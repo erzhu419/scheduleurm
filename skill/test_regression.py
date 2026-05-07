@@ -8791,6 +8791,164 @@ def test_phase3_4_3_claim_race_vs_claim_error():
         sch.NODES = saved_NODES
 
 
+def test_phase3_4_4_claim_replicates_gpu_fits_policy():
+    """Phase 3.4.4 P2 fix: claim() now enforces the same placement policy
+    the local pick_placement / _gpu_fits applies, so two schedulers
+    with stale probes can't both claim onto a fresh GPU when only one
+    of them would have passed local _gpu_fits.
+
+    Pre-fix the script's claim op only checked total VRAM cap. So:
+      - per-task VRAM cap (local: 4GB per task) was unenforced
+      - VRAM margin was unenforced
+      - 1/3 packing rule was unenforced
+    Two schedulers each picking the same fresh 12GB GPU could both
+    succeed at claim() with 5GB tasks (5+5 ≤ 12), then both run
+    simultaneously even though local 1/3 rule says only one fits.
+
+    Util saturation is intentionally NOT replicated — there's no
+    shared GPU util reading; local pick_placement gates on it before
+    claim is invoked, which is the right place for that check.
+    """
+    print("\n[102] Phase 3.4.4 P2 fix: claim replicates per-task cap / margin / 1/3 rule")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Source guards: capacity payload now carries the policy fields.
+    cap_idx = src.find("def _build_capacity")
+    cap_end = src.find("\n    @classmethod", cap_idx + 5)
+    cap_body = src[cap_idx:cap_end]
+    check("_build_capacity carries max_vram_per_task",
+          '"max_vram_per_task"' in cap_body)
+    check("_build_capacity carries vram_margin_mb",
+          '"vram_margin_mb"' in cap_body
+          and "VRAM_MARGIN_MB" in cap_body)
+    check("_build_capacity carries third_pack_rule + default_vram_mb",
+          '"third_pack_rule"' in cap_body
+          and '"default_vram_mb"' in cap_body)
+
+    # Source guard: remote script's claim op enforces these.
+    sc = sch._CLAIMS_REMOTE_SCRIPT
+    check("script enforces per-task VRAM cap",
+          "max_per_task" in sc and "per-task cap" in sc)
+    check("script enforces VRAM margin",
+          "vram_margin" in sc and "post-claim free" in sc)
+    check("script enforces 1/3 packing rule with small-task exemption",
+          "third_rule" in sc and "packing rule" in sc and "default_vram" in sc)
+
+    # Behavioral: drive the script directly with controlled capacity to
+    # exercise each new gate in isolation.
+    import tempfile, subprocess, json as _json
+    with tempfile.TemporaryDirectory() as td:
+        script = sc.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        path = os.path.join(td, "_claims.py")
+        with open(path, "w") as f:
+            f.write(script)
+
+        def claim(rec, cap):
+            r = subprocess.run(
+                ["python3", path, "claim",
+                 _json.dumps(rec), _json.dumps(cap)],
+                capture_output=True, text=True, timeout=10,
+            )
+            return _json.loads(r.stdout.strip().splitlines()[-1])
+
+        def reset():
+            try: os.unlink(os.path.join(td, "claims.json"))
+            except FileNotFoundError: pass
+
+        now = time.time()
+        base_rec = {"owner": "u", "scheduler_id": "S", "task_id": "tA",
+                    "claimed_at": now, "expires_at": now + 3600, "pid": None,
+                    "cpu_cores": 1, "ram_mb": 1000}
+
+        # ---- Per-task cap: local has max_vram_per_task=4000, task wants 6000.
+        reset()
+        rec = dict(base_rec, gpu_idx=0, vram_mb=6000)
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": 4000, "vram_margin_mb": 0,
+               "third_pack_rule": False, "default_vram_mb": 512}
+        r = claim(rec, cap)
+        check("per-task cap exceeded → conflict",
+              r.get("ok") is False and "per-task cap" in (r.get("conflict") or ""),
+              diag=r)
+
+        # ---- Margin: claim leaves <margin free after.
+        reset()
+        rec = dict(base_rec, gpu_idx=0, vram_mb=11600)  # 12000-11600=400 < 500
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 500,
+               "third_pack_rule": False, "default_vram_mb": 512}
+        r = claim(rec, cap)
+        check("post-claim free < margin → conflict",
+              r.get("ok") is False and "margin" in (r.get("conflict") or ""),
+              diag=r)
+
+        # ---- 1/3 rule: 12000//3 = 4000. Big task = 5000 wants empty GPU.
+        # Stacking 5000 puts usage at 5000 > 4000 → reject (vram_need > default
+        # so no small-task exemption).
+        reset()
+        rec = dict(base_rec, gpu_idx=0, vram_mb=5000)
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 0,
+               "third_pack_rule": True, "default_vram_mb": 512}
+        r = claim(rec, cap)
+        check("first claim of 5000 (>1/3 of 12000) → blocked by 1/3 rule",
+              r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
+              diag=r)
+
+        # ---- 1/3 rule small-task exemption: 400MB task can stack past 1/3.
+        # Pre-fill with 4500MB claim from another scheduler, then try to
+        # add a 400MB small task — 1/3 rule alone would block (4500+400 = 4900
+        # > 4000 third) but small-task exemption (≤ default 512) allows it.
+        reset()
+        # Setup: existing 4500MB claim from a different scheduler.
+        existing = dict(base_rec, scheduler_id="OTHER", task_id="big",
+                         gpu_idx=0, vram_mb=4500)
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 0,
+               "third_pack_rule": True, "default_vram_mb": 512}
+        # Bypass 1/3 by setting third_pack_rule=False for the seed.
+        seed_cap = dict(cap, third_pack_rule=False)
+        r = claim(existing, seed_cap)
+        assert r.get("ok") is True, f"seed setup: {r}"
+        # Now try small task with the rule on.
+        rec = dict(base_rec, task_id="small", gpu_idx=0, vram_mb=400)
+        r = claim(rec, cap)
+        check("small task (≤ default_vram_mb) past 1/3 → allowed (exemption)",
+              r.get("ok") is True, diag=r)
+
+        # ---- 1/3 rule disabled: large task on empty GPU succeeds.
+        reset()
+        rec = dict(base_rec, gpu_idx=0, vram_mb=5000)
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 0,
+               "third_pack_rule": False, "default_vram_mb": 512}
+        r = claim(rec, cap)
+        check("third_pack_rule=False → 5000MB on empty GPU allowed",
+              r.get("ok") is True, diag=r)
+
+        # ---- Happy: small claim that respects all gates.
+        reset()
+        rec = dict(base_rec, gpu_idx=0, vram_mb=2000)
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": 4000, "vram_margin_mb": 500,
+               "third_pack_rule": True, "default_vram_mb": 512}
+        r = claim(rec, cap)
+        check("small claim within all gates → ok",
+              r.get("ok") is True, diag=r)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -11325,6 +11483,7 @@ if __name__ == "__main__":
     test_phase3_4_0_cross_user_claim_io()
     test_phase3_4_2_persistent_owner_id()
     test_phase3_4_3_claim_race_vs_claim_error()
+    test_phase3_4_4_claim_replicates_gpu_fits_policy()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -225,7 +225,7 @@ process lifetime.
 | Target node | What you get |
 |---|---|
 | Has slurm | scheduleurm generates sbatch, slurm handles cross-user contention + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
-| No slurm | scheduleurm runs `ssh + nohup + setsid` directly; everything as before |
+| No slurm | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` (Phase 3.2 / 3.4) |
 | Mixed cluster | Per-node — node A can be slurm, node B can be ssh+nohup, scheduleurm routes correctly |
 
 What scheduleurm keeps owning even on slurm nodes (because slurm doesn't): per-signature p80
@@ -246,13 +246,50 @@ walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `ssta
 isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.
 
 The class hierarchy:
-- `Backend` (ABC) — `launch` / `kill` / `batch_probe`
-- `LocalBackend` — current `ssh + nohup` path
+
+- `Backend` (ABC) — `launch(task, node_state=None)` / `kill` / `batch_probe`
+- `LocalBackend` — `ssh + nohup` path; calls `_ClaimManager.claim()` first when the node has `enable_claims=True` (Phase 3.2 / 3.4)
 - `SlurmBackend` — `sbatch` / `scancel` / `squeue`
 - `HybridBackend` — per-node routing; this is what `_BACKEND` actually is
 
-Phase 3 (planned) will add `MultiUserLocalBackend` for the case where a node has *no* slurm
-**and** multiple scheduleurm users contend (cooperative shared state at `/tmp/scheduleurm/`).
+**Phase 3.2 / 3.4 cross-scheduler claims (shipped)**:
+
+When a node has `NODES["x"]["enable_claims"] = True`, all scheduleurm
+instances on that machine (different state dirs / different OS users)
+share `/tmp/scheduleurm/claims.json` mutated under `flock`. Each user
+deploys their own `_claims_${USER}.py` (sticky `/tmp/scheduleurm` would
+otherwise block cross-user overwrite); the shared `claims.json` and
+`claims.lock` are mode 0666; the script writes IN-PLACE under flock
+(no `os.rename` — that fails cross-user in sticky dirs).
+
+`LocalBackend.launch` does an atomic capacity check before `ssh+nohup`.
+The check enforces the same placement policy as local `_gpu_fits`:
+total CPU/RAM/VRAM caps, per-task VRAM cap, VRAM margin, and the 1/3
+packing rule with small-task exemption. Util saturation isn't
+replicated cross-scheduler (no shared util reading); local
+`pick_placement` gates on it before `claim` is invoked.
+
+Failed claims split: capacity conflicts return `CLAIM_RACE:` (task back
+to queue, no fail-count increment, retry next cycle) while transport /
+setup errors return `CLAIM_ERROR:` (real launch failure, counts toward
+`MAX_LAUNCH_RETRY` so a chronically-broken node escalates). Watcher
+periodically `renew_many`s our live claims and `gc_stale`s any expired-
+plus-dead ones from any scheduler. PIDs owned by other users count as
+alive (`PermissionError` from `kill(pid,0)` means the proc exists).
+`scheduler_id` is a persistent UUID stored in `STATE_DIR/claim_owner_id`
+so a scheduleurm restart still matches its own pre-restart claims.
+
+`probe_all` subtracts pending (pre-PID) claims from the node's free
+resources, so a competing scheduler's `pick_placement` sees the
+launch-race window as occupied even before the host process shows up
+in `ps`/`nvidia-smi`.
+
+Not a slurm replacement — there's still no central daemon, no fairness
+across schedulers, no preemption across users. The claims layer just
+makes "two schedulers can share a non-slurm node without over-committing"
+work correctly. If you need the rest of slurm's feature set, install
+slurm; the layers compose (a node can have slurm AND `enable_claims`
+for a third scheduler that bypasses slurm's queue).
 
 ## Architecture (one screen)
 

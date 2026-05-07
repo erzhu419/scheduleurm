@@ -353,6 +353,23 @@ def main():
         data["claims"] = fresh
         save(data)
         print(json.dumps({"ok": True, "renewed": renewed}))
+    elif op == "renew_many":
+        # Bulk renew for one scheduler. Watcher sends our running task ids
+        # every cycle; the same call also implicitly GC's stale entries
+        # because gc_claims already ran above.
+        sid = payload.get("scheduler_id")
+        tids = set(payload.get("task_ids") or [])
+        new_exp = payload.get("expires_at")
+        renewed = 0
+        for c in fresh:
+            if c.get("scheduler_id") == sid and c.get("task_id") in tids:
+                if new_exp:
+                    c["expires_at"] = float(new_exp)
+                renewed += 1
+        data["claims"] = fresh
+        save(data)
+        print(json.dumps({"ok": True, "renewed": renewed,
+                          "removed_stale": len(claims) - len(fresh)}))
     elif op == "gc":
         data["claims"] = fresh
         save(data)
@@ -520,6 +537,25 @@ class _ClaimManager:
             "expires_at": new_exp,
         })
         return bool(result.get("ok"))
+
+    @classmethod
+    def renew_many(cls, node: str, task_ids: list) -> int:
+        """Bulk renew all our claims on `node` matching any of `task_ids`.
+        Returns count renewed; -1 on error; 0 when claims disabled. Used by
+        the watcher every cycle so live claims don't expire."""
+        if not cls.enabled_for(node):
+            return 0
+        if not task_ids:
+            return 0
+        new_exp = time.time() + cls._ttl_for(node)
+        result = _claims_remote_op(node, "renew_many", {
+            "scheduler_id": cls.scheduler_id(),
+            "task_ids": list(task_ids),
+            "expires_at": new_exp,
+        })
+        if result.get("ok"):
+            return int(result.get("renewed", 0))
+        return -1
 
     @classmethod
     def gc_stale(cls, node: str) -> int:
@@ -1612,6 +1648,15 @@ def _batch_check_running(state):
         if res["state"] == "dead":
             t["status"] = "done"
             t["finished_at"] = time.time()
+            # Phase 3.2.1: free the cross-scheduler claim now that the task
+            # is terminal. Best-effort — failure to release just leaves the
+            # claim to expire via TTL + GC. No-op when claims disabled for
+            # this node.
+            try:
+                if t.get("node"):
+                    _ClaimManager.release(t["node"], t["id"])
+            except Exception:
+                pass
             # Slurm reports terminal states directly. Trust COMPLETED as a clean exit and
             # treat explicit Slurm failure states as crashes instead of trying to infer
             # everything from logs (logs can be missing/rotated while Slurm still knows
@@ -2409,7 +2454,7 @@ class Backend:
         """
         return True
 
-    def launch(self, task: dict) -> tuple[bool, str]:
+    def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         """Submit task to its assigned node.
 
         Mutates task in-place: sets status='running', started_at, log_path,
@@ -2453,7 +2498,7 @@ class LocalBackend(Backend):
     """
     name = "local"
 
-    def launch(self, task: dict) -> tuple[bool, str]:
+    def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         """Start the task via nohup, capture remote PID. Mutates task in-place. Returns (ok, msg)."""
         log_path = f"{STATE_DIR}/logs/{task['id']}.log" if NODES[task["node"]]["host"] is None \
                    else f"/tmp/sched_{task['id']}.log"
@@ -2490,6 +2535,30 @@ class LocalBackend(Backend):
             rc_cwd, err_cwd = 1, str(e)
         if rc_cwd != 0:
             return False, f"cwd missing on {task['node']}: {cwd}"
+        # Phase 3.2.1 P1 fix: cross-scheduler claim. When the node has
+        # enable_claims=True, atomically reserve CPU/RAM/VRAM in
+        # /tmp/scheduleurm/claims.json BEFORE ssh+nohup. If another
+        # scheduleurm (different state dir / user) already claimed the
+        # resource, conflict → return CLAIM_RACE sentinel so dispatch
+        # treats it as contention (revert to queued, no fail-count
+        # increment) rather than a real launch failure.
+        claim_record = None
+        if _ClaimManager.enabled_for(task["node"]):
+            ok_claim, info = _ClaimManager.claim(
+                task["node"], task, task.get("gpu_idx"), node_state)
+            if not ok_claim:
+                return False, f"CLAIM_RACE: {info}"
+            claim_record = info
+
+        def _release_and_fail(msg):
+            """Release the claim if we hold one, then return failure."""
+            if claim_record:
+                try:
+                    _ClaimManager.release(task["node"], task["id"])
+                except Exception:
+                    pass
+            return False, msg
+
         # Set CUDA_VISIBLE_DEVICES. For GPU tasks: pin to assigned GPU (will appear as device 0 inside).
         # For CPU-only tasks (gpu_idx=None): set empty string so CUDA truly sees no GPUs — the literal
         # string "None" is NOT a valid CUDA value and would not disable GPU access.
@@ -2520,7 +2589,7 @@ class LocalBackend(Backend):
         try:
             rc, out, err = run_on(task["node"], full, timeout=20, check=False)
             if rc != 0:
-                return False, f"launch rc={rc}: {err.strip()[:200]}"
+                return _release_and_fail(f"launch rc={rc}: {err.strip()[:200]}")
             pid = None
             for line in out.splitlines():
                 line = line.strip()
@@ -2528,7 +2597,8 @@ class LocalBackend(Backend):
                     try: pid = int(line[4:])
                     except ValueError: pass
             if not pid:
-                return False, f"could not parse PID from launch output: {out[:200]}"
+                return _release_and_fail(
+                    f"could not parse PID from launch output: {out[:200]}")
             task["remote_pids"] = [pid]
             task["process_group"] = pid
             task["log_path"] = log_path
@@ -2536,6 +2606,13 @@ class LocalBackend(Backend):
             task["started_at"] = time.time()
             task["peak_vram_mb"] = 0
             task["peak_ram_mb"] = 0
+            # Phase 3.2.1: persist PID into the claim so other schedulers
+            # see liveness; gc_stale won't touch a claim with a live PID.
+            if claim_record:
+                try:
+                    _ClaimManager.update_pid(task["node"], task["id"], pid)
+                except Exception:
+                    pass
             # Docker container PID resolution. The PID we just captured is the host-side bash
             # that ran `docker run` — NOT the python proc inside the container. With containerd-shim
             # the container's actual proc tree is detached, so liveness checks (`kill -0`),
@@ -2568,9 +2645,17 @@ class LocalBackend(Backend):
                     # `kill -- -<pgid>` still catches the docker client too if needed.
                     task["remote_pids"] = [container_pid]
                     task["container_main_pid"] = container_pid
+                    # Phase 3.2.1: refresh the claim's PID to track the
+                    # container's actual main proc, not the bash launcher
+                    # (which exits as soon as `docker run` detaches).
+                    if claim_record:
+                        try:
+                            _ClaimManager.update_pid(task["node"], task["id"], container_pid)
+                        except Exception:
+                            pass
             return True, f"pid={pid}" + (f" container={cname}@{task.get('container_main_pid')}" if cname else "")
         except Exception as e:
-            return False, f"launch exception: {e}"
+            return _release_and_fail(f"launch exception: {e}")
 
     def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
         """Best-effort terminate for a tracked task. SIGTERM first, then SIGKILL for both
@@ -2837,7 +2922,7 @@ class SlurmBackend(Backend):
         lines.append(inner_cmd)
         return "\n".join(lines) + "\n"
 
-    def launch(self, task: dict) -> tuple[bool, str]:
+    def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         # Phase 2.4 P1 fix: slurm-managed jobs run on a compute node (slurm-chosen),
         # but scheduler tails via the login node. /tmp is per-node-local on virtually
         # every cluster — writing to /tmp/sched_<id>.log on compute-N would leave the
@@ -3234,8 +3319,8 @@ class HybridBackend(Backend):
             return self._local  # no node yet (queued task): launch path will re-route
         return self._backend_for(node)
 
-    def launch(self, task: dict) -> tuple[bool, str]:
-        return self._backend_for_task(task).launch(task)
+    def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
+        return self._backend_for_task(task).launch(task, node_state=node_state)
 
     def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
         return self._backend_for_task(task).kill(task, timeout=timeout)
@@ -3267,9 +3352,11 @@ class HybridBackend(Backend):
 _BACKEND: Backend = HybridBackend()
 
 
-def launch(task):
-    """Thin wrapper: delegates to the active Backend. See Backend.launch."""
-    return _BACKEND.launch(task)
+def launch(task, node_state=None):
+    """Thin wrapper: delegates to the active Backend. See Backend.launch.
+    node_state (a probe_all entry) lets backends that need it (LocalBackend
+    when claims are enabled) build a capacity payload without a second probe."""
+    return _BACKEND.launch(task, node_state=node_state)
 
 # ---------- subcommands ----------
 def _cmd_looks_like_training(cmd: str) -> bool:
@@ -4624,6 +4711,13 @@ def _evict_to_queue(victim, state, reason):
     """Send a running task back to queue WITHOUT incrementing retry_count or marking crash.
     Used by preemption — task didn't fail, we just made room for higher priority. Kills its
     PIDs, resets running fields, sets last_block_reason for visibility."""
+    # Phase 3.2.1: release the cross-scheduler claim BEFORE clearing the
+    # node — release() needs task["node"] still set to know where to ssh.
+    try:
+        if victim.get("node"):
+            _ClaimManager.release(victim["node"], victim["id"])
+    except Exception:
+        pass
     _kill_task_processes(victim, timeout=15)
     victim["status"] = "queued"
     for k in ("node", "gpu_idx", "process_group", "log_path", "started_at", "finished_at", "_diagnosis"):
@@ -4893,8 +4987,29 @@ def _do_dispatch(state, nodes):
             save_state(state)
         except Exception:
             pass
-        ok, msg = launch(t)
+        # Phase 3.2.1: pass the picked node's probe state so LocalBackend
+        # can build a capacity payload for cross-scheduler claim() without a
+        # second ssh round-trip.
+        picked_state = next((n for n in nodes if n.get("name") == t.get("node")), None)
+        ok, msg = launch(t, node_state=picked_state)
         if not ok:
+            # Phase 3.2.1: claim race is contention, not a real launch failure.
+            # If LocalBackend.launch returned the CLAIM_RACE sentinel, the
+            # cross-scheduler claim was rejected (some other scheduleurm
+            # claimed the resource first). Revert to queued WITHOUT incrementing
+            # launch_fail_count or recording launch_failed_nodes — otherwise
+            # legitimate contention would eventually hit MAX_LAUNCH_RETRY +
+            # APP_BUG_CAP escalation. Retry naturally on the next dispatch
+            # cycle when capacity opens up or another scheduler releases.
+            if isinstance(msg, str) and msg.startswith("CLAIM_RACE:"):
+                t["status"] = "queued"
+                t["last_block_reason"] = msg
+                t["node"] = None
+                t["gpu_idx"] = None
+                t.pop("launching_started_at", None)
+                events.append({"type": "claim_race", "task_id": t["id"],
+                                "task": t, "reason": msg})
+                continue
             # Don't terminate the task — return it to the queue so dispatch can try a different
             # node next cycle. Common failure modes (ssh timeout, cwd missing on the picked
             # fallback node) are node-specific and recoverable on a different node. After
@@ -5629,6 +5744,8 @@ def cmd_dispatch(args):
         elif ev["type"] == "preempted":
             print(f"  [{tid}] PREEMPT on {ev.get('freed_node') or '?'} "
                   f"(freed {ev.get('cpu_freed', 0)}c / {ev.get('ram_freed', 0)}MB)")
+        elif ev["type"] == "claim_race":
+            print(f"  [{tid}] CLAIM-RACE {ev['reason'][:200]}")
 
 # ---------- watcher (background daemon) ----------
 WATCHER_LOG = STATE_DIR / "logs" / "watcher.log"
@@ -6471,6 +6588,13 @@ def _watch_iteration(args):
                 "cpu_freed": ev.get("cpu_freed", 0),
                 "ram_freed": ev.get("ram_freed", 0),
             })
+        elif ev["type"] == "claim_race":
+            # Phase 3.2.1: cross-scheduler claim contention. Logged so the
+            # user can see WHO had the conflict (multi-user setups). No
+            # Feishu push — not actionable, just informational.
+            notify("task_claim_race",
+                   {"task_id": ev["task_id"], "reason": ev["reason"][:300]},
+                   feishu_enabled=False)
         # no_fit / resume_found are not surfaced — too noisy for Feishu, but they're in the JSONL log.
     for t in auto_adopted:
         notify("task_auto_adopted", t)
@@ -6478,6 +6602,45 @@ def _watch_iteration(args):
         notify("batch_complete", batch)
     if archived_count:
         notify("archived_terminal_tasks", {"count": archived_count, "age_days": ARCHIVE_AGE_DAYS},
+               feishu_enabled=False)
+
+    # Phase 3.2.1: tend cross-scheduler claims on every claims-enabled node.
+    # Single ssh per node:
+    #   1. renew_many — bumps expires_at on ALL of our running tasks' claims
+    #      so they don't expire before the next watcher cycle (TTL is 1h
+    #      default, watcher cycle is 60s, so we have plenty of margin even
+    #      if a few cycles get delayed).
+    #   2. gc_stale runs implicitly inside renew_many's pre-op gc pass, so
+    #      any expired-and-dead-pid claim from any scheduler is dropped.
+    # Graceful: ssh failures don't crash the watcher; they're logged.
+    try:
+        with state_lock():
+            cur_state = load_state()
+        running_by_node = {}
+        for t in cur_state.get("tasks", []):
+            if t.get("status") != "running":
+                continue
+            node = t.get("node")
+            if node and _ClaimManager.enabled_for(node):
+                running_by_node.setdefault(node, []).append(t["id"])
+        for node in NODES:
+            if not _ClaimManager.enabled_for(node):
+                continue
+            try:
+                ids = running_by_node.get(node, [])
+                if ids:
+                    _ClaimManager.renew_many(node, ids)
+                else:
+                    # No running tasks of ours on this node — but other
+                    # schedulers' claims may still be expiring. Run a
+                    # cheap gc pass.
+                    _ClaimManager.gc_stale(node)
+            except Exception as e:
+                notify("claims_tend_error",
+                       {"node": node, "error": str(e)[:200]},
+                       feishu_enabled=False)
+    except Exception as e:
+        notify("claims_tend_outer_error", {"error": str(e)[:200]},
                feishu_enabled=False)
 
     # 5. Heartbeat — independent timer. Snapshot only, no event recap (those got their own notifications).
@@ -6571,6 +6734,13 @@ def cmd_cancel(args):
                     sys.exit(f"task {args.id} is RUNNING — pass --force to kill it (will not affect other tasks)")
                 pids = _task_pids(t)
                 ok, kill_msg = _kill_task_processes(t, timeout=15)
+                # Phase 3.2.1: release the cross-scheduler claim too. Best-
+                # effort; failure leaves the claim to expire via TTL + GC.
+                try:
+                    if t.get("node"):
+                        _ClaimManager.release(t["node"], t["id"])
+                except Exception:
+                    pass
                 t["status"] = "cancelled"
                 t["finished_at"] = time.time()
                 save_state(state)

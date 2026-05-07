@@ -219,7 +219,7 @@ def test_launch_fail_fallback():
         "save_state": sch.save_state,  # WAL save runs BEFORE launch in dispatch — must stub
     }
     esc_calls = []
-    sch.launch = lambda t: (False, "synthetic launch failure")
+    sch.launch = lambda t, node_state=None: (False, "synthetic launch failure")
     sch.pick_placement = lambda t, ns: ("local", None)        # CPU-only on local
     sch.precheck_git = lambda t: (True, "")
     sch.find_resume = lambda t: None
@@ -456,7 +456,7 @@ def test_high_defaults_lower_before_placement():
     sch.precheck_git = lambda t: (True, "")
     sch.find_resume = lambda t: None
     sch.save_state = lambda s: None  # stub — fake state must not reach live queue.json
-    def fake_launch(t):
+    def fake_launch(t, node_state=None):
         t["status"] = "running"; t["remote_pids"] = [4242]
         t["process_group"] = 4242; t["started_at"] = time.time()
         t["log_path"] = "/tmp/fake.log"; return True, "pid=4242"
@@ -1527,8 +1527,11 @@ def test_launching_state_field_persistence():
     print("\n[35] dispatch sets status='launching' before launch (WAL)")
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
     # Find dispatch's launch call and verify a status='launching' flip + save_state is BEFORE it.
-    idx_launch = src.find("ok, msg = launch(t)")
-    check("dispatch calls launch(t)", idx_launch > 0)
+    # Phase 3.2.1 extended the call to launch(t, node_state=picked_state).
+    idx_launch = src.find("ok, msg = launch(t, node_state=")
+    if idx_launch < 0:
+        idx_launch = src.find("ok, msg = launch(t)")  # legacy fallback
+    check("dispatch calls launch(t, ...)", idx_launch > 0)
     if idx_launch > 0:
         before = src[max(0, idx_launch - 800):idx_launch]
         check("status='launching' flip before launch (WAL)",
@@ -1980,7 +1983,7 @@ def test_dispatch_skips_duplicate_signature():
         sch.precheck_git = lambda t: (True, "ok")
         sch.find_resume = lambda t: None
         sch.save_state = fake_save_state
-        def fake_launch(t):
+        def fake_launch(t, node_state=None):
             launched.append(t["id"])
             t["status"] = "running"
             t["remote_pids"] = [1000 + len(launched)]
@@ -2186,7 +2189,9 @@ def test_backend_abstraction_phase1():
                 default=len(src))
         return src[i:j]
 
-    launch_body = _body_after("\ndef launch(task):")
+    # Phase 3.2.1 extended the wrapper signature.
+    launch_body = (_body_after("\ndef launch(task, node_state=None):")
+                   or _body_after("\ndef launch(task):"))
     check("top-level launch() delegates to _BACKEND.launch",
           "_BACKEND.launch(" in launch_body, diag=launch_body[:200])
 
@@ -2211,7 +2216,7 @@ def test_backend_abstraction_phase1():
     # the top-level wrapper, verify the fake was hit.
     class _FakeBackend(sch.Backend):
         name = "fake"
-        def launch(self, task): return True, "fake-launched"
+        def launch(self, task, node_state=None): return True, "fake-launched"
         def kill(self, task, timeout=15): return True, "fake-killed"
         def batch_probe(self, state): return {}
 
@@ -7540,6 +7545,264 @@ def test_phase3_2_0_claim_manager():
         sch.NODES = saved_NODES
 
 
+def test_phase3_2_1_claim_lifecycle_in_dispatch():
+    """Phase 3.2.1: claim lifecycle wired through LocalBackend.launch +
+    dispatch + watcher.
+
+    Verifies:
+      - LocalBackend.launch claims BEFORE ssh, releases on launch failure,
+        update_pid after PID parsed (and again after container_main_pid).
+      - Module-level launch() and Backend.launch all accept node_state kwarg.
+      - _do_dispatch passes node_state to launch.
+      - CLAIM_RACE sentinel takes the contention path: status=queued,
+        no launch_fail_count increment, no launch_failed_nodes entry,
+        emits "claim_race" event (not "launch_failed_retry").
+      - terminal transition (status=done) releases the claim.
+      - cancel/evict release the claim.
+      - watcher tend-step sends renew_many for our running tasks +
+        gc_stale on enabled nodes with no running tasks.
+    """
+    print("\n[95] Phase 3.2.1: claim lifecycle (launch / dispatch / terminate / watcher)")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("Backend.launch signatures accept node_state kwarg",
+          src.count("def launch(self, task: dict, node_state: Optional[dict] = None)") >= 4,
+          diag=f"only {src.count('def launch(self, task: dict, node_state: Optional[dict] = None)')} signatures match")
+    check("module-level launch() forwards node_state to _BACKEND",
+          "_BACKEND.launch(task, node_state=node_state)" in src)
+    lb_idx = src.find("class LocalBackend")
+    lb_end = src.find("\nclass ", lb_idx + 5)
+    lb_body = src[lb_idx:lb_end]
+    check("LocalBackend.launch claims BEFORE ssh (claim placement guard)",
+          "_ClaimManager.claim(" in lb_body
+          and "CLAIM_RACE: " in lb_body
+          and "claim_record = info" in lb_body)
+    check("LocalBackend.launch release-on-failure helper exists",
+          "_release_and_fail" in lb_body)
+    check("LocalBackend.launch update_pid after PID parsed",
+          "_ClaimManager.update_pid(task[\"node\"], task[\"id\"], pid)" in lb_body)
+    check("LocalBackend.launch update_pid AGAIN with container_main_pid",
+          "_ClaimManager.update_pid(task[\"node\"], task[\"id\"], container_pid)" in lb_body)
+    do_idx = src.find("def _do_dispatch")
+    do_end = src.find("\ndef ", do_idx + 5)
+    do_body = src[do_idx:do_end]
+    check("_do_dispatch passes node_state to launch",
+          "launch(t, node_state=picked_state)" in do_body)
+    check("_do_dispatch handles CLAIM_RACE without incrementing fail_count",
+          'msg.startswith("CLAIM_RACE:")' in do_body
+          and '"claim_race"' in do_body)
+    bcr_idx = src.find("def _batch_check_running")
+    bcr_end = src.find("\ndef ", bcr_idx + 5)
+    bcr_body = src[bcr_idx:bcr_end]
+    check("_batch_check_running releases claim on terminal transition",
+          "_ClaimManager.release(t[\"node\"], t[\"id\"])" in bcr_body)
+    evict_idx = src.find("def _evict_to_queue")
+    evict_end = src.find("\ndef ", evict_idx + 5)
+    evict_body = src[evict_idx:evict_end]
+    check("_evict_to_queue releases claim BEFORE clearing node",
+          "_ClaimManager.release(victim[\"node\"], victim[\"id\"])" in evict_body)
+    cancel_idx = src.find("def cmd_cancel")
+    cancel_end = src.find("\ndef ", cancel_idx + 5)
+    cancel_body = src[cancel_idx:cancel_end]
+    check("cmd_cancel releases claim on running --force kill",
+          "_ClaimManager.release(t[\"node\"], t[\"id\"])" in cancel_body)
+    wi_idx = src.find("def _watch_iteration")
+    wi_end = src.find("\ndef ", wi_idx + 5)
+    wi_body = src[wi_idx:wi_end]
+    check("_watch_iteration calls renew_many / gc_stale per enabled node",
+          "_ClaimManager.renew_many(" in wi_body
+          and "_ClaimManager.gc_stale(" in wi_body
+          and "_ClaimManager.enabled_for(" in wi_body)
+
+    # 2. Behavioral: LocalBackend.launch on a claims-enabled node.
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    sch.NODES = {
+        "n_on": {"name": "n_on", "host": "h_on", "enable_claims": True,
+                  "cpu_cores": 12, "ram_mb": 32000, "claim_ttl_s": 600,
+                  "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                  "max_concurrent_running": None},
+        "n_off": {"name": "n_off", "host": "h_off",
+                   "cpu_cores": 12, "ram_mb": 32000,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                   "max_concurrent_running": None},
+    }
+
+    captured = []  # (node, full_cmd) — keep full so substring checks work past
+                   # the heredoc setup bytes.
+    def mock_run_on(node, cmd, timeout=20, check=False):
+        captured.append((node, cmd))
+        # claims script ops → simulate ok
+        if "_claims.py claim " in cmd:
+            return (0, '{"ok": true}\n', "")
+        if "_claims.py release " in cmd:
+            return (0, '{"ok": true, "removed": 1}\n', "")
+        if "_claims.py update_pid " in cmd:
+            return (0, '{"ok": true, "updated": 1}\n', "")
+        # cwd preflight
+        if "test -d " in cmd:
+            return (0, "", "")
+        # actual ssh launch (the setsid one)
+        if "setsid bash" in cmd:
+            return (0, "PID=4242\n", "")
+        return (0, "", "")
+    sch.run_on = mock_run_on
+
+    try:
+        # 2a. Happy path: enabled node, claim ok, launch ok, update_pid called.
+        captured.clear()
+        task = {"id": "tHappy", "node": "n_on", "cwd": "/work",
+                "cmd": "python a.py", "gpu_idx": 0,
+                "est_vram_mb": 1500, "cpu_cores": 2, "ram_mb": 1500,
+                "remote_pids": [], "extra_env": {}}
+        node_state = {"name": "n_on",
+                      "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 11000,
+                                "used_mb": 0, "util_pct": 0}]}
+        ok, msg = sch._BACKEND.launch(task, node_state=node_state)
+        check("happy: launch ok",
+              ok is True and "pid=4242" in msg, diag=msg)
+        check("happy: claim was ssh'd BEFORE the setsid bash launch",
+              any("_claims.py claim" in c for n, c in captured)
+              and any("setsid bash" in c for n, c in captured))
+        # Ensure ordering: claim cmd index < setsid index
+        claim_i = next(i for i, (_, c) in enumerate(captured)
+                        if "_claims.py claim" in c)
+        launch_i = next(i for i, (_, c) in enumerate(captured)
+                         if "setsid bash" in c)
+        check("happy: claim happens BEFORE ssh+nohup (race-free)",
+              claim_i < launch_i, diag=f"claim={claim_i} launch={launch_i}")
+        check("happy: update_pid was sent after PID parsed",
+              any("_claims.py update_pid" in c for n, c in captured))
+
+        # 2b. Disabled node: NO claim ssh (fast path).
+        captured.clear()
+        task = {"id": "tFast", "node": "n_off", "cwd": "/work",
+                "cmd": "python a.py", "gpu_idx": 0,
+                "est_vram_mb": 1500, "cpu_cores": 2, "ram_mb": 1500,
+                "remote_pids": [], "extra_env": {}}
+        ok, msg = sch._BACKEND.launch(task, node_state=None)
+        check("disabled node: launch ok",
+              ok is True, diag=msg)
+        check("disabled node: NO claims-script ssh issued",
+              not any("_claims.py" in c for n, c in captured),
+              diag=str(captured))
+
+        # 2c. Claim conflict: ssh returns conflict → CLAIM_RACE sentinel.
+        captured.clear()
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, '{"ok": false, "conflict": "gpu0: full"}\n', "")
+            if "_claims.py claim " in cmd
+            else (0, "", "")
+        )
+        task = {"id": "tRace", "node": "n_on", "cwd": "/work",
+                "cmd": "python a.py", "gpu_idx": 0,
+                "est_vram_mb": 1500, "cpu_cores": 2, "ram_mb": 1500,
+                "remote_pids": [], "extra_env": {}}
+        ok, msg = sch._BACKEND.launch(task, node_state=node_state)
+        check("claim conflict → ok=False with CLAIM_RACE: prefix",
+              ok is False and msg.startswith("CLAIM_RACE: "),
+              diag=msg)
+        check("claim conflict → message names the underlying conflict",
+              "gpu0: full" in msg, diag=msg)
+
+        # 2d. Claim ok but launch ssh fails → release before returning.
+        # Track release calls to confirm.
+        rel_calls = []
+        def mock_with_failing_launch(node, cmd, timeout=20, check=False):
+            if "_claims.py claim " in cmd:
+                return (0, '{"ok": true}\n', "")
+            if "_claims.py release " in cmd:
+                rel_calls.append(cmd)
+                return (0, '{"ok": true, "removed": 1}\n', "")
+            if "test -d " in cmd:
+                return (0, "", "")
+            if "setsid bash" in cmd:
+                return (1, "", "ssh: blip")  # simulated launch failure
+            return (0, "", "")
+        sch.run_on = mock_with_failing_launch
+        task = {"id": "tRel", "node": "n_on", "cwd": "/work",
+                "cmd": "python a.py", "gpu_idx": 0,
+                "est_vram_mb": 1500, "cpu_cores": 2, "ram_mb": 1500,
+                "remote_pids": [], "extra_env": {}}
+        ok, msg = sch._BACKEND.launch(task, node_state=node_state)
+        check("launch failure after claim → ok=False",
+              ok is False and "rc=1" in msg, diag=msg)
+        check("launch failure after claim → release was called",
+              len(rel_calls) >= 1, diag=str(rel_calls))
+
+        # 2e. _do_dispatch: CLAIM_RACE event takes the contention path
+        # (no launch_fail_count increment, status back to queued).
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, '{"ok": false, "conflict": "ram: too tight"}\n', "")
+            if "_claims.py claim " in cmd
+            else (0, "", "")
+        )
+        # Stub a minimal dispatch context so _do_dispatch can run.
+        saved_save = sch.save_state
+        saved_pre = sch.precheck_git
+        saved_resume = sch.find_resume
+        sch.save_state = lambda s: None
+        sch.precheck_git = lambda t: (True, "")
+        sch.find_resume = lambda t: None
+        state = {"next_id": 100, "tasks": [{
+            "id": "tDR", "status": "queued", "priority": "normal",
+            "submitted_at": time.time(), "cwd": "/work",
+            "cmd": "python a.py", "node": None, "gpu_idx": None,
+            "est_vram_mb": 1500, "cpu_cores": 2, "ram_mb": 1500,
+            "remote_pids": [], "extra_env": {}, "preferred_node": "n_on",
+        }]}
+        nodes = [{
+            "name": "n_on", "alive": True, "free_cpu": 12, "free_ram_mb": 30000,
+            "total_ram_mb": 32000, "total_cpu": 12, "running_count": 0,
+            "slurm_pending_count": 0,
+            "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                       "used_mb": 0, "util_pct": 0}],
+        }]
+        try:
+            events, _ = sch._do_dispatch(state, nodes)
+            ev_types = [e["type"] for e in events]
+            check("dispatch on CLAIM_RACE: 'claim_race' event emitted",
+                  "claim_race" in ev_types, diag=str(ev_types))
+            check("dispatch on CLAIM_RACE: NOT 'launch_failed_retry'",
+                  "launch_failed_retry" not in ev_types, diag=str(ev_types))
+            t = state["tasks"][0]
+            check("dispatch on CLAIM_RACE: task back to queued",
+                  t["status"] == "queued", diag=str(t))
+            check("dispatch on CLAIM_RACE: launch_fail_count NOT incremented",
+                  not t.get("launch_fail_count"),
+                  diag=f"launch_fail_count={t.get('launch_fail_count')}")
+            check("dispatch on CLAIM_RACE: last_block_reason mentions CLAIM_RACE",
+                  "CLAIM_RACE" in (t.get("last_block_reason") or ""),
+                  diag=t.get("last_block_reason"))
+        finally:
+            sch.save_state = saved_save
+            sch.precheck_git = saved_pre
+            sch.find_resume = saved_resume
+
+        # 3. _evict_to_queue releases the claim before clearing node.
+        rel_calls = []
+        sch.run_on = lambda node, cmd, **kw: (
+            (rel_calls.append(cmd), (0, '{"ok": true, "removed": 1}\n', ""))[1]
+            if "_claims.py release " in cmd else (0, "", "")
+        )
+        # Stub kill to no-op
+        saved_kill = sch._kill_task_processes
+        sch._kill_task_processes = lambda task, timeout=15: (True, "ok")
+        try:
+            victim = {"id": "tEvict", "node": "n_on", "remote_pids": [1],
+                      "process_group": 1, "started_at": time.time()}
+            sch._evict_to_queue(victim, {"tasks": [victim]}, "test")
+            check("evict releases claim BEFORE clearing node",
+                  any("_claims.py release " in c for c in rel_calls),
+                  diag=str(rel_calls))
+        finally:
+            sch._kill_task_processes = saved_kill
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -9629,7 +9892,7 @@ def test_backend_slurm_phase2_6_docker_gpu_runtime_env():
 
     # ---------- SlurmBackend.launch passes the right value ----------
     sb_idx = src.find("class SlurmBackend(Backend):")
-    sb_launch_idx = src.find("def launch(self, task: dict)", sb_idx)
+    sb_launch_idx = src.find("def launch(self, task: dict", sb_idx)
     sb_kill_idx = src.find("def kill(self,", sb_launch_idx)
     sb_launch_body = src[sb_launch_idx:sb_kill_idx]
     check("SlurmBackend.launch sets gpu_runtime_env=CUDA_VISIBLE_DEVICES for GPU tasks",
@@ -9720,7 +9983,7 @@ def test_backend_slurm_phase2_4_log_path_shared_fs():
     # ---------- Source guard: no /tmp/sched_ for remote slurm ----------
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
     # SlurmBackend.launch should use cwd-relative path for remote nodes.
-    sb_launch_idx = src.find("def launch(self, task: dict)", src.find("class SlurmBackend"))
+    sb_launch_idx = src.find("def launch(self, task: dict", src.find("class SlurmBackend"))
     sb_kill_idx = src.find("def kill(self,", sb_launch_idx)
     launch_body = src[sb_launch_idx:sb_kill_idx]
     check("SlurmBackend.launch uses cwd-relative log path (not /tmp)",
@@ -10067,6 +10330,7 @@ if __name__ == "__main__":
     test_phase3_0_36_local_terminal_orphan_user_redirect_recovery()
     test_phase3_1_skill_priority_edit_history_why()
     test_phase3_2_0_claim_manager()
+    test_phase3_2_1_claim_lifecycle_in_dispatch()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -4430,6 +4430,89 @@ def test_phase3_0_17_staging_cache_ttl():
         sch._STAGING_CACHE.update(saved_cache)
 
 
+def test_phase3_0_18_probe_all_outside_lock():
+    """Phase 3.0.18 P2 fix: _stage_migration_candidates_outside_lock must call
+    probe_all() OUTSIDE state_lock so a slow ssh+nvidia-smi round-trip doesn't
+    block submit/cancel/status while staging is being identified.
+
+    Pre-fix: function held state_lock for `load_state + probe_all + identify`.
+    probe_all does ssh to every node and can take seconds on a multi-host
+    cluster — and the watcher calls into this every 60s, so other tools were
+    randomly blocked for the duration of node probing.
+
+    Now: state snapshot under a short lock, release, probe_all + identify
+    outside. The function name promised "outside lock" but probe_all wasn't
+    actually outside — that's the fix.
+    """
+    print("\n[75] Phase 3.0.18 P2 fix: probe_all moved outside state_lock during staging")
+
+    # 1. Source guard: in the fn body, probe_all() and _identify_migration_
+    # candidates must be called AFTER the `with state_lock():` block (i.e.
+    # outside the indented lock context).
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _stage_migration_candidates_outside_lock")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    lock_idx = body.find("with state_lock()")
+    # Use rfind so we hit the actual function call, not a `probe_all()` mention
+    # inside the comment block above the lock.
+    probe_idx = body.rfind("probe_all()")
+    identify_idx = body.rfind("_identify_migration_candidates(")
+    check("function still uses state_lock for state snapshot",
+          lock_idx > 0, diag=str(lock_idx))
+    check("probe_all() call is AFTER the state_lock block (outside lock)",
+          probe_idx > lock_idx,
+          diag=f"lock={lock_idx} probe={probe_idx}")
+    check("_identify_migration_candidates call is AFTER state_lock too",
+          identify_idx > lock_idx,
+          diag=f"lock={lock_idx} identify={identify_idx}")
+
+    # 2. Behavioral: instrument lock to assert it's NOT held when probe_all runs.
+    # Use a held-flag set by a fake state_lock contextmanager; probe_all then
+    # asserts the flag is False when it's invoked.
+    saved_lock = sch.state_lock
+    saved_load = sch.load_state
+    saved_probe = sch.probe_all
+    saved_identify = sch._identify_migration_candidates
+
+    held = {"flag": False}
+    probe_called_with_held = {"v": None}
+    identify_called_with_held = {"v": None}
+
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock():
+        held["flag"] = True
+        try:
+            yield
+        finally:
+            held["flag"] = False
+    sch.state_lock = fake_lock
+    sch.load_state = lambda: {"tasks": []}
+    def fake_probe_all():
+        probe_called_with_held["v"] = held["flag"]
+        return []
+    sch.probe_all = fake_probe_all
+    def fake_identify(state, nodes, max_candidates=2):
+        identify_called_with_held["v"] = held["flag"]
+        return []
+    sch._identify_migration_candidates = fake_identify
+
+    try:
+        sch._stage_migration_candidates_outside_lock(max_candidates=2)
+        check("probe_all() invoked with state_lock NOT held",
+              probe_called_with_held["v"] is False,
+              diag=f"held during probe = {probe_called_with_held['v']}")
+        check("_identify_migration_candidates invoked with state_lock NOT held",
+              identify_called_with_held["v"] is False,
+              diag=f"held during identify = {identify_called_with_held['v']}")
+    finally:
+        sch.state_lock = saved_lock
+        sch.load_state = saved_load
+        sch.probe_all = saved_probe
+        sch._identify_migration_candidates = saved_identify
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -6913,6 +6996,7 @@ if __name__ == "__main__":
     test_phase3_0_15_migrated_task_pins_to_staged_node()
     test_phase3_0_16_ckpt_size_probe_fail_closed()
     test_phase3_0_17_staging_cache_ttl()
+    test_phase3_0_18_probe_all_outside_lock()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

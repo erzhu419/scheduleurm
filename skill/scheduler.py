@@ -3583,12 +3583,19 @@ def _stage_migration_candidates_outside_lock(max_candidates: int = 2):
     propagates exceptions to the caller.
     """
     try:
+        # Phase 3.0.18 P2 fix: probe_all() does ssh + nvidia-smi to every node and
+        # can take seconds on a slow / multi-host cluster. Pre-fix it ran INSIDE
+        # state_lock here, blocking submit / cancel / status while the watcher
+        # (which calls into this every 60s) probed. Now: snapshot state under a
+        # short lock, release, probe outside. Identify reads only — safe to run
+        # without the lock. Drift is acceptable: the actual migration commit
+        # happens later in _do_dispatch under a fresh lock + fresh probe via
+        # _consider_migration, which re-runs every gate.
         with state_lock():
             state = load_state()
-            nodes = probe_all()
-            snapshot = _identify_migration_candidates(state, nodes,
-                                                      max_candidates=max_candidates)
-        # lock released here — slow rsync runs WITHOUT blocking submit/cancel/etc
+        nodes = probe_all()
+        snapshot = _identify_migration_candidates(state, nodes,
+                                                  max_candidates=max_candidates)
     except Exception as e:
         try:
             notify("migration_snapshot_error", {"error": str(e)[:200]},

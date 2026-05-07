@@ -142,6 +142,8 @@ When the user says "跑这 9 个 ablation":
 | `--git-repo` | for sync check (refuses launch if local dirty or remote out of sync) |
 | `--ckpt-dir` | abs path on target for resume detection |
 | `--resume-flag` | flag the script accepts (e.g. `--resume_from`); scheduler appends `<flag> <ckpt_path>` to cmd on re-dispatch when `find_resume()` locates a ckpt. Empty default = no injection. Pair with `--ckpt-dir`. Required for auto-resume to actually take effect. |
+| `--result-dir` | **Phase 3.5: opt-in auto result pull-back.** Abs path on TARGET node containing the experiment results (logs / final models / metrics). On task completion (status=done), watcher rsyncs this dir to local once. Intermediate ckpts should stay in `--ckpt-dir` (NOT auto-synced; migration / eval pulls them on demand). Set this when you want results back without manual `scp`. |
+| `--local-result-dir` | Optional override for where on local to land the rsync. Defaults to mirroring the target path. Use when local home differs, or you want to collect runs under one dir. |
 | `--priority` | `low/normal/high` — only if user signals urgency |
 | `--preferred-node` | **soft pin** — try this node first; if it's full / throttled / down, scheduler picks any other fitting node automatically. Use this for "I'd prefer X" intent. |
 | `--require-node` | **hard pin** — task ONLY runs on this node, never falls back. Use ONLY when the task has node-specific dependencies that genuinely can't be moved (libsumo only on local; non-portable C extension; node-local data files; in-place state at a specific path). When in doubt, use `--preferred-node` instead — it preserves the user's preference but lets the scheduler load-balance when one node is overloaded relative to another. |

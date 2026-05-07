@@ -4031,6 +4031,19 @@ def cmd_submit(args):
             "ckpt_dir": args.ckpt_dir,
             "ckpt_glob": args.ckpt_glob,
             "resume_flag": args.resume_flag or "",
+            # Phase 3.5: auto-pull experiment results back to local on
+            # task completion. Opt-in (no field set → no sync). Mirror
+            # the remote path locally unless --local-result-dir overrides.
+            # Intentionally separate from ckpt_dir: ckpts stay on the
+            # node where they were produced (migration / eval flows
+            # already pull them on demand). result_dir should point to
+            # logs / final saved models / metrics — small files the
+            # user wants on their own box.
+            "result_dir": getattr(args, "result_dir", None) or None,
+            "local_result_dir": getattr(args, "local_result_dir", None) or None,
+            "result_synced_at": None,
+            "result_sync_error": None,
+            "result_sync_attempts": 0,
             "extra_env": _parse_env(args.env),
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
@@ -4836,6 +4849,137 @@ def _identify_migration_candidates(state: dict, nodes: list,
     candidates.sort(key=lambda t: int(t.get("eta_seconds") or 0))
     # Pair each candidate with the target_name decision computed above.
     return [(c, target_name) for c in candidates[:max_candidates]]
+
+
+# Phase 3.5: auto-pull results to local on task completion. Uses an outside-
+# lock pattern so the rsync (potentially minutes for big result dirs) doesn't
+# stall submit/cancel/status. Watcher and cmd_dispatch both invoke
+# _sync_completed_results_outside_lock(); first scans state under a short
+# lock for done-tasks-with-result_dir-not-yet-synced, releases, runs rsync
+# per candidate, re-acquires briefly to commit success/failure markers.
+RESULT_SYNC_MAX_ATTEMPTS = int(os.environ.get("SCHEDULEURM_RESULT_SYNC_MAX_ATTEMPTS", "5"))
+RESULT_SYNC_TIMEOUT_S = int(os.environ.get("SCHEDULEURM_RESULT_SYNC_TIMEOUT_S", "1800"))
+
+
+def _sync_one_result(candidate: dict) -> tuple:
+    """rsync remote `result_dir` → local `local_result_dir`. Trailing slash
+    on source means "contents", so dst structure mirrors source. Returns
+    (ok, msg). NEVER pulls ckpts — those live in `ckpt_dir` which is a
+    SEPARATE field, intentionally excluded from this path."""
+    src = f"{candidate['host']}:{candidate['result_dir'].rstrip('/')}/"
+    dst = candidate['local_result_dir'].rstrip('/') + "/"
+    try:
+        Path(dst).mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        return (False, f"mkdir local target failed: {str(e)[:120]}")
+    try:
+        r = subprocess.run(
+            ["rsync", "-az", "--partial", src, dst],
+            capture_output=True, text=True, timeout=RESULT_SYNC_TIMEOUT_S,
+        )
+        if r.returncode != 0:
+            return (False, f"rsync rc={r.returncode}: {r.stderr.strip()[:200]}")
+        return (True, "ok")
+    except subprocess.TimeoutExpired:
+        return (False, f"rsync timeout (>{RESULT_SYNC_TIMEOUT_S}s)")
+    except Exception as e:
+        return (False, f"rsync exception: {str(e)[:200]}")
+
+
+def _sync_completed_results_outside_lock():
+    """Phase 3.5: pull results back to local for tasks transitioned to
+    status='done' with result_dir set. Three phases (short lock → rsync
+    OUTSIDE lock → short lock to commit) mirror _stage_migration_*.
+
+    Skip rules:
+      - status != "done"           — only on completion
+      - result_dir not set          — opt-in feature
+      - result_synced_at already set — one-shot, no re-sync
+      - attempts ≥ MAX_ATTEMPTS     — give up (cap defends against
+        chronically broken nodes that would otherwise hammer rsync
+        every cycle indefinitely)
+      - local node (host=None)     — files already here
+
+    Migration mid-run + eval flows are NOT triggered here. Migration's
+    own staging path (Phase 3.0.4) handles ckpt+cwd between nodes; eval
+    submissions reference ckpt_dir directly. result_dir is intentionally
+    a separate field so the user explicitly chooses what comes back.
+    """
+    try:
+        with state_lock():
+            state = load_state()
+        candidates = []
+        for t in state.get("tasks", []):
+            if t.get("status") != "done":
+                continue
+            rd = t.get("result_dir")
+            if not rd:
+                continue
+            if t.get("result_synced_at"):
+                continue
+            if int(t.get("result_sync_attempts") or 0) >= RESULT_SYNC_MAX_ATTEMPTS:
+                continue
+            node = t.get("node")
+            if not node:
+                continue
+            host = NODES.get(node, {}).get("host")
+            if not host:
+                continue  # local node — already on this box
+            candidates.append({
+                "id": t["id"],
+                "host": host,
+                "result_dir": rd,
+                "local_result_dir": t.get("local_result_dir") or rd,
+            })
+    except Exception as e:
+        try:
+            notify("result_sync_snapshot_error", {"error": str(e)[:200]},
+                   feishu_enabled=False)
+        except Exception:
+            pass
+        return
+
+    if not candidates:
+        return
+
+    results = []
+    for c in candidates:
+        ok, msg = _sync_one_result(c)
+        results.append((c["id"], ok, msg))
+        try:
+            notify("result_sync_done" if ok else "result_sync_failed", {
+                "task_id": c["id"], "result_dir": c["result_dir"],
+                "local_result_dir": c["local_result_dir"], "msg": msg[:200],
+            }, feishu_enabled=False)
+        except Exception:
+            pass
+
+    try:
+        with state_lock():
+            state = load_state()
+            by_id = {t["id"]: t for t in state["tasks"]}
+            for tid, ok, msg in results:
+                t = by_id.get(tid)
+                if not t:
+                    continue
+                # Defensive: only commit if task is still in `done` state
+                # and the same result_dir we synced. If it transitioned
+                # away (cancelled, forgotten, requeued) skip the write.
+                if t.get("status") != "done":
+                    continue
+                if ok:
+                    t["result_synced_at"] = time.time()
+                    t["result_sync_error"] = None
+                else:
+                    t["result_sync_error"] = msg[:300]
+                    t["result_sync_attempts"] = int(t.get("result_sync_attempts") or 0) + 1
+            save_state(state)
+    except Exception as e:
+        try:
+            notify("result_sync_commit_error", {"error": str(e)[:200]},
+                   feishu_enabled=False)
+        except Exception:
+            pass
 
 
 def _stage_migration_candidates_outside_lock(max_candidates: int = 2):
@@ -6324,6 +6468,16 @@ def cmd_dispatch(args):
     except Exception as _e:
         notify("migration_staging_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
+    # Phase 3.5: pull results back from remote nodes for tasks that
+    # transitioned to status='done' since the previous dispatch. Outside-
+    # lock for the same reason migration staging is — a multi-GB rsync
+    # would otherwise stall every other lock holder. The helper itself
+    # uses three short-lock phases (snapshot → rsync → commit markers).
+    try:
+        _sync_completed_results_outside_lock()
+    except Exception as _e:
+        notify("result_sync_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
     with state_lock():
         state = load_state()
         recovered_launching += recover_stale_launching_tasks(state)
@@ -7098,6 +7252,15 @@ def _watch_iteration(args):
         _stage_migration_candidates_outside_lock()
     except Exception as _e:
         notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
+    # Phase 3.5: pull results back from remote nodes for done tasks
+    # opted in via --result-dir. Outside-lock so multi-GB rsync doesn't
+    # stall the watcher cycle. See cmd_dispatch comment for the same
+    # rationale as migration staging.
+    try:
+        _sync_completed_results_outside_lock()
+    except Exception as _e:
+        notify("result_sync_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
     with state_lock():
         state = load_state()
@@ -8276,6 +8439,19 @@ def main():
     s.add_argument("--require-node", dest="require_node", choices=list(NODES.keys()), help="HARD pin: only place on this node, never fall back. Use when the cmd has node-specific paths/env that won't work elsewhere.")
     s.add_argument("--git-repo", help="Local + remote path of git repo to sync-check before launch")
     s.add_argument("--ckpt-dir", help="Checkpoint directory on TARGET node, for resume detection")
+    s.add_argument("--result-dir", dest="result_dir",
+                   help="Phase 3.5: directory on TARGET node containing the "
+                        "experiment results (logs / final models / metrics). "
+                        "On task completion, scheduleurm rsyncs this dir back "
+                        "to local (delta sync; no ckpts unless they live here). "
+                        "Set this to opt in; intermediate ckpts should stay in "
+                        "--ckpt-dir which is NOT synced automatically.")
+    s.add_argument("--local-result-dir", dest="local_result_dir",
+                   help="Phase 3.5: where on local to land the rsync'd results. "
+                        "Defaults to mirroring the remote path (same absolute "
+                        "path on local as on the target). Use when local home "
+                        "differs from remote home, or you want to land "
+                        "everything under one collection dir.")
     s.add_argument("--ckpt-glob", default="*", help="Glob within ckpt-dir (default '*')")
     s.add_argument("--resume-flag", dest="resume_flag", default="",
                    help="If set (e.g. '--resume_from'), launcher appends '<flag> <ckpt_path>' to cmd "

@@ -6,7 +6,7 @@ Sort/filter operate on the cached snapshot — instant response.
 
 Keys:
   r / q / a    → filter to running / queued / all active
-  f            → focus filter input (substring match against id/project/node/sig/desc)
+  f            → focus filter input (substring match against id/project/location/slurm/sig/desc)
   1..8         → sort by column (id / status / node / project / runtime / vram / ram / eta)
   R            → reverse sort direction
   p / P        → bump task priority up / down (only for queued tasks)
@@ -40,6 +40,13 @@ def _fmt_min(secs):
     if secs < 60: return f"{int(secs)}s"
     if secs < 3600: return f"{secs/60:.1f}m"
     return f"{secs/3600:.1f}h"
+
+
+def _int_or_default(value, default=-1):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def _fmt_eta(t, hist):
@@ -102,7 +109,7 @@ def _node_summary_line(nodes):
 COLUMNS = [
     ("id", "id", 6),
     ("status", "status", 9),
-    ("node", "node:gpu", 16),
+    ("node", "location", 24),
     ("project", "project", 14),
     ("priority", "prio", 6),
     ("runtime", "runtime", 9),
@@ -170,7 +177,7 @@ class SchedulerTUI(App):
         # strings can include `[` `]` (e.g. ssh argv `['ssh', '-o', 'BatchMode=yes']`) which Rich
         # would otherwise parse as malformed markup and raise "Expected markup value".
         yield Static("(loading...)", id="node_summary", markup=False)
-        yield Input(placeholder="filter (id/project/node/sig/desc) — Enter to apply, Esc to close", id="filter_input")
+        yield Input(placeholder="filter (id/project/location/slurm/sig/desc) — Enter to apply, Esc to close", id="filter_input")
         yield DataTable(id="task_table", zebra_stripes=True, cursor_type="row")
         yield Footer()
 
@@ -339,8 +346,13 @@ class SchedulerTUI(App):
             tf = (self.text_filter or "").lower().strip()
             if tf:
                 def match(t):
-                    return any(tf in (str(t.get(k, "")) or "").lower()
-                               for k in ("id", "project", "node", "signature", "description"))
+                    fields = [sch._format_task_location(t)]
+                    fields.extend(
+                        "" if t.get(k) is None else str(t.get(k))
+                        for k in ("id", "project", "node", "signature", "description",
+                                  "slurm_job_id", "slurm_state")
+                    )
+                    return any(tf in f.lower() for f in fields)
                 tasks = [t for t in tasks if match(t)]
 
             now = time.time()
@@ -369,7 +381,12 @@ class SchedulerTUI(App):
             sortmap = {
                 "id": lambda t: t.get("id", ""),
                 "status": lambda t: t.get("status", ""),
-                "node": lambda t: (t.get("node") or "~", t.get("gpu_idx") if t.get("gpu_idx") is not None else -1),
+                "node": lambda t: (
+                    t.get("node") or "~",
+                    0 if t.get("slurm_job_id") else 1,
+                    _int_or_default(t.get("slurm_job_id")),
+                    t.get("gpu_idx") if t.get("gpu_idx") is not None else -1,
+                ),
                 "project": lambda t: t.get("project", ""),
                 "priority": lambda t: (prio_rank.get(t.get("priority", "normal"), 1), t.get("submitted_at", 0)),
                 "runtime": lambda t: -runtime_of(t),
@@ -389,8 +406,7 @@ class SchedulerTUI(App):
                 current_id_order = []
 
             def _row_for(t):
-                node_str = (f"{t.get('node','-')}:GPU{t.get('gpu_idx')}"
-                            if t.get("node") and t.get("gpu_idx") is not None else (t.get("node") or "-"))
+                node_str = sch._format_task_location(t)
                 rt = _fmt_min(runtime_of(t)) if t.get("status") == "running" else "-"
                 vram = f"{t.get('peak_vram_mb', 0)}MB" if t.get("peak_vram_mb") else (
                     f"~{t.get('est_vram_mb', 0)}MB" if t.get("est_vram_mb") else "-")

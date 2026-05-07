@@ -6607,6 +6607,187 @@ def test_phase3_0_34_local_docker_fail_fast_no_local_digest():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_35_slurm_terminal_orphan_diagnosis():
+    """Phase 3.0.35 P1 fix: slurm terminal-orphan recovery must populate
+    `task['_diagnosis']` BEFORE invoking _requeue_after_crash.
+
+    Pre-fix: 3.0.33 set `status='failed'` and called `_requeue_after_crash`
+    directly. _requeue_after_crash routes via _classify_failure(_diagnosis):
+    `_classify_failure({})` returns "NORMAL" (the not-is_crash branch),
+    which falls through to the soft-retry path. So:
+      - slurm OUT_OF_MEMORY → should escalate (HARD_FAIL: OOM)
+      - log tail with ModuleNotFoundError → should escalate (PYTHON_IMPORT)
+      - 3.0.30 COMPLETED-but-log-has-CUDA-OOM → should escalate (OOM)
+    All silently became APP_BUG soft retries instead.
+
+    Now: build a full _diagnosis dict (is_crash=True, reason names the
+    slurm state, tail = actual log content) so _classify_failure can match
+    OOM / ENV_MISSING / PYTHON_IMPORT patterns and route to escalation
+    correctly.
+    """
+    print("\n[91] Phase 3.0.35 P1 fix: slurm terminal-orphan _diagnosis enables hard-fail classify")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_fetch_log_tail helper exists (shared between scan + diag)",
+          "def _fetch_log_tail" in src)
+    fn_idx = src.find("def _try_recover_orphan_slurm_job")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("slurm terminal recovery sets _diagnosis BEFORE _requeue_after_crash (COMPLETED+crash path)",
+          'task["_diagnosis"] = {' in body
+          and '"is_crash": True' in body
+          and "_requeue_after_crash(task, state)" in body)
+    check("OUT_OF_MEMORY slurm state surfaces in reason for OOM classification",
+          "out of memory" in body and "OUT_OF_MEMORY" in body,
+          diag="reason must include 'out of memory' substring so OOM_PATTERNS classifies")
+
+    # 2. Behavioral.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    saved_state_dir = sch.STATE_DIR
+    import tempfile
+    tdir = tempfile.mkdtemp()
+    log_dir = os.path.join(tdir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    sch.STATE_DIR = tdir
+    sch.NODES = {"slurmnode": {"host": None}}
+
+    # Stub _write_escalation so HARD_FAIL paths don't try to write to the real
+    # escalations file; capture which categories triggered.
+    saved_write_escalation = sch._write_escalation
+    escalation_calls = []
+    sch._write_escalation = lambda task, category, diag: escalation_calls.append(category)
+
+    try:
+        # ---- Case A: slurm OUT_OF_MEMORY → OOM escalation, NO retry clone ----
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, "100 OUT_OF_MEMORY\n", "") if "squeue -h -n scheduleurm-tA" in cmd
+            else (0, "", "")
+        )
+        state = {"next_id": 100, "tasks": [{
+            "id": "tA", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python a.py", "cwd": "/work", "retry_count": 0,
+            "signature": "TEST/oom",
+        }]}
+        escalation_calls.clear()
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        t = state["tasks"][0]
+        check("OUT_OF_MEMORY orphan → adopted",
+              adopted is True)
+        check("OUT_OF_MEMORY orphan → status=failed",
+              t["status"] == "failed")
+        check("OUT_OF_MEMORY orphan → _diagnosis set with is_crash=True",
+              t.get("_diagnosis", {}).get("is_crash") is True)
+        check("OUT_OF_MEMORY orphan → diag.reason names 'out of memory' for OOM classify",
+              "out of memory" in (t.get("_diagnosis", {}).get("reason") or ""),
+              diag=f"reason={t.get('_diagnosis', {}).get('reason')!r}")
+        check("OUT_OF_MEMORY orphan → escalated as OOM (NOT soft-retried)",
+              "OOM" in escalation_calls,
+              diag=f"escalations: {escalation_calls}")
+        check("OUT_OF_MEMORY orphan → NO retry clone created (escalation, not requeue)",
+              t.get("requeued_as") is None,
+              diag=f"requeued_as={t.get('requeued_as')!r}")
+
+        # ---- Case B: slurm COMPLETED + log has ModuleNotFoundError →
+        # PYTHON_IMPORT escalation. The 3.0.30 scan catches it as crash, and
+        # 3.0.35's diagnosis-with-tail lets classify route it correctly.
+        log_b = os.path.join(log_dir, "tB.log")
+        with open(log_b, "w") as f:
+            f.write("Starting up...\n")
+            f.write("Traceback (most recent call last):\n")
+            f.write("  File 'train.py', line 1, in <module>\n")
+            f.write("ModuleNotFoundError: No module named 'foo_bar'\n")
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, "200 COMPLETED\n", "") if "squeue -h -n scheduleurm-tB" in cmd
+            else (0, "", "")
+        )
+        state = {"next_id": 200, "tasks": [{
+            "id": "tB", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python b.py", "cwd": "/work", "retry_count": 0,
+            "signature": "TEST/mod",
+        }]}
+        escalation_calls.clear()
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        t = state["tasks"][0]
+        check("COMPLETED+ModuleNotFoundError → adopted=True",
+              adopted is True)
+        check("COMPLETED+ModuleNotFoundError → status=failed",
+              t["status"] == "failed")
+        check("COMPLETED+ModuleNotFoundError → diag.tail contains the offending pattern",
+              "ModuleNotFoundError" in (t.get("_diagnosis", {}).get("tail") or ""),
+              diag=f"tail={t.get('_diagnosis', {}).get('tail')!r}")
+        check("COMPLETED+ModuleNotFoundError → escalated as PYTHON_IMPORT (NOT soft-retried)",
+              "PYTHON_IMPORT" in escalation_calls,
+              diag=f"escalations: {escalation_calls}")
+        check("COMPLETED+ModuleNotFoundError → NO retry clone",
+              t.get("requeued_as") is None)
+
+        # ---- Case C: slurm COMPLETED + log has CUDA OOM (3.0.30 scan catches,
+        # 3.0.35 ensures OOM classification kicks in for escalation).
+        log_c = os.path.join(log_dir, "tC.log")
+        with open(log_c, "w") as f:
+            f.write("Epoch 1/100\n")
+            f.write("Traceback (most recent call last):\n")
+            f.write("RuntimeError: CUDA out of memory. Tried to allocate 4.5 GiB\n")
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, "300 COMPLETED\n", "") if "squeue -h -n scheduleurm-tC" in cmd
+            else (0, "", "")
+        )
+        state = {"next_id": 300, "tasks": [{
+            "id": "tC", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python c.py", "cwd": "/work", "retry_count": 0,
+            "signature": "TEST/cudaoom",
+        }]}
+        escalation_calls.clear()
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        t = state["tasks"][0]
+        check("COMPLETED+CUDA-OOM → adopted=True",
+              adopted is True)
+        check("COMPLETED+CUDA-OOM → escalated as OOM (NOT silently retried)",
+              "OOM" in escalation_calls,
+              diag=f"escalations: {escalation_calls}")
+        check("COMPLETED+CUDA-OOM → NO retry clone",
+              t.get("requeued_as") is None)
+
+        # ---- Case D: slurm FAILED with no specific tail → APP_BUG soft retry.
+        # This is the legitimate retry path; ensure 3.0.35 doesn't break it.
+        log_d = os.path.join(log_dir, "tD.log")
+        with open(log_d, "w") as f:
+            f.write("Some training output...\n")
+            f.write("Got SIGTERM\n")  # generic, not in OOM/ENV/IMPORT patterns
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, "400 FAILED\n", "") if "squeue -h -n scheduleurm-tD" in cmd
+            else (0, "", "")
+        )
+        state = {"next_id": 400, "tasks": [{
+            "id": "tD", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python d.py", "cwd": "/work", "retry_count": 0,
+            "signature": "TEST/sigterm",
+        }]}
+        escalation_calls.clear()
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        t = state["tasks"][0]
+        check("FAILED + generic tail → adopted, status=failed",
+              adopted is True and t["status"] == "failed")
+        check("FAILED + generic tail → NO escalation (soft retry path is correct here)",
+              not escalation_calls, diag=f"escalations: {escalation_calls}")
+        check("FAILED + generic tail → retry clone created",
+              t.get("requeued_as") is not None,
+              diag=f"requeued_as={t.get('requeued_as')}")
+    finally:
+        import shutil
+        shutil.rmtree(tdir, ignore_errors=True)
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+        sch.STATE_DIR = saved_state_dir
+        sch._write_escalation = saved_write_escalation
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -9130,6 +9311,7 @@ if __name__ == "__main__":
     test_phase3_0_32_orphan_recovery_restores_log_and_docker_artifacts()
     test_phase3_0_33_terminal_orphan_classification()
     test_phase3_0_34_local_docker_fail_fast_no_local_digest()
+    test_phase3_0_35_slurm_terminal_orphan_diagnosis()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

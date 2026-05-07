@@ -3565,6 +3565,207 @@ def test_phase3_0_12_migration_cooldown_anti_oscillation():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_13_rebalance_pending_outside_lock():
+    """Phase 3.0.13 P3 fix: cmd_rebalance_pending splits into 3 phases so the slow
+    scancel+squeue ssh round-trip happens OUTSIDE state_lock.
+
+    Pre-fix: one big `with state_lock()` block held the global lock for ~5s per
+    candidate (scancel + sleep 1.5s + squeue verify). A 20-task batch blocked
+    submit / cancel / status / watcher iterations for ~100s.
+
+    Now: identify (short lock) → scancel+verify (NO LOCK) → commit (short lock).
+    Plus: pre-scancel state recheck (the wider window means slurm could have
+    started a job; never scancel a RUNNING task) and defensive recheck at commit
+    time (status / slurm_job_id / slurm_state could shift during the unlocked
+    window — leave such tasks alone).
+    """
+    print("\n[70] Phase 3.0.13 P3 fix: rebalance-pending runs slow ssh outside state_lock")
+
+    # 1. Source guard: cmd_rebalance_pending body has TWO state_lock blocks and
+    # the scancel call sits BETWEEN them.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def cmd_rebalance_pending")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    fn_body = src[fn_idx:fn_end]
+    n_locks = fn_body.count("with state_lock()")
+    check("cmd_rebalance_pending uses exactly 2 state_lock blocks (split phases)",
+          n_locks == 2, diag=f"got {n_locks}")
+    # Indices of the two locks and the scancel call. scancel must sit between them.
+    lock1 = fn_body.find("with state_lock()")
+    lock2 = fn_body.find("with state_lock()", lock1 + 1)
+    scancel_idx = fn_body.find("scancel {int(jid)}")
+    check("scancel call sits BETWEEN the two state_lock blocks (i.e. outside lock)",
+          lock1 < scancel_idx < lock2,
+          diag=f"lock1={lock1} scancel={scancel_idx} lock2={lock2}")
+
+    # 2. Behavioral: shared mock setup.
+    saved_save = sch.save_state
+    saved_load = sch.load_state
+    saved_run_on = sch.run_on
+    saved_lock = sch.state_lock
+    saved_sleep = time.sleep
+    time.sleep = lambda s: None
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock():
+        yield
+    sch.state_lock = fake_lock
+
+    class Args:
+        yes = True
+
+    try:
+        # ---------- Case A: race — pre-check sees RUNNING (slurm started job
+        # during the outside-lock window) → never scancel, leave task in place.
+        fake_state = {"next_id": 1, "tasks": [
+            {"id": "tRace", "status": "running", "node": "n1",
+             "slurm_job_id": 800, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Race", "cmd": "x"},
+        ]}
+        sch.load_state = lambda: fake_state
+        sch.save_state = lambda s: None
+        scancel_seen = []
+        def run_on_race(node, cmd, timeout=10, check=True):
+            if "scancel" in cmd:
+                scancel_seen.append(cmd)
+                return (0, "", "")
+            if "squeue" in cmd:
+                return (0, "RUNNING\n", "")  # pre-check sees the race
+            return (0, "", "")
+        sch.run_on = run_on_race
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("pre-check RUNNING → scancel was NEVER called (don't kill the running job)",
+              len(scancel_seen) == 0, diag=f"scancel calls: {scancel_seen}")
+        check("pre-check RUNNING → task LEFT IN PLACE (status=running)",
+              post["status"] == "running" and post.get("slurm_job_id") == 800,
+              diag=str(post))
+
+        # ---------- Case B: pre-check shows already-terminal → no scancel,
+        # task gets cleared + requeued (slurm had already moved it).
+        fake_state = {"next_id": 1, "tasks": [
+            {"id": "tDone", "status": "running", "node": "n1",
+             "slurm_job_id": 801, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Done", "cmd": "x"},
+        ]}
+        sch.load_state = lambda: fake_state
+        scancel_seen = []
+        def run_on_terminal(node, cmd, timeout=10, check=True):
+            if "scancel" in cmd:
+                scancel_seen.append(cmd)
+                return (0, "", "")
+            if "squeue" in cmd:
+                return (0, "CANCELLED\n", "")
+            return (0, "", "")
+        sch.run_on = run_on_terminal
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("pre-check terminal → scancel skipped (already done)",
+              len(scancel_seen) == 0, diag=f"scancel calls: {scancel_seen}")
+        check("pre-check terminal → task requeued",
+              post["status"] == "queued" and post.get("slurm_job_id") is None,
+              diag=str(post))
+
+        # ---------- Case C: defensive commit-phase recheck — task transitioned
+        # to RUNNING in scheduleurm's state.json AFTER our outside-lock window
+        # (slurm_state field updated by watcher's update_running_tasks).
+        # Even though our scancel verified cancelled, do NOT clear: leave alone.
+        identify_state = {"next_id": 1, "tasks": [
+            {"id": "tShift", "status": "running", "node": "n1",
+             "slurm_job_id": 802, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Shift", "cmd": "x"},
+        ]}
+        commit_state = {"next_id": 1, "tasks": [
+            # Same task, but slurm_state has shifted to RUNNING by commit time.
+            {"id": "tShift", "status": "running", "node": "n1",
+             "slurm_job_id": 802, "slurm_state": "RUNNING",
+             "remote_pids": [], "signature": "TEST/Shift", "cmd": "x"},
+        ]}
+        load_call_count = {"n": 0}
+        def staged_load_state():
+            load_call_count["n"] += 1
+            # First call = identify; second call = commit (defensive recheck).
+            return identify_state if load_call_count["n"] == 1 else commit_state
+        sch.load_state = staged_load_state
+        save_capture = {}
+        sch.save_state = lambda s: save_capture.update(state=s)
+        # Pre-check returns PENDING (so scancel fires + verifies).
+        cancelled_jids_local = set()
+        def run_on_shift(node, cmd, timeout=10, check=True):
+            if "scancel" in cmd:
+                try:
+                    cancelled_jids_local.add(int(cmd.split()[-1]))
+                except Exception:
+                    pass
+                return (0, "", "")
+            if "squeue" in cmd:
+                if any(str(j) in cmd for j in cancelled_jids_local):
+                    return (0, "", "")  # post-scancel: gone
+                return (0, "PENDING\n", "")  # pre-scancel: still pending
+            return (0, "", "")
+        sch.run_on = run_on_shift
+        sch.cmd_rebalance_pending(Args())
+        post = commit_state["tasks"][0]
+        check("commit-phase defensive: slurm_state shifted to RUNNING during window → task UNTOUCHED",
+              post["status"] == "running" and post.get("slurm_job_id") == 802
+              and post.get("slurm_state") == "RUNNING",
+              diag=str(post))
+
+        # ---------- Case D: defensive commit-phase — task disappeared from state
+        # (forgotten / archived between identify and commit). Don't crash;
+        # silently skip.
+        identify_state = {"next_id": 1, "tasks": [
+            {"id": "tGone", "status": "running", "node": "n1",
+             "slurm_job_id": 803, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Gone", "cmd": "x"},
+        ]}
+        commit_state = {"next_id": 1, "tasks": []}  # task vanished
+        load_call_count["n"] = 0
+        def staged_load_state2():
+            load_call_count["n"] += 1
+            return identify_state if load_call_count["n"] == 1 else commit_state
+        sch.load_state = staged_load_state2
+        cancelled_jids_local = set()
+        sch.run_on = run_on_shift  # reuses the stateful mock (jid 803 not seen yet, mock starts fresh)
+        # Run; should not raise.
+        sch.cmd_rebalance_pending(Args())
+        check("commit-phase defensive: missing task does not crash, no rebalance recorded",
+              commit_state["tasks"] == [], diag=str(commit_state))
+
+        # ---------- Case E: defensive commit-phase — slurm_job_id changed
+        # between identify and commit (e.g., user cancel + auto-resubmit by
+        # another path). Don't mutate even if our scancel "succeeded" against
+        # the OLD jid — that's a different launch now.
+        identify_state = {"next_id": 1, "tasks": [
+            {"id": "tNewJid", "status": "running", "node": "n1",
+             "slurm_job_id": 804, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/NewJid", "cmd": "x"},
+        ]}
+        commit_state = {"next_id": 1, "tasks": [
+            {"id": "tNewJid", "status": "running", "node": "n1",
+             "slurm_job_id": 999, "slurm_state": "PENDING",  # different jid now
+             "remote_pids": [], "signature": "TEST/NewJid", "cmd": "x"},
+        ]}
+        load_call_count["n"] = 0
+        def staged_load_state3():
+            load_call_count["n"] += 1
+            return identify_state if load_call_count["n"] == 1 else commit_state
+        sch.load_state = staged_load_state3
+        cancelled_jids_local = set()
+        sch.run_on = run_on_shift
+        sch.cmd_rebalance_pending(Args())
+        post = commit_state["tasks"][0]
+        check("commit-phase defensive: slurm_job_id changed → leave alone",
+              post["status"] == "running" and post.get("slurm_job_id") == 999,
+              diag=str(post))
+    finally:
+        sch.save_state = saved_save
+        sch.load_state = saved_load
+        sch.run_on = saved_run_on
+        sch.state_lock = saved_lock
+        time.sleep = saved_sleep
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -4794,13 +4995,37 @@ def test_backend_slurm_phase2_16_1_rebalance_pending():
         ],
     }
     scancel_calls = []
+    # Phase 3.0.13: cmd_rebalance_pending now pre-checks squeue BEFORE scancel — if
+    # pre-check says the job is already gone/terminal, scancel is correctly skipped.
+    # Use a stateful mock so the pre-check sees PENDING (forces scancel path), then
+    # post-scancel verify sees the job gone (verifies cancellation).
+    cancelled_jids = set()
+    def fake_run_on(node, cmd, timeout=10, check=True):
+        if "scancel" in cmd:
+            scancel_calls.append((node, cmd))
+            try:
+                cancelled_jids.add(int(cmd.split()[-1]))
+            except Exception:
+                pass
+            return (0, "", "")
+        if "squeue" in cmd:
+            jid = None
+            try:
+                # Parse "squeue -h -j <jid> -t all -o '%T'"
+                parts = cmd.split()
+                jid = int(parts[parts.index("-j") + 1])
+            except Exception:
+                pass
+            if jid is None or jid in cancelled_jids:
+                return (0, "", "")  # job gone from slurm
+            return (0, "PENDING\n", "")  # still pending → forces scancel path
+        return (0, "", "")
 
     sch.load_state = lambda: fake_state
     sch.save_state = fake_save
-    sch.run_on = lambda node, cmd, timeout=10, check=True: (
-        scancel_calls.append((node, cmd)) or (0, "", "")
-        if "scancel" in cmd else (0, "", "")
-    )
+    sch.run_on = fake_run_on
+    saved_sleep = time.sleep
+    time.sleep = lambda s: None  # skip the 1.5s settle delay
     from contextlib import contextmanager as _cm
     @_cm
     def fake_lock():
@@ -4861,6 +5086,7 @@ def test_backend_slurm_phase2_16_1_rebalance_pending():
         sch.load_state = saved_load
         sch.run_on = saved_run_on
         sch.state_lock = saved_lock
+        time.sleep = saved_sleep
 
 
 def test_backend_slurm_phase2_15_orphan_recovery():
@@ -6013,6 +6239,7 @@ if __name__ == "__main__":
     test_phase3_0_10_migration_event_visibility()
     test_phase3_0_11_migration_target_respects_blocked_and_launch_failed()
     test_phase3_0_12_migration_cooldown_anti_oscillation()
+    test_phase3_0_13_rebalance_pending_outside_lock()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

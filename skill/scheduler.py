@@ -1970,13 +1970,25 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
         if not explicit and local_digest is None:
             return (inner, None)
         if not env_deploy.has_image(run_on, node, chosen_image, local_digest=local_digest):
-            ok, msg = env_deploy.push_image(node_host, chosen_image, timeout_s=1800)
-            if not ok:
-                err = (f"docker image push of {chosen_image} to {node} failed (drift or missing): "
-                       f"{msg[:200]}")
-                if explicit:
-                    return (inner, err)
-                return (inner, None)  # auto → graceful fallback even on push failure
+            # Phase 3.0.31 P3 fix: do NOT push synchronously here. push_image
+            # takes up to 1800s, and _maybe_wrap_docker runs inside the
+            # dispatch state_lock — a single missing image could starve
+            # submit/status/cancel/watcher for 30 min. Both cmd_dispatch and
+            # _watch_iteration already call _preload_docker_images_outside_lock
+            # BEFORE acquiring this lock; preload is the right place for the
+            # transfer. If we reach this branch, preload either failed or
+            # hasn't run for this image yet — bail fast and let the next
+            # dispatch cycle's preload retry. cmd_dispatch / watcher.log
+            # surface the preload failure directly, so the user can diagnose
+            # without reading launch-time errors.
+            err = (f"docker image {chosen_image} not present (or digest "
+                   f"drift) on {node} at launch — preload not yet "
+                   f"successful. Will retry next dispatch cycle; if this "
+                   f"keeps happening, check ~/.claude/scheduler/logs/"
+                   f"watcher.log for preload_image_failed events.")
+            if explicit:
+                return (inner, err)
+            return (inner, None)  # auto → graceful fallback (no docker wrap)
     container_name = f"sched-{task.get('id') or 'unknown'}"
     task["container_name"] = container_name
     wrapped = env_deploy.wrap_cmd_docker(

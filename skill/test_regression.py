@@ -2581,6 +2581,110 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_6_docker_gpu_runtime_env():
+    """Phase 2.6 P1 fix: when SlurmBackend wraps a GPU task in docker, the `--gpus`
+    arg must reference the runtime CUDA_VISIBLE_DEVICES that slurm's gres allocator
+    sets, NOT a static scheduleurm-picked index.
+
+    Bug before fix: SlurmBackend called _maybe_wrap_docker with task['gpu_idx'],
+    which is None for slurm-routed tasks (Phase 2.3 set it None on the bypass
+    path). wrap_cmd_docker with gpu_idx=None emits NO --gpus flag and explicitly
+    nulls CUDA_VISIBLE_DEVICES inside the container. Result: a GPU training task
+    runs in a container with no GPU access — CUDA init fails silently or the
+    framework falls back to CPU and the run wastes hours producing nothing useful.
+
+    Even if gpu_idx HAD been set by some pre-Phase-2.3 path, slurm picks the
+    actual GPU at job start; a stale scheduleurm-picked index could be wrong,
+    leading to docker pinning to a GPU slurm didn't allocate.
+
+    Fix: wrap_cmd_docker accepts gpu_runtime_env="CUDA_VISIBLE_DEVICES". When set,
+    --gpus is emitted as a _ShellLiteral (bypasses shlex.quote) `"device=$VAR"` so
+    bash expands the slurm-set env var at sbatch runtime. SlurmBackend.launch
+    passes this for est_vram_mb > 0 tasks; CPU-only stays gpu_runtime_env=None.
+    """
+    print("\n[47] Phase 2.6 docker GPU pin uses slurm-set CUDA_VISIBLE_DEVICES at runtime")
+
+    # ---------- env_deploy.wrap_cmd_docker semantics ----------
+    ed = sch.env_deploy
+    check("env_deploy exposes _ShellLiteral marker", hasattr(ed, "_ShellLiteral"))
+
+    # GPU task with runtime-env: docker --gpus arg has unquoted $CUDA_VISIBLE_DEVICES
+    cmd = ed.wrap_cmd_docker(
+        inner="python train.py",
+        image="myimg:latest",
+        cwd="/work",
+        gpu_idx=None,
+        gpu_runtime_env="CUDA_VISIBLE_DEVICES",
+        container_name="sched-tslurm",
+    )
+    check("runtime-env path: --gpus contains $CUDA_VISIBLE_DEVICES (unquoted)",
+          '--gpus "device=$CUDA_VISIBLE_DEVICES"' in cmd, diag=cmd[:400])
+    check("runtime-env path: -e CUDA_VISIBLE_DEVICES=0 inside container",
+          "CUDA_VISIBLE_DEVICES=0" in cmd, diag=cmd[:400])
+
+    # Static gpu_idx path (LocalBackend): unchanged, literal device=N
+    cmd_local = ed.wrap_cmd_docker(
+        inner="python train.py",
+        image="myimg:latest",
+        cwd="/work",
+        gpu_idx=1,
+        container_name="sched-tlocal",
+    )
+    check("LocalBackend path: --gpus device=1 (static literal)",
+          "--gpus device=1" in cmd_local, diag=cmd_local[:400])
+    check("LocalBackend path: no $CUDA_VISIBLE_DEVICES (static pin)",
+          "$CUDA_VISIBLE_DEVICES" not in cmd_local)
+
+    # CPU-only path: neither flag — no --gpus at all
+    cmd_cpu = ed.wrap_cmd_docker(
+        inner="python eval.py",
+        image="myimg:latest",
+        cwd="/work",
+        gpu_idx=None,
+        gpu_runtime_env=None,
+        container_name="sched-tcpu",
+    )
+    check("CPU-only path: no --gpus flag", "--gpus" not in cmd_cpu, diag=cmd_cpu[:400])
+    check("CPU-only path: -e CUDA_VISIBLE_DEVICES= (empty, blocks host leak)",
+          "CUDA_VISIBLE_DEVICES=" in cmd_cpu and "CUDA_VISIBLE_DEVICES=0" not in cmd_cpu)
+
+    # gpu_runtime_env takes precedence over a stale gpu_idx (defensive)
+    cmd_both = ed.wrap_cmd_docker(
+        inner="python train.py",
+        image="myimg:latest",
+        cwd="/work",
+        gpu_idx=99,                              # stale, should NOT be used
+        gpu_runtime_env="CUDA_VISIBLE_DEVICES",  # this wins
+        container_name="sched-tboth",
+    )
+    check("gpu_runtime_env takes precedence over gpu_idx",
+          "$CUDA_VISIBLE_DEVICES" in cmd_both and "device=99" not in cmd_both,
+          diag=cmd_both[:400])
+
+    # ---------- _maybe_wrap_docker plumbs gpu_runtime_env ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_maybe_wrap_docker signature accepts gpu_runtime_env",
+          "def _maybe_wrap_docker(task: dict, inner: str, cwd: str,\n                       gpu_runtime_env" in src
+          or "gpu_runtime_env: Optional[str] = None" in src,
+          diag="_maybe_wrap_docker doesn't accept gpu_runtime_env")
+    check("_maybe_wrap_docker passes gpu_runtime_env to wrap_cmd_docker",
+          "gpu_runtime_env=gpu_runtime_env" in src, diag="not threaded through")
+
+    # ---------- SlurmBackend.launch passes the right value ----------
+    sb_idx = src.find("class SlurmBackend(Backend):")
+    sb_launch_idx = src.find("def launch(self, task: dict)", sb_idx)
+    sb_kill_idx = src.find("def kill(self,", sb_launch_idx)
+    sb_launch_body = src[sb_launch_idx:sb_kill_idx]
+    check("SlurmBackend.launch sets gpu_runtime_env=CUDA_VISIBLE_DEVICES for GPU tasks",
+          'gpu_runtime_env = "CUDA_VISIBLE_DEVICES"' in sb_launch_body,
+          diag=sb_launch_body[:600])
+    check("SlurmBackend.launch passes gpu_runtime_env to _maybe_wrap_docker",
+          "_maybe_wrap_docker(task, inner, cwd, gpu_runtime_env=gpu_runtime_env)" in sb_launch_body,
+          diag=sb_launch_body[:1000])
+    check("SlurmBackend.launch CPU-only branch (est_vram_mb=0) → gpu_runtime_env=None",
+          'else None' in sb_launch_body, diag=sb_launch_body[:1000])
+
+
 def test_backend_slurm_phase2_5_cd_guard():
     """Phase 2.5 P1 fix: SlurmBackend's sbatch script must short-circuit on cd failure.
 
@@ -2957,6 +3061,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_3_bypass_local_capacity()
     test_backend_slurm_phase2_4_log_path_shared_fs()
     test_backend_slurm_phase2_5_cd_guard()
+    test_backend_slurm_phase2_6_docker_gpu_runtime_env()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

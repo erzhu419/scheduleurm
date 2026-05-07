@@ -1544,7 +1544,8 @@ def _inject_python_u(cmd: str) -> str:
     out_parts.append(cmd[last_end:])
     return "".join(out_parts)
 
-def _maybe_wrap_docker(task: dict, inner: str, cwd: str) -> tuple[str, Optional[str]]:
+def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
+                       gpu_runtime_env: Optional[str] = None) -> tuple[str, Optional[str]]:
     """If task's env_spec resolves to docker, wrap inner cmd in `docker run ...`.
 
     Returns (wrapped_or_inner, error_or_None). When error is non-None, caller (launch())
@@ -1624,6 +1625,10 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str) -> tuple[str, Optional[
         container_name=container_name,
         memory_mb=task.get("ram_mb"),
         cpus=task.get("cpu_cores"),
+        # Phase 2.6: SlurmBackend passes "CUDA_VISIBLE_DEVICES" so docker pins to
+        # whatever GPU slurm allocated at runtime (rather than scheduleurm's
+        # gpu_idx, which is None for slurm-routed tasks per Phase 2.3).
+        gpu_runtime_env=gpu_runtime_env,
     )
     return (wrapped, None)
 
@@ -2080,10 +2085,19 @@ class SlurmBackend(Backend):
         resume_flag = task.get("resume_flag") or ""
         if resume_path and resume_flag:
             inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
-        # Env-deploy wrapping (docker) runs the same as LocalBackend — sbatch script just
-        # contains `docker run ...` as its body. Slurm's gres binding sets the host-side
-        # CUDA_VISIBLE_DEVICES; the docker wrapper translates that into device pinning.
-        inner, docker_err = _maybe_wrap_docker(task, inner, cwd)
+        # Env-deploy wrapping (docker) — Phase 2.6 P1 fix: pass gpu_runtime_env so the
+        # docker `--gpus` arg is `device=$CUDA_VISIBLE_DEVICES` (literal, expanded by
+        # bash at sbatch runtime) rather than `device=N` with a stale scheduleurm-picked
+        # gpu_idx. Slurm's gres allocator decides the GPU at job start; the env var it
+        # sets is the source of truth. Without this, GPU tasks get either:
+        #   - no `--gpus` flag (gpu_idx=None per Phase 2.3 → CPU-only inside container,
+        #     CUDA init fails or silently uses host-leaked GPUs), or
+        #   - `--gpus device=0` while slurm allocated GPU 1 → wrong card, contention,
+        #     potential hard fail if slurm's cgroup blocks GPU 0 access.
+        # CPU-only slurm tasks (est_vram_mb=0): leave gpu_runtime_env=None so wrapper
+        # emits no --gpus at all (existing behavior).
+        gpu_runtime_env = "CUDA_VISIBLE_DEVICES" if int(task.get("est_vram_mb") or 0) > 0 else None
+        inner, docker_err = _maybe_wrap_docker(task, inner, cwd, gpu_runtime_env=gpu_runtime_env)
         if docker_err:
             return False, docker_err
 

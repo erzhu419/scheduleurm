@@ -190,28 +190,51 @@ def push_image(node_host: Optional[str], image: str, timeout_s: int = 1800) -> t
         return (False, f"push_image failed: {e}")
 
 
+class _ShellLiteral(str):
+    """Marker subclass: this arg is already shell-safe; the docker_run join must NOT
+    shlex.quote it. Used for GPU specs whose value is a runtime-expanded env var
+    (e.g. `device=$CUDA_VISIBLE_DEVICES` for slurm pin-passthrough). shlex.quote
+    would single-quote the `$` and break the bash expansion."""
+    pass
+
+
 def wrap_cmd_docker(inner: str, image: str, cwd: str, gpu_idx: Optional[int],
                     extra_env: Optional[dict] = None,
                     container_name: Optional[str] = None,
                     memory_mb: Optional[int] = None,
-                    cpus: Optional[float] = None) -> str:
+                    cpus: Optional[float] = None,
+                    gpu_runtime_env: Optional[str] = None) -> str:
     """Wrap an already-built shell cmd in `docker run`.
 
-    GPU pinning: when gpu_idx is set, uses `--gpus device=N` to HARD-PIN the container
-    to that one GPU (container sees ONLY that device, enumerated as 0 inside) AND
-    additionally sets `CUDA_VISIBLE_DEVICES=0` so frameworks that read the env var still
-    select the pinned device. Without this combo, `--gpus all` would let a task assigned
-    to GPU1 see/use GPU0 too — silent placement violation. (Codex review caught this.)
+    GPU pinning has two modes:
 
-    Container name: `--name <container_name>` so cancel paths can `docker kill <name>`
-    instead of relying on `docker run` PID descent (containerd-shim makes the actual
-    container procs NOT children of the docker client). Caller passes task id as name.
+    1. **Static pin (LocalBackend)**: gpu_idx=N (integer). Emits `--gpus device=N`
+       to HARD-PIN the container to that one GPU. Container sees only that device,
+       enumerated as 0 inside. Also sets `CUDA_VISIBLE_DEVICES=0` so frameworks
+       that read the env var still pick the pinned device. Without this combo,
+       `--gpus all` would let a task assigned to GPU1 see/use GPU0 too — silent
+       placement violation.
+
+    2. **Runtime pin (SlurmBackend, Phase 2.6)**: gpu_runtime_env="CUDA_VISIBLE_DEVICES".
+       Emits `--gpus "device=$CUDA_VISIBLE_DEVICES"` so the docker pin matches
+       whatever GPU slurm's gres allocator chose at job runtime. Without this,
+       gpu_idx would either be None (Phase 2.3 behavior — task gets NO GPU
+       inside the container even though slurm allocated one) or a stale
+       scheduleurm-picked value that doesn't match slurm's actual allocation.
+
+    CPU-only: gpu_idx=None AND gpu_runtime_env=None. No `--gpus` flag; explicitly
+    null CUDA_VISIBLE_DEVICES inside the container.
+
+    Container name: `--name <container_name>` so cancel paths can `docker kill
+    <name>` instead of relying on `docker run` PID descent (containerd-shim makes
+    the actual container procs NOT children of the docker client). Caller passes
+    task id as name.
 
     - `-v $cwd:$cwd -w $cwd`: absolute host paths resolve identically inside.
     - `--rm`: container is ephemeral; state lives in mounted volumes.
     - extra_env entries become `-e K=V`.
     """
-    args = ["docker", "run", "--rm"]
+    args: list = ["docker", "run", "--rm"]
     if container_name:
         args += ["--name", container_name]
     # Cgroup-level resource limits so the container honors scheduler budgets (Codex P1).
@@ -221,11 +244,16 @@ def wrap_cmd_docker(inner: str, image: str, cwd: str, gpu_idx: Optional[int],
         args += ["--memory", f"{memory_mb}m"]
     if cpus and cpus > 0:
         args += ["--cpus", str(cpus)]
-    if gpu_idx is not None:
-        # Hard pin at container level (not the loose `--gpus all`)
+    if gpu_runtime_env:
+        # Slurm path: docker pins to whatever GPU slurm has set in this env var at runtime.
+        # The arg must be unquoted at shell-join time so `$CUDA_VISIBLE_DEVICES` expands.
+        # We wrap in double quotes so a value like "0,1" stays as one arg even if any of
+        # those bytes were spaces (paranoia — slurm uses comma, not space).
+        args += ["--gpus", _ShellLiteral(f'"device=${gpu_runtime_env}"')]
+        args += ["-e", "CUDA_VISIBLE_DEVICES=0"]
+    elif gpu_idx is not None:
+        # Static pin (LocalBackend): scheduleurm-decided GPU.
         args += ["--gpus", f"device={gpu_idx}"]
-        # Inside the container the pinned device enumerates as 0; set CUDA_VISIBLE_DEVICES
-        # accordingly so app code that uses the env var doesn't try to address device N.
         args += ["-e", "CUDA_VISIBLE_DEVICES=0"]
     else:
         # CPU-only: don't request GPU at all; explicitly null CUDA_VISIBLE_DEVICES so any
@@ -235,12 +263,17 @@ def wrap_cmd_docker(inner: str, image: str, cwd: str, gpu_idx: Optional[int],
     if extra_env:
         for k, v in extra_env.items():
             # Skip CUDA_VISIBLE_DEVICES from extra_env: we set it explicitly above based on
-            # gpu_idx. User-supplied value would override our pinning.
+            # gpu_idx / gpu_runtime_env. User-supplied value would override our pinning.
             if k == "CUDA_VISIBLE_DEVICES":
                 continue
             args += ["-e", f"{k}={v}"]
     args += [image, "bash", "-c", inner]
-    docker_run = " ".join(shlex.quote(a) for a in args)
+    # Quote everything EXCEPT _ShellLiteral fragments. The literal class marks pre-quoted
+    # args (currently only the runtime-env GPU spec) where we need bash to expand $VAR.
+    docker_run = " ".join(
+        a if isinstance(a, _ShellLiteral) else shlex.quote(a)
+        for a in args
+    )
     # Pre-cleanup: remove any stale container with same name (left over from prior crashed
     # launch where --rm didn't fire because container exited dirtily). Without this, the
     # second launch fails with "container name already in use". Codex P1.

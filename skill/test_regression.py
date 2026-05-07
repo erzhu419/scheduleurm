@@ -4918,6 +4918,90 @@ def test_phase3_0_21_explicit_docker_fail_fast_no_local_digest():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_22_explicit_conda_fail_fast_no_local_path():
+    """Phase 3.0.22 P2 fix: explicit `--env-spec conda:/abs/path` with the path
+    missing on local must fail-fast at launch.
+
+    Pre-fix: _preload_env_outside_lock silently skipped a `conda:/abs/path`
+    when `Path(path).is_dir()` was False on local — comment was "caller's
+    mistake, eventual launch failure is diagnosed through ENV_MISSING".
+    But _maybe_wrap_docker treated kind=conda as a no-op return — no
+    fail-fast gate. If the remote happened to have a stale env at the same
+    path (sibling task deployed it earlier, manual user setup), the task
+    silently ran the stale remote python instead of the expected new one.
+
+    Auto / non-absolute conda specs (e.g. `conda:envname`) are unaffected —
+    those rely on `conda activate <name>` semantics, not path-rsync.
+    """
+    print("\n[79] Phase 3.0.22 P2 fix: explicit conda fail-fast when local path missing")
+
+    # 1. Source guard.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _maybe_wrap_docker")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("conda branch checks Path.is_absolute() AND not Path.is_dir() for fail-fast",
+          ("Path(spec_image).is_absolute()" in body
+           and "not Path(spec_image).is_dir()" in body))
+    check("conda branch error message names stale-remote-env risk",
+          "stale remote env" in body)
+
+    # 2. Behavioral.
+    saved_env_deploy = sch.env_deploy
+    class FakeED:
+        @staticmethod
+        def parse_env_spec(spec):
+            if spec.startswith("conda:"):
+                return ("conda", spec.split(":", 1)[1])
+            if spec == "auto":
+                return ("auto", "")
+            return ("none", "")
+    sch.env_deploy = FakeED
+
+    try:
+        # ---- Case A: conda:/abs/missing → fail-fast (path absent locally) ----
+        # Use a path that is essentially guaranteed to not exist on this box.
+        missing_path = "/__scheduleurm_test_missing_env__/never_existed"
+        task = {"id": "tA", "node": "n1", "env_spec": f"conda:{missing_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("conda + missing local path → fail (err returned)",
+              err is not None, diag=f"err={err!r}")
+        check("conda fail-fast message references the env path",
+              err and missing_path in err, diag=f"err={err!r}")
+        check("conda fail-fast: inner cmd unchanged",
+              inner == "python a.py")
+
+        # ---- Case B: conda:/tmp (exists) → ok, no error ----
+        import tempfile, os as _os
+        with tempfile.TemporaryDirectory() as tdir:
+            task = {"id": "tB", "node": "n1", "env_spec": f"conda:{tdir}"}
+            inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+            check("conda + existing local path → ok (no error, inner unchanged)",
+                  err is None and inner == "python a.py",
+                  diag=f"err={err!r} inner={inner!r}")
+
+        # ---- Case C: conda:envname (non-absolute) → unaffected ----
+        # Non-absolute conda specs (e.g. `conda:resac-jax`) rely on
+        # `conda activate <name>` semantics. The path-existence check should
+        # NOT touch them.
+        task = {"id": "tC", "node": "n1", "env_spec": "conda:envname"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("conda + non-absolute env-name spec → not gated by path check",
+              err is None,
+              diag=f"err={err!r}")
+
+        # ---- Case D: conda + relative path that doesn't exist → also unaffected ----
+        # `Path("relative/foo").is_absolute()` is False, so the gate doesn't
+        # fire. We don't try to be clever about cwd-relative resolution.
+        task = {"id": "tD", "node": "n1", "env_spec": "conda:relative/foo"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("conda + non-absolute relative path → not gated either",
+              err is None,
+              diag=f"err={err!r}")
+    finally:
+        sch.env_deploy = saved_env_deploy
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7415,6 +7499,7 @@ if __name__ == "__main__":
     test_phase3_0_19_staging_failure_cooldown_unblocks_later_candidates()
     test_phase3_0_20_cwd_always_rsyncs_on_cache_miss()
     test_phase3_0_21_explicit_docker_fail_fast_no_local_digest()
+    test_phase3_0_22_explicit_conda_fail_fast_no_local_path()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

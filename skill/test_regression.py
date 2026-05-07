@@ -1116,12 +1116,15 @@ def test_invariant_race_guard_includes_launching():
     check before either flipped to running."""
     print("\n[46] invariant: race-guard counts launching as taken")
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
-    # The running_sigs comprehension in _do_dispatch should include launching now
-    idx = src.find("running_sigs = {")
-    check("running_sigs comprehension found", idx > 0)
+    # Phase 3.4.12: dedup key changed from `signature` alone to `(signature, cmd)`
+    # tuple. Same-cmd duplicates still blocked; different-cmd-same-sig allowed.
+    idx = src.find("running_keys = {")
+    check("running_keys comprehension found",
+          idx > 0,
+          diag="3.4.12 P2-2: dedup key now (sig, cmd), not sig alone")
     if idx > 0:
         block = src[idx:idx + 400]
-        check("running_sigs includes 'launching' state",
+        check("running_keys includes 'launching' state",
               "launching" in block,
               diag=block[:300])
 
@@ -1929,38 +1932,47 @@ def test_dispatch_skips_duplicate_signature():
              "est_vram_mb": 0, "cpu_cores": 1},
         ]
     }
-    # Re-implement just the guard logic against fake_state (mirrors scheduler dispatch loop)
-    running_sigs = {(t.get("signature") or "")
+    # Phase 3.4.12 P2-2: dedup key is (signature, cmd) tuple, not signature alone.
+    # tdup has the SAME cmd as trun (`python train.py`) → still blocked.
+    running_keys = {(t.get("signature") or "", t.get("cmd") or "")
                     for t in fake_state["tasks"]
                     if t.get("status") == "running" and t.get("signature")}
     blocked, eligible = [], []
     for t in fake_state["tasks"]:
         if t["status"] != "queued": continue
         sig = t.get("signature") or ""
-        if sig and sig in running_sigs:
+        cmd_dd = t.get("cmd") or ""
+        if sig and (sig, cmd_dd) in running_keys:
             blocked.append(t["id"])
         else:
             eligible.append(t["id"])
-    check("queued task with same sig as running → blocked",
+    check("queued task with same (sig, cmd) as running → blocked",
           "tdup" in blocked, diag=f"blocked={blocked}")
     check("queued task with empty sig → not blocked (exempt from guard)",
           "tnosig" in eligible, diag=f"eligible={eligible}")
-    check("running_sigs correctly built from running tasks",
-          running_sigs == {"TEST/dup-sig"}, diag=str(running_sigs))
+    check("running_keys correctly built from running tasks (3.4.12 P2-2)",
+          running_keys == {("TEST/dup-sig", "python train.py")},
+          diag=str(running_keys))
 
-    # Full _do_dispatch regression: if two queued tasks share a signature and no instance is
-    # running at loop start, launching the first must immediately block the second in the same
-    # dispatch pass. The old implementation precomputed running_sigs once and forgot to update it
-    # after launch, so both would start and clobber the same output directory.
+    # Full _do_dispatch regression — Phase 3.4.12 P2-2 SCOPE CHANGE:
+    # Pre-fix: any two queued tasks with the SAME signature were blocked
+    # against each other regardless of cmd. That over-blocked legitimate
+    # ablation batches (e.g. 28 BAPR ablations with one shared signature
+    # but distinct (algo, env, seed) cmds — all stuck behind one peer).
+    # Post-fix: dedup key is (sig, cmd). Same sig + DIFFERENT cmd → both
+    # launch in parallel. Same sig + SAME cmd → second still blocked
+    # (real duplicate; protects --out_dir/--ckpt-dir from clobber).
+    # Below we test the same-cmd case (real duplicate) with cmds equal,
+    # so the second task IS expected to be blocked.
     state = {
         "tasks": [
             {"id": "tq1", "status": "queued", "signature": "TEST/same-pass",
-             "submitted_at": time.time(), "priority": "normal", "description": "eval A",
-             "cmd": "python eval.py --a", "cwd": "/tmp", "ram_mb": 500,
+             "submitted_at": time.time(), "priority": "normal", "description": "dup A",
+             "cmd": "python eval.py --x", "cwd": "/tmp", "ram_mb": 500,
              "est_vram_mb": 0, "cpu_cores": 1},
             {"id": "tq2", "status": "queued", "signature": "TEST/same-pass",
-             "submitted_at": time.time() + 1, "priority": "normal", "description": "eval B",
-             "cmd": "python eval.py --b", "cwd": "/tmp", "ram_mb": 500,
+             "submitted_at": time.time() + 1, "priority": "normal", "description": "dup A again",
+             "cmd": "python eval.py --x", "cwd": "/tmp", "ram_mb": 500,
              "est_vram_mb": 0, "cpu_cores": 1},
         ],
         "next_id": 900,
@@ -2000,14 +2012,56 @@ def test_dispatch_skips_duplicate_signature():
     tq1 = state["tasks"][0]
     tq2 = state["tasks"][1]
     blocked_ids = [ev["task_id"] for ev in events if ev["type"] == "blocked"]
-    check("same-pass duplicate: only first queued sig launches",
+    check("same-pass duplicate (sig+cmd identical): only first launches",
           launched == ["tq1"], diag=f"launched={launched}")
     check("same-pass duplicate: second task remains queued",
           tq1["status"] == "running" and tq2["status"] == "queued",
           diag=f"tq1={tq1['status']} tq2={tq2['status']}")
-    check("same-pass duplicate: second task gets blocked event",
-          "tq2" in blocked_ids and "already has a running task" in tq2.get("last_block_reason", ""),
+    check("same-pass duplicate: second task gets blocked event with new reason",
+          "tq2" in blocked_ids
+          and "identical cmd already has a running task" in tq2.get("last_block_reason", ""),
           diag=f"blocked={blocked_ids}, reason={tq2.get('last_block_reason')}")
+
+    # Phase 3.4.12 P2-2 — sibling case: same sig, DIFFERENT cmds → BOTH
+    # launch in parallel. Pre-fix this was over-blocked (28-task ablation
+    # batch incident). Re-run dispatch on a fresh state.
+    state2 = {
+        "tasks": [
+            {"id": "tA", "status": "queued", "signature": "TEST/diff-cmd",
+             "submitted_at": time.time(), "priority": "normal", "description": "ablation A",
+             "cmd": "python ablation.py --algo bapr", "cwd": "/tmp", "ram_mb": 500,
+             "est_vram_mb": 0, "cpu_cores": 1},
+            {"id": "tB", "status": "queued", "signature": "TEST/diff-cmd",
+             "submitted_at": time.time() + 1, "priority": "normal", "description": "ablation B",
+             "cmd": "python ablation.py --algo escp", "cwd": "/tmp", "ram_mb": 500,
+             "est_vram_mb": 0, "cpu_cores": 1},
+        ],
+        "next_id": 901,
+    }
+    nodes2 = [{"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+               "free_ram_mb": 30000, "total_ram_mb": 56000, "running_count": 0,
+               "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192,
+                         "free_mb": 8192, "util_pct": 0}]}]
+    launched2 = []
+    try:
+        sch.precheck_git = lambda t: (True, "ok")
+        sch.find_resume = lambda t: None
+        sch.save_state = fake_save_state
+        def fake_launch2(t, node_state=None):
+            launched2.append(t["id"])
+            t["status"] = "running"
+            t["remote_pids"] = [2000 + len(launched2)]
+            t["started_at"] = time.time()
+            t["log_path"] = f"/tmp/{t['id']}.log"
+            return True, "pid=stub"
+        sch.launch = fake_launch2
+        sch._do_dispatch(state2, nodes2)
+    finally:
+        sch.precheck_git, sch.find_resume, sch.launch = orig_precheck, orig_find, orig_launch
+        sch.save_state = orig_save
+    check("3.4.12 P2-2: same sig + DIFFERENT cmd → both launch in parallel",
+          set(launched2) == {"tA", "tB"},
+          diag=f"launched2={launched2}")
 
 def test_cpu_training_justification_required():
     """When --allow-cpu-training is set on a training task, --cpu-training-justification must
@@ -9242,9 +9296,11 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
           and 'os.environ.get("SCHEDULEURM_LAUNCH_MAX_CWD_SIZE_MB", "2048")' in src,
           diag="default 2GB per user spec '依赖 > 2GB 就坚持本地跑'")
 
-    check("3.4.10: _stage_cwd_for_launch helper defined",
-          "def _stage_cwd_for_launch(task: dict, target_node: str)" in src,
-          diag="must mirror _stage_for_migration but with source pinned to local")
+    check("3.4.10: _stage_cwd_for_launch helper defined (3.4.12 added extra_excludes)",
+          "def _stage_cwd_for_launch(task: dict, target_node: str" in src
+          and "extra_excludes" in src,
+          diag="must mirror _stage_for_migration but with source pinned to local; "
+               "3.4.12 P1 added extra_excludes for dynamic ckpt_dir/result_dir protection")
 
     fn = src.split("def _stage_cwd_for_launch")[1].split("\ndef ")[0]
     check("3.4.10: helper short-circuits when target is local (host is None)",
@@ -9690,6 +9746,154 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
         sch.load_state = saved_load
         sch.save_state = saved_save
         sch._sync_one_result = saved_sync_one
+
+    # ============================================================
+    # Phase 3.4.12 fixes — dynamic excludes + stage_failed escalation
+    #   + preferred_node fallback + (sig, cmd) dedup
+    # ============================================================
+    print("\n[Phase 3.4.12] dynamic excludes + stage_failed + preferred_node + (sig,cmd) dedup")
+
+    src = open(sch.__file__).read()
+
+    # ---- P1-1: dynamic excludes for ckpt_dir/result_dir under cwd ----
+    fn_launch = src.split("def _stage_cwd_for_launch")[1].split("\ndef ")[0]
+    check("3.4.12 P1-1: _stage_cwd_for_launch accepts extra_excludes parameter",
+          "extra_excludes: list" in fn_launch
+          and 'f"--exclude={ex}"' in fn_launch,
+          diag="caller can pass dynamic --exclude paths to protect ckpt_dir/result_dir")
+    check("3.4.12 P1-1: du size probe also honors extra_excludes (no over-count)",
+          fn_launch.count("extra_excludes") >= 2,
+          diag="cap check would falsely fire if du counts dirs the rsync would skip")
+
+    fn_outside = src.split("def _stage_launch_candidates_outside_lock()")[1].split("\ndef ")[0]
+    check("3.4.12 P1-1: outside-lock helper builds protected_under_cwd map",
+          "protected_under_cwd" in fn_outside
+          and "ckpt_dir" in fn_outside and "result_dir" in fn_outside,
+          diag="scan ALL tasks (any status) for ckpt_dir/result_dir under each cwd")
+    check("3.4.12 P1-1: outside-lock helper passes extra_excludes to _stage_cwd_for_launch",
+          "extra_excludes=extra" in fn_outside,
+          diag="dynamic protection passed through to rsync invocation")
+    check("3.4.12 P1-1: rel-path computed via os.path.relpath, rejects '..' traversal",
+          "os.path.relpath" in fn_outside
+          and 'rel.startswith("..")' in fn_outside,
+          diag="ckpt_dir outside cwd shouldn't contribute (relpath would yield '..')")
+
+    # ---- P1-2: stage_failed cache + dispatch routing ----
+    check("3.4.12 P1-2: _STAGING_FAILS cache module-level dict",
+          "_STAGING_FAILS: dict = {}" in src,
+          diag="rsync transport failures must persist across cycles, TTL via STAGING_FAIL_COOLDOWN_S")
+    check("3.4.12 P1-2: outside-lock helper records to _STAGING_FAILS on rsync failure",
+          '_STAGING_FAILS[("local", tn, cwd)] = (time.time()' in src,
+          diag="failure path that ISN'T CAP_EXCEEDED must be recorded for escalation")
+    fn_check = src.split("def _stage_cwd_check")[1].split("\ndef ")[0]
+    check("3.4.12 P1-2: _stage_cwd_check returns 'stage_failed' on fresh _STAGING_FAILS entry",
+          'return "stage_failed"' in fn_check,
+          diag="dispatch routes via launch_failed_nodes/launch_fail_count instead of needs_stage loop")
+    check("3.4.12 P1-2: _stage_failure_reason helper exposes underlying error",
+          "def _stage_failure_reason" in src,
+          diag="dispatch uses this for last_block_reason and launch_failed_nodes entry")
+    check("3.4.12 P1-2: dispatch routes 'stage_failed' through launch_fail_count + escalation",
+          'stage_state == "stage_failed"' in src
+          and "_stage_failure_reason(target, cwd_for_stage)" in src
+          and "_write_escalation" in src,
+          diag="permanent rsync failure must escalate after MAX_LAUNCH_RETRY")
+
+    # ---- P2-1: preferred_node fallback (stage all remote nodes if not require) ----
+    check("3.4.12 P2-1: outside-lock helper splits require_node vs preferred_node",
+          "require = t.get(\"require_node\")" in fn_outside
+          and "if require:" in fn_outside,
+          diag="only require_node is single-target; preferred_node is soft → stage all remotes")
+    check("3.4.12 P2-1: when no require_node, stage to ALL nodes (filtered to non-local below)",
+          "tgts = list(NODES.keys())" in fn_outside,
+          diag="preferred_node alone shouldn't shrink target set — pick_placement may fall back")
+
+    # ---- P2-2: dedup key changed to (signature, cmd) ----
+    check("3.4.12 P2-2: dispatch dedup uses (sig, cmd) tuple, not sig alone",
+          "running_keys = {" in src
+          and 't.get("signature") or "", t.get("cmd")' in src,
+          diag="lets independent experiments with same family signature run in parallel")
+    check("3.4.12 P2-2: in-loop add uses (sig, cmd) tuple too",
+          'running_keys.add((sig, t.get("cmd") or ""))' in src,
+          diag="same-cycle dedup must match the precomputed key shape")
+    check("3.4.12 P2-2: blocked-event reason mentions 'identical cmd'",
+          "identical cmd already has a running task" in src,
+          diag="user-facing message tells operator different cmds with same sig are allowed")
+
+    # ---- P1-1 behavioral: extra_excludes appended to rsync ----
+    saved_NODES = sch.NODES
+    saved_run = subprocess.run if hasattr(subprocess, "run") else None
+    try:
+        sch.NODES = {
+            "local": {"host": None},
+            "remote": {"host": "user@host"},
+        }
+        # Capture the rsync argv so we can assert --exclude entries.
+        captured_argv = []
+        class _MockResult:
+            def __init__(self): self.returncode = 0; self.stdout = "1\n"; self.stderr = ""
+        def mock_run(args, **kw):
+            captured_argv.append(list(args))
+            return _MockResult()
+        import subprocess as _sp
+        saved_sp_run = _sp.run
+        _sp.run = mock_run
+        try:
+            # Need a real local cwd for Path.exists() check inside helper.
+            import tempfile as _tf
+            with _tf.TemporaryDirectory() as td:
+                ok, msg = sch._stage_cwd_for_launch(
+                    {"cwd": td}, "remote",
+                    extra_excludes=["runs/exp1/", "outputs/seed42/"])
+                # 2 calls expected: du, then rsync.
+                rsync_call = next((a for a in captured_argv if a and a[0] == "rsync"), None)
+                check("3.4.12 P1-1 behavior: rsync argv contains dynamic --exclude entries",
+                      rsync_call is not None
+                      and "--exclude=runs/exp1/" in rsync_call
+                      and "--exclude=outputs/seed42/" in rsync_call,
+                      diag=f"rsync_call={rsync_call}")
+                # Cleanup cache so subsequent tests aren't affected
+                sch._STAGING_CACHE.clear()
+        finally:
+            _sp.run = saved_sp_run
+    finally:
+        sch.NODES = saved_NODES
+
+    # ---- P1-2 behavioral: stage_failed → bumped fail count + revert queued ----
+    # Direct probe via _stage_cwd_check after seeding _STAGING_FAILS.
+    saved_NODES = sch.NODES
+    try:
+        sch.NODES = {
+            "local": {"host": None},
+            "remote": {"host": "user@host"},
+        }
+        cwd_key = ("local", "remote", "/some/cwd")
+        sch._STAGING_FAILS[cwd_key] = (time.time(), "rsync rc=12: connection refused")
+        check("3.4.12 P1-2 behavior: fresh _STAGING_FAILS → 'stage_failed'",
+              sch._stage_cwd_check("remote", "/some/cwd") == "stage_failed")
+        check("3.4.12 P1-2 behavior: _stage_failure_reason exposes message",
+              "rsync rc=12" in sch._stage_failure_reason("remote", "/some/cwd"))
+        # Stale entry (older than STAGING_FAIL_COOLDOWN_S) → reverts to needs_stage
+        sch._STAGING_FAILS[cwd_key] = (
+            time.time() - sch.STAGING_FAIL_COOLDOWN_S - 10,
+            "old failure")
+        check("3.4.12 P1-2 behavior: stale _STAGING_FAILS → 'needs_stage' (auto recovery)",
+              sch._stage_cwd_check("remote", "/some/cwd") == "needs_stage")
+        sch._STAGING_FAILS.pop(cwd_key, None)
+    finally:
+        sch.NODES = saved_NODES
+
+    # ---- P2-2 behavioral: same sig + different cmd both launch ----
+    # (Exercised in the broader same-pass duplicate test above; here we
+    # just sanity-check the dedup tuple type.)
+    saved_NODES = sch.NODES
+    try:
+        running_keys_test = {("sig", "cmd_A"), ("sig", "cmd_B")}
+        check("3.4.12 P2-2 behavior: tuple-keyed set distinguishes cmds with same sig",
+              ("sig", "cmd_A") in running_keys_test
+              and ("sig", "cmd_C") not in running_keys_test,
+              diag=str(running_keys_test))
+    finally:
+        sch.NODES = saved_NODES
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():

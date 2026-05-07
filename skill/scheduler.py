@@ -4399,12 +4399,23 @@ def _conda_sync_ok(node, env_path) -> bool:
 # automatically on the next outside-lock pre-staging pass.
 _STAGING_CAP_EXCEEDED: dict = {}
 
+# Phase 3.4.12 P1-2 fix: rsync-failure cache. Populated by
+# _stage_launch_candidates_outside_lock when rsync to a (target, cwd) fails
+# (transport / disk full / permission). Consulted by _stage_cwd_check so
+# dispatch can route the task through the existing launch_failed_nodes
+# pipeline (count + retry on different node + heal escalation after MAX),
+# rather than looping forever in "needs_stage". TTL via STAGING_FAIL_COOLDOWN_S
+# so transient ssh blips and user-fixable issues recover automatically.
+# Value: (timestamp, last_error_msg) so dispatch can surface the reason.
+_STAGING_FAILS: dict = {}
+
 
 def _stage_cwd_check(target_node: str, cwd: str):
-    """Phase 3.4.11 P1 fix: FAST inside-lock probe of staging state.
+    """Phase 3.4.11 P1 fix + 3.4.12 P1-2: FAST inside-lock probe of staging state.
     Returns one of:
       "ready"        — target == local, OR _STAGING_CACHE has fresh entry
       "cap_exceeded" — _STAGING_CAP_EXCEEDED has fresh entry
+      "stage_failed" — _STAGING_FAILS has fresh entry (rsync failed last try)
       "needs_stage"  — cache miss; dispatch must defer this cycle and let
                        the next outside-lock pass run _stage_cwd_for_launch
 
@@ -4412,6 +4423,9 @@ def _stage_cwd_check(target_node: str, cwd: str):
     Caller (inside _do_dispatch, under state_lock) routes:
       "ready"        → proceed with launch
       "cap_exceeded" → set require_node=local + revert queued
+      "stage_failed" → bump launch_fail_count + record launch_failed_nodes
+                       on this target, then revert queued so pick_placement
+                       avoids it next cycle
       "needs_stage"  → emit launch_stage_deferred event, leave queued
     """
     if NODES.get(target_node, {}).get("host") is None:
@@ -4425,14 +4439,41 @@ def _stage_cwd_check(target_node: str, cwd: str):
             _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
         else:
             return "cap_exceeded"
+    fail = _STAGING_FAILS.get(cwd_key)
+    if fail is not None:
+        fail_ts = fail[0] if isinstance(fail, tuple) else fail
+        if (time.time() - fail_ts) > STAGING_FAIL_COOLDOWN_S:
+            _STAGING_FAILS.pop(cwd_key, None)
+        else:
+            return "stage_failed"
     return "needs_stage"
 
 
-def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
+def _stage_failure_reason(target_node: str, cwd: str) -> str:
+    """Return the cached rsync failure message for (target, cwd), or empty
+    string if not in _STAGING_FAILS. Used by dispatch to surface the
+    underlying error in last_block_reason / launch_failed_nodes."""
+    cwd_key = ("local", target_node, cwd)
+    fail = _STAGING_FAILS.get(cwd_key)
+    if fail is None:
+        return ""
+    return fail[1] if isinstance(fail, tuple) and len(fail) > 1 else "unknown"
+
+
+def _stage_cwd_for_launch(task: dict, target_node: str,
+                          extra_excludes: list = None) -> tuple:
     """Phase 3.4.10 P1 fix: pre-launch sync of cwd from LOCAL (source-of-truth)
     to a non-local target_node. Mirrors `_stage_for_migration`'s rsync semantics
     but with source pinned to local — `local working tree` is authoritative,
     not whatever happens to live on the chosen target.
+
+    extra_excludes (Phase 3.4.12 P1 fix): additional --exclude paths
+    passed by the outside-lock orchestrator to protect ANY task's
+    ckpt_dir / result_dir that lives under this cwd. Without dynamic
+    protection, --delete would wipe `runs/exp1/`, `outputs/seed1/`,
+    `checkpoints/`, `<arbitrary>/` — only the hard-coded `results/ logs/
+    experiment_output/ archive*/` excludes survived. Caller computes
+    these relative to cwd before invoking.
 
     Pre-fix gap: dispatch's first-launch path only did `test -d cwd` on target
     (LocalBackend.launch line ~2918). If target had a stale clone, an old
@@ -4474,14 +4515,24 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
     # while the actual code transfer is <50MB).
     cwd_size_mb = 0
     try:
+        du_args = ["du", "-sm",
+                   "--exclude=.git", "--exclude=__pycache__", "--exclude=*.pyc",
+                   "--exclude=results", "--exclude=results_*",
+                   "--exclude=logs", "--exclude=logs_*",
+                   "--exclude=experiment_output",
+                   "--exclude=archive*", "--exclude=*.tar.gz"]
+        # Phase 3.4.12 P1: extend du excludes to match the rsync excludes
+        # so the cap check doesn't over-count bytes the rsync would skip
+        # anyway (otherwise a 5GB results/ outside the rsync set would
+        # falsely trigger CAP_EXCEEDED).
+        if extra_excludes:
+            for ex in extra_excludes:
+                if ex:
+                    # du --exclude doesn't want trailing slash like rsync does
+                    du_args.append(f"--exclude={ex.rstrip('/')}")
+        du_args.append(cwd)
         r = subprocess.run(
-            ["du", "-sm",
-             "--exclude=.git", "--exclude=__pycache__", "--exclude=*.pyc",
-             "--exclude=results", "--exclude=results_*",
-             "--exclude=logs", "--exclude=logs_*",
-             "--exclude=experiment_output",
-             "--exclude=archive*", "--exclude=*.tar.gz",
-             cwd],
+            du_args,
             capture_output=True, text=True, timeout=30,
         )
         if r.returncode == 0:
@@ -4514,22 +4565,33 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
 
     src_path = cwd.rstrip("/") + "/"
     dst_path = f"{tgt_host}:{cwd.rstrip('/')}/"
+    # Phase 3.4.11 P2 fix: --delete enforces "local is source-of-truth"
+    # semantics. Without it, files that were renamed/deleted on local
+    # remain on remote, so a stale code path could still execute (e.g.
+    # an old `train_v1.py` that local replaced with `train_v2.py`).
+    # The exclude list applies to BOTH transfer and delete passes, so
+    # excluded paths on remote are NEVER removed — they live outside
+    # the rsync set.
+    rsync_args = ["rsync", "-az", "--partial", "--delete",
+                  "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
+                  "--exclude=results/", "--exclude=results_*/",
+                  "--exclude=logs/", "--exclude=logs_*/",
+                  "--exclude=experiment_output/",
+                  "--exclude=archive*/", "--exclude=*.tar.gz"]
+    # Phase 3.4.12 P1 fix: dynamic --exclude for any task's ckpt_dir /
+    # result_dir that lands under this cwd. Caller computes relative
+    # paths and passes them here so we never wipe a sibling task's
+    # output dir just because the dir name doesn't match a hard-coded
+    # exclude. Each entry is appended verbatim with the `--exclude=`
+    # prefix; trailing slash on dirs ensures rsync treats them as dirs.
+    if extra_excludes:
+        for ex in extra_excludes:
+            if ex:
+                rsync_args.extend([f"--exclude={ex}"])
+    rsync_args.extend([src_path, dst_path])
     try:
-        # Phase 3.4.11 P2 fix: --delete enforces "local is source-of-truth"
-        # semantics. Without it, files that were renamed/deleted on local
-        # remain on remote, so a stale code path could still execute (e.g.
-        # an old `train_v1.py` that local replaced with `train_v2.py`).
-        # The exclude list applies to BOTH transfer and delete passes, so
-        # `results/`, `logs/`, `experiment_output/` etc. on remote are
-        # NEVER removed — they live outside the rsync set.
         r = subprocess.run(
-            ["rsync", "-az", "--partial", "--delete",
-             "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
-             "--exclude=results/", "--exclude=results_*/",
-             "--exclude=logs/", "--exclude=logs_*/",
-             "--exclude=experiment_output/",
-             "--exclude=archive*/", "--exclude=*.tar.gz",
-             src_path, dst_path],
+            rsync_args,
             capture_output=True, text=True, timeout=600,
         )
         if r.returncode != 0:
@@ -4544,6 +4606,8 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
     # Cap was previously cached but cwd has been re-checked successfully —
     # clear any stale CAP_EXCEEDED entry so stage_cwd_check returns "ready".
     _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+    # Same for any prior rsync failure record — success supersedes.
+    _STAGING_FAILS.pop(cwd_key, None)
     return (True, f"synced ({cwd_size_mb}MB)")
 
 
@@ -4574,7 +4638,42 @@ def _stage_launch_candidates_outside_lock():
     try:
         with state_lock():
             state = load_state()
-        # Build (target, cwd) candidate set from queued tasks.
+        # Phase 3.4.12 P1: build cwd → set of relative paths under cwd that
+        # belong to ANY task's ckpt_dir / result_dir / local_result_dir.
+        # These paths must NOT be deleted by --delete, even if they don't
+        # exist locally yet. Scan ALL tasks regardless of status — even a
+        # `failed` task may have left a recoverable ckpt the user wants.
+        protected_under_cwd: dict = {}  # cwd_str -> set[rel_path]
+        for t in state.get("tasks", []):
+            t_cwd = t.get("cwd")
+            if not t_cwd:
+                continue
+            t_cwd_norm = t_cwd.rstrip("/")
+            for field in ("ckpt_dir", "result_dir", "local_result_dir"):
+                d = t.get(field)
+                if not d:
+                    continue
+                d_norm = str(d).rstrip("/")
+                # Only protect if the path is genuinely under t_cwd.
+                # commonpath handles trailing slashes / relative bits.
+                try:
+                    if (d_norm == t_cwd_norm
+                            or os.path.commonpath([d_norm, t_cwd_norm]) == t_cwd_norm):
+                        rel = os.path.relpath(d_norm, t_cwd_norm)
+                        if rel and rel != "." and not rel.startswith(".."):
+                            # rsync expects trailing slash for dirs to
+                            # match dir-or-content semantics consistently.
+                            protected_under_cwd.setdefault(t_cwd_norm, set()).add(
+                                rel.rstrip("/") + "/")
+                except (ValueError, OSError):
+                    # commonpath raises on different drives etc; just skip.
+                    pass
+
+        # Phase 3.4.12 P2-1 fix: split require vs. preferred. require_node is
+        # a hard pin → single target. preferred_node is SOFT and pick_placement
+        # falls back to other nodes; if we only stage to preferred, dispatch
+        # may end up choosing a different node and stay in needs_stage forever.
+        # So preferred → stage to ALL non-local nodes (preferred + fallbacks).
         candidates: set = set()
         for t in state.get("tasks", []):
             if t.get("status") != "queued":
@@ -4582,23 +4681,19 @@ def _stage_launch_candidates_outside_lock():
             cwd = t.get("cwd")
             if not cwd:
                 continue
-            pin = t.get("require_node") or t.get("preferred_node")
-            if pin:
-                tgts = [pin]
+            require = t.get("require_node")
+            if require:
+                tgts = [require]
             else:
+                # No hard pin (preferred OR nothing) → stage to every node
+                # pick_placement might pick. Filtered to non-local below.
                 tgts = list(NODES.keys())
             for tn in tgts:
-                # Skip local — _stage_cwd_for_launch short-circuits anyway,
-                # but we save a function call by filtering here.
                 if NODES.get(tn, {}).get("host") is None:
                     continue
-                # Skip if both caches already say something definitive.
                 cwd_key = ("local", tn, cwd)
                 if _staging_cache_hit(cwd_key):
                     continue
-                # CAP_EXCEEDED with fresh TTL → already known too big; skip
-                # rsync attempt. _stage_cwd_check will return "cap_exceeded"
-                # to dispatch which routes to require_node=local.
                 cap_ts = _STAGING_CAP_EXCEEDED.get(cwd_key)
                 if cap_ts is not None and (time.time() - cap_ts) <= STAGING_TTL_S:
                     continue
@@ -4615,13 +4710,23 @@ def _stage_launch_candidates_outside_lock():
         return
 
     for tn, cwd in candidates:
+        cwd_norm = cwd.rstrip("/")
+        extra = sorted(protected_under_cwd.get(cwd_norm, set()))
         try:
-            ok, msg = _stage_cwd_for_launch({"cwd": cwd}, tn)
-            if not ok and not msg.startswith("CAP_EXCEEDED:"):
-                # Transport failure — log but don't fail the whole pre-stage
-                # pass. _stage_cwd_for_launch DID NOT update _STAGING_CACHE
-                # so dispatch's _stage_cwd_check returns "needs_stage" and
-                # the task defers to the next cycle (which retries).
+            ok, msg = _stage_cwd_for_launch({"cwd": cwd}, tn,
+                                            extra_excludes=extra)
+            if not ok:
+                if msg.startswith("CAP_EXCEEDED:"):
+                    # Cap is a routing decision (handled by dispatch via
+                    # _STAGING_CAP_EXCEEDED cache); not a transport fail.
+                    continue
+                # Phase 3.4.12 P1-2 fix: rsync transport failure must
+                # eventually escalate, not loop forever in needs_stage.
+                # Stamp _STAGING_FAILS so _stage_cwd_check returns
+                # "stage_failed" → dispatch routes to launch_failed_nodes
+                # / launch_fail_count. Cooldown via STAGING_FAIL_COOLDOWN_S
+                # so transient ssh blips recover automatically.
+                _STAGING_FAILS[("local", tn, cwd)] = (time.time(), msg[:200])
                 try:
                     notify("launch_staging_failed",
                            {"target": tn, "cwd": cwd, "reason": msg[:200]},
@@ -4629,6 +4734,8 @@ def _stage_launch_candidates_outside_lock():
                 except Exception:
                     pass
         except Exception as e:
+            _STAGING_FAILS[("local", tn, cwd)] = (
+                time.time(), f"exception: {str(e)[:150]}")
             try:
                 notify("launch_staging_exception",
                        {"target": tn, "cwd": cwd, "error": str(e)[:200]},
@@ -5724,18 +5831,32 @@ def _do_dispatch(state, nodes):
     # launching window. Without this, two dispatch cycles overlapping the WAL window could
     # both succeed → 2 instances of same sig running. Invariant: same signature can be in
     # AT MOST ONE active state (queued is the only allowed plural — but dedup at dispatch).
-    running_sigs = {(t.get("signature") or "")
+    # Phase 3.4.12 P2-2 fix: dedup key is (signature, cmd) not signature alone.
+    # Pre-fix: any same-signature task was blocked even when the cmd / args /
+    # implicit out_dir differed. Real-world impact: 28 BAPR ablation tasks
+    # submitted with one shared signature were ALL blocked behind a single
+    # running peer because they happened to share the family-level signature
+    # — even though every cmd had a different (algo, env, seed) combination
+    # writing to a different per-run dir. Now we dedup on (signature, cmd):
+    # truly identical re-submissions still get one-instance protection;
+    # variants with different args run in parallel. ckpt_dir collisions are
+    # still caught by the separate ckpt-dir conflict guard at submit time.
+    running_keys = {(t.get("signature") or "", t.get("cmd") or "")
                     for t in state["tasks"]
-                    if t.get("status") in ("running", "launching") and t.get("signature")}
+                    if t.get("status") in ("running", "launching")
+                    and t.get("signature")}
     queued = sorted(
         [t for t in state["tasks"] if t["status"] == "queued"],
         key=lambda t: (prio.get(t["priority"], 1), t["submitted_at"])
     )
     for t in queued:
         sig = t.get("signature") or ""
-        if sig and sig in running_sigs:
-            reason = (f"signature {sig!r} already has a running task; refusing to dispatch a "
-                      f"second instance (would clobber shared --out_dir/--ckpt-dir).")
+        cmd_for_dedup = t.get("cmd") or ""
+        if sig and (sig, cmd_for_dedup) in running_keys:
+            reason = (f"signature {sig!r} + identical cmd already has a running task; "
+                      f"refusing to dispatch a duplicate (would clobber the same "
+                      f"--out_dir/--ckpt-dir). Different cmds with the same signature "
+                      f"are allowed and run in parallel.")
             t["last_block_reason"] = reason
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
             continue
@@ -5832,6 +5953,8 @@ def _do_dispatch(state, nodes):
         # acquires state_lock. Here we just consult the cache state:
         #   "ready"        → proceed with launch
         #   "cap_exceeded" → cwd > 2GB; re-route to local (no fail-count bump)
+        #   "stage_failed" → rsync transport failure; treat as launch fail
+        #                    on this target (3.4.12 P1-2)
         #   "needs_stage"  → cache miss; defer this cycle, next outside-lock
         #                    pass will rsync, the cycle after launches
         target = t.get("node")
@@ -5854,6 +5977,50 @@ def _do_dispatch(state, nodes):
                     "task": t,
                     "reason": f"cwd > {LAUNCH_MAX_CWD_SIZE_MB}MB",
                 })
+                continue
+            if stage_state == "stage_failed":
+                # Phase 3.4.12 P1-2: rsync to this target keeps failing.
+                # Route through the existing launch-failure pipeline so
+                # pick_placement avoids this node next cycle, and after
+                # MAX_LAUNCH_RETRY total launch failures the task gets
+                # heal-escalated. This breaks the "needs_stage forever"
+                # loop the original outside-lock split could create when
+                # rsync was permanently broken (auth, disk, network).
+                fail_msg = (_stage_failure_reason(target, cwd_for_stage)
+                            or "rsync to target failed")
+                attempted = target
+                t["launch_fail_count"] = (t.get("launch_fail_count") or 0) + 1
+                failed = t.setdefault("launch_failed_nodes", {})
+                if not isinstance(failed, dict):
+                    failed = {}
+                    t["launch_failed_nodes"] = failed
+                failed[attempted] = {
+                    "ts": time.time(),
+                    "attempt": t["launch_fail_count"],
+                    "error": f"stage_cwd: {fail_msg[:280]}",
+                }
+                t["last_block_reason"] = (
+                    f"launch stage attempt {t['launch_fail_count']}/{MAX_LAUNCH_RETRY}: "
+                    f"rsync to {target} failed: {fail_msg[:200]}"
+                )
+                t["node"] = None
+                t["gpu_idx"] = None
+                t.pop("launching_started_at", None)
+                if t["launch_fail_count"] >= MAX_LAUNCH_RETRY:
+                    t["status"] = "failed"
+                    try:
+                        _write_escalation(t, "LAUNCH_FAIL_CAP",
+                                          {"reason": fail_msg, "tail": fail_msg})
+                    except Exception:
+                        pass
+                    events.append({"type": "launch_failed_terminal",
+                                    "task_id": t["id"], "task": t,
+                                    "error": fail_msg})
+                else:
+                    t["status"] = "queued"
+                    events.append({"type": "launch_failed_retry",
+                                    "task_id": t["id"], "task": t,
+                                    "error": fail_msg})
                 continue
             if stage_state == "needs_stage":
                 # Defer this cycle. Don't bump launch_fail_count — staging
@@ -5954,9 +6121,11 @@ def _do_dispatch(state, nodes):
                    {"id": t["id"], "error": str(_e)[:200]}, feishu_enabled=False)
         if sig:
             # Treat a just-launched task as running for the rest of this dispatch pass.
-            # Otherwise two queued tasks with the same signature can both launch in one
-            # iteration even though the precomputed running_sigs set was empty at loop start.
-            running_sigs.add(sig)
+            # Phase 3.4.12 P2-2: track (sig, cmd) tuple to match the dedup key.
+            # Two queued tasks with same sig + same cmd in one cycle would both
+            # try to launch otherwise; same sig + different cmd is intentionally
+            # allowed (different experiments).
+            running_keys.add((sig, t.get("cmd") or ""))
         # Reflect placement in our local probe so subsequent iterations of this same dispatch
         # see the resources as already consumed (CPU + RAM at node level, VRAM at GPU level).
         for n in nodes:

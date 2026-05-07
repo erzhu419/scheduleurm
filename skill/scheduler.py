@@ -2028,7 +2028,7 @@ class SlurmBackend(Backend):
         return f"{hours:02d}:{mins:02d}:00"
 
     def _build_sbatch_script(self, task: dict, inner_cmd: str, log_path: str) -> str:
-        """Build the sbatch script as a string. Streamed via stdin to `sbatch -`."""
+        """Build the sbatch script as a string. Streamed via stdin to `sbatch /dev/stdin`."""
         lines = ["#!/bin/bash"]
         lines.append(f"#SBATCH --job-name=scheduleurm-{task['id']}")
         lines.append(f"#SBATCH --output={log_path}")
@@ -2134,18 +2134,23 @@ class SlurmBackend(Backend):
             return False, f"cwd missing or log_dir uncreatable on {task['node']}: {cwd}"
 
         script = self._build_sbatch_script(task, inner, log_path)
-        # Pipe script via stdin: sbatch -. Avoids leaving files on the compute node.
-        # We can't reuse run_on directly because it doesn't accept stdin. Inline the ssh.
+        # Pipe script via stdin to `sbatch /dev/stdin`. Phase 2.10 P1 fix: empirically
+        # `sbatch -` (the "argv shorthand for stdin" form) is rejected on Ubuntu 24.04 /
+        # slurm 23.11.4 with "Unable to open file -" — the package's argv parser doesn't
+        # treat `-` as a stdin sentinel. `/dev/stdin` is the kernel-level stdin pipe and
+        # works universally across slurm versions because slurm just opens it as a path.
+        # No file is left on the compute node either way (it's the same pipe).
         host = NODES[task["node"]]["host"]
         try:
             if host is None:
                 proc = subprocess.run(
-                    ["sbatch", "-"], input=script, capture_output=True, text=True, timeout=30,
+                    ["sbatch", "/dev/stdin"], input=script,
+                    capture_output=True, text=True, timeout=30,
                 )
             else:
                 proc = subprocess.run(
                     ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
-                     host, "sbatch -"],
+                     host, "sbatch /dev/stdin"],
                     input=script, capture_output=True, text=True, timeout=30,
                 )
             if proc.returncode != 0:

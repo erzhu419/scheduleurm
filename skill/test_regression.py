@@ -7754,9 +7754,15 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         saved_save = sch.save_state
         saved_pre = sch.precheck_git
         saved_resume = sch.find_resume
+        # Phase 3.4.10 P1: dispatch now runs _stage_cwd_for_launch BEFORE the
+        # backend.launch() call this test exercises. Bypass it for this test
+        # since cwd="/work" is a fake path; the staging logic itself has its
+        # own dedicated test block.
+        saved_stage = sch._stage_cwd_for_launch
         sch.save_state = lambda s: None
         sch.precheck_git = lambda t: (True, "")
         sch.find_resume = lambda t: None
+        sch._stage_cwd_for_launch = lambda t, n: (True, "test bypass")
         state = {"next_id": 100, "tasks": [{
             "id": "tDR", "status": "queued", "priority": "normal",
             "submitted_at": time.time(), "cwd": "/work",
@@ -7791,6 +7797,7 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
             sch.save_state = saved_save
             sch.precheck_git = saved_pre
             sch.find_resume = saved_resume
+            sch._stage_cwd_for_launch = saved_stage
 
         # 3. _evict_to_queue releases the claim before clearing node.
         rel_calls = []
@@ -8756,6 +8763,7 @@ def test_phase3_4_3_claim_race_vs_claim_error():
     saved_pre = sch.precheck_git
     saved_resume = sch.find_resume
     saved_run = sch.run_on
+    saved_stage = sch._stage_cwd_for_launch
     sch.NODES = {"n_on": {"name": "n_on", "host": "h", "enable_claims": True,
                             "cpu_cores": 12, "ram_mb": 32000,
                             "ram_headroom_frac": 0.10,
@@ -8764,6 +8772,10 @@ def test_phase3_4_3_claim_race_vs_claim_error():
     sch.save_state = lambda s: None
     sch.precheck_git = lambda t: (True, "")
     sch.find_resume = lambda t: None
+    # Phase 3.4.10 P1: bypass new pre-launch staging step — this test exercises
+    # the launch-time CLAIM_ERROR path with cwd="/work" (mock); the staging
+    # logic itself has its own dedicated test block.
+    sch._stage_cwd_for_launch = lambda t, n: (True, "test bypass")
     # cwd preflight (test -d) runs BEFORE claim. Pass it; fail only the
     # claims-script ssh so the CLAIM_ERROR path is the actual failure.
     def fake_run(node, cmd, **kw):
@@ -8810,6 +8822,7 @@ def test_phase3_4_3_claim_race_vs_claim_error():
         sch.find_resume = saved_resume
         sch.run_on = saved_run
         sch.NODES = saved_NODES
+        sch._stage_cwd_for_launch = saved_stage
 
 
 def test_phase3_4_4_claim_replicates_gpu_fits_policy():
@@ -9206,6 +9219,117 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
               size_post == 0,
               diag=f"size after second setup = {size_post}; "
                    "non-zero would mean bootstrap clobbered crash-corrupt state")
+
+    # ============================================================
+    # Phase 3.4.10 P1 fix: launch-time cwd auto-sync from local
+    # ============================================================
+    print("\n[Phase 3.4.10] launch-time cwd auto-sync from local source-of-truth")
+
+    # ---- Source guards ----
+    src = open(sch.__file__).read()
+
+    check("3.4.10: LAUNCH_MAX_CWD_SIZE_MB constant defined (default 2048)",
+          "LAUNCH_MAX_CWD_SIZE_MB" in src
+          and 'os.environ.get("SCHEDULEURM_LAUNCH_MAX_CWD_SIZE_MB", "2048")' in src,
+          diag="default 2GB per user spec '依赖 > 2GB 就坚持本地跑'")
+
+    check("3.4.10: _stage_cwd_for_launch helper defined",
+          "def _stage_cwd_for_launch(task: dict, target_node: str)" in src,
+          diag="must mirror _stage_for_migration but with source pinned to local")
+
+    fn = src.split("def _stage_cwd_for_launch")[1].split("\ndef ")[0]
+    check("3.4.10: helper short-circuits when target is local (host is None)",
+          'NODES.get(target_node, {}).get("host") is None' in fn
+          and "target is local" in fn,
+          diag="local→local has no rsync to do")
+    check("3.4.10: helper bails if local cwd doesn't exist (no source-of-truth)",
+          "Path(cwd).exists()" in fn
+          and "can't seed target" in fn,
+          diag="rsync-from-nothing must fail explicitly, not silently mkdir empty")
+    check("3.4.10: helper consults _staging_cache_hit before rsync",
+          "_staging_cache_hit(cwd_key)" in fn,
+          diag="TTL-bounded cache avoids redundant rsync within 10min window")
+    check("3.4.10: helper applies LAUNCH_MAX_CWD_SIZE_MB cap with 'CAP_EXCEEDED:' sentinel",
+          "LAUNCH_MAX_CWD_SIZE_MB" in fn and "CAP_EXCEEDED:" in fn,
+          diag="caller dispatches require_node=local on this sentinel")
+    check("3.4.10: du probe excludes match rsync excludes (consistent size accounting)",
+          "--exclude=.git" in fn and "--exclude=__pycache__" in fn
+          and "--exclude=results" in fn and "--exclude=logs" in fn,
+          diag="size pre-check must match what rsync would actually transfer")
+    check("3.4.10: helper updates _STAGING_CACHE on success",
+          "_STAGING_CACHE[cwd_key] = time.time()" in fn,
+          diag="next dispatch within TTL skips rsync via cache hit")
+
+    # ---- Dispatch wiring guard: CAP_EXCEEDED → require_node=local + revert ----
+    # Find the dispatch loop body that calls _stage_cwd_for_launch.
+    check("3.4.10: dispatch invokes _stage_cwd_for_launch before launch()",
+          "_stage_cwd_for_launch(t, target)" in src,
+          diag="must run BEFORE launch() so wrong-code launch never happens")
+    check("3.4.10: CAP_EXCEEDED routes to require_node=local + revert queued",
+          'stage_msg.startswith("CAP_EXCEEDED:")' in src
+          and 't["require_node"] = "local"' in src,
+          diag="size-cap is a routing decision, not a launch failure — no fail-count bump")
+    check("3.4.10: launch_capped event emitted for CAP_EXCEEDED branch",
+          '"type": "launch_capped"' in src,
+          diag="surfaces in events log so operator sees why a task got pinned")
+
+    # ---- Behavioral: helper short-circuit cases ----
+    saved_NODES = sch.NODES
+    try:
+        sch.NODES = {
+            "local": {"host": None, "cpu_cores": 4, "ram_mb": 8000},
+            "remote": {"host": "user@remotehost", "cpu_cores": 4, "ram_mb": 8000},
+        }
+        # Case A: target is local → instant return
+        ok, msg = sch._stage_cwd_for_launch({"cwd": "/tmp"}, "local")
+        check("3.4.10 behavior: target=local short-circuits with ok=True",
+              ok is True and "nothing to sync" in msg, diag=msg)
+
+        # Case B: cwd doesn't exist locally → explicit failure
+        ok, msg = sch._stage_cwd_for_launch(
+            {"cwd": "/nonexistent_path_for_test_3_4_10"}, "remote")
+        check("3.4.10 behavior: missing local cwd → ok=False with clear message",
+              ok is False and "can't seed target" in msg, diag=msg)
+
+        # Case C: empty/missing cwd field
+        ok, msg = sch._stage_cwd_for_launch({}, "remote")
+        check("3.4.10 behavior: no cwd on task → ok=False",
+              ok is False and "no cwd" in msg, diag=msg)
+
+        # Case D: CAP_EXCEEDED — synthesise by injecting a small cap.
+        # Use a real existing dir that du can scan; threshold 0MB forces
+        # CAP_EXCEEDED for any non-empty dir.
+        import tempfile as _tf
+        with _tf.TemporaryDirectory() as td:
+            # Put a small file so du > 0
+            with open(os.path.join(td, "marker.txt"), "w") as fh:
+                fh.write("x" * 1024)
+            saved_cap = sch.LAUNCH_MAX_CWD_SIZE_MB
+            sch.LAUNCH_MAX_CWD_SIZE_MB = 0  # any size triggers cap
+            try:
+                ok, msg = sch._stage_cwd_for_launch({"cwd": td}, "remote")
+                check("3.4.10 behavior: cwd > cap → ok=False with CAP_EXCEEDED prefix",
+                      ok is False and msg.startswith("CAP_EXCEEDED:"), diag=msg)
+            finally:
+                sch.LAUNCH_MAX_CWD_SIZE_MB = saved_cap
+
+        # Case E: cache hit short-circuits (no actual rsync attempted).
+        # Pre-populate the cache for (local, remote, cwd) and verify the
+        # helper returns ok=True with "cache hit" without ever calling rsync.
+        # Mock subprocess.run to flag if rsync is attempted.
+        with _tf.TemporaryDirectory() as td:
+            cwd_key = ("local", "remote", td)
+            sch._STAGING_CACHE[cwd_key] = time.time()  # fresh entry
+            # If the helper hits the rsync path, du will be called on td.
+            # Cache hit short-circuits BEFORE the du probe runs, so we just
+            # check the return value.
+            ok, msg = sch._stage_cwd_for_launch({"cwd": td}, "remote")
+            check("3.4.10 behavior: cache hit returns ok=True without rsync",
+                  ok is True and "cache hit" in msg, diag=msg)
+            # Cleanup so other tests don't see this entry.
+            sch._STAGING_CACHE.pop(cwd_key, None)
+    finally:
+        sch.NODES = saved_NODES
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():

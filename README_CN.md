@@ -139,6 +139,13 @@ scheduleurm 在 slurm 节点上**仍然**owns 的（因为 slurm 不做这些）
 估计、ckpt resume flag 自动注入、跨任务 `--ckpt-dir` 冲突检测、env-deploy（docker/conda）
 包装、MCP/skill UI、外部启动进程的自动 adopt。
 
+**slurm 节点会绕开 scheduleurm 的本地容量门**。scheduleurm 的 `dispatch` 正常会跑 `probe_node`
+看 CPU/RAM/VRAM 实时是否够，不够就拒绝放置 —— 对 `LocalBackend` 是对的（它就是 placement
+决策者）。但对 slurm 节点这是灾难：登录节点通常根本没 GPU，集群繁忙的时候恰恰是 slurm 排队
+最有用的时候。所以检测到 slurm 的节点会直接短路 `pick_placement`，scheduleurm 把任务通过
+`sbatch` 交出去，slurm 自己排队。（本地节点照旧走即时容量门；如果本地和 slurm 都能接，本地
+赢，因为本地立刻起。）
+
 slurm **接管**的：跨用户队列排序、cgroup 内存/CPU 上限、walltime 强制、`--gres` GPU 绑定。
 通过 `sstat`/`sacct` 抓 peak VRAM/RAM 在 v1 没启用 —— slurm 已经强制 declared 上限，所以
 peak ≈ declared。

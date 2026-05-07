@@ -1311,6 +1311,14 @@ def pick_placement(task, nodes):
     def _candidates_for_node(n):
         """Return list of (score, name, gpu_idx) candidates this node can offer (may be empty)."""
         if not n["alive"]: return []
+        # Phase 2.3 P1 fix: slurm-managed nodes defer to slurm's own queue — no local
+        # capacity check. Without this, login nodes with no GPU (probe gpus=[]) or busy
+        # nodes never emit a candidate and the task stays queued in scheduleurm forever,
+        # never reaching sbatch. Score uses 9999 in primary key so any local-fitting
+        # candidate (whose primary keys are 0 or 1) ranks ahead — slurm only wins if no
+        # local node fits OR the task explicitly requires/prefers a slurm node.
+        if not _BACKEND.requires_local_capacity_check(n["name"]):
+            return [((9999,), n["name"], None)]
         node_info = NODES[n["name"]]
         ok, _why = _node_resources_ok(task, n, node_info)
         if not ok: return []
@@ -1637,6 +1645,21 @@ class Backend:
     """
     name = "abstract"
 
+    def requires_local_capacity_check(self, node: str) -> bool:
+        """Should pick_placement gate this node on local CPU/RAM/VRAM availability?
+
+        - LocalBackend → True: scheduleurm IS the placement decider, so we MUST verify
+          the task fits before launching (otherwise it OOMs the host or contends).
+        - SlurmBackend → False: slurm has its own queue. The login node may have no
+          GPU at all (gpus=[] from probe), or all GPUs may be busy with other slurm
+          users — neither of which prevents slurm from accepting and queueing the
+          job. Scheduler must NOT gate slurm submissions on instant local capacity,
+          or jobs would get stuck queued in scheduleurm forever, never reaching sbatch.
+
+        Default True (safe). Phase 2.3 fix.
+        """
+        return True
+
     def launch(self, task: dict) -> tuple[bool, str]:
         """Submit task to its assigned node.
 
@@ -1948,6 +1971,11 @@ class SlurmBackend(Backend):
     which many simple installs lack. v1 keeps it simple: liveness-only probe.
     """
     name = "slurm"
+
+    def requires_local_capacity_check(self, node: str) -> bool:
+        """Slurm has its own queue — scheduler must not gate on local capacity here.
+        See Backend.requires_local_capacity_check docstring."""
+        return False
 
     # Walltime defaults: slurm needs --time, and "no limit" is partition-default which
     # might be only 1 hour on some clusters. We pick a generous floor + EWMA-derived
@@ -2263,6 +2291,12 @@ class HybridBackend(Backend):
         self._local = LocalBackend()
         self._slurm = SlurmBackend()
         self._cache: dict = {}  # node_name -> 'slurm' | 'local'
+
+    def requires_local_capacity_check(self, node: str) -> bool:
+        """Per-node delegation: slurm-detected node → False (slurm queues); else True
+        (LocalBackend's instant-capacity gate). Used by pick_placement to skip the
+        CPU/RAM/VRAM-fits check on slurm nodes (Phase 2.3 P1 fix)."""
+        return self._backend_for(node).requires_local_capacity_check(node)
 
     def _kind_for(self, node: str) -> str:
         if node in self._cache:
@@ -2998,6 +3032,16 @@ def _do_dispatch(state, nodes):
                     reasons.append(f"{n['name']}=DOWN"); continue
                 if n["name"] in (blocked or set()):
                     reasons.append(f"{n['name']}=blocklisted"); continue
+                # Phase 2.3 P1: slurm nodes don't go through local capacity gate, so showing
+                # "GPU0=1/3 mem locked" is misleading (we never probed slurm-side capacity).
+                # If a slurm node is alive + not blocklisted but pick_placement still returned
+                # None, the only legitimate reason is require_node mismatch — surface that.
+                if not _BACKEND.requires_local_capacity_check(n["name"]):
+                    if require and require != n["name"]:
+                        reasons.append(f"{n['name']}=slurm(require!={require})")
+                    else:
+                        reasons.append(f"{n['name']}=slurm(deferred but require/prefer mismatch)")
+                    continue
                 ok_node, why_node = _node_resources_ok(t, n, NODES[n["name"]])
                 if not ok_node:
                     reasons.append(f"{n['name']}={why_node}"); continue

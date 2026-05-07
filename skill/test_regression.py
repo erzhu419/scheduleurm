@@ -2581,6 +2581,147 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_3_bypass_local_capacity():
+    """Phase 2.3 P1 fix: pick_placement must NOT gate slurm nodes on local capacity.
+
+    Bug before fix: pick_placement ran _node_resources_ok + _gpu_fits on every node
+    uniformly. On a real slurm cluster the login node usually has no GPU at all
+    (probe gpus=[]) → no candidate emitted → task stuck queued in scheduleurm forever,
+    NEVER reaching sbatch. Even on a node with GPUs, if all GPUs are currently busy
+    with other slurm users, slurm could queue the job, but pick_placement would refuse.
+
+    Fix: Backend.requires_local_capacity_check(node) — False for slurm-routed nodes.
+    pick_placement short-circuits those: emits a deferred-placement candidate with
+    gpu_idx=None and a 9999 primary score (so any local-fitting candidate wins, but
+    if none fit OR slurm is required/preferred, slurm wins).
+    """
+    print("\n[44] Phase 2.3 pick_placement bypasses local capacity check for slurm nodes")
+
+    # ---------- Hook contract ----------
+    check("Backend has requires_local_capacity_check method",
+          callable(getattr(sch.Backend, "requires_local_capacity_check", None)))
+    # Default is True (LocalBackend semantics)
+    check("LocalBackend.requires_local_capacity_check → True (instant gate)",
+          sch.LocalBackend().requires_local_capacity_check("any-node") is True)
+    check("SlurmBackend.requires_local_capacity_check → False (defer to slurm)",
+          sch.SlurmBackend().requires_local_capacity_check("any-node") is False)
+
+    # HybridBackend: per-node based on cache
+    hb = sch.HybridBackend()
+    hb._cache["fake-slurm"] = "slurm"
+    hb._cache["fake-local"] = "local"
+    check("HybridBackend slurm-cached node → bypass (False)",
+          hb.requires_local_capacity_check("fake-slurm") is False)
+    check("HybridBackend local-cached node → gate (True)",
+          hb.requires_local_capacity_check("fake-local") is True)
+
+    # ---------- Functional: pick_placement on a slurm-only no-GPU login node ----------
+    # Scenario: NODES has just one slurm node ("login") whose probe returned no GPUs
+    # and 0 free CPU. Task is GPU-needing. Under old behavior pick_placement would
+    # return None (no candidate) and the task would be stuck. Under new behavior,
+    # slurm short-circuits and returns ("login", None) — sbatch will queue it.
+    saved_backend = sch._BACKEND
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["login"] = "slurm"
+    sch._BACKEND = fake_hb
+    try:
+        nodes = [{"name": "login", "alive": True, "gpus": [], "free_cpu": 0,
+                  "free_ram_mb": 0, "loadavg": 5.0}]
+        # Need NODES to have an entry for "login" since pick_placement looks up node_info
+        # for the local-capacity branch — but our slurm short-circuit returns BEFORE that
+        # lookup. Still, _gpu_fits / _node_resources_ok would crash on a missing entry,
+        # so verify the short-circuit really skips them.
+        task = {"id": "tslurm", "est_vram_mb": 4000, "cpu_cores": 4, "ram_mb": 8000,
+                "signature": "TEST/slurm-bypass"}
+        placement = sch.pick_placement(task, nodes)
+        check("slurm-only login node with no GPU still returns a placement",
+              placement is not None, diag=f"got {placement}")
+        check("placement returns (slurm-node, None) — slurm picks the GPU itself",
+              placement == ("login", None), diag=f"got {placement}")
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- Functional: local-fits AND slurm-available → local wins ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["local-box"] = "local"
+    fake_hb._cache["cluster"] = "slurm"
+    sch._BACKEND = fake_hb
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "local-box": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None},
+        "cluster": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None},
+    }
+    try:
+        nodes = [
+            {"name": "local-box", "alive": True, "loadavg": 1.0, "free_cpu": 8,
+             "free_ram_mb": 20000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 200, "total_mb": 8000, "free_mb": 7800,
+                       "util_pct": 10}]},
+            {"name": "cluster", "alive": True, "loadavg": 0.0, "free_cpu": 0,
+             "free_ram_mb": 0, "running_count": 0, "gpus": []},
+        ]
+        task = {"id": "tboth", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
+                "signature": "TEST/local-vs-slurm"}
+        placement = sch.pick_placement(task, nodes)
+        check("when local fits AND slurm available → local wins (immediate > queued)",
+              placement is not None and placement[0] == "local-box",
+              diag=f"got {placement}")
+        check("local-wins placement returns gpu_idx (not None)",
+              placement and placement[1] == 0, diag=f"got {placement}")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
+
+    # ---------- Functional: --require-node = slurm node → must use slurm even if local fits ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["local-box"] = "local"
+    fake_hb._cache["cluster"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.NODES = {
+        "local-box": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None},
+        "cluster": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None},
+    }
+    try:
+        nodes = [
+            {"name": "local-box", "alive": True, "loadavg": 1.0, "free_cpu": 8,
+             "free_ram_mb": 20000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 200, "total_mb": 8000, "free_mb": 7800,
+                       "util_pct": 10}]},
+            {"name": "cluster", "alive": True, "loadavg": 0.0, "free_cpu": 0,
+             "free_ram_mb": 0, "running_count": 0, "gpus": []},
+        ]
+        task = {"id": "treq", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
+                "signature": "TEST/require-slurm",
+                "require_node": "cluster"}
+        placement = sch.pick_placement(task, nodes)
+        check("require_node=cluster → pick cluster even when local-box also fits",
+              placement == ("cluster", None), diag=f"got {placement}")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
+
+    # ---------- Source-level guard: requires_local_capacity_check is consulted in pick_placement ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("pick_placement source consults _BACKEND.requires_local_capacity_check",
+          "_BACKEND.requires_local_capacity_check" in src)
+    # The bypass branch must come BEFORE _node_resources_ok call inside _candidates_for_node
+    # (otherwise we'd still gate on local capacity). Check by finding both and asserting order.
+    pp_idx = src.find("def pick_placement")
+    bypass_idx = src.find("requires_local_capacity_check", pp_idx)
+    nrok_idx = src.find("_node_resources_ok(task, n, node_info)", pp_idx)
+    check("bypass branch precedes _node_resources_ok call inside pick_placement",
+          0 < bypass_idx < nrok_idx,
+          diag=f"bypass_idx={bypass_idx}, nrok_idx={nrok_idx}")
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -2642,6 +2783,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2()
     test_backend_slurm_phase2_1_sstat()
     test_backend_slurm_phase2_2_adopt_skip()
+    test_backend_slurm_phase2_3_bypass_local_capacity()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

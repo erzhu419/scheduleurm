@@ -142,6 +142,14 @@ history estimation, automatic resume-from-checkpoint flag injection, cross-task 
 conflict detection, env-deploy (docker/conda) wrapping, MCP/skill UI, auto-adoption of
 externally-launched processes.
 
+**Slurm nodes bypass scheduleurm's local capacity gate.** scheduleurm's normal `dispatch`
+runs `probe_node` and refuses placement when CPU/RAM/VRAM doesn't fit instantly — that's the
+right thing for `LocalBackend` (we ARE the placement decider). For slurm nodes it would be
+catastrophically wrong: the login node usually has no GPU, and busy clusters are exactly
+when slurm's queue earns its keep. So slurm-detected nodes short-circuit `pick_placement` —
+scheduleurm hands the task off via `sbatch` and slurm queues it. (Local nodes still get the
+instant-fit gate; if both local and slurm can take a task, local wins because it starts now.)
+
 What slurm owns when present: queue ordering across users, cgroup-based memory/CPU caps,
 walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `sstat`/`sacct`
 isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.

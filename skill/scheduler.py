@@ -5488,10 +5488,19 @@ def cmd_rebalance_pending(args):
     Use case: after editing SLURM_MAX_PENDING_PER_NODE / NODES[name].max_slurm_pending
     or during a policy migration, to re-distribute already-sbatched-but-not-yet-running
     tasks. Safe to run anytime — RUNNING tasks won't be killed.
+
+    Phase 3.0.13 P3 fix: split into 3 phases so the slow scancel+squeue ssh round-trip
+    happens OUTSIDE state_lock. Pre-fix this loop held the lock for ~5s per candidate;
+    a 20-task batch blocked submit/cancel/status/watcher iterations for ~100s. Now:
+      Phase 1 (short lock) — load state, snapshot candidates.
+      Phase 2 (NO LOCK)    — pre-check slurm state, scancel, post-verify per candidate.
+      Phase 3 (short lock) — re-load state, defensive recheck (status/jid/slurm_state
+                              unchanged), commit clears + requeues.
     """
+    # Phase 1: identify (short lock).
     with state_lock():
         state = load_state()
-        candidates = []
+        candidates_snapshot = []
         for t in state["tasks"]:
             if t.get("status") != "running":
                 continue
@@ -5499,90 +5508,139 @@ def cmd_rebalance_pending(args):
                 continue
             if t.get("slurm_state") not in _SLURM_PENDING_LIKE:
                 continue
-            candidates.append(t)
+            candidates_snapshot.append({
+                "id": t["id"],
+                "jid": int(t["slurm_job_id"]),
+                "node": t["node"],
+                "signature": t.get("signature"),
+                "slurm_state": t.get("slurm_state"),
+            })
 
-        if not candidates:
-            print("no slurm-pending tasks to rebalance")
-            return
+    if not candidates_snapshot:
+        print("no slurm-pending tasks to rebalance")
+        return
 
-        if not args.yes:
-            print(f"would rebalance {len(candidates)} task(s) (scancel + revert to queued):")
-            for t in candidates[:15]:
-                print(f"  {t['id']}: jid={t['slurm_job_id']} on {t['node']}  "
-                      f"state={t.get('slurm_state') or 'NEW'}  sig={t.get('signature')}")
-            if len(candidates) > 15:
-                print(f"  ... and {len(candidates) - 15} more")
-            print("RUNNING / COMPLETING tasks are NOT touched.")
-            print("Re-run with --yes to proceed.")
-            return
+    if not args.yes:
+        print(f"would rebalance {len(candidates_snapshot)} task(s) (scancel + revert to queued):")
+        for c in candidates_snapshot[:15]:
+            print(f"  {c['id']}: jid={c['jid']} on {c['node']}  "
+                  f"state={c.get('slurm_state') or 'NEW'}  sig={c.get('signature')}")
+        if len(candidates_snapshot) > 15:
+            print(f"  ... and {len(candidates_snapshot) - 15} more")
+        print("RUNNING / COMPLETING tasks are NOT touched.")
+        print("Re-run with --yes to proceed.")
+        return
 
-        rebalanced = 0
-        skipped_scancel_failed = []
-        for t in candidates:
-            jid = int(t["slurm_job_id"])
-            node = t["node"]
-            # Phase 3.0.7 P1 fix: scancel + VERIFY the job actually left slurm's queue
-            # before clearing slurm_job_id and re-queueing.
-            #
-            # Pre-fix: if scancel rc != 0 (ssh blip, slurm RPC failure, partial outage)
-            # we still cleared slurm_job_id and flipped status=queued. Next dispatch saw
-            # a queued task and sbatched AGAIN — slurm now had TWO jobs running the same
-            # workload. Violates the "同一个任务不会跑多次" invariant.
-            #
-            # Now: scancel + sleep 1.5s + squeue check. Only clear + requeue when slurm
-            # confirms the job is terminal (COMPLETED/CANCELLED/FAILED/etc.) OR absent
-            # from squeue. Otherwise leave the task untouched (status=running, slurm_job_id
-            # intact) and report the failure so the user can intervene.
-            cancelled = False
-            scancel_msg = ""
-            try:
-                rc, _, err = run_on(node, f"scancel {int(jid)}", timeout=10, check=False)
-                if rc != 0:
-                    scancel_msg = f"scancel rc={rc}: {err.strip()[:120]}"
-            except Exception as e:
-                scancel_msg = f"scancel exception: {str(e)[:120]}"
+    # Phase 2: scancel + verify (NO LOCK held). Slow ssh ops here.
+    # Phase 3.0.7 P1 invariant: only mark cancelled=True if slurm confirms terminal/gone.
+    # Phase 3.0.13: pre-scancel state check — the outside-lock window widens the race
+    # where slurm transitions PENDING→RUNNING; never scancel a RUNNING/COMPLETING task.
+    ALIVE_STATES = _SLURM_PENDING_LIKE | {"RUNNING", "COMPLETING"}
+    results = []  # [(tid, jid, cancelled, msg)]
+    for c in candidates_snapshot:
+        tid, jid, node = c["id"], c["jid"], c["node"]
+        # Pre-check: if slurm has already moved this job, decide without scancel.
+        pre_decided = False
+        try:
+            rc0, out0, _ = run_on(
+                node,
+                f"squeue -h -j {int(jid)} -t all -o '%T' 2>/dev/null",
+                timeout=10, check=False,
+            )
+            if rc0 == 0:
+                pre_state = (out0 or "").strip().splitlines()
+                pre_state = pre_state[0].strip().upper() if pre_state else ""
+                if pre_state in ("RUNNING", "COMPLETING"):
+                    results.append((tid, jid, False,
+                                    f"transitioned to {pre_state} during rebalance "
+                                    f"window; left in place"))
+                    pre_decided = True
+                elif pre_state and pre_state not in ALIVE_STATES:
+                    results.append((tid, jid, True,
+                                    f"already {pre_state} (no scancel needed)"))
+                    pre_decided = True
+                elif not pre_state:
+                    results.append((tid, jid, True,
+                                    "already gone from squeue (no scancel needed)"))
+                    pre_decided = True
+                # else: pre_state in PENDING_LIKE → fall through to scancel
+        except Exception:
+            pass  # squeue check failed → still try scancel
+        if pre_decided:
+            continue
 
-            # Verify regardless of scancel rc — even rc=0 is no guarantee the job left
-            # slurm's queue (scancel is async; slurm may take a few seconds to act).
-            time.sleep(1.5)
-            ALIVE_STATES = _SLURM_PENDING_LIKE | {"RUNNING", "COMPLETING"}
-            try:
-                rc2, out2, _ = run_on(
-                    node,
-                    f"squeue -h -j {int(jid)} -t all -o '%T' 2>/dev/null",
-                    timeout=10, check=False,
-                )
-                if rc2 == 0:
-                    state_str = (out2 or "").strip().splitlines()
-                    state_str = state_str[0].strip().upper() if state_str else ""
-                    if not state_str:
-                        cancelled = True  # job not in squeue → fully gone
-                    elif state_str not in ALIVE_STATES:
-                        cancelled = True  # terminal state → safe to clear
-                    else:
-                        cancelled = False  # still alive in slurm — DO NOT clear
-                        if not scancel_msg:
-                            scancel_msg = f"slurm still reports state={state_str} after scancel"
+        cancelled = False
+        scancel_msg = ""
+        try:
+            rc, _, err = run_on(node, f"scancel {int(jid)}", timeout=10, check=False)
+            if rc != 0:
+                scancel_msg = f"scancel rc={rc}: {err.strip()[:120]}"
+        except Exception as e:
+            scancel_msg = f"scancel exception: {str(e)[:120]}"
+        # Verify regardless of scancel rc — scancel is async; slurm may take a few
+        # seconds to act.
+        time.sleep(1.5)
+        try:
+            rc2, out2, _ = run_on(
+                node,
+                f"squeue -h -j {int(jid)} -t all -o '%T' 2>/dev/null",
+                timeout=10, check=False,
+            )
+            if rc2 == 0:
+                state_str = (out2 or "").strip().splitlines()
+                state_str = state_str[0].strip().upper() if state_str else ""
+                if not state_str:
+                    cancelled = True
+                elif state_str not in ALIVE_STATES:
+                    cancelled = True
                 else:
-                    # squeue check itself failed — be conservative, don't clear
                     cancelled = False
                     if not scancel_msg:
-                        scancel_msg = f"post-scancel verify: squeue rc={rc2}"
-            except Exception as e:
+                        scancel_msg = f"slurm still reports state={state_str} after scancel"
+            else:
                 cancelled = False
                 if not scancel_msg:
-                    scancel_msg = f"post-scancel verify exception: {str(e)[:120]}"
+                    scancel_msg = f"post-scancel verify: squeue rc={rc2}"
+        except Exception as e:
+            cancelled = False
+            if not scancel_msg:
+                scancel_msg = f"post-scancel verify exception: {str(e)[:120]}"
+        results.append((tid, jid, cancelled, scancel_msg or "verified cancelled"))
 
+    # Phase 3: commit (short lock). Defensive recheck — task may have transitioned
+    # during the outside-lock window. Watcher's update_running_tasks could have
+    # flipped slurm_state PENDING→RUNNING, or user could have cancelled the task.
+    rebalanced = 0
+    skipped_scancel_failed = []
+    skipped_state_changed = []
+    with state_lock():
+        state = load_state()
+        by_id = {t["id"]: t for t in state["tasks"]}
+        for tid, jid, cancelled, msg in results:
+            t = by_id.get(tid)
+            if not t:
+                skipped_state_changed.append((tid, "task gone from state"))
+                continue
+            if t.get("status") != "running":
+                skipped_state_changed.append((tid, f"status now {t.get('status')!r}"))
+                continue
+            if str(t.get("slurm_job_id") or "") != str(jid):
+                skipped_state_changed.append((tid, "slurm_job_id changed"))
+                continue
+            if t.get("slurm_state") not in _SLURM_PENDING_LIKE:
+                # Watcher saw the job transition (e.g., PENDING→RUNNING) during our
+                # outside-lock window. Even if our scancel reported cancelled=True
+                # we leave the task alone — operator should investigate.
+                skipped_state_changed.append((tid,
+                    f"slurm_state now {t.get('slurm_state')!r}"))
+                continue
             if not cancelled:
-                # Leave task as-is. Record why we skipped so user can act.
-                skipped_scancel_failed.append((t["id"], jid, scancel_msg))
+                skipped_scancel_failed.append((tid, jid, msg))
                 t["last_block_reason"] = (
-                    f"rebalance-pending SKIPPED for jid={jid}: {scancel_msg}; "
+                    f"rebalance-pending SKIPPED for jid={jid}: {msg}; "
                     f"task left in place to avoid duplicate sbatch"
                 )
                 continue
-
-            # scancel verified → safe to clear + requeue
             for k in ("slurm_job_id", "slurm_state", "started_at", "finished_at",
                       "log_path", "_diagnosis", "process_group", "launching_started_at"):
                 t[k] = None
@@ -5590,20 +5648,25 @@ def cmd_rebalance_pending(args):
             t["alive_pids"] = []
             t["status"] = "queued"
             t["last_block_reason"] = (
-                f"rebalance-pending: scancelled slurm job {jid} on {node} "
-                f"(verified terminal); will re-dispatch under current policy"
+                f"rebalance-pending: scancelled slurm job {jid} on {t.get('node') or '?'} "
+                f"({msg}); will re-dispatch under current policy"
             )
             rebalanced += 1
-
         save_state(state)
-        print(f"rebalanced {rebalanced} task(s) — back to queued for re-dispatch")
-        if skipped_scancel_failed:
-            print(f"\nWARN: {len(skipped_scancel_failed)} scancel(s) NOT verified — "
-                  f"those tasks LEFT IN PLACE to avoid duplicate sbatch:")
-            for tid, jid, why in skipped_scancel_failed[:5]:
-                print(f"  {tid} jid={jid}: {why}")
-            print("Manual recovery: run `squeue -j <jid>` on each, scancel by hand, "
-                  "re-run rebalance-pending. Or wait for the orphan to time out at walltime.")
+
+    print(f"rebalanced {rebalanced} task(s) — back to queued for re-dispatch")
+    if skipped_scancel_failed:
+        print(f"\nWARN: {len(skipped_scancel_failed)} scancel(s) NOT verified — "
+              f"those tasks LEFT IN PLACE to avoid duplicate sbatch:")
+        for tid, jid, why in skipped_scancel_failed[:5]:
+            print(f"  {tid} jid={jid}: {why}")
+        print("Manual recovery: run `squeue -j <jid>` on each, scancel by hand, "
+              "re-run rebalance-pending. Or wait for the orphan to time out at walltime.")
+    if skipped_state_changed:
+        print(f"\nINFO: {len(skipped_state_changed)} task(s) transitioned during "
+              f"rebalance and were left untouched:")
+        for tid, why in skipped_state_changed[:5]:
+            print(f"  {tid}: {why}")
 
 
 def cmd_install_slurm(args):

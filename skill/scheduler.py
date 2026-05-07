@@ -3120,6 +3120,20 @@ MIGRATION_COOLDOWN_S = int(os.environ.get("SCHEDULEURM_MIGRATION_COOLDOWN_S", "1
 # the next migration is considered, short enough that genuine imbalance still gets
 # rebalanced within an hour.
 
+MIGRATION_MIN_SOURCE_LOAD_S = int(os.environ.get("SCHEDULEURM_MIGRATION_MIN_SOURCE_LOAD_S", "600"))
+# Phase 3.0.14 P4 fix: don't migrate when the "overloaded" node only has a few
+# seconds of work. The pre-fix LOAD_RATIO=2x check was satisfied by trivial
+# imbalances (target=0s, source=2s → ratio=2.0 → migrate a 600s task to save 2s).
+# A real "overloaded" node should hold at least 10 minutes of pinned ETA. Below
+# that, the rsync staging cost exceeds the saving — let it drain naturally.
+
+MIGRATION_MAX_CWD_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CWD_SIZE_MB", "1024"))
+# Phase 3.0.14 P4 fix: cap the size of cwd that we'll rsync during migration
+# staging. MIGRATION_MAX_CKPT_SIZE_MB only bounded ckpt; cwd was unbounded so a
+# monorepo cwd (5GB+) could blow through the 600s rsync timeout and starve the
+# staging path. Default 1GB excludes .git/__pycache__/*.pyc (mirroring rsync's
+# excludes), which catches typical code dirs (≤100MB) with comfortable headroom.
+
 
 def compute_node_load_seconds(state: dict) -> dict:
     """Phase 3.0.2: per-node load = sum of eta_seconds of in-flight tasks pinned to
@@ -3233,6 +3247,28 @@ def _stage_for_migration(task: dict, target_node: str,
                         f"cwd missing on {target_node} and rsync remote→remote not "
                         f"yet supported (src={src_host}, tgt={tgt_host}); user must "
                         f"sync code manually OR via shared NFS")
+            # Phase 3.0.14 P4 fix: cap cwd size before rsync, mirror the ckpt cap.
+            # Excludes match the rsync excludes below so the size is the actual
+            # transfer size — unbounded cwd was a 600s timeout / starvation risk.
+            cwd_size_mb = 0
+            if source_node:
+                try:
+                    rc_du, out_du, _ = run_on(
+                        source_node,
+                        f"du -sm --exclude=.git --exclude=__pycache__ "
+                        f"--exclude='*.pyc' {shlex.quote(cwd)} 2>/dev/null | "
+                        f"awk '{{print $1}}'",
+                        timeout=15, check=False,
+                    )
+                    if rc_du == 0 and out_du.strip().isdigit():
+                        cwd_size_mb = int(out_du.strip())
+                except Exception:
+                    cwd_size_mb = 0
+            if cwd_size_mb > MIGRATION_MAX_CWD_SIZE_MB:
+                return (False,
+                        f"cwd {cwd} is {cwd_size_mb}MB > max "
+                        f"{MIGRATION_MAX_CWD_SIZE_MB}MB; migration aborted "
+                        f"(rsync would risk hitting the 600s timeout)")
             try:
                 import subprocess as _sp
                 r = _sp.run(["rsync", "-az", "--partial",
@@ -3395,6 +3431,11 @@ def _identify_migration_candidates(state: dict, nodes: list,
     if target_load >= MIGRATION_FREE_THRESHOLD_S:
         return []
     if source_load < MIGRATION_LOAD_RATIO * max(target_load, 1):
+        return []
+    # Phase 3.0.14 P4 fix: even a satisfied load-ratio is meaningless when the
+    # "overloaded" source actually holds only a few seconds of work — rsync cost
+    # would exceed any saving. Require a minimum absolute load on source.
+    if source_load < MIGRATION_MIN_SOURCE_LOAD_S:
         return []
 
     candidates = []
@@ -3559,6 +3600,11 @@ def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) 
         return []  # target not really free
     if source_load < MIGRATION_LOAD_RATIO * max(target_load, 1):
         return []  # not imbalanced enough
+    # Phase 3.0.14 P4 fix: absolute floor on source load. Mirrors the identify-
+    # side gate so a trivially-loaded source (target=0s, source=2s, ratio=2.0
+    # passes) doesn't trigger migration of a 600s task to save 2s of source load.
+    if source_load < MIGRATION_MIN_SOURCE_LOAD_S:
+        return []
 
     # Find candidates: queued tasks with soft pin to source, no hard pin
     candidates = []

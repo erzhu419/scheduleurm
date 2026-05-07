@@ -8133,6 +8133,209 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
         sch.probe_node = saved_probe_node
 
 
+def test_phase3_3_local_windows_host_metrics():
+    """Phase 3.3: WSL2 `local` probe surfaces Windows-host metrics
+    (free RAM + DXGI Compute-engine util) so TUI numbers match what users
+    see in Task Manager.
+
+    The discrepancy: WSL2 sees ~1GB MemAvailable inside its 30GB-cap VM,
+    while the host has 17GB+ free in a 64GB pool. Similarly nvidia-smi's
+    NVML utilization.gpu reads ~10% during RL bursts while Task Manager's
+    Compute engine shows 90%+. Both numbers are correct for their model;
+    showing both prevents user confusion and surfaces the right number for
+    each mental model (placement decisions still use the WSL/NVML view).
+    """
+    print("\n[98] Phase 3.3: local probe surfaces Windows-host RAM + DXGI Compute util")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_probe_windows_host_extras helper exists",
+          "def _probe_windows_host_extras" in src)
+    check("helper queries Win32_OperatingSystem for free/total physical memory",
+          "Win32_OperatingSystem" in src
+          and "FreePhysicalMemory" in src
+          and "TotalVisibleMemorySize" in src)
+    check("helper queries DXGI Compute engine counter (matches Task Manager)",
+          "GPU Engine" in src
+          and "engtype_Compute" in src)
+    check("probe_node folds extras ONLY for `local` node (WSL-only path)",
+          'if name == "local":' in src
+          and "_probe_windows_host_extras()" in src)
+    check("extras land on host_free_ram_mb / host_total_ram_mb / per-GPU util_pct_compute",
+          'host_free_ram_mb' in src
+          and 'host_total_ram_mb' in src
+          and 'util_pct_compute' in src)
+    check("TUI _node_summary_line displays WSL / host RAM side-by-side",
+          'WSL' in open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read()
+          and 'host' in open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read())
+    tui_src = open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read()
+    check("TUI shows both NVML and Compute util when both available",
+          "nvml/compute" in tui_src or "util_pct_compute" in tui_src)
+
+    # 2. Behavioral: helper returns parsed extras when PowerShell succeeds.
+    saved_run = sch.subprocess.run
+    saved_path_exists = sch.Path.exists
+
+    class FakeRun:
+        def __init__(self, stdout):
+            self.returncode = 0
+            self.stdout = stdout
+            self.stderr = ""
+    captured_cmds = []
+    def fake_pwsh_ok(cmd, capture_output=True, text=True, timeout=None):
+        captured_cmds.append(cmd)
+        # Simulate PowerShell return: "free|total|gpu_pct"
+        return FakeRun("17500|65536|94\n")
+    # Path.exists check on /mnt/c... for powershell binary
+    sch.Path.exists = lambda self: True
+    sch.subprocess.run = fake_pwsh_ok
+    try:
+        out = sch._probe_windows_host_extras()
+        check("helper: parses host_free_ram_mb",
+              out.get("host_free_ram_mb") == 17500, diag=str(out))
+        check("helper: parses host_total_ram_mb",
+              out.get("host_total_ram_mb") == 65536, diag=str(out))
+        check("helper: parses gpu_compute_util_pct",
+              out.get("gpu_compute_util_pct") == 94, diag=str(out))
+        check("helper: invocation passed -NoProfile -NonInteractive",
+              any("-NoProfile" in arg for arg in captured_cmds[0])
+              and any("-NonInteractive" in arg for arg in captured_cmds[0]))
+        check("helper: invocation queries DXGI Compute engine counter",
+              any("engtype_Compute" in arg for arg in captured_cmds[0]))
+
+        # 2b. Garbage output → returns {} instead of crashing.
+        sch.subprocess.run = lambda *a, **kw: FakeRun("nope")
+        out = sch._probe_windows_host_extras()
+        check("helper: garbage output → empty dict (no crash)",
+              out == {})
+
+        # 2c. PowerShell rc != 0 → returns {}.
+        class FakeRunBad:
+            returncode = 1
+            stdout = ""
+            stderr = "access denied"
+        sch.subprocess.run = lambda *a, **kw: FakeRunBad()
+        out = sch._probe_windows_host_extras()
+        check("helper: rc != 0 → empty dict",
+              out == {})
+
+        # 2d. Subprocess timeout → returns {}.
+        def fake_timeout(*a, **kw):
+            raise sch.subprocess.TimeoutExpired(cmd="powershell", timeout=4)
+        sch.subprocess.run = fake_timeout
+        out = sch._probe_windows_host_extras()
+        check("helper: subprocess timeout → empty dict (best-effort)",
+              out == {})
+
+        # 2e. powershell.exe missing → returns {} without invoking subprocess.
+        sch.Path.exists = lambda self: False
+        called = [0]
+        def count_calls(*a, **kw):
+            called[0] += 1
+            return FakeRun("ignored")
+        sch.subprocess.run = count_calls
+        out = sch._probe_windows_host_extras()
+        check("helper: powershell.exe missing → empty dict, no subprocess invoked",
+              out == {} and called[0] == 0)
+    finally:
+        sch.subprocess.run = saved_run
+        sch.Path.exists = saved_path_exists
+
+    # 3. probe_node integration: for `local`, the result includes host_*.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    saved_extras = sch._probe_windows_host_extras
+    sch.NODES = {"local": {"host": None, "cpu_cores": 12, "ram_mb": 30000,
+                            "ram_headroom_frac": 0.10}}
+    # Stub run_on so probe_node returns a normal probe; then the integration
+    # appends Windows extras.
+    sch.run_on = lambda node, cmd, **kw: (0,
+        ("0, 100, 8000, 7900, 50\n"  # GPU0 line
+         "===SEP===\n"
+         "20000\n30000\n"            # MemAvailable / MemTotal in MB
+         "===SEP===\n"
+         "12\n"                       # nproc
+         "===SEP===\n"
+         "1.5\n"                      # loadavg
+         "===SEP===\n"
+         "0, 50\n---SAMPLE---\n0, 50\n---SAMPLE---\n"  # extra util samples
+        ), "")
+    sch._probe_windows_host_extras = lambda: {
+        "host_free_ram_mb": 17500,
+        "host_total_ram_mb": 65536,
+        "gpu_compute_util_pct": 88,
+    }
+    try:
+        n = sch.probe_node("local")
+        check("probe_node(local): host_free_ram_mb folded in",
+              n.get("host_free_ram_mb") == 17500)
+        check("probe_node(local): host_total_ram_mb folded in",
+              n.get("host_total_ram_mb") == 65536)
+        check("probe_node(local): util_pct_compute attached to each GPU",
+              all(g.get("util_pct_compute") == 88 for g in n["gpus"]),
+              diag=str(n["gpus"]))
+        # WSL-side ram_free still reflects /proc/meminfo (placement decisions
+        # use this, NOT the host value).
+        check("probe_node(local): WSL free_ram_mb still reflects /proc/meminfo",
+              n.get("free_ram_mb") == 20000)
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+        sch._probe_windows_host_extras = saved_extras
+
+    # 4. probe_node for non-local nodes does NOT call the Windows helper.
+    extras_called = [0]
+    sch._probe_windows_host_extras = lambda: (
+        extras_called.__setitem__(0, extras_called[0] + 1)
+        or {"host_free_ram_mb": 99999})
+    sch.NODES = {"remote": {"host": "rbox", "cpu_cores": 12, "ram_mb": 32000,
+                             "ram_headroom_frac": 0.10}}
+    sch.run_on = lambda node, cmd, **kw: (0,
+        ("0, 100, 8000, 7900, 50\n===SEP===\n20000\n30000\n===SEP===\n"
+         "12\n===SEP===\n1.5\n===SEP===\n0, 50\n---SAMPLE---\n"), "")
+    try:
+        n = sch.probe_node("remote")
+        check("probe_node(non-local): does NOT invoke Windows helper",
+              extras_called[0] == 0,
+              diag=f"helper called {extras_called[0]} times")
+        check("probe_node(non-local): no host_* keys in result",
+              "host_free_ram_mb" not in n
+              and "host_total_ram_mb" not in n)
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+        sch._probe_windows_host_extras = saved_extras
+
+    # 5. TUI _node_summary_line uses both host + WSL when present.
+    from tui import _node_summary_line
+    n_with_extras = {
+        "name": "local", "alive": True,
+        "free_cpu": 7, "total_cpu": 12, "loadavg": 5.0,
+        "free_ram_mb": 1230, "host_free_ram_mb": 17500,
+        "gpus": [{"idx": 0, "used_mb": 800, "total_mb": 8000,
+                    "free_mb": 7200, "util_pct": 10, "util_pct_compute": 88}],
+    }
+    line = _node_summary_line([n_with_extras])
+    check("TUI line shows BOTH WSL and host RAM",
+          "1230MB(WSL)" in line and "17500MB(host)" in line, diag=line)
+    check("TUI line shows BOTH NVML and Compute util",
+          "10/88%util(nvml/compute)" in line, diag=line)
+
+    # 6. TUI line gracefully omits host info when extras unavailable.
+    n_no_extras = {
+        "name": "remote", "alive": True,
+        "free_cpu": 12, "total_cpu": 12, "loadavg": 0.5,
+        "free_ram_mb": 100000,
+        "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 12000,
+                    "free_mb": 12000, "util_pct": 0}],
+    }
+    line2 = _node_summary_line([n_no_extras])
+    check("TUI line omits (host) tag when no host_free_ram_mb",
+          "(WSL)" not in line2 and "(host)" not in line2, diag=line2)
+    check("TUI line omits (nvml/compute) tag when no util_pct_compute",
+          "nvml/compute" not in line2, diag=line2)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -10663,6 +10866,7 @@ if __name__ == "__main__":
     test_phase3_2_1_claim_lifecycle_in_dispatch()
     test_phase3_2_2_probe_folds_pending_claims()
     test_phase3_2_3_concurrent_schedulers_only_one_wins()
+    test_phase3_3_local_windows_host_metrics()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -4513,6 +4513,137 @@ def test_phase3_0_18_probe_all_outside_lock():
         sch._identify_migration_candidates = saved_identify
 
 
+def test_phase3_0_19_staging_failure_cooldown_unblocks_later_candidates():
+    """Phase 3.0.19 P3 fix: a permanent staging failure on the first
+    max_candidates picks must NOT permanently starve the rest of the queue.
+
+    Pre-fix: _identify_migration_candidates always returned the same first 2
+    entries (sorted by eta ascending). If both had permanent failures (ckpt >
+    cap, env missing on target, remote→remote refuse), candidates 3+ never
+    got their staging slot — permanent starvation.
+
+    Now: each failed staging attempt records (task_id, target) in
+    _STAGING_FAILED with timestamp. Next identify pass skips tagged pairs so
+    later candidates are exposed. Failures TTL out via
+    STAGING_FAIL_COOLDOWN_S — transient blips and user-fixed issues recover
+    automatically.
+    """
+    print("\n[76] Phase 3.0.19 P3 fix: staging failure cooldown unblocks starved candidates")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("STAGING_FAIL_COOLDOWN_S env-overridable constant exists",
+          "STAGING_FAIL_COOLDOWN_S = int(os.environ.get(" in src
+          and "SCHEDULEURM_STAGING_FAIL_COOLDOWN_S" in src)
+    check("_STAGING_FAILED dict + helpers exist",
+          "_STAGING_FAILED: dict" in src
+          and "def _staging_recently_failed" in src
+          and "def _record_staging_failure" in src)
+    iden_idx = src.find("def _identify_migration_candidates")
+    iden_end = src.find("\ndef ", iden_idx + 5)
+    iden_body = src[iden_idx:iden_end]
+    check("_identify_migration_candidates skips recently-failed (id,target) pairs",
+          "_staging_recently_failed" in iden_body)
+    stage_outer_idx = src.find("def _stage_migration_candidates_outside_lock")
+    stage_outer_end = src.find("\ndef ", stage_outer_idx + 5)
+    stage_outer_body = src[stage_outer_idx:stage_outer_end]
+    check("staging outside-lock records failure on `not ok` AND on exception",
+          stage_outer_body.count("_record_staging_failure") >= 2)
+
+    # 2. Helper unit tests.
+    saved_failed = dict(sch._STAGING_FAILED)
+    sch._STAGING_FAILED.clear()
+    try:
+        sch._record_staging_failure("tA", "tgt")
+        check("_record_staging_failure + _staging_recently_failed: fresh tag → True",
+              sch._staging_recently_failed("tA", "tgt") is True)
+        check("_staging_recently_failed: untagged (id,target) → False",
+              sch._staging_recently_failed("tA", "other") is False)
+        # Force expiration — past cooldown.
+        sch._STAGING_FAILED[("tStale", "tgt")] = time.time() - sch.STAGING_FAIL_COOLDOWN_S - 60
+        check("_staging_recently_failed: expired tag → False (and popped)",
+              sch._staging_recently_failed("tStale", "tgt") is False
+              and ("tStale", "tgt") not in sch._STAGING_FAILED)
+        # LRU eviction when at cap.
+        sch._STAGING_FAILED.clear()
+        for i in range(sch._STAGING_FAILED_MAX):
+            sch._STAGING_FAILED[(f"t{i}", "tgt")] = time.time() - i  # older → smaller ts
+        before = len(sch._STAGING_FAILED)
+        sch._record_staging_failure("tNew", "tgt")
+        check("_record_staging_failure evicts ~25% when full",
+              len(sch._STAGING_FAILED) < before)
+        check("freshly-recorded tag survives the LRU pass",
+              ("tNew", "tgt") in sch._STAGING_FAILED)
+    finally:
+        sch._STAGING_FAILED.clear()
+        sch._STAGING_FAILED.update(saved_failed)
+
+    # 3. Behavioral: identify excludes failure-tagged candidates and exposes
+    # the next eligible task in queue.
+    saved_NODES = sch.NODES
+    saved_blocked = sch._blocked_nodes_for_task
+    saved_launch_failed = sch._launch_failed_nodes_for_task
+    saved_failed = dict(sch._STAGING_FAILED)
+    sch.NODES = {"loaded": {"name": "loaded"}, "free": {"name": "free"}}
+    sch._blocked_nodes_for_task = lambda task: set()
+    sch._launch_failed_nodes_for_task = lambda task: set()
+    sch._STAGING_FAILED.clear()
+    try:
+        eta_min = sch.MIGRATION_MIN_TASK_ETA_S
+        # Three candidates with identical eta → submitted_at decides tie. Tag
+        # the first two as recently-failed. Identify must surface only t3.
+        running_a = {"id": "rA", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        t1 = {"id": "t1", "status": "queued", "preferred_node": "loaded",
+              "eta_seconds": eta_min, "submitted_at": time.time(),
+              "priority": "normal"}
+        t2 = {"id": "t2", "status": "queued", "preferred_node": "loaded",
+              "eta_seconds": eta_min, "submitted_at": time.time() + 1,
+              "priority": "normal"}
+        t3 = {"id": "t3", "status": "queued", "preferred_node": "loaded",
+              "eta_seconds": eta_min, "submitted_at": time.time() + 2,
+              "priority": "normal"}
+        state = {"tasks": [running_a, t1, t2, t3]}
+        nodes = [
+            {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 1,
+             "slurm_pending_count": 0},
+            {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+             "slurm_pending_count": 0},
+        ]
+
+        # Baseline: no failures recorded → identify returns t1 + t2 (max_candidates=2).
+        ids_baseline = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state, nodes, max_candidates=2)]
+        check("baseline (no failures): identify returns first 2 candidates t1,t2",
+              ids_baseline == ["t1", "t2"], diag=f"got {ids_baseline}")
+
+        # Tag t1 and t2 as recently failed → identify exposes t3.
+        sch._record_staging_failure("t1", "free")
+        sch._record_staging_failure("t2", "free")
+        ids_starved = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state, nodes, max_candidates=2)]
+        check("after tagging t1,t2 failed → identify exposes t3 (no starvation)",
+              "t3" in ids_starved
+              and "t1" not in ids_starved
+              and "t2" not in ids_starved,
+              diag=f"got {ids_starved}")
+
+        # Tag is per-(task,target). Same tasks pinned to a different target
+        # would NOT be skipped — only this specific (task, target) pair is gated.
+        # Verify by checking that _staging_recently_failed for ("t1","other") is False.
+        check("failure tag is per-(task,target), not global",
+              sch._staging_recently_failed("t1", "free") is True
+              and sch._staging_recently_failed("t1", "other_node") is False)
+    finally:
+        sch.NODES = saved_NODES
+        sch._blocked_nodes_for_task = saved_blocked
+        sch._launch_failed_nodes_for_task = saved_launch_failed
+        sch._STAGING_FAILED.clear()
+        sch._STAGING_FAILED.update(saved_failed)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -6997,6 +7128,7 @@ if __name__ == "__main__":
     test_phase3_0_16_ckpt_size_probe_fail_closed()
     test_phase3_0_17_staging_cache_ttl()
     test_phase3_0_18_probe_all_outside_lock()
+    test_phase3_0_19_staging_failure_cooldown_unblocks_later_candidates()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

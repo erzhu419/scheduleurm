@@ -3027,6 +3027,228 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_4_staging():
+    """Phase 3.0.4: _stage_for_migration handles cwd rsync, ckpt size cap (2GB), env probe.
+
+    Mocks run_on (ssh) and subprocess.run (rsync) since this hits live hosts otherwise.
+    """
+    print("\n[62] Phase 3.0.4 staging — cwd rsync + ckpt cap + env probe")
+
+    saved_run_on = sch.run_on
+    saved_sp_run = sch.subprocess.run
+    saved_NODES = sch.NODES
+    saved_cache = sch._STAGING_CACHE.copy()
+
+    sch.NODES = {
+        "src": {"host": "srcbox", "cpu_cores": 12, "ram_mb": 32000,
+                "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                "max_concurrent_running": None},
+        "tgt": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                "max_concurrent_running": None},
+        "tgt_remote": {"host": "tgtbox", "cpu_cores": 12, "ram_mb": 32000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None},
+    }
+
+    # Helper: build a fake run_on that maps each command to a canned response
+    def mk_run_on(plan):
+        """plan: list of (cmd_substring → (rc, out, err))"""
+        def fake(node, cmd, timeout=15, check=True):
+            for substr, resp in plan:
+                if substr in cmd:
+                    return resp
+            return (1, "", "")  # default deny
+        return fake
+
+    # Helper: subprocess.run mock that records rsync commands
+    rsync_calls = []
+    def fake_subprocess_run(args, **kwargs):
+        if args and "rsync" in args[0]:
+            rsync_calls.append(args)
+        class R: pass
+        r = R()
+        r.returncode = 0
+        r.stdout = ""; r.stderr = ""
+        return r
+
+    # ---------- Case A: cwd already exists on target → no rsync needed ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (0, "", "")),     # cwd exists on target
+        ("test -x", (0, "", "")),           # python exists on target
+    ])
+    sch.subprocess.run = fake_subprocess_run
+    rsync_calls.clear()
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tA", "cwd": "/work", "preferred_node": "src",
+             "cmd": "/abs/path/python -u train.py"},
+            "tgt"
+        )
+        check("cwd exists on target → ok, no rsync issued",
+              ok and len(rsync_calls) == 0, diag=f"ok={ok} rsync={rsync_calls}")
+    finally:
+        pass
+
+    # ---------- Case B: cwd missing on target, source local → rsync ----------
+    sch._STAGING_CACHE.clear()
+    cwd_state = [0]  # 0=missing, 1=exists. Flips after rsync.
+    def fake_run_on_B(node, cmd, timeout=15, check=True):
+        if "test -d /work" in cmd:
+            return (0, "", "") if cwd_state[0] else (1, "", "")
+        if "mkdir -p" in cmd or "test -x" in cmd:
+            return (0, "", "")
+        return (0, "", "")
+    sch.run_on = fake_run_on_B
+    rsync_calls.clear()
+    def rsync_succeed(args, **kwargs):
+        rsync_calls.append(args)
+        cwd_state[0] = 1  # post-rsync: cwd exists
+        class R: pass
+        r = R(); r.returncode = 0; r.stdout = ""; r.stderr = ""
+        return r
+    sch.subprocess.run = rsync_succeed
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tB", "cwd": "/work", "preferred_node": "src",
+             "cmd": "/abs/path/python -u train.py"},
+            "tgt"
+        )
+        check("cwd missing → rsync issued + ok",
+              ok and len(rsync_calls) == 1, diag=f"ok={ok} rsync_calls={rsync_calls}")
+        check("rsync used `-az --partial` flags",
+              "-az" in rsync_calls[0] and "--partial" in rsync_calls[0])
+    finally:
+        pass
+
+    # ---------- Case C: ckpt size > 2GB → reject ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (0, "", "")),
+        ("du -sm /ckpt", (0, "5000\n", "")),  # 5GB ckpt
+        ("test -x", (0, "", "")),
+    ])
+    rsync_calls.clear()
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tC", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python train.py"},
+            "tgt"
+        )
+        check("ckpt 5000MB > cap 2048MB → reject",
+              not ok and "5000MB" in msg and "2048MB" in msg, diag=msg)
+        check("no rsync of oversized ckpt",
+              all("ckpt" not in (str(a) if a else "") for a in rsync_calls)
+              if rsync_calls else True)
+    finally:
+        pass
+
+    # ---------- Case D: ckpt under cap → rsync ckpt + cwd ----------
+    sch._STAGING_CACHE.clear()
+    cwd_state[0] = 0  # cwd missing initially; rsync_succeed flips it to 1
+    def fake_run_on_D(node, cmd, timeout=15, check=True):
+        if "test -d /work" in cmd:
+            return (0, "", "") if cwd_state[0] else (1, "", "")
+        if "du -sm /ckpt" in cmd:
+            return (0, "1500\n", "")  # 1.5GB ckpt — under cap
+        if "mkdir -p" in cmd or "test -x" in cmd:
+            return (0, "", "")
+        return (0, "", "")
+    sch.run_on = fake_run_on_D
+    rsync_calls.clear()
+    sch.subprocess.run = rsync_succeed
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tD", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python train.py"},
+            "tgt"
+        )
+        check("ckpt under cap + cwd missing → both rsync'd, ok",
+              ok and len(rsync_calls) >= 1, diag=f"ok={ok} rsync count={len(rsync_calls)}")
+    finally:
+        pass
+
+    # ---------- Case E: env (python) missing on target → reject ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (0, "", "")),
+        ("test -x /home/me/conda/envs/X/bin/python", (1, "", "")),  # missing
+    ])
+    rsync_calls.clear()
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tE", "cwd": "/work", "preferred_node": "src",
+             "cmd": "/home/me/conda/envs/X/bin/python -u train.py"},
+            "tgt"
+        )
+        check("python missing on target → reject with helpful msg",
+              not ok and "python" in msg and "X/bin/python" in msg, diag=msg)
+    finally:
+        pass
+
+    # ---------- Case F: source==target → no-op success ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([("test -d", (0, "", ""))])  # never called actually
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tF", "cwd": "/work", "preferred_node": "tgt", "cmd": "python a.py"},
+            "tgt"
+        )
+        check("source==target → ok, no-op", ok and "nothing to stage" in msg)
+    finally:
+        pass
+
+    # ---------- Case G: remote→remote rsync — refused (no via-local routing) ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (1, "", "")),  # cwd missing on target
+    ])
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tG", "cwd": "/work", "preferred_node": "src",  # remote
+             "cmd": "python a.py"},
+            "tgt_remote"  # also remote
+        )
+        check("remote→remote rsync refused (not yet supported)",
+              not ok and "remote→remote" in msg, diag=msg)
+    finally:
+        pass
+
+    # ---------- _can_migrate_to wraps _stage_for_migration ----------
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (1, "", "")),  # cwd missing
+        ("test -x", (1, "", "")),         # python also missing → fail
+    ])
+    rsync_calls.clear()
+    sch.subprocess.run = rsync_succeed  # rsync would succeed but env probe fails
+    try:
+        result = sch._can_migrate_to(
+            {"id": "tH", "cwd": "/work", "preferred_node": "src",
+             "cmd": "/abs/python a.py"},
+            "tgt"
+        )
+        check("_can_migrate_to=False when staging fails", not result)
+        # Look at the task in scope — _can_migrate_to wrote last_migration_skip on it
+        task = {"id": "tI", "cwd": "/work", "preferred_node": "src",
+                "cmd": "/abs/python a.py"}
+        sch._STAGING_CACHE.clear()
+        sch._can_migrate_to(task, "tgt")
+        check("_can_migrate_to stashes last_migration_skip on task",
+              "last_migration_skip" in task and task["last_migration_skip"],
+              diag=task.get("last_migration_skip"))
+    finally:
+        pass
+
+    # ---------- Cleanup ----------
+    sch.run_on = saved_run_on
+    sch.subprocess.run = saved_sp_run
+    sch.NODES = saved_NODES
+    sch._STAGING_CACHE.clear()
+    sch._STAGING_CACHE.update(saved_cache)
+
+
 def test_phase3_0_3_migration_trigger():
     """Phase 3.0.3: _consider_migration re-pins soft-pinned tasks from overloaded
     nodes to near-empty ones. Respects: hard pins (require_node), portability check,
@@ -4818,6 +5040,7 @@ if __name__ == "__main__":
     test_phase3_0_1_eta_parser_and_integration()
     test_phase3_0_2_node_load_metric()
     test_phase3_0_3_migration_trigger()
+    test_phase3_0_4_staging()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

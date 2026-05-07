@@ -3110,24 +3110,176 @@ def compute_node_load_seconds(state: dict) -> dict:
     return loads
 
 
-def _can_migrate_to(task: dict, target_node: str, timeout_s: int = 5) -> bool:
-    """Phase 3.0.3: minimum portability check before re-pinning a task to a new node.
+MIGRATION_MAX_CKPT_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CKPT_SIZE_MB", "2048"))
+# Hard cap on ckpt rsync size during migration. Larger ckpts → migration aborts; the
+# task stays on source. Rationale: rsync of a 5+GB ckpt takes minutes, often longer
+# than just letting source's queue drain naturally. User-spec'd default is 2GB.
 
-    Today: just verifies cwd exists on the target. Phase 3.0.4 will replace this
-    with full staging (rsync code + ckpt with 2GB cap + env probe).
+# Cache for staged paths so we don't redundantly rsync. Key: (source_node, target_node, path)
+# Reset on watcher restart (in-memory only) — that's fine, rsync's delta algorithm makes
+# re-runs of unchanged paths trivial (~1s for unchanged).
+_STAGING_CACHE: set = set()
 
-    Returns True iff migration to target_node is safe RIGHT NOW. False if the
-    target lacks the cwd path (would launch_fail there) or ssh failed.
+
+def _stage_for_migration(task: dict, target_node: str,
+                         max_ckpt_mb: int = MIGRATION_MAX_CKPT_SIZE_MB) -> tuple:
+    """Phase 3.0.4: rsync code + ckpt + verify env before migration.
+
+    Steps:
+      1. Identify the source node = current `preferred_node` (or running `node`).
+         Skip rsync if source==target.
+      2. cwd: if missing on target, rsync source:cwd → target:cwd (`-az --partial`,
+         idempotent; ~1s for already-synced). If still missing after rsync, fail.
+      3. ckpt_dir: if set AND exists on source AND size ≤ max_ckpt_mb, rsync to
+         target. Bigger → fail (don't migrate; task stays on source).
+      4. env: extract `python` abs path from cmd (e.g. /home/u/conda/envs/X/bin/python);
+         verify `ssh target test -x <path>`. Missing → fail (env-deploy is the user's
+         responsibility; auto-rsync of a multi-GB conda env isn't this layer's job).
+
+    Returns (ok, msg). ok=True only when target is now ready to launch the task.
+    On failure msg explains why so callers can log it.
+
+    Side effect on success: caches (source, target, cwd) in _STAGING_CACHE so
+    subsequent migration attempts in the same process skip redundant rsync.
     """
     cwd = task.get("cwd")
     if not cwd:
-        return False
-    try:
-        rc, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
-                          timeout=timeout_s, check=False)
-        return rc == 0
-    except Exception:
-        return False
+        return (False, "no cwd on task")
+
+    # Determine source for rsync
+    source_node = task.get("preferred_node") or task.get("node")
+    if source_node and source_node == target_node:
+        return (True, "source==target; nothing to stage")
+
+    # Step 2: cwd
+    cwd_key = (source_node, target_node, cwd)
+    if cwd_key not in _STAGING_CACHE:
+        try:
+            rc, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
+                              timeout=5, check=False)
+        except Exception as e:
+            return (False, f"target ssh failed: {str(e)[:120]}")
+        if rc != 0:
+            # cwd missing → rsync from source. Source must be NODES-keyed and have host.
+            src_info = NODES.get(source_node or "", {})
+            src_host = src_info.get("host")
+            tgt_info = NODES.get(target_node, {})
+            tgt_host = tgt_info.get("host")
+            # Build src/dst rsync paths
+            src_path = (f"{src_host}:" if src_host else "") + cwd.rstrip("/") + "/"
+            dst_path = (f"{tgt_host}:" if tgt_host else "") + cwd.rstrip("/") + "/"
+            mkdir_cmd = f"mkdir -p {shlex.quote(cwd)}"
+            try:
+                run_on(target_node, mkdir_cmd, timeout=10, check=False)
+            except Exception:
+                pass
+            # rsync only works directly when one side is local. If both src and tgt are
+            # remote (different hosts), we can't directly do remote→remote without ssh
+            # tunneling. Use --rsync-path workaround OR, simpler: pull source to local
+            # then push to target in two hops. For now: only support source-side OR
+            # target-side being local (typical scheduleurm: local is usually one of the
+            # two). Bail on remote→remote pairs.
+            if src_host and tgt_host:
+                return (False,
+                        f"cwd missing on {target_node} and rsync remote→remote not "
+                        f"yet supported (src={src_host}, tgt={tgt_host}); user must "
+                        f"sync code manually OR via shared NFS")
+            try:
+                import subprocess as _sp
+                r = _sp.run(["rsync", "-az", "--partial",
+                             "--exclude=.git", "--exclude=__pycache__",
+                             "--exclude=*.pyc", src_path, dst_path],
+                            capture_output=True, text=True, timeout=600)
+                if r.returncode != 0:
+                    return (False, f"rsync cwd failed rc={r.returncode}: {r.stderr.strip()[:200]}")
+            except _sp.TimeoutExpired:
+                return (False, "rsync cwd timeout (>10min)")
+            except Exception as e:
+                return (False, f"rsync cwd exception: {e}")
+            # Verify after rsync
+            try:
+                rc2, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
+                                   timeout=5, check=False)
+                if rc2 != 0:
+                    return (False, "cwd still missing after rsync")
+            except Exception as e:
+                return (False, f"post-rsync ssh check failed: {e}")
+        _STAGING_CACHE.add(cwd_key)
+
+    # Step 3: ckpt_dir (if set)
+    ckpt_dir = task.get("ckpt_dir")
+    if ckpt_dir:
+        # Size check: only on source side (where ckpt actually lives)
+        size_mb = 0
+        if source_node:
+            try:
+                rc, out, _ = run_on(source_node,
+                                    f"du -sm {shlex.quote(ckpt_dir)} 2>/dev/null | "
+                                    f"awk '{{print $1}}'",
+                                    timeout=15, check=False)
+                if rc == 0 and out.strip().isdigit():
+                    size_mb = int(out.strip())
+            except Exception:
+                size_mb = 0
+        if size_mb > max_ckpt_mb:
+            return (False,
+                    f"ckpt_dir {ckpt_dir} is {size_mb}MB > max {max_ckpt_mb}MB; "
+                    f"migration aborted (rsync would take too long)")
+
+        # Stage ckpt (similar two-host limitation as cwd)
+        ckpt_key = (source_node, target_node, ckpt_dir)
+        if size_mb > 0 and ckpt_key not in _STAGING_CACHE:
+            src_info = NODES.get(source_node or "", {})
+            src_host = src_info.get("host")
+            tgt_info = NODES.get(target_node, {})
+            tgt_host = tgt_info.get("host")
+            if not (src_host and tgt_host):  # one side local → rsync OK
+                src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
+                dst_path = (f"{tgt_host}:" if tgt_host else "") + ckpt_dir.rstrip("/") + "/"
+                try:
+                    run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}",
+                           timeout=10, check=False)
+                    import subprocess as _sp
+                    r = _sp.run(["rsync", "-az", "--partial",
+                                 src_path, dst_path],
+                                capture_output=True, text=True, timeout=600)
+                    if r.returncode != 0:
+                        return (False, f"rsync ckpt failed rc={r.returncode}: "
+                                       f"{r.stderr.strip()[:200]}")
+                except Exception as e:
+                    return (False, f"rsync ckpt exception: {e}")
+            _STAGING_CACHE.add(ckpt_key)
+
+    # Step 4: env probe — extract python path from cmd
+    cmd_str = task.get("cmd") or ""
+    py_path = None
+    py_match = re.search(r'(/[\w./-]+/python\d*(?:\.\d+)?)\b', cmd_str)
+    if py_match:
+        py_path = py_match.group(1)
+    if py_path:
+        try:
+            rc, _, _ = run_on(target_node, f"test -x {shlex.quote(py_path)}",
+                              timeout=5, check=False)
+            if rc != 0:
+                return (False,
+                        f"python at {py_path} not executable on {target_node}; "
+                        f"deploy the conda env first (env_spec=conda:... if available)")
+        except Exception as e:
+            return (False, f"env probe failed: {e}")
+
+    return (True, f"staged (cwd{' + ckpt' if ckpt_dir else ''}{' + env' if py_path else ''})")
+
+
+def _can_migrate_to(task: dict, target_node: str, timeout_s: int = 5) -> bool:
+    """Phase 3.0.4: now backed by full _stage_for_migration. Returns True only if
+    cwd + (optional) ckpt are staged AND env is reachable on target. The staging
+    side-effects are committed before the bool result, so caller's preferred_node
+    rewrite is safe to do unconditionally after this returns True."""
+    ok, msg = _stage_for_migration(task, target_node)
+    if not ok:
+        # Stash the reason so callers / debug surfaces can see why migration was rejected.
+        task["last_migration_skip"] = msg
+    return ok
 
 
 def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) -> list:

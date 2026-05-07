@@ -120,11 +120,36 @@ Procs not associated with a tracked task get adopted: a synthetic task record is
 
 This lets you `nohup` a script the old way and still see it in `status`. Over time, the auto-adopted history teaches the scheduler how big these jobs are, so when you re-launch through `submit` later the estimates are reasonable.
 
+## Cross-scheduler exclusion (Phase 3.2)
+
+For non-slurm nodes that multiple `scheduleurm` instances use concurrently
+(different state dirs, different OS users, or both), per-node opt-in
+**claims** prevent over-commit:
+
+- Set `NODES["x"]["enable_claims"] = True` in your scheduler.py NODES config.
+- Each `LocalBackend.launch` ssh-flocks `/tmp/scheduleurm/claims.json` on the
+  target node and atomically reserves CPU/RAM/VRAM against ALL schedulers'
+  current claims before kicking off `ssh+nohup`.
+- A losing claim returns the `CLAIM_RACE:` sentinel; dispatch puts the task
+  back to queued without penalizing it as a launch failure, retries next
+  cycle.
+- `probe_all` subtracts pending (pre-PID) claims from free resources, so
+  competing schedulers' `pick_placement` sees the launch-race window as
+  occupied.
+- Watcher renews live claims every cycle and GCs stale ones (TTL expired
+  AND no live PID) so a crashed scheduler doesn't pin resources forever.
+
+This is not a full replacement for slurm — there's no central daemon, no
+fairness, no preemption across schedulers. It's just "don't let two
+schedulers launch onto the same GPU at the same time".
+
 ## What it deliberately doesn't do
 
-- **Multi-user fairness** — single-user only. No queue priorities by user, no quota.
+- **Multi-user fairness across schedulers** — claim ordering is "first to
+  flock wins". No quotas, no priority across schedulers, no per-user limits.
+  Phase 3.2's claims layer just stops over-commit; it doesn't arbitrate.
 - **Cluster-wide DAG** — task A → task B chaining isn't here. Use bash with `wait-for`, or chain in your launcher script.
 - **Hot-reload of NODES** — edit `scheduler.py`, re-run `install.sh`, watcher restart picks it up. No live config reload (would complicate the lock semantics).
 - **Cross-node tensor sharing** — every task is a single-node operation. Multi-node training is the user's responsibility (NCCL/MPI/torchrun).
 - **Auto-scale / spawn nodes** — `NODES` is fixed. If you need elasticity, add nodes statically and let `dispatch` ignore offline ones (probe failure = skip).
-- **Replace SLURM** — if you have a real HPC cluster, use SLURM. This is for the messy single-user case where SLURM is overkill.
+- **Replace SLURM** — if you have a real HPC cluster, use SLURM. This is for the messy mostly-single-user case (with the optional Phase 3.2 claims layer when you do have to share a non-slurm node) where SLURM is overkill.

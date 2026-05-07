@@ -943,7 +943,65 @@ def probe_node(name):
 
 def probe_all():
     with ThreadPoolExecutor(max_workers=len(NODES)) as ex:
-        return list(ex.map(probe_node, NODES.keys()))
+        nodes = list(ex.map(probe_node, NODES.keys()))
+    # Phase 3.2.2 P1: fold cross-scheduler "pending" claims into the probe.
+    # The race window: scheduler A calls _ClaimManager.claim() (record pid=null),
+    # then runs the slow ssh+nohup launch. Until launch returns and we
+    # update_pid, A's process isn't visible to nvidia-smi / ps — so a
+    # concurrent scheduler B's probe_all sees the GPU as free and pick_placement
+    # picks the same slot. claim() catches the conflict at the atomic-update
+    # layer, but we'd rather B not even consider that slot. Solution: subtract
+    # all *pending* claims (pid is null) from the probe view here, so
+    # _node_resources_ok / _gpu_fits already see the resource as occupied.
+    # claims with a real pid are not added — those processes are already
+    # visible to ps/nvidia-smi, double-counting would be wrong.
+    return _fold_claims_into_probe(nodes)
+
+
+def _fold_claims_into_probe(nodes: list) -> list:
+    """For each node where claims are enabled, fetch the live claims and
+    subtract the pending ones (pid=null) from the probe's free resources.
+    Failures are non-fatal: we keep the original probe, log via notify."""
+    for n in nodes:
+        if not n.get("alive"):
+            continue
+        name = n.get("name")
+        if not name or not _ClaimManager.enabled_for(name):
+            continue
+        try:
+            claims = _ClaimManager.enumerate(name)
+        except Exception as e:
+            try:
+                notify("claims_probe_fold_error",
+                       {"node": name, "error": str(e)[:200]},
+                       feishu_enabled=False)
+            except Exception:
+                pass
+            continue
+        # Only subtract claims that haven't yet attached to a host process.
+        # Once pid is set, the process is in ps + nvidia-smi already.
+        pending = [c for c in claims if not c.get("pid")]
+        if not pending:
+            continue
+        cpu_p = sum(int(c.get("cpu_cores") or 0) for c in pending)
+        ram_p = sum(int(c.get("ram_mb") or 0) for c in pending)
+        per_gpu = {}
+        for c in pending:
+            g = c.get("gpu_idx")
+            if g is None:
+                continue
+            per_gpu[int(g)] = per_gpu.get(int(g), 0) + int(c.get("vram_mb") or 0)
+        if cpu_p:
+            n["free_cpu"] = max(0, int(n.get("free_cpu") or 0) - cpu_p)
+        if ram_p:
+            n["free_ram_mb"] = max(0, int(n.get("free_ram_mb") or 0) - ram_p)
+        for g in n.get("gpus") or []:
+            extra = per_gpu.get(int(g["idx"]), 0)
+            if extra:
+                g["used_mb"] = int(g.get("used_mb") or 0) + extra
+                g["free_mb"] = max(0, int(g.get("free_mb") or 0) - extra)
+        n["pending_claims"] = pending  # surfaced in status / why for debug
+    return nodes
 
 # ---------- running-task health + peak VRAM tracking ----------
 def _task_pids(task):

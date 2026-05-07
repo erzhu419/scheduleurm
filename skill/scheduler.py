@@ -2343,18 +2343,40 @@ class HybridBackend(Backend):
         return self._backend_for(node).requires_local_capacity_check(node)
 
     def _kind_for(self, node: str) -> str:
+        """Return 'slurm' or 'local' for this node, cached after the FIRST DEFINITIVE
+        answer. Phase 2.7 P1 fix: only cache definitive results (probe ssh succeeded
+        AND we got either HAS_SLURM or NO_SLURM marker). Any failure mode (ssh
+        exception, non-zero rc, missing marker due to bashrc spam, etc.) leaves the
+        cache untouched, so the next call re-probes — a single ssh blip can no longer
+        permanently mis-route a node to LocalBackend until watcher restart.
+
+        Failure mode for THIS call: returns 'local' (the safe-loud default — at least
+        the launch path will surface an error if slurm IS expected). One cycle of
+        fallback is the worst case; next dispatch cycle re-probes and self-heals.
+        """
         if node in self._cache:
             return self._cache[node]
-        # Probe: sbatch + squeue both present?
-        cmd = ("command -v sbatch >/dev/null 2>&1 && "
-               "command -v squeue >/dev/null 2>&1 && echo HAS_SLURM")
+        # Probe must ALWAYS emit a definitive marker so we can distinguish "slurm not
+        # installed" (NO_SLURM, definitive) from "probe failed" (no marker). The old
+        # `... && echo HAS_SLURM` chain emitted nothing on absence, conflating absence
+        # with failure → caller cached "local" forever on transient errors.
+        cmd = ("if command -v sbatch >/dev/null 2>&1 && "
+               "command -v squeue >/dev/null 2>&1; "
+               "then echo HAS_SLURM; else echo NO_SLURM; fi")
         try:
             rc, out, _ = run_on(node, cmd, timeout=5, check=False)
-            kind = "slurm" if (rc == 0 and "HAS_SLURM" in out) else "local"
         except Exception:
-            kind = "local"  # ssh failed entirely → assume local; user will see a clearer error at launch
-        self._cache[node] = kind
-        return kind
+            return "local"  # ssh broke — DON'T cache; next call re-probes
+        if rc != 0:
+            return "local"  # rc!=0 means our probe itself failed; don't cache
+        if "HAS_SLURM" in out:
+            self._cache[node] = "slurm"
+            return "slurm"
+        if "NO_SLURM" in out:
+            self._cache[node] = "local"
+            return "local"
+        # Ambiguous output (output mangled by remote bashrc, MOTD, etc.) — don't cache.
+        return "local"
 
     def _backend_for(self, node: str) -> Backend:
         return self._slurm if self._kind_for(node) == "slurm" else self._local

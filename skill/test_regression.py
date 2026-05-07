@@ -2581,6 +2581,125 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_7_probe_failure_does_not_cache():
+    """Phase 2.7 P1 fix: HybridBackend._kind_for must NOT cache failure results.
+
+    Bug before fix: any probe failure (ssh exception, non-zero rc, missing
+    HAS_SLURM marker due to bashrc spam etc.) collapsed to `kind = "local"` and
+    THAT got cached for the process lifetime. A single transient ssh blip during
+    the very first probe of a slurm node would silently route every subsequent
+    task to LocalBackend until watcher restart — the user would never know slurm
+    was being bypassed.
+
+    Fix: probe command always emits HAS_SLURM or NO_SLURM (no silent
+    short-circuit on `&&`). Cache writes only happen on definitive results
+    (rc=0 AND a recognized marker). Any other path returns "local" for the
+    current call but leaves the cache empty — next call re-probes.
+    """
+    print("\n[48] Phase 2.7 _kind_for caches only definitive answers, not failures")
+    real_run_on = sch.run_on
+
+    # ---------- Probe shape: always emits a marker ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # The probe command must use `if/then/else/fi` (not `&& ... echo HAS_SLURM`),
+    # so a missing tool gets `NO_SLURM` (definitive) instead of empty output.
+    check("probe command emits HAS_SLURM AND NO_SLURM markers",
+          "echo HAS_SLURM" in src and "echo NO_SLURM" in src,
+          diag="probe doesn't emit definitive negative marker")
+    check("probe uses if/fi shape (not bare && echo HAS_SLURM)",
+          "if command -v sbatch" in src,
+          diag="probe didn't switch to definitive shape")
+
+    # ---------- Definitive HAS_SLURM → cache 'slurm' ----------
+    hb = sch.HybridBackend()
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (0, "HAS_SLURM\n", "")
+    try:
+        kind = hb._kind_for("nodeA")
+        check("HAS_SLURM → returns 'slurm'", kind == "slurm")
+        check("HAS_SLURM → caches 'slurm'", hb._cache.get("nodeA") == "slurm")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- Definitive NO_SLURM → cache 'local' ----------
+    hb = sch.HybridBackend()
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (0, "NO_SLURM\n", "")
+    try:
+        kind = hb._kind_for("nodeB")
+        check("NO_SLURM → returns 'local'", kind == "local")
+        check("NO_SLURM → caches 'local'", hb._cache.get("nodeB") == "local")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- ssh exception → DO NOT cache, return 'local' ----------
+    hb = sch.HybridBackend()
+    sch.run_on = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("ssh broken"))
+    try:
+        kind = hb._kind_for("flakyA")
+        check("ssh exception → returns 'local'", kind == "local")
+        check("ssh exception → does NOT cache",
+              "flakyA" not in hb._cache, diag=f"cache={hb._cache}")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- rc != 0 → DO NOT cache (probe broke before reaching markers) ----------
+    hb = sch.HybridBackend()
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (255, "", "ssh: connect timeout")
+    try:
+        kind = hb._kind_for("flakyB")
+        check("rc != 0 → returns 'local'", kind == "local")
+        check("rc != 0 → does NOT cache",
+              "flakyB" not in hb._cache, diag=f"cache={hb._cache}")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- Ambiguous output (rc=0 but no marker) → DO NOT cache ----------
+    # E.g. remote bashrc emits a banner that overwrites stdout, or some weird shell
+    # config swallows the if/fi output. We refuse to interpret as definitive.
+    hb = sch.HybridBackend()
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (0, "Welcome to my server\nLast login: ...\n", "")
+    try:
+        kind = hb._kind_for("noisy")
+        check("rc=0 but no marker → returns 'local' (safe default)", kind == "local")
+        check("rc=0 but no marker → does NOT cache",
+              "noisy" not in hb._cache, diag=f"cache={hb._cache}")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- Self-heal: failed probe doesn't poison subsequent successful one ----------
+    hb = sch.HybridBackend()
+    # Round 1: ssh exception → fail
+    sch.run_on = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("transient blip"))
+    try:
+        first = hb._kind_for("recovers")
+        check("after transient failure: returns 'local'", first == "local")
+        check("after transient failure: cache empty (no poison)",
+              "recovers" not in hb._cache)
+    finally:
+        sch.run_on = real_run_on
+    # Round 2: ssh recovers, slurm IS installed
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (0, "HAS_SLURM\n", "")
+    try:
+        second = hb._kind_for("recovers")
+        check("after recovery: returns 'slurm' (re-probed, found it)", second == "slurm")
+        check("after recovery: cache now reflects 'slurm'",
+              hb._cache.get("recovers") == "slurm")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- Once cached, no further probes (perf invariant) ----------
+    hb = sch.HybridBackend()
+    hb._cache["preset"] = "slurm"
+    probe_calls = []
+    sch.run_on = lambda *a, **k: (probe_calls.append(1) or (0, "HAS_SLURM\n", ""))
+    try:
+        for _ in range(5):
+            hb._kind_for("preset")
+        check("cached node: zero ssh probes on subsequent calls",
+              len(probe_calls) == 0, diag=f"made {len(probe_calls)} probes")
+    finally:
+        sch.run_on = real_run_on
+
+
 def test_backend_slurm_phase2_6_docker_gpu_runtime_env():
     """Phase 2.6 P1 fix: when SlurmBackend wraps a GPU task in docker, the `--gpus`
     arg must reference the runtime CUDA_VISIBLE_DEVICES that slurm's gres allocator
@@ -3062,6 +3181,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_4_log_path_shared_fs()
     test_backend_slurm_phase2_5_cd_guard()
     test_backend_slurm_phase2_6_docker_gpu_runtime_env()
+    test_backend_slurm_phase2_7_probe_failure_does_not_cache()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

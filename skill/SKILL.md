@@ -314,6 +314,18 @@ Synthesizes:
 
 The first thing to run when a queued task seems stuck. Far better than parsing `last_block_reason` strings by hand.
 
+### "和别的 scheduler / 别的用户共用节点 / 抢资源" (Phase 3.2)
+
+非 slurm 节点上多个 scheduleurm 实例（不同 state dir、不同 OS user，或两者都不同）想共用同一台机器时，set `NODES["x"]["enable_claims"] = True` 在 scheduler.py 的 NODES 配置里。然后：
+
+- `LocalBackend.launch` 在 `ssh+nohup` 之前会去 `/tmp/scheduleurm/claims.json`（节点本地）拿 flock，做 atomic CPU/RAM/VRAM capacity check。输了的 scheduler 收到 `CLAIM_RACE:` 信号，dispatch 把任务回到队列等下个 cycle，**不**计 `launch_fail_count`。
+- `probe_all` 会把所有 pending claim（已 claim 但还没拿到 PID 的）扣进 free 资源里 —— 对方 scheduler 的 `pick_placement` 直接看到资源被占。
+- watcher 每 cycle 一次 `renew_many + gc_stale`，崩溃的 scheduler 留下的 claim 会按 TTL（默认 1h）过期 + 死 PID 检测自动清理。
+
+什么时候不开：单用户 / 单 scheduler 配置不需要，开了反而每次 launch 多一次 ssh + flock。所以是 per-node opt-in。
+
+slurm 节点不需要开 —— slurm 自己有 gres + cgroup 处理这个。
+
 ### "history 里这个 sig 有个 9GB 的离群值 / 清掉 / 改" (Phase 3.1)
 ```bash
 # Drop entire entry: next runs of this sig start fresh from real measurements

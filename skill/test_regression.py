@@ -7803,6 +7803,336 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         sch.run_on = saved_run_on
 
 
+def test_phase3_2_2_probe_folds_pending_claims():
+    """Phase 3.2.2: probe_all subtracts pending (pid=null) claims from
+    free resources so a concurrent scheduler's pick_placement sees the
+    launch-race window as occupied. Claims with a live pid are NOT
+    folded — the process is already visible to ps/nvidia-smi via the
+    normal probe pathway, double-counting would be wrong.
+    """
+    print("\n[96] Phase 3.2.2: probe_all folds pending cross-scheduler claims")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_fold_claims_into_probe helper exists",
+          "def _fold_claims_into_probe" in src)
+    check("probe_all calls the fold helper",
+          "_fold_claims_into_probe(nodes)" in src)
+    check("fold helper subtracts ONLY pending claims (pid=null)",
+          "not c.get(\"pid\")" in src
+          and "pending = [c for c in claims" in src)
+
+    # 2. Behavioral.
+    saved_NODES = sch.NODES
+    saved_probe_node = sch.probe_node
+    saved_run_on = sch.run_on
+    sch.NODES = {
+        "n_on": {"name": "n_on", "host": "h_on", "enable_claims": True,
+                  "cpu_cores": 12, "ram_mb": 32000, "claim_ttl_s": 600},
+        "n_off": {"name": "n_off", "host": "h_off",
+                   "cpu_cores": 12, "ram_mb": 32000},
+    }
+
+    # Mock probe_node so probe_all gets a known baseline.
+    base = {
+        "n_on": {"name": "n_on", "alive": True, "free_cpu": 12,
+                  "free_ram_mb": 30000, "total_ram_mb": 32000, "total_cpu": 12,
+                  "running_count": 0, "slurm_pending_count": 0,
+                  "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                              "used_mb": 0, "util_pct": 0}]},
+        "n_off": {"name": "n_off", "alive": True, "free_cpu": 12,
+                   "free_ram_mb": 30000, "total_ram_mb": 32000, "total_cpu": 12,
+                   "running_count": 0, "slurm_pending_count": 0,
+                   "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                               "used_mb": 0, "util_pct": 0}]},
+    }
+    import copy as _copy
+    sch.probe_node = lambda name: _copy.deepcopy(base[name])
+
+    # Mock claims.list to return controlled records on n_on.
+    claims_response = {"n_on": [], "n_off": []}
+    def mock_run_on(node, cmd, **kw):
+        if "_claims.py list" in cmd:
+            return (0, '{"ok": true, "claims": '
+                    + __import__("json").dumps(claims_response.get(node, []))
+                    + '}\n', "")
+        return (0, "", "")
+    sch.run_on = mock_run_on
+
+    try:
+        # 2a. No claims → probe pass-through.
+        claims_response["n_on"] = []
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        check("no claims → free_cpu unchanged",
+              n_on["free_cpu"] == 12)
+        check("no claims → GPU0 free_mb unchanged",
+              n_on["gpus"][0]["free_mb"] == 12000)
+
+        # 2b. PENDING claim (pid=null) → resources subtracted.
+        claims_response["n_on"] = [{
+            "scheduler_id": "other:9", "task_id": "tOther",
+            "owner": "alice", "gpu_idx": 0,
+            "vram_mb": 4000, "cpu_cores": 3, "ram_mb": 5000,
+            "claimed_at": time.time(), "expires_at": time.time() + 3600,
+            "pid": None,  # pending — not yet visible to ps/nvidia-smi
+        }]
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        check("pending claim → free_cpu decreased by claimed cpu_cores",
+              n_on["free_cpu"] == 12 - 3, diag=f"got {n_on['free_cpu']}")
+        check("pending claim → free_ram_mb decreased by claimed ram_mb",
+              n_on["free_ram_mb"] == 30000 - 5000,
+              diag=f"got {n_on['free_ram_mb']}")
+        check("pending claim → GPU0 free_mb decreased by claimed vram_mb",
+              n_on["gpus"][0]["free_mb"] == 12000 - 4000,
+              diag=f"got {n_on['gpus'][0]['free_mb']}")
+        check("pending claim → GPU0 used_mb increased by claimed vram_mb",
+              n_on["gpus"][0]["used_mb"] == 0 + 4000,
+              diag=f"got {n_on['gpus'][0]['used_mb']}")
+        check("pending_claims surfaced on node_state for diagnostics",
+              n_on.get("pending_claims") and len(n_on["pending_claims"]) == 1)
+
+        # 2c. Claim with LIVE pid → NOT subtracted (already visible to ps).
+        claims_response["n_on"] = [{
+            "scheduler_id": "other:9", "task_id": "tLive",
+            "owner": "alice", "gpu_idx": 0,
+            "vram_mb": 4000, "cpu_cores": 3, "ram_mb": 5000,
+            "claimed_at": time.time(), "expires_at": time.time() + 3600,
+            "pid": 99999,  # has pid — already in ps
+        }]
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        check("live-pid claim → free_cpu NOT subtracted (would double-count)",
+              n_on["free_cpu"] == 12)
+        check("live-pid claim → GPU0 free_mb NOT subtracted",
+              n_on["gpus"][0]["free_mb"] == 12000)
+
+        # 2d. Mixed: one pending + one live → only pending subtracted.
+        claims_response["n_on"] = [
+            {"scheduler_id": "A", "task_id": "tP", "gpu_idx": 0,
+             "vram_mb": 2000, "cpu_cores": 2, "ram_mb": 1500,
+             "claimed_at": time.time(), "expires_at": time.time() + 3600,
+             "pid": None},
+            {"scheduler_id": "B", "task_id": "tL", "gpu_idx": 0,
+             "vram_mb": 5000, "cpu_cores": 4, "ram_mb": 5000,
+             "claimed_at": time.time(), "expires_at": time.time() + 3600,
+             "pid": 88888},
+        ]
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        check("mixed: only pending claim subtracted (cpu)",
+              n_on["free_cpu"] == 12 - 2)
+        check("mixed: only pending claim subtracted (vram)",
+              n_on["gpus"][0]["free_mb"] == 12000 - 2000)
+
+        # 2e. n_off has no enable_claims → pass-through, no ssh.
+        claims_response["n_off"] = [{"task_id": "irrelevant", "pid": None,
+                                      "vram_mb": 999, "cpu_cores": 999, "ram_mb": 999}]
+        out = sch.probe_all()
+        n_off = next(n for n in out if n["name"] == "n_off")
+        check("disabled node: probe pass-through (no claims fold)",
+              n_off["free_cpu"] == 12)
+
+        # 2f. Multi-GPU per-card subtraction.
+        sch.NODES["n_on"]["host"] = "h_on"
+        base["n_on"]["gpus"] = [
+            {"idx": 0, "total_mb": 12000, "free_mb": 12000, "used_mb": 0, "util_pct": 0},
+            {"idx": 1, "total_mb": 12000, "free_mb": 12000, "used_mb": 0, "util_pct": 0},
+        ]
+        claims_response["n_on"] = [
+            {"task_id": "g0", "scheduler_id": "X", "gpu_idx": 0,
+             "vram_mb": 3000, "cpu_cores": 1, "ram_mb": 1000,
+             "claimed_at": time.time(), "expires_at": time.time() + 3600, "pid": None},
+            {"task_id": "g1", "scheduler_id": "X", "gpu_idx": 1,
+             "vram_mb": 7000, "cpu_cores": 1, "ram_mb": 1000,
+             "claimed_at": time.time(), "expires_at": time.time() + 3600, "pid": None},
+        ]
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        check("multi-GPU: GPU0 subtracted by its own claim",
+              n_on["gpus"][0]["free_mb"] == 12000 - 3000)
+        check("multi-GPU: GPU1 subtracted by its own claim",
+              n_on["gpus"][1]["free_mb"] == 12000 - 7000)
+    finally:
+        sch.NODES = saved_NODES
+        sch.probe_node = saved_probe_node
+        sch.run_on = saved_run_on
+
+
+def test_phase3_2_3_concurrent_schedulers_only_one_wins():
+    """Phase 3.2.3: end-to-end concurrency test against the REAL claims
+    script (not mocks). Two simulated schedulers race to claim the same
+    GPU's full capacity; only one succeeds, the other gets a clean
+    conflict — proving the flock + atomic write actually serializes.
+    """
+    print("\n[97] Phase 3.2.3: cross-scheduler concurrency — one of two racers always wins")
+
+    import tempfile, subprocess, threading, json as _json
+
+    with tempfile.TemporaryDirectory() as td:
+        script = sch._CLAIMS_REMOTE_SCRIPT.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        script_path = os.path.join(td, "_claims.py")
+        with open(script_path, "w") as f:
+            f.write(script)
+        lock_path = os.path.join(td, "claims.lock")
+
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000}}
+
+        # Each "scheduler" wants the FULL GPU0 — capacity allows only one.
+        def attempt(scheduler_id, task_id, results):
+            rec = {
+                "owner": "u", "scheduler_id": scheduler_id,
+                "task_id": task_id, "gpu_idx": 0,
+                "vram_mb": 11000, "cpu_cores": 6, "ram_mb": 50000,
+                "claimed_at": time.time(),
+                "expires_at": time.time() + 3600,
+                "pid": None,
+            }
+            # Wrap each call in flock (matching what _claims_remote_op does).
+            cmd = [
+                "flock", "-x", "-w", "30", lock_path,
+                "python3", script_path, "claim",
+                _json.dumps(rec), _json.dumps(cap),
+            ]
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+            try:
+                results[scheduler_id] = _json.loads(r.stdout.strip().splitlines()[-1])
+            except Exception:
+                results[scheduler_id] = {"_rc": r.returncode, "_stdout": r.stdout, "_stderr": r.stderr}
+
+        # Run 2 racers concurrently many times; every iteration must show
+        # exactly one winner.
+        wins, losses, drawn_iter = 0, 0, 0
+        for _ in range(20):
+            # Reset claims file each iteration so capacity is clean.
+            try:
+                os.unlink(os.path.join(td, "claims.json"))
+            except FileNotFoundError:
+                pass
+            results = {}
+            threads = [
+                threading.Thread(target=attempt, args=("h1:111", "tA", results)),
+                threading.Thread(target=attempt, args=("h2:222", "tB", results)),
+            ]
+            for t in threads: t.start()
+            for t in threads: t.join()
+            ok_a = results.get("h1:111", {}).get("ok") is True
+            ok_b = results.get("h2:222", {}).get("ok") is True
+            if ok_a and not ok_b:
+                wins += 1
+            elif ok_b and not ok_a:
+                wins += 1
+            elif ok_a and ok_b:
+                drawn_iter += 1  # both succeeded — would mean over-commit!
+            else:
+                losses += 1  # both failed — also wrong (capacity allowed 1)
+
+        check("20-round race: every round had EXACTLY one winner (no over-commit)",
+              wins == 20 and drawn_iter == 0,
+              diag=f"wins={wins} drawn={drawn_iter} both_lost={losses}")
+        check("20-round race: NEVER both succeeded (capacity invariant)",
+              drawn_iter == 0)
+
+    # 3. Cross-scheduler scenario via _ClaimManager: scheduler A claims, then
+    # scheduler B's probe_all sees the resource as occupied (Phase 3.2.2
+    # pending-claim fold).
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    saved_probe_node = sch.probe_node
+    sch.NODES = {"n": {"name": "n", "host": "h", "enable_claims": True,
+                        "cpu_cores": 12, "ram_mb": 32000, "claim_ttl_s": 600}}
+
+    # Shared claims state across our two simulated schedulers.
+    shared_claims = []
+    def mock_run_on(node, cmd, **kw):
+        if "_claims.py claim " in cmd:
+            # parse the record from cmd argv (last single-quoted JSON before capacity)
+            import re as _re
+            quoted = _re.findall(r"'(\{[^']*\})'", cmd)
+            if not quoted:
+                return (0, '{"ok": false, "error": "no payload"}\n', "")
+            rec = _json.loads(quoted[-2])  # second-to-last is the record
+            cap_obj = _json.loads(quoted[-1])
+            # Apply capacity check against shared_claims.
+            used_cpu = sum(c.get("cpu_cores", 0) for c in shared_claims)
+            used_ram = sum(c.get("ram_mb", 0) for c in shared_claims)
+            per_gpu = {}
+            for c in shared_claims:
+                if c.get("gpu_idx") is not None:
+                    per_gpu[str(c["gpu_idx"])] = (per_gpu.get(str(c["gpu_idx"]), 0)
+                                                   + c.get("vram_mb", 0))
+            if used_cpu + rec.get("cpu_cores", 0) > cap_obj.get("cpu_cores", 0):
+                return (0, '{"ok": false, "conflict": "cpu over"}\n', "")
+            if used_ram + rec.get("ram_mb", 0) > cap_obj.get("ram_mb", 0):
+                return (0, '{"ok": false, "conflict": "ram over"}\n', "")
+            g = rec.get("gpu_idx")
+            if g is not None:
+                gcap = int(cap_obj.get("gpu_vram_mb", {}).get(str(g), 0))
+                if per_gpu.get(str(g), 0) + rec.get("vram_mb", 0) > gcap:
+                    return (0, '{"ok": false, "conflict": "gpu over"}\n', "")
+            shared_claims.append(rec)
+            return (0, '{"ok": true}\n', "")
+        if "_claims.py list" in cmd:
+            return (0, '{"ok": true, "claims": '
+                    + _json.dumps(shared_claims) + '}\n', "")
+        return (0, "", "")
+    sch.run_on = mock_run_on
+
+    base = {"name": "n", "alive": True, "free_cpu": 12, "free_ram_mb": 30000,
+             "total_ram_mb": 32000, "total_cpu": 12, "running_count": 0,
+             "slurm_pending_count": 0,
+             "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                         "used_mb": 0, "util_pct": 0}]}
+    import copy as _copy
+    sch.probe_node = lambda name: _copy.deepcopy(base)
+
+    try:
+        # Scheduler A claims the full GPU.
+        ok_a, info_a = sch._ClaimManager.claim(
+            "n", {"id": "tA", "est_vram_mb": 11000,
+                   "cpu_cores": 6, "ram_mb": 25000},
+            gpu_idx=0,
+            node_state={"name": "n", "gpus": [{"idx": 0, "total_mb": 12000}]})
+        check("racer A claim succeeds (capacity allows it)",
+              ok_a is True, diag=str(info_a))
+
+        # Now scheduler B does probe_all — should see the GPU as occupied
+        # via Phase 3.2.2 pending-claim fold.
+        out = sch.probe_all()
+        n0 = out[0]
+        check("scheduler B's probe_all reflects A's pending claim (free_mb)",
+              n0["gpus"][0]["free_mb"] == 12000 - 11000,
+              diag=f"got {n0['gpus'][0]['free_mb']}")
+        check("scheduler B's probe_all reflects A's pending claim (free_cpu)",
+              n0["free_cpu"] == 12 - 6)
+
+        # B tries to claim the SAME GPU → conflict.
+        ok_b, info_b = sch._ClaimManager.claim(
+            "n", {"id": "tB", "est_vram_mb": 8000,
+                   "cpu_cores": 4, "ram_mb": 10000},
+            gpu_idx=0,
+            node_state={"name": "n", "gpus": [{"idx": 0, "total_mb": 12000}]})
+        check("racer B claim fails (cross-scheduler exclusion held)",
+              ok_b is False, diag=str(info_b))
+        check("racer B conflict message names the resource",
+              isinstance(info_b, str)
+              and ("gpu over" in info_b or "ram over" in info_b
+                    or "cpu over" in info_b),
+              diag=info_b)
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+        sch.probe_node = saved_probe_node
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -10331,6 +10661,8 @@ if __name__ == "__main__":
     test_phase3_1_skill_priority_edit_history_why()
     test_phase3_2_0_claim_manager()
     test_phase3_2_1_claim_lifecycle_in_dispatch()
+    test_phase3_2_2_probe_folds_pending_claims()
+    test_phase3_2_3_concurrent_schedulers_only_one_wins()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

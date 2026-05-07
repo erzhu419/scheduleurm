@@ -132,7 +132,7 @@ python3 $sch cancel t0042
 | 目标节点 | 你拿到什么 |
 |---|---|
 | 装了 slurm | scheduleurm 生成 sbatch，slurm 处理跨用户排队 + cgroup 隔离 + walltime。scheduleurm 仍然做 signature 去重、history 估计、resume 注入 |
-| 没装 slurm | scheduleurm 直接 `ssh + nohup + setsid`，跟之前完全一样 |
+| 没装 slurm | scheduleurm 直接 `ssh + nohup + setsid`；`enable_claims=True` 时通过 `/tmp/scheduleurm/claims.json + flock` 做跨 scheduler / 跨用户原子互斥（Phase 3.2） |
 | 混合集群 | 按节点判断 —— A 节点走 slurm，B 节点走 ssh+nohup，路由自动处理 |
 
 scheduleurm 在 slurm 节点上**仍然**owns 的（因为 slurm 不做这些）：每 signature 的 p80 历史
@@ -151,13 +151,23 @@ slurm **接管**的：跨用户队列排序、cgroup 内存/CPU 上限、walltim
 peak ≈ declared。
 
 类层次：
-- `Backend`（ABC）—— `launch` / `kill` / `batch_probe`
-- `LocalBackend` —— 当前的 `ssh + nohup` 路径
+- `Backend`（ABC）—— `launch(task, node_state=None)` / `kill` / `batch_probe`
+- `LocalBackend` —— `ssh + nohup` 路径，`enable_claims` 时调用 `_ClaimManager.claim()` 做 Phase 3.2 跨 scheduler 互斥
 - `SlurmBackend` —— `sbatch` / `scancel` / `squeue`
 - `HybridBackend` —— 按节点路由；`_BACKEND` 实际就是这个
 
-Phase 3（计划中）会加 `MultiUserLocalBackend`，处理"节点没 slurm **且**多个 scheduleurm 用户
-同时用"的场景（`/tmp/scheduleurm/` 协作共享状态）。
+**Phase 3.2 跨 scheduler claims 层（已实装）**：
+
+`NODES["x"]["enable_claims"] = True` 后，节点上多个 scheduleurm 实例（不同 state dir / 不同
+OS user）共享一个 `/tmp/scheduleurm/claims.json`，所有 claim/release/renew/gc 通过 `flock`
+原子化。`LocalBackend.launch` 在 `ssh+nohup` 之前做 atomic capacity check，输了的 scheduler
+拿到 `CLAIM_RACE:` 信号、回到队列重试。`probe_all` 把"刚 claim 但还没 launch"的 pending
+claim 扣进 free 资源里，让对方 scheduler 的 `pick_placement` 直接看到那块资源被占用。
+watcher 每 cycle 一次 `renew_many + gc_stale`，崩溃的 scheduler 留下的 claim 会被 TTL 过期
++ 死 PID 检测自动清理。
+
+不替代 slurm —— claims 层只解决 over-commit，不做用户公平、配额、跨 scheduler 抢占。要那些
+能力还是装 slurm。
 
 ## 架构（一屏看完）
 

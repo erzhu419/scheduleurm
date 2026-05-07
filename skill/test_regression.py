@@ -3027,6 +3027,161 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_1_eta_parser_and_integration():
+    """Phase 3.0.1: ETA parser + watcher integration.
+
+    Covers:
+      - eta_tracker.parse_progress: each pattern (tqdm, epoch, iter, step, "done")
+      - eta_tracker.compute_eta_seconds: rate math + EWMA fallback
+      - _refresh_eta_from_logs: writes task['eta_seconds'] from log tail
+      - update_running_tasks chains _batch_check_running + _refresh_eta_from_logs
+    """
+    print("\n[59] Phase 3.0.1 ETA parser + watcher integration")
+
+    # Load eta_tracker the same way scheduler.py does
+    import importlib.util as _ilu
+    spec = _ilu.spec_from_file_location(
+        "eta_tracker",
+        os.path.expanduser("~/.claude/skills/scheduler/eta_tracker.py"),
+    )
+    et = _ilu.module_from_spec(spec); spec.loader.exec_module(et)
+
+    # ---------- pattern coverage ----------
+    cases = [
+        ("tqdm fancy", "  47%|████▋     | 1234/5678 [00:42<03:21, 12.34it/s, loss=0.342]", (1234, 5678)),
+        ("tqdm slow s/it", "Training: 12%|█▏ | 23/200 [11:24<1:29:20, 30.28s/it]", (23, 200)),
+        ("epoch bracket", "[Epoch 22/200] Rollout: events=102", (22, 200)),
+        ("epoch colon", "Epoch: 5/100  loss=0.42", (5, 100)),
+        ("iter form", "Iter 1234 / 5000  lr=1e-4", (1234, 5000)),
+        ("step form", "step 100 of 200: avg_reward=42", (100, 200)),
+        ("done form", "(50/100) done", (50, 100)),
+        ("multi-line, last wins", "[Epoch 1/100]\n[Epoch 2/100]\n[Epoch 3/100]\n", (3, 100)),
+        ("no progress", "starting\nloading\nready", None),
+        ("absurd current > total", "100/50 step", None),
+        ("zero total", "0/0 init", None),
+    ]
+    for name, text, expected in cases:
+        got = et.parse_progress(text)
+        check(f"parse: {name}", got == expected, diag=f"text={text!r} got={got} expected={expected}")
+
+    # ---------- ETA math ----------
+    # 23/200 progress, 600s elapsed → rate=0.0383/s, remaining=(200-23)/0.0383 ≈ 4617s
+    eta = et.compute_eta_seconds(
+        "Training: | 23/200 [11:24<1:29:20, 30.28s/it]",
+        elapsed_s=600, fallback_ewma_s=0
+    )
+    check("ETA math: 23/200 after 600s ≈ 4617s",
+          4500 <= eta <= 4700, diag=f"got {eta}")
+
+    # No progress, fallback EWMA (1800s) - elapsed (300s) = 1500s
+    eta = et.compute_eta_seconds("nothing", elapsed_s=300, fallback_ewma_s=1800)
+    check("ETA fallback: EWMA(1800) - elapsed(300) = 1500s",
+          eta == 1500, diag=f"got {eta}")
+
+    # No progress AND no EWMA → 0 (unknown)
+    eta = et.compute_eta_seconds("", elapsed_s=10, fallback_ewma_s=0)
+    check("ETA: no signal → 0", eta == 0)
+
+    # Almost done: 199/200 after 5950s → rate=0.0334/s, remaining=(1)/0.0334 ≈ 30s
+    eta = et.compute_eta_seconds("[Epoch 199/200]", elapsed_s=5950, fallback_ewma_s=0)
+    check("ETA: 199/200 after 5950s → ~30s", 25 <= eta <= 35, diag=f"got {eta}")
+
+    # 0/200 just started → no rate available, fallback to EWMA - elapsed
+    eta = et.compute_eta_seconds("[Epoch 0/200]", elapsed_s=10, fallback_ewma_s=600)
+    check("ETA: 0/N at start uses fallback (no rate)", 580 <= eta <= 600, diag=f"got {eta}")
+
+    # format helpers
+    check("format 0 → '—'", et.format_eta(0) == "—")
+    check("format 30 → '30s'", et.format_eta(30) == "30s")
+    check("format 90 → '1.5m'", et.format_eta(90) == "1.5m")
+    check("format 7200 → '2.0h'", et.format_eta(7200) == "2.0h")
+
+    # ---------- _refresh_eta_from_logs integration ----------
+    saved_run_on = sch.run_on
+    saved_history_get = sch.history_get
+
+    sch.history_get = lambda sig: {"dur_s_ewma": 1200} if sig == "TEST/eta-fallback" else None
+
+    # Mock per-node ssh tail: returns a marker-delimited log dump
+    def _mock_run_on(node, cmd, timeout=30, check=True):
+        # Pretend node-A has two tasks: t1 with 80% progress, t2 with no log
+        if "===ETA_LOG_t-prog===" in cmd:
+            return (0,
+                    "===ETA_LOG_t-prog===\n[Epoch 80/100] step\n"
+                    "===ETA_LOG_t-noprog===\nstarting up\n",
+                    "")
+        return (0, "", "")
+    sch.run_on = _mock_run_on
+
+    state = {"tasks": [
+        {"id": "t-prog", "status": "running", "node": "A",
+         "log_path": "/tmp/p.log", "signature": "TEST/eta-runs",
+         "started_at": time.time() - 800},
+        {"id": "t-noprog", "status": "running", "node": "A",
+         "log_path": "/tmp/np.log", "signature": "TEST/eta-fallback",
+         "started_at": time.time() - 100},
+        {"id": "t-nolog", "status": "running", "node": "A",
+         "log_path": None, "signature": "TEST/eta-fallback",
+         "started_at": time.time() - 50},
+        {"id": "t-done", "status": "done", "node": "A",
+         "log_path": "/tmp/d.log"},  # not running — should be skipped
+    ]}
+    try:
+        sch._refresh_eta_from_logs(state)
+        prog = next(t for t in state["tasks"] if t["id"] == "t-prog")
+        noprog = next(t for t in state["tasks"] if t["id"] == "t-noprog")
+        nolog = next(t for t in state["tasks"] if t["id"] == "t-nolog")
+        done = next(t for t in state["tasks"] if t["id"] == "t-done")
+
+        # t-prog: 80/100 after 800s → rate=0.1/s, remaining=20/0.1=200s
+        check("running task with progress: ETA from rate (~200s)",
+              prog.get("eta_seconds") and 150 <= prog["eta_seconds"] <= 250,
+              diag=f"got {prog.get('eta_seconds')}")
+        # t-noprog: no progress in tail, EWMA=1200, elapsed=100 → 1100
+        check("running task no progress in tail: EWMA fallback (~1100s)",
+              noprog.get("eta_seconds") and 1050 <= noprog["eta_seconds"] <= 1200,
+              diag=f"got {noprog.get('eta_seconds')}")
+        # t-nolog: no log_path → pure EWMA fallback (1200 - 50 = 1150)
+        check("running task with no log_path: pure EWMA fallback (~1150s)",
+              nolog.get("eta_seconds") and 1100 <= nolog["eta_seconds"] <= 1200,
+              diag=f"got {nolog.get('eta_seconds')}")
+        # t-done: not running → eta_seconds NOT set (we skip non-running)
+        check("non-running task is skipped",
+              "eta_seconds" not in done or done.get("eta_seconds") is None,
+              diag=f"got {done.get('eta_seconds')}")
+    finally:
+        sch.run_on = saved_run_on
+        sch.history_get = saved_history_get
+
+    # ---------- ssh failure → graceful fallback (no exception) ----------
+    sch.run_on = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("ssh broken"))
+    sch.history_get = lambda sig: {"dur_s_ewma": 600}
+    try:
+        state = {"tasks": [
+            {"id": "tx", "status": "running", "node": "A",
+             "log_path": "/tmp/x.log", "signature": "TEST/eta-fb",
+             "started_at": time.time() - 100},
+        ]}
+        sch._refresh_eta_from_logs(state)
+        tx = state["tasks"][0]
+        check("ssh failure → fallback EWMA, no exception",
+              tx.get("eta_seconds") and 480 <= tx["eta_seconds"] <= 520,
+              diag=f"got {tx.get('eta_seconds')}")
+    finally:
+        sch.run_on = saved_run_on
+        sch.history_get = saved_history_get
+
+    # ---------- update_running_tasks chains both passes ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    urt_idx = src.find("def update_running_tasks(state):")
+    next_def = src.find("\ndef ", urt_idx + 5)
+    body = src[urt_idx:next_def]
+    check("update_running_tasks calls _batch_check_running",
+          "_batch_check_running(state)" in body)
+    check("update_running_tasks calls _refresh_eta_from_logs",
+          "_refresh_eta_from_logs(state)" in body)
+
+
 def test_phase2_17_install_slurm_orchestration():
     """Phase 2.17: scheduleurm install-slurm subcommand + node installer script.
 
@@ -4357,6 +4512,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_16_pending_throttle()
     test_backend_slurm_phase2_16_1_rebalance_pending()
     test_phase2_17_install_slurm_orchestration()
+    test_phase3_0_1_eta_parser_and_integration()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -5108,6 +5108,110 @@ def test_phase3_0_23_env_key_validation_and_reserved_guard():
           list(sch._safe_extra_env_items(None)) == [])
 
 
+def test_phase3_0_24_rebalance_pending_clears_placement_fields():
+    """Phase 3.0.24 P3 fix: requeue path in cmd_rebalance_pending must clear
+    `node`, `gpu_idx`, `actual_started_at` along with the slurm fields.
+
+    Pre-fix: only slurm-specific fields were cleared. `node` stayed pinned
+    to the old slurm host. _do_dispatch would overwrite it on re-placement,
+    but in the interim, status / TUI / env smoke probes would see a queued
+    task still associated with the old node — confusing display + needless
+    smoke probes against the wrong target.
+
+    The audit message keeps the old node value (captured into a local before
+    clearing) so users can see where the task came from.
+    """
+    print("\n[81] Phase 3.0.24 P3 fix: rebalance-pending requeue clears node/gpu_idx/actual_started_at")
+
+    # 1. Source guard.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def cmd_rebalance_pending")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("requeue clears `node`",
+          '"node"' in body and "node\", \"gpu_idx" in body)
+    check("requeue clears `gpu_idx`",
+          '"gpu_idx"' in body)
+    check("requeue clears `actual_started_at`",
+          '"actual_started_at"' in body)
+    check("audit message captures old_node BEFORE clearing",
+          "old_node" in body and "old_node = t.get" in body)
+
+    # 2. Behavioral.
+    saved_save = sch.save_state
+    saved_load = sch.load_state
+    saved_run_on = sch.run_on
+    saved_lock = sch.state_lock
+    saved_sleep = time.sleep
+    time.sleep = lambda s: None
+
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tA", "status": "running", "node": "n1",
+         "slurm_job_id": 100, "slurm_state": "PENDING",
+         "gpu_idx": 0, "actual_started_at": time.time() - 300,
+         "started_at": time.time() - 600, "remote_pids": [],
+         "signature": "TEST/A", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    sch.save_state = lambda s: None
+    cancelled_jids = set()
+    def fake_run_on(node, cmd, timeout=10, check=True):
+        if "scancel" in cmd:
+            try:
+                cancelled_jids.add(int(cmd.split()[-1]))
+            except Exception:
+                pass
+            return (0, "", "")
+        if "squeue" in cmd:
+            jid = None
+            try:
+                parts = cmd.split()
+                jid = int(parts[parts.index("-j") + 1])
+            except Exception:
+                pass
+            if jid is None or jid in cancelled_jids:
+                return (0, "", "")  # gone after scancel
+            return (0, "PENDING\n", "")
+        return (0, "", "")
+    sch.run_on = fake_run_on
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock():
+        yield
+    sch.state_lock = fake_lock
+
+    class Args: yes = True
+
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("rebalanced task: status=queued",
+              post["status"] == "queued", diag=str(post))
+        check("rebalanced task: slurm_job_id cleared",
+              post.get("slurm_job_id") is None)
+        check("rebalanced task: node cleared",
+              post.get("node") is None,
+              diag=f"node still {post.get('node')!r} (would mislead status/TUI/env-smoke)")
+        check("rebalanced task: gpu_idx cleared",
+              post.get("gpu_idx") is None,
+              diag=f"gpu_idx still {post.get('gpu_idx')!r}")
+        check("rebalanced task: actual_started_at cleared",
+              post.get("actual_started_at") is None,
+              diag=f"actual_started_at still {post.get('actual_started_at')!r}")
+        check("rebalanced task: started_at cleared (was already covered)",
+              post.get("started_at") is None)
+        # The audit trail keeps the old node name in last_block_reason.
+        check("last_block_reason still names the old node (captured before clear)",
+              "n1" in (post.get("last_block_reason") or ""),
+              diag=f"got {post.get('last_block_reason')!r}")
+    finally:
+        sch.save_state = saved_save
+        sch.load_state = saved_load
+        sch.run_on = saved_run_on
+        sch.state_lock = saved_lock
+        time.sleep = saved_sleep
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7607,6 +7711,7 @@ if __name__ == "__main__":
     test_phase3_0_21_explicit_docker_fail_fast_no_local_digest()
     test_phase3_0_22_explicit_conda_fail_fast_no_local_path()
     test_phase3_0_23_env_key_validation_and_reserved_guard()
+    test_phase3_0_24_rebalance_pending_clears_placement_fields()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

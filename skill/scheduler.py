@@ -5909,14 +5909,25 @@ def cmd_rebalance_pending(args):
                     f"task left in place to avoid duplicate sbatch"
                 )
                 continue
+            old_node = t.get("node") or "?"
+            # Phase 3.0.24 P3 fix: also clear `node`, `gpu_idx`,
+            # `actual_started_at`. Pre-fix the requeued task kept its old node
+            # pinned in state — _do_dispatch overwrites it on re-placement, but
+            # in the meantime status/TUI/env-smoke probes would see a queued
+            # task displayed/probed against the OLD node, which is misleading
+            # at best (the whole point of rebalance-pending is that the old
+            # placement is being undone). Capture the old_node into the
+            # last_block_reason message before clearing so the audit trail
+            # still names where the task came from.
             for k in ("slurm_job_id", "slurm_state", "started_at", "finished_at",
-                      "log_path", "_diagnosis", "process_group", "launching_started_at"):
+                      "log_path", "_diagnosis", "process_group", "launching_started_at",
+                      "node", "gpu_idx", "actual_started_at"):
                 t[k] = None
             t["remote_pids"] = []
             t["alive_pids"] = []
             t["status"] = "queued"
             t["last_block_reason"] = (
-                f"rebalance-pending: scancelled slurm job {jid} on {t.get('node') or '?'} "
+                f"rebalance-pending: scancelled slurm job {jid} on {old_node} "
                 f"({msg}); will re-dispatch under current policy"
             )
             rebalanced += 1

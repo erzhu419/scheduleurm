@@ -1816,6 +1816,20 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
         # path that should now exist on target (preload rsync'd it). Bare `inner` is correct.
         # If env didn't preload (e.g., target down), launch will fail with ENV_MISSING and
         # heal flow takes over — no different from legacy `none` behavior.
+        #
+        # Phase 3.0.22 P2 fix: but if user passed `conda:/abs/path` and the local
+        # source path doesn't exist, preload silently skipped the rsync (line in
+        # _preload_env_outside_lock guards `Path.is_dir()`). Launching anyway
+        # would let a stale remote env at the same path silently run — same
+        # blast-radius shape as the docker stale-tag P1. Fail-fast at launch
+        # so the user sees the misconfiguration before compute is wasted.
+        if spec_image and Path(spec_image).is_absolute() and not Path(spec_image).is_dir():
+            return (inner,
+                    f"--env-spec conda:{spec_image} but the env path does not "
+                    f"exist locally — preload skipped (nothing to rsync); "
+                    f"launching now would risk running a stale remote env at "
+                    f"the same path. Create/deploy the env locally first, "
+                    f"then resubmit.")
         return (inner, None)
     chosen_image = spec_image or image
     node = task.get("node")

@@ -143,8 +143,20 @@ When the user says "跑这 9 个 ablation":
 | `--ckpt-dir` | abs path on target for resume detection |
 | `--resume-flag` | flag the script accepts (e.g. `--resume_from`); scheduler appends `<flag> <ckpt_path>` to cmd on re-dispatch when `find_resume()` locates a ckpt. Empty default = no injection. Pair with `--ckpt-dir`. Required for auto-resume to actually take effect. |
 | `--priority` | `low/normal/high` — only if user signals urgency |
-| `--preferred-node` | only if user explicitly insists |
+| `--preferred-node` | **soft pin** — try this node first; if it's full / throttled / down, scheduler picks any other fitting node automatically. Use this for "I'd prefer X" intent. |
+| `--require-node` | **hard pin** — task ONLY runs on this node, never falls back. Use ONLY when the task has node-specific dependencies that genuinely can't be moved (libsumo only on local; non-portable C extension; node-local data files; in-place state at a specific path). When in doubt, use `--preferred-node` instead — it preserves the user's preference but lets the scheduler load-balance when one node is overloaded relative to another. |
 | `--env KEY=VAL ...` | env vars (CUDA_VISIBLE_DEVICES is set automatically) |
+
+### Pinning rule of thumb (very important — bad pin choices waste cluster capacity)
+
+When the user says "跑在 X 上" / "用 jtl110gpu2 跑这个" / "在 local 跑":
+- **Default to `--preferred-node`** unless one of these is true:
+  - The task uses a library that's only on that node (e.g. SUMO/libsumo: only on `local`)
+  - Resume-from-ckpt and the ckpt only exists on that node (and is large enough that copying it is meaningful)
+  - User explicitly says "必须 / 一定要 / 只能 / strictly" / similar hard-pin language
+- **`--require-node` is the hammer**, not the default. Hard pin means the task waits forever if the node is full, even when another node is idle — exactly the resource waste scheduleurm exists to prevent. With `--preferred-node`, a node tied up with long jobs lets new work flow to its less-loaded peer.
+
+If you previously submitted a batch with `--require-node` and now realize they should have been soft-pinned, edit the queued tasks (e.g. via a small `python3 -c '...'` script under `state_lock`) to swap `require_node` → `preferred_node` and clear `node`/`gpu_idx` so dispatch re-decides.
 
 Example (RE-SAC b1):
 ```bash

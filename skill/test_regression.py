@@ -6788,6 +6788,154 @@ def test_phase3_0_35_slurm_terminal_orphan_diagnosis():
         sch._write_escalation = saved_write_escalation
 
 
+def test_phase3_0_36_local_terminal_orphan_user_redirect_recovery():
+    """Phase 3.0.36 P2 fix: local terminal-orphan finalize must consult the
+    user's own stdout/stderr redirect target before declaring "no evidence".
+
+    Pre-fix: `if log_size <= 0: return False`. Wrapper log is 0 bytes
+    whenever the user's cmd has its own redirect (`python train.py >
+    out.log 2>&1`) — bash's inner redirect overrides the outer one. So
+    a task that ran-and-finished via its own log would pass through the
+    revert → re-launch path and run a SECOND time as a duplicate.
+
+    Now: when the wrapper log is empty, parse the cmd for a `> path`
+    redirect and probe that path. If it has content, finalize via
+    _diagnose_terminal (which already has the same redirect-recovery
+    logic and will read the real log for classification). Only revert
+    when BOTH wrapper AND user-redirect are empty/missing.
+    """
+    print("\n[92] Phase 3.0.36 P2 fix: local terminal-orphan handles cmd's own redirect")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _try_finalize_terminal_local_task")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("finalize probes user redirect when wrapper log empty",
+          "cmd_has_own_redirect" in body
+          and "&>|>>|2>&1|>&|>" in body)
+    check("finalize uses unified _probe_size helper for both wrapper + redirect",
+          "def _probe_size" in body)
+    check("finalize reverts only when BOTH wrapper AND redirect are empty",
+          "real_size <= 0" in body)
+
+    # 2. Behavioral.
+    saved_NODES = sch.NODES
+    saved_state_dir = sch.STATE_DIR
+    saved_write_escalation = sch._write_escalation
+    sch._write_escalation = lambda *a, **kw: None
+    import tempfile
+    tdir = tempfile.mkdtemp()
+    log_dir = os.path.join(tdir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    sch.STATE_DIR = tdir
+    sch.NODES = {"localnode": {"host": None}}
+
+    try:
+        # ---- Case A: wrapper log empty BUT cmd has `> real.log 2>&1` and
+        # the user log has content → finalize as done.
+        wrapper_a = os.path.join(log_dir, "tA.log")
+        open(wrapper_a, "w").close()  # empty wrapper (cmd took over)
+        real_a = os.path.join(log_dir, "real_tA.log")
+        with open(real_a, "w") as f:
+            f.write("Epoch 100/100 loss=0.001\n")
+            f.write("Training complete\nFinal model saved\n")
+        state = {"next_id": 100, "tasks": [{
+            "id": "tA", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": f"python train.py > {real_a} 2>&1",
+            "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("wrapper empty + user-redirect with content → finalized=True",
+              finalized is True)
+        check("wrapper empty + clean user log → status=done (NOT reverted)",
+              state["tasks"][0]["status"] == "done")
+
+        # ---- Case B: wrapper log empty AND user log empty → revert (no
+        # evidence the task ran).
+        wrapper_b = os.path.join(log_dir, "tB.log")
+        open(wrapper_b, "w").close()
+        real_b = os.path.join(log_dir, "real_tB.log")
+        open(real_b, "w").close()
+        state = {"next_id": 200, "tasks": [{
+            "id": "tB", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": f"python train.py > {real_b} 2>&1",
+            "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("wrapper empty + user-redirect also empty → finalized=False (revert)",
+              finalized is False)
+        check("wrapper empty + user-redirect also empty → status unchanged",
+              state["tasks"][0]["status"] == "launching")
+
+        # ---- Case C: wrapper log empty AND no redirect in cmd → revert
+        # (existing behavior — unchanged contract for tasks without their
+        # own redirect).
+        wrapper_c = os.path.join(log_dir, "tC.log")
+        open(wrapper_c, "w").close()
+        state = {"next_id": 300, "tasks": [{
+            "id": "tC", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python train.py",  # no redirect
+            "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("wrapper empty + no redirect in cmd → finalized=False",
+              finalized is False)
+
+        # ---- Case D: wrapper log has content (legacy path) → finalize as
+        # before, no redirect needed.
+        wrapper_d = os.path.join(log_dir, "tD.log")
+        with open(wrapper_d, "w") as f:
+            f.write("Training complete\nFinal model saved\n")
+        state = {"next_id": 400, "tasks": [{
+            "id": "tD", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python train.py",
+            "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("wrapper has content → finalize via existing path",
+              finalized is True and state["tasks"][0]["status"] == "done")
+
+        # ---- Case E: wrapper empty + redirect points to user log with crash
+        # patterns → status=failed + auto-requeue (mirrors regular crash flow).
+        wrapper_e = os.path.join(log_dir, "tE.log")
+        open(wrapper_e, "w").close()
+        real_e = os.path.join(log_dir, "real_tE.log")
+        with open(real_e, "w") as f:
+            f.write("Epoch 5/100 starting\n")
+            f.write("Traceback (most recent call last):\n")
+            f.write("AssertionError: invariant violated\n")
+        state = {"next_id": 500, "tasks": [{
+            "id": "tE", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": f"python train.py > {real_e} 2>&1",
+            "cwd": "/work", "retry_count": 0, "signature": "TEST/redirect-crash",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("wrapper empty + redirect+crash → finalized=True",
+              finalized is True)
+        check("wrapper empty + redirect+crash → status=failed",
+              state["tasks"][0]["status"] == "failed")
+        check("wrapper empty + redirect+crash → retry clone created",
+              state["tasks"][0].get("requeued_as") is not None,
+              diag=str(state["tasks"]))
+    finally:
+        import shutil
+        shutil.rmtree(tdir, ignore_errors=True)
+        sch.NODES = saved_NODES
+        sch.STATE_DIR = saved_state_dir
+        sch._write_escalation = saved_write_escalation
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -9312,6 +9460,7 @@ if __name__ == "__main__":
     test_phase3_0_33_terminal_orphan_classification()
     test_phase3_0_34_local_docker_fail_fast_no_local_digest()
     test_phase3_0_35_slurm_terminal_orphan_diagnosis()
+    test_phase3_0_36_local_terminal_orphan_user_redirect_recovery()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

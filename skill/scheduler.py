@@ -4907,31 +4907,56 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
         log_path = f"{STATE_DIR}/logs/{tid}.log"
     else:
         log_path = f"/tmp/sched_{tid}.log"
-    log_size = 0
-    try:
-        if NODES.get(node, {}).get("host") is None:
-            lp = Path(log_path)
-            if not lp.exists():
-                return False
-            log_size = lp.stat().st_size
-        else:
+
+    def _probe_size(path: str) -> int:
+        """Return file size on `node` (0 on missing / probe failure)."""
+        try:
+            if NODES.get(node, {}).get("host") is None:
+                lp = Path(path)
+                return lp.stat().st_size if lp.exists() else 0
             rc, out, _ = run_on(
-                node,
-                f"wc -c < {shlex.quote(log_path)} 2>/dev/null",
+                node, f"wc -c < {shlex.quote(path)} 2>/dev/null",
                 timeout=5, check=False,
             )
             if rc != 0:
-                return False
+                return 0
             try:
-                log_size = int((out or "0").strip())
+                return int((out or "0").strip())
             except ValueError:
-                return False
-    except Exception:
-        return False
+                return 0
+        except Exception:
+            return 0
+
+    log_size = _probe_size(log_path)
     if log_size <= 0:
-        # Empty / missing log = no evidence the task ever ran. Fall back
-        # to the revert path; next dispatch attempts a fresh launch.
-        return False
+        # Phase 3.0.36 P2 fix: wrapper log being empty isn't proof the task
+        # didn't run — many cmds redirect their own stdout / stderr (e.g.
+        # `python train.py > out.log 2>&1`), making the wrapper file 0 bytes
+        # by design. _diagnose_terminal already knows how to recover the real
+        # log from the cmd's redirect target; before reverting, probe THAT
+        # path. Without this gate the task would get re-launched as a
+        # duplicate even though it had run-and-finished successfully.
+        cmd_str = task.get("cmd") or ""
+        cmd_has_own_redirect = bool(re.search(
+            r"(?<!\d)(?:&>|>>|2>&1|>&|>)\s*[^\s|;&)]+", cmd_str)) \
+            or "2>&1" in cmd_str
+        real_log = None
+        if cmd_has_own_redirect:
+            m = re.search(r"(?:^|\s)(?:&>|>)\s*([^\s|;&)<>]+)", cmd_str)
+            if m:
+                real_log = m.group(1)
+        if not real_log:
+            return False
+        real_size = _probe_size(real_log)
+        if real_size <= 0:
+            # Wrapper empty AND user-redirect target also empty/missing → no
+            # evidence the task ever ran. Fall back to revert path.
+            return False
+        # User-redirect log has content: _diagnose_terminal will recover and
+        # read it for classification (it has the same redirect-recovery
+        # path). Continue into the finalize block; log_size stays 0 here
+        # because we want to record the WRAPPER log_path on the task —
+        # _diagnose_terminal probes the user redirect itself.
     # Adopt as terminal. _diagnose_terminal needs log_path / started_at /
     # finished_at to do its work.
     task["log_path"] = log_path

@@ -197,7 +197,7 @@ Tunables (all env-var overridable; no code edit; takes effect after watcher rest
 | `SCHEDULEURM_MIGRATION_MIN_TASK_ETA_S` | `300` | Tasks shorter than this aren't migrated (staging cost > savings) |
 | `SCHEDULEURM_MIGRATION_MAX_CKPT_SIZE_MB` | `2048` | Reject migration if ckpt > this size (rsync would take too long) |
 
-Migration emits a `migrated` event (visible in `journalctl --user -u scheduler` and `~/.claude/scheduler/logs/watcher.log`) and rewrites the task's `preferred_node` + sets `last_block_reason` so it's visible in `scheduler status`.
+Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log` (JSONL, also pushed to Feishu when configured), prints a `MIGRATE from → to (eta=...s)` line on `scheduler dispatch`, and rewrites the task's `preferred_node` + sets `last_block_reason` so it's visible in `scheduler status` too. Sibling `task_preempted` events surface the same way for high-prio preemption.
 
 `scheduler status` now shows per-node `eta_load` so you can see imbalance directly:
 

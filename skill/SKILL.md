@@ -289,6 +289,41 @@ python ~/.claude/skills/scheduler/scheduler.py history
 ```
 Auto-tracked: peak VRAM + peak RAM + cpu_cores per signature.
 
+### "让 t0099 / 这几个先跑 / bump priority" (Phase 3.1)
+```bash
+python ~/.claude/skills/scheduler/scheduler.py priority t0099 high
+```
+Queued-only. Re-sorts the queue by `(priority, submitted_at)`; high-prio tasks dispatch first when GPUs free up. Do NOT use this on running tasks (rejected). For RUNNING tasks the answer is `cancel --force` + resubmit, OR ride out the natural completion order.
+
+### "t0099 估算太高 / GPU 永远塞不下 / 改一下" (Phase 3.1)
+```bash
+python ~/.claude/skills/scheduler/scheduler.py edit t0099 --vram-mb 2000
+# also supports --ram-mb, --cpu, --description, --preferred-node, --require-node
+```
+Queued-only. Use this when history-based estimate is poisoned by a single bad sample (typical sign: sibling signatures show 1-2GB but this task estimates >5GB). Pair with `history --drop <sig>` so the next run doesn't inherit the bad value again.
+
+### "为什么 t0099 一直不上 / why" (Phase 3.1)
+```bash
+python ~/.claude/skills/scheduler/scheduler.py why t0099
+```
+Synthesizes:
+- Task header (status / priority / preferred / est)
+- `last_block_reason` from the most recent dispatch attempt
+- Own + sibling history (so user can see if their est_vram_mb is an outlier)
+- Per-node fit analysis: probes every node and explains FITS / blocked / 1/3-rule / util-saturation / RAM-headroom rejection per GPU
+
+The first thing to run when a queued task seems stuck. Far better than parsing `last_block_reason` strings by hand.
+
+### "history 里这个 sig 有个 9GB 的离群值 / 清掉 / 改" (Phase 3.1)
+```bash
+# Drop entire entry: next runs of this sig start fresh from real measurements
+python ~/.claude/skills/scheduler/scheduler.py history --drop 'RE-SAC/b2/ns_tqc_Hopper-v2_16'
+
+# Or set a specific value (resets vram_samples to single-element list):
+python ~/.claude/skills/scheduler/scheduler.py history --set 'RE-SAC/b2/ns_tqc_Hopper-v2_16' --vram-mb 1500
+```
+Use when one bad run got recorded as the peak (e.g. crash-spike before OOM kill, runaway leak). Drop is preferred over set — let the next clean run establish a real peak.
+
 ## Hard constraints (don't violate)
 
 - **NEVER ask "want X-way concurrency?"** — decide based on `status` + heuristics. Ask only if genuinely ambiguous.

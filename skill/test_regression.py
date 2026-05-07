@@ -6936,6 +6936,308 @@ def test_phase3_0_36_local_terminal_orphan_user_redirect_recovery():
         sch._write_escalation = saved_write_escalation
 
 
+def test_phase3_1_skill_priority_edit_history_why():
+    """Phase 3.1: four operational commands cover the gaps surfaced by
+    repeated ad-hoc state.json edits (priority bump, est_vram fix, history
+    poison cleanup, stuck-task diagnosis).
+    """
+    print("\n[93] Phase 3.1: priority / edit / history --drop|--set / why commands")
+
+    # 1. Source guards: each cmd_* function exists and registered as subparser.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    for fn_name in ("cmd_priority", "cmd_edit", "cmd_why", "_explain_node_fit"):
+        check(f"{fn_name} defined",
+              f"def {fn_name}" in src,
+              diag=f"{fn_name} missing")
+    # cmd_history extended with --drop / --set branches.
+    hist_idx = src.find("def cmd_history")
+    hist_end = src.find("\ndef ", hist_idx + 5)
+    hist_body = src[hist_idx:hist_end]
+    check("cmd_history handles --drop",
+          'getattr(args, "drop"' in hist_body
+          and "save_history(h)" in hist_body)
+    check("cmd_history handles --set",
+          'getattr(args, "set"' in hist_body
+          and 'rec["vram_mb"]' in hist_body)
+    # main() registers all four subparsers.
+    main_idx = src.find("def main():")
+    main_body = src[main_idx:]
+    for sp in ("priority", "edit", "why"):
+        check(f"main() registers `{sp}` subcommand",
+              f'sub.add_parser("{sp}"' in main_body)
+    check("main() history subcommand exposes --drop and --set flags",
+          's.add_argument("--drop"' in main_body
+          and 's.add_argument("--set"' in main_body)
+
+    # 2. Behavioral: cmd_priority on queued task.
+    saved_save = sch.save_state
+    saved_load = sch.load_state
+    saved_lock = sch.state_lock
+
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tQ", "status": "queued", "priority": "normal",
+         "description": "test queued task"},
+        {"id": "tR", "status": "running", "priority": "normal"},
+    ]}
+    save_capture = [None]
+    sch.load_state = lambda: fake_state
+    sch.save_state = lambda s: save_capture.__setitem__(0, s)
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock(): yield
+    sch.state_lock = fake_lock
+
+    class A:
+        pass
+
+    try:
+        # priority queued → mutates
+        a = A(); a.id = "tQ"; a.level = "high"
+        sch.cmd_priority(a)
+        check("priority on queued task → field updated",
+              fake_state["tasks"][0]["priority"] == "high")
+        check("priority change persisted via save_state",
+              save_capture[0] is fake_state)
+
+        # priority running → SystemExit
+        a = A(); a.id = "tR"; a.level = "high"
+        try:
+            sch.cmd_priority(a)
+            check("priority on running task → rejected (SystemExit)", False,
+                  diag="should have raised SystemExit")
+        except SystemExit as e:
+            check("priority on running task → rejected (SystemExit)",
+                  "not queued" in str(e), diag=str(e))
+
+        # priority unknown id → SystemExit
+        a = A(); a.id = "tNOPE"; a.level = "low"
+        try:
+            sch.cmd_priority(a)
+            check("priority on unknown id → SystemExit", False)
+        except SystemExit as e:
+            check("priority on unknown id → SystemExit",
+                  "not found" in str(e), diag=str(e))
+
+        # 3. Behavioral: cmd_edit
+        # Use only fields we already mock NODES for (avoid preferred_node validation).
+        a = A(); a.id = "tQ"; a.vram_mb = 2000; a.ram_mb = 1500
+        a.cpu = 4; a.description = "edited"
+        a.preferred_node = None; a.require_node = None
+        sch.cmd_edit(a)
+        t = fake_state["tasks"][0]
+        check("edit: vram_mb updated", t.get("est_vram_mb") == 2000)
+        check("edit: ram_mb updated", t.get("ram_mb") == 1500)
+        check("edit: cpu_cores updated", t.get("cpu_cores") == 4)
+        check("edit: description updated", t.get("description") == "edited")
+
+        # edit running task → reject
+        a = A(); a.id = "tR"; a.vram_mb = 100; a.ram_mb = None
+        a.cpu = None; a.description = None
+        a.preferred_node = None; a.require_node = None
+        try:
+            sch.cmd_edit(a)
+            check("edit on running task → SystemExit", False)
+        except SystemExit as e:
+            check("edit on running task → SystemExit",
+                  "not queued" in str(e), diag=str(e))
+
+        # edit with no flags → SystemExit
+        a = A(); a.id = "tQ"; a.vram_mb = None; a.ram_mb = None
+        a.cpu = None; a.description = None
+        a.preferred_node = None; a.require_node = None
+        try:
+            sch.cmd_edit(a)
+            check("edit with no flags → SystemExit", False)
+        except SystemExit as e:
+            check("edit with no flags → SystemExit",
+                  "specify at least one" in str(e), diag=str(e))
+
+        # 4. Behavioral: cmd_history --drop and --set
+        saved_load_h = sch.load_history
+        saved_save_h = sch.save_history
+        fake_h = {"PROJ/sigA": {"vram_mb": 9999, "vram_samples": [9999]},
+                  "PROJ/sigB": {"vram_mb": 1500, "vram_samples": [1400, 1500]}}
+        save_h_capture = [None]
+        sch.load_history = lambda: fake_h
+        sch.save_history = lambda h: save_h_capture.__setitem__(0, h.copy())
+
+        # --drop existing
+        a = A(); a.drop = "PROJ/sigA"; a.set = None
+        a.vram_mb = None; a.ram_mb = None; a.cpu = None
+        sch.cmd_history(a)
+        check("history --drop: entry removed",
+              "PROJ/sigA" not in fake_h)
+        check("history --drop: save_history called",
+              save_h_capture[0] is not None)
+
+        # --drop missing
+        a = A(); a.drop = "DOES/NOT/EXIST"; a.set = None
+        a.vram_mb = None; a.ram_mb = None; a.cpu = None
+        try:
+            sch.cmd_history(a)
+            check("history --drop unknown sig → SystemExit", False)
+        except SystemExit as e:
+            check("history --drop unknown sig → SystemExit",
+                  "not in history" in str(e), diag=str(e))
+
+        # --set with vram_mb resets samples
+        save_h_capture[0] = None
+        a = A(); a.drop = None; a.set = "PROJ/sigB"
+        a.vram_mb = 800; a.ram_mb = None; a.cpu = None
+        sch.cmd_history(a)
+        check("history --set vram_mb: vram_mb updated",
+              fake_h["PROJ/sigB"]["vram_mb"] == 800)
+        check("history --set vram_mb: vram_samples reset to single value",
+              fake_h["PROJ/sigB"]["vram_samples"] == [800],
+              diag=str(fake_h["PROJ/sigB"]))
+
+        # --set with no fields → SystemExit
+        a = A(); a.drop = None; a.set = "PROJ/newSig"
+        a.vram_mb = None; a.ram_mb = None; a.cpu = None
+        try:
+            sch.cmd_history(a)
+            check("history --set with no fields → SystemExit", False)
+        except SystemExit as e:
+            check("history --set with no fields → SystemExit",
+                  "requires at least one" in str(e), diag=str(e))
+
+        sch.load_history = saved_load_h
+        sch.save_history = saved_save_h
+
+        # 5. Behavioral: cmd_why prints diagnostic for queued task
+        # Stub probe_all + history + helpers so we don't hit real ssh.
+        saved_probe = sch.probe_all
+        saved_lh2 = sch.load_history
+        sch.probe_all = lambda: [
+            {"name": "n1", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "total_ram_mb": 200000, "total_cpu": 12, "running_count": 0,
+             "slurm_pending_count": 0, "gpus": [
+                 {"idx": 0, "total_mb": 12288, "used_mb": 11000,
+                  "free_mb": 1288, "util_pct": 100},
+             ]},
+        ]
+        sch.load_history = lambda: {"PROJ/foo": {"vram_mb": 1000, "ram_mb": 500}}
+        saved_NODES = sch.NODES
+        sch.NODES = {"n1": {"name": "n1", "host": None, "cpu_cores": 12,
+                            "ram_mb": 200000, "ram_headroom_frac": 0.10,
+                            "max_vram_per_task": None,
+                            "max_concurrent_running": None}}
+        # Make backend report n1 as local (not slurm-routed) so the GPU-fit
+        # path is exercised.
+        saved_backend = sch._BACKEND
+        class _Local:
+            def requires_local_capacity_check(self, name): return True
+        sch._BACKEND = _Local()
+
+        fake_state["tasks"].append({
+            "id": "tWhy", "status": "queued", "priority": "high",
+            "description": "diagnose me", "signature": "PROJ/foo/seedA",
+            "preferred_node": "n1", "require_node": None,
+            "est_vram_mb": 5000, "ram_mb": 2000, "cpu_cores": 2,
+            "last_block_reason": "no fit yesterday",
+        })
+
+        # Capture stdout
+        import io as _io
+        from contextlib import redirect_stdout as _rs
+        buf = _io.StringIO()
+        a = A(); a.id = "tWhy"
+        with _rs(buf):
+            sch.cmd_why(a)
+        out = buf.getvalue()
+        check("why: prints task header (status / priority / preferred)",
+              "status:       queued" in out
+              and "priority:     high" in out
+              and "preferred:    'n1'" in out, diag=out[:300])
+        check("why: surfaces last_block_reason",
+              "no fit yesterday" in out)
+        check("why: per-node fit analysis explains GPU rejection",
+              "n1" in out
+              and "compute saturation" in out, diag=out)
+
+        # Why on terminal task → degraded info, no probe
+        fake_state["tasks"].append({
+            "id": "tDone", "status": "done", "description": "old"})
+        buf = _io.StringIO()
+        a = A(); a.id = "tDone"
+        with _rs(buf):
+            sch.cmd_why(a)
+        out = buf.getvalue()
+        check("why: terminal task → 'task is done' note instead of fit analysis",
+              "is 'done'" in out or "is \"done\"" in out, diag=out)
+
+        # Why on unknown id → SystemExit
+        a = A(); a.id = "tNONE"
+        try:
+            sch.cmd_why(a)
+            check("why on unknown id → SystemExit", False)
+        except SystemExit as e:
+            check("why on unknown id → SystemExit",
+                  "not found" in str(e), diag=str(e))
+
+        sch._BACKEND = saved_backend
+        sch.NODES = saved_NODES
+        sch.probe_all = saved_probe
+        sch.load_history = saved_lh2
+
+        # 6. _explain_node_fit unit cases.
+        # GPU available with room → FITS.
+        node_state = {"name": "n1", "alive": True, "free_cpu": 12,
+                      "free_ram_mb": 100000, "total_ram_mb": 200000,
+                      "total_cpu": 12, "running_count": 0,
+                      "gpus": [{"idx": 0, "total_mb": 12288, "used_mb": 200,
+                                 "free_mb": 12000, "util_pct": 5}]}
+        sch.NODES = {"n1": {"name": "n1", "host": None, "cpu_cores": 12,
+                             "ram_mb": 200000, "ram_headroom_frac": 0.10,
+                             "max_vram_per_task": None,
+                             "max_concurrent_running": None}}
+        saved_blocked = sch._blocked_nodes_for_task
+        saved_lf = sch._launch_failed_nodes_for_task
+        saved_be = sch._BACKEND
+        sch._blocked_nodes_for_task = lambda task: set()
+        sch._launch_failed_nodes_for_task = lambda task: set()
+        sch._BACKEND = _Local()
+        small_task = {"est_vram_mb": 500, "ram_mb": 1000, "cpu_cores": 2}
+        msg = sch._explain_node_fit(small_task, node_state)
+        check("explain: small task on empty GPU → FITS",
+              msg.startswith("FITS:"), diag=msg)
+
+        # GPU at compute saturation → reject.
+        sat_node = dict(node_state)
+        sat_node["gpus"] = [{"idx": 0, "total_mb": 12288, "used_mb": 1000,
+                             "free_mb": 11000, "util_pct": 100}]
+        msg = sch._explain_node_fit(small_task, sat_node)
+        check("explain: compute saturated GPU → no-GPU-fit + util reason",
+              "no-GPU-fit" in msg and "compute saturation" in msg, diag=msg)
+
+        # Blocked node → BLOCKED message.
+        sch._blocked_nodes_for_task = lambda task: {"n1"}
+        msg = sch._explain_node_fit(small_task, node_state)
+        check("explain: blocked node → BLOCKED message",
+              msg.startswith("BLOCKED:"), diag=msg)
+        sch._blocked_nodes_for_task = lambda task: set()
+
+        # CPU-only task on alive node → FITS (CPU-only).
+        cpu_task = {"est_vram_mb": 0, "ram_mb": 1000, "cpu_cores": 2}
+        msg = sch._explain_node_fit(cpu_task, node_state)
+        check("explain: CPU-only task → FITS (CPU-only)",
+              "FITS (CPU-only)" in msg, diag=msg)
+
+        # Down node.
+        down = {"name": "n1", "alive": False, "error": "ssh timeout"}
+        msg = sch._explain_node_fit(small_task, down)
+        check("explain: dead node → DOWN message",
+              msg.startswith("DOWN"), diag=msg)
+
+        sch._blocked_nodes_for_task = saved_blocked
+        sch._launch_failed_nodes_for_task = saved_lf
+        sch._BACKEND = saved_be
+    finally:
+        sch.save_state = saved_save
+        sch.load_state = saved_load
+        sch.state_lock = saved_lock
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -9461,6 +9763,7 @@ if __name__ == "__main__":
     test_phase3_0_34_local_docker_fail_fast_no_local_digest()
     test_phase3_0_35_slurm_terminal_orphan_diagnosis()
     test_phase3_0_36_local_terminal_orphan_user_redirect_recovery()
+    test_phase3_1_skill_priority_edit_history_why()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

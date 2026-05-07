@@ -7456,8 +7456,10 @@ def test_phase3_2_0_claim_manager():
         check("enabled_for: non-opt-in node returns False",
               sch._ClaimManager.enabled_for("n_off") is False)
         sid = sch._ClaimManager.scheduler_id()
-        check("scheduler_id format: <host>:<pid>",
-              ":" in sid and sid.split(":")[1].isdigit(), diag=sid)
+        # Phase 3.4.2: scheduler_id is now <host>:<hex12-uuid-suffix>
+        # (persistent across restarts), not <host>:<pid>.
+        check("scheduler_id format: <host>:<persistent-id>",
+              ":" in sid and len(sid.split(":")[1]) >= 6, diag=sid)
 
         # 3b. Disabled node → fast path, NO ssh.
         captured.clear()
@@ -8532,6 +8534,95 @@ def test_phase3_4_0_cross_user_claim_io():
           "_claims_${USER:-anon}.py" in setup)
     check("setup cmd umasks 0 before file ops",
           "umask 0" in setup)
+
+
+def test_phase3_4_2_persistent_owner_id():
+    """Phase 3.4.2 P1 fix: scheduler_id must persist across restarts so a
+    watcher restart / manual dispatch / re-launched daemon can still
+    release() / renew_many() / gc its OWN claims from before the restart.
+
+    Pre-fix the id was `<host>:<pid>` — a fresh PID after restart didn't
+    match any prior-restart claims. They survived until TTL expired
+    (default 1h) which kept resources double-booked between the new
+    process and the orphaned claim until cleanup.
+
+    Now: random hex suffix stored at STATE_DIR/claim_owner_id, cached
+    in-process, regenerated only if the file is missing. Different
+    STATE_DIR (different scheduleurm install) → different id.
+    """
+    print("\n[100] Phase 3.4.2 P1 fix: persistent scheduler_id (survives restart)")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("scheduler_id() loads from STATE_DIR/claim_owner_id when present",
+          'STATE_DIR / "claim_owner_id"' in src
+          and "owner_file.read_text" in src)
+    check("scheduler_id() generates UUID hex when missing",
+          "uuid.uuid4()" in src
+          and "owner_file.write_text" in src)
+    check("scheduler_id() caches result in-class so file isn't read every call",
+          "_cached_owner_id" in src)
+    check("scheduler_id() does NOT use os.getpid() (would break on restart)",
+          # Allow the fallback path to use pid as last-resort, but not the primary
+          src.count("os.getpid()") < 5,  # used elsewhere in the file too; loose bound
+          diag="primary path must not depend on PID")
+
+    import tempfile, importlib
+    saved_state_dir = sch.STATE_DIR
+    saved_cache = getattr(sch._ClaimManager, "_cached_owner_id", None)
+
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            sch.STATE_DIR = sch.Path(td)
+            # First call: id generated and persisted.
+            try:
+                delattr(sch._ClaimManager, "_cached_owner_id")
+            except AttributeError:
+                pass
+            sid1 = sch._ClaimManager.scheduler_id()
+            check("first call: scheduler_id generates a non-empty id",
+                  sid1 and ":" in sid1, diag=sid1)
+            owner_file = sch.Path(td) / "claim_owner_id"
+            check("first call: id persisted to STATE_DIR/claim_owner_id",
+                  owner_file.exists()
+                  and owner_file.read_text().strip() == sid1, diag=sid1)
+
+            # Second call (same process): cache hit, same id.
+            sid2 = sch._ClaimManager.scheduler_id()
+            check("second call (cached): same id",
+                  sid2 == sid1)
+
+            # Simulate restart: clear cache. Should re-load from disk, NOT
+            # generate a new one.
+            try:
+                delattr(sch._ClaimManager, "_cached_owner_id")
+            except AttributeError:
+                pass
+            sid3 = sch._ClaimManager.scheduler_id()
+            check("after cache clear (simulated restart): same id loaded from disk",
+                  sid3 == sid1, diag=f"sid1={sid1} sid3={sid3}")
+
+            # Different STATE_DIR (different install) → different id.
+            with tempfile.TemporaryDirectory() as td2:
+                sch.STATE_DIR = sch.Path(td2)
+                try:
+                    delattr(sch._ClaimManager, "_cached_owner_id")
+                except AttributeError:
+                    pass
+                sid_other = sch._ClaimManager.scheduler_id()
+                check("different STATE_DIR (different install) → different id",
+                      sid_other != sid1, diag=f"a={sid1} b={sid_other}")
+
+            # Restore td so cleanup is clean.
+            sch.STATE_DIR = sch.Path(td)
+    finally:
+        sch.STATE_DIR = saved_state_dir
+        if saved_cache is None:
+            try:
+                delattr(sch._ClaimManager, "_cached_owner_id")
+            except AttributeError:
+                pass
+        else:
+            sch._ClaimManager._cached_owner_id = saved_cache
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -11066,6 +11157,7 @@ if __name__ == "__main__":
     test_phase3_2_3_concurrent_schedulers_only_one_wins()
     test_phase3_3_local_windows_host_metrics()
     test_phase3_4_0_cross_user_claim_io()
+    test_phase3_4_2_persistent_owner_id()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

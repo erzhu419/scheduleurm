@@ -2581,6 +2581,150 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_check_running_phase2_9_slurm_aware():
+    """Phase 2.9 P2 fix: check_running() helper must route through the backend for
+    slurm tasks too (which have remote_pids=[] and track via slurm_job_id).
+
+    Bug before fix:
+        if not _task_pids(task): return "dead"
+    fired immediately for any slurm task → reported 'dead' without ever consulting
+    squeue. The main _batch_check_running path didn't have this bug (it routes via
+    _BACKEND.batch_probe directly, no early-return), but check_running was used by
+    external callers (tests, MCP wrapper, future tools) and gave wrong answers.
+
+    Fix: drop the early-return. Let each backend's batch_probe filter tasks lacking
+    its own tracking artifact — they fall through to `if not res: return "dead"`.
+    """
+    print("\n[50] Phase 2.9 check_running consults backend for slurm tasks (no pid early-return)")
+
+    # Save and stub the singleton backend with a controllable fake.
+    saved_backend = sch._BACKEND
+    probe_calls = []
+
+    class _ProbeRecorder(sch.Backend):
+        name = "probe-recorder"
+        def __init__(self, canned):
+            self._canned = canned  # {task_id: result_dict}
+        def launch(self, t): return False, "n/a"
+        def kill(self, t, timeout=15): return False, "n/a"
+        def batch_probe(self, state):
+            probe_calls.append([t["id"] for t in state["tasks"]])
+            return {tid: r for tid, r in self._canned.items()
+                    if any(t["id"] == tid for t in state["tasks"])}
+
+    # ---------- Slurm task (no pids, has slurm_job_id) is NOT short-circuited ----------
+    # Backend reports alive — check_running must propagate that, not return "dead".
+    sch._BACKEND = _ProbeRecorder({
+        "tslurm": {"state": "alive", "alive_pids": [],
+                   "vram_mb": 0, "ram_mb": 4096, "pcpu": 0.0}
+    })
+    probe_calls.clear()
+    try:
+        slurm_task = {
+            "id": "tslurm", "status": "running", "node": "cluster",
+            "remote_pids": [],            # slurm-launched: empty
+            "slurm_job_id": 12345,        # tracking via slurm
+            "peak_ram_mb": 0, "peak_vram_mb": 0,
+        }
+        result = sch.check_running(slurm_task)
+        check("slurm task with [] pids consults backend (not early-return 'dead')",
+              probe_calls and probe_calls[0] == ["tslurm"],
+              diag=f"probe_calls={probe_calls}")
+        check("slurm task: backend says alive → check_running returns 'alive'",
+              result == "alive", diag=f"got {result!r}")
+        check("slurm task: ram_mb folded into peak_ram_mb",
+              slurm_task["peak_ram_mb"] == 4096)
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- Slurm task: backend says dead (squeue COMPLETED) ----------
+    sch._BACKEND = _ProbeRecorder({
+        "tslurm2": {"state": "dead", "alive_pids": [],
+                    "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+    })
+    probe_calls.clear()
+    try:
+        result = sch.check_running({
+            "id": "tslurm2", "status": "running", "node": "cluster",
+            "remote_pids": [], "slurm_job_id": 200,
+        })
+        check("slurm task: backend says dead → check_running returns 'dead'",
+              result == "dead")
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- Slurm task: probe failure (squeue ssh broken) → 'unknown' ----------
+    sch._BACKEND = _ProbeRecorder({
+        "tslurm3": {"state": "unknown", "alive_pids": [],
+                    "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+    })
+    try:
+        result = sch.check_running({
+            "id": "tslurm3", "status": "running", "node": "cluster",
+            "remote_pids": [], "slurm_job_id": 300,
+        })
+        check("slurm task: backend says unknown → check_running returns 'unknown'",
+              result == "unknown")
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- Local task with PIDs: regression — still works as before ----------
+    sch._BACKEND = _ProbeRecorder({
+        "tlocal": {"state": "alive", "alive_pids": [101, 102],
+                   "vram_mb": 1024, "ram_mb": 2048, "pcpu": 80.0}
+    })
+    try:
+        local_task = {
+            "id": "tlocal", "status": "running", "node": "local",
+            "remote_pids": [101], "peak_ram_mb": 0, "peak_vram_mb": 0,
+        }
+        result = sch.check_running(local_task)
+        check("local task with PIDs: backend says alive → 'alive' (regression)",
+              result == "alive")
+        check("local task: vram_mb folded into peak_vram_mb",
+              local_task["peak_vram_mb"] == 1024)
+        check("local task: alive_pids written through",
+              local_task.get("alive_pids") == [101, 102])
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- No result from backend (task with neither artifact) → 'dead' ----------
+    sch._BACKEND = _ProbeRecorder({})  # empty — backend has no info
+    try:
+        ghost = {"id": "tghost", "status": "running", "node": "?",
+                 "remote_pids": [], "slurm_job_id": None}
+        result = sch.check_running(ghost)
+        check("task with no artifact → 'dead' (via `if not res`)",
+              result == "dead")
+    finally:
+        sch._BACKEND = saved_backend
+
+    # ---------- Source guard: the early-return is gone ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    cr_idx = src.find("def check_running(task):")
+    cr_end = src.find("\ndef ", cr_idx + 5)
+    cr_body = src[cr_idx:cr_end]
+    # Strip the docstring before checking for the bug pattern — the docstring
+    # mentions the old form in backticks for changelog context, which would falsely
+    # match. Anything between the first and second `"""` is prose.
+    if '"""' in cr_body:
+        first = cr_body.find('"""')
+        second = cr_body.find('"""', first + 3)
+        if second > first:
+            stripped_body = cr_body[:first] + cr_body[second + 3:]
+        else:
+            stripped_body = cr_body
+    else:
+        stripped_body = cr_body
+    check("check_running body has NO multi-line `if not _task_pids(task): return \"dead\"` early-return",
+          'if not _task_pids(task):\n        return "dead"' not in stripped_body
+          and 'if not _task_pids(task): return "dead"' not in stripped_body,
+          diag=stripped_body[:400])
+    check("check_running body still delegates via _BACKEND.batch_probe",
+          "_BACKEND.batch_probe(fake_state)" in cr_body,
+          diag=cr_body[:400])
+
+
 def test_backend_slurm_phase2_8_route_by_launch_artifacts():
     """Phase 2.8 P1 fix: HybridBackend._backend_for_task routes based on the task's
     launch artifacts (slurm_job_id / remote_pids), not the per-node cache.
@@ -3296,6 +3440,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_6_docker_gpu_runtime_env()
     test_backend_slurm_phase2_7_probe_failure_does_not_cache()
     test_backend_slurm_phase2_8_route_by_launch_artifacts()
+    test_check_running_phase2_9_slurm_aware()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

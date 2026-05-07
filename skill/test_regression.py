@@ -7238,6 +7238,308 @@ def test_phase3_1_skill_priority_edit_history_why():
         sch.state_lock = saved_lock
 
 
+def test_phase3_2_0_claim_manager():
+    """Phase 3.2.0: cross-scheduler / cross-user resource claims layer.
+
+    Tests two layers:
+      1. Remote claims script logic — run the actual script via subprocess
+         against a tmp claims.json so the real read-modify-write semantics
+         are exercised. No ssh, no local-only mocks: this is the same code
+         that runs on every node when claims is enabled.
+      2. _ClaimManager Python API — mock run_on, verify the manager
+         (a) skips ssh entirely when enable_claims is off (fast-path),
+         (b) builds the right record + capacity payload,
+         (c) returns the conflict message on capacity refusal,
+         (d) wires release / renew / update_pid / gc_stale / enumerate
+             through the same op channel.
+    """
+    print("\n[94] Phase 3.2.0: _ClaimManager + remote claims script (cross-scheduler exclusion)")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_CLAIMS_REMOTE_SCRIPT defined", "_CLAIMS_REMOTE_SCRIPT = " in src)
+    check("_ClaimManager class exists", "class _ClaimManager" in src)
+    check("_claims_remote_op helper exists", "def _claims_remote_op" in src)
+    check("_claims_setup_cmd helper exists (heredoc deploy)",
+          "def _claims_setup_cmd" in src)
+    check("flock used in remote op",
+          "flock -x -w" in src and "CLAIMS_LOCK_REMOTE" in src)
+
+    # 2. Test the script's own logic by running it as a real subprocess
+    # against a tmp claims.json. The script string is what gets deployed
+    # to /tmp/scheduleurm/_claims.py on each node — what we test here is
+    # exactly what runs there.
+    import tempfile, subprocess, json as _json
+    with tempfile.TemporaryDirectory() as td:
+        # Write the script and rewrite its CLAIMS_FILE to live in our tmp
+        # so the test doesn't touch /tmp/scheduleurm.
+        script = sch._CLAIMS_REMOTE_SCRIPT.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        script_path = os.path.join(td, "_claims.py")
+        with open(script_path, "w") as f:
+            f.write(script)
+
+        def run_op(op, payload, capacity=None):
+            r = subprocess.run(
+                ["python3", script_path, op,
+                 _json.dumps(payload), _json.dumps(capacity or {})],
+                capture_output=True, text=True, timeout=10,
+            )
+            if r.returncode != 0:
+                return {"_rc": r.returncode, "_stderr": r.stderr}
+            try:
+                return _json.loads(r.stdout.strip().splitlines()[-1])
+            except Exception:
+                return {"_parse_error": r.stdout, "_stderr": r.stderr}
+
+        now = time.time()
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000, "1": 12000}}
+
+        # 2a. Empty file, first claim succeeds.
+        rec_a = {"owner": "u1", "scheduler_id": "h1:1000", "task_id": "tA",
+                 "gpu_idx": 0, "vram_mb": 2000, "cpu_cores": 2, "ram_mb": 1500,
+                 "claimed_at": now, "expires_at": now + 3600, "pid": None}
+        r = run_op("claim", rec_a, cap)
+        check("script: first claim on empty file → ok",
+              r.get("ok") is True, diag=r)
+
+        # 2b. Conflicting claim from a DIFFERENT scheduler on the same GPU
+        # exceeds capacity → reject. (cap[GPU0]=12000; 2000 already; new wants
+        # 11000 → 13000 > 12000 → conflict.)
+        rec_b = {"owner": "u2", "scheduler_id": "h2:2000", "task_id": "tB",
+                 "gpu_idx": 0, "vram_mb": 11000, "cpu_cores": 2, "ram_mb": 1500,
+                 "claimed_at": now, "expires_at": now + 3600, "pid": None}
+        r = run_op("claim", rec_b, cap)
+        check("script: capacity-exceeding claim from different scheduler → conflict",
+              r.get("ok") is False
+              and "gpu0" in (r.get("conflict") or ""), diag=r)
+
+        # 2c. Smaller claim on the same GPU within remaining capacity → ok.
+        rec_c = {"owner": "u2", "scheduler_id": "h2:2000", "task_id": "tC",
+                 "gpu_idx": 0, "vram_mb": 5000, "cpu_cores": 1, "ram_mb": 500,
+                 "claimed_at": now, "expires_at": now + 3600, "pid": None}
+        r = run_op("claim", rec_c, cap)
+        check("script: claim within remaining capacity → ok",
+              r.get("ok") is True, diag=r)
+
+        # 2d. Claim on a different GPU — no contention.
+        rec_d = {"owner": "u3", "scheduler_id": "h3:3000", "task_id": "tD",
+                 "gpu_idx": 1, "vram_mb": 8000, "cpu_cores": 2, "ram_mb": 2000,
+                 "claimed_at": now, "expires_at": now + 3600, "pid": None}
+        r = run_op("claim", rec_d, cap)
+        check("script: claim on different GPU → ok (per-GPU accounting)",
+              r.get("ok") is True, diag=r)
+
+        # 2e. List shows all 3 claims now (tA, tC, tD).
+        r = run_op("list", {})
+        check("script: list returns all live claims",
+              r.get("ok") is True and len(r.get("claims", [])) == 3, diag=r)
+
+        # 2f. Release tA via its (scheduler_id, task_id).
+        r = run_op("release", {"scheduler_id": "h1:1000", "task_id": "tA"})
+        check("script: release returns removed=1",
+              r.get("ok") is True and r.get("removed") == 1, diag=r)
+
+        # 2g. update_pid sets pid on the matching claim.
+        r = run_op("update_pid",
+                   {"scheduler_id": "h2:2000", "task_id": "tC", "pid": 99999})
+        check("script: update_pid → ok with updated=1",
+              r.get("ok") is True and r.get("updated") == 1, diag=r)
+
+        # 2h. renew bumps expires_at on the matching claim.
+        future = now + 7200
+        r = run_op("renew",
+                   {"scheduler_id": "h2:2000", "task_id": "tC",
+                    "expires_at": future})
+        check("script: renew → ok with renewed=1",
+              r.get("ok") is True and r.get("renewed") == 1, diag=r)
+
+        # 2i. Inject a stale claim manually + GC.
+        # stale = expires_at < now AND (no pid OR pid not alive)
+        with open(os.path.join(td, "claims.json")) as f:
+            data = _json.load(f)
+        data["claims"].append({
+            "scheduler_id": "h_dead:9999", "task_id": "tStale",
+            "owner": "ghost", "gpu_idx": 0, "vram_mb": 100,
+            "cpu_cores": 0, "ram_mb": 0,
+            "claimed_at": now - 7200, "expires_at": now - 3600,
+            "pid": None,  # no pid AND past TTL → stale
+        })
+        before = len(data["claims"])
+        with open(os.path.join(td, "claims.json"), "w") as f:
+            _json.dump(data, f)
+        r = run_op("gc", {})
+        check("script: gc removes stale (no-pid + expired) claim",
+              r.get("ok") is True and r.get("removed") == 1, diag=r)
+        # Verify file content matches.
+        with open(os.path.join(td, "claims.json")) as f:
+            after_data = _json.load(f)
+        check("script: gc persisted (file has before-1 claims)",
+              len(after_data["claims"]) == before - 1)
+
+        # 2j. Stale-but-alive-pid is NOT GC'd (live orphan; trust the
+        # process is using the resource).
+        my_pid = os.getpid()
+        with open(os.path.join(td, "claims.json")) as f:
+            data = _json.load(f)
+        data["claims"].append({
+            "scheduler_id": "h_orphan:5555", "task_id": "tOrphan",
+            "owner": "ghost", "gpu_idx": None, "vram_mb": 0,
+            "cpu_cores": 0, "ram_mb": 0,
+            "claimed_at": now - 7200, "expires_at": now - 3600,
+            "pid": my_pid,  # alive — keep
+        })
+        with open(os.path.join(td, "claims.json"), "w") as f:
+            _json.dump(data, f)
+        r = run_op("gc", {})
+        check("script: stale-but-alive-pid claim KEPT (live orphan)",
+              r.get("ok") is True and r.get("removed") == 0,
+              diag=f"r={r} my_pid={my_pid}")
+
+        # 2k. Unknown op returns ok=False with error.
+        r = run_op("noop", {})
+        check("script: unknown op → ok=False with error",
+              r.get("ok") is False and "unknown op" in (r.get("error") or ""),
+              diag=r)
+
+        # 2l. Missing claims file (fresh node) → list returns empty, no crash.
+        os.remove(os.path.join(td, "claims.json"))
+        r = run_op("list", {})
+        check("script: missing claims file → list returns ok with []",
+              r.get("ok") is True and r.get("claims") == [], diag=r)
+
+    # 3. _ClaimManager API: mock run_on to verify the manager calls
+    # the script with the right payload and parses results correctly.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "n_on": {"name": "n_on", "host": "h_on", "enable_claims": True,
+                 "cpu_cores": 12, "ram_mb": 32000, "claim_ttl_s": 600},
+        "n_off": {"name": "n_off", "host": "h_off", "cpu_cores": 12,
+                  "ram_mb": 32000},  # no enable_claims
+    }
+
+    captured = []
+    def fake_run_on(node, cmd, timeout=30, check=False):
+        captured.append((node, cmd))
+        # Simple dispatch: parse the op token (after `_claims.py`)
+        if "_claims.py claim " in cmd:
+            return (0, '{"ok": true}\n', "")
+        if "_claims.py release " in cmd:
+            return (0, '{"ok": true, "removed": 1}\n', "")
+        if "_claims.py renew " in cmd:
+            return (0, '{"ok": true, "renewed": 1}\n', "")
+        if "_claims.py update_pid " in cmd:
+            return (0, '{"ok": true, "updated": 1}\n', "")
+        if "_claims.py gc " in cmd:
+            return (0, '{"ok": true, "removed": 2}\n', "")
+        if "_claims.py list " in cmd:
+            return (0, '{"ok": true, "claims": [{"task_id": "x"}]}\n', "")
+        return (1, "", "unmatched")
+    sch.run_on = fake_run_on
+
+    try:
+        # 3a. enabled_for / scheduler_id basics
+        check("enabled_for: opt-in node returns True",
+              sch._ClaimManager.enabled_for("n_on") is True)
+        check("enabled_for: non-opt-in node returns False",
+              sch._ClaimManager.enabled_for("n_off") is False)
+        sid = sch._ClaimManager.scheduler_id()
+        check("scheduler_id format: <host>:<pid>",
+              ":" in sid and sid.split(":")[1].isdigit(), diag=sid)
+
+        # 3b. Disabled node → fast path, NO ssh.
+        captured.clear()
+        ok, info = sch._ClaimManager.claim(
+            "n_off", {"id": "tD", "est_vram_mb": 1000,
+                       "cpu_cores": 1, "ram_mb": 500},
+            gpu_idx=0)
+        check("disabled node claim → ok=True without ssh",
+              ok is True and not captured, diag=f"captured={captured}")
+
+        # 3c. Enabled node + ok response → returns claim record.
+        captured.clear()
+        ok, info = sch._ClaimManager.claim(
+            "n_on", {"id": "tX", "est_vram_mb": 2000,
+                      "cpu_cores": 2, "ram_mb": 1500},
+            gpu_idx=0,
+            node_state={"name": "n_on",
+                        "gpus": [{"idx": 0, "total_mb": 12000},
+                                 {"idx": 1, "total_mb": 12000}]})
+        check("enabled node claim → ssh issued",
+              len(captured) == 1, diag=str(captured)[:200])
+        check("enabled node claim → ok=True with claim record",
+              ok is True
+              and isinstance(info, dict)
+              and info.get("task_id") == "tX"
+              and info.get("vram_mb") == 2000
+              and info.get("cpu_cores") == 2
+              and info.get("ram_mb") == 1500
+              and info.get("gpu_idx") == 0,
+              diag=info)
+        check("claim record has scheduler_id + owner + expires_at",
+              info.get("scheduler_id") == sid
+              and info.get("owner")
+              and info.get("expires_at") > info.get("claimed_at"))
+
+        # 3d. Conflict response → ok=False, info is the conflict string.
+        sch.run_on = lambda node, cmd, **kw: (
+            0, '{"ok": false, "conflict": "gpu0: need 9000 + claimed 5000 > cap 12000", "claims_seen": 1}\n', "")
+        ok, info = sch._ClaimManager.claim(
+            "n_on", {"id": "tY", "est_vram_mb": 9000,
+                      "cpu_cores": 2, "ram_mb": 1500},
+            gpu_idx=0,
+            node_state={"name": "n_on",
+                        "gpus": [{"idx": 0, "total_mb": 12000}]})
+        check("conflict response → ok=False with conflict text",
+              ok is False and "gpu0" in info and "need 9000" in info,
+              diag=info)
+
+        # 3e. release / update_pid / renew / gc_stale / enumerate
+        sch.run_on = fake_run_on
+        check("release ok",
+              sch._ClaimManager.release("n_on", "tX") is True)
+        check("update_pid ok",
+              sch._ClaimManager.update_pid("n_on", "tX", 12345) is True)
+        check("renew ok",
+              sch._ClaimManager.renew("n_on", "tX") is True)
+        check("gc_stale returns removed count",
+              sch._ClaimManager.gc_stale("n_on") == 2)
+        claims_list = sch._ClaimManager.enumerate("n_on")
+        check("enumerate returns parsed claims list",
+              isinstance(claims_list, list)
+              and claims_list and claims_list[0].get("task_id") == "x",
+              diag=claims_list)
+
+        # 3f. Disabled node fast-paths return sane defaults.
+        check("disabled release → True (no-op)",
+              sch._ClaimManager.release("n_off", "any") is True)
+        check("disabled gc_stale → 0",
+              sch._ClaimManager.gc_stale("n_off") == 0)
+        check("disabled enumerate → []",
+              sch._ClaimManager.enumerate("n_off") == [])
+
+        # 3g. ssh-error response → claim returns ok=False with error msg.
+        sch.run_on = lambda *a, **k: (255, "", "ssh: connection timed out")
+        ok, info = sch._ClaimManager.claim(
+            "n_on", {"id": "tFail", "est_vram_mb": 100,
+                      "cpu_cores": 1, "ram_mb": 100},
+            gpu_idx=None,
+            node_state={"name": "n_on", "gpus": []})
+        check("ssh failure during claim → ok=False with error info",
+              ok is False and "rc=255" in info,
+              diag=info)
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -9764,6 +10066,7 @@ if __name__ == "__main__":
     test_phase3_0_35_slurm_terminal_orphan_diagnosis()
     test_phase3_0_36_local_terminal_orphan_user_redirect_recovery()
     test_phase3_1_skill_priority_edit_history_why()
+    test_phase3_2_0_claim_manager()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -3027,6 +3027,78 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase2_17_install_slurm_orchestration():
+    """Phase 2.17: scheduleurm install-slurm subcommand + node installer script.
+
+    The tool itself does live work (apt install, source build, sudo) so we can't
+    truly e2e it in a regression test. Instead we verify:
+      - The bash installer script exists, is executable, syntax-checks clean
+      - cmd_install_slurm exists and registers the right argparse args
+      - The 3-tier fallback chain is in source (tier 1 ssh github, tier 2 rsync local
+        cache, tier 3 = LocalBackend continues unchanged)
+      - HybridBackend cache invalidation happens after install attempt (so next
+        dispatch re-probes for newly-installed slurm)
+    """
+    print("\n[58] Phase 2.17 install-slurm tool: structure + orchestration guards")
+
+    # ---------- bash installer script: exists + executable + syntax-clean ----------
+    from pathlib import Path as _Path
+    script_path = _Path(os.path.expanduser("~/.claude/skills/scheduler/scripts/install_slurm_node.sh"))
+    check("install_slurm_node.sh exists at expected path",
+          script_path.exists(), diag=str(script_path))
+    if script_path.exists():
+        check("install_slurm_node.sh is executable",
+              os.access(script_path, os.X_OK))
+        # bash -n syntax check (no execution)
+        import subprocess as _sp
+        rc = _sp.run(["bash", "-n", str(script_path)], capture_output=True).returncode
+        check("install_slurm_node.sh syntax-checks clean (bash -n)", rc == 0)
+        # Required behaviors in script
+        body = script_path.read_text()
+        check("script detects existing slurm via sbatch+squeue (early exit 2)",
+              "command -v sbatch" in body and "command -v squeue" in body and "exit 2" in body)
+        check("script supports both --tag (github clone) and --source-dir (rsync)",
+              "--tag" in body and "--source-dir" in body)
+        check("script handles sudo password via --sudo-pass",
+              "--sudo-pass" in body and "sudo -S" in body)
+        check("script writes default slurm.conf based on probed hardware",
+              "/etc/slurm/slurm.conf" in body and "RealMemory=" in body and "CPUs=" in body)
+        check("script auto-detects nvidia GPUs and writes gres.conf",
+              "/dev/nvidia" in body and "gres.conf" in body)
+
+    # ---------- cmd_install_slurm: exists + has 3-tier chain ----------
+    check("cmd_install_slurm function defined",
+          callable(getattr(sch, "cmd_install_slurm", None)))
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    func_idx = src.find("def cmd_install_slurm(args):")
+    check("cmd_install_slurm in scheduler.py", func_idx > 0)
+    if func_idx > 0:
+        next_def = src.find("\ndef cmd_", func_idx + 5)
+        body = src[func_idx:next_def] if next_def > 0 else src[func_idx:]
+        check("tier 1: try github clone on the target node (ssh + script --tag)",
+              "_try_tier1_github_on_node" in body)
+        check("tier 2: rsync local-cache → node + script --source-dir",
+              "_try_tier2_rsync" in body and "rsync" in body and "--source-dir" in body)
+        check("tier 3: graceful degrade — node continues to use LocalBackend",
+              "LocalBackend fallback" in body or "no-local-cache" in body)
+        check("local cache lives at ~/.cache/scheduleurm/slurm-src",
+              ".cache" in body and "slurm-src" in body)
+        check("HybridBackend cache invalidation after install attempt",
+              "_BACKEND._cache.pop" in body or "_cache.pop" in body)
+
+    # ---------- argparse: subcommand registered with the right options ----------
+    sched = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
+    import subprocess as _sp
+    r = _sp.run(["python3", sched, "install-slurm", "--help"],
+                capture_output=True, text=True, timeout=10)
+    out = r.stdout + r.stderr
+    check("install-slurm subcommand registered (responds to --help)",
+          r.returncode == 0)
+    check("--node arg available", "--node" in out)
+    check("--tag arg available", "--tag" in out)
+    check("--sudo-pass arg available", "--sudo-pass" in out)
+
+
 def test_backend_slurm_phase2_16_1_rebalance_pending():
     """Phase 2.16.1: cmd_rebalance_pending pulls slurm-PENDING tasks back to scheduleurm
     queue (scancel + revert to status=queued) so they can re-dispatch under current
@@ -4284,6 +4356,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_15_orphan_recovery()
     test_backend_slurm_phase2_16_pending_throttle()
     test_backend_slurm_phase2_16_1_rebalance_pending()
+    test_phase2_17_install_slurm_orchestration()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

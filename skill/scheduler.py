@@ -4806,7 +4806,7 @@ def cmd_install_slurm(args):
     Side effects: creates ~/.cache/scheduleurm/slurm-src/ as the local source cache.
     """
     import shutil
-    SRC_TAG = args.tag or "slurm-23.11.10-1"
+    SRC_TAG = args.tag or "slurm-23-11-9-1"  # SchedMD uses dashes in tag names, not dots
     SCRIPT = Path(__file__).resolve().parent / "scripts" / "install_slurm_node.sh"
     if not SCRIPT.exists():
         print(f"ERROR: install script missing at {SCRIPT}")

@@ -122,6 +122,48 @@ python3 $sch cancel t0042
 
 Full subcommand list: `python3 scheduler.py --help`.
 
+## Installing slurm on cluster nodes (`install-slurm` subcommand)
+
+scheduleurm ships a tool that installs slurm + munge on a target node from source,
+with graceful 3-tier fallback. Use it once per node; the tool detects existing
+installs and is idempotent.
+
+```bash
+# Install on local + every NODES entry. Default tag: slurm-23-11-9-1 (LTS).
+scheduleurm install-slurm
+
+# Single node:
+scheduleurm install-slurm --node jtl110gpu --sudo-pass <password>
+
+# Different version:
+scheduleurm install-slurm --tag slurm-24-05-0-1
+```
+
+**3-tier fallback chain (per node, in order):**
+
+1. **Tier 1 — github clone on the node**: ssh in, `git clone --depth 1 -b <tag> https://github.com/SchedMD/slurm.git`, build with `./configure && make -j && sudo make install`. Requires github reach from the node.
+2. **Tier 2 — rsync from local cache**: if tier 1 fails (corp network, air-gapped node), the local box clones once into `~/.cache/scheduleurm/slurm-src/`, then rsyncs to the node and runs the same build script with `--source-dir`. Requires github reach from the local box only.
+3. **Tier 3 — LocalBackend fallback**: if both fail, the tool reports `no-local-cache` / `failed-rsync` / etc. The node continues to work via `LocalBackend` (ssh+nohup+setsid) — no slurm needed for scheduleurm to function. You can rerun the install later when network or sudo issues are resolved.
+
+What the install script does on success:
+- Installs build deps via apt: `build-essential autoconf libtool libmunge-dev libnl-3-dev libssl-dev …`
+- Builds slurm from source to `/usr/local`
+- Generates `/etc/munge/munge.key` if missing, starts munge daemon
+- Creates `slurm` user, runtime dirs (`/var/spool/slurmctld`, `/var/log/slurm`, …)
+- Writes a sensible default `/etc/slurm/slurm.conf` based on detected CPUs/RAM/GPUs (uses `proctrack/linuxproc` to avoid cgroup version issues)
+- Auto-detects `/dev/nvidia[0-9]` and writes `gres.conf`
+- Installs systemd units, starts `slurmctld` + `slurmd`, runs `sinfo` to verify
+
+What it doesn't do (out of scope; manual if you need them):
+- Multi-node cluster setup (cross-node munge key sync, `ControlMachine` config)
+- LDAP / AD user federation
+- Slurmdbd accounting database
+
+After install, restart the watcher so `HybridBackend` re-detects the node:
+```bash
+systemctl --user restart scheduler
+```
+
 ## Slurm coexistence (Phase 2)
 
 If a target node has `sbatch` and `squeue` installed, scheduleurm **automatically routes

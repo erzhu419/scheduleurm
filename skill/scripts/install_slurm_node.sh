@@ -28,7 +28,8 @@
 set -eo pipefail
 
 # --- args --------------------------------------------------------------------
-SLURM_TAG="slurm-23.11.10-1"   # known-good LTS; matches jtl110gpu2's apt 23.11.4 closely
+SLURM_TAG="slurm-23-11-9-1"    # known-good LTS (latest 23.11 tag at time of writing); SchedMD uses dashes
+                               # in tag names (verify: git ls-remote --tags https://github.com/SchedMD/slurm.git)
 SOURCE_DIR=""
 PREFIX="/usr/local"
 SUDO_PASS=""

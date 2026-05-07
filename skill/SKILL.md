@@ -158,6 +158,44 @@ When the user says "跑在 X 上" / "用 jtl110gpu2 跑这个" / "在 local 跑"
 
 If you previously submitted a batch with `--require-node` and now realize they should have been soft-pinned, edit the queued tasks (e.g. via a small `python3 -c '...'` script under `state_lock`) to swap `require_node` → `preferred_node` and clear `node`/`gpu_idx` so dispatch re-decides.
 
+### Pre-submit: ensure the training loop uses `tqdm` (Phase 3.0 ETA accuracy)
+
+Phase 3.0's load-balanced migration makes per-node load decisions based on `eta_seconds`
+of each in-flight task. The watcher computes `eta_seconds` by tailing the task's log;
+the most accurate signal is **tqdm's own pre-computed `remaining` field** (e.g.
+`[00:42<03:21, 12.34it/s]` — `03:21` is tqdm's smoothed-rate estimate of remaining time,
+which adapts to warmup vs steady-state better than any rate computation we can do
+externally).
+
+When user says "跑这个 ..." / "submit this", **before** issuing the `submit` call:
+
+1. **Identify the training entry script** from the cmd (the `.py` file, after stripping
+   `python -u -m foo.bar` / `python script.py` / `conda run ... python ...` etc).
+2. **Read the script** and look at its top-level training/eval loops:
+   - `for ... in range(n_iters):` / `for epoch in range(n_epochs):` / `for step in range(...):`
+   - `while ... :` outer loop (if it's the main one)
+3. **Check if `tqdm` wraps the iterable**. Look for `from tqdm import tqdm` / `from tqdm.auto import tqdm` AND a wrap site like `for x in tqdm(loop, total=N):` or `pbar = tqdm(total=N)`.
+4. **If missing**, propose adding it via the Edit tool BEFORE running submit:
+   - Add `from tqdm import tqdm` (or `from tqdm.auto import tqdm` if mixed env) to imports
+   - Wrap the outermost training loop: `for i in tqdm(range(n_iters), desc="<task>"):` or
+     equivalent. Preserve any existing per-iteration logging (so RE-SAC's `Iter N | Reward
+     ...` print still happens, tqdm just adds the progress bar on top).
+   - One sentence diff explanation; user reviews + approves.
+5. **Skip auto-add** when:
+   - Script already prints something parseable as `Iter N` AND has a `--max_iters N` flag
+     in cmd (parser's tier-2 fallback handles this)
+   - User explicitly says "no tqdm" / "I have my own progress" / etc.
+   - Multi-process / distributed training — auto-adding tqdm to ranks > 0 spams stdout.
+     Detect via `torch.distributed`, `mpi4py`, `accelerate.launch`, etc. Skip those.
+6. **After tqdm is in place**, proceed to `submit`. The watcher will pick up tqdm's
+   `[elapsed<remaining, rate]` output and use the `remaining` directly.
+
+This is one-time per script — once tqdm is in, future submits are unchanged.
+
+If you're unsure whether a loop is THE training loop or a sub-loop, ask the user
+("which is the training loop you want me to wrap with tqdm?"). Don't guess and modify
+random for-loops; that's worse than no progress bar.
+
 Example (RE-SAC b1):
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py submit \

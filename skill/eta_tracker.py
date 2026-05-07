@@ -46,18 +46,80 @@ _ETA_PATTERNS = [
 ]
 
 
-def parse_progress(tail_text: str) -> Optional[Tuple[int, int]]:
+# tqdm pre-computed remaining time. Format: "[<elapsed><<remaining>, <rate>it/s]"
+# Examples:
+#   "[00:42<03:21, 12.34it/s]"          → remaining=03:21 (m:s)
+#   "[1:14:32<5:23:11, 3.21it/s]"       → remaining=5:23:11 (h:m:s)
+#   "[02:00<00:00, 1.50s/it]"           → remaining=00:00 (effectively done)
+#   "[02:00<?, ?it/s]"                  → remaining='?' (tqdm doesn't know)
+_TQDM_ETA_RE = re.compile(
+    r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:it/s|s/it)\s*\]'
+)
+
+
+def _parse_tqdm_time(s: str) -> Optional[int]:
+    """Parse tqdm's "MM:SS" / "HH:MM:SS" / "D:HH:MM:SS" → seconds. '?' → None."""
+    if not s or s == '?':
+        return None
+    parts = s.split(':')
+    try:
+        if len(parts) == 1:
+            return int(parts[0])
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + int(parts[1])
+        if len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        if len(parts) == 4:
+            return (int(parts[0]) * 86400 + int(parts[1]) * 3600
+                    + int(parts[2]) * 60 + int(parts[3]))
+    except ValueError:
+        return None
+    return None
+
+
+def parse_tqdm_eta(tail_text: str) -> Optional[int]:
+    """Extract tqdm's own pre-computed remaining-seconds from the tail.
+
+    tqdm's remaining is more accurate than rate-from-current/elapsed because
+    tqdm uses a smoothed (windowed) rate that adapts to phase changes —
+    e.g. JAX warmup compile is one slow step then fast steady-state, but
+    cumulative-average rate would project wildly long ETAs throughout
+    steady-state. tqdm's smoothed rate handles this correctly.
+
+    Returns int seconds (>= 0) or None if no tqdm output found in tail.
+    """
+    if not tail_text:
+        return None
+    last = None
+    for line in tail_text.splitlines():
+        for m in _TQDM_ETA_RE.finditer(line):
+            remaining = _parse_tqdm_time(m.group(2))
+            if remaining is not None and remaining >= 0:
+                last = remaining
+    return last
+
+
+def parse_progress(tail_text: str, cmd: Optional[str] = None) -> Optional[Tuple[int, int]]:
     """Walk all patterns over every line of tail_text. Return the LATEST
     (current, total) found. None if nothing matches.
 
     "Latest" = most recent line containing a progress pattern. tqdm rewrites
     the same line repeatedly so we want the LAST line's number, not the first.
+
+    Tier 2 fallback (when cmd is provided): some training scripts log only
+    `Iter N` / `step N` / `Epoch N` with no total. Extract the total from the
+    cmd's `--max_iters N` / `--n_epochs N` / `--max_steps N` / `--epochs N` /
+    `--total_steps N` flag and pair with the latest current-only marker in the
+    tail. Without this fallback ETAs would be 0 for any framework that doesn't
+    print N/M (RE-SAC, many torch examples, hand-rolled training loops).
     """
     if not tail_text:
+        # Empty tail can still benefit from cmd parsing — but no current-step
+        # signal means no rate, so still None. The caller's EWMA fallback owns
+        # the no-tail case.
         return None
     last = None
-    # Iterate lines in original order; last successful match wins (so most
-    # recent progress, since logs are append-only and tail is the newest N bytes).
+    # Tier 1: full-form patterns (current AND total in the same line)
     for line in tail_text.splitlines():
         for pat in _ETA_PATTERNS:
             m = pat.search(line)
@@ -69,19 +131,101 @@ def parse_progress(tail_text: str) -> Optional[Tuple[int, int]]:
                 total = int(groups[1])
             except (ValueError, IndexError):
                 continue
-            # Sanity: total must be positive, current must fit in [0, total].
-            # Some training scripts log "0/0" before init — reject that.
             if total <= 0 or current < 0 or current > total:
                 continue
             last = (current, total)
-            break  # this line matched; move to next line in the tail
+            break
+    if last is not None:
+        return last
+
+    # Tier 2: tail has "Iter N" / "step N" / "Epoch N" alone, cmd has --max_iters / etc.
+    if cmd:
+        total = _extract_total_from_cmd(cmd)
+        if total and total > 0:
+            current = _extract_current_only_from_tail(tail_text)
+            if current is not None and 0 <= current <= total:
+                return (current, total)
+    return None
+
+
+# Cmd-line flags that declare the task's total step/iter count. Order doesn't
+# matter; we take the first match. Common across PyTorch, JAX, scikit, etc.
+_CMD_TOTAL_PATTERNS = [
+    re.compile(r'--max[_-]?iters[=\s]+(\d+)'),
+    re.compile(r'--n[_-]?epochs[=\s]+(\d+)'),
+    re.compile(r'--num[_-]?epochs[=\s]+(\d+)'),
+    re.compile(r'--epochs[=\s]+(\d+)'),
+    re.compile(r'--max[_-]?steps[=\s]+(\d+)'),
+    re.compile(r'--total[_-]?steps[=\s]+(\d+)'),
+    re.compile(r'--n[_-]?steps[=\s]+(\d+)'),
+    re.compile(r'--num[_-]?steps[=\s]+(\d+)'),
+    re.compile(r'--num[_-]?iters[=\s]+(\d+)'),
+    re.compile(r'--iterations[=\s]+(\d+)'),
+]
+
+
+def _extract_total_from_cmd(cmd: str) -> Optional[int]:
+    """Look for --max_iters / --n_epochs / --max_steps / etc. flags in the cmd
+    string. Returns the first match as int, or None if no recognized flag."""
+    if not cmd:
+        return None
+    for pat in _CMD_TOTAL_PATTERNS:
+        m = pat.search(cmd)
+        if m:
+            try:
+                v = int(m.group(1))
+                if v > 0:
+                    return v
+            except ValueError:
+                pass
+    return None
+
+
+# Per-line "current step only" patterns — anchored to common log formats.
+# We keep these conservative to avoid false positives from random integers
+# in the log (e.g. "Reward: 4739.1" wouldn't match because Reward isn't in
+# the prefix list).
+_CURRENT_ONLY_PATTERNS = [
+    re.compile(r'(?:^|[^\w])Iter\s+(\d+)(?:\s|$|[|,])'),
+    re.compile(r'(?:^|[^\w])Iteration\s+(\d+)(?:\s|$|[|,])'),
+    re.compile(r'(?:^|[^\w])Epoch\s+(\d+)(?:\s|$|[|,:])'),
+    re.compile(r'(?:^|[^\w])Step\s+(\d+)(?:\s|$|[|,])'),
+    re.compile(r'(?:^|[^\w])step\s+(\d+)(?:\s|$|[|,])'),
+]
+
+
+def _extract_current_only_from_tail(tail_text: str) -> Optional[int]:
+    """Find the LATEST `Iter N` / `Epoch N` / `Step N` in the tail that doesn't
+    have a `/total` immediately after. Returns int current or None.
+
+    Why not also check tqdm "47%|" alone? Because tqdm always shows total
+    alongside (its progress bar is meaningless without it); tasks using tqdm
+    are already covered by tier-1 patterns. The current-only fallback is for
+    hand-rolled "Iter N" loggers that DON'T do tqdm at all (RE-SAC, many
+    JAX experiments).
+    """
+    last = None
+    for line in tail_text.splitlines():
+        for pat in _CURRENT_ONLY_PATTERNS:
+            m = pat.search(line)
+            if not m:
+                continue
+            try:
+                current = int(m.group(1))
+            except ValueError:
+                continue
+            if current < 0:
+                continue
+            last = current
+            break
     return last
 
 
 def compute_eta_seconds(tail_text: str,
                         elapsed_s: float,
                         fallback_ewma_s: float = 0,
-                        min_progress_for_rate: int = 1) -> int:
+                        min_progress_for_rate: int = 1,
+                        cmd: Optional[str] = None) -> int:
     """Returns ETA (remaining seconds) as int. 0 means unknown / done / no signal.
 
     Strategy:
@@ -105,7 +249,14 @@ def compute_eta_seconds(tail_text: str,
     """
     elapsed = max(1.0, float(elapsed_s))  # avoid div-by-zero
 
-    progress = parse_progress(tail_text)
+    # Tier 0 (highest priority): tqdm's own pre-computed remaining-seconds.
+    # tqdm uses a smoothed windowed rate that adapts to warmup vs steady-state
+    # better than our cumulative current/elapsed; trust it when available.
+    tqdm_eta = parse_tqdm_eta(tail_text)
+    if tqdm_eta is not None:
+        return int(tqdm_eta)
+
+    progress = parse_progress(tail_text, cmd=cmd)
     if progress is not None:
         current, total = progress
         if current >= min_progress_for_rate:

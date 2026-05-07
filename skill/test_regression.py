@@ -3064,13 +3064,63 @@ def test_phase3_0_1_eta_parser_and_integration():
         got = et.parse_progress(text)
         check(f"parse: {name}", got == expected, diag=f"text={text!r} got={got} expected={expected}")
 
+    # --- tier 2 (cmd-flag fallback): "Iter N" alone in tail + "--max_iters N" in cmd ---
+    cmd = "/abs/python -u -m jax.train --max_iters 2000 --seed 42"
+    tail = "Iter 1793 | Reward: 4753.1 | Time: 71275s | 21.9s/iter"
+    got = et.parse_progress(tail, cmd=cmd)
+    check("tier 2: Iter N alone + --max_iters in cmd",
+          got == (1793, 2000), diag=f"got {got}")
+
+    cmd2 = "python train.py --n_epochs 50"
+    tail2 = "Epoch 30 done"
+    got = et.parse_progress(tail2, cmd=cmd2)
+    check("tier 2: --n_epochs flag",
+          got == (30, 50), diag=f"got {got}")
+
+    # cmd has total but tail has no current → still None (need both)
+    got = et.parse_progress("loading...", cmd=cmd)
+    check("tier 2: no current in tail → None",
+          got is None, diag=f"got {got}")
+
+    # --- tqdm ETA extractor (used as tier-0 in compute_eta_seconds) ---
+    cases_tqdm = [
+        ("simple m:s", "[00:42<03:21, 12.34it/s]", 3*60+21),
+        ("h:m:s", "[1:14:32<5:23:11, 3.21it/s]", 5*3600+23*60+11),
+        ("d:h:m:s", "[02:00<1:02:30:00, 0.5s/it]", 1*86400+2*3600+30*60),
+        ("? unknown", "[02:00<?, ?it/s]", None),
+        ("zero remaining", "[02:00<00:00, 1.50s/it]", 0),
+        ("not tqdm format", "Iter 100", None),
+    ]
+    for name, text, expected in cases_tqdm:
+        got = et.parse_tqdm_eta(text)
+        check(f"tqdm-eta: {name}", got == expected, diag=f"text={text!r} got={got} expected={expected}")
+
+    # Multiple tqdm lines — last wins
+    multi = "[00:42<03:21, 12.34it/s]\n[01:00<03:00, 12.34it/s]\n[01:30<02:30, 12.34it/s]\n"
+    got = et.parse_tqdm_eta(multi)
+    check("tqdm-eta: multi-line last wins",
+          got == 2*60+30, diag=f"got {got}")
+
+    # --- compute_eta_seconds prefers tqdm-eta over rate computation ---
+    text = "  47%|████▋     | 1234/5678 [00:42<03:21, 12.34it/s]"
+    eta = et.compute_eta_seconds(text, elapsed_s=42, fallback_ewma_s=99999)
+    check("compute_eta_seconds: tqdm-eta tier-0 used (201s, ignoring rate-from-current)",
+          eta == 201, diag=f"got {eta}")
+
     # ---------- ETA math ----------
-    # 23/200 progress, 600s elapsed → rate=0.0383/s, remaining=(200-23)/0.0383 ≈ 4617s
+    # tier-0 (tqdm pre-computed) wins: extracts "1:29:20" directly = 5360s
     eta = et.compute_eta_seconds(
         "Training: | 23/200 [11:24<1:29:20, 30.28s/it]",
         elapsed_s=600, fallback_ewma_s=0
     )
-    check("ETA math: 23/200 after 600s ≈ 4617s",
+    check("ETA: tqdm-eta tier-0 reads remaining 1:29:20 = 5360s (ignores elapsed_s)",
+          eta == 5360, diag=f"got {eta}")
+    # Without tqdm bracket: rate from current/elapsed → 4617s
+    eta = et.compute_eta_seconds(
+        "[Epoch 23/200] step",
+        elapsed_s=600, fallback_ewma_s=0
+    )
+    check("ETA rate-math: 23/200 after 600s elapsed ≈ 4617s (no tqdm-eta available)",
           4500 <= eta <= 4700, diag=f"got {eta}")
 
     # No progress, fallback EWMA (1800s) - elapsed (300s) = 1500s

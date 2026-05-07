@@ -113,6 +113,24 @@ def test_crash_requeue_dedup():
     check("done/failed siblings do NOT block requeue", new_id_c is not None
           and new_id_c not in ("tF", "tG") and len(state_c["tasks"]) == pre_c + 1)
 
+    # Case D: backend launch artifacts from the crashed parent must be cleared on retry clone.
+    parent4 = dict(parent)
+    parent4.update({
+        "id": "tH", "signature": "proj/exp/slurm-artifacts",
+        "cmd": "python train.py --seed 777", "retry_count": 0,
+        "slurm_job_id": 12345, "slurm_state": "FAILED",
+        "container_name": "sched-tH", "container_main_pid": 999,
+    })
+    state_d = {"tasks": [parent4], "next_id": 400}
+    new_id_d = sch._requeue_after_crash(parent4, state_d)
+    clone = state_d["tasks"][-1]
+    check("requeue clone clears stale slurm_job_id",
+          new_id_d is not None and clone.get("slurm_job_id") is None,
+          diag=str(clone))
+    check("requeue clone clears stale docker/container artifacts",
+          clone.get("container_name") is None and clone.get("container_main_pid") is None,
+          diag=str(clone))
+
 # -----------------------------------------------------------------------------
 def test_preempt_sufficiency():
     """_preempt_for_high_priority: keep evicting until freed cpu/ram covers hi requirement."""
@@ -394,6 +412,12 @@ def test_status_view_no_truncation():
     check("TUI has no max-row slice in render",
           "tasks[:" not in tui_render_src,
           diag="tasks[:N] suggests truncation")
+    check("TUI row location uses scheduler formatter (shows Slurm job/state)",
+          "sch._format_task_location(t)" in tui_render_src,
+          diag="TUI must not hand-roll node:GPU display")
+    check("TUI text filter includes Slurm job id/state",
+          '"slurm_job_id"' in tui_render_src and '"slurm_state"' in tui_render_src,
+          diag="filtering for 'slurm', job id, or Slurm state would miss rows")
 
 def test_high_defaults_lower_before_placement():
     """High stored/default estimates must not starve a job when sibling evidence says it is small.
@@ -2223,6 +2247,7 @@ def test_backend_slurm_phase2():
         "cmd": "python train.py --seed 42",
         "cpu_cores": 4, "ram_mb": 8192, "est_vram_mb": 4000,
         "extra_env": {"FOO": "bar"},
+        "slurm_partition": "gpu", "slurm_account": "acct", "slurm_qos": "normal",
         "signature": "TEST/slurm-script-gen",
         "resume_flag": "", "resume_from": None,
     }
@@ -2237,6 +2262,11 @@ def test_backend_slurm_phase2():
           "#SBATCH --output=/tmp/sched_t9001.log" in script
           and "#SBATCH --error=/tmp/sched_t9001.log" in script)
     check("script has --time= directive", "#SBATCH --time=" in script, diag=script[:400])
+    check("script carries optional --slurm-partition/account/qos",
+          "#SBATCH --partition=gpu" in script
+          and "#SBATCH --account=acct" in script
+          and "#SBATCH --qos=normal" in script,
+          diag=script)
     check("script exports extra_env", "export FOO=bar" in script)
     check("script cd's to cwd", "cd /tmp" in script)
     check("script body has the inner cmd", "python -u train.py --seed 42" in script)
@@ -2326,14 +2356,26 @@ def test_backend_slurm_phase2():
         res = sb.batch_probe(state)
         check("RUNNING → alive", res["ta"]["state"] == "alive", diag=str(res.get("ta")))
         check("PENDING → alive (still queued in slurm)", res["tb"]["state"] == "alive")
-        check("COMPLETED → dead", res["tc"]["state"] == "dead")
-        check("FAILED → dead", res["td"]["state"] == "dead")
-        check("absent from squeue → dead (purged or stale)", res["te"]["state"] == "dead")
+        check("COMPLETED → dead + terminal_ok=True",
+              res["tc"]["state"] == "dead" and res["tc"].get("terminal_ok") is True,
+              diag=str(res["tc"]))
+        check("FAILED → dead + terminal_ok=False",
+              res["td"]["state"] == "dead" and res["td"].get("terminal_ok") is False,
+              diag=str(res["td"]))
+        check("absent from squeue → dead + terminal_ok=None",
+              res["te"]["state"] == "dead" and res["te"].get("terminal_ok") is None,
+              diag=str(res["te"]))
         # All entries have peak fields zeroed (Phase 2 v1 doesn't track via slurm)
         check("vram_mb is 0 for all slurm probes",
               all(v["vram_mb"] == 0 for v in res.values()))
     finally:
         sch.run_on = real_run_on
+
+    src_submit = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("submit parser exposes --slurm-partition/account/qos",
+          "--slurm-partition" in src_submit
+          and "--slurm-account" in src_submit
+          and "--slurm-qos" in src_submit)
 
     # squeue ssh failure → all tasks should be 'unknown' (don't transition silently)
     sch.run_on = lambda node, cmd, timeout=15, check=True: (1, "", "ssh fail")
@@ -2732,8 +2774,290 @@ def test_backend_slurm_phase2_12_eviction_skips_slurm_tasks():
           diag="preempt site missing _is_slurm_managed guard")
     check("_reserve_inflight_vram calls _is_slurm_managed",
           "_is_slurm_managed(t)" in src[src.find("def _reserve_inflight_vram"):
-                                          src.find("def _signature_batch_key")],
+                                       src.find("def _signature_batch_key")],
           diag="reserve_inflight_vram site missing _is_slurm_managed guard")
+
+
+def test_backend_slurm_phase2_13_terminal_state_semantics():
+    """Phase 2.13: Slurm terminal states should drive done/failed semantics.
+
+    COMPLETED is stronger than scheduleurm's log heuristic: Slurm has already
+    observed exit code 0, so an empty/missing log must not false-crash it.
+    FAILED/TIMEOUT/OUT_OF_MEMORY/etc. are stronger than "ambiguous log" too:
+    they must become failed/requeued, not done.
+    """
+    print("\n[53] Phase 2.13 Slurm terminal states override fragile log heuristics")
+
+    now = time.time()
+    state = {
+        "next_id": 900,
+        "tasks": [
+            {"id": "tc", "status": "running", "node": "cluster", "slurm_job_id": 10,
+             "cmd": "python train.py --seed 10", "signature": "TEST/slurm-completed",
+             "started_at": now - 1000, "submitted_at": now - 1100,
+             "retry_count": 0, "ram_mb": 1024, "est_vram_mb": 1000, "cpu_cores": 1,
+             "extra_env": {}, "priority": "normal", "description": "completed", "project": "p"},
+            {"id": "tf", "status": "running", "node": "cluster", "slurm_job_id": 11,
+             "cmd": "python train.py --seed 11", "signature": "TEST/slurm-timeout",
+             "started_at": now - 1000, "submitted_at": now - 1100,
+             "retry_count": 0, "ram_mb": 1024, "est_vram_mb": 1000, "cpu_cores": 1,
+             "extra_env": {}, "priority": "normal", "description": "timeout", "project": "p"},
+        ],
+    }
+
+    class _FakeBackend:
+        def batch_probe(self, _state):
+            return {
+                "tc": {"state": "dead", "alive_pids": [], "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
+                       "backend_state": "COMPLETED", "terminal_ok": True,
+                       "terminal_reason": "slurm terminal state COMPLETED"},
+                "tf": {"state": "dead", "alive_pids": [], "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
+                       "backend_state": "TIMEOUT", "terminal_ok": False,
+                       "terminal_reason": "slurm terminal state TIMEOUT"},
+            }
+
+    saved_backend = sch._BACKEND
+    saved_diag = sch._diagnose_terminal
+    saved_history_record = sch.history_record
+    saved_history_get = sch.history_get
+    diag_calls = []
+
+    def fake_diag(t):
+        diag_calls.append(t["id"])
+        return {"is_crash": False, "reason": "ambiguous; assumed normal", "tail": "",
+                "lifetime_s": 1000, "log_size": 0, "log_path": t.get("log_path"),
+                "success_marker": None}
+
+    sch._BACKEND = _FakeBackend()
+    sch._diagnose_terminal = fake_diag
+    sch.history_record = lambda *a, **k: None
+    sch.history_get = lambda sig: {"dur_s_ewma": 10000, "dur_s_runs": 2}
+    try:
+        sch.update_running_tasks(state)
+    finally:
+        sch._BACKEND = saved_backend
+        sch._diagnose_terminal = saved_diag
+        sch.history_record = saved_history_record
+        sch.history_get = saved_history_get
+
+    tc = next(t for t in state["tasks"] if t["id"] == "tc")
+    tf = next(t for t in state["tasks"] if t["id"] == "tf")
+    retry = next((t for t in state["tasks"] if t.get("parent_id") == "tf"), None)
+    check("Slurm COMPLETED → scheduleurm done, no log/lifetime false crash",
+          tc["status"] == "done" and tc["_diagnosis"]["is_crash"] is False and "tc" not in diag_calls,
+          diag=str(tc.get("_diagnosis")))
+    check("Slurm TIMEOUT → scheduleurm failed even if log heuristic is ambiguous",
+          tf["status"] == "failed" and tf["_diagnosis"]["is_crash"] is True
+          and "TIMEOUT" in tf["_diagnosis"]["reason"],
+          diag=str(tf.get("_diagnosis")))
+    check("Slurm failed terminal state auto-requeues with cleared backend artifacts",
+          retry is not None and retry["status"] == "queued" and retry.get("slurm_job_id") is None,
+          diag=str(retry))
+
+
+def test_backend_slurm_phase2_14_ui_and_launch_notification():
+    """Phase 2.14: Slurm tasks have no remote_pids and gpu_idx=None by design.
+
+    UI/notifications must render slurm_job_id and SLURM-GPU/CPU, not crash on
+    remote_pids[0] or display GPU jobs as plain CPU work.
+    """
+    print("\n[54] Phase 2.14 Slurm UI location + launch notification handle")
+    task = {
+        "id": "tslurm-ui", "project": "p", "node": "cluster",
+        "slurm_job_id": 77, "slurm_state": "PENDING",
+        "gpu_idx": None, "remote_pids": [], "est_vram_mb": 4096,
+        "description": "slurm gpu task",
+    }
+    loc = sch._format_task_location(task)
+    check("Slurm GPU task displays as SLURM-GPU, not CPU",
+          "SLURM-GPU#77" in loc and ":CPU" not in loc, diag=loc)
+    msg = sch._format_feishu("task_launched", task)
+    check("task_launched formats slurm_job_id instead of indexing empty remote_pids",
+          "slurm_job_id=77" in msg and "pid=" not in msg, diag=msg)
+    cpu_task = dict(task, slurm_job_id=78, est_vram_mb=0, slurm_state="RUNNING")
+    check("Slurm CPU task displays as SLURM-CPU",
+          "SLURM-CPU#78" in sch._format_task_location(cpu_task),
+          diag=sch._format_task_location(cpu_task))
+
+
+def test_backend_slurm_phase2_15_orphan_recovery():
+    """Phase 2.15 P2: WAL recovery for orphaned slurm jobs.
+
+    The orphan window: SlurmBackend.launch persists status='launching' (with WAL
+    save_state) BEFORE sbatch. If sbatch returns success but the scheduler process
+    dies before status='running' + slurm_job_id can be flushed, slurm has the job
+    (running 24h walltime by default) but scheduleurm forgot. The default
+    recover_stale_launching_tasks reverts launching → queued, next dispatch sees
+    a fresh queued task and sbatches AGAIN — slurm now has TWO copies of the same
+    workload, scheduleurm tracks only the second, the first is orphaned.
+
+    Fix: before reverting a slurm-routed launching task, query
+    `squeue -n scheduleurm-<id>` for an existing job. If found in alive state,
+    adopt it onto the task instead of reverting.
+    """
+    print("\n[55] Phase 2.15 orphan slurm job recovery (no double-submission after crash)")
+
+    # ---------- Helper contract ----------
+    check("_try_recover_orphan_slurm_job exists",
+          callable(getattr(sch, "_try_recover_orphan_slurm_job", None)))
+
+    saved_backend = sch._BACKEND
+    real_run_on = sch.run_on
+    now = time.time()
+    stale = now - sch.LAUNCHING_RESET_S - 5  # past the threshold
+
+    # ---------- Case A: orphan exists + RUNNING → adopt ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (
+        (0, "9999 RUNNING\n", "") if "squeue -h -n" in cmd else (0, "", "")
+    )
+    try:
+        state = {"tasks": [{
+            "id": "tA", "status": "launching", "node": "slurmnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        n_reverted = sch.recover_stale_launching_tasks(state, now=now)
+        t = state["tasks"][0]
+        check("orphan RUNNING → adopted (status=running)",
+              t["status"] == "running", diag=str(t))
+        check("orphan RUNNING → slurm_job_id set from squeue",
+              t.get("slurm_job_id") == 9999, diag=str(t))
+        check("orphan RUNNING → remote_pids stays []",
+              t.get("remote_pids") == [])
+        check("orphan RUNNING → launching_started_at cleared",
+              "launching_started_at" not in t)
+        check("orphan RUNNING → revert count is 0",
+              n_reverted == 0, diag=f"n_reverted={n_reverted}")
+        check("orphan RUNNING → last_block_reason mentions orphan recovery",
+              "WAL recovery: adopted orphan" in (t.get("last_block_reason") or ""),
+              diag=t.get("last_block_reason"))
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case B: orphan exists + PENDING → also adopt (alive state) ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (
+        (0, "1234 PENDING\n", "") if "squeue -h -n" in cmd else (0, "", "")
+    )
+    try:
+        state = {"tasks": [{
+            "id": "tB", "status": "launching", "node": "slurmnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        sch.recover_stale_launching_tasks(state, now=now)
+        check("orphan PENDING → also adopted (slurm queue counts as alive)",
+              state["tasks"][0]["status"] == "running"
+              and state["tasks"][0].get("slurm_job_id") == 1234,
+              diag=str(state["tasks"][0]))
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case C: squeue empty → revert as usual (no orphan) ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (0, "", "")
+    try:
+        state = {"tasks": [{
+            "id": "tC", "status": "launching", "node": "slurmnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        n_reverted = sch.recover_stale_launching_tasks(state, now=now)
+        check("no orphan in squeue → reverted to queued",
+              state["tasks"][0]["status"] == "queued"
+              and state["tasks"][0].get("slurm_job_id") is None
+              and n_reverted == 1)
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case D: orphan but TERMINAL state → revert (don't adopt dead job) ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (
+        (0, "5555 COMPLETED\n", "") if "squeue -h -n" in cmd else (0, "", "")
+    )
+    try:
+        state = {"tasks": [{
+            "id": "tD", "status": "launching", "node": "slurmnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        sch.recover_stale_launching_tasks(state, now=now)
+        check("orphan in TERMINAL state → revert (don't adopt dead job)",
+              state["tasks"][0]["status"] == "queued"
+              and state["tasks"][0].get("slurm_job_id") is None,
+              diag=str(state["tasks"][0]))
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case E: ssh fails during recovery probe → revert (don't get stuck) ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("ssh broken"))
+    try:
+        state = {"tasks": [{
+            "id": "tE", "status": "launching", "node": "slurmnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        sch.recover_stale_launching_tasks(state, now=now)
+        check("ssh failure during orphan probe → revert (don't get stuck launching)",
+              state["tasks"][0]["status"] == "queued")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case F: local-routed launching task → no slurm probe, just revert ----------
+    # Local nodes don't have slurm orphans by definition; the recovery path must NOT
+    # do an ssh probe for them (cost + irrelevant).
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["localnode"] = "local"
+    sch._BACKEND = fake_hb
+    probe_count = []
+    sch.run_on = lambda *a, **k: (probe_count.append(1) or (0, "", ""))
+    try:
+        state = {"tasks": [{
+            "id": "tF", "status": "launching", "node": "localnode",
+            "launching_started_at": stale, "remote_pids": [],
+        }]}
+        sch.recover_stale_launching_tasks(state, now=now)
+        check("local-routed launching task → no slurm orphan probe issued",
+              len(probe_count) == 0, diag=f"made {len(probe_count)} probes")
+        check("local-routed launching task → reverted normally",
+              state["tasks"][0]["status"] == "queued")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
+    # ---------- Case G: not-yet-stale launching → no probe, no revert ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurmnode"] = "slurm"
+    sch._BACKEND = fake_hb
+    probe_count2 = []
+    sch.run_on = lambda *a, **k: (probe_count2.append(1) or (0, "HAS_SLURM\n", ""))
+    try:
+        state = {"tasks": [{
+            "id": "tG", "status": "launching", "node": "slurmnode",
+            "launching_started_at": now - 5,  # very recent (< LAUNCHING_RESET_S)
+            "remote_pids": [],
+        }]}
+        sch.recover_stale_launching_tasks(state, now=now)
+        check("fresh launching task → no probe issued (let launch finish)",
+              len(probe_count2) == 0, diag=f"made {len(probe_count2)} probes")
+        check("fresh launching task → status preserved",
+              state["tasks"][0]["status"] == "launching")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = real_run_on
+
 
 
 def test_backend_slurm_phase2_10_sbatch_stdin_form():
@@ -3079,10 +3403,11 @@ def test_backend_slurm_phase2_7_probe_failure_does_not_cache():
     task to LocalBackend until watcher restart — the user would never know slurm
     was being bypassed.
 
-    Fix: probe command always emits HAS_SLURM or NO_SLURM (no silent
-    short-circuit on `&&`). Cache writes only happen on definitive results
-    (rc=0 AND a recognized marker). Any other path returns "local" for the
-    current call but leaves the cache empty — next call re-probes.
+    Fix: probe command always emits HAS_SLURM, NO_SLURM, or SLURM_UNUSABLE
+    (no silent short-circuit on `&&`). Cache writes only happen on definitive
+    install/non-install results. If Slurm tools exist but the controller is
+    temporarily unusable, route to SlurmBackend without caching so launch fails
+    loudly instead of running on a login node via LocalBackend.
     """
     print("\n[48] Phase 2.7 _kind_for caches only definitive answers, not failures")
     real_run_on = sch.run_on
@@ -3091,9 +3416,11 @@ def test_backend_slurm_phase2_7_probe_failure_does_not_cache():
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
     # The probe command must use `if/then/else/fi` (not `&& ... echo HAS_SLURM`),
     # so a missing tool gets `NO_SLURM` (definitive) instead of empty output.
-    check("probe command emits HAS_SLURM AND NO_SLURM markers",
-          "echo HAS_SLURM" in src and "echo NO_SLURM" in src,
+    check("probe command emits HAS_SLURM / NO_SLURM / SLURM_UNUSABLE markers",
+          "echo HAS_SLURM" in src and "echo NO_SLURM" in src and "echo SLURM_UNUSABLE" in src,
           diag="probe doesn't emit definitive negative marker")
+    check("probe validates slurm controller with squeue -h",
+          "squeue -h" in src, diag="probe only checked command existence")
     check("probe uses if/fi shape (not bare && echo HAS_SLURM)",
           "if command -v sbatch" in src,
           diag="probe didn't switch to definitive shape")
@@ -3115,6 +3442,18 @@ def test_backend_slurm_phase2_7_probe_failure_does_not_cache():
         kind = hb._kind_for("nodeB")
         check("NO_SLURM → returns 'local'", kind == "local")
         check("NO_SLURM → caches 'local'", hb._cache.get("nodeB") == "local")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- Slurm tools present but controller/account unusable → SlurmBackend, no cache ----------
+    hb = sch.HybridBackend()
+    sch.run_on = lambda node, cmd, timeout=5, check=True: (0, "SLURM_UNUSABLE\n", "")
+    try:
+        kind = hb._kind_for("slurm-down")
+        check("SLURM_UNUSABLE → routes to slurm (loud launch failure, not LocalBackend)",
+              kind == "slurm", diag=f"got {kind}")
+        check("SLURM_UNUSABLE → does NOT cache",
+              "slurm-down" not in hb._cache, diag=f"cache={hb._cache}")
     finally:
         sch.run_on = real_run_on
 
@@ -3674,6 +4013,9 @@ if __name__ == "__main__":
     test_check_running_phase2_9_slurm_aware()
     test_backend_slurm_phase2_10_sbatch_stdin_form()
     test_backend_slurm_phase2_12_eviction_skips_slurm_tasks()
+    test_backend_slurm_phase2_13_terminal_state_semantics()
+    test_backend_slurm_phase2_14_ui_and_launch_notification()
+    test_backend_slurm_phase2_15_orphan_recovery()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

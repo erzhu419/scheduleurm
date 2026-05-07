@@ -1124,6 +1124,14 @@ def _requeue_after_crash(parent, state):
         "peak_ram_mb": 0,
         "alive_pids": [],
         "resume_from": None,
+        # Backend launch artifacts must not survive into a retry clone. A crashed
+        # Slurm task carrying its old slurm_job_id would be routed back to
+        # SlurmBackend even after dispatch picks a local node, and docker container
+        # handles from the parent are stale for the new task id.
+        "slurm_job_id": None,
+        "slurm_state": None,
+        "container_name": None,
+        "container_main_pid": None,
         # A requeued task is scheduler-owned even if the parent was auto-adopted with a
         # captured real cmdline. Do not inherit auto_adopted/adopted, otherwise terminal
         # diagnosis will skip scheduler logs and preemption will treat it as external.
@@ -1161,8 +1169,39 @@ def _batch_check_running(state):
         if res["state"] == "dead":
             t["status"] = "done"
             t["finished_at"] = time.time()
-            # Diagnose: did it complete normally, or crash? Tail log + check patterns + lifetime.
-            diag = _diagnose_terminal(t)
+            # Slurm reports terminal states directly. Trust COMPLETED as a clean exit and
+            # treat explicit Slurm failure states as crashes instead of trying to infer
+            # everything from logs (logs can be missing/rotated while Slurm still knows
+            # the job outcome). For LocalBackend / absent-from-squeue cases, fall back
+            # to the existing log heuristic.
+            terminal_ok = res.get("terminal_ok")
+            backend_state = res.get("backend_state")
+            terminal_reason = res.get("terminal_reason") or (
+                f"slurm terminal state {backend_state}" if backend_state else ""
+            )
+            if terminal_ok is True:
+                diag = {
+                    "is_crash": False,
+                    "reason": terminal_reason or "slurm terminal state COMPLETED",
+                    "tail": "(slurm reported COMPLETED; log not required for success)",
+                    "lifetime_s": int(max(0, t["finished_at"] - (t.get("started_at") or t["finished_at"]))),
+                    "log_size": 0,
+                    "log_path": t.get("log_path"),
+                    "success_marker": f"SLURM_{backend_state or 'COMPLETED'}",
+                }
+            else:
+                # Diagnose: did it complete normally, or crash? Tail log + check patterns + lifetime.
+                diag = _diagnose_terminal(t)
+                if terminal_ok is False:
+                    diag = dict(diag)
+                    diag["is_crash"] = True
+                    reason = terminal_reason or "slurm terminal state indicates failure"
+                    if backend_state == "OUT_OF_MEMORY":
+                        reason += " (out of memory)"
+                    prior = diag.get("reason") or ""
+                    if prior and prior != "ambiguous; assumed normal":
+                        reason = f"{reason}; {prior}"
+                    diag["reason"] = reason
             t["_diagnosis"] = diag  # caller (watcher) reads + emits task_crashed if needed
             # Belt-and-suspenders: never let heuristics flip an auto-adopted task to "failed".
             # Adopted tasks have no scheduler-owned log so heuristics like "log 0B after Ns"
@@ -1179,6 +1218,7 @@ def _batch_check_running(state):
             # set to 'cancelled' before this code runs and we never get here). Works for both
             # scheduler-launched AND auto-adopted tasks (now that adopt captures cmdline).
             elif (not diag.get("is_crash")
+                  and terminal_ok is not True
                   and t.get("status") == "done"  # not already failed/cancelled
                   and t.get("started_at") and t.get("finished_at")):
                 sig = t.get("signature") or ""
@@ -2282,6 +2322,10 @@ class SlurmBackend(Backend):
 
         ALIVE_STATES = {"PENDING", "CONFIGURING", "RUNNING", "COMPLETING", "RESIZING",
                         "REQUEUED", "SUSPENDED"}
+        SUCCESS_STATES = {"COMPLETED"}
+        FAILURE_STATES = {"FAILED", "TIMEOUT", "NODE_FAIL", "OUT_OF_MEMORY",
+                          "CANCELLED", "PREEMPTED", "BOOT_FAIL", "DEADLINE",
+                          "REVOKED", "SPECIAL_EXIT"}
 
         def _probe(node):
             ids_list = [t["slurm_job_id"] for t in by_node[node]]
@@ -2327,17 +2371,38 @@ class SlurmBackend(Backend):
                     # (slurm.conf MinJobAge), OR our job_id is stale. Treat as dead — the
                     # diagnose path will tail the log and decide success vs failure.
                     state_norm = "dead"
+                    terminal_ok = None
+                    terminal_reason = "slurm job absent from squeue; falling back to log diagnosis"
                 elif slurm_state in ALIVE_STATES:
                     state_norm = "alive"
-                else:
+                    terminal_ok = None
+                    terminal_reason = None
+                    t["slurm_state"] = slurm_state
+                elif slurm_state in SUCCESS_STATES:
                     state_norm = "dead"
+                    terminal_ok = True
+                    terminal_reason = f"slurm terminal state {slurm_state}"
+                    t["slurm_state"] = slurm_state
+                else:
+                    # Unknown terminal-ish states are safer as failures than "maybe done":
+                    # if Slurm did not say the job is alive or COMPLETED, scheduleurm should
+                    # retry/escalate rather than silently drop work.
+                    state_norm = "dead"
+                    terminal_ok = False
+                    known = slurm_state in FAILURE_STATES
+                    label = slurm_state if known else f"UNRECOGNIZED:{slurm_state}"
+                    terminal_reason = f"slurm terminal state {label}"
+                    t["slurm_state"] = slurm_state
                 # sstat peak (Phase 2.1): only fold for ALIVE tasks. Dead-state probes don't
                 # fold peaks because the policy code calls history_record on transition with
                 # whatever peak_ram_mb is at that point — sstat won't return useful data for
                 # already-finished jobs anyway (that's sacct's domain).
                 ram_mb = sstat_peaks.get(jid, 0) if state_norm == "alive" else 0
                 results[t["id"]] = {"state": state_norm, "alive_pids": [],
-                                    "vram_mb": 0, "ram_mb": ram_mb, "pcpu": 0.0}
+                                    "vram_mb": 0, "ram_mb": ram_mb, "pcpu": 0.0,
+                                    "backend_state": slurm_state,
+                                    "terminal_ok": terminal_ok,
+                                    "terminal_reason": terminal_reason}
         return results
 
 
@@ -2379,13 +2444,19 @@ class HybridBackend(Backend):
         """
         if node in self._cache:
             return self._cache[node]
-        # Probe must ALWAYS emit a definitive marker so we can distinguish "slurm not
-        # installed" (NO_SLURM, definitive) from "probe failed" (no marker). The old
-        # `... && echo HAS_SLURM` chain emitted nothing on absence, conflating absence
-        # with failure → caller cached "local" forever on transient errors.
+        # Probe must ALWAYS emit a marker so we can distinguish:
+        # - NO_SLURM: tools absent, definitively local-capable.
+        # - HAS_SLURM: tools exist AND the controller answers a cheap squeue probe.
+        # - SLURM_UNUSABLE: tools exist but controller/account/path is broken right now.
+        #
+        # The last case deliberately routes to SlurmBackend for this attempt but is not
+        # cached. Falling back to LocalBackend on a Slurm node can launch jobs on a login
+        # node and bypass cluster policy; a loud sbatch/squeue failure is safer.
         cmd = ("if command -v sbatch >/dev/null 2>&1 && "
-               "command -v squeue >/dev/null 2>&1; "
-               "then echo HAS_SLURM; else echo NO_SLURM; fi")
+               "command -v squeue >/dev/null 2>&1; then "
+               "if squeue -h >/dev/null 2>&1; then echo HAS_SLURM; "
+               "else echo SLURM_UNUSABLE; fi; "
+               "else echo NO_SLURM; fi")
         try:
             rc, out, _ = run_on(node, cmd, timeout=5, check=False)
         except Exception:
@@ -2398,6 +2469,8 @@ class HybridBackend(Backend):
         if "NO_SLURM" in out:
             self._cache[node] = "local"
             return "local"
+        if "SLURM_UNUSABLE" in out:
+            return "slurm"  # tools present; don't cache because controller/account may recover
         # Ambiguous output (output mangled by remote bashrc, MOTD, etc.) — don't cache.
         return "local"
 
@@ -2753,6 +2826,9 @@ def cmd_submit(args):
             # available. `image` is the docker image to use when env_spec resolves to docker.
             "env_spec": getattr(args, "env_spec", None) or "none",
             "image": getattr(args, "image", None) or "",
+            "slurm_partition": getattr(args, "slurm_partition", None) or "",
+            "slurm_account": getattr(args, "slurm_account", None) or "",
+            "slurm_qos": getattr(args, "slurm_qos", None) or "",
             "node": None,
             "gpu_idx": None,
             "remote_pids": [],
@@ -3305,9 +3381,72 @@ def _print_node_summary(nodes):
 def _format_task_location(task):
     if not task.get("node"):
         return "-"
+    if task.get("slurm_job_id"):
+        kind = "SLURM-GPU" if int(task.get("est_vram_mb") or 0) > 0 else "SLURM-CPU"
+        state = task.get("slurm_state")
+        state_part = f":{state}" if state else ""
+        return f"{task['node']}:{kind}#{task['slurm_job_id']}{state_part}"
     if task.get("gpu_idx") is None:
         return f"{task['node']}:CPU"
     return f"{task['node']}:GPU{task['gpu_idx']}"
+
+_SLURM_ALIVE_STATES = {"PENDING", "CONFIGURING", "RUNNING", "COMPLETING",
+                        "RESIZING", "REQUEUED", "SUSPENDED"}
+
+
+def _try_recover_orphan_slurm_job(task: dict, node: str) -> bool:
+    """Phase 2.15 P2: look for an orphan slurm job named `scheduleurm-<task_id>`
+    on `node`. If found in an alive state, adopt it onto the task (set
+    slurm_job_id, transition to running) so we don't double-submit when the
+    next dispatch tries to launch the still-queued task again.
+
+    The orphan window: SlurmBackend.launch persists status='launching' BEFORE
+    sbatch (WAL). If sbatch returns success but the scheduler process dies
+    before status='running' + slurm_job_id can be flushed, slurm has the job
+    (running 24h walltime by default) but scheduleurm forgot. Without this
+    recovery, watcher startup reverts launching → queued, next dispatch sees
+    a fresh queued task and sbatches AGAIN — slurm now has two copies running
+    the same workload.
+
+    Returns True iff orphan was found + adopted (caller should NOT revert).
+    """
+    job_name = f"scheduleurm-{task['id']}"
+    # squeue -h: no header. -n NAME: filter by name. -t all: include finished.
+    # -o "%i %T": "<jobid> <state>" per line.
+    cmd = f"squeue -h -n {shlex.quote(job_name)} -t all -o '%i %T' 2>/dev/null"
+    try:
+        rc, out, _ = run_on(node, cmd, timeout=10, check=False)
+    except Exception:
+        return False
+    if rc != 0 or not out.strip():
+        return False
+    # Pick the first matching alive job (defensive: should be at most one)
+    for line in out.splitlines():
+        bits = line.strip().split()
+        if len(bits) < 2 or not bits[0].isdigit():
+            continue
+        jid = int(bits[0])
+        slurm_state = bits[1].upper()
+        if slurm_state not in _SLURM_ALIVE_STATES:
+            # Job is already terminal in slurm — safer to let the revert path handle:
+            # the task goes back to queued, next dispatch creates a fresh job, the
+            # terminal slurm record stays as a forensic breadcrumb but doesn't
+            # interfere.
+            continue
+        task["slurm_job_id"] = jid
+        task["status"] = "running"
+        task["remote_pids"] = []  # slurm-managed: no host PIDs to track
+        task["started_at"] = task.get("launching_started_at") or time.time()
+        task["peak_vram_mb"] = 0
+        task["peak_ram_mb"] = 0
+        task.pop("launching_started_at", None)
+        task["last_block_reason"] = (
+            f"WAL recovery: adopted orphan slurm job {jid} on {node} "
+            f"(state={slurm_state}); avoids double-submit"
+        )
+        return True
+    return False
+
 
 def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: int = LAUNCHING_RESET_S) -> int:
     """Revert stale WAL launch markers to queued under state_lock.
@@ -3316,6 +3455,13 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
     that scheduler process dies before launch() flips it to running, the task would
     otherwise be invisible to dispatch forever. Keeping this recovery in one helper makes
     dispatch, watcher, status, and wait-for share the same active-state invariant.
+
+    Phase 2.15 P2: for slurm-routed launching tasks, BEFORE reverting we check
+    whether sbatch actually succeeded (orphan slurm job named scheduleurm-<id>
+    present in squeue). If yes, adopt the orphan onto the task — prevents
+    double-submission when the next dispatch tries to re-launch.
+
+    Returns count of tasks reverted (NOT including those recovered as orphans).
     """
     now = time.time() if now is None else now
     reverted = 0
@@ -3325,6 +3471,12 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
         age = now - (t.get("launching_started_at") or now)
         if age < reset_s:
             continue
+        # Phase 2.15 P2: try slurm-orphan recovery first. The check is per-task:
+        # only slurm-routed nodes have orphans to recover.
+        node = t.get("node")
+        if node and not _BACKEND.requires_local_capacity_check(node):
+            if _try_recover_orphan_slurm_job(t, node):
+                continue  # adopted; do not revert
         t["status"] = "queued"
         t["last_block_reason"] = (
             f"WAL recovery: was 'launching' for {max(0, age):.0f}s, reverted to queued"
@@ -3598,8 +3750,10 @@ def _format_feishu(event_type, payload):
                 f"{t.get('description','')[:60]}")
     if event_type == "task_launched":
         t = payload
+        handle = f"slurm_job_id={t['slurm_job_id']}" if t.get("slurm_job_id") else \
+                 f"pid={(t.get('remote_pids') or ['?'])[0]}"
         return (f"[scheduler] 🚀 {t['id']} {t.get('project','?')} launched on "
-                f"{_format_task_location(t)} pid={t.get('remote_pids',['?'])[0]} | {t.get('description','')[:60]}")
+                f"{_format_task_location(t)} {handle} | {t.get('description','')[:60]}")
     if event_type == "task_auto_adopted":
         t = payload
         return (f"[scheduler] 👁 auto-adopted {t['id']} {t.get('project','?')} on "
@@ -4700,6 +4854,12 @@ def main():
                         "still corrupt each other unless coordinated.")
     s.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true",
                    help="Allow submission even when (signature, cmd) matches an existing queued/launching/running task")
+    s.add_argument("--slurm-partition", dest="slurm_partition", default="",
+                   help="Optional Slurm partition to pass as #SBATCH --partition when routed to SlurmBackend")
+    s.add_argument("--slurm-account", dest="slurm_account", default="",
+                   help="Optional Slurm account to pass as #SBATCH --account when routed to SlurmBackend")
+    s.add_argument("--slurm-qos", dest="slurm_qos", default="",
+                   help="Optional Slurm QoS to pass as #SBATCH --qos when routed to SlurmBackend")
     s.set_defaults(func=cmd_submit)
 
     sub.add_parser("dispatch", help="Probe nodes & launch what fits (also rebalances queue)").set_defaults(func=cmd_dispatch)

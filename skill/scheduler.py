@@ -1866,6 +1866,15 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
                     f"locally (no digest available); refusing to launch — would "
                     f"silently run stale remote tag if one existed. Build/pull "
                     f"the image locally first, then resubmit.")
+        # Phase 3.0.26 P1 fix: same staleness risk for `auto` mode. has_image()
+        # with local_digest=None falls through to "remote has any tag → True",
+        # which lets a stale prior push silently run when local isn't authoritative.
+        # Auto's contract is "use docker if available, else none" — and we
+        # cannot verify the image is fresh without a local digest. Fall back to
+        # bare cmd (kind=none equivalent) instead of docker-wrapping a possibly-
+        # stale remote tag.
+        if not explicit and local_digest is None:
+            return (inner, None)
         if not env_deploy.has_image(run_on, node, chosen_image, local_digest=local_digest):
             ok, msg = env_deploy.push_image(node_host, chosen_image, timeout_s=1800)
             if not ok:

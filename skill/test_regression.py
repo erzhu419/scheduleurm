@@ -4893,14 +4893,20 @@ def test_phase3_0_21_explicit_docker_fail_fast_no_local_digest():
               inner.startswith("docker_wrap("),
               diag=f"inner={inner!r}")
 
-        # ---- Case C: explicit + local digest != remote → push (drift recovery) ----
+        # ---- Case C: explicit + local digest != remote → preload-retry error
+        # Phase 3.0.31: launch-side push was moved out of state_lock. On drift
+        # at launch (preload either failed or is in flight), explicit returns
+        # an error pointing to the preload-retry path; push is NOT invoked
+        # synchronously inside the lock anymore.
         FakeED.local_digest_ref["value"] = "fresh-local-digest"
         FakeED.remote_tag_present["value"] = True  # remote has stale-digest tag
         FakeED.push_called["n"] = 0
         task = {"id": "tC", "node": "n1", "env_spec": "docker:myproj:latest"}
         inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
-        check("explicit docker + digest drift → push triggered, no error",
-              err is None and FakeED.push_called["n"] == 1,
+        check("explicit docker + digest drift at launch → preload-retry error (NOT synchronous push)",
+              err is not None
+              and "preload" in err
+              and FakeED.push_called["n"] == 0,
               diag=f"err={err!r} push_n={FakeED.push_called['n']}")
 
         # ---- Case D: AUTO mode + no local digest → graceful fallback (no err) ----
@@ -5458,16 +5464,21 @@ def test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none():
               err is None and inner.startswith("docker_wrap("),
               diag=f"err={err!r} inner={inner!r}")
 
-        # ---- Case C: auto + local digest different → push triggered ----
+        # ---- Case C: auto + local digest different → graceful fallback ----
+        # Phase 3.0.31: push moved out of launch-time state_lock. On drift at
+        # launch (preload either failed or is in flight), auto falls back to
+        # bare cmd (kind=none equivalent) — no push, no wrap, no error. The
+        # next dispatch cycle's preload will retry the transfer.
         FakeED.local_digest_ref["value"] = "fresh-local-digest"
         FakeED.push_called["n"] = 0
         FakeED.has_image_called["n"] = 0
         task = {"id": "tC", "node": "n1", "env_spec": "auto",
                 "image": "myproj:latest"}
         inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
-        check("auto + digest drift → push triggered, docker-wrap",
-              err is None and FakeED.push_called["n"] == 1
-              and inner.startswith("docker_wrap("),
+        check("auto + digest drift at launch → graceful fallback (no push, no wrap, no error)",
+              err is None
+              and FakeED.push_called["n"] == 0
+              and inner == "python a.py",
               diag=f"err={err!r} push_n={FakeED.push_called['n']} inner={inner!r}")
 
         # ---- Case D (regression): explicit + no local digest still fails ----
@@ -5975,6 +5986,130 @@ def test_phase3_0_30_slurm_completed_log_scan_for_crash():
             finally:
                 sch.run_on = saved_run_on
     finally:
+        sch.NODES = saved_NODES
+
+
+def test_phase3_0_31_launch_side_docker_push_no_longer_holds_lock():
+    """Phase 3.0.31 P3 fix: _maybe_wrap_docker must not call push_image
+    synchronously inside the dispatch state_lock.
+
+    Pre-fix: when the image was missing or had digest drift on the target,
+    _maybe_wrap_docker called env_deploy.push_image(timeout_s=1800) right
+    there — INSIDE the dispatch state_lock. A single missing image could
+    block submit / status / cancel / watcher iterations for up to 30 min
+    while the docker save | ssh load round-trip ran. Both cmd_dispatch and
+    _watch_iteration already call _preload_docker_images_outside_lock
+    BEFORE acquiring state_lock; push belongs there, not at launch.
+
+    Now: launch-time push is removed. If has_image() returns False at the
+    launch site (preload not yet successful for this image), explicit mode
+    returns an error pointing at the preload-retry path; auto mode falls
+    back to bare cmd (kind=none equivalent). The next dispatch cycle's
+    preload retries the transfer.
+    """
+    print("\n[87] Phase 3.0.31 P3 fix: launch-side docker push removed (preload owns transfers)")
+
+    # 1. Source guard: env_deploy.push_image must NOT appear inside
+    # _maybe_wrap_docker. It SHOULD still appear in _preload_docker_images_outside_lock.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _maybe_wrap_docker")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    fn_body = src[fn_idx:fn_end]
+    check("_maybe_wrap_docker does NOT call env_deploy.push_image",
+          "env_deploy.push_image(" not in fn_body,
+          diag="env_deploy.push_image() call inside _maybe_wrap_docker would be inside state_lock")
+    preload_idx = src.find("def _preload_docker_images_outside_lock")
+    preload_end = src.find("\ndef ", preload_idx + 5)
+    preload_body = src[preload_idx:preload_end]
+    check("_preload_docker_images_outside_lock STILL calls env_deploy.push_image",
+          "env_deploy.push_image" in preload_body,
+          diag="preload is the right place to push")
+    check("_maybe_wrap_docker has-image-miss branch mentions preload-retry",
+          "preload" in fn_body and "retry" in fn_body)
+
+    # 2. Behavioral: confirm at runtime that no synchronous push_image is
+    # invoked from _maybe_wrap_docker, even on the drift path.
+    saved_env_deploy = sch.env_deploy
+    saved_NODES = sch.NODES
+    sch.NODES = {"n1": {"host": "n1box"}}
+
+    class FakeED:
+        @staticmethod
+        def parse_env_spec(spec):
+            if spec.startswith("docker:"):
+                return ("docker", spec.split(":", 1)[1])
+            if spec == "auto":
+                return ("auto", "")
+            return ("none", "")
+        @staticmethod
+        def has_docker(run_on, node, timeout=8): return True
+
+        local_digest_ref = {"value": None}
+        push_called = {"n": 0}
+
+        @classmethod
+        def get_image_digest(cls, run_on, node, image, timeout=10):
+            if node == "local":
+                return cls.local_digest_ref["value"]
+            return "remote-stale"
+
+        @classmethod
+        def has_image(cls, run_on, node, image, local_digest=None, timeout=10):
+            # Simulate drift: local digest != remote digest.
+            return cls.get_image_digest(None, node, image) == local_digest
+
+        @classmethod
+        def push_image(cls, *a, **k):
+            cls.push_called["n"] += 1
+            return (True, "ok")
+
+        @staticmethod
+        def wrap_cmd_docker(inner, image, cwd, gpu_idx, extra_env, container_name,
+                            memory_mb, cpus, gpu_runtime_env):
+            return f"docker_wrap({inner})"
+
+    sch.env_deploy = FakeED
+
+    try:
+        # ---- Case A: explicit + drift → preload-retry error, push NOT called ----
+        FakeED.local_digest_ref["value"] = "fresh-local-digest"
+        FakeED.push_called["n"] = 0
+        task = {"id": "tA", "node": "n1", "env_spec": "docker:myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("explicit + drift → error mentions preload",
+              err is not None and "preload" in err, diag=f"err={err!r}")
+        check("explicit + drift → push_image NOT invoked synchronously",
+              FakeED.push_called["n"] == 0,
+              diag=f"push_n={FakeED.push_called['n']}")
+        check("explicit + drift → cmd unchanged (no docker wrap)",
+              inner == "python a.py")
+
+        # ---- Case B: auto + drift → graceful fallback to none, push NOT called ----
+        FakeED.local_digest_ref["value"] = "fresh-local-digest"
+        FakeED.push_called["n"] = 0
+        task = {"id": "tB", "node": "n1", "env_spec": "auto",
+                "image": "myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("auto + drift → no error",
+              err is None, diag=f"err={err!r}")
+        check("auto + drift → push_image NOT invoked synchronously",
+              FakeED.push_called["n"] == 0,
+              diag=f"push_n={FakeED.push_called['n']}")
+        check("auto + drift → bare cmd (kind=none equivalent)",
+              inner == "python a.py")
+
+        # ---- Case C: image already present (no drift) → docker wraps as usual ----
+        FakeED.local_digest_ref["value"] = "remote-stale"  # matches → no drift
+        FakeED.push_called["n"] = 0
+        task = {"id": "tC", "node": "n1", "env_spec": "docker:myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("explicit + no drift → ok, docker-wrap (happy path preserved)",
+              err is None
+              and inner.startswith("docker_wrap(")
+              and FakeED.push_called["n"] == 0,
+              diag=f"err={err!r} inner={inner!r} push_n={FakeED.push_called['n']}")
+    finally:
+        sch.env_deploy = saved_env_deploy
         sch.NODES = saved_NODES
 
 
@@ -8490,6 +8625,7 @@ if __name__ == "__main__":
     test_phase3_0_28_local_wal_orphan_recovery()
     test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch()
     test_phase3_0_30_slurm_completed_log_scan_for_crash()
+    test_phase3_0_31_launch_side_docker_push_no_longer_holds_lock()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

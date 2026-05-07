@@ -2364,6 +2364,129 @@ def test_backend_slurm_phase2():
         sch.run_on = real_run_on
 
 
+def test_backend_slurm_phase2_1_sstat():
+    """Phase 2.1: SlurmBackend pulls live RAM peaks via `sstat` so the history accumulator
+    gets real samples (Phase 2 v1 left ram_mb=0 → history estimates were forever stuck at
+    declared values for slurm-only signatures). Failure tolerant: any sstat failure
+    (no plugin / not in PATH / parse error) silently degrades to v1 behavior.
+
+    These tests don't need slurm installed — run_on is mocked to return canned sstat output.
+    """
+    print("\n[42] Phase 2.1 SlurmBackend sstat live RAM peaks")
+    sb = sch.SlurmBackend()
+
+    # ---------- _parse_size_to_mb: K/M/G/T suffixes + bare KiB ----------
+    p = sb._parse_size_to_mb
+    check("'1024K' → 1 MB", p("1024K") == 1)
+    check("'512000K' → 500 MB", p("512000K") == 500)
+    check("'800M' → 800 MB", p("800M") == 800)
+    check("'2G' → 2048 MB", p("2G") == 2048)
+    check("'1T' → 1048576 MB", p("1T") == 1024 * 1024)
+    check("bare digits = KiB by sstat convention",
+          p("4096") == 4)  # 4096 KiB = 4 MiB
+    check("empty / None → None", p("") is None and p(None) is None)
+    check("garbage → None", p("notanumber") is None)
+    check("decimal works ('1.5G' = 1536 MB)", p("1.5G") == 1536)
+
+    # ---------- _query_sstat_peaks: parses pipe-delimited multi-step output ----------
+    real_run_on = sch.run_on
+
+    canned_sstat = (
+        "12345.batch|512000K\n"     # = 500 MB
+        "12345.0|800M\n"             # = 800 MB  ← max for jid 12345
+        "12345.extern|1G\n"          # = 1024 MB ← actual max for jid 12345
+        "67890.batch|256000K\n"      # = 250 MB  ← only step for jid 67890
+        "99999.batch|garbage\n"      # parse fails for jid 99999 → not in output
+    )
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (
+        (0, canned_sstat, "") if "sstat" in cmd else (0, "", "")
+    )
+    try:
+        peaks = sb._query_sstat_peaks("local", [12345, 67890, 99999])
+        check("sstat: max across steps wins (1G > 800M > 500M)",
+              peaks.get(12345) == 1024, diag=str(peaks))
+        check("sstat: single-step job parsed",
+              peaks.get(67890) == 250, diag=str(peaks))
+        check("sstat: unparseable row silently skipped",
+              99999 not in peaks, diag=str(peaks))
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- sstat error → empty dict (graceful degradation) ----------
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (1, "", "sstat: command not found")
+    try:
+        peaks = sb._query_sstat_peaks("local", [12345])
+        check("sstat command-not-found → {} (no peaks, no exception)",
+              peaks == {}, diag=str(peaks))
+    finally:
+        sch.run_on = real_run_on
+
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (_ for _ in ()).throw(RuntimeError("ssh broken"))
+    try:
+        peaks = sb._query_sstat_peaks("local", [12345])
+        check("sstat: ssh exception → {} (caught, no propagation)",
+              peaks == {}, diag=str(peaks))
+    finally:
+        sch.run_on = real_run_on
+
+    # Empty job-ids list → trivial early return (no ssh)
+    ssh_called = []
+    sch.run_on = lambda *a, **k: (ssh_called.append(1) or (0, "", ""))
+    try:
+        peaks = sb._query_sstat_peaks("local", [])
+        check("sstat: empty job_ids → no ssh issued",
+              peaks == {} and not ssh_called)
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- batch_probe: sstat peak folded into ALIVE result, not dead ----------
+    canned_squeue = "100 RUNNING\n101 COMPLETED\n"
+    canned_sstat_2 = (
+        "100.batch|2G\n"     # alive — 2048 MB should land in ram_mb
+        "101.batch|1G\n"     # dead — sstat data ignored (won't fold)
+    )
+    def _mock_run_on(node, cmd, timeout=15, check=True):
+        if "squeue" in cmd:
+            return (0, canned_squeue, "")
+        if "sstat" in cmd:
+            return (0, canned_sstat_2, "")
+        return (0, "", "")
+    sch.run_on = _mock_run_on
+    try:
+        state = {"tasks": [
+            {"id": "ta", "status": "running", "node": "local", "slurm_job_id": 100},
+            {"id": "tb", "status": "running", "node": "local", "slurm_job_id": 101},
+        ]}
+        res = sb.batch_probe(state)
+        check("alive task: sstat ram_mb folded into result",
+              res["ta"]["state"] == "alive" and res["ta"]["ram_mb"] == 2048,
+              diag=str(res.get("ta")))
+        check("dead task: sstat ram_mb NOT folded (would be stale anyway)",
+              res["tb"]["state"] == "dead" and res["tb"]["ram_mb"] == 0,
+              diag=str(res.get("tb")))
+        check("vram_mb / pcpu still 0 (Phase 2.1 only adds ram_mb)",
+              res["ta"]["vram_mb"] == 0 and res["ta"]["pcpu"] == 0.0)
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- batch_probe: sstat failure → ram_mb stays 0 (v1 fallback) ----------
+    def _mock_squeue_only(node, cmd, timeout=15, check=True):
+        if "squeue" in cmd:
+            return (0, "100 RUNNING\n", "")
+        if "sstat" in cmd:
+            return (1, "", "no accounting plugin")
+        return (0, "", "")
+    sch.run_on = _mock_squeue_only
+    try:
+        state = {"tasks": [{"id": "tc", "status": "running", "node": "local", "slurm_job_id": 100}]}
+        res = sb.batch_probe(state)
+        check("sstat failure → ram_mb=0, state still 'alive' (graceful v1 degradation)",
+              res["tc"]["state"] == "alive" and res["tc"]["ram_mb"] == 0,
+              diag=str(res.get("tc")))
+    finally:
+        sch.run_on = real_run_on
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -2423,6 +2546,7 @@ if __name__ == "__main__":
     test_history_record_p80_outlier_resistance()
     test_backend_abstraction_phase1()
     test_backend_slurm_phase2()
+    test_backend_slurm_phase2_1_sstat()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

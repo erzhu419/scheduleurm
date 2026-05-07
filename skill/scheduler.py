@@ -850,6 +850,70 @@ def run_on(node, shell_cmd, timeout=15, check=True):
     return proc.returncode, proc.stdout, proc.stderr
 
 # ---------- node probe ----------
+def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
+    """Phase 3.3: query Windows host metrics via WSL → PowerShell interop.
+
+    The WSL2 `local` node sees only its OWN memory pool (the VM's, capped
+    by .wslconfig — typically 30GB on a 64GB host) and only NVML's
+    "any-kernel-active" GPU utilization (averaged across the sample window,
+    much lower than Task Manager's per-engine Compute utilization for
+    bursty RL workloads). Users comparing TUI vs. Task Manager see large
+    apparent discrepancies even though both numbers are "correct" for
+    their respective measurement model.
+
+    This helper queries Windows-side ground truth so the TUI can show it
+    alongside the WSL view:
+      host_free_ram_mb         — Win32_OperatingSystem.FreePhysicalMemory
+      host_total_ram_mb        — Win32_OperatingSystem.TotalVisibleMemorySize
+      gpu_compute_util_pct     — max DXGI Compute engine utilization
+                                 (the metric Task Manager's GPU widget uses)
+
+    Best-effort: any failure (powershell.exe missing, interop slow, query
+    error) returns an empty dict so callers can fall back gracefully.
+    Total worst-case latency: ~timeout_s; in practice 200-800ms.
+    """
+    out = {}
+    pwsh = "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+    if not Path(pwsh).exists():
+        # 22H2+ paths can also live here; otherwise abort silently.
+        alt = "/mnt/c/WINDOWS/system32/WindowsPowerShell/v1.0/powershell.exe"
+        if Path(alt).exists():
+            pwsh = alt
+        else:
+            return out
+    # Combine all queries into one PowerShell invocation to amortize the
+    # WSL→Windows interop startup cost (~200ms each spawn).
+    script = (
+        "$os = Get-CimInstance Win32_OperatingSystem; "
+        "$free = [math]::Round($os.FreePhysicalMemory / 1024); "  # KB → MB
+        "$tot  = [math]::Round($os.TotalVisibleMemorySize / 1024); "
+        "$gpu = (Get-Counter '\\GPU Engine(*engtype_Compute*)\\Utilization "
+        "Percentage' -ErrorAction SilentlyContinue).CounterSamples "
+        "| Measure-Object -Maximum CookedValue; "
+        "$gpu_pct = if ($gpu.Maximum) { [math]::Round($gpu.Maximum) } else { 0 }; "
+        "Write-Output \"$free|$tot|$gpu_pct\""
+    )
+    try:
+        r = subprocess.run(
+            [pwsh, "-NoProfile", "-NonInteractive", "-Command", script],
+            capture_output=True, text=True, timeout=timeout_s,
+        )
+        if r.returncode != 0:
+            return out
+        line = (r.stdout or "").strip().splitlines()[-1] if r.stdout else ""
+        bits = line.split("|")
+        if len(bits) >= 3:
+            try:
+                out["host_free_ram_mb"] = int(bits[0])
+                out["host_total_ram_mb"] = int(bits[1])
+                out["gpu_compute_util_pct"] = int(bits[2])
+            except ValueError:
+                pass
+    except Exception:
+        pass
+    return out
+
+
 def probe_node(name):
     # /proc/meminfo is locale-independent (free -m's "Mem:" header is localized on some hosts).
     # util_pct is averaged over 3 samples (initial + 2 follow-ups, 100ms apart) because
@@ -936,10 +1000,26 @@ def probe_node(name):
     sched_free_ram = min(free_ram, total_ram) if total_ram else free_ram
     total_cpu = info.get("cpu_cores", cores) or cores or 1
     free_cpu = max(0, total_cpu - int(round(loadavg)))
-    return {"name": name, "alive": True, "gpus": gpus,
-            "free_ram_mb": sched_free_ram, "actual_free_ram_mb": free_ram, "total_ram_mb": total_ram,
-            "free_cpu": free_cpu, "total_cpu": total_cpu, "loadavg": loadavg,
-            "cores": cores}
+    result = {"name": name, "alive": True, "gpus": gpus,
+              "free_ram_mb": sched_free_ram, "actual_free_ram_mb": free_ram, "total_ram_mb": total_ram,
+              "free_cpu": free_cpu, "total_cpu": total_cpu, "loadavg": loadavg,
+              "cores": cores}
+    # Phase 3.3: for WSL2 `local`, fold Windows-host metrics so the TUI can
+    # show numbers that match what the user sees in Task Manager. These are
+    # *display* values only; dispatch placement still uses the WSL view (the
+    # only correct number for "can a new task fit inside the WSL VM").
+    if name == "local":
+        extras = _probe_windows_host_extras()
+        if extras:
+            result["host_free_ram_mb"] = extras.get("host_free_ram_mb")
+            result["host_total_ram_mb"] = extras.get("host_total_ram_mb")
+            cu = extras.get("gpu_compute_util_pct")
+            if cu is not None:
+                # Single-GPU on local; if multi, attach to all and let the
+                # display layer decide.
+                for g in result["gpus"]:
+                    g["util_pct_compute"] = cu
+    return result
 
 def probe_all():
     with ThreadPoolExecutor(max_workers=len(NODES)) as ex:

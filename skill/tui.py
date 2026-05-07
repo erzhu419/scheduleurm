@@ -92,14 +92,31 @@ def _node_summary_line(nodes):
             err = (n.get("error", "?") or "?")[:60].replace("[", "(").replace("]", ")")
             lines.append(f"{n['name']:<11s} DOWN ({err})")
             continue
-        gpus = "  ".join(
-            f"GPU{g['idx']}={g['used_mb']}/{g['total_mb']}MB({g['used_mb']*100//g['total_mb']}%mem,{g['util_pct']}%util)"
-            for g in n["gpus"]
-        )
+        # Phase 3.3: for `local` (WSL2), supplement NVML util with the DXGI
+        # Compute-engine reading (matches Task Manager) and free-RAM with
+        # the Windows host view. Dispatch still uses the WSL/NVML numbers
+        # (correct for "can the WSL VM fit one more task"); these are
+        # display-only sanity checks for the user.
+        def _gpu_segment(g):
+            mem_pct = g['used_mb'] * 100 // max(g['total_mb'], 1)
+            util = f"{g['util_pct']}%util"
+            cu = g.get("util_pct_compute")
+            if cu is not None:
+                util = f"{g['util_pct']}/{cu}%util(nvml/compute)"
+            return f"GPU{g['idx']}={g['used_mb']}/{g['total_mb']}MB({mem_pct}%mem,{util})"
+        gpus = "  ".join(_gpu_segment(g) for g in n["gpus"])
         load = n.get("loadavg")
         load_s = f"load {load:.1f}" if isinstance(load, (int, float)) else ""
         ram_free = n.get("free_ram_mb")
-        ram_s = f"ram_free={ram_free}MB" if ram_free is not None else ""
+        host_free = n.get("host_free_ram_mb")
+        if ram_free is not None and host_free is not None:
+            # Display both: WSL-VM view + Windows-host view, since they're
+            # different memory pools and the user's reference is Task Manager.
+            ram_s = f"ram_free={ram_free}MB(WSL)/{host_free}MB(host)"
+        elif ram_free is not None:
+            ram_s = f"ram_free={ram_free}MB"
+        else:
+            ram_s = ""
         cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
         tail = "  ".join(s for s in (cpu_s, load_s, ram_s) if s)
         lines.append(f"{n['name']:<11s} {gpus}  {tail}")

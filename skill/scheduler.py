@@ -2803,6 +2803,25 @@ def _parse_env(pairs):
 STARTUP_FLOOR_MB = 500   # minimum reservation per running task with peak=0 (still loading model)
 EVICT_TASK_MIN_AGE_S = 180  # don't evict a task within this many seconds of launch (give JAX/torch model loading + warmup a chance — JAX in particular spikes util to 100% during first iter compile)
 
+
+def _is_slurm_managed(task: dict) -> bool:
+    """True iff this task's placement is owned by slurm (NOT scheduleurm).
+
+    Phase 2.12 P2 defensive helper. scheduleurm's eviction / preemption /
+    inflight-vram-reservation must skip slurm-routed tasks because slurm has
+    its own queue + cgroup + walltime mechanism that owns the task once
+    sbatch returned. Without an explicit guard, the only reason these paths
+    didn't touch slurm tasks today is the implicit `gpu_idx == g["idx"]`
+    filter (slurm tasks have gpu_idx=None) — fragile under refactor: the
+    moment any path sets gpu_idx for a slurm task (e.g. for cosmetic display),
+    eviction would start scancel'ing slurm-managed work.
+
+    Source of truth: slurm_job_id presence. SlurmBackend.launch sets it; nothing
+    else does. A task with slurm_job_id is in slurm's queue regardless of
+    scheduleurm's view of node-level resources.
+    """
+    return bool(task.get("slurm_job_id"))
+
 def _reserve_inflight_vram(state, nodes):
     """Reserve a small floor for running tasks whose model hasn't yet loaded onto GPU
     (peak_vram_mb still tiny). This prevents over-packing during the multi-minute SUMO sim
@@ -2821,6 +2840,8 @@ def _reserve_inflight_vram(state, nodes):
     for t in state.get("tasks", []):
         if t.get("status") != "running":
             continue
+        if _is_slurm_managed(t):
+            continue  # Phase 2.12: slurm allocates its own VRAM via cgroup; we don't reserve here
         if t.get("gpu_idx") is None:
             continue
         n = by_node.get(t.get("node"))
@@ -2931,6 +2952,7 @@ def _enforce_post_dispatch_thresholds(state, nodes):
                 and t.get("gpu_idx") == g["idx"]
                 and t.get("started_at")
                 and not t.get("auto_adopted")  # never evict externally-launched tasks
+                and not _is_slurm_managed(t)   # Phase 2.12: slurm owns its placement; never scancel here
             ]
             if len(tasks_here) < 2:
                 continue  # single big task on the GPU — design exception, leave it
@@ -3016,6 +3038,7 @@ def _preempt_for_high_priority(state, nodes):
                        and t.get("node") == node_pin
                        and t.get("priority") == "normal"
                        and not t.get("auto_adopted")
+                       and not _is_slurm_managed(t)  # Phase 2.12: slurm owns these; don't preempt
                        and t.get("started_at")
                        and (now - t["started_at"]) > PREEMPT_VICTIM_MIN_AGE_MIN * 60
                        and (now - t["started_at"]) < PREEMPT_VICTIM_MAX_AGE_MIN * 60]

@@ -2597,6 +2597,145 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_12_eviction_skips_slurm_tasks():
+    """Phase 2.12 P2 defensive: scheduleurm's eviction / preemption / inflight-vram
+    reservation must NOT touch slurm-managed tasks, EVEN IF they have a gpu_idx set.
+
+    Today the legacy `gpu_idx == g["idx"]` filter implicitly excludes slurm tasks
+    (which have gpu_idx=None per Phase 2.3). This test forces a slurm task to have
+    a non-None gpu_idx (defeating the legacy filter) and asserts the new explicit
+    `_is_slurm_managed(t)` guard still keeps eviction/preemption hands-off.
+
+    Why: a future refactor that sets gpu_idx for any reason (cosmetic display,
+    NVML telemetry binding, etc.) would otherwise re-enable scancel'ing slurm
+    tasks — silent destructive interference with slurm's queue.
+    """
+    print("\n[52] Phase 2.12 eviction/preempt/reserve skip slurm-managed tasks (defensive)")
+
+    # ---------- _is_slurm_managed contract ----------
+    check("_is_slurm_managed exists", hasattr(sch, "_is_slurm_managed"))
+    check("_is_slurm_managed: slurm_job_id set → True",
+          sch._is_slurm_managed({"slurm_job_id": 42}) is True)
+    check("_is_slurm_managed: slurm_job_id None → False",
+          sch._is_slurm_managed({"slurm_job_id": None}) is False)
+    check("_is_slurm_managed: missing slurm_job_id → False",
+          sch._is_slurm_managed({}) is False)
+    check("_is_slurm_managed: slurm_job_id=0 → False (defensive: 0 is sentinel-like)",
+          sch._is_slurm_managed({"slurm_job_id": 0}) is False)
+
+    # ---------- _enforce_post_dispatch_thresholds: skip slurm task even when gpu_idx matches ----------
+    now = time.time()
+    state = {"tasks": [
+        # LocalBackend task on GPU0 (older — would be the survivor)
+        {"id": "tlocal-old", "status": "running", "node": "n", "gpu_idx": 0,
+         "remote_pids": [101], "started_at": now - 1000, "priority": "normal",
+         "cpu_cores": 2, "ram_mb": 4096},
+        # LocalBackend task on GPU0 (younger — would be evicted under threshold breach)
+        {"id": "tlocal-young", "status": "running", "node": "n", "gpu_idx": 0,
+         "remote_pids": [102], "started_at": now - 500, "priority": "normal",
+         "cpu_cores": 2, "ram_mb": 4096},
+        # Slurm task ARTIFICIALLY pinned to gpu_idx=0 (defeats legacy filter).
+        # Phase 2.12 must still skip via _is_slurm_managed.
+        {"id": "tslurm-young", "status": "running", "node": "n", "gpu_idx": 0,
+         "remote_pids": [], "slurm_job_id": 999, "started_at": now - 100,
+         "priority": "normal", "cpu_cores": 2, "ram_mb": 4096},
+    ]}
+    nodes = [{"name": "n", "alive": True,
+              "gpus": [{"idx": 0, "used_mb": 5000, "total_mb": 12000,
+                         "free_mb": 7000, "util_pct": 100}]}]
+    # Stub out the actual kill so test doesn't try ssh
+    real_kill = sch._kill_task_processes
+    kill_calls = []
+    sch._kill_task_processes = lambda t, timeout=15: (kill_calls.append(t["id"]) or (True, ""))
+    try:
+        evicted_ids = sch._enforce_post_dispatch_thresholds(state, nodes)
+        check("eviction did NOT scancel slurm task (tslurm-young)",
+              "tslurm-young" not in kill_calls,
+              diag=f"kill_calls={kill_calls}, evicted={evicted_ids}")
+        check("eviction did NOT include slurm task in evicted_ids",
+              "tslurm-young" not in evicted_ids,
+              diag=f"evicted_ids={evicted_ids}")
+        # Sanity: with 2 LOCAL tasks on the GPU and threshold breach, eviction WOULD
+        # pick the youngest LOCAL task (or skip if neither qualifies due to age window).
+        # We don't assert it actually evicts the local — just that it didn't pick slurm.
+    finally:
+        sch._kill_task_processes = real_kill
+
+    # ---------- _preempt_for_high_priority: slurm task can't be a victim ----------
+    state = {"tasks": [
+        # high-prio task waiting > PREEMPT_QUEUE_WAIT_MIN
+        {"id": "thi", "status": "queued", "priority": "high",
+         "submitted_at": now - sch.PREEMPT_QUEUE_WAIT_MIN * 60 - 100,
+         "require_node": "n", "cpu_cores": 4, "ram_mb": 4096},
+        # Local task in age window, eligible victim
+        {"id": "tvictim-local", "status": "running", "node": "n", "priority": "normal",
+         "started_at": now - sch.PREEMPT_VICTIM_MIN_AGE_MIN * 60 - 600,
+         "cpu_cores": 2, "ram_mb": 2048,
+         "remote_pids": [201]},
+        # Slurm task in age window — defensively must NOT be picked as victim
+        {"id": "tvictim-slurm", "status": "running", "node": "n", "priority": "normal",
+         "started_at": now - sch.PREEMPT_VICTIM_MIN_AGE_MIN * 60 - 100,
+         "cpu_cores": 2, "ram_mb": 2048,
+         "remote_pids": [], "slurm_job_id": 1000},
+    ]}
+    nodes = [{"name": "n", "alive": True, "free_cpu": 0, "free_ram_mb": 0, "gpus": []}]
+    sch._kill_task_processes = lambda t, timeout=15: (kill_calls.append(t["id"]) or (True, ""))
+    kill_calls.clear()
+    try:
+        out = sch._preempt_for_high_priority(state, nodes)
+        evicted_ids2 = [e["id"] for e in out]
+        check("preempt did NOT pick slurm task as victim",
+              "tvictim-slurm" not in evicted_ids2 and "tvictim-slurm" not in kill_calls,
+              diag=f"evicted={evicted_ids2}, kill_calls={kill_calls}")
+    finally:
+        sch._kill_task_processes = real_kill
+
+    # ---------- _reserve_inflight_vram: slurm task contributes 0 reservation ----------
+    # Build a node with a fresh GPU and one slurm task gpu_idx=0 with peak_vram=0.
+    # Without the skip, scheduleurm would reserve STARTUP_FLOOR_MB on GPU0; with it,
+    # it reserves nothing for the slurm task.
+    state = {"tasks": [
+        {"id": "ts", "status": "running", "node": "n", "gpu_idx": 0,
+         "slurm_job_id": 5, "remote_pids": [], "peak_vram_mb": 0,
+         "est_vram_mb": 4000},
+    ]}
+    nodes = [{"name": "n", "alive": True,
+              "gpus": [{"idx": 0, "used_mb": 100, "total_mb": 12000,
+                         "free_mb": 11900, "util_pct": 0}]}]
+    sch._reserve_inflight_vram(state, nodes)
+    check("reserve_inflight_vram does NOT reserve for slurm task",
+          nodes[0]["gpus"][0]["free_mb"] == 11900,
+          diag=f"free_mb={nodes[0]['gpus'][0]['free_mb']} (should still be 11900)")
+
+    # And regression: if it were a LocalBackend task with same shape, reservation DOES happen
+    state2 = {"tasks": [
+        {"id": "tl", "status": "running", "node": "n", "gpu_idx": 0,
+         "remote_pids": [101], "peak_vram_mb": 0, "est_vram_mb": 4000},
+    ]}
+    nodes2 = [{"name": "n", "alive": True,
+               "gpus": [{"idx": 0, "used_mb": 100, "total_mb": 12000,
+                          "free_mb": 11900, "util_pct": 0}]}]
+    sch._reserve_inflight_vram(state2, nodes2)
+    check("reserve_inflight_vram still reserves for LocalBackend task (regression)",
+          nodes2[0]["gpus"][0]["free_mb"] < 11900,
+          diag=f"free_mb={nodes2[0]['gpus'][0]['free_mb']}")
+
+    # ---------- Source guards: ensure helper is consulted at all 3 sites ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_enforce_post_dispatch_thresholds calls _is_slurm_managed",
+          "_is_slurm_managed(t)" in src[src.find("def _enforce_post_dispatch_thresholds"):
+                                          src.find("def _evict_to_queue")],
+          diag="eviction site missing _is_slurm_managed guard")
+    check("_preempt_for_high_priority calls _is_slurm_managed",
+          "_is_slurm_managed(t)" in src[src.find("def _preempt_for_high_priority"):
+                                         src.find("def _do_dispatch")],
+          diag="preempt site missing _is_slurm_managed guard")
+    check("_reserve_inflight_vram calls _is_slurm_managed",
+          "_is_slurm_managed(t)" in src[src.find("def _reserve_inflight_vram"):
+                                          src.find("def _signature_batch_key")],
+          diag="reserve_inflight_vram site missing _is_slurm_managed guard")
+
+
 def test_backend_slurm_phase2_10_sbatch_stdin_form():
     """Phase 2.10 P1 fix: SlurmBackend.launch uses `sbatch /dev/stdin` (kernel-level
     stdin pipe), NOT `sbatch -` (slurm-CLI argv sentinel).
@@ -3534,6 +3673,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_8_route_by_launch_artifacts()
     test_check_running_phase2_9_slurm_aware()
     test_backend_slurm_phase2_10_sbatch_stdin_form()
+    test_backend_slurm_phase2_12_eviction_skips_slurm_tasks()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

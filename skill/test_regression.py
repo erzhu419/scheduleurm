@@ -3027,6 +3027,83 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_2_node_load_metric():
+    """Phase 3.0.2: compute_node_load_seconds(state) → {node: total_eta_seconds}.
+
+    Used by Phase 3.0.3 migration trigger to identify imbalanced nodes. Counts
+    in-flight tasks pinned to each node:
+      - status=running on N (regardless of slurm_state)
+      - status=queued with require_node=N OR preferred_node=N
+      - eta_seconds=0 → unknown ETA, don't count (neutral)
+      - auto_adopted → not counted (don't migrate user-managed work)
+      - status=launching → transient, not counted
+    """
+    print("\n[60] Phase 3.0.2 per-node ETA-based load metric")
+
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "A": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+        "B": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+    }
+    try:
+        state = {"tasks": [
+            # Running on A: 3600 + 1800 = 5400 should land on A
+            {"id": "t1", "status": "running", "node": "A", "eta_seconds": 3600},
+            {"id": "t2", "status": "running", "node": "A", "eta_seconds": 1800},
+            # Queued, require=A: counts toward A's load (3000)
+            {"id": "t3", "status": "queued", "require_node": "A", "eta_seconds": 3000},
+            # Queued, preferred=B (no require): counts toward B (1200)
+            {"id": "t4", "status": "queued", "preferred_node": "B", "eta_seconds": 1200},
+            # Running on B: counts toward B (600)
+            {"id": "t5", "status": "running", "node": "B", "eta_seconds": 600},
+            # eta_seconds=0 (unknown): excluded
+            {"id": "t6", "status": "running", "node": "A", "eta_seconds": 0},
+            {"id": "t7", "status": "queued", "require_node": "B", "eta_seconds": 0},
+            # auto_adopted: excluded
+            {"id": "t8", "status": "running", "node": "B",
+             "eta_seconds": 7200, "auto_adopted": True},
+            # status=launching: excluded
+            {"id": "t9", "status": "launching", "node": "A", "eta_seconds": 5000},
+            # Pinned to unknown node: excluded (filtered by NODES dict)
+            {"id": "t10", "status": "queued", "preferred_node": "ghost", "eta_seconds": 999},
+        ]}
+        loads = sch.compute_node_load_seconds(state)
+        check("A's load = running(3600+1800) + require_queued(3000) = 8400",
+              loads.get("A") == 8400, diag=str(loads))
+        check("B's load = running(600) + preferred_queued(1200) = 1800",
+              loads.get("B") == 1800, diag=str(loads))
+        check("ghost node not in loads (filtered to NODES.keys())",
+              "ghost" not in loads)
+        check("auto_adopted task NOT counted (B would be 9000 if it were)",
+              loads.get("B") < 9000)
+        check("launching task NOT counted",
+              loads.get("A") < 13400)
+        check("eta=0 tasks NOT counted (excluded, neutral)",
+              loads.get("A") == 8400)  # if eta=0 counted, A would have +0 still
+
+        # Empty state → all zero
+        loads2 = sch.compute_node_load_seconds({"tasks": []})
+        check("empty state → all nodes load=0",
+              all(v == 0 for v in loads2.values()) and len(loads2) == 2,
+              diag=str(loads2))
+    finally:
+        sch.NODES = saved_NODES
+
+    # Source guard: status display surfaces eta_load
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    cmd_status_idx = src.find("def cmd_status")
+    next_def = src.find("\ndef ", cmd_status_idx + 5)
+    body = src[cmd_status_idx:next_def]
+    check("cmd_status calls compute_node_load_seconds",
+          "compute_node_load_seconds(state)" in body)
+    check("cmd_status formats eta_load output",
+          "eta_load=" in body)
+
+
 def test_phase3_0_1_eta_parser_and_integration():
     """Phase 3.0.1: ETA parser + watcher integration.
 
@@ -4563,6 +4640,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_16_1_rebalance_pending()
     test_phase2_17_install_slurm_orchestration()
     test_phase3_0_1_eta_parser_and_integration()
+    test_phase3_0_2_node_load_metric()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

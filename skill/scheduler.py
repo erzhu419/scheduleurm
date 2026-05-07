@@ -669,6 +669,48 @@ TRAINING_MARKERS = [
 EARLY_DEATH_SECONDS = 120   # any task dying within this window is treated as crash regardless of log
 SHORT_LIVE_SECONDS = 600    # task < this AND no success marker AND no error trace → suspected crash
 
+def _fetch_log_tail(task) -> tuple[str, int]:
+    """Phase 3.0.35: shared tail fetcher used by COMPLETED-log scan and
+    terminal-orphan diagnosis. Returns (tail_text, log_size).
+
+    Returns ("", 0) on any error — caller decides what to do with empty
+    result. Mirrors _diagnose_terminal's primary tail-read path (NOT the
+    user-redirect recovery path; that's _diagnose_terminal-only).
+    """
+    log_path = task.get("log_path")
+    if not log_path or task.get("auto_adopted"):
+        return ("", 0)
+    try:
+        node = task.get("node")
+        if node and NODES.get(node, {}).get("host") is None:
+            lp = Path(log_path)
+            if not lp.exists():
+                return ("", 0)
+            sz = lp.stat().st_size
+            with open(lp, "rb") as f:
+                f.seek(max(0, sz - 4096))
+                return (f.read().decode("utf-8", errors="replace"), sz)
+        elif node:
+            rc, out, _ = run_on(
+                node,
+                f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null; "
+                f"echo '___SZ___'; wc -c < {shlex.quote(log_path)} 2>/dev/null",
+                timeout=10, check=False,
+            )
+            if rc != 0 or not out:
+                return ("", 0)
+            if "___SZ___" in out:
+                body, _, sz_str = out.rpartition("___SZ___")
+                try:
+                    return (body, int(sz_str.strip()))
+                except ValueError:
+                    return (body, 0)
+            return (out, 0)
+    except Exception:
+        return ("", 0)
+    return ("", 0)
+
+
 def _scan_completed_log_for_crash(task) -> tuple[bool, str]:
     """Phase 3.0.30 P2: lightweight crash-pattern scan for slurm COMPLETED.
 
@@ -685,27 +727,7 @@ def _scan_completed_log_for_crash(task) -> tuple[bool, str]:
     (False, "") — be conservative; don't add false crashes when we can't
     read the log.
     """
-    log_path = task.get("log_path")
-    if not log_path or task.get("auto_adopted"):
-        return (False, "")
-    tail_text = ""
-    try:
-        node = task.get("node")
-        if node and NODES.get(node, {}).get("host") is None:
-            lp = Path(log_path)
-            if lp.exists():
-                sz = lp.stat().st_size
-                with open(lp, "rb") as f:
-                    f.seek(max(0, sz - 4096))
-                    tail_text = f.read().decode("utf-8", errors="replace")
-        elif node:
-            rc, out, _ = run_on(node,
-                f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null",
-                timeout=10, check=False)
-            if rc == 0 and out:
-                tail_text = out
-    except Exception:
-        return (False, "")
+    tail_text, _log_size = _fetch_log_tail(task)
     if not tail_text:
         return (False, "")
     matched = [p for p in CRASH_PATTERNS if p in tail_text]
@@ -4674,6 +4696,13 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
                 task["log_path"] = f"{STATE_DIR}/logs/{task['id']}.log"
             elif cwd:
                 task["log_path"] = f"{cwd}/.scheduleurm/{task['id']}.log"
+            # Phase 3.0.35 P1 fix: build a proper _diagnosis BEFORE calling
+            # _requeue_after_crash. Without it, _classify_failure({}) returns
+            # NORMAL → soft retry — silently re-running OUT_OF_MEMORY /
+            # ModuleNotFoundError / OOM-via-pipefail crashes that should
+            # escalate. Fetch the actual log tail so OOM_PATTERNS /
+            # ENV_MISSING_PATTERNS / PYTHON_IMPORT_PATTERNS can match.
+            lifetime_s = int(max(0, task["finished_at"] - task["started_at"]))
             if slurm_state == "COMPLETED":
                 crash_matched, crash_reason = _scan_completed_log_for_crash(task)
                 if crash_matched:
@@ -4683,6 +4712,16 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
                         f"reported COMPLETED but log shows crash: "
                         f"{crash_reason[:120]}"
                     )
+                    tail, log_size = _fetch_log_tail(task)
+                    task["_diagnosis"] = {
+                        "is_crash": True,
+                        "reason": crash_reason,
+                        "tail": tail,
+                        "lifetime_s": lifetime_s,
+                        "log_size": log_size,
+                        "log_path": task.get("log_path"),
+                        "success_marker": None,
+                    }
                     if state is not None:
                         new_id = _requeue_after_crash(task, state)
                         if new_id:
@@ -4699,6 +4738,23 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
                     f"WAL recovery: orphan slurm job {jid} on {node} "
                     f"terminal in state {slurm_state}; avoids re-submit"
                 )
+                # 3.0.35: surface the slurm terminal state in `reason` so
+                # _classify_failure picks up OUT_OF_MEMORY etc., and pull tail
+                # so any in-log patterns (e.g. ModuleNotFoundError) classify too.
+                tail, log_size = _fetch_log_tail(task)
+                reason = f"slurm terminal state {slurm_state}"
+                if slurm_state == "OUT_OF_MEMORY":
+                    # explicit substring so OOM_PATTERNS matches in classify
+                    reason += " (out of memory)"
+                task["_diagnosis"] = {
+                    "is_crash": True,
+                    "reason": reason,
+                    "tail": tail,
+                    "lifetime_s": lifetime_s,
+                    "log_size": log_size,
+                    "log_path": task.get("log_path"),
+                    "success_marker": None,
+                }
                 if state is not None:
                     new_id = _requeue_after_crash(task, state)
                     if new_id:

@@ -1301,8 +1301,122 @@ def _batch_check_running(state):
                     t["cpu_cores"] = new_cpu
 
 def update_running_tasks(state):
-    """Batched version — one ssh per node instead of one per task. See _batch_check_running."""
+    """Batched version — one ssh per node instead of one per task. See _batch_check_running.
+    Phase 3.0.1: also refreshes per-task eta_seconds from log-tail progress parsing."""
     _batch_check_running(state)
+    _refresh_eta_from_logs(state)
+
+
+def _refresh_eta_from_logs(state):
+    """Phase 3.0.1: parse log tails for tqdm/epoch/iter progress markers, compute
+    rate-based remaining-seconds, write task['eta_seconds']. Falls back to
+    (history_ewma - elapsed) when no progress signal is found in the tail.
+
+    Used by Phase 3.0's load-balanced migration trigger: per-node load = sum of
+    eta_seconds of in-flight tasks. Without live ETA, a node whose tasks are 90%
+    done would falsely look as loaded as one that just started.
+
+    Runs ONE ssh per node (tails all running tasks' logs there in a single shell
+    cmd). Failure-tolerant: ssh fail / log missing / no parse → eta uses EWMA
+    fallback or 0. Never raises out of this function.
+    """
+    try:
+        from . import eta_tracker  # type: ignore
+    except Exception:
+        # Module loaded as a flat script; import via spec the same way env_deploy is
+        try:
+            import importlib.util as _ilu  # type: ignore
+            spec = _ilu.spec_from_file_location(
+                "eta_tracker", str(Path(__file__).parent / "eta_tracker.py")
+            )
+            if spec and spec.loader:
+                eta_tracker = _ilu.module_from_spec(spec)
+                spec.loader.exec_module(eta_tracker)
+            else:
+                return
+        except Exception:
+            return
+
+    by_node = {}  # node -> [(task, log_path), ...]
+    pure_ewma = []  # tasks without log_path; just compute fallback
+    for t in state.get("tasks", []):
+        if t.get("status") != "running":
+            continue
+        log_path = t.get("log_path")
+        if not log_path or not t.get("node"):
+            pure_ewma.append(t)
+            continue
+        by_node.setdefault(t["node"], []).append((t, log_path))
+
+    # No-log tasks: just use EWMA fallback
+    now = time.time()
+    for t in pure_ewma:
+        sig = t.get("signature") or ""
+        h = history_get(sig) or {}
+        ewma = int(h.get("dur_s_ewma", 0))
+        elapsed = max(0, now - (t.get("started_at") or now))
+        t["eta_seconds"] = eta_tracker.compute_eta_seconds(
+            "", elapsed_s=elapsed, fallback_ewma_s=ewma
+        )
+
+    if not by_node:
+        return
+
+    import re as _re
+
+    def _probe(node):
+        entries = by_node[node]
+        # Build a single ssh cmd that tails each task's log with a marker separator.
+        # `tail -c 4096` returns at most 4KB which is plenty for the tqdm/epoch
+        # patterns we need. `2>/dev/null` swallows missing-log errors. The trailing
+        # `; true` keeps overall rc=0 even if some tails fail.
+        parts = []
+        for (t, log_path) in entries:
+            tid = t["id"]
+            parts.append(f"echo '===ETA_LOG_{tid}==='")
+            parts.append(f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null")
+        cmd = "; ".join(parts) + "; true"
+        try:
+            rc, out, _ = run_on(node, cmd, timeout=30, check=False)
+            return out if rc == 0 else None
+        except Exception:
+            return None
+
+    nodes_list = list(by_node.keys())
+    with ThreadPoolExecutor(max_workers=max(1, len(nodes_list))) as ex:
+        outputs = dict(zip(nodes_list, ex.map(_probe, nodes_list)))
+
+    marker_re = _re.compile(r'===ETA_LOG_(\S+?)===')
+    for node, out in outputs.items():
+        if out is None:
+            # ssh failed — leave eta_seconds untouched (or fallback if missing)
+            for t, _ in by_node[node]:
+                if t.get("eta_seconds") is None:
+                    sig = t.get("signature") or ""
+                    h = history_get(sig) or {}
+                    ewma = int(h.get("dur_s_ewma", 0))
+                    elapsed = max(0, now - (t.get("started_at") or now))
+                    t["eta_seconds"] = eta_tracker.compute_eta_seconds(
+                        "", elapsed_s=elapsed, fallback_ewma_s=ewma
+                    )
+            continue
+        # Split on markers: ['header', 'tid1', 'tail1', 'tid2', 'tail2', ...]
+        chunks = marker_re.split(out)
+        if len(chunks) >= 3:
+            it = iter(chunks[1:])
+            log_by_tid = dict(zip(it, it))
+        else:
+            log_by_tid = {}
+        for (t, _log_path) in by_node[node]:
+            tid = t["id"]
+            tail_text = log_by_tid.get(tid, "")
+            sig = t.get("signature") or ""
+            h = history_get(sig) or {}
+            ewma = int(h.get("dur_s_ewma", 0))
+            elapsed = max(0, now - (t.get("started_at") or now))
+            t["eta_seconds"] = eta_tracker.compute_eta_seconds(
+                tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma
+            )
 
 # ---------- placement ----------
 def _node_resources_ok(task, node_state, node_info):

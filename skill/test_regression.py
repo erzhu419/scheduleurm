@@ -5778,6 +5778,95 @@ def test_phase3_0_28_local_wal_orphan_recovery():
         sch.run_on = saved_run_on
 
 
+def test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch():
+    """Phase 3.0.29 P2 fix: actual_started_at must be None on a freshly-
+    requeued / relaunched task, not inherited from the parent run.
+
+    Pre-fix: _requeue_after_crash cleared slurm_job_id / slurm_state but NOT
+    actual_started_at (Phase 3.0.9 stamp). SlurmBackend.launch didn't clear
+    it either. Because _effective_elapsed_s prefers actual_started_at for
+    slurm tasks, a retry could carry the parent's old timestamp into the
+    PENDING window and report seconds-of-elapsed-compute that didn't happen
+    yet. ETA / eta_load / migration decisions then drifted.
+
+    Now: both _requeue_after_crash and SlurmBackend.launch explicitly set
+    actual_started_at = None. batch_probe re-stamps it the first time the
+    new job actually reaches slurm_state=RUNNING.
+    """
+    print("\n[85] Phase 3.0.29 P2 fix: actual_started_at cleared on requeue + (re)launch")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    rq_idx = src.find("def _requeue_after_crash")
+    rq_end = src.find("\ndef ", rq_idx + 5)
+    rq_body = src[rq_idx:rq_end]
+    check("_requeue_after_crash sets actual_started_at = None",
+          '"actual_started_at": None' in rq_body)
+    sb_idx = src.find("class SlurmBackend")
+    sb_end = src.find("\nclass ", sb_idx + 5)
+    sb_body = src[sb_idx:sb_end]
+    check("SlurmBackend.launch sets actual_started_at = None",
+          'task["actual_started_at"] = None' in sb_body)
+
+    # 2. Behavioral: _requeue_after_crash on a parent that has actual_started_at
+    # set must produce a clone with actual_started_at = None.
+    saved_max_retry = sch.MAX_AUTO_RETRY
+    try:
+        # Build a minimal state with a "crashed" parent task. _requeue_after_crash
+        # also writes escalations on cap, but we keep retry_count low.
+        parent = {
+            "id": "tParent", "status": "failed", "node": "n1",
+            "remote_pids": [], "retry_count": 0,
+            # Stale stamps from the previous run:
+            "actual_started_at": time.time() - 3600,
+            "started_at": time.time() - 3700,
+            "slurm_job_id": 42, "slurm_state": "FAILED",
+            "signature": "TEST/req", "cmd": "x",
+            "_diagnosis": {"category": "TRANSIENT", "reason": "ssh blip"},
+        }
+        state = {"next_id": 100, "tasks": [parent]}
+        new_id = sch._requeue_after_crash(parent, state)
+        check("_requeue_after_crash produced a new task id",
+              new_id is not None and new_id.startswith("t"),
+              diag=f"got {new_id!r}")
+        clone = next(t for t in state["tasks"] if t["id"] == new_id)
+        check("retry clone: actual_started_at cleared (None)",
+              clone.get("actual_started_at") is None,
+              diag=f"got {clone.get('actual_started_at')!r}")
+        check("retry clone: slurm_job_id cleared (existing 3.0.x guard)",
+              clone.get("slurm_job_id") is None)
+        check("retry clone: started_at cleared",
+              clone.get("started_at") is None)
+        check("retry clone: status=queued",
+              clone.get("status") == "queued")
+        # The parent's stamp must remain untouched (audit trail).
+        check("parent task: actual_started_at preserved (forensic value)",
+              parent.get("actual_started_at") is not None
+              and abs(parent["actual_started_at"] - (time.time() - 3600)) < 60)
+    finally:
+        sch.MAX_AUTO_RETRY = saved_max_retry
+
+    # 3. _effective_elapsed_s on the clone reports 0 (no actual_started_at yet).
+    # That's the whole reason this fix matters: stale stamp would have surfaced
+    # here as inflated elapsed seconds.
+    clone_for_elapsed = {
+        "id": "tCheck", "started_at": time.time() - 200,
+        "slurm_job_id": None,  # not yet relaunched
+        "actual_started_at": None,
+    }
+    elapsed = sch._effective_elapsed_s(clone_for_elapsed)
+    check("retry clone _effective_elapsed_s: LocalBackend semantics until slurm relaunch",
+          elapsed > 0 and elapsed < 1000,
+          diag=f"got {elapsed}")
+    # Now simulate the new slurm relaunch + still PENDING (no actual_started_at):
+    clone_for_elapsed["slurm_job_id"] = 999
+    clone_for_elapsed["actual_started_at"] = None
+    elapsed_pending = sch._effective_elapsed_s(clone_for_elapsed)
+    check("after relaunch + still PENDING: elapsed=0 (3.0.9 invariant)",
+          elapsed_pending == 0,
+          diag=f"got {elapsed_pending}")
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -8288,6 +8377,7 @@ if __name__ == "__main__":
     test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none()
     test_phase3_0_27_conda_sync_success_gate()
     test_phase3_0_28_local_wal_orphan_recovery()
+    test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

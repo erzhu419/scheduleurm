@@ -2382,11 +2382,25 @@ class HybridBackend(Backend):
         return self._slurm if self._kind_for(node) == "slurm" else self._local
 
     def _backend_for_task(self, task: dict) -> Backend:
-        # Force slurm if task already has slurm_job_id (post-launch routing — even if cache
-        # was somehow cleared, the task itself remembers which backend launched it). This
-        # makes kill/probe paths bullet-proof against cache invalidation.
+        """Route by what the task ACTUALLY has, not by the (mutable) per-node cache.
+
+        Phase 2.8 P1 fix: previously, a node's cache flipping from 'local' → 'slurm'
+        (e.g. Phase 2.7's re-probe finding slurm after a transient blip) caused
+        already-running LocalBackend tasks (those have remote_pids, no slurm_job_id)
+        to be re-routed to SlurmBackend.batch_probe, which skips them on
+        `if not jid: continue` → tasks become forever-stuck zombies (never probed,
+        never transitioned to terminal). Same hazard for kill — SlurmBackend.kill
+        returns "no slurm_job_id" without doing anything.
+
+        New rule: launch artifacts on the task itself are the source of truth.
+        - slurm_job_id present → SlurmBackend (it launched the task)
+        - remote_pids present → LocalBackend (it launched the task)
+        - neither → queued, use per-node cache for the upcoming launch
+        """
         if task.get("slurm_job_id"):
             return self._slurm
+        if task.get("remote_pids"):
+            return self._local
         node = task.get("node")
         if not node:
             return self._local  # no node yet (queued task): launch path will re-route

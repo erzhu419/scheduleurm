@@ -368,6 +368,11 @@ def main():
         cpu_cap = capacity.get("cpu_cores", 0)
         ram_cap = capacity.get("ram_mb", 0)
         gpu_caps = capacity.get("gpu_vram_mb", {}) or {}
+        # Phase 3.4.4: cross-scheduler enforcement of local placement policy.
+        max_per_task = capacity.get("max_vram_per_task")
+        vram_margin = int(capacity.get("vram_margin_mb", 0) or 0)
+        third_rule = bool(capacity.get("third_pack_rule"))
+        default_vram = int(capacity.get("default_vram_mb", 0) or 0)
         conflicts = []
         if used_cpu + cpu_need > cpu_cap:
             conflicts.append("cpu: need %d + claimed %d > cap %d" % (cpu_need, used_cpu, cpu_cap))
@@ -377,8 +382,30 @@ def main():
             gkey = str(gpu_idx)
             gcap = int(gpu_caps.get(gkey, 0))
             gused = per_gpu.get(gkey, 0)
+            # Per-task VRAM cap (e.g. local enforces ≤ 4GB per task).
+            if max_per_task is not None and vram_need > int(max_per_task):
+                conflicts.append("gpu%s: need %dMB > per-task cap %dMB" % (
+                    gkey, vram_need, int(max_per_task)))
+            # Total cap (raw VRAM math).
             if gused + vram_need > gcap:
-                conflicts.append("gpu%s: need %dMB + claimed %dMB > cap %dMB" % (gkey, vram_need, gused, gcap))
+                conflicts.append("gpu%s: need %dMB + claimed %dMB > cap %dMB" % (
+                    gkey, vram_need, gused, gcap))
+            # VRAM margin: leave at least margin MB free after this claim.
+            if gcap > 0 and (gcap - gused - vram_need) < vram_margin:
+                conflicts.append("gpu%s: post-claim free %dMB < margin %dMB" % (
+                    gkey, gcap - gused - vram_need, vram_margin))
+            # 1/3 packing rule: don't push a card past 1/3 used. Small-task
+            # exemption: a task with vram_need ≤ default may stack past 1/3
+            # (compute-saturation check is the local-only safeguard for that
+            # case, run before claim is invoked).
+            if third_rule and gcap > 0:
+                third = gcap // 3
+                gused_after = gused + vram_need
+                if gused_after >= third and gused_after > 100:
+                    if vram_need > default_vram:
+                        conflicts.append(
+                            "gpu%s: claim would push usage to %dMB ≥ 1/3 of "
+                            "%dMB (packing rule)" % (gkey, gused_after, gcap))
         if conflicts:
             print(json.dumps({"ok": False, "conflict": "; ".join(conflicts), "claims_seen": len(fresh)}))
             return
@@ -584,13 +611,28 @@ class _ClaimManager:
 
     @classmethod
     def _build_capacity(cls, node: str, node_state: Optional[dict] = None) -> dict:
-        """Build the capacity payload sent with every claim op. CPU/RAM
-        from NODES config; per-GPU VRAM from a fresh probe (passed in)."""
+        """Build the capacity payload sent with every claim op.
+
+        Phase 3.4.4 P2 fix: payload now carries the local placement policy
+        (per-task VRAM cap, VRAM margin, 1/3 packing rule, small-task
+        exemption threshold). Without these, two schedulers with stale
+        probes could BOTH pass `_gpu_fits` locally on a fresh GPU and BOTH
+        succeed at claim() — then the second-running task would violate
+        the 1/3 rule even though the first scheduler's claim was meant to
+        prevent that. Util saturation isn't replicated (no shared util
+        reading); local pick_placement still gates on it before claim is
+        ever invoked.
+        """
         info = NODES.get(node, {})
         cap = {
             "cpu_cores": int(info.get("cpu_cores", 0)),
             "ram_mb": int(info.get("ram_mb", 0)),
             "gpu_vram_mb": {},
+            # Policy fields for cross-scheduler enforcement.
+            "max_vram_per_task": info.get("max_vram_per_task"),
+            "vram_margin_mb": int(VRAM_MARGIN_MB),
+            "third_pack_rule": bool(ONE_THIRD_PACK_RULE),
+            "default_vram_mb": int(DEFAULT_VRAM_MB),
         }
         if node_state and node_state.get("gpus"):
             for g in node_state["gpus"]:

@@ -3501,6 +3501,11 @@ def _node_processes(name):
     # cap at 4KB. Used by adopt to record the real launch command so a crashed adopted task
     # can be auto-requeued instead of disappearing silently. Field 6 (cmdline) may contain
     # `|` chars in args — Python parser uses maxsplit=5 to keep cmdline intact.
+    # Slurm-detection (Phase 2.2): grep /proc/<pid>/environ for SLURM_JOB_ID (modern) or
+    # SLURM_JOBID (legacy). PIDs that are slurm-managed get sl=1 and the caller skips them
+    # to prevent double-tracking — when scheduleurm submits via SlurmBackend, the task is
+    # already tracked by slurm_job_id; auto-adopt would duplicate the same workload.
+    # Reading environ requires owning the process; slurm jobs run as the submitting user.
     cmd = (
         "nvidia-smi --query-compute-apps=gpu_bus_id,pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
         "echo '===BUS==='; "
@@ -3512,8 +3517,9 @@ def _node_processes(name):
         "  r=$(awk '/^VmRSS:/ {print $2}' /proc/$p/status 2>/dev/null); "
         "  pc=$(ps -o pcpu= -p \"$p\" 2>/dev/null | tr -d ' '); "
         "  pg=$(ps -o pgid= -p \"$p\" 2>/dev/null | tr -d ' '); "
+        "  sl=0; grep -aqE 'SLURM_JOB_ID=|SLURM_JOBID=' /proc/$p/environ 2>/dev/null && sl=1; "
         "  cl=$(head -c 4096 /proc/$p/cmdline 2>/dev/null | tr '\\0' ' ' | sed 's/[[:space:]]*$//'); "
-        "  echo \"${p}|${o}|${c}|${r}|${pc}|${pg}|${cl}\"; "
+        "  echo \"${p}|${o}|${c}|${r}|${pc}|${pg}|${sl}|${cl}\"; "
         "done"
     )
     try:
@@ -3535,8 +3541,9 @@ def _node_processes(name):
             except ValueError: continue
     pid_meta = {}
     for ml in meta_lines:
-        # maxsplit=6 keeps the cmdline (last field) intact even if it contains `|` chars.
-        bits = ml.split("|", 6)
+        # maxsplit=7 keeps the cmdline (last field) intact even if it contains `|` chars.
+        # Phase 2.2: extra `sl` field between pgid and cmdline indicates slurm-managed PID.
+        bits = ml.split("|", 7)
         if len(bits) >= 3:
             owner = bits[1].strip()
             cwd = bits[2].strip()
@@ -3550,8 +3557,9 @@ def _node_processes(name):
             pgid = None
             if len(bits) >= 6 and bits[5].strip().isdigit():
                 pgid = int(bits[5].strip())
-            cmdline = bits[6].strip() if len(bits) >= 7 else ""
-            try: pid_meta[int(bits[0])] = (owner, cwd, rss_kb, pcpu, pgid, cmdline)
+            is_slurm = (len(bits) >= 7 and bits[6].strip() == "1")
+            cmdline = bits[7].strip() if len(bits) >= 8 else ""
+            try: pid_meta[int(bits[0])] = (owner, cwd, rss_kb, pcpu, pgid, is_slurm, cmdline)
             except ValueError: continue
     out_list = []
     for pl in proc_lines:
@@ -3562,10 +3570,13 @@ def _node_processes(name):
         except ValueError: continue
         gpu_idx = bus_to_idx.get(parts[0])
         if gpu_idx is None: continue
-        owner, cwd, rss_kb, pcpu, pgid, cmdline = pid_meta.get(pid, ("", "", 0, 0.0, None, ""))
+        owner, cwd, rss_kb, pcpu, pgid, is_slurm, cmdline = pid_meta.get(
+            pid, ("", "", 0, 0.0, None, False, "")
+        )
         out_list.append({"node": name, "pid": pid, "gpu_idx": gpu_idx, "used_mb": used,
                           "owner": owner, "cwd": cwd, "rss_mb": rss_kb // 1024,
-                          "pcpu": pcpu, "pgid": pgid or pid, "cmdline": cmdline})
+                          "pcpu": pcpu, "pgid": pgid or pid, "cmdline": cmdline,
+                          "is_slurm": is_slurm})
     return out_list
 
 def _node_ppid_map(name):
@@ -3635,6 +3646,7 @@ def _node_cpu_processes(name):
     import getpass
     me = getpass.getuser()
     # cmdline appended for adopt-time cmd capture; see _node_processes for rationale.
+    # Phase 2.2: emit `sl` flag (1 = slurm-managed) so caller skips slurm-owned procs.
     script = (
         f"PIDS=$(ps -eo pid,user,pcpu,cmd --no-headers 2>/dev/null | "
         f"awk -v u={me} '$2==u && $4~/python/ && $3+0>=50 {{print $1}}'); "
@@ -3643,8 +3655,9 @@ def _node_cpu_processes(name):
         f"  rss=$(ps -o rss= -p $p 2>/dev/null | tr -d ' '); "
         f"  pg=$(ps -o pgid= -p $p 2>/dev/null | tr -d ' '); "
         f"  cwd=$(readlink /proc/$p/cwd 2>/dev/null); "
+        f"  sl=0; grep -aqE 'SLURM_JOB_ID=|SLURM_JOBID=' /proc/$p/environ 2>/dev/null && sl=1; "
         f"  cl=$(head -c 4096 /proc/$p/cmdline 2>/dev/null | tr '\\0' ' ' | sed 's/[[:space:]]*$//'); "
-        f"  echo \"${{p}}|${{pcpu}}|${{rss}}|${{pg}}|${{cwd}}|${{cl}}\"; "
+        f"  echo \"${{p}}|${{pcpu}}|${{rss}}|${{pg}}|${{cwd}}|${{sl}}|${{cl}}\"; "
         f"done"
     )
     try:
@@ -3654,8 +3667,9 @@ def _node_cpu_processes(name):
         return []
     out_list = []
     for line in out.splitlines():
-        # maxsplit=5 keeps cmdline (last field) intact even if it contains `|` chars.
-        bits = line.strip().split("|", 5)
+        # maxsplit=6 keeps cmdline (last field) intact even if it contains `|` chars.
+        # Phase 2.2: extra `sl` field after cwd indicates slurm-managed PID.
+        bits = line.strip().split("|", 6)
         if len(bits) < 5: continue
         try:
             pid = int(bits[0])
@@ -3665,10 +3679,12 @@ def _node_cpu_processes(name):
         except ValueError:
             continue
         cwd = bits[4].strip()
-        cmdline = bits[5].strip() if len(bits) >= 6 else ""
+        is_slurm = (len(bits) >= 6 and bits[5].strip() == "1")
+        cmdline = bits[6].strip() if len(bits) >= 7 else ""
         out_list.append({"node": name, "pid": pid, "owner": me, "rss_mb": rss_kb // 1024,
                           "cwd": cwd, "pcpu": pcpu, "gpu_idx": None, "used_mb": 0,
-                          "is_cpu_only": True, "pgid": pgid, "cmdline": cmdline})
+                          "is_cpu_only": True, "pgid": pgid, "cmdline": cmdline,
+                          "is_slurm": is_slurm})
     return out_list
 
 def _refresh_adopted_resources(state, gpu_proc_lists, cpu_proc_lists):
@@ -3778,10 +3794,17 @@ def _reconcile_external_tasks(state):
             all_procs.append(p)
     # Filter to ours + new + project-shaped cwd. Reject children of already-tracked PIDs
     # (the scheduler-launched bash wrapper + its python child were being adopted as TWO tasks).
+    # Phase 2.2: also reject slurm-managed PIDs (SLURM_JOB_ID set in /proc/<pid>/environ).
+    # Reason: when scheduleurm submits via SlurmBackend, the actual user proc is launched by
+    # slurmstepd not by scheduleurm — nvidia-smi sees its PID. Without this filter, the same
+    # workload would be tracked twice (once via slurm_job_id, once as auto-adopted). Even
+    # if user submits to slurm OUTSIDE scheduleurm, we still skip — they can submit through
+    # scheduleurm if they want it tracked; otherwise, hands off.
     candidates = []
     for p in all_procs:
         if (p["node"], p["pid"]) in tracked: continue
         if p["pid"] in descendants_by_node.get(p["node"], set()): continue
+        if p.get("is_slurm"): continue  # Phase 2.2: don't shadow slurm-managed work
         if p["owner"] != me: continue
         if not p["cwd"] or not p["cwd"].startswith(home_root): continue
         project = _project_from_path(p["cwd"])

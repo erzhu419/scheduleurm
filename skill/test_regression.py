@@ -2487,6 +2487,100 @@ def test_backend_slurm_phase2_1_sstat():
         sch.run_on = real_run_on
 
 
+def test_backend_slurm_phase2_2_adopt_skip():
+    """Phase 2.2: auto-adopt skips processes managed by slurm (SLURM_JOB_ID in /proc/<pid>/environ).
+
+    Scenario: same machine has scheduleurm + slurm. SlurmBackend submits a task; slurmstepd
+    starts the user proc; nvidia-smi sees it. Without this filter, _reconcile_external_tasks
+    would create an auto-adopted task record on top of the existing slurm_job_id-tracked one
+    — same workload tracked twice, doubled resource accounting, eviction picks wrong victim.
+    """
+    print("\n[43] Phase 2.2 auto-adopt skips SLURM_JOB_ID-marked processes")
+
+    # ---------- Source-level: probe scripts emit and parsers carry the is_slurm flag ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_node_processes ssh script greps SLURM_JOB_ID/SLURM_JOBID",
+          "SLURM_JOB_ID=" in src and "SLURM_JOBID=" in src,
+          diag="missing slurm-detection grep")
+    check("GPU probe ssh script emits ${sl} field between ${pg} and ${cl}",
+          "${pg}|${sl}|${cl}" in src,
+          diag="GPU probe doesn't emit sl field in expected position")
+    check("CPU probe ssh script emits ${sl} field between ${cwd} and ${cl}",
+          # CPU probe uses Python f-string with doubled curlies, so source bytes are
+          # literal `${{cwd}}|${{sl}}|${{cl}}` (escaped curlies for f-string).
+          "${{cwd}}|${{sl}}|${{cl}}" in src,
+          diag="CPU probe doesn't emit sl field in expected position")
+    # _reconcile_external_tasks must skip is_slurm candidates BEFORE owner / cwd / project filters
+    # (or at any point, but it must skip) — verify via grep
+    check("_reconcile_external_tasks rejects is_slurm candidates",
+          'p.get("is_slurm")' in src and 'continue' in src,
+          diag="no is_slurm filter in candidate loop")
+
+    # ---------- Functional: stub probes to emit a slurm-managed PID, verify it's skipped ----------
+    # We stub _node_processes / _node_cpu_processes / _node_ppid_map so _reconcile_external_tasks
+    # runs without ssh. Inject a slurm-managed proc and a regular proc — only the regular one
+    # should be auto-adopted.
+    real_node_processes = sch._node_processes
+    real_node_cpu_processes = sch._node_cpu_processes
+    real_node_ppid_map = sch._node_ppid_map
+    real_history_get = sch.history_get
+    real_save = sch.save_state
+    sch.save_state = lambda s: None  # don't write live queue.json (regression sentinel rule)
+    sch.history_get = lambda sig: None
+
+    import getpass
+    me = getpass.getuser()
+    home = f"/home/{me}/some-project-dir"
+    _NODES_BACKUP = sch.NODES.copy()
+    sch.NODES = {"local": {"host": None, "cpu_cores": 12, "ram_mb": 56*1024,
+                            "ram_headroom_frac": 0.20, "max_vram_per_task": None,
+                            "max_concurrent_running": 10}}
+
+    def _fake_gpu_procs(node):
+        return [
+            # Regular non-slurm proc → SHOULD be adopted
+            {"node": "local", "pid": 1001, "gpu_idx": 0, "used_mb": 2048,
+             "owner": me, "cwd": home, "rss_mb": 4096, "pcpu": 80.0,
+             "pgid": 1001, "cmdline": "python train.py", "is_slurm": False},
+            # Slurm-managed proc → SHOULD be skipped (Phase 2.2)
+            {"node": "local", "pid": 2002, "gpu_idx": 1, "used_mb": 3072,
+             "owner": me, "cwd": home, "rss_mb": 6000, "pcpu": 90.0,
+             "pgid": 2002, "cmdline": "python slurm_managed.py", "is_slurm": True},
+        ]
+    def _fake_cpu_procs(node):
+        return [
+            {"node": "local", "pid": 3003, "owner": me, "rss_mb": 1500,
+             "cwd": home, "pcpu": 75.0, "gpu_idx": None, "used_mb": 0,
+             "is_cpu_only": True, "pgid": 3003, "cmdline": "python eval.py",
+             "is_slurm": True},  # also slurm-managed → SHOULD be skipped
+        ]
+    def _fake_ppid(node): return {}
+
+    sch._node_processes = _fake_gpu_procs
+    sch._node_cpu_processes = _fake_cpu_procs
+    sch._node_ppid_map = _fake_ppid
+
+    try:
+        state = {"tasks": [], "next_id": 1}
+        adopted = sch._reconcile_external_tasks(state)
+        adopted_pids = sorted(p for t in adopted for p in t.get("remote_pids", []))
+        check("non-slurm GPU proc (pid 1001) adopted",
+              1001 in adopted_pids, diag=f"adopted_pids={adopted_pids}")
+        check("slurm-managed GPU proc (pid 2002) NOT adopted",
+              2002 not in adopted_pids, diag=f"adopted_pids={adopted_pids}")
+        check("slurm-managed CPU proc (pid 3003) NOT adopted",
+              3003 not in adopted_pids, diag=f"adopted_pids={adopted_pids}")
+        check("exactly one adopted task (the non-slurm one)",
+              len(adopted) == 1, diag=f"adopted={len(adopted)} tasks")
+    finally:
+        sch._node_processes = real_node_processes
+        sch._node_cpu_processes = real_node_cpu_processes
+        sch._node_ppid_map = real_node_ppid_map
+        sch.history_get = real_history_get
+        sch.save_state = real_save
+        sch.NODES = _NODES_BACKUP
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -2547,6 +2641,7 @@ if __name__ == "__main__":
     test_backend_abstraction_phase1()
     test_backend_slurm_phase2()
     test_backend_slurm_phase2_1_sstat()
+    test_backend_slurm_phase2_2_adopt_skip()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

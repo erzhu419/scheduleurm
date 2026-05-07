@@ -3965,6 +3965,168 @@ def test_phase3_0_14_min_source_load_and_cwd_size_cap():
         sch.run_on = saved_run_on
 
 
+def test_phase3_0_15_migrated_task_pins_to_staged_node():
+    """Phase 3.0.15 P1 fix: after migration, the task must launch on the staged
+    target node — never on a fallback node.
+
+    Pre-fix: migration only rewrote `preferred_node`. pick_placement's policy is
+    "try preferred first, fall back to ANY node if preferred is full / throttled
+    / has no capacity". Reproduced: staged target B → B full at dispatch time →
+    pick_placement returns C → task launches on C with cwd/ckpt staged for B but
+    nothing on C → resume task silently restarts from step 0. Same blast radius
+    shape as the 3.0.6 remote→remote ckpt bug — wasted compute on a
+    quietly-broken resume.
+
+    Now: _consider_migration sets `staged_node` on commit. pick_placement
+    promotes `staged_node` to a hard pin (overrides preferred-with-fallback)
+    UNLESS the user explicitly set `require_node` (operator override beats
+    auto-balance).
+    """
+    print("\n[72] Phase 3.0.15 P1 fix: migrated task hard-pins to staged target node")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    cm_idx = src.find("def _consider_migration")
+    cm_end = src.find("\ndef ", cm_idx + 5)
+    cm_body = src[cm_idx:cm_end]
+    check("_consider_migration sets staged_node on commit",
+          'cand["staged_node"] = target_name' in cm_body
+          or "cand['staged_node']" in cm_body)
+    pp_idx = src.find("def pick_placement")
+    pp_end = src.find("\ndef ", pp_idx + 5)
+    pp_body = src[pp_idx:pp_end]
+    check("pick_placement consults staged_node",
+          "staged_node" in pp_body or 'staged = task.get("staged_node")' in pp_body)
+    check("pick_placement promotes staged_node to require ONLY when no user require_node",
+          "if staged and not require" in pp_body
+          or "if staged and require is None" in pp_body)
+
+    # 2. Behavioral. Use slurm-style nodes (no local capacity check) so the test
+    # focuses on the pin logic rather than CPU/RAM/VRAM gates.
+    saved_backend = sch._BACKEND
+    saved_NODES = sch.NODES
+    saved_slurm_cap = sch._slurm_max_pending_for_node
+    saved_blocked = sch._blocked_nodes_for_task
+    saved_launch_failed = sch._launch_failed_nodes_for_task
+
+    class FakeBackend:
+        def requires_local_capacity_check(self, name):
+            return False  # treat every node as slurm-managed for the test
+
+    sch._BACKEND = FakeBackend()
+    sch.NODES = {"A": {"name": "A"}, "B": {"name": "B"}, "C": {"name": "C"}}
+    sch._blocked_nodes_for_task = lambda task: set()
+    sch._launch_failed_nodes_for_task = lambda task: set()
+    # Throttle: B accepts 1 pending; A/C accept 999. Set B's pending count to
+    # exhaust its cap so _candidates_for_node(B) returns [] in the "B full" cases.
+    sch._slurm_max_pending_for_node = lambda n: 1 if n == "B" else 999
+
+    nodes_open = [
+        {"name": "A", "alive": True, "slurm_pending_count": 0},
+        {"name": "B", "alive": True, "slurm_pending_count": 0},
+        {"name": "C", "alive": True, "slurm_pending_count": 0},
+    ]
+    nodes_b_full = [
+        {"name": "A", "alive": True, "slurm_pending_count": 0},
+        {"name": "B", "alive": True, "slurm_pending_count": 1},  # at cap → throttled
+        {"name": "C", "alive": True, "slurm_pending_count": 0},
+    ]
+    try:
+        # ---- Case A: staged_node=B, B available → picks B ----
+        t_staged = {"id": "tA", "est_vram_mb": 0, "staged_node": "B"}
+        placement = sch.pick_placement(t_staged, nodes_open)
+        check("staged_node=B + B available → placement=B",
+              placement is not None and placement[0] == "B",
+              diag=f"got {placement}")
+
+        # ---- Case B: staged_node=B, B full → returns None (NOT fallback) ----
+        t_staged_b_full = {"id": "tB", "est_vram_mb": 0, "staged_node": "B"}
+        placement = sch.pick_placement(t_staged_b_full, nodes_b_full)
+        check("staged_node=B + B full → placement=None (no fallback to A or C)",
+              placement is None,
+              diag=f"got {placement} (pre-fix would have returned A or C)")
+
+        # ---- Case C: no staged_node, preferred=B, B full → falls back to A or C ----
+        # This is the existing soft-preferred behavior. Preserved.
+        t_pref_only = {"id": "tC", "est_vram_mb": 0, "preferred_node": "B"}
+        placement = sch.pick_placement(t_pref_only, nodes_b_full)
+        check("preferred_node=B (no staged) + B full → fallback to A or C (legacy behavior)",
+              placement is not None and placement[0] in ("A", "C"),
+              diag=f"got {placement}")
+
+        # ---- Case D: user-explicit require_node=A + staged_node=B → require wins ----
+        # Operator override: if user hard-pinned require=A, migration's staged_node
+        # must NOT silently re-route them. require=A wins. A available → picks A.
+        t_require = {"id": "tD", "est_vram_mb": 0,
+                     "require_node": "A", "staged_node": "B"}
+        placement = sch.pick_placement(t_require, nodes_open)
+        check("require_node=A + staged_node=B → require wins, placement=A",
+              placement is not None and placement[0] == "A",
+              diag=f"got {placement}")
+
+        # ---- Case E: staged_node=B and B not in nodes list at all → returns None ----
+        # Defense against stale staged_node referencing a removed node.
+        t_orphan = {"id": "tE", "est_vram_mb": 0, "staged_node": "B"}
+        nodes_no_b = [
+            {"name": "A", "alive": True, "slurm_pending_count": 0},
+            {"name": "C", "alive": True, "slurm_pending_count": 0},
+        ]
+        placement = sch.pick_placement(t_orphan, nodes_no_b)
+        check("staged_node=B but B absent from nodes → placement=None (no fallback)",
+              placement is None,
+              diag=f"got {placement}")
+
+        # ---- Case F: staged_node + preferred_node both set (the typical post-
+        # migration shape: preferred=B, staged=B) → still picks B when available.
+        t_normal = {"id": "tF", "est_vram_mb": 0,
+                    "preferred_node": "B", "staged_node": "B"}
+        placement = sch.pick_placement(t_normal, nodes_open)
+        check("preferred=staged=B → placement=B",
+              placement is not None and placement[0] == "B")
+
+        # ---- Case G: end-to-end via _consider_migration sets staged_node correctly.
+        saved_NODES_for_migrate = sch.NODES
+        sch.NODES = {"loaded": {"name": "loaded"}, "free": {"name": "free"}}
+        saved_can_migrate = sch._can_migrate_to
+        sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+        try:
+            eta = sch.MIGRATION_MIN_TASK_ETA_S
+            running_a = {"id": "rA", "status": "running", "node": "loaded",
+                         "eta_seconds": 5000, "started_at": time.time() - 100}
+            cand = {"id": "tMig", "status": "queued", "preferred_node": "loaded",
+                    "eta_seconds": eta, "submitted_at": time.time(),
+                    "priority": "normal"}
+            state = {"tasks": [running_a, cand]}
+            mnodes = [
+                {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+                 "gpus": [], "max_concurrent_running": 999, "running_count": 1,
+                 "slurm_pending_count": 0},
+                {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+                 "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+                 "slurm_pending_count": 0},
+            ]
+            migrated = sch._consider_migration(state, mnodes)
+            check("_consider_migration migrated tMig",
+                  migrated == ["tMig"], diag=f"got {migrated}")
+            check("post-migration: staged_node set to target",
+                  cand.get("staged_node") == "free",
+                  diag=f"got {cand.get('staged_node')!r}")
+            check("post-migration: preferred_node also set to target",
+                  cand.get("preferred_node") == "free")
+            check("post-migration: migration metadata intact",
+                  cand.get("migrated_from") == "loaded"
+                  and isinstance(cand.get("migrated_at"), float))
+        finally:
+            sch.NODES = saved_NODES_for_migrate
+            sch._can_migrate_to = saved_can_migrate
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = saved_NODES
+        sch._slurm_max_pending_for_node = saved_slurm_cap
+        sch._blocked_nodes_for_task = saved_blocked
+        sch._launch_failed_nodes_for_task = saved_launch_failed
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -6440,6 +6602,7 @@ if __name__ == "__main__":
     test_phase3_0_12_migration_cooldown_anti_oscillation()
     test_phase3_0_13_rebalance_pending_outside_lock()
     test_phase3_0_14_min_source_load_and_cwd_size_cap()
+    test_phase3_0_15_migrated_task_pins_to_staged_node()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

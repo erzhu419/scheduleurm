@@ -3027,6 +3027,88 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_8_unknown_eta_skipped_in_migration():
+    """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
+    must NOT be migrated.
+
+    Pre-fix: filter was `if eta > 0 and eta < MIN: continue` — eta=0 escaped the
+    filter, AND the candidate sort `key=lambda t: int(t.get("eta_seconds") or 0)`
+    placed unknown-ETA tasks FIRST. So a brand-new queued task with no log signal
+    yet would be the first to migrate, against documented "eta=0 is neutral, don't
+    bias either way" semantics.
+
+    Now: filter rewritten to `if eta < MIN: continue` which catches both eta=0
+    and eta in [1, MIN). Conservative: without an ETA signal we can't reason about
+    migration cost/benefit, so skip.
+    """
+    print("\n[65] Phase 3.0.8 P2 fix: eta=0 (unknown) tasks NOT migrated")
+
+    saved_can_migrate = sch._can_migrate_to
+    saved_NODES = sch.NODES
+    sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+    sch.NODES = {
+        "A": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+        "B": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+    }
+    nodes_alive = [{"name": "A", "alive": True}, {"name": "B", "alive": True}]
+
+    try:
+        # ---------- Reproducer of the bug user reported ----------
+        # A is heavily loaded (running task tR). B is empty. Two queued candidates,
+        # both pinned to A: q0 has eta=0 (unknown), q1 has eta=1800 (>MIN).
+        # Pre-fix: q0 migrated first (sort puts eta=0 ahead of eta=1800).
+        # Post-fix: q0 is skipped, q1 migrates.
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "q0", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 0, "cwd": "/tmp"},  # unknown ETA
+            {"id": "q1", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("eta=0 candidate NOT migrated (was 'unknown_eta_migration' bug)",
+              "q0" not in migrated, diag=str(migrated))
+        check("eta>=MIN candidate q1 migrated instead",
+              migrated == ["q1"], diag=str(migrated))
+
+        # ---------- _identify_migration_candidates also filters eta=0 ----------
+        # Same fix needs to apply to the outside-lock identification path so we
+        # don't waste rsync staging on tasks we'd reject inside the lock anyway.
+        # Use a FRESH state since _consider_migration above mutated q1.preferred_node.
+        state_id = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "q0", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 0, "cwd": "/tmp"},
+            {"id": "q1", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        snap = sch._identify_migration_candidates(state_id, nodes_alive, max_candidates=5)
+        candidate_ids = [c[0]["id"] for c in snap]
+        check("identify_candidates also skips eta=0",
+              "q0" not in candidate_ids, diag=str(candidate_ids))
+        check("identify_candidates includes eta>=MIN candidates",
+              "q1" in candidate_ids, diag=str(candidate_ids))
+
+        # ---------- Edge: only eta=0 candidates → empty ----------
+        state2 = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "q0a", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 0, "cwd": "/tmp"},
+            {"id": "q0b", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 0, "cwd": "/tmp"},
+        ]}
+        migrated2 = sch._consider_migration(state2, nodes_alive)
+        check("only-eta=0 candidates → no migration (don't migrate blind)",
+              migrated2 == [], diag=str(migrated2))
+    finally:
+        sch._can_migrate_to = saved_can_migrate
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_7_rebalance_pending_no_duplicate_sbatch():
     """Phase 3.0.7 P1 fix: rebalance-pending verifies scancel actually took effect
     BEFORE clearing slurm_job_id + status=queued. If verification fails, the task
@@ -5388,6 +5470,7 @@ if __name__ == "__main__":
     test_phase3_0_4_staging()
     test_phase3_0_5_staging_outside_lock()
     test_phase3_0_7_rebalance_pending_no_duplicate_sbatch()
+    test_phase3_0_8_unknown_eta_skipped_in_migration()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

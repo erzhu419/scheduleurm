@@ -3359,7 +3359,12 @@ def _identify_migration_candidates(state: dict, nodes: list,
         if t.get("preferred_node") != source_name:
             continue
         eta = int(t.get("eta_seconds") or 0)
-        if eta > 0 and eta < MIGRATION_MIN_TASK_ETA_S:
+        # Phase 3.0.8 P2 fix: eta=0 (unknown / no signal yet) was previously skipping
+        # this filter and getting migrated FIRST due to the ascending-by-eta sort. But
+        # "unknown ETA" means we can't reason about whether migration is worth its
+        # rsync cost — conservative answer is "don't migrate, wait until we have a
+        # rate signal". Treat eta=0 the same as eta-too-short.
+        if eta < MIGRATION_MIN_TASK_ETA_S:
             continue
         # Snapshot fields needed by _stage_for_migration (cwd, ckpt_dir, cmd,
         # preferred_node, signature, id) so the outside-lock caller doesn't need
@@ -3502,7 +3507,12 @@ def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) 
         if t.get("preferred_node") != source_name:
             continue
         eta = int(t.get("eta_seconds") or 0)
-        if eta > 0 and eta < MIGRATION_MIN_TASK_ETA_S:
+        # Phase 3.0.8 P2 fix: eta=0 (unknown / no signal yet) was previously skipping
+        # this filter and getting migrated FIRST due to the ascending-by-eta sort. But
+        # "unknown ETA" means we can't reason about whether migration is worth its
+        # rsync cost — conservative answer is "don't migrate, wait until we have a
+        # rate signal". Treat eta=0 the same as eta-too-short.
+        if eta < MIGRATION_MIN_TASK_ETA_S:
             continue  # task will finish before staging completes
         candidates.append(t)
 

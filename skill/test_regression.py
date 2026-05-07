@@ -3439,6 +3439,132 @@ def test_phase3_0_11_migration_target_respects_blocked_and_launch_failed():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_12_migration_cooldown_anti_oscillation():
+    """Phase 3.0.12 P3 fix: a task that just migrated must wait MIGRATION_COOLDOWN_S
+    before another migration is considered.
+
+    Pre-fix: no per-task cooldown. Under load oscillation (A becomes heavy → migrate
+    task to B; B becomes heavy → migrate same task back to A; A becomes heavy → …)
+    the same task could ping-pong every dispatch cycle, costing one rsync per hop
+    and burning network bandwidth without ever progressing.
+
+    Now: both _identify_migration_candidates and _consider_migration check
+    `migrated_at` and skip candidates whose last migration was within
+    MIGRATION_COOLDOWN_S of now. Tasks with no `migrated_at` (never migrated) are
+    not affected.
+    """
+    print("\n[69] Phase 3.0.12 P3 fix: per-task migration cooldown stops oscillation")
+
+    # 1. Source guard: cooldown constant exists and both call sites consult migrated_at.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("MIGRATION_COOLDOWN_S env-overridable constant exists",
+          "MIGRATION_COOLDOWN_S = int(os.environ.get(" in src
+          and "SCHEDULEURM_MIGRATION_COOLDOWN_S" in src)
+    iden_idx = src.find("def _identify_migration_candidates")
+    iden_end = src.find("\ndef ", iden_idx + 5)
+    iden_body = src[iden_idx:iden_end]
+    check("_identify_migration_candidates checks migrated_at vs cooldown",
+          "migrated_at" in iden_body and "MIGRATION_COOLDOWN_S" in iden_body)
+    cm_idx = src.find("def _consider_migration")
+    cm_end = src.find("\ndef ", cm_idx + 5)
+    cm_body = src[cm_idx:cm_end]
+    check("_consider_migration also checks migrated_at vs cooldown (defensive)",
+          "migrated_at" in cm_body and "MIGRATION_COOLDOWN_S" in cm_body)
+
+    # 2. Behavioral: cooldown filter inside _identify_migration_candidates.
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "loaded": {"name": "loaded"},
+        "free":   {"name": "free"},
+    }
+    try:
+        eta = sch.MIGRATION_MIN_TASK_ETA_S + 600
+        # Background load on "loaded" so it qualifies as the source.
+        running_a = {"id": "rA", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        running_b = {"id": "rB", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        # tCool: just migrated 60s ago → still in cooldown → must be skipped.
+        # tWarm: migrated MIGRATION_COOLDOWN_S+60s ago → cooldown elapsed → eligible.
+        # tFresh: never migrated (no migrated_at) → eligible.
+        now = time.time()
+        tCool = {"id": "tCool", "status": "queued", "preferred_node": "loaded",
+                 "eta_seconds": eta, "submitted_at": now,
+                 "priority": "normal", "description": "still in cooldown",
+                 "migrated_at": now - 60}
+        tWarm = {"id": "tWarm", "status": "queued", "preferred_node": "loaded",
+                 "eta_seconds": eta, "submitted_at": now + 1,
+                 "priority": "normal", "description": "cooldown expired",
+                 "migrated_at": now - sch.MIGRATION_COOLDOWN_S - 60}
+        tFresh = {"id": "tFresh", "status": "queued", "preferred_node": "loaded",
+                  "eta_seconds": eta, "submitted_at": now + 2,
+                  "priority": "normal", "description": "never migrated"}
+        state = {"tasks": [running_a, running_b, tCool, tWarm, tFresh]}
+        nodes = [
+            {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 2,
+             "slurm_pending_count": 0},
+            {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+             "slurm_pending_count": 0},
+        ]
+        identified = sch._identify_migration_candidates(state, nodes, max_candidates=10)
+        ids = [c["id"] for c, _ in identified]
+        check("recently-migrated task (tCool) NOT in staging snapshot",
+              "tCool" not in ids, diag=f"got {ids}")
+        check("cooldown-expired task (tWarm) IS in snapshot",
+              "tWarm" in ids, diag=f"got {ids}")
+        check("never-migrated task (tFresh) IS in snapshot",
+              "tFresh" in ids, diag=f"got {ids}")
+
+        # 3. _consider_migration mirrors the gate. tCool stays put even if staging
+        # would have succeeded (we mock _can_migrate_to True).
+        saved_can_migrate = sch._can_migrate_to
+        sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+        try:
+            migrated = sch._consider_migration(state, nodes)
+            check("_consider_migration migrates exactly one task",
+                  len(migrated) == 1, diag=f"got {migrated}")
+            # MIGRATION_MAX_PER_DISPATCH=1; among eligibles tWarm vs tFresh, sort is
+            # ascending eta — both have same eta so submitted_at decides ⇒ tWarm wins.
+            check("_consider_migration migrates an eligible task (not tCool)",
+                  migrated and migrated[0] != "tCool", diag=f"got {migrated}")
+            check("tCool preferred_node UNCHANGED (still 'loaded')",
+                  tCool["preferred_node"] == "loaded")
+        finally:
+            sch._can_migrate_to = saved_can_migrate
+
+        # 4. Edge: migrated_at set to exactly cooldown boundary minus 1s — still gated.
+        # And exactly cooldown + 1s — passes.
+        boundary_just_under = {"id": "tBoundUnder", "status": "queued",
+                               "preferred_node": "loaded", "eta_seconds": eta,
+                               "submitted_at": now + 10, "priority": "normal",
+                               "migrated_at": now - sch.MIGRATION_COOLDOWN_S + 1}
+        boundary_just_over  = {"id": "tBoundOver", "status": "queued",
+                               "preferred_node": "loaded", "eta_seconds": eta,
+                               "submitted_at": now + 11, "priority": "normal",
+                               "migrated_at": now - sch.MIGRATION_COOLDOWN_S - 1}
+        state2 = {"tasks": [running_a, running_b, boundary_just_under, boundary_just_over]}
+        ids2 = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state2, nodes, max_candidates=10)]
+        check("migrated_at = (cooldown - 1s) ago → still gated",
+              "tBoundUnder" not in ids2, diag=f"got {ids2}")
+        check("migrated_at = (cooldown + 1s) ago → passes",
+              "tBoundOver" in ids2, diag=f"got {ids2}")
+
+        # 5. migrated_at = 0 / missing → treated as "never migrated", not gated.
+        zero_t = {"id": "tZero", "status": "queued", "preferred_node": "loaded",
+                  "eta_seconds": eta, "submitted_at": now + 20,
+                  "priority": "normal", "migrated_at": 0}
+        state3 = {"tasks": [running_a, running_b, zero_t]}
+        ids3 = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state3, nodes, max_candidates=10)]
+        check("migrated_at=0 (sentinel for never-migrated) → not gated",
+              "tZero" in ids3, diag=f"got {ids3}")
+    finally:
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -5886,6 +6012,7 @@ if __name__ == "__main__":
     test_phase3_0_9_slurm_pending_elapsed_zero()
     test_phase3_0_10_migration_event_visibility()
     test_phase3_0_11_migration_target_respects_blocked_and_launch_failed()
+    test_phase3_0_12_migration_cooldown_anti_oscillation()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

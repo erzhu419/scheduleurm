@@ -3112,6 +3112,14 @@ MIGRATION_MIN_TASK_ETA_S = int(os.environ.get("SCHEDULEURM_MIGRATION_MIN_TASK_ET
 # Don't migrate a task whose ETA is < this many seconds — it'll finish where it is
 # faster than the rsync+launch round-trip would take.
 
+MIGRATION_COOLDOWN_S = int(os.environ.get("SCHEDULEURM_MIGRATION_COOLDOWN_S", "1800"))
+# Phase 3.0.12 P3 fix: minimum seconds between two migrations of the same task.
+# Without this, oscillating loads (A becomes heavy → B; then B becomes heavy → A;
+# then A again …) can ping-pong the same task repeatedly, costing one rsync per
+# dispatch cycle. 30 min is long enough that real load shifts have settled before
+# the next migration is considered, short enough that genuine imbalance still gets
+# rebalanced within an hour.
+
 
 def compute_node_load_seconds(state: dict) -> dict:
     """Phase 3.0.2: per-node load = sum of eta_seconds of in-flight tasks pinned to
@@ -3417,6 +3425,12 @@ def _identify_migration_candidates(state: dict, nodes: list,
             continue
         if target_name in _launch_failed_nodes_for_task(t):
             continue
+        # Phase 3.0.12 P3 fix: cooldown gate — a task that just migrated must wait
+        # MIGRATION_COOLDOWN_S before another migration. Stops oscillation from
+        # ping-ponging the same task across nodes when load metrics fluctuate.
+        last_mig_at = float(t.get("migrated_at") or 0)
+        if last_mig_at and (time.time() - last_mig_at) < MIGRATION_COOLDOWN_S:
+            continue
         # Snapshot fields needed by _stage_for_migration (cwd, ckpt_dir, cmd,
         # preferred_node, signature, id) so the outside-lock caller doesn't need
         # to hold a reference into state["tasks"].
@@ -3573,6 +3587,11 @@ def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) 
         if target_name in _blocked_nodes_for_task(t):
             continue
         if target_name in _launch_failed_nodes_for_task(t):
+            continue
+        # Phase 3.0.12 P3 fix: cooldown gate (mirrors the identify-side gate). Don't
+        # commit a second migration of the same task within MIGRATION_COOLDOWN_S.
+        last_mig_at = float(t.get("migrated_at") or 0)
+        if last_mig_at and (time.time() - last_mig_at) < MIGRATION_COOLDOWN_S:
             continue
         candidates.append(t)
 

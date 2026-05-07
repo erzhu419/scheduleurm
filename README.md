@@ -196,6 +196,7 @@ Tunables (all env-var overridable; no code edit; takes effect after watcher rest
 | `SCHEDULEURM_MIGRATION_MAX_PER_DISPATCH` | `1` | Cap on migrations per 60s dispatch cycle |
 | `SCHEDULEURM_MIGRATION_MIN_TASK_ETA_S` | `300` | Tasks shorter than this aren't migrated (staging cost > savings) |
 | `SCHEDULEURM_MIGRATION_MAX_CKPT_SIZE_MB` | `2048` | Reject migration if ckpt > this size (rsync would take too long) |
+| `SCHEDULEURM_MIGRATION_COOLDOWN_S` | `1800` | Same task cannot be migrated again within this many seconds (anti-oscillation) |
 
 Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log` (JSONL, also pushed to Feishu when configured), prints a `MIGRATE from → to (eta=...s)` line on `scheduler dispatch`, and rewrites the task's `preferred_node` + sets `last_block_reason` so it's visible in `scheduler status` too. Sibling `task_preempted` events surface the same way for high-prio preemption.
 

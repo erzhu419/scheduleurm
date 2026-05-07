@@ -3027,6 +3027,193 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_7_rebalance_pending_no_duplicate_sbatch():
+    """Phase 3.0.7 P1 fix: rebalance-pending verifies scancel actually took effect
+    BEFORE clearing slurm_job_id + status=queued. If verification fails, the task
+    is LEFT IN PLACE so next dispatch can't re-sbatch a duplicate.
+
+    Pre-fix: scancel rc != 0 was logged but the code still cleared slurm_job_id
+    and flipped status=queued. Next dispatch sbatched again. Slurm got two jobs
+    for the same task — violation of the "same task never runs twice" invariant.
+
+    Now: post-scancel `squeue -j <jid>` polls slurm's actual state with 1.5s
+    settle delay. Only when squeue says terminal-or-absent do we clear + requeue.
+    """
+    print("\n[64] Phase 3.0.7 rebalance-pending: scancel verify before clearing slurm_job_id")
+
+    saved_save = sch.save_state
+    saved_load = sch.load_state
+    saved_run_on = sch.run_on
+    saved_lock = sch.state_lock
+    saved_sleep = time.sleep
+    time.sleep = lambda s: None  # skip the 1.5s settle delay in tests
+
+    captured = {}
+    sch.save_state = lambda s: captured.setdefault("state", s)
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock():
+        yield
+    sch.state_lock = fake_lock
+
+    class Args: yes = True
+
+    # ---------- Case A: scancel succeeds + squeue confirms terminal ----------
+    sch._STAGING_CACHE.clear() if hasattr(sch, "_STAGING_CACHE") else None
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tA", "status": "running", "node": "n1",
+         "slurm_job_id": 100, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/A", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_terminal(node, cmd, timeout=15, check=True):
+        if "scancel" in cmd:
+            return (0, "", "")
+        if "squeue" in cmd:
+            return (0, "CANCELLED\n", "")  # slurm confirms terminal
+        return (0, "", "")
+    sch.run_on = run_on_terminal
+    captured.clear()
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("scancel + squeue=CANCELLED → cleared + requeued",
+              post["status"] == "queued" and post.get("slurm_job_id") is None,
+              diag=str(post))
+    finally:
+        pass
+
+    # ---------- Case B: scancel rc=0 BUT squeue still shows RUNNING → leave task ----------
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tB", "status": "running", "node": "n1",
+         "slurm_job_id": 200, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/B", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_still_alive(node, cmd, timeout=15, check=True):
+        if "scancel" in cmd:
+            return (0, "", "")          # scancel "succeeded" but...
+        if "squeue" in cmd:
+            return (0, "RUNNING\n", "")  # ...job is still RUNNING
+        return (0, "", "")
+    sch.run_on = run_on_still_alive
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("scancel rc=0 but slurm still shows RUNNING → task LEFT IN PLACE",
+              post["status"] == "running" and post.get("slurm_job_id") == 200,
+              diag=str(post))
+        check("skipped task gets last_block_reason explaining why",
+              "SKIPPED" in (post.get("last_block_reason") or "")
+              and "duplicate sbatch" in (post.get("last_block_reason") or ""),
+              diag=post.get("last_block_reason"))
+    finally:
+        pass
+
+    # ---------- Case C: scancel rc != 0 (ssh blip / slurm RPC fail) → leave task ----------
+    # Squeue check might still succeed and show RUNNING, OR fail too. Either way:
+    # task should NOT be cleared if slurm still has it.
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tC", "status": "running", "node": "n1",
+         "slurm_job_id": 300, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/C", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_scancel_fails(node, cmd, timeout=15, check=True):
+        if "scancel" in cmd:
+            return (1, "", "ssh: connection refused")
+        if "squeue" in cmd:
+            return (0, "PENDING\n", "")  # job still pending in slurm
+        return (0, "", "")
+    sch.run_on = run_on_scancel_fails
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("scancel rc!=0 + squeue says PENDING → task LEFT IN PLACE",
+              post["status"] == "running" and post.get("slurm_job_id") == 300,
+              diag=str(post))
+    finally:
+        pass
+
+    # ---------- Case D: squeue verify itself fails (network issue) → leave task ----------
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tD", "status": "running", "node": "n1",
+         "slurm_job_id": 400, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/D", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_verify_fails(node, cmd, timeout=15, check=True):
+        if "scancel" in cmd:
+            return (0, "", "")  # scancel "succeeded"
+        if "squeue" in cmd:
+            return (1, "", "ssh: timed out")  # but verify itself fails
+        return (0, "", "")
+    sch.run_on = run_on_verify_fails
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("scancel rc=0 but squeue verify fails → conservatively LEFT IN PLACE",
+              post["status"] == "running" and post.get("slurm_job_id") == 400,
+              diag=str(post))
+    finally:
+        pass
+
+    # ---------- Case E: squeue returns empty (job not in queue at all) → safe to clear ----------
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tE", "status": "running", "node": "n1",
+         "slurm_job_id": 500, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/E", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_squeue_empty(node, cmd, timeout=15, check=True):
+        if "scancel" in cmd:
+            return (0, "", "")
+        if "squeue" in cmd:
+            return (0, "", "")  # empty = job not in slurm anymore
+        return (0, "", "")
+    sch.run_on = run_on_squeue_empty
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post = fake_state["tasks"][0]
+        check("squeue empty (job purged from slurm) → safe to clear + requeue",
+              post["status"] == "queued" and post.get("slurm_job_id") is None,
+              diag=str(post))
+    finally:
+        pass
+
+    # ---------- Case F: mix — one verifies, one doesn't ----------
+    fake_state = {"next_id": 1, "tasks": [
+        {"id": "tOK", "status": "running", "node": "n1",
+         "slurm_job_id": 600, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/OK", "cmd": "x"},
+        {"id": "tBad", "status": "running", "node": "n1",
+         "slurm_job_id": 700, "slurm_state": "PENDING",
+         "remote_pids": [], "signature": "TEST/Bad", "cmd": "x"},
+    ]}
+    sch.load_state = lambda: fake_state
+    def run_on_mix(node, cmd, timeout=15, check=True):
+        if "scancel 600" in cmd: return (0, "", "")
+        if "scancel 700" in cmd: return (0, "", "")
+        if "squeue -h -j 600" in cmd: return (0, "CANCELLED\n", "")
+        if "squeue -h -j 700" in cmd: return (0, "RUNNING\n", "")  # still alive
+        return (0, "", "")
+    sch.run_on = run_on_mix
+    try:
+        sch.cmd_rebalance_pending(Args())
+        post_ok = next(t for t in fake_state["tasks"] if t["id"] == "tOK")
+        post_bad = next(t for t in fake_state["tasks"] if t["id"] == "tBad")
+        check("verified task → cleared + requeued",
+              post_ok["status"] == "queued" and post_ok.get("slurm_job_id") is None)
+        check("unverified task → LEFT IN PLACE (status=running, slurm_job_id intact)",
+              post_bad["status"] == "running" and post_bad.get("slurm_job_id") == 700)
+    finally:
+        sch.save_state = saved_save
+        sch.load_state = saved_load
+        sch.run_on = saved_run_on
+        sch.state_lock = saved_lock
+        time.sleep = saved_sleep
+
+
 def test_phase3_0_5_staging_outside_lock():
     """Phase 3.0.5 P1 fix: migration staging runs OUTSIDE state_lock so a multi-minute
     rsync can't block submit/cancel/status/watcher.
@@ -5200,6 +5387,7 @@ if __name__ == "__main__":
     test_phase3_0_3_migration_trigger()
     test_phase3_0_4_staging()
     test_phase3_0_5_staging_outside_lock()
+    test_phase3_0_7_rebalance_pending_no_duplicate_sbatch()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

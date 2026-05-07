@@ -5383,22 +5383,72 @@ def cmd_rebalance_pending(args):
             return
 
         rebalanced = 0
-        scancel_failed = []
+        skipped_scancel_failed = []
         for t in candidates:
             jid = int(t["slurm_job_id"])
             node = t["node"]
-            # scancel — best effort. If it fails (ssh blip, jid already done), proceed
-            # with requeue anyway. An orphan slurm job will time out at walltime (24h
-            # default); not ideal but recoverable. Worst case the user runs `squeue`
-            # and scancels manually.
+            # Phase 3.0.7 P1 fix: scancel + VERIFY the job actually left slurm's queue
+            # before clearing slurm_job_id and re-queueing.
+            #
+            # Pre-fix: if scancel rc != 0 (ssh blip, slurm RPC failure, partial outage)
+            # we still cleared slurm_job_id and flipped status=queued. Next dispatch saw
+            # a queued task and sbatched AGAIN — slurm now had TWO jobs running the same
+            # workload. Violates the "同一个任务不会跑多次" invariant.
+            #
+            # Now: scancel + sleep 1.5s + squeue check. Only clear + requeue when slurm
+            # confirms the job is terminal (COMPLETED/CANCELLED/FAILED/etc.) OR absent
+            # from squeue. Otherwise leave the task untouched (status=running, slurm_job_id
+            # intact) and report the failure so the user can intervene.
+            cancelled = False
+            scancel_msg = ""
             try:
-                rc, _, err = run_on(node, f"scancel {jid}", timeout=10, check=False)
+                rc, _, err = run_on(node, f"scancel {int(jid)}", timeout=10, check=False)
                 if rc != 0:
-                    scancel_failed.append((t["id"], jid, err.strip()[:100]))
+                    scancel_msg = f"scancel rc={rc}: {err.strip()[:120]}"
             except Exception as e:
-                scancel_failed.append((t["id"], jid, str(e)[:100]))
-            # Reset slurm-related fields, return to queued. Don't clear ckpt_dir /
-            # resume_flag / signature / cmd — those drive resume injection on next launch.
+                scancel_msg = f"scancel exception: {str(e)[:120]}"
+
+            # Verify regardless of scancel rc — even rc=0 is no guarantee the job left
+            # slurm's queue (scancel is async; slurm may take a few seconds to act).
+            time.sleep(1.5)
+            ALIVE_STATES = _SLURM_PENDING_LIKE | {"RUNNING", "COMPLETING"}
+            try:
+                rc2, out2, _ = run_on(
+                    node,
+                    f"squeue -h -j {int(jid)} -t all -o '%T' 2>/dev/null",
+                    timeout=10, check=False,
+                )
+                if rc2 == 0:
+                    state_str = (out2 or "").strip().splitlines()
+                    state_str = state_str[0].strip().upper() if state_str else ""
+                    if not state_str:
+                        cancelled = True  # job not in squeue → fully gone
+                    elif state_str not in ALIVE_STATES:
+                        cancelled = True  # terminal state → safe to clear
+                    else:
+                        cancelled = False  # still alive in slurm — DO NOT clear
+                        if not scancel_msg:
+                            scancel_msg = f"slurm still reports state={state_str} after scancel"
+                else:
+                    # squeue check itself failed — be conservative, don't clear
+                    cancelled = False
+                    if not scancel_msg:
+                        scancel_msg = f"post-scancel verify: squeue rc={rc2}"
+            except Exception as e:
+                cancelled = False
+                if not scancel_msg:
+                    scancel_msg = f"post-scancel verify exception: {str(e)[:120]}"
+
+            if not cancelled:
+                # Leave task as-is. Record why we skipped so user can act.
+                skipped_scancel_failed.append((t["id"], jid, scancel_msg))
+                t["last_block_reason"] = (
+                    f"rebalance-pending SKIPPED for jid={jid}: {scancel_msg}; "
+                    f"task left in place to avoid duplicate sbatch"
+                )
+                continue
+
+            # scancel verified → safe to clear + requeue
             for k in ("slurm_job_id", "slurm_state", "started_at", "finished_at",
                       "log_path", "_diagnosis", "process_group", "launching_started_at"):
                 t[k] = None
@@ -5406,17 +5456,20 @@ def cmd_rebalance_pending(args):
             t["alive_pids"] = []
             t["status"] = "queued"
             t["last_block_reason"] = (
-                f"rebalance-pending: scancelled slurm job {jid} on {node}; "
-                f"will re-dispatch under current policy"
+                f"rebalance-pending: scancelled slurm job {jid} on {node} "
+                f"(verified terminal); will re-dispatch under current policy"
             )
             rebalanced += 1
 
         save_state(state)
         print(f"rebalanced {rebalanced} task(s) — back to queued for re-dispatch")
-        if scancel_failed:
-            print(f"\nWARN: {len(scancel_failed)} scancel(s) failed (jobs may linger in slurm queue):")
-            for tid, jid, err in scancel_failed[:5]:
-                print(f"  {tid} jid={jid}: {err}")
+        if skipped_scancel_failed:
+            print(f"\nWARN: {len(skipped_scancel_failed)} scancel(s) NOT verified — "
+                  f"those tasks LEFT IN PLACE to avoid duplicate sbatch:")
+            for tid, jid, why in skipped_scancel_failed[:5]:
+                print(f"  {tid} jid={jid}: {why}")
+            print("Manual recovery: run `squeue -j <jid>` on each, scancel by hand, "
+                  "re-run rebalance-pending. Or wait for the orphan to time out at walltime.")
 
 
 def cmd_install_slurm(args):

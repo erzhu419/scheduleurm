@@ -3271,15 +3271,154 @@ def _stage_for_migration(task: dict, target_node: str,
 
 
 def _can_migrate_to(task: dict, target_node: str, timeout_s: int = 5) -> bool:
-    """Phase 3.0.4: now backed by full _stage_for_migration. Returns True only if
-    cwd + (optional) ckpt are staged AND env is reachable on target. The staging
-    side-effects are committed before the bool result, so caller's preferred_node
-    rewrite is safe to do unconditionally after this returns True."""
-    ok, msg = _stage_for_migration(task, target_node)
-    if not ok:
-        # Stash the reason so callers / debug surfaces can see why migration was rejected.
-        task["last_migration_skip"] = msg
-    return ok
+    """Phase 3.0.5: fast-path lookup of _STAGED_TASKS only — NO ssh/rsync inside the
+    state_lock that callers hold. Staging itself runs outside the lock via
+    _stage_migration_candidates_outside_lock(); _consider_migration uses this fn to
+    confirm staging completed before committing the preferred_node rewrite.
+
+    Pre-Phase-3.0.5: this called _stage_for_migration directly, which would block
+    cmd_submit / cancel / status / watcher for up to 600s during ckpt rsync inside
+    the global lock. Now it's a pure dict membership check — milliseconds."""
+    return (task.get("id"), target_node) in _STAGED_TASKS
+
+
+# Process-local staging cache — populated by _stage_migration_candidates_outside_lock,
+# read by _can_migrate_to inside the state_lock. Key: (task_id, target_node).
+# Value: timestamp. Reset on watcher restart (acceptable — re-staging is cheap thanks
+# to rsync's delta algorithm, ~1s for unchanged paths).
+_STAGED_TASKS: dict = {}
+_STAGED_TASKS_MAX = 100  # bound memory; LRU evicts oldest when full
+
+
+def _identify_migration_candidates(state: dict, nodes: list,
+                                    max_candidates: int = 2) -> list:
+    """Pure logic: return up to `max_candidates` (task_dict_copy, target_node) pairs
+    that pass all migration GATES (load-imbalance, soft-pin, ETA-min, target alive).
+
+    Does NOT do staging or any I/O. Safe to call inside or outside state_lock.
+    Returns deep-enough copies of task fields so the outside-lock caller can read
+    cwd / ckpt_dir / cmd / preferred_node without re-acquiring the lock.
+
+    Used by _stage_migration_candidates_outside_lock to pick rsync targets.
+    Inside-lock _consider_migration re-runs the same gates plus _STAGED_TASKS
+    membership to actually commit.
+    """
+    loads = compute_node_load_seconds(state)
+    if not loads or len(loads) < 2:
+        return []
+    alive_names = {n["name"] for n in nodes if n.get("alive")}
+    candidates_loads = [(name, load) for name, load in loads.items() if name in alive_names]
+    if len(candidates_loads) < 2:
+        return []
+    candidates_loads.sort(key=lambda kv: kv[1])
+    target_name, target_load = candidates_loads[0]
+    source_name, source_load = candidates_loads[-1]
+
+    if source_name == target_name:
+        return []
+    if target_load >= MIGRATION_FREE_THRESHOLD_S:
+        return []
+    if source_load < MIGRATION_LOAD_RATIO * max(target_load, 1):
+        return []
+
+    candidates = []
+    for t in state.get("tasks", []):
+        if t.get("status") != "queued":
+            continue
+        if t.get("require_node"):
+            continue
+        if t.get("auto_adopted"):
+            continue
+        if t.get("preferred_node") != source_name:
+            continue
+        eta = int(t.get("eta_seconds") or 0)
+        if eta > 0 and eta < MIGRATION_MIN_TASK_ETA_S:
+            continue
+        # Snapshot fields needed by _stage_for_migration (cwd, ckpt_dir, cmd,
+        # preferred_node, signature, id) so the outside-lock caller doesn't need
+        # to hold a reference into state["tasks"].
+        candidates.append({
+            "id": t["id"],
+            "cwd": t.get("cwd"),
+            "ckpt_dir": t.get("ckpt_dir"),
+            "cmd": t.get("cmd"),
+            "preferred_node": t.get("preferred_node"),
+            "signature": t.get("signature"),
+            "eta_seconds": eta,
+        })
+    candidates.sort(key=lambda t: int(t.get("eta_seconds") or 0))
+    # Pair each candidate with the target_name decision computed above.
+    return [(c, target_name) for c in candidates[:max_candidates]]
+
+
+def _stage_migration_candidates_outside_lock(max_candidates: int = 2):
+    """Phase 3.0.5 P1 fix: identify migration candidates inside a SHORT lock,
+    release lock, run rsync staging OUTSIDE the lock (which can take minutes for
+    multi-GB ckpts), update _STAGED_TASKS on success.
+
+    Called from cmd_dispatch and watcher iteration BEFORE acquiring the main
+    state_lock. Mirrors _preload_docker_images_outside_lock's pattern from
+    Phase 1 — slow I/O moves out of the global lock so submit/cancel/status/
+    watcher don't get stalled for minutes during staging.
+
+    Failure tolerant: any exception in identify or stage paths just leaves the
+    cache as-is; next cycle retries. Logs to watcher.log via notify() but never
+    propagates exceptions to the caller.
+    """
+    try:
+        with state_lock():
+            state = load_state()
+            nodes = probe_all()
+            snapshot = _identify_migration_candidates(state, nodes,
+                                                      max_candidates=max_candidates)
+        # lock released here — slow rsync runs WITHOUT blocking submit/cancel/etc
+    except Exception as e:
+        try:
+            notify("migration_snapshot_error", {"error": str(e)[:200]},
+                   feishu_enabled=False)
+        except Exception:
+            pass
+        return
+
+    if not snapshot:
+        return
+
+    # LRU eviction if cache is full
+    if len(_STAGED_TASKS) >= _STAGED_TASKS_MAX:
+        # Drop oldest 25% to make room
+        sorted_keys = sorted(_STAGED_TASKS.items(), key=lambda kv: kv[1])
+        for k, _ in sorted_keys[:_STAGED_TASKS_MAX // 4]:
+            _STAGED_TASKS.pop(k, None)
+
+    for task_snapshot, target in snapshot:
+        cache_key = (task_snapshot["id"], target)
+        # Skip already-staged in this process
+        if cache_key in _STAGED_TASKS:
+            continue
+        try:
+            ok, msg = _stage_for_migration(task_snapshot, target)
+            if ok:
+                _STAGED_TASKS[cache_key] = time.time()
+            else:
+                # Don't cache failures; next cycle retries (transient ssh blips, etc).
+                # Log so user can see persistent failures in watcher.log.
+                try:
+                    notify("migration_staging_skip",
+                           {"task_id": task_snapshot["id"],
+                            "target": target,
+                            "reason": msg[:200]},
+                           feishu_enabled=False)
+                except Exception:
+                    pass
+        except Exception as e:
+            try:
+                notify("migration_staging_error",
+                       {"task_id": task_snapshot["id"],
+                        "target": target,
+                        "error": str(e)[:200]},
+                       feishu_enabled=False)
+            except Exception:
+                pass
 
 
 def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) -> list:
@@ -4170,6 +4309,17 @@ def cmd_dispatch(args):
         _preload_docker_images_outside_lock()
     except Exception as _e:
         notify("preload_error", {"error": str(_e)[:200]}, feishu_enabled=False)
+    # Phase 3.0.5 P1 fix: stage migration candidates (rsync cwd/ckpt) BEFORE the main
+    # state_lock. Without this, _do_dispatch's _consider_migration would call
+    # _stage_for_migration inside the lock — a 5GB ckpt rsync (timeout=600s) would
+    # block submit/cancel/status/watcher for up to 10 min. Now staging side-effects
+    # land in the process-local _STAGED_TASKS cache; _consider_migration inside the
+    # lock is a fast dict lookup (microseconds).
+    try:
+        _stage_migration_candidates_outside_lock()
+    except Exception as _e:
+        notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
     with state_lock():
         state = load_state()
         recovered_launching += recover_stale_launching_tasks(state)
@@ -4923,6 +5073,12 @@ def _watch_iteration(args):
         _preload_docker_images_outside_lock()
     except Exception as _e:
         notify("preload_error", {"error": str(_e)[:200]}, feishu_enabled=False)
+    # Phase 3.0.5 P1: stage migration outside the main lock (see cmd_dispatch comment)
+    try:
+        _stage_migration_candidates_outside_lock()
+    except Exception as _e:
+        notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
     with state_lock():
         state = load_state()
         recovered_launching_count += recover_stale_launching_tasks(state)

@@ -3027,6 +3027,113 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_5_staging_outside_lock():
+    """Phase 3.0.5 P1 fix: migration staging runs OUTSIDE state_lock so a multi-minute
+    rsync can't block submit/cancel/status/watcher.
+
+    Pre-fix: _do_dispatch → _consider_migration → _can_migrate_to → _stage_for_migration
+    chain ran rsync (timeout=600s) inside the global state_lock. Any other tool
+    waiting on state_lock (status / submit / cancel / watcher iteration) would
+    starve for up to 10 minutes per dispatch cycle.
+
+    Fix: split into
+      - inside lock: _can_migrate_to() = dict lookup of _STAGED_TASKS only (μs)
+      - outside lock: _stage_migration_candidates_outside_lock() does identify-
+        candidates (brief lock) → release → rsync → update _STAGED_TASKS
+    """
+    print("\n[63] Phase 3.0.5 staging runs outside state_lock (P1 lock-starvation fix)")
+
+    # ---------- Source guards: dispatch entry points call outside-lock staging ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+
+    # cmd_dispatch: outside-lock call comes BEFORE the main `with state_lock():`
+    cd_idx = src.find("def cmd_dispatch")
+    next_def = src.find("\ndef ", cd_idx + 5)
+    cd_body = src[cd_idx:next_def]
+    stage_idx = cd_body.find("_stage_migration_candidates_outside_lock()")
+    main_lock_idx = cd_body.rfind("with state_lock():")
+    check("cmd_dispatch calls _stage_migration_candidates_outside_lock",
+          stage_idx > 0)
+    check("cmd_dispatch's stage call happens BEFORE the main state_lock",
+          stage_idx > 0 and main_lock_idx > stage_idx,
+          diag=f"stage_idx={stage_idx} main_lock_idx={main_lock_idx}")
+
+    # _watch_iteration: same constraint
+    wi_idx = src.find("def _watch_iteration")
+    next_def = src.find("\ndef ", wi_idx + 5)
+    wi_body = src[wi_idx:next_def]
+    stage_idx_w = wi_body.find("_stage_migration_candidates_outside_lock()")
+    # _watch_iteration acquires multiple locks; the relevant one is the one wrapping
+    # _do_dispatch. Look for first state_lock that comes AFTER the staging call.
+    main_lock_idx_w = wi_body.find("with state_lock():", stage_idx_w) if stage_idx_w > 0 else -1
+    check("_watch_iteration calls _stage_migration_candidates_outside_lock",
+          stage_idx_w > 0)
+    check("_watch_iteration's stage call comes BEFORE its dispatch state_lock",
+          stage_idx_w > 0 and main_lock_idx_w > stage_idx_w)
+
+    # ---------- _can_migrate_to no longer calls _stage_for_migration ----------
+    cmt_idx = src.find("def _can_migrate_to")
+    next_def = src.find("\ndef ", cmt_idx + 5)
+    cmt_body = src[cmt_idx:next_def]
+    check("_can_migrate_to does NOT call _stage_for_migration (would block lock)",
+          "_stage_for_migration(" not in cmt_body,
+          diag="staging back inside the lock breaks Phase 3.0.5 invariant")
+    check("_can_migrate_to is a _STAGED_TASKS lookup",
+          "_STAGED_TASKS" in cmt_body)
+
+    # ---------- _STAGED_TASKS LRU eviction guards memory ----------
+    check("_STAGED_TASKS is a dict", isinstance(sch._STAGED_TASKS, dict))
+    check("_STAGED_TASKS_MAX bounds memory",
+          hasattr(sch, "_STAGED_TASKS_MAX") and sch._STAGED_TASKS_MAX > 0)
+
+    # ---------- _identify_migration_candidates returns snapshot, not live refs ----------
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "A": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+        "B": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+    }
+    nodes_alive = [{"name": "A", "alive": True}, {"name": "B", "alive": True}]
+    state = {"tasks": [
+        {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+        {"id": "tQ1", "status": "queued", "preferred_node": "A",
+         "eta_seconds": 1800, "cwd": "/p1", "ckpt_dir": "/c1",
+         "cmd": "/abs/python train.py", "signature": "TEST/m1"},
+        {"id": "tQ2", "status": "queued", "preferred_node": "A",
+         "eta_seconds": 2400, "cwd": "/p2", "cmd": "/abs/python train.py",
+         "signature": "TEST/m2"},
+    ]}
+    try:
+        snap = sch._identify_migration_candidates(state, nodes_alive, max_candidates=2)
+        check("_identify_migration_candidates returns up to N pairs",
+              len(snap) == 2, diag=f"got {len(snap)}")
+        check("each pair is (task_dict_copy, target_node)",
+              all(isinstance(c[0], dict) and isinstance(c[1], str) for c in snap))
+        check("pair contains the fields _stage_for_migration needs",
+              all({"id", "cwd", "cmd", "preferred_node"} <= set(c[0].keys()) for c in snap))
+        # Snapshot is a copy — mutating it shouldn't touch state["tasks"]
+        snap[0][0]["cwd"] = "/MUTATED"
+        check("snapshot is a copy, not a live ref into state",
+              state["tasks"][1].get("cwd") == "/p1",
+              diag=str(state["tasks"][1].get("cwd")))
+        # Smallest-ETA-first ordering preserved
+        check("candidates ordered by ETA ascending",
+              snap[0][0]["eta_seconds"] <= snap[1][0]["eta_seconds"])
+
+        # No candidates when balanced
+        balanced = {"tasks": [
+            {"id": "tA", "status": "running", "node": "A", "eta_seconds": 1000},
+            {"id": "tB", "status": "running", "node": "B", "eta_seconds": 800},
+        ]}
+        snap2 = sch._identify_migration_candidates(balanced, nodes_alive)
+        check("balanced loads → no candidates", len(snap2) == 0)
+    finally:
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_4_staging():
     """Phase 3.0.4: _stage_for_migration handles cwd rsync, ckpt size cap (2GB), env probe.
 
@@ -3215,31 +3322,21 @@ def test_phase3_0_4_staging():
     finally:
         pass
 
-    # ---------- _can_migrate_to wraps _stage_for_migration ----------
-    sch._STAGING_CACHE.clear()
-    sch.run_on = mk_run_on([
-        ("test -d /work", (1, "", "")),  # cwd missing
-        ("test -x", (1, "", "")),         # python also missing → fail
-    ])
-    rsync_calls.clear()
-    sch.subprocess.run = rsync_succeed  # rsync would succeed but env probe fails
-    try:
-        result = sch._can_migrate_to(
-            {"id": "tH", "cwd": "/work", "preferred_node": "src",
-             "cmd": "/abs/python a.py"},
-            "tgt"
-        )
-        check("_can_migrate_to=False when staging fails", not result)
-        # Look at the task in scope — _can_migrate_to wrote last_migration_skip on it
-        task = {"id": "tI", "cwd": "/work", "preferred_node": "src",
-                "cmd": "/abs/python a.py"}
-        sch._STAGING_CACHE.clear()
-        sch._can_migrate_to(task, "tgt")
-        check("_can_migrate_to stashes last_migration_skip on task",
-              "last_migration_skip" in task and task["last_migration_skip"],
-              diag=task.get("last_migration_skip"))
-    finally:
-        pass
+    # ---------- _can_migrate_to is a fast cache lookup (Phase 3.0.5 split) ----------
+    # Pre-fix it called _stage_for_migration directly inside the state_lock; now it
+    # only checks _STAGED_TASKS membership. Staging happens outside-lock.
+    sch._STAGED_TASKS.clear()
+    task = {"id": "tH", "cwd": "/work", "preferred_node": "src", "cmd": "/abs/python a.py"}
+    check("_can_migrate_to=False when not staged",
+          not sch._can_migrate_to(task, "tgt"))
+    # Simulate outside-lock staging completed
+    sch._STAGED_TASKS[("tH", "tgt")] = time.time()
+    check("_can_migrate_to=True when (task_id, target) is in _STAGED_TASKS",
+          sch._can_migrate_to(task, "tgt"))
+    # Different target → still False
+    check("_can_migrate_to=False for unstaged target",
+          not sch._can_migrate_to(task, "other-target"))
+    sch._STAGED_TASKS.clear()
 
     # ---------- Cleanup ----------
     sch.run_on = saved_run_on
@@ -5041,6 +5138,7 @@ if __name__ == "__main__":
     test_phase3_0_2_node_load_metric()
     test_phase3_0_3_migration_trigger()
     test_phase3_0_4_staging()
+    test_phase3_0_5_staging_outside_lock()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -1838,6 +1838,20 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
     # absorbed the bulk of this in the common case so launch-side push is rare).
     if node_host:
         local_digest = env_deploy.get_image_digest(run_on, "local", chosen_image)
+        # Phase 3.0.21 P1 fix: explicit `docker:IMAGE` with no local digest must
+        # fail-fast. has_image() with local_digest=None falls back to tag-presence
+        # ("legacy fast path") — if the remote has any tag, even a stale one from
+        # a prior push, has_image returns True and we silently launch the stale
+        # remote image. That's exactly the drift Codex's earlier digest check
+        # was meant to catch. Auto mode keeps the graceful fallback (its whole
+        # contract is "use docker if available, else `none`"); only `explicit`
+        # path treats the missing local image as fatal.
+        if explicit and local_digest is None:
+            return (inner,
+                    f"--env-spec docker:{chosen_image} but image not present "
+                    f"locally (no digest available); refusing to launch — would "
+                    f"silently run stale remote tag if one existed. Build/pull "
+                    f"the image locally first, then resubmit.")
         if not env_deploy.has_image(run_on, node, chosen_image, local_digest=local_digest):
             ok, msg = env_deploy.push_image(node_host, chosen_image, timeout_s=1800)
             if not ok:

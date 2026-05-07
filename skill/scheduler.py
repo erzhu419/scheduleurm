@@ -101,6 +101,21 @@ MAX_LAUNCH_RETRY = 3        # launch-failure cap (cwd missing, ssh timeout, etc.
 LAUNCHING_RESET_S = 60      # stale WAL launch marker age before reverting to queued
 ESCALATIONS_FILE = STATE_DIR / "escalations.jsonl"  # /scheduler-heal reads this; watcher appends
 
+# Phase 2.16: cap on OUR slurm-managed tasks in PENDING state per node before scheduleurm
+# holds the rest in its own queue. Default 1 — slurm gets at most one lookahead slot to
+# bridge GPU swaps; the rest stay queued in scheduleurm and dispatch to whichever node
+# frees up next. Avoids "all 10 tasks sbatch'd to node A's queue while node B sits idle"
+# in a multi-slurm-node cluster.
+#
+# Tuning options (all need watcher restart to pick up new value):
+#   1. Edit this constant in scheduler.py
+#   2. Set env SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE=N (recommended for no-code-edit override)
+#   3. Per-node: NODES["nodename"]["max_slurm_pending"] = N (overrides this default for that node)
+#
+# Picking 0 means "never let scheduleurm have a pending task on any slurm node" — strict
+# pull-on-demand. Risks GPU idle gaps during slurm's transitions but maximizes spread.
+SLURM_MAX_PENDING_PER_NODE = int(os.environ.get("SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE", "1"))
+
 # Failure classification — drives whether to retry or escalate to /scheduler-heal.
 ENV_MISSING_PATTERNS = ("没有那个文件或目录", "no such file or directory", "command not found", "未找到命令")
 PYTHON_IMPORT_PATTERNS = ("ModuleNotFoundError", "ImportError")
@@ -1371,7 +1386,14 @@ def pick_placement(task, nodes):
         # never reaching sbatch. Score uses 9999 in primary key so any local-fitting
         # candidate (whose primary keys are 0 or 1) ranks ahead — slurm only wins if no
         # local node fits OR the task explicitly requires/prefers a slurm node.
+        # Phase 2.16: but throttle when this slurm node already has SLURM_MAX_PENDING_PER_NODE
+        # of OUR tasks pending — keeping the rest in scheduleurm's queue lets them spread
+        # to whichever slurm node frees up next, instead of piling on one host.
         if not _BACKEND.requires_local_capacity_check(n["name"]):
+            pending = n.get("slurm_pending_count", 0)
+            cap = _slurm_max_pending_for_node(n["name"])
+            if pending >= cap:
+                return []  # throttled — let pending drain or another node pick up
             return [((9999,), n["name"], None)]
         node_info = NODES[n["name"]]
         ok, _why = _node_resources_ok(task, n, node_info)
@@ -2880,6 +2902,41 @@ STARTUP_FLOOR_MB = 500   # minimum reservation per running task with peak=0 (sti
 EVICT_TASK_MIN_AGE_S = 180  # don't evict a task within this many seconds of launch (give JAX/torch model loading + warmup a chance — JAX in particular spikes util to 100% during first iter compile)
 
 
+def _slurm_max_pending_for_node(node_name: str) -> int:
+    """Per-node override > global default. NODES[name]["max_slurm_pending"] takes precedence
+    over SLURM_MAX_PENDING_PER_NODE when set. See the constant's docstring for tuning options."""
+    return NODES.get(node_name, {}).get("max_slurm_pending", SLURM_MAX_PENDING_PER_NODE)
+
+
+# Slurm states that count as "still pending in slurm's queue" for throttle accounting.
+# RUNNING / COMPLETING / done aren't pending — they're consuming a real slot. None /
+# empty string means "just-submitted, watcher hasn't probed slurm_state yet" — treat as
+# pending until proven otherwise (next watcher cycle clears the ambiguity).
+_SLURM_PENDING_LIKE = frozenset({None, "", "PENDING", "CONFIGURING", "REQUEUED", "SUSPENDED"})
+
+
+def _count_slurm_pending_per_node(state: dict) -> dict:
+    """Phase 2.16: count OUR slurm-managed tasks that are PENDING (or just-submitted with
+    no slurm_state probed yet) per node. Used by pick_placement to throttle dispatch to
+    a slurm node that already has pending tasks waiting — better to hold them in
+    scheduleurm's own queue and dispatch to a node that can actually run NOW.
+
+    The 'just-submitted' case (slurm_state=None right after sbatch) is treated as pending;
+    one watcher cycle (60s default) refreshes the state to PENDING/RUNNING/etc."""
+    counts: dict = {}
+    for t in state.get("tasks", []):
+        if t.get("status") != "running":
+            continue
+        if not _is_slurm_managed(t):
+            continue
+        node = t.get("node")
+        if not node:
+            continue
+        if t.get("slurm_state") in _SLURM_PENDING_LIKE:
+            counts[node] = counts.get(node, 0) + 1
+    return counts
+
+
 def _is_slurm_managed(task: dict) -> bool:
     """True iff this task's placement is owned by slurm (NOT scheduleurm).
 
@@ -3144,8 +3201,14 @@ def _do_dispatch(state, nodes):
     from collections import Counter as _Counter
     running_per_node = _Counter(t.get("node") for t in state["tasks"]
                                  if t.get("status") == "running" and t.get("node"))
+    # Phase 2.16: count OUR slurm-pending tasks per node. pick_placement throttles further
+    # dispatch to a node that already has SLURM_MAX_PENDING_PER_NODE pending — keeps tasks
+    # in scheduleurm's queue so they can spread to whichever slurm node frees up next,
+    # rather than piling on one host's slurm queue.
+    slurm_pending_per_node = _count_slurm_pending_per_node(state)
     for n in nodes:
         n["running_count"] = running_per_node.get(n["name"], 0)
+        n["slurm_pending_count"] = slurm_pending_per_node.get(n["name"], 0)
     # Apply freed resources from preemption to the local probe view so the high-prio task
     # actually fits on this dispatch round (otherwise probe lags by 60s and high keeps waiting).
     for ev in preempted:
@@ -3239,7 +3302,11 @@ def _do_dispatch(state, nodes):
                 # If a slurm node is alive + not blocklisted but pick_placement still returned
                 # None, the only legitimate reason is require_node mismatch — surface that.
                 if not _BACKEND.requires_local_capacity_check(n["name"]):
-                    if require and require != n["name"]:
+                    pending = n.get("slurm_pending_count", 0)
+                    cap = _slurm_max_pending_for_node(n["name"])
+                    if pending >= cap:
+                        reasons.append(f"{n['name']}=slurm({pending}/{cap} pending; throttled)")
+                    elif require and require != n["name"]:
                         reasons.append(f"{n['name']}=slurm(require!={require})")
                     else:
                         reasons.append(f"{n['name']}=slurm(deferred but require/prefer mismatch)")
@@ -3356,6 +3423,10 @@ def _do_dispatch(state, nodes):
             n["free_cpu"] = max(0, n.get("free_cpu", 0) - t.get("cpu_cores", DEFAULT_CPU_CORES))
             n["free_ram_mb"] = max(0, n.get("free_ram_mb", 0) - t.get("ram_mb", DEFAULT_RAM_MB))
             n["running_count"] = n.get("running_count", 0) + 1  # for max_concurrent_running cap
+            # Phase 2.16: bump slurm pending count too so pick_placement in subsequent loop
+            # iterations sees this just-sbatched task and respects the per-node cap.
+            if _is_slurm_managed(t):
+                n["slurm_pending_count"] = n.get("slurm_pending_count", 0) + 1
             if t.get("gpu_idx") is None: continue  # CPU-only task
             for g in n["gpus"]:
                 if g["idx"] != t["gpu_idx"]: continue

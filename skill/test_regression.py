@@ -2581,6 +2581,67 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_5_cd_guard():
+    """Phase 2.5 P1 fix: SlurmBackend's sbatch script must short-circuit on cd failure.
+
+    Bug before fix: the script had a bare `cd /path/to/cwd` followed by the user's cmd.
+    If the compute node can't see that path (NFS stale handle, path not exported to
+    compute partition, etc.), bash continues from whatever its current cwd is —
+    typically $HOME. The user cmd "runs" but with wrong working dir → relative paths
+    point nowhere, output goes to $HOME, no useful signal in the log, diagnose has
+    nothing to grab onto.
+
+    Fix: explicit `cd PATH || { echo ...; exit 1; }` so cd-failure aborts immediately
+    with a parseable error in the log. Mirrors LocalBackend's `cd ... && cmd` pattern.
+    """
+    print("\n[46] Phase 2.5 sbatch cd is fatal-on-failure (matches LocalBackend semantics)")
+    sb = sch.SlurmBackend()
+
+    task = {
+        "id": "tcd", "node": "local", "cwd": "/path/to/proj",
+        "cmd": "python train.py", "cpu_cores": 1, "ram_mb": 1024,
+        "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/cd-guard",
+        "resume_flag": "", "resume_from": None,
+    }
+    script = sb._build_sbatch_script(task, "python -u train.py", "/tmp/log.log")
+
+    # Required: the cd line is followed by `||` (logical-or short-circuit). The fix
+    # uses { echo ...; exit 1; } block; check both halves.
+    check("sbatch cd uses || guard (cd PATH || ...)",
+          "cd /path/to/proj || " in script,
+          diag=script)
+    check("cd guard contains exit 1 (script aborts on cd failure)",
+          "exit 1" in script,
+          diag=script)
+    check("cd guard echoes a diagnostic to stderr",
+          "scheduleurm: cwd not accessible on compute node" in script and ">&2" in script,
+          diag=script)
+    # Specifically: there is no bare `cd /path/to/proj\n<cmd>` pattern remaining
+    # (regression catcher). Look for the cd line and ensure the next line isn't
+    # the inner cmd directly.
+    lines = script.splitlines()
+    cd_line_idx = None
+    for i, ln in enumerate(lines):
+        if ln.startswith("cd /path/to/proj"):
+            cd_line_idx = i
+            break
+    check("cd line is on a single line with || guard (not split)",
+          cd_line_idx is not None and "||" in lines[cd_line_idx],
+          diag=str(lines[cd_line_idx-1:cd_line_idx+3]) if cd_line_idx else "no cd line found")
+
+    # Edge case: cwd containing shell-special chars (spaces, $) must be properly quoted
+    # in BOTH the cd target AND the diagnostic echo (so the echo doesn't blow up).
+    task2 = dict(task, cwd="/path with space/$weird")
+    script2 = sb._build_sbatch_script(task2, "python -u train.py", "/tmp/log.log")
+    # shlex.quote single-quotes paths with shell-special chars
+    check("cwd with shell-special chars is shlex-quoted in cd",
+          "cd '/path with space/$weird'" in script2,
+          diag=script2[:600])
+    check("diagnostic message preserves the literal cwd for user readability",
+          "/path with space/$weird" in script2,
+          diag=script2[:600])
+
+
 def test_backend_slurm_phase2_4_log_path_shared_fs():
     """Phase 2.4 P1 fix: SlurmBackend log_path must live on a shared filesystem so the
     compute node (where slurm runs the job) and the login node (where scheduler tails
@@ -2895,6 +2956,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_2_adopt_skip()
     test_backend_slurm_phase2_3_bypass_local_capacity()
     test_backend_slurm_phase2_4_log_path_shared_fs()
+    test_backend_slurm_phase2_5_cd_guard()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

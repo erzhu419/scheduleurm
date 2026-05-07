@@ -2043,7 +2043,20 @@ class SlurmBackend(Backend):
         if task.get("extra_env"):
             for k, v in task["extra_env"].items():
                 lines.append(f"export {k}={shlex.quote(v)}")
-        lines.append(f"cd {shlex.quote(task['cwd'])}")
+        # Phase 2.5 P1 fix: cd must be fatal-on-failure. A bare `cd path` followed by
+        # the inner cmd silently continues from $HOME (or wherever) if the compute node
+        # doesn't see this path (NFS stale handle, cwd not propagated to compute, etc.).
+        # The job appears to "run" but produces no output, hits no checkpoints, and
+        # diagnose has no signal — log just has whatever bash printed about cd. Match
+        # LocalBackend's `cd ... && cmd` semantics with an explicit guard that also
+        # leaves a parseable error in the log so diagnose can route to ENV_MISSING.
+        cwd_q = shlex.quote(task['cwd'])
+        lines.append(
+            f"cd {cwd_q} || {{ "
+            f"echo \"scheduleurm: cwd not accessible on compute node: {task['cwd']}\" >&2; "
+            f"exit 1; "
+            f"}}"
+        )
         lines.append(inner_cmd)
         return "\n".join(lines) + "\n"
 

@@ -7463,7 +7463,7 @@ def test_phase3_2_0_claim_manager():
 
         # 3b. Disabled node → fast path, NO ssh.
         captured.clear()
-        ok, info = sch._ClaimManager.claim(
+        ok, info, _kind = sch._ClaimManager.claim(
             "n_off", {"id": "tD", "est_vram_mb": 1000,
                        "cpu_cores": 1, "ram_mb": 500},
             gpu_idx=0)
@@ -7472,7 +7472,7 @@ def test_phase3_2_0_claim_manager():
 
         # 3c. Enabled node + ok response → returns claim record.
         captured.clear()
-        ok, info = sch._ClaimManager.claim(
+        ok, info, _kind = sch._ClaimManager.claim(
             "n_on", {"id": "tX", "est_vram_mb": 2000,
                       "cpu_cores": 2, "ram_mb": 1500},
             gpu_idx=0,
@@ -7498,7 +7498,7 @@ def test_phase3_2_0_claim_manager():
         # 3d. Conflict response → ok=False, info is the conflict string.
         sch.run_on = lambda node, cmd, **kw: (
             0, '{"ok": false, "conflict": "gpu0: need 9000 + claimed 5000 > cap 12000", "claims_seen": 1}\n', "")
-        ok, info = sch._ClaimManager.claim(
+        ok, info, _kind = sch._ClaimManager.claim(
             "n_on", {"id": "tY", "est_vram_mb": 9000,
                       "cpu_cores": 2, "ram_mb": 1500},
             gpu_idx=0,
@@ -7534,7 +7534,7 @@ def test_phase3_2_0_claim_manager():
 
         # 3g. ssh-error response → claim returns ok=False with error msg.
         sch.run_on = lambda *a, **k: (255, "", "ssh: connection timed out")
-        ok, info = sch._ClaimManager.claim(
+        ok, info, _kind = sch._ClaimManager.claim(
             "n_on", {"id": "tFail", "est_vram_mb": 100,
                       "cpu_cores": 1, "ram_mb": 100},
             gpu_idx=None,
@@ -8098,7 +8098,7 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
 
     try:
         # Scheduler A claims the full GPU.
-        ok_a, info_a = sch._ClaimManager.claim(
+        ok_a, info_a, _ka = sch._ClaimManager.claim(
             "n", {"id": "tA", "est_vram_mb": 11000,
                    "cpu_cores": 6, "ram_mb": 25000},
             gpu_idx=0,
@@ -8117,7 +8117,7 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
               n0["free_cpu"] == 12 - 6)
 
         # B tries to claim the SAME GPU → conflict.
-        ok_b, info_b = sch._ClaimManager.claim(
+        ok_b, info_b, _kb = sch._ClaimManager.claim(
             "n", {"id": "tB", "est_vram_mb": 8000,
                    "cpu_cores": 4, "ram_mb": 10000},
             gpu_idx=0,
@@ -8623,6 +8623,172 @@ def test_phase3_4_2_persistent_owner_id():
                 pass
         else:
             sch._ClaimManager._cached_owner_id = saved_cache
+
+
+def test_phase3_4_3_claim_race_vs_claim_error():
+    """Phase 3.4.3 P1 fix: capacity CONFLICTs and transport ERRORs follow
+    different paths in dispatch.
+
+    Pre-fix _ClaimManager.claim() returned a 2-tuple `(ok, msg)`, and
+    LocalBackend.launch wrapped any failure as `CLAIM_RACE: <msg>`.
+    Dispatch then treated CLAIM_RACE as contention — task back to queued,
+    no launch_fail_count increment, retry next cycle. So a node with
+    chronic transport issues (ssh permission, missing python3, flock
+    failure, json parse error) made tasks loop in queue forever instead
+    of escalating to APP_BUG_CAP.
+
+    Now claim() returns `(ok, info, kind)` where kind ∈ {ok, conflict,
+    error}. LocalBackend.launch translates:
+      kind="conflict" → "CLAIM_RACE: ..."  (legitimate contention)
+      kind="error"    → "CLAIM_ERROR: ..." (real launch failure)
+    Dispatch CLAIM_RACE path stays as-is. CLAIM_ERROR falls through to
+    the normal launch_failed_retry path so MAX_LAUNCH_RETRY → APP_BUG_CAP
+    escalation eventually fires.
+    """
+    print("\n[101] Phase 3.4.3 P1 fix: CLAIM_RACE (capacity) vs CLAIM_ERROR (transport)")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_ClaimManager.claim returns 3-tuple (ok, info, kind)",
+          'return (True, record, "ok")' in src
+          and '"conflict"' in src and '"error"' in src
+          and 'claim transport failed' in src)
+    check("LocalBackend.launch wraps conflict as CLAIM_RACE:",
+          'f"CLAIM_RACE: {info}"' in src)
+    check("LocalBackend.launch wraps transport errors as CLAIM_ERROR:",
+          'f"CLAIM_ERROR: {info}"' in src)
+    do_idx = src.find("def _do_dispatch")
+    do_end = src.find("\ndef ", do_idx + 5)
+    do_body = src[do_idx:do_end]
+    check("dispatch routes CLAIM_RACE to contention path (no fail count)",
+          'msg.startswith("CLAIM_RACE:")' in do_body)
+    check("dispatch does NOT special-case CLAIM_ERROR (falls through to launch_fail)",
+          'msg.startswith("CLAIM_ERROR:")' not in do_body,
+          diag="CLAIM_ERROR must hit the regular launch_failed_retry path")
+
+    # Behavioral: _ClaimManager.claim with the three response shapes.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    sch.NODES = {"n_on": {"name": "n_on", "host": "h", "enable_claims": True,
+                            "cpu_cores": 12, "ram_mb": 32000}}
+    task = {"id": "tT", "est_vram_mb": 1000, "cpu_cores": 1, "ram_mb": 500}
+    ns = {"name": "n_on", "gpus": [{"idx": 0, "total_mb": 12000}]}
+
+    try:
+        # 3a. Conflict response (script returned ok:false + conflict).
+        sch.run_on = lambda *a, **kw: (
+            0, '{"ok": false, "conflict": "ram: too tight"}\n', "")
+        ok, info, kind = sch._ClaimManager.claim("n_on", task, 0, ns)
+        check("conflict: ok=False",
+              ok is False)
+        check("conflict: kind='conflict'",
+              kind == "conflict", diag=kind)
+        check("conflict: info carries the reason",
+              "ram: too tight" in info, diag=info)
+
+        # 3b. Transport error: rc != 0.
+        sch.run_on = lambda *a, **kw: (255, "", "ssh: connection timed out")
+        ok, info, kind = sch._ClaimManager.claim("n_on", task, 0, ns)
+        check("transport rc!=0: ok=False",
+              ok is False)
+        check("transport rc!=0: kind='error' (NOT 'conflict')",
+              kind == "error", diag=kind)
+        check("transport rc!=0: info names the rc/stderr",
+              "rc=255" in info or "ssh" in info.lower(), diag=info)
+
+        # 3c. Transport error: parse failure (script returned garbage).
+        sch.run_on = lambda *a, **kw: (0, "garbage not json\n", "")
+        ok, info, kind = sch._ClaimManager.claim("n_on", task, 0, ns)
+        check("transport parse-fail: kind='error'",
+              kind == "error", diag=kind)
+
+        # 3d. Empty output → error.
+        sch.run_on = lambda *a, **kw: (0, "", "")
+        ok, info, kind = sch._ClaimManager.claim("n_on", task, 0, ns)
+        check("transport empty stdout: kind='error'",
+              kind == "error", diag=kind)
+
+        # 3e. Happy path.
+        sch.run_on = lambda *a, **kw: (0, '{"ok": true}\n', "")
+        ok, info, kind = sch._ClaimManager.claim("n_on", task, 0, ns)
+        check("happy: ok=True",
+              ok is True)
+        check("happy: kind='ok'",
+              kind == "ok", diag=kind)
+        check("happy: info is the claim record",
+              isinstance(info, dict) and info.get("task_id") == "tT")
+
+        # 3f. Disabled-node fast path returns ok with kind='ok'.
+        sch.NODES["n_off"] = {"name": "n_off", "host": "h", "cpu_cores": 12,
+                                "ram_mb": 32000}  # no enable_claims
+        ok, info, kind = sch._ClaimManager.claim("n_off", task, 0, ns)
+        check("disabled-node: ok=True",
+              ok is True)
+        check("disabled-node: kind='ok'",
+              kind == "ok")
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+    # 4. End-to-end via LocalBackend.launch + dispatch: CLAIM_ERROR
+    # propagates to launch_fail_count (NOT to claim_race contention path).
+    saved_save = sch.save_state
+    saved_pre = sch.precheck_git
+    saved_resume = sch.find_resume
+    saved_run = sch.run_on
+    sch.NODES = {"n_on": {"name": "n_on", "host": "h", "enable_claims": True,
+                            "cpu_cores": 12, "ram_mb": 32000,
+                            "ram_headroom_frac": 0.10,
+                            "max_vram_per_task": None,
+                            "max_concurrent_running": None}}
+    sch.save_state = lambda s: None
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    # cwd preflight (test -d) runs BEFORE claim. Pass it; fail only the
+    # claims-script ssh so the CLAIM_ERROR path is the actual failure.
+    def fake_run(node, cmd, **kw):
+        if "test -d" in cmd:
+            return (0, "", "")
+        if '"$SCRIPT_PATH" claim' in cmd:
+            return (255, "", "ssh: blip")
+        return (0, "", "")
+    sch.run_on = fake_run
+
+    state = {"next_id": 100, "tasks": [{
+        "id": "tErr", "status": "queued", "priority": "normal",
+        "submitted_at": time.time(), "cwd": "/work", "cmd": "python a.py",
+        "node": None, "gpu_idx": None, "est_vram_mb": 1500,
+        "cpu_cores": 2, "ram_mb": 1500,
+        "remote_pids": [], "extra_env": {}, "preferred_node": "n_on",
+    }]}
+    nodes = [{
+        "name": "n_on", "alive": True, "free_cpu": 12, "free_ram_mb": 30000,
+        "total_ram_mb": 32000, "total_cpu": 12, "running_count": 0,
+        "slurm_pending_count": 0,
+        "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                    "used_mb": 0, "util_pct": 0}],
+    }]
+    try:
+        events, _ = sch._do_dispatch(state, nodes)
+        ev_types = [e["type"] for e in events]
+        check("CLAIM_ERROR dispatch: NOT routed to claim_race",
+              "claim_race" not in ev_types,
+              diag=str(ev_types))
+        check("CLAIM_ERROR dispatch: routed to launch_failed_retry (real failure)",
+              "launch_failed_retry" in ev_types,
+              diag=str(ev_types))
+        t = state["tasks"][0]
+        check("CLAIM_ERROR: launch_fail_count incremented",
+              (t.get("launch_fail_count") or 0) >= 1,
+              diag=f"launch_fail_count={t.get('launch_fail_count')}")
+        check("CLAIM_ERROR: last_block_reason carries the message",
+              "CLAIM_ERROR" in (t.get("last_block_reason") or ""),
+              diag=t.get("last_block_reason"))
+    finally:
+        sch.save_state = saved_save
+        sch.precheck_git = saved_pre
+        sch.find_resume = saved_resume
+        sch.run_on = saved_run
+        sch.NODES = saved_NODES
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -11158,6 +11324,7 @@ if __name__ == "__main__":
     test_phase3_3_local_windows_host_metrics()
     test_phase3_4_0_cross_user_claim_io()
     test_phase3_4_2_persistent_owner_id()
+    test_phase3_4_3_claim_race_vs_claim_error()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

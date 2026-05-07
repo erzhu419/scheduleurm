@@ -2110,6 +2110,87 @@ def test_history_record_p80_outlier_resistance():
         except: pass
 
 
+def test_backend_abstraction_phase1():
+    """Phase 1 abstraction: launch / kill / check_running / _batch_check_running must all
+    go through the active Backend instance — not directly call run_on for launch/kill or
+    inline an ad-hoc nvidia-smi command for probing. This test guards the abstraction
+    from being silently re-bypassed in future edits.
+
+    Phase 2 (slurm backend) and Phase 3 (multi-user local) plug in here without touching
+    the rest of scheduler.py — but only if call sites stay routed through the singleton.
+    """
+    print("\n[40] Phase 1 backend abstraction: launch/kill/probe routed through _BACKEND")
+    # Required exports
+    check("Backend ABC defined", hasattr(sch, "Backend"))
+    check("LocalBackend defined", hasattr(sch, "LocalBackend"))
+    check("LocalBackend subclasses Backend",
+          issubclass(getattr(sch, "LocalBackend", type), getattr(sch, "Backend", type)))
+    check("_BACKEND singleton exists", hasattr(sch, "_BACKEND"))
+    check("_BACKEND is a Backend instance",
+          isinstance(getattr(sch, "_BACKEND", None), getattr(sch, "Backend", type)))
+
+    # Backend interface contract
+    backend_methods = ("launch", "kill", "batch_probe")
+    for m in backend_methods:
+        check(f"Backend.{m} declared",
+              callable(getattr(sch.Backend, m, None)))
+        check(f"LocalBackend.{m} concrete",
+              callable(getattr(sch.LocalBackend, m, None)))
+
+    # Source-level: top-level wrappers must delegate. We grep the source so a careless
+    # future inline-implementation regresses immediately.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+
+    # def launch(task): must contain `_BACKEND.launch(task)`. Find body of launch().
+    def _body_after(marker_def, end_keywords=("\ndef ", "\nclass ")):
+        i = src.find(marker_def)
+        if i < 0: return ""
+        j = min((src.find(k, i + len(marker_def)) for k in end_keywords if src.find(k, i + len(marker_def)) > 0),
+                default=len(src))
+        return src[i:j]
+
+    launch_body = _body_after("\ndef launch(task):")
+    check("top-level launch() delegates to _BACKEND.launch",
+          "_BACKEND.launch(" in launch_body, diag=launch_body[:200])
+
+    kill_body = _body_after("\ndef _kill_task_processes(task")
+    check("top-level _kill_task_processes() delegates to _BACKEND.kill",
+          "_BACKEND.kill(" in kill_body, diag=kill_body[:200])
+
+    check_body = _body_after("\ndef check_running(task):")
+    check("top-level check_running() delegates to _BACKEND.batch_probe",
+          "_BACKEND.batch_probe(" in check_body, diag=check_body[:200])
+
+    bcr_body = _body_after("\ndef _batch_check_running(state):")
+    check("_batch_check_running() pulls probe data from _BACKEND.batch_probe",
+          "_BACKEND.batch_probe(" in bcr_body, diag=bcr_body[:200])
+    # Critical: the OLD inline ssh+nvidia-smi probe must be GONE from _batch_check_running
+    # (it lives inside LocalBackend.batch_probe now). This catches a copy-paste regression
+    # where someone adds a sibling ad-hoc probe.
+    check("no inline `===PSALL===` in _batch_check_running body (must be in backend)",
+          "===PSALL===" not in bcr_body, diag=bcr_body[:300])
+
+    # Functional: launch routed through swappable backend. Substitute a fake backend, call
+    # the top-level wrapper, verify the fake was hit.
+    class _FakeBackend(sch.Backend):
+        name = "fake"
+        def launch(self, task): return True, "fake-launched"
+        def kill(self, task, timeout=15): return True, "fake-killed"
+        def batch_probe(self, state): return {}
+
+    saved = sch._BACKEND
+    try:
+        sch._BACKEND = _FakeBackend()
+        ok, msg = sch.launch({"id": "tX", "node": "local", "cmd": "true", "cwd": "/tmp"})
+        check("launch() routes to swapped-in fake backend",
+              ok and msg == "fake-launched", diag=f"ok={ok} msg={msg}")
+        ok2, msg2 = sch._kill_task_processes({"id": "tX", "node": "local", "remote_pids": [1]})
+        check("_kill_task_processes() routes to swapped-in fake backend",
+              ok2 and msg2 == "fake-killed", diag=f"ok={ok2} msg={msg2}")
+    finally:
+        sch._BACKEND = saved
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -2167,6 +2248,7 @@ if __name__ == "__main__":
     test_cpu_training_justification_required()
     test_post_dispatch_eviction_and_rule()
     test_history_record_p80_outlier_resistance()
+    test_backend_abstraction_phase1()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

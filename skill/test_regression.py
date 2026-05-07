@@ -9331,6 +9331,162 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     finally:
         sch.NODES = saved_NODES
 
+    # ============================================================
+    # Phase 3.5 P1 fix: auto-pull results back to local on done
+    # ============================================================
+    print("\n[Phase 3.5] auto-pull results back to local on task completion")
+
+    # ---- Source guards ----
+    src = open(sch.__file__).read()
+    check("3.5: RESULT_SYNC_MAX_ATTEMPTS constant defined (default 5)",
+          'os.environ.get("SCHEDULEURM_RESULT_SYNC_MAX_ATTEMPTS", "5")' in src,
+          diag="cap defends against chronically broken nodes hammering rsync")
+    check("3.5: RESULT_SYNC_TIMEOUT_S constant defined (default 1800)",
+          'os.environ.get("SCHEDULEURM_RESULT_SYNC_TIMEOUT_S", "1800")' in src,
+          diag="30min timeout matches typical multi-GB rsync on slow links")
+    check("3.5: _sync_one_result helper defined",
+          "def _sync_one_result(candidate: dict)" in src)
+    check("3.5: _sync_completed_results_outside_lock helper defined",
+          "def _sync_completed_results_outside_lock()" in src)
+    check("3.5: --result-dir CLI arg defined on submit",
+          'add_argument("--result-dir"' in src,
+          diag="user opts in by passing this on submit")
+    check("3.5: --local-result-dir CLI arg defined on submit",
+          'add_argument("--local-result-dir"' in src,
+          diag="optional override for where rsync lands locally")
+    check("3.5: cmd_submit stores result_dir / local_result_dir / sync state",
+          '"result_dir": getattr(args, "result_dir"' in src
+          and '"result_synced_at": None' in src
+          and '"result_sync_attempts": 0' in src,
+          diag="task record carries the opt-in fields + sync progress")
+    check("3.5: cmd_dispatch invokes _sync_completed_results_outside_lock",
+          "_sync_completed_results_outside_lock()" in src,
+          diag="must run before main state_lock to avoid stalling other ops")
+
+    # ---- Skip rules in _sync_completed_results_outside_lock ----
+    fn = src.split("def _sync_completed_results_outside_lock")[1].split("\ndef ")[0]
+    check("3.5: skip when status != 'done'",
+          't.get("status") != "done"' in fn)
+    check("3.5: skip when result_dir not set (opt-in)",
+          'rd = t.get("result_dir")' in fn and "if not rd:" in fn)
+    check("3.5: skip when result_synced_at already set (one-shot)",
+          't.get("result_synced_at")' in fn)
+    check("3.5: skip when attempts >= RESULT_SYNC_MAX_ATTEMPTS",
+          ">= RESULT_SYNC_MAX_ATTEMPTS" in fn)
+    check("3.5: skip when host=None (local node — already here)",
+          'host = NODES.get(node, {}).get("host")' in fn
+          and "if not host:" in fn)
+    check("3.5: 3-phase outside-lock pattern — short lock → rsync → short lock",
+          fn.count("with state_lock():") >= 2,
+          diag="snapshot under lock; rsync OUTSIDE; commit markers under lock")
+    check("3.5: defensive recheck on commit (status still done + same task)",
+          't.get("status") != "done"' in fn,
+          diag="task may have been cancelled/forgotten during rsync window")
+
+    # ---- Behavioral: skip rules trigger correctly ----
+    saved_NODES = sch.NODES
+    saved_load = sch.load_state
+    saved_save = sch.save_state
+    saved_sync_one = sch._sync_one_result
+    try:
+        sch.NODES = {
+            "local": {"host": None},
+            "remote": {"host": "user@host"},
+        }
+
+        # Mock state with a mix of tasks; track which ones get sync'd.
+        synced_ids = []
+        def mock_sync_one(c):
+            synced_ids.append(c["id"])
+            return (True, "ok")
+        sch._sync_one_result = mock_sync_one
+
+        committed_state = {"tasks": [
+            # Should sync: status=done, result_dir set, host=remote, not synced
+            {"id": "t1", "status": "done", "result_dir": "/r/t1",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 0},
+            # Skip: status != done
+            {"id": "t2", "status": "running", "result_dir": "/r/t2",
+             "node": "remote"},
+            # Skip: no result_dir
+            {"id": "t3", "status": "done", "node": "remote"},
+            # Skip: already synced
+            {"id": "t4", "status": "done", "result_dir": "/r/t4",
+             "node": "remote", "result_synced_at": time.time()},
+            # Skip: attempts cap reached
+            {"id": "t5", "status": "done", "result_dir": "/r/t5",
+             "node": "remote", "result_sync_attempts": 99},
+            # Skip: local node (host=None)
+            {"id": "t6", "status": "done", "result_dir": "/r/t6",
+             "node": "local"},
+        ]}
+        # Mock load/save so the helper's 3-phase lock works on our dict.
+        sch.load_state = lambda: committed_state
+        saved_writes = []
+        def mock_save(s): saved_writes.append({k: v for t in s["tasks"]
+                                                  for k in [t["id"]]
+                                                  for v in [{kk: vv for kk, vv in t.items()
+                                                              if kk in ("status", "result_synced_at",
+                                                                        "result_sync_attempts",
+                                                                        "result_sync_error")}]})
+        sch.save_state = mock_save
+
+        sch._sync_completed_results_outside_lock()
+
+        check("3.5 behavior: only t1 (status=done + result_dir + remote + not-synced) synced",
+              synced_ids == ["t1"], diag=str(synced_ids))
+        # Verify commit phase wrote result_synced_at on t1.
+        t1 = next(t for t in committed_state["tasks"] if t["id"] == "t1")
+        check("3.5 behavior: success commits result_synced_at",
+              t1.get("result_synced_at") is not None
+              and t1.get("result_sync_error") is None,
+              diag=str(t1))
+
+        # Failure path: ensure attempts increments + error recorded.
+        synced_ids.clear()
+        committed_state2 = {"tasks": [
+            {"id": "tFail", "status": "done", "result_dir": "/r/tFail",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 2},
+        ]}
+        sch.load_state = lambda: committed_state2
+        sch._sync_one_result = lambda c: (False, "rsync rc=23: blip")
+        sch._sync_completed_results_outside_lock()
+        tF = committed_state2["tasks"][0]
+        check("3.5 behavior: failure increments result_sync_attempts",
+              tF.get("result_sync_attempts") == 3, diag=str(tF))
+        check("3.5 behavior: failure records result_sync_error",
+              "rsync rc=23" in (tF.get("result_sync_error") or ""), diag=str(tF))
+        check("3.5 behavior: failure leaves result_synced_at unset",
+              tF.get("result_synced_at") is None, diag=str(tF))
+
+        # Defensive recheck: if task transitions away from 'done' DURING the
+        # rsync window, commit phase must NOT mutate it. Simulate by mutating
+        # status between snapshot and commit via a sentinel sync_one.
+        committed_state3 = {"tasks": [
+            {"id": "tCancel", "status": "done", "result_dir": "/r/tCancel",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 0},
+        ]}
+        sch.load_state = lambda: committed_state3
+        def sync_then_cancel(c):
+            # Simulate user cancelling between the two short locks.
+            committed_state3["tasks"][0]["status"] = "cancelled"
+            return (True, "ok")
+        sch._sync_one_result = sync_then_cancel
+        sch._sync_completed_results_outside_lock()
+        tC = committed_state3["tasks"][0]
+        check("3.5 behavior: status flipped during rsync window → no commit",
+              tC.get("status") == "cancelled"
+              and tC.get("result_synced_at") is None,
+              diag=str(tC))
+    finally:
+        sch.NODES = saved_NODES
+        sch.load_state = saved_load
+        sch.save_state = saved_save
+        sch._sync_one_result = saved_sync_one
+
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)

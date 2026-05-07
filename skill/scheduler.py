@@ -3288,80 +3288,81 @@ def _stage_for_migration(task: dict, target_node: str,
         return (True, "source==target; nothing to stage")
 
     # Step 2: cwd
+    # Phase 3.0.20 P1 fix: on cache miss, ALWAYS rsync — even if `test -d cwd`
+    # says the dir already exists on target. Pre-fix: cache miss + dir present
+    # → skip rsync entirely + populate the cache. If target had a stale clone
+    # of the same path (older user setup, sibling task, manual ssh), the
+    # migrated task ran old code with no warning. rsync's delta algorithm
+    # makes "already in sync" cheap (~1s) so always running it is the safer
+    # default than trusting `test -d` as a freshness proxy.
     cwd_key = (source_node, target_node, cwd)
     if not _staging_cache_hit(cwd_key):
+        # Source must be NODES-keyed; both sides resolve to local-or-host.
+        src_info = NODES.get(source_node or "", {})
+        src_host = src_info.get("host")
+        tgt_info = NODES.get(target_node, {})
+        tgt_host = tgt_info.get("host")
+        # Build src/dst rsync paths
+        src_path = (f"{src_host}:" if src_host else "") + cwd.rstrip("/") + "/"
+        dst_path = (f"{tgt_host}:" if tgt_host else "") + cwd.rstrip("/") + "/"
+        mkdir_cmd = f"mkdir -p {shlex.quote(cwd)}"
         try:
-            rc, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
-                              timeout=5, check=False)
-        except Exception as e:
-            return (False, f"target ssh failed: {str(e)[:120]}")
-        if rc != 0:
-            # cwd missing → rsync from source. Source must be NODES-keyed and have host.
-            src_info = NODES.get(source_node or "", {})
-            src_host = src_info.get("host")
-            tgt_info = NODES.get(target_node, {})
-            tgt_host = tgt_info.get("host")
-            # Build src/dst rsync paths
-            src_path = (f"{src_host}:" if src_host else "") + cwd.rstrip("/") + "/"
-            dst_path = (f"{tgt_host}:" if tgt_host else "") + cwd.rstrip("/") + "/"
-            mkdir_cmd = f"mkdir -p {shlex.quote(cwd)}"
+            run_on(target_node, mkdir_cmd, timeout=10, check=False)
+        except Exception:
+            pass
+        # rsync only works directly when one side is local. If both src and tgt are
+        # remote (different hosts), we can't directly do remote→remote without ssh
+        # tunneling. Use --rsync-path workaround OR, simpler: pull source to local
+        # then push to target in two hops. For now: only support source-side OR
+        # target-side being local (typical scheduleurm: local is usually one of the
+        # two). Bail on remote→remote pairs.
+        if src_host and tgt_host:
+            return (False,
+                    f"cwd rsync remote→remote not yet supported "
+                    f"(src={src_host}, tgt={tgt_host}); user must sync code "
+                    f"manually OR via shared NFS")
+        # Phase 3.0.14 P4 fix: cap cwd size before rsync, mirror the ckpt cap.
+        # Excludes match the rsync excludes below so the size is the actual
+        # transfer size — unbounded cwd was a 600s timeout / starvation risk.
+        cwd_size_mb = 0
+        if source_node:
             try:
-                run_on(target_node, mkdir_cmd, timeout=10, check=False)
+                rc_du, out_du, _ = run_on(
+                    source_node,
+                    f"du -sm --exclude=.git --exclude=__pycache__ "
+                    f"--exclude='*.pyc' {shlex.quote(cwd)} 2>/dev/null | "
+                    f"awk '{{print $1}}'",
+                    timeout=15, check=False,
+                )
+                if rc_du == 0 and out_du.strip().isdigit():
+                    cwd_size_mb = int(out_du.strip())
             except Exception:
-                pass
-            # rsync only works directly when one side is local. If both src and tgt are
-            # remote (different hosts), we can't directly do remote→remote without ssh
-            # tunneling. Use --rsync-path workaround OR, simpler: pull source to local
-            # then push to target in two hops. For now: only support source-side OR
-            # target-side being local (typical scheduleurm: local is usually one of the
-            # two). Bail on remote→remote pairs.
-            if src_host and tgt_host:
-                return (False,
-                        f"cwd missing on {target_node} and rsync remote→remote not "
-                        f"yet supported (src={src_host}, tgt={tgt_host}); user must "
-                        f"sync code manually OR via shared NFS")
-            # Phase 3.0.14 P4 fix: cap cwd size before rsync, mirror the ckpt cap.
-            # Excludes match the rsync excludes below so the size is the actual
-            # transfer size — unbounded cwd was a 600s timeout / starvation risk.
-            cwd_size_mb = 0
-            if source_node:
-                try:
-                    rc_du, out_du, _ = run_on(
-                        source_node,
-                        f"du -sm --exclude=.git --exclude=__pycache__ "
-                        f"--exclude='*.pyc' {shlex.quote(cwd)} 2>/dev/null | "
-                        f"awk '{{print $1}}'",
-                        timeout=15, check=False,
-                    )
-                    if rc_du == 0 and out_du.strip().isdigit():
-                        cwd_size_mb = int(out_du.strip())
-                except Exception:
-                    cwd_size_mb = 0
-            if cwd_size_mb > MIGRATION_MAX_CWD_SIZE_MB:
-                return (False,
-                        f"cwd {cwd} is {cwd_size_mb}MB > max "
-                        f"{MIGRATION_MAX_CWD_SIZE_MB}MB; migration aborted "
-                        f"(rsync would risk hitting the 600s timeout)")
-            try:
-                import subprocess as _sp
-                r = _sp.run(["rsync", "-az", "--partial",
-                             "--exclude=.git", "--exclude=__pycache__",
-                             "--exclude=*.pyc", src_path, dst_path],
-                            capture_output=True, text=True, timeout=600)
-                if r.returncode != 0:
-                    return (False, f"rsync cwd failed rc={r.returncode}: {r.stderr.strip()[:200]}")
-            except _sp.TimeoutExpired:
-                return (False, "rsync cwd timeout (>10min)")
-            except Exception as e:
-                return (False, f"rsync cwd exception: {e}")
-            # Verify after rsync
-            try:
-                rc2, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
-                                   timeout=5, check=False)
-                if rc2 != 0:
-                    return (False, "cwd still missing after rsync")
-            except Exception as e:
-                return (False, f"post-rsync ssh check failed: {e}")
+                cwd_size_mb = 0
+        if cwd_size_mb > MIGRATION_MAX_CWD_SIZE_MB:
+            return (False,
+                    f"cwd {cwd} is {cwd_size_mb}MB > max "
+                    f"{MIGRATION_MAX_CWD_SIZE_MB}MB; migration aborted "
+                    f"(rsync would risk hitting the 600s timeout)")
+        try:
+            import subprocess as _sp
+            r = _sp.run(["rsync", "-az", "--partial",
+                         "--exclude=.git", "--exclude=__pycache__",
+                         "--exclude=*.pyc", src_path, dst_path],
+                        capture_output=True, text=True, timeout=600)
+            if r.returncode != 0:
+                return (False, f"rsync cwd failed rc={r.returncode}: {r.stderr.strip()[:200]}")
+        except _sp.TimeoutExpired:
+            return (False, "rsync cwd timeout (>10min)")
+        except Exception as e:
+            return (False, f"rsync cwd exception: {e}")
+        # Verify after rsync
+        try:
+            rc2, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
+                               timeout=5, check=False)
+            if rc2 != 0:
+                return (False, "cwd still missing after rsync")
+        except Exception as e:
+            return (False, f"post-rsync ssh check failed: {e}")
         _STAGING_CACHE[cwd_key] = time.time()
 
     # Step 3: ckpt_dir (if set)

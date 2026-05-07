@@ -4644,6 +4644,139 @@ def test_phase3_0_19_staging_failure_cooldown_unblocks_later_candidates():
         sch._STAGING_FAILED.update(saved_failed)
 
 
+def test_phase3_0_20_cwd_always_rsyncs_on_cache_miss():
+    """Phase 3.0.20 P1 fix: cwd staging must rsync on cache miss even when the
+    target already has a directory at that path.
+
+    Pre-fix: `if rc != 0:` (target lacks cwd) was the gate around rsync. If the
+    target HAPPENED to have a stale checkout at the same cwd (a sibling task
+    cloned it earlier, manual user setup, leftover from a previous migration
+    that finished), rsync was SKIPPED and the cache populated as if staged.
+    Migrated task ran old code with no warning. Same blast-radius shape as the
+    other silent-staleness P1s.
+
+    Now: cache miss → ALWAYS rsync. rsync's delta keeps the in-sync case cheap
+    (~1s), so trusting `test -d` as a freshness proxy is the unsafe shortcut.
+    The TTL on _STAGING_CACHE bounds how often we re-rsync within a session.
+    """
+    print("\n[77] Phase 3.0.20 P1 fix: cwd always rsyncs on cache miss (no test-d shortcut)")
+
+    # 1. Source guard: the rsync block must NOT sit inside an `if rc != 0:` arm.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    stage_idx = src.find("def _stage_for_migration")
+    stage_end = src.find("\ndef ", stage_idx + 5)
+    body = src[stage_idx:stage_end]
+    cache_check = body.find("if not _staging_cache_hit(cwd_key):")
+    rsync_call = body.find('subprocess as _sp\n            r = _sp.run(["rsync"', cache_check)
+    if rsync_call < 0:
+        rsync_call = body.find("_sp.run([\"rsync\"", cache_check)
+    # The pre-rsync `test -d cwd` short-circuit is gone.
+    pre_rsync_segment = body[cache_check:rsync_call] if rsync_call > 0 else ""
+    check("rsync block sits directly under the cache-miss guard, not behind a `test -d` short-circuit",
+          rsync_call > cache_check
+          and "if rc != 0" not in pre_rsync_segment.split("subprocess as _sp")[0],
+          diag=f"cache_check={cache_check} rsync={rsync_call}")
+
+    # 2. Behavioral: cwd present on target → still rsync.
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    saved_sp_run = sch.subprocess.run
+    saved_cache = sch._STAGING_CACHE.copy()
+    sch.NODES = {
+        "src": {"host": None}, "tgt": {"host": "tgtbox"},
+    }
+    rsync_count = {"n": 0}
+    class R:
+        def __init__(self, rc=0):
+            self.returncode = rc; self.stdout = ""; self.stderr = ""
+    def fake_rsync(*a, **kw):
+        rsync_count["n"] += 1
+        return R(0)
+    sch.subprocess.run = fake_rsync
+
+    try:
+        # ---- Case A: target has cwd (test -d returns 0) → still rsync ----
+        sch._STAGING_CACHE.clear()
+        rsync_count["n"] = 0
+        def run_on_target_has_cwd(node, cmd, timeout=15, check=False):
+            if "test -d /code" in cmd: return (0, "", "")  # target has it
+            if "du -sm" in cmd and "--exclude=.git" in cmd: return (0, "10\n", "")
+            if "test -x" in cmd: return (0, "", "")
+            if "mkdir -p" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_target_has_cwd
+        ok, msg = sch._stage_for_migration(
+            {"id": "tA", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("cache miss + target has stale cwd → rsync STILL fires (no test-d shortcut)",
+              ok is True and rsync_count["n"] >= 1,
+              diag=f"ok={ok} rsync_count={rsync_count['n']} msg={msg!r}")
+
+        # ---- Case B: cache hit → no rsync (TTL-fresh entry) ----
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE[("src", "tgt", "/code")] = time.time()  # fresh
+        rsync_count["n"] = 0
+        ok, msg = sch._stage_for_migration(
+            {"id": "tB", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("cache hit → no rsync (TTL governs re-rsync, not test-d)",
+              ok is True and rsync_count["n"] == 0,
+              diag=f"ok={ok} rsync_count={rsync_count['n']}")
+
+        # ---- Case C: cache miss + target lacks cwd → rsync (regression) ----
+        sch._STAGING_CACHE.clear()
+        rsync_count["n"] = 0
+        cwd_state = {"present": False}  # flips to True after rsync
+        def fake_rsync_flip(*a, **kw):
+            rsync_count["n"] += 1
+            cwd_state["present"] = True  # post-rsync: dir exists
+            return R(0)
+        sch.subprocess.run = fake_rsync_flip
+        def run_on_target_missing(node, cmd, timeout=15, check=False):
+            if "test -d /code" in cmd:
+                return (0, "", "") if cwd_state["present"] else (1, "", "")
+            if "du -sm" in cmd and "--exclude=.git" in cmd: return (0, "10\n", "")
+            if "test -x" in cmd: return (0, "", "")
+            if "mkdir -p" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_target_missing
+        ok, msg = sch._stage_for_migration(
+            {"id": "tC", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("cache miss + target lacks cwd → rsync (existing path still works)",
+              ok is True and rsync_count["n"] >= 1,
+              diag=f"ok={ok} rsync_count={rsync_count['n']} msg={msg!r}")
+        sch.subprocess.run = fake_rsync  # restore non-flipping mock for Case D
+
+        # ---- Case D: rsync of an oversized cwd still bails ----
+        sch._STAGING_CACHE.clear()
+        rsync_count["n"] = 0
+        big_size = sch.MIGRATION_MAX_CWD_SIZE_MB + 100
+        def run_on_oversized(node, cmd, timeout=15, check=False):
+            if "test -d /code" in cmd: return (0, "", "")  # target has it
+            if "du -sm" in cmd and "--exclude=.git" in cmd:
+                return (0, f"{big_size}\n", "")
+            if "test -x" in cmd: return (0, "", "")
+            if "mkdir -p" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_oversized
+        ok, msg = sch._stage_for_migration(
+            {"id": "tD", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("oversized cwd → reject regardless of target presence",
+              ok is False and "MB" in msg and str(big_size) in msg,
+              diag=f"ok={ok} msg={msg!r}")
+        check("oversized cwd: no rsync attempted",
+              rsync_count["n"] == 0,
+              diag=f"rsync_count={rsync_count['n']}")
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+        sch.subprocess.run = saved_sp_run
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE.update(saved_cache)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -5065,11 +5198,17 @@ def test_phase3_0_4_staging():
         r.stdout = ""; r.stderr = ""
         return r
 
-    # ---------- Case A: cwd already exists on target → no rsync needed ----------
+    # ---------- Case A: cwd already exists on target → STILL rsync (Phase 3.0.20 P1) ----------
+    # Pre-3.0.20 the code skipped rsync if `test -d cwd` succeeded on target.
+    # That meant a stale repo on target would silently run on the migrated task.
+    # New contract: cache miss → always rsync (rsync delta keeps it cheap when
+    # already synced).
     sch._STAGING_CACHE.clear()
     sch.run_on = mk_run_on([
-        ("test -d /work", (0, "", "")),     # cwd exists on target
+        ("test -d /work", (0, "", "")),     # cwd happens to exist on target
         ("test -x", (0, "", "")),           # python exists on target
+        ("du -sm",      (0, "10\n", "")),   # cwd 10MB
+        ("mkdir -p",    (0, "", "")),
     ])
     sch.subprocess.run = fake_subprocess_run
     rsync_calls.clear()
@@ -5079,8 +5218,8 @@ def test_phase3_0_4_staging():
              "cmd": "/abs/path/python -u train.py"},
             "tgt"
         )
-        check("cwd exists on target → ok, no rsync issued",
-              ok and len(rsync_calls) == 0, diag=f"ok={ok} rsync={rsync_calls}")
+        check("cwd present on target → STILL rsync issued (delta sync; no stale code)",
+              ok and len(rsync_calls) >= 1, diag=f"ok={ok} rsync={rsync_calls}")
     finally:
         pass
 
@@ -5198,13 +5337,15 @@ def test_phase3_0_4_staging():
     finally:
         pass
 
-    # ---------- Case G2 (Phase 3.0.6 P1 fix): remote→remote ckpt — refused ----------
-    # Pre-fix: branch silently skipped rsync + STILL added to _STAGING_CACHE + returned
-    # success → migration commits, task starts on target without ckpt → resume from
-    # scratch. Now: explicit rejection like cwd has, and cache only on real rsync.
+    # ---------- Case G2 (Phase 3.0.6 P1 + 3.0.20): remote→remote refused at cwd stage ----------
+    # Pre-3.0.20 cwd stage short-circuited when target already had the dir, leaving
+    # ckpt as the lone remote→remote concern (this test originally exercised the
+    # ckpt rsync rejection). With 3.0.20 the cwd stage always rsyncs on cache
+    # miss, so remote→remote is now rejected at the cwd stage — same conservative
+    # outcome (no migration when both sides remote), just earlier in the pipeline.
     sch._STAGING_CACHE.clear()
     sch.run_on = mk_run_on([
-        ("test -d /work", (0, "", "")),       # cwd already on target
+        ("test -d /work", (0, "", "")),       # cwd happens to exist on target
         ("test -d /ckpt", (0, "", "")),       # Phase 3.0.16: source-side existence
         ("du -sm /ckpt", (0, "500\n", "")),   # ckpt is 500MB on source
     ])
@@ -5217,13 +5358,15 @@ def test_phase3_0_4_staging():
              "cmd": "python a.py"},
             "tgt_remote"  # also remote (host=tgtbox)
         )
-        check("remote→remote ckpt → REJECTED (would lose ckpt on migration)",
-              not ok and "remote→remote not supported" in msg
-              and "checkpoint" in msg, diag=msg)
-        check("rejected ckpt is NOT cached (would falsely succeed next time)",
+        check("remote→remote → REJECTED at cwd stage (no migration when both sides remote)",
+              not ok and "remote→remote" in msg and "not yet supported" in msg, diag=msg)
+        check("rejected migration: cwd cache NOT populated",
+              ("src", "tgt_remote", "/work") not in sch._STAGING_CACHE,
+              diag=str(sch._STAGING_CACHE))
+        check("rejected migration: ckpt cache NOT populated",
               ("src", "tgt_remote", "/ckpt") not in sch._STAGING_CACHE,
               diag=str(sch._STAGING_CACHE))
-        check("no rsync attempted in remote→remote ckpt case",
+        check("no rsync attempted in remote→remote case",
               not any("rsync" in (str(a) if a else "") for a in rsync_calls))
     finally:
         pass
@@ -7129,6 +7272,7 @@ if __name__ == "__main__":
     test_phase3_0_17_staging_cache_ttl()
     test_phase3_0_18_probe_all_outside_lock()
     test_phase3_0_19_staging_failure_cooldown_unblocks_later_candidates()
+    test_phase3_0_20_cwd_always_rsyncs_on_cache_miss()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

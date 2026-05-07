@@ -531,12 +531,52 @@ class _ClaimManager:
 
     @classmethod
     def scheduler_id(cls) -> str:
-        """Unique id for THIS scheduleurm process: <hostname>:<pid>."""
+        """Phase 3.4.2 P1 fix: PERSISTENT id keyed to the state dir, not
+        the running PID. Pre-fix this returned `<host>:<pid>`, so a
+        scheduler restart (watcher service restart, manual `dispatch`
+        from a fresh shell) generated a new id and could no longer
+        match its own pre-restart claims for release()/renew_many() —
+        those would sit until TTL expired even though the same
+        scheduler is alive and running.
+
+        Stored at STATE_DIR/claim_owner_id (random UUID once, then
+        cached in-process). Each scheduleurm install (different
+        STATE_DIR / different state file) gets its own id; same
+        install across restarts reuses the same id."""
+        cached = getattr(cls, "_cached_owner_id", None)
+        if cached:
+            return cached
+        owner_file = STATE_DIR / "claim_owner_id"
+        try:
+            if owner_file.exists():
+                v = owner_file.read_text().strip()
+                if v:
+                    cls._cached_owner_id = v
+                    return v
+        except Exception:
+            pass
+        # Generate a fresh persistent id. Prefix with hostname for
+        # human-readable forensics, append a random hex suffix for
+        # cross-install uniqueness on the same machine.
         try:
             host = os.uname().nodename
         except Exception:
             host = "unknown"
-        return f"{host}:{os.getpid()}"
+        try:
+            import uuid as _uuid
+            new_id = f"{host}:{_uuid.uuid4().hex[:12]}"
+        except Exception:
+            # Last-resort fallback; better than nothing if uuid is missing.
+            new_id = f"{host}:{os.getpid()}-{int(time.time())}"
+        try:
+            STATE_DIR.mkdir(parents=True, exist_ok=True)
+            owner_file.write_text(new_id)
+        except Exception:
+            # Persistence failed — id will not survive restart, but the
+            # claims layer still works for the lifetime of this process.
+            pass
+        cls._cached_owner_id = new_id
+        return new_id
 
     @classmethod
     def _ttl_for(cls, node: str) -> int:

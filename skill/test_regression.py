@@ -9014,10 +9014,14 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     check("main() catches the corrupt-state exception → claims_corrupt error",
           "claims_corrupt" in sc)
     setup = sch._claims_setup_cmd()
-    check("setup writes default content to claims.json when empty",
+    check("setup writes default content to claims.json when missing",
           '{"version":1,"claims":[]}' in setup)
-    check("setup uses `if [ ! -s ... ]` to test for empty before init",
-          "[ ! -s " in setup)
+    # 3.4.9 P1: setup must NOT clobber a 0-byte file. `-e` tests existence only;
+    # `-s` would silently rewrite the post-crash empty state to "no claims",
+    # bypassing the load_from_fd corruption signal at the next op.
+    check("3.4.9: setup uses `if [ ! -e ... ]` (existence-only), not `-s`",
+          "[ ! -e " in setup and "[ ! -s " not in setup,
+          diag="`-s` would re-bootstrap empty file, masking crash-corruption")
 
     # 3.4.8 source guards
     check("setup writes per-user script via atomic tmp+rename",
@@ -9137,6 +9141,71 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     check("3.4.8: setup writes script to tmp BEFORE mv into place",
           0 < cat_idx < mv_idx,
           diag=f"cat={cat_idx} mv={mv_idx}")
+
+    # ---- 3.4.9 P1 source guards ----
+
+    # Source: orphan adopt (LOCAL) wires update_pid on success.
+    src = open(sch.__file__).read()
+    fn_local = src.split("def _try_recover_orphan_local_task")[1].split("\ndef ")[0]
+    check("3.4.9: _try_recover_orphan_local_task calls update_pid after adopt",
+          "_ClaimManager.update_pid(node, tid, pid)" in fn_local,
+          diag="orphan adopted as running must wire host PID into claim")
+    check("3.4.9: same function also wires update_pid for docker container PID",
+          "_ClaimManager.update_pid(node, tid, cpid)" in fn_local,
+          diag="docker branch overrides remote_pids — must mirror in claim")
+
+    # Source: terminal-orphan finalize releases claim.
+    fn_term = src.split("def _try_finalize_terminal_local_task")[1].split("\ndef ")[0]
+    check("3.4.9: _try_finalize_terminal_local_task releases claim",
+          "_ClaimManager.release(node, tid)" in fn_term,
+          diag="terminal orphan must release claim or it lingers until TTL GC")
+
+    # Source: revert-to-queued path releases claim.
+    fn_revert = src.split("def recover_stale_launching_tasks")[1].split("\ndef ")[0]
+    check("3.4.9: revert-to-queued in recover_stale_launching_tasks releases claim",
+          "_ClaimManager.release(node, t[\"id\"])" in fn_revert,
+          diag="claim from pre-launch may linger if scheduler died mid-launch")
+
+    # Source: watcher reconciles claim PIDs each cycle.
+    # _watch_iteration is the iteration body. Locate the reconcile sentinel.
+    check("3.4.9: watcher reconciles claim pid against task remote_pids",
+          "live_pid_by_node" in src and "update_pid(node, tid, want_pid)" in src,
+          diag="best-effort update_pid in launch can fail; watcher must retry")
+
+    # ---- 3.4.9 P1 behavioral: setup does NOT bootstrap a 0-byte file ----
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as td:
+        # Build a minimal local "claims dir" then run a setup-equivalent.
+        cf = os.path.join(td, "claims.json")
+        # Pretend a prior writer crashed mid-truncate: 0 bytes on disk.
+        open(cf, "w").close()
+        size_before = os.path.getsize(cf)
+        # Now simulate exactly what setup does for that bootstrap branch:
+        # `if [ ! -e file ]; then printf default > file; fi`. With -e, the
+        # branch is FALSE for an existing 0-byte file → no write.
+        setup_branch_cmd = f"if [ ! -e {cf} ]; then printf '%s' '{{\"version\":1,\"claims\":[]}}' > {cf}; fi"
+        subprocess.run(["bash", "-c", setup_branch_cmd], check=True)
+        size_after = os.path.getsize(cf)
+        check("3.4.9: setup bootstrap branch leaves a 0-byte claims.json untouched",
+              size_before == 0 and size_after == 0,
+              diag=f"before={size_before} after={size_after}")
+
+        # And verify: with a real claim already present, then truncated to 0,
+        # then setup runs again — the file STAYS 0 bytes (does not get re-init).
+        # This is the actual reviewer scenario: writer ftruncate(0), crash,
+        # next setup must NOT silently restore "[]" and lose the previous
+        # cross-scheduler claims.
+        with open(cf, "w") as f:
+            f.write('{"version":1,"claims":[{"task_id":"tPrev"}]}')
+        # Now truncate to simulate crash-window state.
+        with open(cf, "w") as f:
+            pass
+        subprocess.run(["bash", "-c", setup_branch_cmd], check=True)
+        size_post = os.path.getsize(cf)
+        check("3.4.9: post-crash 0-byte claims.json NOT silently re-bootstrapped",
+              size_post == 0,
+              diag=f"size after second setup = {size_post}; "
+                   "non-zero would mean bootstrap clobbered crash-corrupt state")
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():

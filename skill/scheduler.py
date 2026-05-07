@@ -551,9 +551,14 @@ def _claims_setup_cmd():
         f"mkdir -p {dir_q} && chmod 1777 {dir_q} 2>/dev/null; "
         # Lock file shared 0666 so any user can flock it.
         f"touch {lock_q} 2>/dev/null && chmod 0666 {lock_q} 2>/dev/null; "
-        # Claims file: ensure exists, 0666, AND non-empty default so
-        # 0 bytes always signals a crash-corrupted state.
-        f"if [ ! -s {file_q} ]; then "
+        # Claims file: bootstrap ONLY when missing (Phase 3.4.9 P1 fix).
+        # A 0-byte file means a writer crashed between ftruncate(0) and
+        # the subsequent write — it must NOT be silently re-initialized
+        # to empty (that would over-commit by re-issuing every running
+        # task's resources on the next dispatch). Letting the 0-byte
+        # state propagate makes load_from_fd raise → main() returns
+        # claims_corrupt → operator sees an actionable error.
+        f"if [ ! -e {file_q} ]; then "
         f"  printf '%s' '{{\"version\":1,\"claims\":[]}}' > {file_q} 2>/dev/null; "
         f"fi; "
         f"chmod 0666 {file_q} 2>/dev/null; "
@@ -5694,6 +5699,21 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
     task["peak_vram_mb"] = 0
     task["peak_ram_mb"] = 0
     task.pop("launching_started_at", None)
+    # Phase 3.4.9 P1: orphan adopt-as-running must wire the live PID into
+    # the cross-scheduler claim. The pre-launch claim recorded pid=None
+    # (the original launcher died); without this update the claim stays
+    # pid=None forever, which (a) gets double-counted as a "pending" claim
+    # in node folding (over-subtracting capacity), and (b) becomes
+    # GC-eligible after TTL expiry even though the real process is alive
+    # — letting another scheduler claim the same resource. Best-effort:
+    # if claims are disabled or the call fails (transport), liveness will
+    # at least be observable via remote_pids; next watcher reconcile pass
+    # will retry.
+    if _ClaimManager.enabled_for(node):
+        try:
+            _ClaimManager.update_pid(node, tid, pid)
+        except Exception:
+            pass
     # Phase 3.0.32 P1 fix: also restore the deterministic log_path used by
     # LocalBackend.launch. Pre-fix, recovery left log_path=None, so a
     # later _diagnose_terminal saw "no log_path" and short-circuited to
@@ -5733,6 +5753,14 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
                     task["container_main_pid"] = cpid
                     task["remote_pids"] = [cpid]
                     task["alive_pids"] = [cpid]
+                    # Phase 3.4.9 P1: refresh claim PID to the container's
+                    # main proc, not the bash launcher (mirrors the same
+                    # pattern in LocalBackend.launch's docker branch).
+                    if _ClaimManager.enabled_for(node):
+                        try:
+                            _ClaimManager.update_pid(node, tid, cpid)
+                        except Exception:
+                            pass
         except Exception:
             pass  # docker may not be reachable; recovery proceeds with bash PID
     task["last_block_reason"] = (
@@ -5840,6 +5868,15 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
             f"WAL recovery: terminal orphan local task on {node}; diagnosed "
             f"clean exit ({(diag.get('reason') or 'no signal')[:120]})"
         )
+    # Phase 3.4.9 P1: release the claim now that the task is terminal.
+    # Mirrors the regular running→done/failed transition (line 2037).
+    # Without this, the claim sits with pid=None until TTL GC, occupying
+    # capacity that other schedulers refuse to dispatch into.
+    if _ClaimManager.enabled_for(node):
+        try:
+            _ClaimManager.release(node, tid)
+        except Exception:
+            pass
     return True
 
 
@@ -5885,6 +5922,18 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
                 continue  # adopted as running
             if _try_finalize_terminal_local_task(t, node, state):
                 continue  # adopted as terminal (done / failed + maybe requeued)
+        # Phase 3.4.9 P1: a launching task that we revert may have had a
+        # cross-scheduler claim created in LocalBackend.launch (line ~2926)
+        # but never released — _release_and_fail only fires when launch()
+        # itself raised, not when the scheduler died mid-launch. Releasing
+        # before status=queued prevents the dead claim from sitting at
+        # pid=None until TTL GC, which would block our own retry next
+        # cycle (claim still occupies the resource we need to reclaim).
+        if node and _ClaimManager.enabled_for(node):
+            try:
+                _ClaimManager.release(node, t["id"])
+            except Exception:
+                pass
         t["status"] = "queued"
         t["last_block_reason"] = (
             f"WAL recovery: was 'launching' for {max(0, age):.0f}s, reverted to queued"
@@ -7006,12 +7055,23 @@ def _watch_iteration(args):
         with state_lock():
             cur_state = load_state()
         running_by_node = {}
+        # Phase 3.4.9 P1: also collect (task_id -> live PID) per node for
+        # claim pid reconcile. update_pid in launch / orphan-adopt is best-
+        # effort with try/except; if those failed (transport blip, claims
+        # disabled momentarily, etc.) the claim sits at pid=None forever
+        # and gets double-counted in pending-claim folding (line ~1305).
+        # The watcher reconciles each cycle so the worst-case window is
+        # one watch interval, not the task's lifetime.
+        live_pid_by_node = {}
         for t in cur_state.get("tasks", []):
             if t.get("status") != "running":
                 continue
             node = t.get("node")
             if node and _ClaimManager.enabled_for(node):
                 running_by_node.setdefault(node, []).append(t["id"])
+                pids = t.get("remote_pids") or []
+                if pids:
+                    live_pid_by_node.setdefault(node, {})[t["id"]] = int(pids[0])
         for node in NODES:
             if not _ClaimManager.enabled_for(node):
                 continue
@@ -7019,6 +7079,30 @@ def _watch_iteration(args):
                 ids = running_by_node.get(node, [])
                 if ids:
                     _ClaimManager.renew_many(node, ids)
+                    # Reconcile claim PIDs against task remote_pids[0]. We
+                    # only update when (a) we know a live PID for the task
+                    # and (b) the claim record's pid is missing or differs.
+                    # No-op for tasks where remote_pids is empty (slurm-
+                    # routed) — those legitimately have pid=None claims
+                    # and we have no host PID to record.
+                    pid_map = live_pid_by_node.get(node) or {}
+                    if pid_map:
+                        try:
+                            current_claims = _ClaimManager.enumerate(node)
+                        except Exception:
+                            current_claims = []
+                        for c in current_claims:
+                            tid = c.get("task_id")
+                            want_pid = pid_map.get(tid)
+                            if want_pid is None:
+                                continue
+                            cur_pid = c.get("pid")
+                            if cur_pid == want_pid:
+                                continue
+                            try:
+                                _ClaimManager.update_pid(node, tid, want_pid)
+                            except Exception:
+                                pass
                 else:
                     # No running tasks of ours on this node — but other
                     # schedulers' claims may still be expiring. Run a

@@ -164,6 +164,50 @@ After install, restart the watcher so `HybridBackend` re-detects the node:
 systemctl --user restart scheduler
 ```
 
+## Load-balanced migration (Phase 3.0)
+
+When you submit `--preferred-node A` and node A has a long backlog while node B is nearly free, scheduleurm proactively migrates one queued task per dispatch cycle from A to B — **only when all of these hold**:
+
+1. **A is heavily loaded**: A's `eta_load` (sum of remaining-seconds across all in-flight tasks pinned there) > `MIGRATION_LOAD_RATIO × B's eta_load` (default ratio = 2.0)
+2. **B is genuinely free**: B's `eta_load` < `MIGRATION_FREE_THRESHOLD_S` (default 10 min). Migrating between two loaded nodes just shifts work, doesn't balance it.
+3. **The task is portable**: `--preferred-node A`, no `--require-node`, not `auto_adopted`, ETA ≥ `MIGRATION_MIN_TASK_ETA_S` (300 s — short tasks don't recoup staging cost).
+4. **Staging succeeds**: cwd is rsync'd to B if missing; `--ckpt-dir` is rsync'd if ≤ `MIGRATION_MAX_CKPT_SIZE_MB` (default 2048 MB); `python` from cmd is executable on B.
+
+If any check fails → no migration this cycle, task stays on A, the reason is stashed in `task['last_migration_skip']` for inspection.
+
+ETA is the load-imbalance signal, not task count (one 30-hour job ≠ thirty 1-hour jobs). ETA is computed every watcher cycle from log tails:
+
+| Tier | Source | Accuracy | Trigger |
+|---|---|---|---|
+| 0 | `tqdm` bracket `[<elapsed><<remaining>, <rate>]` — its smoothed-rate estimate | Best | When script uses tqdm |
+| 1 | Rate from `(current, total)` parsed in tail (e.g. `[Epoch 22/200]`, `Iter 1234/5000`) | Good | When tail has both numbers |
+| 2 | Rate from `Iter N` in tail + `--max_iters N` / `--n_epochs N` / `--max_steps N` in cmd | Decent | When tail only has current |
+| 3 | History EWMA − elapsed | Coarse | Fallback for new signatures |
+| — | 0 (unknown) | None | No signal at all |
+
+For best ETA accuracy, **wrap the training loop with tqdm**. The skill auto-checks scripts at submit time and proposes adding `from tqdm import tqdm; for x in tqdm(loop): ...` if missing — your loop's existing per-iter logging stays intact, tqdm just adds the bar.
+
+Tunables (all env-var overridable; no code edit; takes effect after watcher restart):
+
+| Var | Default | Meaning |
+|---|---|---|
+| `SCHEDULEURM_MIGRATION_LOAD_RATIO` | `2.0` | Source load must exceed this × target load |
+| `SCHEDULEURM_MIGRATION_FREE_THRESHOLD_S` | `600` | Target's eta_load must be under this many seconds |
+| `SCHEDULEURM_MIGRATION_MAX_PER_DISPATCH` | `1` | Cap on migrations per 60s dispatch cycle |
+| `SCHEDULEURM_MIGRATION_MIN_TASK_ETA_S` | `300` | Tasks shorter than this aren't migrated (staging cost > savings) |
+| `SCHEDULEURM_MIGRATION_MAX_CKPT_SIZE_MB` | `2048` | Reject migration if ckpt > this size (rsync would take too long) |
+
+Migration emits a `migrated` event (visible in `journalctl --user -u scheduler` and `~/.claude/scheduler/logs/watcher.log`) and rewrites the task's `preferred_node` + sets `last_block_reason` so it's visible in `scheduler status`.
+
+`scheduler status` now shows per-node `eta_load` so you can see imbalance directly:
+
+```
+=== nodes ===
+  local       GPU0=...  cpu=...  ram_free=...  eta_load=8.0d
+  jtl110gpu   GPU0=..., GPU1=...  cpu=...  ram_free=...  eta_load=1.2d
+  jtl110gpu2  GPU0=..., GPU1=...  cpu=...  ram_free=...  eta_load=1.9d
+```
+
 ## Slurm coexistence (Phase 2)
 
 If a target node has `sbatch` and `squeue` installed, scheduleurm **automatically routes

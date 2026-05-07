@@ -4623,7 +4623,7 @@ _SLURM_ALIVE_STATES = {"PENDING", "CONFIGURING", "RUNNING", "COMPLETING",
                         "RESIZING", "REQUEUED", "SUSPENDED"}
 
 
-def _try_recover_orphan_slurm_job(task: dict, node: str) -> bool:
+def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] = None) -> bool:
     """Phase 2.15 P2: look for an orphan slurm job named `scheduleurm-<task_id>`
     on `node`. If found in an alive state, adopt it onto the task (set
     slurm_job_id, transition to running) so we don't double-submit when the
@@ -4657,11 +4657,58 @@ def _try_recover_orphan_slurm_job(task: dict, node: str) -> bool:
         jid = int(bits[0])
         slurm_state = bits[1].upper()
         if slurm_state not in _SLURM_ALIVE_STATES:
-            # Job is already terminal in slurm — safer to let the revert path handle:
-            # the task goes back to queued, next dispatch creates a fresh job, the
-            # terminal slurm record stays as a forensic breadcrumb but doesn't
-            # interfere.
-            continue
+            # Phase 3.0.33 P1 fix: terminal slurm orphan was previously skipped
+            # ("let the revert path handle it"), but the revert path goes back
+            # to queued → next dispatch sbatches AGAIN. The slurm job already
+            # ran (and possibly succeeded). Rerunning the same task wastes
+            # compute and breaks the "task never runs twice" invariant.
+            # Now: adopt the terminal record + classify done/failed using the
+            # 3.0.30 log-scan semantics for COMPLETED. Reconstruct log_path
+            # the same way SlurmBackend.launch did so _scan_completed_log_for_
+            # crash can read it.
+            task["slurm_job_id"] = jid
+            task["slurm_state"] = slurm_state
+            task["finished_at"] = time.time()
+            task["started_at"] = task.get("launching_started_at") or task["finished_at"]
+            task.pop("launching_started_at", None)
+            task["remote_pids"] = []
+            task["peak_vram_mb"] = 0
+            task["peak_ram_mb"] = 0
+            cwd = task.get("cwd") or ""
+            if NODES.get(node, {}).get("host") is None:
+                task["log_path"] = f"{STATE_DIR}/logs/{task['id']}.log"
+            elif cwd:
+                task["log_path"] = f"{cwd}/.scheduleurm/{task['id']}.log"
+            if slurm_state == "COMPLETED":
+                crash_matched, crash_reason = _scan_completed_log_for_crash(task)
+                if crash_matched:
+                    task["status"] = "failed"
+                    task["last_block_reason"] = (
+                        f"WAL recovery: orphan slurm job {jid} on {node} "
+                        f"reported COMPLETED but log shows crash: "
+                        f"{crash_reason[:120]}"
+                    )
+                    if state is not None:
+                        new_id = _requeue_after_crash(task, state)
+                        if new_id:
+                            task["requeued_as"] = new_id
+                else:
+                    task["status"] = "done"
+                    task["last_block_reason"] = (
+                        f"WAL recovery: orphan slurm job {jid} on {node} "
+                        f"already COMPLETED; avoids re-submit"
+                    )
+            else:
+                task["status"] = "failed"
+                task["last_block_reason"] = (
+                    f"WAL recovery: orphan slurm job {jid} on {node} "
+                    f"terminal in state {slurm_state}; avoids re-submit"
+                )
+                if state is not None:
+                    new_id = _requeue_after_crash(task, state)
+                    if new_id:
+                        task["requeued_as"] = new_id
+            return True
         task["slurm_job_id"] = jid
         task["status"] = "running"
         task["remote_pids"] = []  # slurm-managed: no host PIDs to track
@@ -4788,6 +4835,82 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
     return True
 
 
+def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> bool:
+    """Phase 3.0.33 P1 fix: if the alive-orphan probe found nothing but the
+    task's deterministic log_path exists with content on the candidate node,
+    the orphan ran AND finished within the launch-save window. Classify it
+    (done / failed) here instead of reverting → re-launching.
+
+    Mirrors the local-vs-remote log-path formula from LocalBackend.launch.
+    Calls _diagnose_terminal for the no-slurm-signal classification (full
+    heuristic, since no backend signal is available); on crash, triggers
+    _requeue_after_crash to mirror the running-task transition path.
+
+    Returns True iff the task was finalized (done or failed). False means
+    no log evidence — caller falls back to the revert path.
+    """
+    tid = task.get("id") or ""
+    if not tid:
+        return False
+    if NODES.get(node, {}).get("host") is None:
+        log_path = f"{STATE_DIR}/logs/{tid}.log"
+    else:
+        log_path = f"/tmp/sched_{tid}.log"
+    log_size = 0
+    try:
+        if NODES.get(node, {}).get("host") is None:
+            lp = Path(log_path)
+            if not lp.exists():
+                return False
+            log_size = lp.stat().st_size
+        else:
+            rc, out, _ = run_on(
+                node,
+                f"wc -c < {shlex.quote(log_path)} 2>/dev/null",
+                timeout=5, check=False,
+            )
+            if rc != 0:
+                return False
+            try:
+                log_size = int((out or "0").strip())
+            except ValueError:
+                return False
+    except Exception:
+        return False
+    if log_size <= 0:
+        # Empty / missing log = no evidence the task ever ran. Fall back
+        # to the revert path; next dispatch attempts a fresh launch.
+        return False
+    # Adopt as terminal. _diagnose_terminal needs log_path / started_at /
+    # finished_at to do its work.
+    task["log_path"] = log_path
+    task["finished_at"] = time.time()
+    task["started_at"] = task.get("launching_started_at") or task["finished_at"]
+    task.pop("launching_started_at", None)
+    task["remote_pids"] = []
+    task["alive_pids"] = []
+    task["peak_vram_mb"] = 0
+    task["peak_ram_mb"] = 0
+    diag = _diagnose_terminal(task)
+    task["_diagnosis"] = diag
+    if diag.get("is_crash"):
+        task["status"] = "failed"
+        task["last_block_reason"] = (
+            f"WAL recovery: terminal orphan local task on {node}; diagnosed "
+            f"crash: {(diag.get('reason') or '')[:120]}"
+        )
+        new_id = _requeue_after_crash(task, state)
+        if new_id:
+            task["requeued_as"] = new_id
+    else:
+        task["status"] = "done"
+        task["last_block_reason"] = (
+            f"WAL recovery: terminal orphan local task on {node}; diagnosed "
+            f"clean exit ({(diag.get('reason') or 'no signal')[:120]})"
+        )
+    return True
+
+
 def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: int = LAUNCHING_RESET_S) -> int:
     """Revert stale WAL launch markers to queued under state_lock.
 
@@ -4814,16 +4937,22 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
         age = now - (t.get("launching_started_at") or now)
         if age < reset_s:
             continue
-        # Phase 2.15 / 3.0.28: orphan recovery before revert. Per-task: slurm
-        # nodes use squeue+name; local nodes use the SCHEDULEURM_TASK_ID env
-        # marker via /proc/*/environ.
+        # Phase 2.15 / 3.0.28 / 3.0.33: orphan recovery before revert.
+        # Per-task: slurm nodes use squeue+name (alive AND terminal); local
+        # nodes use the SCHEDULEURM_TASK_ID env marker via /proc/*/environ
+        # for alive orphans, then the deterministic log_path for terminal
+        # orphans. Adopted-as-running and adopted-as-terminal both bypass
+        # the revert+requeue path that would otherwise re-launch the same
+        # workload.
         node = t.get("node")
         if node and not _BACKEND.requires_local_capacity_check(node):
-            if _try_recover_orphan_slurm_job(t, node):
+            if _try_recover_orphan_slurm_job(t, node, state):
                 continue  # adopted; do not revert
         elif node:
             if _try_recover_orphan_local_task(t, node):
-                continue  # adopted; do not revert
+                continue  # adopted as running
+            if _try_finalize_terminal_local_task(t, node, state):
+                continue  # adopted as terminal (done / failed + maybe requeued)
         t["status"] = "queued"
         t["last_block_reason"] = (
             f"WAL recovery: was 'launching' for {max(0, age):.0f}s, reverted to queued"

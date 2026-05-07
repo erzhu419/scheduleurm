@@ -3302,9 +3302,40 @@ def _stage_for_migration(task: dict, target_node: str,
     # Step 3: ckpt_dir (if set)
     ckpt_dir = task.get("ckpt_dir")
     if ckpt_dir:
-        # Size check: only on source side (where ckpt actually lives)
-        size_mb = 0
+        # Phase 3.0.16 P1 fix: ckpt staging must be fail-closed when source-side
+        # state is unknown. Pre-fix: a `du -sm ckpt_dir` failure (ssh blip,
+        # permission, awk parse) silently set size_mb=0; the rsync gate
+        # `if size_mb > 0` then skipped the actual transfer and the function
+        # still returned success. Resume task launched on target with no ckpt →
+        # silent step-0 restart. Same blast-radius shape as 3.0.6 / 3.0.15.
+        #
+        # Now: explicit existence test on source first.
+        #   - source has no source_node OR ckpt_dir absent on source → no ckpt
+        #     to stage (legitimate first-launch case); return success-so-far,
+        #     skip rsync.
+        #   - ckpt_dir exists on source → size MUST be determinable.
+        #     du failure = unknown size = fail-closed (don't migrate without
+        #     transferring the ckpt we know is there).
+        src_present = False
         if source_node:
+            try:
+                rc_test, _, _ = run_on(
+                    source_node, f"test -d {shlex.quote(ckpt_dir)}",
+                    timeout=5, check=False,
+                )
+                src_present = (rc_test == 0)
+            except Exception as e:
+                return (False,
+                        f"ckpt_dir {ckpt_dir} reachability check on {source_node} "
+                        f"failed: {str(e)[:120]}; fail-closed (would otherwise "
+                        f"migrate without rsyncing the ckpt → silent step-0 restart)")
+
+        if not src_present:
+            # No ckpt to stage. Skip directly to env probe — equivalent to a
+            # first-launch task that hasn't created its ckpt yet.
+            ckpt_dir = None  # signal "nothing to do" to the rest of step 3
+        else:
+            size_mb = -1  # sentinel: "unknown"
             try:
                 rc, out, _ = run_on(source_node,
                                     f"du -sm {shlex.quote(ckpt_dir)} 2>/dev/null | "
@@ -3313,11 +3344,16 @@ def _stage_for_migration(task: dict, target_node: str,
                 if rc == 0 and out.strip().isdigit():
                     size_mb = int(out.strip())
             except Exception:
-                size_mb = 0
-        if size_mb > max_ckpt_mb:
-            return (False,
-                    f"ckpt_dir {ckpt_dir} is {size_mb}MB > max {max_ckpt_mb}MB; "
-                    f"migration aborted (rsync would take too long)")
+                pass
+            if size_mb < 0:
+                return (False,
+                        f"ckpt_dir {ckpt_dir} exists on {source_node} but size "
+                        f"probe failed; fail-closed (would otherwise migrate "
+                        f"without rsyncing the ckpt → silent step-0 restart)")
+            if size_mb > max_ckpt_mb:
+                return (False,
+                        f"ckpt_dir {ckpt_dir} is {size_mb}MB > max {max_ckpt_mb}MB; "
+                        f"migration aborted (rsync would take too long)")
 
         # Stage ckpt (same two-host limitation as cwd: rsync needs one side local).
         # Phase 3.0.6 P1 fix: prior code had _STAGING_CACHE.add(ckpt_key) OUTSIDE the
@@ -3326,8 +3362,8 @@ def _stage_for_migration(task: dict, target_node: str,
         # commit and the resume task would start on target without a checkpoint —
         # silently restarting from step 0. Now we reject remote→remote (same as cwd
         # does) and only cache after a verified rsync.
-        ckpt_key = (source_node, target_node, ckpt_dir)
-        if size_mb > 0 and ckpt_key not in _STAGING_CACHE:
+        ckpt_key = (source_node, target_node, ckpt_dir) if ckpt_dir else None
+        if ckpt_dir and size_mb > 0 and ckpt_key not in _STAGING_CACHE:
             src_info = NODES.get(source_node or "", {})
             src_host = src_info.get("host")
             tgt_info = NODES.get(target_node, {})

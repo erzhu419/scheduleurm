@@ -1307,6 +1307,40 @@ def update_running_tasks(state):
     _refresh_eta_from_logs(state)
 
 
+def _effective_elapsed_s(task: dict) -> float:
+    """Phase 3.0.9 P2: return seconds since the task ACTUALLY started compute, not
+    since launch returned. Critical for slurm tasks that may PEND for hours before
+    slurm allocates resources.
+
+    LocalBackend tasks: started_at IS the compute start (launch path runs the cmd
+    inline and captures PIDs synchronously) → return now - started_at.
+
+    SlurmBackend tasks: started_at is sbatch return time, which may be hours
+    before slurm actually starts running the job. Use actual_started_at, set
+    once by batch_probe when slurm_state first transitions to RUNNING. Until
+    then (PENDING/CONFIGURING/None) elapsed = 0 — the task hasn't started, so
+    ETA shouldn't decay and node load shouldn't shrink.
+
+    Without this, _refresh_eta_from_logs's EWMA fallback decays a slurm-PENDING
+    task's eta_seconds to 0 just from sitting in slurm's queue — corrupts
+    eta_load and tricks Phase 3.0.3 migration into routing tasks toward the
+    "free" node that's actually loaded but pending."""
+    now = time.time()
+    started_at = task.get("started_at")
+    if not started_at:
+        return 0.0
+    # Slurm task: prefer actual_started_at; fall back to "still pending → elapsed=0"
+    if task.get("slurm_job_id"):
+        actual = task.get("actual_started_at")
+        if actual:
+            return max(0.0, now - actual)
+        # No RUNNING observation yet — task is PENDING (or just-sbatched, not yet
+        # probed). Treat as elapsed=0 so ETA = full EWMA, load doesn't shrink.
+        return 0.0
+    # LocalBackend / non-slurm task: started_at == compute start
+    return max(0.0, now - started_at)
+
+
 def _refresh_eta_from_logs(state):
     """Phase 3.0.1: parse log tails for tqdm/epoch/iter progress markers, compute
     rate-based remaining-seconds, write task['eta_seconds']. Falls back to
@@ -1354,7 +1388,7 @@ def _refresh_eta_from_logs(state):
         sig = t.get("signature") or ""
         h = history_get(sig) or {}
         ewma = int(h.get("dur_s_ewma", 0))
-        elapsed = max(0, now - (t.get("started_at") or now))
+        elapsed = _effective_elapsed_s(t)
         t["eta_seconds"] = eta_tracker.compute_eta_seconds(
             "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
         )
@@ -1395,7 +1429,7 @@ def _refresh_eta_from_logs(state):
                     sig = t.get("signature") or ""
                     h = history_get(sig) or {}
                     ewma = int(h.get("dur_s_ewma", 0))
-                    elapsed = max(0, now - (t.get("started_at") or now))
+                    elapsed = _effective_elapsed_s(t)
                     t["eta_seconds"] = eta_tracker.compute_eta_seconds(
                         "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
                     )
@@ -1413,7 +1447,7 @@ def _refresh_eta_from_logs(state):
             sig = t.get("signature") or ""
             h = history_get(sig) or {}
             ewma = int(h.get("dur_s_ewma", 0))
-            elapsed = max(0, now - (t.get("started_at") or now))
+            elapsed = _effective_elapsed_s(t)
             t["eta_seconds"] = eta_tracker.compute_eta_seconds(
                 tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
             )
@@ -2514,6 +2548,13 @@ class SlurmBackend(Backend):
                     terminal_ok = None
                     terminal_reason = None
                     t["slurm_state"] = slurm_state
+                    # Phase 3.0.9 P2: record the actual compute-start time the FIRST
+                    # time we observe RUNNING. Until this is set, _effective_elapsed_s
+                    # returns 0 for slurm tasks so ETA / load stay at "full ewma" while
+                    # PENDING. Without this, a job pending in slurm's queue for an hour
+                    # silently decays its ETA to 0 and migration sees a fake "free" node.
+                    if slurm_state == "RUNNING" and not t.get("actual_started_at"):
+                        t["actual_started_at"] = time.time()
                 elif slurm_state in SUCCESS_STATES:
                     state_norm = "dead"
                     terminal_ok = True

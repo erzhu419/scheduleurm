@@ -3186,6 +3186,18 @@ MIGRATION_MAX_CKPT_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CKPT_
 # task stays on source. Rationale: rsync of a 5+GB ckpt takes minutes, often longer
 # than just letting source's queue drain naturally. User-spec'd default is 2GB.
 
+STAGING_FAIL_COOLDOWN_S = int(os.environ.get("SCHEDULEURM_STAGING_FAIL_COOLDOWN_S", "3600"))
+# Phase 3.0.19 P3 fix: per-(task,target) cooldown after a failed staging attempt.
+# Pre-fix, _identify_migration_candidates always returned the same first
+# max_candidates=2 entries (sorted by eta). If both had permanent failures
+# (ckpt > cap, env missing on target, remote→remote refuse), candidates 3+
+# never got a chance — permanent starvation. Now: a failed staging attempt
+# tags the (task_id, target) pair for STAGING_FAIL_COOLDOWN_S seconds; the
+# identify pass skips tagged pairs so subsequent candidates are exposed.
+# Recovery is automatic: cooldown expires, candidate becomes eligible again.
+# 1 hour balances quick recovery for fixable failures (env-missing the user
+# patches) vs. avoiding rsync churn for permanent ones (oversized ckpt).
+
 STAGING_TTL_S = int(os.environ.get("SCHEDULEURM_STAGING_TTL_S", "600"))
 # Phase 3.0.17 P2 fix: TTL on staging caches. Pre-fix _STAGING_CACHE was a plain
 # set — once a (src,tgt,path) was added, it survived until process restart, so a
@@ -3213,6 +3225,36 @@ def _staging_cache_hit(key) -> bool:
         _STAGING_CACHE.pop(key, None)
         return False
     return True
+
+
+# Phase 3.0.19: per-(task_id, target) failure tag with TTL. Populated when
+# _stage_migration_candidates_outside_lock observes a staging failure;
+# consulted by _identify_migration_candidates so doomed candidates don't
+# permanently block later eligible ones from getting their staging slot.
+_STAGING_FAILED: dict = {}
+_STAGING_FAILED_MAX = 200  # bound memory; LRU evicts oldest when full
+
+
+def _staging_recently_failed(task_id, target) -> bool:
+    """Return True iff (task_id, target) had a recent staging failure within
+    STAGING_FAIL_COOLDOWN_S. Pops expired entries opportunistically."""
+    key = (task_id, target)
+    ts = _STAGING_FAILED.get(key)
+    if ts is None:
+        return False
+    if (time.time() - ts) > STAGING_FAIL_COOLDOWN_S:
+        _STAGING_FAILED.pop(key, None)
+        return False
+    return True
+
+
+def _record_staging_failure(task_id, target):
+    """Mark (task_id, target) as recently-failed. LRU evicts oldest 25% when full."""
+    if len(_STAGING_FAILED) >= _STAGING_FAILED_MAX:
+        sorted_keys = sorted(_STAGING_FAILED.items(), key=lambda kv: kv[1])
+        for k, _ in sorted_keys[:_STAGING_FAILED_MAX // 4]:
+            _STAGING_FAILED.pop(k, None)
+    _STAGING_FAILED[(task_id, target)] = time.time()
 
 
 def _stage_for_migration(task: dict, target_node: str,
@@ -3551,6 +3593,12 @@ def _identify_migration_candidates(state: dict, nodes: list,
         last_mig_at = float(t.get("migrated_at") or 0)
         if last_mig_at and (time.time() - last_mig_at) < MIGRATION_COOLDOWN_S:
             continue
+        # Phase 3.0.19 P3 fix: skip candidates whose (id, target) had a recent
+        # staging failure. Without this, the same first 2 doomed candidates
+        # (ckpt > cap, env missing, etc.) get re-picked every dispatch and the
+        # rest of the queue starves. Failures TTL out via STAGING_FAIL_COOLDOWN_S.
+        if _staging_recently_failed(t["id"], target_name):
+            continue
         # Snapshot fields needed by _stage_for_migration (cwd, ckpt_dir, cmd,
         # preferred_node, signature, id) so the outside-lock caller doesn't need
         # to hold a reference into state["tasks"].
@@ -3624,7 +3672,12 @@ def _stage_migration_candidates_outside_lock(max_candidates: int = 2):
             if ok:
                 _STAGED_TASKS[cache_key] = time.time()
             else:
-                # Don't cache failures; next cycle retries (transient ssh blips, etc).
+                # Phase 3.0.19 P3 fix: tag (task,target) as recently-failed so
+                # the next identify pass skips it and exposes the next
+                # candidate. Failure tag TTLs out via STAGING_FAIL_COOLDOWN_S
+                # so transient ssh blips and user-fixable issues (env missing
+                # patched, ckpt shrunk) recover automatically.
+                _record_staging_failure(task_snapshot["id"], target)
                 # Log so user can see persistent failures in watcher.log.
                 try:
                     notify("migration_staging_skip",
@@ -3635,6 +3688,9 @@ def _stage_migration_candidates_outside_lock(max_candidates: int = 2):
                 except Exception:
                     pass
         except Exception as e:
+            # Same treatment for thrown exceptions — tag and let cooldown drive
+            # recovery instead of trying the doomed candidate again next cycle.
+            _record_staging_failure(task_snapshot["id"], target)
             try:
                 notify("migration_staging_error",
                        {"task_id": task_snapshot["id"],

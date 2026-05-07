@@ -2014,9 +2014,11 @@ class LocalBackend(Backend):
             env_prefix = 'export CUDA_VISIBLE_DEVICES=""; '
         else:
             env_prefix = f"export CUDA_VISIBLE_DEVICES={gpu_idx}; "
-        if task.get("extra_env"):
-            for k, v in task["extra_env"].items():
-                env_prefix += f"export {k}={shlex.quote(v)}; "
+        # Phase 3.0.23 P2 fix: filter extra_env at the export site so legacy
+        # state.json entries with invalid / reserved keys can't break the
+        # export shell or override CUDA_VISIBLE_DEVICES set above.
+        for k, v in _safe_extra_env_items(task.get("extra_env")):
+            env_prefix += f"export {k}={shlex.quote(v)}; "
         # setsid creates a new session + process group leader, so `cancel --force`'s `kill -- -<pid>`
         # reliably catches every worker child. The </dev/null is so the launched process doesn't
         # inherit ssh's stdin pipe (which would otherwise keep the ssh-side bash alive).
@@ -2305,9 +2307,12 @@ class SlurmBackend(Backend):
         # Note: slurm does its OWN CUDA_VISIBLE_DEVICES via gres binding, so we don't export
         # it here (and explicitly NOT inheriting it from the launching shell).
         lines.append("")
-        if task.get("extra_env"):
-            for k, v in task["extra_env"].items():
-                lines.append(f"export {k}={shlex.quote(v)}")
+        # Phase 3.0.23 P2 fix: filter extra_env via _safe_extra_env_items so any
+        # legacy state.json entry with an invalid / reserved key (e.g. one that
+        # would override slurm's gres-bound CUDA_VISIBLE_DEVICES) can't break
+        # the sbatch script. submit-time validation is the primary gate.
+        for k, v in _safe_extra_env_items(task.get("extra_env")):
+            lines.append(f"export {k}={shlex.quote(v)}")
         # Phase 2.5 P1 fix: cd must be fatal-on-failure. A bare `cd path` followed by
         # the inner cmd silently continues from $HOME (or wherever) if the compute node
         # doesn't see this path (NFS stale handle, cwd not propagated to compute, etc.).
@@ -3079,6 +3084,30 @@ def _project_from_pid(node, pid):
     except Exception:
         return ""
 
+_ENV_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+# Phase 3.0.23 P2 fix: env keys reserved by scheduleurm. Users must not be able
+# to override these via --env because they're set by the launch path itself
+# (LocalBackend / SlurmBackend) to honor scheduling decisions like GPU pinning.
+# Letting --env override `CUDA_VISIBLE_DEVICES` would let a user-submitted task
+# read a different GPU than the one it was scheduled onto, breaking VRAM
+# accounting + the 1/3 packing rule + everything downstream.
+_RESERVED_ENV_KEYS = frozenset({"CUDA_VISIBLE_DEVICES"})
+
+
+def _safe_extra_env_items(extra_env):
+    """Yield (k, v) from extra_env, skipping any key that fails 3.0.23 validation
+    (invalid POSIX shape OR reserved). Defensive layer at launch sites to
+    protect against tasks persisted in state.json BEFORE 3.0.23 (which may
+    have invalid keys baked in) — submit-time validation is the primary
+    gate, this is belt-and-suspenders."""
+    for k, v in (extra_env or {}).items():
+        if not _ENV_KEY_RE.match(k):
+            continue
+        if k in _RESERVED_ENV_KEYS:
+            continue
+        yield (k, v)
+
+
 def _parse_env(pairs):
     if not pairs: return {}
     out = {}
@@ -3086,6 +3115,21 @@ def _parse_env(pairs):
         if "=" not in p:
             raise SystemExit(f"--env expects KEY=VALUE, got {p!r}")
         k, v = p.split("=", 1)
+        # Phase 3.0.23 P2 fix: validate the key shape AND reject reserved names.
+        # Pre-fix: any string was accepted, which let users smuggle in keys with
+        # spaces / quotes (broken `export` line in launch shell) or override
+        # reserved keys like CUDA_VISIBLE_DEVICES (broke GPU pinning silently).
+        if not _ENV_KEY_RE.match(k):
+            raise SystemExit(
+                f"--env key {k!r} is not a valid POSIX env var name "
+                f"(must match ^[A-Za-z_][A-Za-z0-9_]*$); refusing to launch "
+                f"with a key that would break the export shell line.")
+        if k in _RESERVED_ENV_KEYS:
+            raise SystemExit(
+                f"--env key {k!r} is reserved by scheduleurm (set by the "
+                f"launch path to honor GPU pinning / scheduling decisions); "
+                f"user override would break VRAM accounting + the 1/3 "
+                f"packing rule.")
         out[k] = v
     return out
 

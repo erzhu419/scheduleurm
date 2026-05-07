@@ -5002,6 +5002,112 @@ def test_phase3_0_22_explicit_conda_fail_fast_no_local_path():
         sch.env_deploy = saved_env_deploy
 
 
+def test_phase3_0_23_env_key_validation_and_reserved_guard():
+    """Phase 3.0.23 P2 fix: --env keys must match POSIX env-var shape AND
+    cannot override scheduleurm-reserved keys (CUDA_VISIBLE_DEVICES).
+
+    Pre-fix: _parse_env accepted any string with `=` in it. Both backends
+    then did `export {k}=...`. Two failure modes:
+      (a) `--env "FOO BAR=1"` → `export FOO BAR=1` is a shell syntax error,
+          breaking the entire export prefix and silently failing the launch.
+      (b) `--env CUDA_VISIBLE_DEVICES=2` → user-specified value clobbered
+          scheduleurm's gpu_idx pin, so the task read a different GPU than
+          the one it was scheduled onto. VRAM accounting + 1/3 packing
+          rule both broke silently.
+
+    Now: _parse_env enforces ^[A-Za-z_][A-Za-z0-9_]*$ and rejects reserved
+    keys. _safe_extra_env_items at the launch sites is a defensive filter
+    so legacy state.json entries can't slip through either.
+    """
+    print("\n[80] Phase 3.0.23 P2 fix: --env key validation + CUDA_VISIBLE_DEVICES guard")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("regex constant matches POSIX env-var name shape",
+          "_ENV_KEY_RE" in src
+          and r"^[A-Za-z_][A-Za-z0-9_]*$" in src)
+    check("_RESERVED_ENV_KEYS includes CUDA_VISIBLE_DEVICES",
+          "_RESERVED_ENV_KEYS" in src
+          and "CUDA_VISIBLE_DEVICES" in src)
+    parse_env_idx = src.find("def _parse_env(")
+    parse_env_end = src.find("\ndef ", parse_env_idx + 5)
+    parse_env_body = src[parse_env_idx:parse_env_end]
+    check("_parse_env validates key shape",
+          "_ENV_KEY_RE.match(k)" in parse_env_body)
+    check("_parse_env rejects reserved keys",
+          "k in _RESERVED_ENV_KEYS" in parse_env_body)
+    check("_safe_extra_env_items helper exists for launch-side filtering",
+          "def _safe_extra_env_items" in src)
+    # Both backends (LocalBackend.launch + SlurmBackend.build_sbatch_script)
+    # iterate via the helper instead of raw .items().
+    check("LocalBackend / SlurmBackend export-loop uses _safe_extra_env_items",
+          src.count("_safe_extra_env_items") >= 3,  # def + 2 call sites
+          diag=f"count={src.count('_safe_extra_env_items')}")
+
+    # 2. Behavioral: _parse_env validation.
+    # Valid keys are accepted.
+    out = sch._parse_env(["FOO=bar", "_X=1", "BUILD_ID=abc123"])
+    check("valid keys accepted",
+          out == {"FOO": "bar", "_X": "1", "BUILD_ID": "abc123"},
+          diag=str(out))
+
+    # Invalid shape → SystemExit.
+    bad_keys = [
+        "0LEAD_DIGIT=x",     # starts with digit
+        "FOO BAR=x",         # space
+        "FOO-BAR=x",         # hyphen
+        "FOO.BAR=x",         # dot
+        "PATH;rm -rf=x",     # shell metachar
+        "=novalue",          # empty key (split's left side is "")
+    ]
+    for bad in bad_keys:
+        try:
+            sch._parse_env([bad])
+            check(f"invalid key rejected: {bad!r}", False,
+                  diag="SystemExit was NOT raised")
+        except SystemExit as e:
+            msg = str(e)
+            check(f"invalid key rejected: {bad!r}",
+                  ("not a valid POSIX" in msg) or ("KEY=VALUE" in msg),
+                  diag=f"got msg={msg!r}")
+
+    # Reserved key → SystemExit with clear message.
+    try:
+        sch._parse_env(["CUDA_VISIBLE_DEVICES=2"])
+        check("CUDA_VISIBLE_DEVICES override rejected", False,
+              diag="SystemExit was NOT raised")
+    except SystemExit as e:
+        check("CUDA_VISIBLE_DEVICES override rejected at submit",
+              "reserved" in str(e) and "CUDA_VISIBLE_DEVICES" in str(e),
+              diag=f"got msg={str(e)!r}")
+
+    # 3. _safe_extra_env_items filters legacy bad keys silently.
+    # (defensive: preserves behavior for tasks already in state.json from
+    #  before 3.0.23.)
+    legacy = {
+        "FOO": "bar",                     # valid → kept
+        "BAD KEY": "x",                   # space → dropped
+        "0DIGIT": "y",                    # leading digit → dropped
+        "CUDA_VISIBLE_DEVICES": "2",      # reserved → dropped
+        "VALID_2": "ok",                  # valid → kept
+    }
+    safe_items = list(sch._safe_extra_env_items(legacy))
+    safe_keys = sorted(k for k, _ in safe_items)
+    check("_safe_extra_env_items keeps valid keys",
+          safe_keys == ["FOO", "VALID_2"], diag=f"got {safe_keys}")
+    check("_safe_extra_env_items drops keys with invalid shape",
+          "BAD KEY" not in dict(safe_items)
+          and "0DIGIT" not in dict(safe_items))
+    check("_safe_extra_env_items drops CUDA_VISIBLE_DEVICES",
+          "CUDA_VISIBLE_DEVICES" not in dict(safe_items))
+
+    # 4. Empty / None → empty iterator (not crash).
+    check("_safe_extra_env_items({}) → empty",
+          list(sch._safe_extra_env_items({})) == [])
+    check("_safe_extra_env_items(None) → empty",
+          list(sch._safe_extra_env_items(None)) == [])
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7500,6 +7606,7 @@ if __name__ == "__main__":
     test_phase3_0_20_cwd_always_rsyncs_on_cache_miss()
     test_phase3_0_21_explicit_docker_fail_fast_no_local_digest()
     test_phase3_0_22_explicit_conda_fail_fast_no_local_path()
+    test_phase3_0_23_env_key_validation_and_reserved_guard()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

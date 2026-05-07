@@ -1199,6 +1199,11 @@ def test_pick_placement_best_fit_warm_first():
       - warm card preferred over empty card (preserve empties for big tasks)
       - among same-emptiness candidates, tightest fit (smallest leftover) wins"""
     print("\n[49] pick_placement: best-fit + warm-first (was worst-fit)")
+    # Force LocalBackend semantics for the duration of this test — Phase 2.3+ would otherwise
+    # route the test "local" node through SlurmBackend (gpu_idx=None) on machines where the
+    # actual host has slurm installed, defeating the GPU-pinning assertions below.
+    _saved_backend = sch._BACKEND
+    sch._BACKEND = sch.LocalBackend()
     # Two GPUs on one node:
     #   GPU0: 2GB used, 6GB free  (warm, partially full)
     #   GPU1: 0GB used, 8GB free  (empty)
@@ -1244,6 +1249,8 @@ def test_pick_placement_best_fit_warm_first():
     check("among warm+fitting cards, best-fit picks tighter (GPU3, smaller free_mb)",
           placement3 is not None and placement3[1] == 3,
           diag=f"placement={placement3} (expected (local, 3))")
+    # restore backend so subsequent tests use the production HybridBackend
+    sch._BACKEND = _saved_backend
 
 
 def test_diagnose_peak_vram_implies_crash_without_success():
@@ -2880,6 +2887,146 @@ def test_backend_slurm_phase2_14_ui_and_launch_notification():
           diag=sch._format_task_location(cpu_task))
 
 
+def test_backend_slurm_phase2_16_pending_throttle():
+    """Phase 2.16: scheduleurm dispatch throttles slurm nodes that already have ≥
+    SLURM_MAX_PENDING_PER_NODE of OUR tasks pending. Tasks queued in scheduleurm
+    stay there instead of piling up in one slurm node's queue — they spread to
+    whichever node frees up next.
+
+    The user's pain point that prompted this: with several small slurm nodes (2 GPUs each),
+    Phase 2.3 'always sbatch on slurm route' would dump all queued work onto whichever
+    slurm node pick_placement saw first, leaving other nodes idle if THAT node's running
+    tasks took longer than expected. Now scheduleurm holds extras in its own queue.
+
+    Tunable via:
+      - SLURM_MAX_PENDING_PER_NODE module constant (default 1)
+      - SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE env var (read at module import)
+      - NODES[name]['max_slurm_pending'] per-node override
+    """
+    print("\n[56] Phase 2.16 slurm pending throttle (don't pile pending on one node)")
+
+    # ---------- Constants + helper ----------
+    check("SLURM_MAX_PENDING_PER_NODE constant exists",
+          hasattr(sch, "SLURM_MAX_PENDING_PER_NODE"))
+    check("default cap = 1",
+          sch.SLURM_MAX_PENDING_PER_NODE == 1, diag=f"got {sch.SLURM_MAX_PENDING_PER_NODE}")
+    check("_count_slurm_pending_per_node helper exists",
+          callable(getattr(sch, "_count_slurm_pending_per_node", None)))
+    check("_slurm_max_pending_for_node helper exists",
+          callable(getattr(sch, "_slurm_max_pending_for_node", None)))
+
+    # ---------- _count_slurm_pending_per_node: states correctly classified ----------
+    state = {"tasks": [
+        # PENDING-like states → counted
+        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1, "slurm_state": "PENDING"},
+        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2, "slurm_state": "CONFIGURING"},
+        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3, "slurm_state": None},  # just-submitted
+        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4, "slurm_state": "PENDING"},
+        # NOT pending — should NOT be counted
+        {"id": "tE", "status": "running", "node": "n1", "slurm_job_id": 5, "slurm_state": "RUNNING"},
+        {"id": "tF", "status": "running", "node": "n2", "slurm_job_id": 6, "slurm_state": "COMPLETING"},
+        # Local task on slurm node (mixed cluster scenario) — not slurm-managed, ignored
+        {"id": "tG", "status": "running", "node": "n1", "remote_pids": [9], "slurm_job_id": None},
+        # Done/queued — wrong status, ignored
+        {"id": "tH", "status": "queued", "node": "n1", "slurm_job_id": 7, "slurm_state": "PENDING"},
+    ]}
+    counts = sch._count_slurm_pending_per_node(state)
+    check("count: n1 = 3 (tA PENDING + tB CONFIGURING + tC just-submitted)",
+          counts.get("n1") == 3, diag=str(counts))
+    check("count: n2 = 1 (tD only — tF COMPLETING doesn't count)",
+          counts.get("n2") == 1, diag=str(counts))
+
+    # ---------- _slurm_max_pending_for_node: per-node override ----------
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "default-cap": {"host": None, "cpu_cores": 12, "ram_mb": 30000,
+                         "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                         "max_concurrent_running": None},
+        "custom-cap": {"host": None, "cpu_cores": 12, "ram_mb": 30000,
+                        "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                        "max_concurrent_running": None,
+                        "max_slurm_pending": 5},  # per-node override
+    }
+    try:
+        check("default cap from constant when no per-node override",
+              sch._slurm_max_pending_for_node("default-cap") == sch.SLURM_MAX_PENDING_PER_NODE)
+        check("per-node override beats global",
+              sch._slurm_max_pending_for_node("custom-cap") == 5)
+        check("unknown node falls back to global",
+              sch._slurm_max_pending_for_node("ghost-node") == sch.SLURM_MAX_PENDING_PER_NODE)
+    finally:
+        sch.NODES = saved_NODES
+
+    # ---------- pick_placement: throttle kicks in when pending >= cap ----------
+    # Force HybridBackend with custom cache so we can simulate slurm nodes deterministically.
+    saved_backend = sch._BACKEND
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["slurm-A"] = "slurm"
+    fake_hb._cache["slurm-B"] = "slurm"
+    sch._BACKEND = fake_hb
+    sch.NODES = {
+        "slurm-A": {"host": "A", "cpu_cores": 12, "ram_mb": 200000,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None},
+        "slurm-B": {"host": "B", "cpu_cores": 12, "ram_mb": 200000,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None},
+    }
+    try:
+        # Both nodes alive, no GPUs probed (slurm decides)
+        nodes = [
+            {"name": "slurm-A", "alive": True, "gpus": [], "free_cpu": 0,
+             "free_ram_mb": 0, "loadavg": 0.0,
+             "running_count": 0, "slurm_pending_count": 1},  # at cap
+            {"name": "slurm-B", "alive": True, "gpus": [], "free_cpu": 0,
+             "free_ram_mb": 0, "loadavg": 0.0,
+             "running_count": 0, "slurm_pending_count": 0},  # has slot
+        ]
+        task = {"id": "tnew", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
+                "signature": "TEST/throttle"}
+        placement = sch.pick_placement(task, nodes)
+        check("slurm-A throttled (pending=1, cap=1) → slurm-B picked",
+              placement is not None and placement[0] == "slurm-B",
+              diag=f"placement={placement}")
+
+        # Both at cap → no placement
+        nodes[1]["slurm_pending_count"] = 1
+        placement = sch.pick_placement(task, nodes)
+        check("both nodes at cap → no placement (task stays queued)",
+              placement is None, diag=f"placement={placement}")
+
+        # Both have 0 pending → first available picked
+        nodes[0]["slurm_pending_count"] = 0
+        nodes[1]["slurm_pending_count"] = 0
+        placement = sch.pick_placement(task, nodes)
+        check("both nodes have 0 pending → some node picked",
+              placement is not None, diag=f"placement={placement}")
+
+        # require_node forces a throttled node → still no placement (require trumps fallback,
+        # but throttle trumps require — slurm queue is full, scheduleurm holds the task)
+        nodes[0]["slurm_pending_count"] = 1
+        nodes[1]["slurm_pending_count"] = 0
+        task_req = dict(task, require_node="slurm-A")
+        placement = sch.pick_placement(task_req, nodes)
+        check("require_node + that node throttled → no placement (don't pile)",
+              placement is None, diag=f"placement={placement}")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = saved_NODES
+
+    # ---------- Source guard: dispatch loop populates slurm_pending_count ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_do_dispatch populates n['slurm_pending_count'] before placement loop",
+          'n["slurm_pending_count"] = slurm_pending_per_node' in src,
+          diag="dispatch must seed per-node pending count")
+    check("_do_dispatch bumps slurm_pending_count on each launch",
+          'n["slurm_pending_count"] = n.get("slurm_pending_count"' in src,
+          diag="post-launch bump missing — sequential dispatches in same cycle would over-pack")
+    check("_candidates_for_node consults the throttle",
+          "n.get(\"slurm_pending_count\", 0)" in src and "_slurm_max_pending_for_node" in src,
+          diag="throttle missing from pick_placement")
+
+
 def test_backend_slurm_phase2_15_orphan_recovery():
     """Phase 2.15 P2: WAL recovery for orphaned slurm jobs.
 
@@ -4016,6 +4163,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_13_terminal_state_semantics()
     test_backend_slurm_phase2_14_ui_and_launch_notification()
     test_backend_slurm_phase2_15_orphan_recovery()
+    test_backend_slurm_phase2_16_pending_throttle()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

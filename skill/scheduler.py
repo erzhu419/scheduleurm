@@ -190,6 +190,358 @@ def save_state(s): _atomic_write_json(QUEUE_FILE, s)
 def load_history(): return _load_json(VRAM_FILE, {})
 def save_history(h): _atomic_write_json(VRAM_FILE, h)
 
+# ---------- Phase 3.2.0: cross-scheduler / cross-user resource claims ----------
+# Goal: stop two scheduleurm instances (different users OR different state dirs)
+# from racing on the same non-slurm node and over-committing CPU/RAM/VRAM. Slurm
+# solves this with its central daemon; without slurm, schedulers had no shared
+# view — both saw the GPU as free, both ssh'd, both launched.
+#
+# Mechanism: per-node claims file at /tmp/scheduleurm/claims.json under flock,
+# updated atomically by every scheduleurm via a small Python script the layer
+# deploys to /tmp/scheduleurm/_claims.py on first use. claim() does a single
+# ssh that:
+#   1. (re-)deploys the script idempotently
+#   2. flock -x -w N /tmp/scheduleurm/claims.lock python3 _claims.py <op> ...
+#   3. read JSON, GC stale, capacity-check vs. fresh claims, append-or-reject
+# All schedulers see the same file under the same lock; first-claim-wins on
+# conflicts. Stale entries (expired TTL with dead PID) get GC'd in every op.
+#
+# Per-node opt-in (NODES["x"]["enable_claims"] = True) so single-user setups
+# don't pay the ssh-flock cost. TTL is configurable per node; watcher renews
+# living claims and runs gc_stale on a schedule.
+
+CLAIMS_DIR_REMOTE = "/tmp/scheduleurm"
+CLAIMS_FILE_REMOTE = CLAIMS_DIR_REMOTE + "/claims.json"
+CLAIMS_LOCK_REMOTE = CLAIMS_DIR_REMOTE + "/claims.lock"
+CLAIMS_SCRIPT_REMOTE = CLAIMS_DIR_REMOTE + "/_claims.py"
+CLAIM_LOCK_TIMEOUT_S = int(os.environ.get("SCHEDULEURM_CLAIM_LOCK_TIMEOUT_S", "30"))
+CLAIM_TTL_S = int(os.environ.get("SCHEDULEURM_CLAIM_TTL_S", "3600"))
+
+# Pure-Python script deployed to /tmp/scheduleurm/_claims.py on each node that
+# enables claims. Reads/writes claims.json under the caller's flock. Operations:
+#   claim       <record_json> <capacity_json>   → {ok}|{ok:false, conflict}
+#   release     <{scheduler_id, task_id}_json>  → {ok, removed}
+#   update_pid  <{scheduler_id, task_id, pid}>  → {ok, updated}
+#   renew       <{scheduler_id, task_id, expires_at}> → {ok, renewed}
+#   gc                                          → {ok, removed}
+#   list                                        → {ok, claims, removed_stale}
+_CLAIMS_REMOTE_SCRIPT = '''#!/usr/bin/env python3
+"""scheduleurm remote claims daemon — deployed by _ClaimManager.
+
+Caller wraps invocations in flock so the file mutates atomically.
+"""
+import errno, json, os, sys, time
+
+CLAIMS_FILE = "/tmp/scheduleurm/claims.json"
+
+def alive(pid):
+    if not pid:
+        return False
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except (ProcessLookupError, PermissionError, ValueError):
+        return False
+    except OSError as e:
+        return e.errno != errno.ESRCH
+
+def load():
+    if not os.path.exists(CLAIMS_FILE):
+        return {"version": 1, "claims": []}
+    try:
+        with open(CLAIMS_FILE) as f:
+            data = json.load(f)
+        if not isinstance(data, dict) or "claims" not in data:
+            return {"version": 1, "claims": []}
+        return data
+    except Exception:
+        return {"version": 1, "claims": []}
+
+def save(data):
+    tmp = CLAIMS_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f)
+    os.rename(tmp, CLAIMS_FILE)
+
+def is_stale(c, now):
+    """Stale = TTL expired AND (no pid OR pid dead). A live pid past TTL is
+    treated as orphan-but-still-using-resources; live scheduler should renew."""
+    if c.get("expires_at", 0) >= now:
+        return False
+    pid = c.get("pid")
+    if pid and alive(pid):
+        return False
+    return True
+
+def gc_claims(claims, now):
+    return [c for c in claims if not is_stale(c, now)]
+
+def main():
+    if len(sys.argv) < 2:
+        print(json.dumps({"ok": False, "error": "missing op"}))
+        return
+    op = sys.argv[1]
+    payload = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
+    capacity = json.loads(sys.argv[3]) if len(sys.argv) > 3 else {}
+    os.makedirs("/tmp/scheduleurm", exist_ok=True)
+    data = load()
+    claims = data.get("claims", [])
+    now = time.time()
+    fresh = gc_claims(claims, now)
+    if op == "claim":
+        used_cpu = sum(c.get("cpu_cores", 0) for c in fresh)
+        used_ram = sum(c.get("ram_mb", 0) for c in fresh)
+        per_gpu = {}
+        for c in fresh:
+            g = c.get("gpu_idx")
+            if g is not None:
+                per_gpu[str(g)] = per_gpu.get(str(g), 0) + c.get("vram_mb", 0)
+        cpu_need = payload.get("cpu_cores", 0)
+        ram_need = payload.get("ram_mb", 0)
+        gpu_idx = payload.get("gpu_idx")
+        vram_need = payload.get("vram_mb", 0)
+        cpu_cap = capacity.get("cpu_cores", 0)
+        ram_cap = capacity.get("ram_mb", 0)
+        gpu_caps = capacity.get("gpu_vram_mb", {}) or {}
+        conflicts = []
+        if used_cpu + cpu_need > cpu_cap:
+            conflicts.append("cpu: need %d + claimed %d > cap %d" % (cpu_need, used_cpu, cpu_cap))
+        if used_ram + ram_need > ram_cap:
+            conflicts.append("ram: need %dMB + claimed %dMB > cap %dMB" % (ram_need, used_ram, ram_cap))
+        if gpu_idx is not None:
+            gkey = str(gpu_idx)
+            gcap = int(gpu_caps.get(gkey, 0))
+            gused = per_gpu.get(gkey, 0)
+            if gused + vram_need > gcap:
+                conflicts.append("gpu%s: need %dMB + claimed %dMB > cap %dMB" % (gkey, vram_need, gused, gcap))
+        if conflicts:
+            print(json.dumps({"ok": False, "conflict": "; ".join(conflicts), "claims_seen": len(fresh)}))
+            return
+        fresh.append(payload)
+        data["claims"] = fresh
+        save(data)
+        print(json.dumps({"ok": True}))
+    elif op == "release":
+        sid = payload.get("scheduler_id")
+        tid = payload.get("task_id")
+        kept = [c for c in fresh if not (c.get("scheduler_id") == sid and c.get("task_id") == tid)]
+        data["claims"] = kept
+        save(data)
+        print(json.dumps({"ok": True, "removed": len(fresh) - len(kept)}))
+    elif op == "update_pid":
+        sid = payload.get("scheduler_id")
+        tid = payload.get("task_id")
+        pid = payload.get("pid")
+        updated = 0
+        for c in fresh:
+            if c.get("scheduler_id") == sid and c.get("task_id") == tid:
+                c["pid"] = int(pid) if pid else None
+                updated += 1
+        data["claims"] = fresh
+        save(data)
+        print(json.dumps({"ok": True, "updated": updated}))
+    elif op == "renew":
+        sid = payload.get("scheduler_id")
+        tid = payload.get("task_id")
+        new_exp = payload.get("expires_at")
+        renewed = 0
+        for c in fresh:
+            if c.get("scheduler_id") == sid and c.get("task_id") == tid:
+                if new_exp:
+                    c["expires_at"] = float(new_exp)
+                renewed += 1
+        data["claims"] = fresh
+        save(data)
+        print(json.dumps({"ok": True, "renewed": renewed}))
+    elif op == "gc":
+        data["claims"] = fresh
+        save(data)
+        print(json.dumps({"ok": True, "removed": len(claims) - len(fresh)}))
+    elif op == "list":
+        if len(fresh) != len(claims):
+            data["claims"] = fresh
+            save(data)
+        print(json.dumps({"ok": True, "claims": fresh, "removed_stale": len(claims) - len(fresh)}))
+    else:
+        print(json.dumps({"ok": False, "error": "unknown op " + repr(op)}))
+
+main()
+'''
+
+
+def _claims_setup_cmd():
+    """Shell snippet that ensures the remote claims script is present.
+    Quoted heredoc means the script content goes through verbatim — no shell
+    expansion of `$`, backticks, etc. inside the Python source."""
+    return (
+        f"mkdir -p {shlex.quote(CLAIMS_DIR_REMOTE)} && "
+        f"chmod 1777 {shlex.quote(CLAIMS_DIR_REMOTE)} 2>/dev/null; "
+        f"cat > {shlex.quote(CLAIMS_SCRIPT_REMOTE)} <<'PYEOF'\n"
+        f"{_CLAIMS_REMOTE_SCRIPT}\n"
+        f"PYEOF"
+    )
+
+
+def _claims_remote_op(node, op, payload, capacity=None, timeout_s=30):
+    """Run a claims op on `node`. Returns parsed JSON result dict, or
+    {"ok": False, "error": "..."} on transport / parse failure. Idempotently
+    deploys the remote script before each call (ssh round-trip dominates;
+    heredoc bytes are negligible)."""
+    payload_arg = shlex.quote(json.dumps(payload))
+    capacity_arg = shlex.quote(json.dumps(capacity or {}))
+    op_cmd = (
+        f"flock -x -w {CLAIM_LOCK_TIMEOUT_S} {shlex.quote(CLAIMS_LOCK_REMOTE)} "
+        f"python3 {shlex.quote(CLAIMS_SCRIPT_REMOTE)} {shlex.quote(op)} "
+        f"{payload_arg} {capacity_arg}"
+    )
+    full = _claims_setup_cmd() + "\n" + op_cmd
+    try:
+        rc, out, err = run_on(node, full, timeout=timeout_s, check=False)
+    except Exception as e:
+        return {"ok": False, "error": f"ssh exception: {str(e)[:200]}"}
+    if rc != 0:
+        return {"ok": False, "error": f"rc={rc}: {(err or '').strip()[:200]}"}
+    out = (out or "").strip()
+    if not out:
+        return {"ok": False, "error": "empty output"}
+    try:
+        # Last line is the JSON result (heredoc setup may have emitted lines)
+        return json.loads(out.splitlines()[-1])
+    except Exception as e:
+        return {"ok": False, "error": f"parse error: {e}; out={out[:200]!r}"}
+
+
+class _ClaimManager:
+    """Phase 3.2.0: cross-scheduler resource claims via remote flock + JSON.
+
+    Per-node opt-in. When NODES[name]["enable_claims"] is True, every
+    LocalBackend launch on that node atomically claims its CPU/RAM/VRAM
+    against ALL schedulers' claims; conflicts cause the launch to retry on
+    the next dispatch cycle. release/update_pid/renew/gc_stale tend the
+    claim across the task's lifecycle. Watcher periodically gc_stale's so
+    crashed schedulers don't pin resources beyond their TTL.
+    """
+
+    @classmethod
+    def enabled_for(cls, node: str) -> bool:
+        return bool(NODES.get(node, {}).get("enable_claims"))
+
+    @classmethod
+    def scheduler_id(cls) -> str:
+        """Unique id for THIS scheduleurm process: <hostname>:<pid>."""
+        try:
+            host = os.uname().nodename
+        except Exception:
+            host = "unknown"
+        return f"{host}:{os.getpid()}"
+
+    @classmethod
+    def _ttl_for(cls, node: str) -> int:
+        return int(NODES.get(node, {}).get("claim_ttl_s", CLAIM_TTL_S))
+
+    @classmethod
+    def _build_capacity(cls, node: str, node_state: Optional[dict] = None) -> dict:
+        """Build the capacity payload sent with every claim op. CPU/RAM
+        from NODES config; per-GPU VRAM from a fresh probe (passed in)."""
+        info = NODES.get(node, {})
+        cap = {
+            "cpu_cores": int(info.get("cpu_cores", 0)),
+            "ram_mb": int(info.get("ram_mb", 0)),
+            "gpu_vram_mb": {},
+        }
+        if node_state and node_state.get("gpus"):
+            for g in node_state["gpus"]:
+                cap["gpu_vram_mb"][str(g["idx"])] = int(g["total_mb"])
+        return cap
+
+    @classmethod
+    def claim(cls, node: str, task: dict, gpu_idx: Optional[int],
+              node_state: Optional[dict] = None) -> tuple:
+        """Atomically claim resources for `task` on `node`. Returns
+        (ok: bool, info). info on success is the claim record (caller
+        must keep it to release on failure); info on failure is a string
+        describing the conflict."""
+        if not cls.enabled_for(node):
+            return (True, {"reason": "claims disabled for this node"})
+        now = time.time()
+        ttl = cls._ttl_for(node)
+        try:
+            owner = os.environ.get("USER") or os.getlogin() or "?"
+        except Exception:
+            owner = "?"
+        record = {
+            "owner": owner,
+            "scheduler_id": cls.scheduler_id(),
+            "task_id": task["id"],
+            "gpu_idx": gpu_idx,
+            "vram_mb": int(task.get("est_vram_mb") or 0),
+            "cpu_cores": int(task.get("cpu_cores") or DEFAULT_CPU_CORES),
+            "ram_mb": int(task.get("ram_mb") or DEFAULT_RAM_MB),
+            "claimed_at": now,
+            "expires_at": now + ttl,
+            "pid": None,
+        }
+        capacity = cls._build_capacity(node, node_state)
+        result = _claims_remote_op(node, "claim", record, capacity)
+        if result.get("ok"):
+            return (True, record)
+        return (False, result.get("conflict") or result.get("error")
+                or "claim refused")
+
+    @classmethod
+    def release(cls, node: str, task_id: str) -> bool:
+        if not cls.enabled_for(node):
+            return True
+        result = _claims_remote_op(node, "release", {
+            "scheduler_id": cls.scheduler_id(),
+            "task_id": task_id,
+        })
+        return bool(result.get("ok"))
+
+    @classmethod
+    def update_pid(cls, node: str, task_id: str, pid: Optional[int]) -> bool:
+        if not cls.enabled_for(node):
+            return True
+        result = _claims_remote_op(node, "update_pid", {
+            "scheduler_id": cls.scheduler_id(),
+            "task_id": task_id,
+            "pid": int(pid) if pid else None,
+        })
+        return bool(result.get("ok"))
+
+    @classmethod
+    def renew(cls, node: str, task_id: str) -> bool:
+        if not cls.enabled_for(node):
+            return True
+        new_exp = time.time() + cls._ttl_for(node)
+        result = _claims_remote_op(node, "renew", {
+            "scheduler_id": cls.scheduler_id(),
+            "task_id": task_id,
+            "expires_at": new_exp,
+        })
+        return bool(result.get("ok"))
+
+    @classmethod
+    def gc_stale(cls, node: str) -> int:
+        """Returns count of removed claims; -1 on error; 0 if disabled."""
+        if not cls.enabled_for(node):
+            return 0
+        result = _claims_remote_op(node, "gc", {})
+        if result.get("ok"):
+            return int(result.get("removed", 0))
+        return -1
+
+    @classmethod
+    def enumerate(cls, node: str) -> list:
+        """Returns list of claim dicts on `node`; [] when disabled or on error."""
+        if not cls.enabled_for(node):
+            return []
+        result = _claims_remote_op(node, "list", {})
+        if result.get("ok"):
+            return list(result.get("claims", []))
+        return []
+
+
 def archive_terminal_tasks(state, age_days=ARCHIVE_AGE_DAYS):
     """Move done/failed/cancelled/forgotten tasks older than age_days from queue.json into the archive
     JSONL. Caller must hold state_lock and is responsible for save_state(state) after this returns."""

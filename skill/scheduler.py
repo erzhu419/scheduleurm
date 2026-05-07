@@ -2232,9 +2232,13 @@ class SlurmBackend(Backend):
         if not job_ids:
             return {}
         ids = ",".join(str(j) for j in job_ids)
+        # -a includes ALL step records (.batch, .extern, .0, ...). Without -a, sstat shows
+        # only the "main" step and MaxRSS comes back empty for batch jobs since their data
+        # lives in <jid>.batch. Verified empirically on slurm 23.11.4 / Ubuntu 24.04 — bare
+        # `sstat -j 4` returns nothing, `sstat -a -j 4` returns `4.batch|975.50M`.
         # -P pipe-delim, --noheader, format=JobID|MaxRSS. 2>/dev/null swallows errors when
         # sstat exists but accounting isn't configured (e.g. JobAcctGatherType=none).
-        cmd = f"sstat -j {ids} -P --noheader --format=JobID,MaxRSS 2>/dev/null"
+        cmd = f"sstat -a -j {ids} -P --noheader --format=JobID,MaxRSS 2>/dev/null"
         try:
             rc, out, _ = run_on(node, cmd, timeout=10, check=False)
         except Exception:

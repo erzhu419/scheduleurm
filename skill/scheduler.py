@@ -3847,8 +3847,21 @@ def _do_dispatch(state, nodes):
     # loop sees the new preferred_node assignment.
     migrated = _consider_migration(state, nodes)
     if migrated:
+        # Phase 3.0.10 P3 fix: enrich payload with from/to pin + eta + reason so
+        # cmd_dispatch can print and the watcher's notify loop can log/Feishu
+        # without a second state lookup. Without these fields the README's
+        # "visible in watcher.log / journalctl" claim was empty.
+        by_id = {t["id"]: t for t in state.get("tasks", [])}
         for tid in migrated:
-            events.append({"type": "migrated", "task_id": tid})
+            cand = by_id.get(tid, {})
+            events.append({
+                "type": "migrated",
+                "task_id": tid,
+                "from_node": cand.get("migrated_from"),
+                "to_node": cand.get("preferred_node"),
+                "eta_seconds": int(cand.get("eta_seconds") or 0),
+                "reason": cand.get("last_block_reason", ""),
+            })
     # Preemption pass: free a slot for starved high-prio tasks (one eviction max per dispatch).
     preempted = _preempt_for_high_priority(state, nodes)
     # Initialize per-node running task count (for max_concurrent_running cap in _node_resources_ok).
@@ -4433,6 +4446,12 @@ def cmd_dispatch(args):
             print(f"  [{tid}] RETRY launch failed ({t.get('launch_fail_count', '?')}/{MAX_LAUNCH_RETRY}): {ev['error'][:200]}")
         elif ev["type"] == "launch_failed_terminal":
             print(f"  [{tid}] FAIL  launch failed permanently: {ev['error'][:200]}")
+        elif ev["type"] == "migrated":
+            print(f"  [{tid}] MIGRATE {ev.get('from_node') or '?'} → "
+                  f"{ev.get('to_node') or '?'}  (eta={ev.get('eta_seconds', 0)}s, load-balance)")
+        elif ev["type"] == "preempted":
+            print(f"  [{tid}] PREEMPT on {ev.get('freed_node') or '?'} "
+                  f"(freed {ev.get('cpu_freed', 0)}c / {ev.get('ram_freed', 0)}MB)")
 
 # ---------- watcher (background daemon) ----------
 WATCHER_LOG = STATE_DIR / "logs" / "watcher.log"
@@ -4505,6 +4524,14 @@ def _format_feishu(event_type, payload):
         return f"[scheduler] watcher stopped (pid={payload['pid']})"
     if event_type == "task_blocked":
         return f"[scheduler] ⚠ {payload['task_id']} blocked: {payload['reason']}"
+    if event_type == "task_migrated":
+        return (f"[scheduler] 🔀 {payload['task_id']} re-pinned "
+                f"{payload.get('from_node') or '?'} → {payload.get('to_node') or '?'} "
+                f"(eta={payload.get('eta_seconds', 0)}s, load-balance)")
+    if event_type == "task_preempted":
+        return (f"[scheduler] ⚡ {payload['task_id']} preempted on "
+                f"{payload.get('freed_node') or '?'} "
+                f"(freed {payload.get('cpu_freed', 0)}c/{payload.get('ram_freed', 0)}MB)")
     if event_type == "task_launch_retry":
         return (f"[scheduler] ⚠ {payload['task_id']} launch failed "
                 f"({payload.get('attempt','?')}/{MAX_LAUNCH_RETRY}); will retry/fallback: "
@@ -5249,6 +5276,24 @@ def _watch_iteration(args):
             })
         elif ev["type"] == "launch_failed_terminal":
             notify("task_failed", {"task_id": ev["task_id"], "error": ev["error"]})
+        elif ev["type"] == "migrated":
+            # Phase 3.0.10 P3 fix: surface migrations in watcher.log + Feishu so
+            # the README's visibility claim is actually true. Was previously a
+            # silent state mutation invisible to operators.
+            notify("task_migrated", {
+                "task_id": ev["task_id"],
+                "from_node": ev.get("from_node"),
+                "to_node": ev.get("to_node"),
+                "eta_seconds": ev.get("eta_seconds", 0),
+                "reason": ev.get("reason", ""),
+            })
+        elif ev["type"] == "preempted":
+            notify("task_preempted", {
+                "task_id": ev["task_id"],
+                "freed_node": ev.get("freed_node"),
+                "cpu_freed": ev.get("cpu_freed", 0),
+                "ram_freed": ev.get("ram_freed", 0),
+            })
         # no_fit / resume_found are not surfaced — too noisy for Feishu, but they're in the JSONL log.
     for t in auto_adopted:
         notify("task_auto_adopted", t)

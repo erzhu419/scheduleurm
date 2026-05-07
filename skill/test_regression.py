@@ -3168,6 +3168,142 @@ def test_phase3_0_9_slurm_pending_elapsed_zero():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_10_migration_event_visibility():
+    """Phase 3.0.10 P3 fix: migrated/preempted events must surface in
+    cmd_dispatch stdout, watcher.log JSONL via notify(), and the Feishu push.
+
+    Pre-fix: _do_dispatch appended {"type": "migrated", "task_id": tid} to its
+    events list, but cmd_dispatch's print loop and _watch_iteration's notify
+    loop both lacked elif branches. The only persisted side-effect was the
+    `last_block_reason` string on the task, so the README's claim that
+    migrations are "visible in journalctl --user -u scheduler and watcher.log"
+    was empty. Same gap existed for `preempted` events (sibling event in the
+    same code section).
+
+    Fix: enrich the migrated event payload at emission with from_node/to_node/
+    eta_seconds/reason so consumers don't have to re-look up the task; add elif
+    branches to cmd_dispatch and _watch_iteration; add Feishu format strings
+    for both task_migrated and task_preempted.
+    """
+    print("\n[67] Phase 3.0.10 P3 fix: migration/preempt events visible in dispatch + watcher.log + Feishu")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+
+    # 1. _do_dispatch enriches the migrated event with from_node/to_node/eta/reason.
+    do_idx = src.find("def _do_dispatch")
+    next_def = src.find("\ndef ", do_idx + 5)
+    body = src[do_idx:next_def]
+    check("_do_dispatch attaches from_node to migrated event",
+          '"from_node"' in body and "migrated_from" in body)
+    check("_do_dispatch attaches to_node to migrated event",
+          '"to_node"' in body and "preferred_node" in body)
+    check("_do_dispatch attaches eta_seconds to migrated event",
+          '"eta_seconds"' in body)
+    check("_do_dispatch attaches reason to migrated event (last_block_reason)",
+          '"reason"' in body and "last_block_reason" in body)
+
+    # 2. cmd_dispatch print loop has elif branches for migrated and preempted.
+    cd_idx = src.find("def cmd_dispatch")
+    cd_next = src.find("\ndef ", cd_idx + 5)
+    cd_body = src[cd_idx:cd_next]
+    check("cmd_dispatch prints MIGRATE on 'migrated' event",
+          'ev["type"] == "migrated"' in cd_body and "MIGRATE" in cd_body)
+    check("cmd_dispatch prints PREEMPT on 'preempted' event",
+          'ev["type"] == "preempted"' in cd_body and "PREEMPT" in cd_body)
+
+    # 3. _watch_iteration's notify loop fires task_migrated and task_preempted.
+    wi_idx = src.find("def _watch_iteration")
+    wi_next = src.find("\ndef ", wi_idx + 5)
+    wi_body = src[wi_idx:wi_next]
+    check("_watch_iteration calls notify('task_migrated', ...)",
+          'notify("task_migrated"' in wi_body)
+    check("_watch_iteration calls notify('task_preempted', ...)",
+          'notify("task_preempted"' in wi_body)
+
+    # 4. _format_feishu has cases for both event types so they render in push.
+    ff_idx = src.find("def _format_feishu")
+    ff_next = src.find("\ndef ", ff_idx + 5)
+    ff_body = src[ff_idx:ff_next]
+    check("_format_feishu handles task_migrated",
+          '"task_migrated"' in ff_body)
+    check("_format_feishu handles task_preempted",
+          '"task_preempted"' in ff_body)
+
+    # 5. Behavioral: _do_dispatch on a contrived state must produce one enriched
+    # 'migrated' event with the fields that downstream consumers depend on.
+    saved_can_migrate = sch._can_migrate_to
+    saved_NODES = sch.NODES
+    saved_pick_placement = sch.pick_placement
+    saved_save_state = sch.save_state  # SENTINEL (queue-wipe incident 2026-05-07): stub
+    sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+    sch.NODES = {
+        "loaded": {"name": "loaded"},
+        "free":   {"name": "free"},
+    }
+    # Skip placement entirely — we only care about migration's event emission,
+    # not the launch path. None ⇒ pick_placement found nowhere to fit.
+    sch.pick_placement = lambda task, nodes: None
+    sch.save_state = lambda *_a, **_kw: None  # don't touch live queue.json
+    try:
+        eta = sch.MIGRATION_MIN_TASK_ETA_S + 600  # safely past the threshold
+        running_a = {"id": "rA", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        running_b = {"id": "rB", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        cand = {"id": "tQ", "status": "queued", "preferred_node": "loaded",
+                "eta_seconds": eta, "submitted_at": time.time(),
+                "priority": "normal", "description": "migrate me",
+                "cpu_cores": 1, "ram_mb": 1000, "est_vram_mb": 0}
+        state = {"tasks": [running_a, running_b, cand]}
+        nodes = [
+            {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 2,
+             "slurm_pending_count": 0},
+            {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+             "slurm_pending_count": 0},
+        ]
+        events, _qcount = sch._do_dispatch(state, nodes)
+        mig_events = [e for e in events if e.get("type") == "migrated"]
+        check("_do_dispatch emitted exactly 1 'migrated' event",
+              len(mig_events) == 1, diag=f"events={events}")
+        if mig_events:
+            ev = mig_events[0]
+            check("migrated event has task_id=tQ",
+                  ev.get("task_id") == "tQ")
+            check("migrated event has from_node=loaded",
+                  ev.get("from_node") == "loaded",
+                  diag=f"got {ev.get('from_node')!r}")
+            check("migrated event has to_node=free",
+                  ev.get("to_node") == "free",
+                  diag=f"got {ev.get('to_node')!r}")
+            check("migrated event preserves eta_seconds (≥ MIN threshold)",
+                  ev.get("eta_seconds", 0) >= sch.MIGRATION_MIN_TASK_ETA_S,
+                  diag=f"got {ev.get('eta_seconds')}")
+            check("migrated event has non-empty reason carrying last_block_reason",
+                  isinstance(ev.get("reason"), str) and "migrated" in ev["reason"])
+    finally:
+        sch._can_migrate_to = saved_can_migrate
+        sch.NODES = saved_NODES
+        sch.pick_placement = saved_pick_placement
+        sch.save_state = saved_save_state
+
+    # 6. _format_feishu produces a sane single-line text for both event types.
+    msg_m = sch._format_feishu("task_migrated", {
+        "task_id": "tQ", "from_node": "loaded", "to_node": "free",
+        "eta_seconds": 1800, "reason": "migrated: ..."
+    })
+    check("Feishu task_migrated text mentions task id, both nodes, eta",
+          "tQ" in msg_m and "loaded" in msg_m and "free" in msg_m and "1800" in msg_m,
+          diag=msg_m)
+    msg_p = sch._format_feishu("task_preempted", {
+        "task_id": "tV", "freed_node": "loaded", "cpu_freed": 4, "ram_freed": 8000
+    })
+    check("Feishu task_preempted text mentions task id, node, freed resources",
+          "tV" in msg_p and "loaded" in msg_p and "4" in msg_p and "8000" in msg_p,
+          diag=msg_p)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -5613,6 +5749,7 @@ if __name__ == "__main__":
     test_phase3_0_7_rebalance_pending_no_duplicate_sbatch()
     test_phase3_0_8_unknown_eta_skipped_in_migration()
     test_phase3_0_9_slurm_pending_elapsed_zero()
+    test_phase3_0_10_migration_event_visibility()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

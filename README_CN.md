@@ -49,10 +49,17 @@ GPU 在 dispatch 时通过 `nvidia-smi --query-gpu=memory.used,memory.total,util
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm
-./install.sh           # 把 skill 拷贝到 ~/.claude/skills/scheduler/，安装 systemd 单元
+./install.sh                  # COPY 模式：把 skill 拷到 ~/.claude/skills/scheduler/
+# 或者
+./install.sh --link           # LINK 模式：symlink ~/.claude/skills/scheduler -> clone/skill
+                              #            clone 里改了立即生效，不用重装
+                              #            （推荐：会 git pull / 自己改的人）
 # 或者
 ./install.sh --no-systemd     # 跳过 watcher unit；自己手动跑 watch
+                              # （可以和 --link 组合）
 ```
+
+**COPY vs LINK 一句话对比**：COPY 是"装一次就忘"，LINK 是"在 clone 里直接开发，不用拷"。`--link` 之后 `git pull` 直接更新 live skill；`systemctl --user restart scheduler` 让 watcher 加载新版 scheduler.py。LINK 模式下别挪/删 clone —— symlink 会断。
 
 验证：
 ```bash

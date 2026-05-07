@@ -4704,6 +4704,89 @@ def cmd_clear_queue(args):
         save_state(state)
         print(f"cancelled {len(ids)} queued tasks (running tasks untouched)")
 
+def cmd_rebalance_pending(args):
+    """Pull all currently-pending slurm tasks back into scheduleurm's queue so they
+    re-distribute under the current policy (e.g. after changing
+    SLURM_MAX_PENDING_PER_NODE).
+
+    Acts only on tasks with status='running' AND slurm_job_id set AND slurm_state in
+    {None, '', PENDING, CONFIGURING, REQUEUED, SUSPENDED}. RUNNING / COMPLETING tasks
+    are NEVER touched (they have allocated GPUs and may be mid-training). LocalBackend
+    tasks (no slurm_job_id) are also untouched.
+
+    For each candidate: `scancel <jid>` on the task's node (best-effort — orphan
+    cleanup if it fails; orphan job times out at slurm walltime), then clear slurm
+    fields and revert status='queued'. Next dispatch cycle re-places under the
+    current throttle, spreading pending across slurm nodes that have free cap.
+
+    Use case: after editing SLURM_MAX_PENDING_PER_NODE / NODES[name].max_slurm_pending
+    or during a policy migration, to re-distribute already-sbatched-but-not-yet-running
+    tasks. Safe to run anytime — RUNNING tasks won't be killed.
+    """
+    with state_lock():
+        state = load_state()
+        candidates = []
+        for t in state["tasks"]:
+            if t.get("status") != "running":
+                continue
+            if not _is_slurm_managed(t):
+                continue
+            if t.get("slurm_state") not in _SLURM_PENDING_LIKE:
+                continue
+            candidates.append(t)
+
+        if not candidates:
+            print("no slurm-pending tasks to rebalance")
+            return
+
+        if not args.yes:
+            print(f"would rebalance {len(candidates)} task(s) (scancel + revert to queued):")
+            for t in candidates[:15]:
+                print(f"  {t['id']}: jid={t['slurm_job_id']} on {t['node']}  "
+                      f"state={t.get('slurm_state') or 'NEW'}  sig={t.get('signature')}")
+            if len(candidates) > 15:
+                print(f"  ... and {len(candidates) - 15} more")
+            print("RUNNING / COMPLETING tasks are NOT touched.")
+            print("Re-run with --yes to proceed.")
+            return
+
+        rebalanced = 0
+        scancel_failed = []
+        for t in candidates:
+            jid = int(t["slurm_job_id"])
+            node = t["node"]
+            # scancel — best effort. If it fails (ssh blip, jid already done), proceed
+            # with requeue anyway. An orphan slurm job will time out at walltime (24h
+            # default); not ideal but recoverable. Worst case the user runs `squeue`
+            # and scancels manually.
+            try:
+                rc, _, err = run_on(node, f"scancel {jid}", timeout=10, check=False)
+                if rc != 0:
+                    scancel_failed.append((t["id"], jid, err.strip()[:100]))
+            except Exception as e:
+                scancel_failed.append((t["id"], jid, str(e)[:100]))
+            # Reset slurm-related fields, return to queued. Don't clear ckpt_dir /
+            # resume_flag / signature / cmd — those drive resume injection on next launch.
+            for k in ("slurm_job_id", "slurm_state", "started_at", "finished_at",
+                      "log_path", "_diagnosis", "process_group", "launching_started_at"):
+                t[k] = None
+            t["remote_pids"] = []
+            t["alive_pids"] = []
+            t["status"] = "queued"
+            t["last_block_reason"] = (
+                f"rebalance-pending: scancelled slurm job {jid} on {node}; "
+                f"will re-dispatch under current policy"
+            )
+            rebalanced += 1
+
+        save_state(state)
+        print(f"rebalanced {rebalanced} task(s) — back to queued for re-dispatch")
+        if scancel_failed:
+            print(f"\nWARN: {len(scancel_failed)} scancel(s) failed (jobs may linger in slurm queue):")
+            for tid, jid, err in scancel_failed[:5]:
+                print(f"  {tid} jid={jid}: {err}")
+
+
 def cmd_adopt(args):
     """Register externally-launched process(es) as a tracked task. Verifies PIDs alive and on the claimed GPU."""
     pids = list(args.pids)
@@ -4966,6 +5049,10 @@ def main():
     s = sub.add_parser("clear-queue", help="Cancel ALL queued tasks (running tasks untouched)")
     s.add_argument("--confirm", action="store_true")
     s.set_defaults(func=cmd_clear_queue)
+
+    s = sub.add_parser("rebalance-pending", help="Pull slurm-PENDING tasks back into scheduleurm queue for re-dispatch (RUNNING tasks untouched)")
+    s.add_argument("--yes", action="store_true", help="Apply (without --yes prints dry-run plan)")
+    s.set_defaults(func=cmd_rebalance_pending)
 
     s = sub.add_parser("adopt", help="Register externally-launched PIDs as a tracked task")
     s.add_argument("--node", required=True, choices=list(NODES.keys()))

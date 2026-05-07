@@ -3766,6 +3766,205 @@ def test_phase3_0_13_rebalance_pending_outside_lock():
         time.sleep = saved_sleep
 
 
+def test_phase3_0_14_min_source_load_and_cwd_size_cap():
+    """Phase 3.0.14 P4 fix: two cleanups around migration triggering.
+
+    (a) MIGRATION_MIN_SOURCE_LOAD_S — absolute floor on the heaviest node's
+        eta_load. Pre-fix, LOAD_RATIO=2x was satisfied by trivial imbalances
+        (target=0s, source=2s → ratio 2.0 passes). That would migrate a 600s
+        task to save 2s of source load — rsync cost dwarfs the saving.
+
+    (b) MIGRATION_MAX_CWD_SIZE_MB — size cap on cwd rsync. MIGRATION_MAX_CKPT_
+        SIZE_MB only bounded ckpt; cwd was unbounded. A monorepo cwd (5GB+)
+        could blow past the 600s rsync timeout and starve the staging path.
+        Excludes mirror rsync excludes (.git, __pycache__, *.pyc).
+    """
+    print("\n[71] Phase 3.0.14 P4 fix: min source-load + cwd size cap")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("MIGRATION_MIN_SOURCE_LOAD_S env-overridable constant exists",
+          "MIGRATION_MIN_SOURCE_LOAD_S = int(os.environ.get(" in src
+          and "SCHEDULEURM_MIGRATION_MIN_SOURCE_LOAD_S" in src)
+    check("MIGRATION_MAX_CWD_SIZE_MB env-overridable constant exists",
+          "MIGRATION_MAX_CWD_SIZE_MB = int(os.environ.get(" in src
+          and "SCHEDULEURM_MIGRATION_MAX_CWD_SIZE_MB" in src)
+    iden_idx = src.find("def _identify_migration_candidates")
+    iden_end = src.find("\ndef ", iden_idx + 5)
+    iden_body = src[iden_idx:iden_end]
+    check("_identify_migration_candidates enforces MIN_SOURCE_LOAD_S",
+          "MIGRATION_MIN_SOURCE_LOAD_S" in iden_body)
+    cm_idx = src.find("def _consider_migration")
+    cm_end = src.find("\ndef ", cm_idx + 5)
+    cm_body = src[cm_idx:cm_end]
+    check("_consider_migration also enforces MIN_SOURCE_LOAD_S (defensive)",
+          "MIGRATION_MIN_SOURCE_LOAD_S" in cm_body)
+    stage_idx = src.find("def _stage_for_migration")
+    stage_end = src.find("\ndef ", stage_idx + 5)
+    stage_body = src[stage_idx:stage_end]
+    check("_stage_for_migration enforces MAX_CWD_SIZE_MB before rsync",
+          "MIGRATION_MAX_CWD_SIZE_MB" in stage_body
+          and "du -sm" in stage_body and "--exclude=.git" in stage_body)
+
+    # 2. Behavioral: source-load below floor → no candidates / no migration.
+    saved_NODES = sch.NODES
+    saved_can_migrate = sch._can_migrate_to
+    sch.NODES = {
+        "loaded": {"name": "loaded"},
+        "free":   {"name": "free"},
+    }
+    sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+    try:
+        # NOTE: queued tasks pinned to source ALSO count toward source_load via
+        # compute_node_load_seconds. Use the minimum legal candidate eta
+        # (MIGRATION_MIN_TASK_ETA_S = 300) so the candidate itself doesn't push
+        # source_load past the floor we're testing.
+        eta = sch.MIGRATION_MIN_TASK_ETA_S  # = 300 by default
+        # Below-floor source: 50s running + 300s queued = 350s on "loaded" — below
+        # the 600s default min source load. Ratio (350 vs 0) still passes the
+        # legacy LOAD_RATIO check, so this exercises the new floor specifically.
+        running_tiny = {"id": "rTiny", "status": "running", "node": "loaded",
+                        "eta_seconds": 50, "started_at": time.time() - 10}
+        cand = {"id": "tQ", "status": "queued", "preferred_node": "loaded",
+                "eta_seconds": eta, "submitted_at": time.time(),
+                "priority": "normal", "description": "should not migrate"}
+        state_below = {"tasks": [running_tiny, cand]}
+        nodes = [
+            {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 1,
+             "slurm_pending_count": 0},
+            {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+             "slurm_pending_count": 0},
+        ]
+        identified_below = sch._identify_migration_candidates(state_below, nodes,
+                                                              max_candidates=10)
+        check("source_load 50s < MIN_SOURCE_LOAD_S (600s) → no staging snapshot",
+              identified_below == [], diag=f"got {identified_below}")
+        migrated_below = sch._consider_migration(state_below, nodes)
+        check("source_load 50s < MIN_SOURCE_LOAD_S → _consider_migration returns []",
+              migrated_below == [], diag=f"got {migrated_below}")
+        check("tQ preferred_node UNCHANGED (still 'loaded')",
+              cand["preferred_node"] == "loaded")
+
+        # Above-floor source: enough load that the absolute floor passes too.
+        running_a = {"id": "rA", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        running_b = {"id": "rB", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        cand2 = {"id": "tOK", "status": "queued", "preferred_node": "loaded",
+                 "eta_seconds": eta, "submitted_at": time.time() + 1,
+                 "priority": "normal", "description": "should migrate"}
+        state_above = {"tasks": [running_a, running_b, cand2]}
+        identified_above = sch._identify_migration_candidates(state_above, nodes,
+                                                              max_candidates=10)
+        ids_above = [c["id"] for c, _ in identified_above]
+        check("source_load 10000s > MIN_SOURCE_LOAD_S → tOK in snapshot",
+              "tOK" in ids_above, diag=f"got {ids_above}")
+        migrated_above = sch._consider_migration(state_above, nodes)
+        check("source_load 10000s → _consider_migration migrates tOK",
+              migrated_above == ["tOK"], diag=f"got {migrated_above}")
+
+        # 3. Boundary: total source_load just under threshold → blocked; just over → passes.
+        # source_load = running.eta + cand.eta. cand.eta is fixed at MIGRATION_MIN_TASK_ETA_S.
+        # Pick running.eta so total = (MIN_SOURCE_LOAD_S - 1) for the under case
+        # and (MIN_SOURCE_LOAD_S + 1) for the over case.
+        boundary_running_under = {"id": "rUnder", "status": "running", "node": "loaded",
+                                  "eta_seconds": sch.MIGRATION_MIN_SOURCE_LOAD_S - 1 - eta,
+                                  "started_at": time.time() - 10}
+        boundary_running_over  = {"id": "rOver", "status": "running", "node": "loaded",
+                                  "eta_seconds": sch.MIGRATION_MIN_SOURCE_LOAD_S + 1 - eta,
+                                  "started_at": time.time() - 10}
+        cand3 = {"id": "tBound", "status": "queued", "preferred_node": "loaded",
+                 "eta_seconds": eta, "submitted_at": time.time() + 2,
+                 "priority": "normal"}
+        state_under = {"tasks": [boundary_running_under, cand3]}
+        # Note: ratio gate also needs source > 2*max(target,1). target=0 ⇒ source ≥ 2 — satisfied.
+        ids_under = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state_under, nodes, max_candidates=10)]
+        check("source_load = MIN-1 → blocked",
+              "tBound" not in ids_under, diag=f"got {ids_under}")
+        # Reset cand3.preferred_node since previous _consider_migration calls
+        # may have mutated it (we test identify-only here so no commit).
+        cand3["preferred_node"] = "loaded"
+        state_over = {"tasks": [boundary_running_over, cand3]}
+        ids_over = [c["id"] for c, _ in sch._identify_migration_candidates(
+            state_over, nodes, max_candidates=10)]
+        check("source_load = MIN+1 → passes",
+              "tBound" in ids_over, diag=f"got {ids_over}")
+    finally:
+        sch.NODES = saved_NODES
+        sch._can_migrate_to = saved_can_migrate
+
+    # 4. cwd size cap behavioral test on _stage_for_migration.
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    sch.NODES = {
+        "src":  {"name": "src",  "host": None},   # local
+        "tgt":  {"name": "tgt",  "host": "tgt-host"},
+    }
+    try:
+        # Mock: target says cwd is missing (test -d returns 1) → triggers rsync path.
+        # Source du returns a size we control. For this test we don't actually rsync —
+        # we want the size check to short-circuit before the rsync subprocess call.
+        big_size_mb = sch.MIGRATION_MAX_CWD_SIZE_MB + 100
+        small_size_mb = max(1, sch.MIGRATION_MAX_CWD_SIZE_MB - 100)
+        size_to_return = {"v": big_size_mb}
+        def run_on_size_check(node, cmd, timeout=15, check=False):
+            if "test -d" in cmd:
+                return (1, "", "")  # cwd missing on target → triggers rsync
+            if "du -sm" in cmd and "--exclude=.git" in cmd:
+                return (0, f"{size_to_return['v']}\n", "")
+            if "mkdir" in cmd:
+                return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_size_check
+        # Above cap: should bail before rsync with "cwd ... too large" message.
+        task_big = {"id": "tBig", "cwd": "/big/repo", "preferred_node": "src",
+                    "cmd": "python x.py"}
+        ok_big, msg_big = sch._stage_for_migration(task_big, "tgt")
+        check("cwd size > MAX_CWD_SIZE_MB → staging fails with size-cap message",
+              ok_big is False
+              and "cwd" in msg_big
+              and "MB" in msg_big
+              and str(big_size_mb) in msg_big,
+              diag=f"got ok={ok_big} msg={msg_big!r}")
+        # Below cap: size check should pass and we'd proceed to rsync. Since the
+        # test mock doesn't actually rsync, we expect a different failure (or
+        # success on the env probe). We just want to confirm the size message
+        # is NOT triggered when we're under the cap.
+        size_to_return["v"] = small_size_mb
+        # Use real rsync attempt — it'll fail (no actual src/tgt), but the
+        # error msg should be about rsync, not about cwd size.
+        # To avoid that hassle, mock subprocess.run. But the function imports
+        # subprocess locally, so we can't easily replace. Simpler: just assert
+        # size_to_return value gets through to a non-size-cap failure path.
+        # The cleanest behavioral signal: the failure message must NOT contain
+        # "max" + "MB" (which is unique to the size-cap msg).
+        import subprocess as _sp_real
+        saved_sp_run = _sp_real.run
+        def fake_sp_run(*a, **kw):
+            class R:
+                returncode = 99
+                stdout = ""
+                stderr = "fake rsync failure for test"
+            return R()
+        _sp_real.run = fake_sp_run
+        try:
+            task_small = {"id": "tSmall", "cwd": "/small/repo", "preferred_node": "src",
+                          "cmd": "python x.py"}
+            ok_small, msg_small = sch._stage_for_migration(task_small, "tgt")
+            check("cwd size < MAX_CWD_SIZE_MB → not blocked by size cap (different failure)",
+                  ok_small is False
+                  and ("max " not in msg_small or str(sch.MIGRATION_MAX_CWD_SIZE_MB) not in msg_small),
+                  diag=f"got ok={ok_small} msg={msg_small!r}")
+        finally:
+            _sp_real.run = saved_sp_run
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -6240,6 +6439,7 @@ if __name__ == "__main__":
     test_phase3_0_11_migration_target_respects_blocked_and_launch_failed()
     test_phase3_0_12_migration_cooldown_anti_oscillation()
     test_phase3_0_13_rebalance_pending_outside_lock()
+    test_phase3_0_14_min_source_load_and_cwd_size_cap()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

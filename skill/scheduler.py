@@ -3051,6 +3051,27 @@ def _count_slurm_pending_per_node(state: dict) -> dict:
     return counts
 
 
+# Phase 3.0.3: load-balance migration tunables.
+# All tunable via env var (no restart needed beyond watcher reload) for parity with
+# the Phase 2.16 throttle. Defaults err on the SIDE OF NOT MIGRATING (high ratio,
+# low free-threshold) so casual imbalance doesn't thrash the queue.
+MIGRATION_LOAD_RATIO = float(os.environ.get("SCHEDULEURM_MIGRATION_LOAD_RATIO", "2.0"))
+# Source load must be > RATIO × target load before migration kicks in.
+
+MIGRATION_FREE_THRESHOLD_S = int(os.environ.get("SCHEDULEURM_MIGRATION_FREE_THRESHOLD_S", "600"))
+# Target node's eta_load must be UNDER this many seconds (≈10 min default) for it
+# to count as "almost free". Otherwise both nodes are loaded and migrating between
+# them just shifts work, not balances it.
+
+MIGRATION_MAX_PER_DISPATCH = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_PER_DISPATCH", "1"))
+# At most N migrations per dispatch cycle. User-spec'd to 1 — let things settle a
+# minute before another decision. Avoid stampeding the rsync staging path too.
+
+MIGRATION_MIN_TASK_ETA_S = int(os.environ.get("SCHEDULEURM_MIGRATION_MIN_TASK_ETA_S", "300"))
+# Don't migrate a task whose ETA is < this many seconds — it'll finish where it is
+# faster than the rsync+launch round-trip would take.
+
+
 def compute_node_load_seconds(state: dict) -> dict:
     """Phase 3.0.2: per-node load = sum of eta_seconds of in-flight tasks pinned to
     that node. Used by Phase 3.0.3 migration trigger to detect imbalance — when
@@ -3087,6 +3108,109 @@ def compute_node_load_seconds(state: dict) -> dict:
             if pin and pin in loads:
                 loads[pin] += eta
     return loads
+
+
+def _can_migrate_to(task: dict, target_node: str, timeout_s: int = 5) -> bool:
+    """Phase 3.0.3: minimum portability check before re-pinning a task to a new node.
+
+    Today: just verifies cwd exists on the target. Phase 3.0.4 will replace this
+    with full staging (rsync code + ckpt with 2GB cap + env probe).
+
+    Returns True iff migration to target_node is safe RIGHT NOW. False if the
+    target lacks the cwd path (would launch_fail there) or ssh failed.
+    """
+    cwd = task.get("cwd")
+    if not cwd:
+        return False
+    try:
+        rc, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
+                          timeout=timeout_s, check=False)
+        return rc == 0
+    except Exception:
+        return False
+
+
+def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) -> list:
+    """Phase 3.0.3: when one node has a much heavier eta_load than another,
+    re-pin a queued task with preferred_node=overloaded to the lighter node.
+
+    Strategy:
+      1. Compute per-node load (or use cached `loads` arg).
+      2. Find heaviest + lightest nodes. If gap < MIGRATION_LOAD_RATIO or
+         lightest is itself loaded > MIGRATION_FREE_THRESHOLD_S → no migration.
+      3. Find queued candidates with preferred_node=heaviest, no require_node
+         (hard pins respected), eta_seconds ≥ MIGRATION_MIN_TASK_ETA_S.
+      4. Sort by eta ascending — cheapest task moves first.
+      5. For each candidate, run _can_migrate_to. Skip on fail.
+      6. On first success: rewrite preferred_node = target, log reason, return
+         that task_id. Hard cap MIGRATION_MAX_PER_DISPATCH per cycle.
+
+    Returns list of migrated task IDs (current default cap=1 → 0 or 1 entry).
+
+    Does NOT mutate scheduler.py call sites' "nodes" view of CPU/RAM/VRAM —
+    migration only changes the task's preferred_node, leaving real placement to
+    pick_placement on the next iteration.
+    """
+    if loads is None:
+        loads = compute_node_load_seconds(state)
+    if not loads or len(loads) < 2:
+        return []
+
+    # Order nodes by load. Skip nodes that are alive=False — can't migrate to dead box.
+    alive_names = {n["name"] for n in nodes if n.get("alive")}
+    candidates_loads = [(name, load) for name, load in loads.items() if name in alive_names]
+    if len(candidates_loads) < 2:
+        return []
+    candidates_loads.sort(key=lambda kv: kv[1])
+    target_name, target_load = candidates_loads[0]
+    source_name, source_load = candidates_loads[-1]
+
+    if source_name == target_name:
+        return []
+    if target_load >= MIGRATION_FREE_THRESHOLD_S:
+        return []  # target not really free
+    if source_load < MIGRATION_LOAD_RATIO * max(target_load, 1):
+        return []  # not imbalanced enough
+
+    # Find candidates: queued tasks with soft pin to source, no hard pin
+    candidates = []
+    for t in state.get("tasks", []):
+        if t.get("status") != "queued":
+            continue
+        if t.get("require_node"):
+            continue  # hard pin — respected
+        if t.get("auto_adopted"):
+            continue  # not ours to move
+        if t.get("preferred_node") != source_name:
+            continue
+        eta = int(t.get("eta_seconds") or 0)
+        if eta > 0 and eta < MIGRATION_MIN_TASK_ETA_S:
+            continue  # task will finish before staging completes
+        candidates.append(t)
+
+    if not candidates:
+        return []
+
+    # Smallest ETA first — cheapest staging if Phase 3.0.4's rsync cost is proportional,
+    # AND quickest to actually start running on target.
+    candidates.sort(key=lambda t: int(t.get("eta_seconds") or 0))
+
+    migrated = []
+    for cand in candidates:
+        if len(migrated) >= MIGRATION_MAX_PER_DISPATCH:
+            break
+        if not _can_migrate_to(cand, target_name):
+            continue
+        old_pref = cand.get("preferred_node")
+        cand["preferred_node"] = target_name
+        cand["migrated_from"] = old_pref
+        cand["migrated_at"] = time.time()
+        cand["last_block_reason"] = (
+            f"migrated: preferred {old_pref}(load={int(source_load)}s) → "
+            f"{target_name}(load={int(target_load)}s) for load balance"
+        )
+        migrated.append(cand["id"])
+    return migrated
 
 
 def _is_slurm_managed(task: dict) -> bool:
@@ -3347,6 +3471,15 @@ def _do_dispatch(state, nodes):
     Caller is responsible for state_lock and save_state."""
     events = []
     prio = {"high": 0, "normal": 1, "low": 2}
+    # Phase 3.0.3: load-balance pass — re-pin a queued soft-pinned task from an
+    # overloaded node to a near-empty one, BEFORE the placement loop. Hard pins
+    # (require_node) are never touched. Capped at MIGRATION_MAX_PER_DISPATCH
+    # (default 1) so we don't churn the queue. This runs first so the placement
+    # loop sees the new preferred_node assignment.
+    migrated = _consider_migration(state, nodes)
+    if migrated:
+        for tid in migrated:
+            events.append({"type": "migrated", "task_id": tid})
     # Preemption pass: free a slot for starved high-prio tasks (one eviction max per dispatch).
     preempted = _preempt_for_high_priority(state, nodes)
     # Initialize per-node running task count (for max_concurrent_running cap in _node_resources_ok).

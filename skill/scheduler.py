@@ -1356,7 +1356,7 @@ def _refresh_eta_from_logs(state):
         ewma = int(h.get("dur_s_ewma", 0))
         elapsed = max(0, now - (t.get("started_at") or now))
         t["eta_seconds"] = eta_tracker.compute_eta_seconds(
-            "", elapsed_s=elapsed, fallback_ewma_s=ewma
+            "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
         )
 
     if not by_node:
@@ -1397,7 +1397,7 @@ def _refresh_eta_from_logs(state):
                     ewma = int(h.get("dur_s_ewma", 0))
                     elapsed = max(0, now - (t.get("started_at") or now))
                     t["eta_seconds"] = eta_tracker.compute_eta_seconds(
-                        "", elapsed_s=elapsed, fallback_ewma_s=ewma
+                        "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
                     )
             continue
         # Split on markers: ['header', 'tid1', 'tail1', 'tid2', 'tail2', ...]
@@ -1415,7 +1415,7 @@ def _refresh_eta_from_logs(state):
             ewma = int(h.get("dur_s_ewma", 0))
             elapsed = max(0, now - (t.get("started_at") or now))
             t["eta_seconds"] = eta_tracker.compute_eta_seconds(
-                tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma
+                tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
             )
 
 # ---------- placement ----------

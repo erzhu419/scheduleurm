@@ -3051,6 +3051,44 @@ def _count_slurm_pending_per_node(state: dict) -> dict:
     return counts
 
 
+def compute_node_load_seconds(state: dict) -> dict:
+    """Phase 3.0.2: per-node load = sum of eta_seconds of in-flight tasks pinned to
+    that node. Used by Phase 3.0.3 migration trigger to detect imbalance — when
+    load(A) >> load(B), tasks with preferred_node=A may be moved to B.
+
+    What counts as "in-flight on node N":
+      - status=running on N (regardless of slurm_state — PENDING in slurm queue
+        still consumes a slot eventually)
+      - status=queued with require_node=N OR preferred_node=N (pinned future load)
+
+    What we exclude:
+      - status=launching (transient WAL state; recovers in ≤60s)
+      - auto_adopted tasks (we don't migrate user-managed external work)
+      - tasks with eta_seconds=0 (unknown ETA — neutral, don't assume)
+
+    Returns: {node_name: total_eta_seconds}. Only nodes that appear in NODES are
+    keyed (filters out stale node references).
+    """
+    loads: dict = {n: 0 for n in NODES}
+    for t in state.get("tasks", []):
+        if t.get("auto_adopted"):
+            continue
+        eta = int(t.get("eta_seconds") or 0)
+        if eta <= 0:
+            continue
+        status = t.get("status")
+        if status == "running":
+            node = t.get("node")
+            if node in loads:
+                loads[node] += eta
+        elif status == "queued":
+            # pinned queue load: prefer require, else preferred (require dominates)
+            pin = t.get("require_node") or t.get("preferred_node")
+            if pin and pin in loads:
+                loads[pin] += eta
+    return loads
+
+
 def _is_slurm_managed(task: dict) -> bool:
     """True iff this task's placement is owned by slurm (NOT scheduleurm).
 
@@ -4723,6 +4761,7 @@ def cmd_status(args):
         print(json.dumps({"tasks": state["tasks"]}, indent=2))
         return
     print("=== nodes ===")
+    node_loads = compute_node_load_seconds(state)
     for n in probe_all():
         if not n["alive"]:
             print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
@@ -4733,7 +4772,18 @@ def cmd_status(args):
         gpu_str = ", ".join(gpu_parts)
         load = n.get("loadavg", 0)
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={n['free_ram_mb']}MB")
+        # Phase 3.0.2: show node ETA-load (sum of in-flight task ETAs) so the user
+        # sees imbalance directly. Migration trigger (Phase 3.0.3) acts on this metric.
+        etaload = node_loads.get(n["name"], 0)
+        if etaload <= 0:
+            etaload_str = ""
+        elif etaload < 3600:
+            etaload_str = f"  eta_load={etaload/60:.0f}m"
+        elif etaload < 86400:
+            etaload_str = f"  eta_load={etaload/3600:.1f}h"
+        else:
+            etaload_str = f"  eta_load={etaload/86400:.1f}d"
+        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={n['free_ram_mb']}MB{etaload_str}")
     print("\n=== tasks ===")
     show_done = args.all
     rows = [t for t in state["tasks"] if show_done or t["status"] in ("queued", "launching", "running")]

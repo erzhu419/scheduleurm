@@ -3407,6 +3407,16 @@ def _identify_migration_candidates(state: dict, nodes: list,
         # rate signal". Treat eta=0 the same as eta-too-short.
         if eta < MIGRATION_MIN_TASK_ETA_S:
             continue
+        # Phase 3.0.11 P2 fix: target is the lightest-load node, but if THIS task
+        # has env_missing/python_import escalation pending against target, OR has
+        # already failed to launch on target, pick_placement would exclude target
+        # at dispatch time and fall back to another node — possibly one where the
+        # ckpt isn't staged. Result: silent resume-from-step-0. Skip such candidates
+        # entirely so we don't burn an rsync staging a doomed target.
+        if target_name in _blocked_nodes_for_task(t):
+            continue
+        if target_name in _launch_failed_nodes_for_task(t):
+            continue
         # Snapshot fields needed by _stage_for_migration (cwd, ckpt_dir, cmd,
         # preferred_node, signature, id) so the outside-lock caller doesn't need
         # to hold a reference into state["tasks"].
@@ -3555,6 +3565,15 @@ def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) 
         # rate signal". Treat eta=0 the same as eta-too-short.
         if eta < MIGRATION_MIN_TASK_ETA_S:
             continue  # task will finish before staging completes
+        # Phase 3.0.11 P2 fix: defensive recheck of target eligibility. Staging ran
+        # OUTSIDE the lock, so a launch failure or env-missing escalation could have
+        # been recorded for THIS task on target between identify and consider. Without
+        # this, we'd commit migration to a target pick_placement will then exclude →
+        # task falls back to a node where the ckpt isn't staged → silent restart.
+        if target_name in _blocked_nodes_for_task(t):
+            continue
+        if target_name in _launch_failed_nodes_for_task(t):
+            continue
         candidates.append(t)
 
     if not candidates:

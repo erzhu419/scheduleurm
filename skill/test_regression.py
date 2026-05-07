@@ -4904,17 +4904,22 @@ def test_phase3_0_21_explicit_docker_fail_fast_no_local_digest():
               diag=f"err={err!r} push_n={FakeED.push_called['n']}")
 
         # ---- Case D: AUTO mode + no local digest → graceful fallback (no err) ----
-        # Auto mode's contract: use docker if available, else `none`. The
-        # missing-local-digest fast-fail is reserved for the explicit path so
-        # we don't break the historical graceful-degradation behavior.
+        # Auto mode's contract: use docker if available, else `none`. Since we
+        # cannot verify the image is fresh without a local digest, Phase 3.0.26
+        # tightened the fallback: auto + no local digest now declines to docker-
+        # wrap (returns inner cmd unchanged, equivalent to kind=none) instead
+        # of trusting a possibly-stale remote tag.
         FakeED.local_digest_ref["value"] = None
         FakeED.remote_tag_present["value"] = True
         FakeED.push_called["n"] = 0
         task = {"id": "tD", "node": "n1", "env_spec": "auto", "image": "myproj:latest"}
         inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
-        check("auto mode + no local digest → graceful (no error, may still wrap)",
+        check("auto mode + no local digest → graceful (no error)",
               err is None,
               diag=f"err={err!r}")
+        check("auto mode + no local digest → does NOT docker-wrap (3.0.26)",
+              inner == "python a.py" and FakeED.push_called["n"] == 0,
+              diag=f"inner={inner!r} push_n={FakeED.push_called['n']}")
     finally:
         sch.env_deploy = saved_env_deploy
         sch.NODES = saved_NODES
@@ -5343,6 +5348,139 @@ def test_phase3_0_25_zombie_descendants_not_alive():
               diag=f"alive_pids={t.get('alive_pids')}")
     finally:
         sch.run_on = saved_run_on
+
+
+def test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none():
+    """Phase 3.0.26 P1 fix: auto-mode docker with no local digest falls back to
+    `none` (bare cmd), not the legacy "remote tag exists = OK" path.
+
+    Pre-fix: 3.0.21 closed the explicit `docker:IMAGE` hole — but `auto` mode
+    with `image` set still slipped through. has_image() with local_digest=None
+    falls back to "remote has any tag → True", which lets a stale prior push
+    silently run when local isn't authoritative. Auto's contract is "use
+    docker if available, else none" — and we cannot verify the image is fresh
+    without a local digest, so the "available" predicate must require a
+    digest too.
+
+    Now: when not explicit AND local_digest is None → return inner unchanged
+    (kind=none equivalent). No docker wrap, no push attempt, no error.
+    """
+    print("\n[82] Phase 3.0.26 P1 fix: auto+no-local-digest falls back to none (no stale-tag run)")
+
+    # 1. Source guard.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _maybe_wrap_docker")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("auto-mode no-local-digest fallback exists",
+          "if not explicit and local_digest is None" in body,
+          diag="auto path must short-circuit before has_image() fallthrough")
+    explicit_idx = body.find("if explicit and local_digest is None")
+    auto_idx = body.find("if not explicit and local_digest is None")
+    has_image_idx = body.find("env_deploy.has_image(run_on, node, chosen_image, local_digest=local_digest)")
+    check("auto fallback sits BEFORE has_image() fallthrough",
+          0 < explicit_idx < auto_idx < has_image_idx,
+          diag=f"explicit={explicit_idx} auto={auto_idx} has_image={has_image_idx}")
+
+    # 2. Behavioral.
+    saved_env_deploy = sch.env_deploy
+    saved_NODES = sch.NODES
+    sch.NODES = {"n1": {"host": "n1box"}}
+
+    class FakeED:
+        @staticmethod
+        def parse_env_spec(spec):
+            if spec == "docker":
+                return ("docker", "")
+            if spec.startswith("docker:"):
+                return ("docker", spec.split(":", 1)[1])
+            if spec == "auto":
+                return ("auto", "")
+            return ("none", "")
+        @staticmethod
+        def has_docker(run_on, node, timeout=8): return True
+        local_digest_ref = {"value": None}
+        push_called = {"n": 0}
+        has_image_called = {"n": 0}
+
+        @classmethod
+        def get_image_digest(cls, run_on, node, image, timeout=10):
+            if node == "local":
+                return cls.local_digest_ref["value"]
+            return "remote-stale-digest"
+
+        @classmethod
+        def has_image(cls, run_on, node, image, local_digest=None, timeout=10):
+            cls.has_image_called["n"] += 1
+            # Legacy fallthrough: tag present + local_digest None → True (the bug).
+            if local_digest is None:
+                return True
+            return cls.get_image_digest(None, node, image) == local_digest
+
+        @classmethod
+        def push_image(cls, node_host, image, timeout_s=1800):
+            cls.push_called["n"] += 1
+            return (True, "ok")
+
+        @staticmethod
+        def wrap_cmd_docker(inner, image, cwd, gpu_idx, extra_env, container_name,
+                            memory_mb, cpus, gpu_runtime_env):
+            return f"docker_wrap({inner})"
+
+    sch.env_deploy = FakeED
+
+    try:
+        # ---- Case A: auto + no local digest → fall back to none (no wrap) ----
+        FakeED.local_digest_ref["value"] = None
+        FakeED.push_called["n"] = 0
+        FakeED.has_image_called["n"] = 0
+        task = {"id": "tA", "node": "n1", "env_spec": "auto",
+                "image": "myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("auto + no local digest → no error",
+              err is None, diag=f"err={err!r}")
+        check("auto + no local digest → cmd NOT docker-wrapped (kind=none equivalent)",
+              inner == "python a.py", diag=f"inner={inner!r}")
+        check("auto + no local digest → has_image NOT called (short-circuit before fallthrough)",
+              FakeED.has_image_called["n"] == 0,
+              diag=f"has_image_n={FakeED.has_image_called['n']}")
+        check("auto + no local digest → push NOT attempted",
+              FakeED.push_called["n"] == 0)
+
+        # ---- Case B: auto + local digest matches remote → docker-wrap as usual ----
+        FakeED.local_digest_ref["value"] = "remote-stale-digest"
+        FakeED.push_called["n"] = 0
+        FakeED.has_image_called["n"] = 0
+        task = {"id": "tB", "node": "n1", "env_spec": "auto",
+                "image": "myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("auto + matching digest → ok, docker-wrap",
+              err is None and inner.startswith("docker_wrap("),
+              diag=f"err={err!r} inner={inner!r}")
+
+        # ---- Case C: auto + local digest different → push triggered ----
+        FakeED.local_digest_ref["value"] = "fresh-local-digest"
+        FakeED.push_called["n"] = 0
+        FakeED.has_image_called["n"] = 0
+        task = {"id": "tC", "node": "n1", "env_spec": "auto",
+                "image": "myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("auto + digest drift → push triggered, docker-wrap",
+              err is None and FakeED.push_called["n"] == 1
+              and inner.startswith("docker_wrap("),
+              diag=f"err={err!r} push_n={FakeED.push_called['n']} inner={inner!r}")
+
+        # ---- Case D (regression): explicit + no local digest still fails ----
+        FakeED.local_digest_ref["value"] = None
+        FakeED.push_called["n"] = 0
+        task = {"id": "tD", "node": "n1", "env_spec": "docker:myproj:latest"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("explicit + no local digest still fail-fast (3.0.21 regression)",
+              err is not None and "stale remote tag" in err,
+              diag=f"err={err!r}")
+    finally:
+        sch.env_deploy = saved_env_deploy
+        sch.NODES = saved_NODES
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -7846,6 +7984,7 @@ if __name__ == "__main__":
     test_phase3_0_23_env_key_validation_and_reserved_guard()
     test_phase3_0_24_rebalance_pending_clears_placement_fields()
     test_phase3_0_25_zombie_descendants_not_alive()
+    test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

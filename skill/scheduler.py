@@ -1145,6 +1145,13 @@ def _requeue_after_crash(parent, state):
         # handles from the parent are stale for the new task id.
         "slurm_job_id": None,
         "slurm_state": None,
+        # Phase 3.0.29 P2 fix: clear actual_started_at too (Phase 3.0.9 stamp).
+        # Pre-fix the retry clone inherited the parent's real-compute timestamp
+        # so _effective_elapsed_s would report stale elapsed time as soon as
+        # SlurmBackend.batch_probe assigned a slurm_job_id again, corrupting
+        # eta_load / migration decisions. The retry hasn't started running on
+        # slurm yet, so this must be None.
+        "actual_started_at": None,
         "container_name": None,
         "container_main_pid": None,
         # A requeued task is scheduler-owned even if the parent was auto-adopted with a
@@ -2472,6 +2479,13 @@ class SlurmBackend(Backend):
             task["log_path"] = log_path
             task["status"] = "running"
             task["started_at"] = time.time()
+            # Phase 3.0.29 P2 fix: clear actual_started_at on (re)launch. The
+            # 3.0.9 stamp is set ONLY when batch_probe first observes
+            # slurm_state=RUNNING. Pre-fix it could survive into a relaunched
+            # task (if the parent state was reused, or the same task object got
+            # recycled via rebalance-pending), making _effective_elapsed_s
+            # report stale elapsed seconds while the new job sits PENDING.
+            task["actual_started_at"] = None
             task["peak_vram_mb"] = 0
             task["peak_ram_mb"] = 0
             # Empty for slurm tasks — there's no host-visible PID for scheduleurm to track.

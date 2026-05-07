@@ -1520,6 +1520,14 @@ def pick_placement(task, nodes):
     cpu_only = task.get("est_vram_mb", DEFAULT_VRAM_MB) <= 0
     preferred = task.get("preferred_node")
     require = task.get("require_node")  # HARD pin — never falls back
+    # Phase 3.0.15 P1 fix: a task that was migrated has its cwd/ckpt staged ONLY
+    # on staged_node. Without promoting that to a hard pin, pick_placement's
+    # fallback path could land the task on a third node where staging never ran
+    # → resume task silently restarts from step 0. User-explicit require_node
+    # still wins over the migration pin (operator override beats auto-balance).
+    staged = task.get("staged_node")
+    if staged and not require:
+        require = staged
     blocked = _blocked_nodes_for_task(task)
     launch_failed = _launch_failed_nodes_for_task(task)
     if blocked:
@@ -3656,6 +3664,13 @@ def _consider_migration(state: dict, nodes: list, loads: Optional[dict] = None) 
             continue
         old_pref = cand.get("preferred_node")
         cand["preferred_node"] = target_name
+        # Phase 3.0.15 P1 fix: staged_node pins this task to the staged target
+        # for ALL future placement decisions (until launch / terminal). Without
+        # this, pick_placement's preferred_node-with-fallback would happily land
+        # the task on a third node where cwd/ckpt was never staged → silent
+        # step-0 restart. preferred_node alone is "soft preference"; staged_node
+        # is "hard pin while ckpt only lives here".
+        cand["staged_node"] = target_name
         cand["migrated_from"] = old_pref
         cand["migrated_at"] = time.time()
         cand["last_block_reason"] = (

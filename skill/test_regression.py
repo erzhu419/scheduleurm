@@ -2402,9 +2402,13 @@ def test_backend_slurm_phase2_1_sstat():
         "67890.batch|256000K\n"      # = 250 MB  ← only step for jid 67890
         "99999.batch|garbage\n"      # parse fails for jid 99999 → not in output
     )
-    sch.run_on = lambda node, cmd, timeout=10, check=True: (
-        (0, canned_sstat, "") if "sstat" in cmd else (0, "", "")
-    )
+    captured_sstat_cmd = []
+    def _record_sstat(node, cmd, timeout=10, check=True):
+        if "sstat" in cmd:
+            captured_sstat_cmd.append(cmd)
+            return (0, canned_sstat, "")
+        return (0, "", "")
+    sch.run_on = _record_sstat
     try:
         peaks = sb._query_sstat_peaks("local", [12345, 67890, 99999])
         check("sstat: max across steps wins (1G > 800M > 500M)",
@@ -2413,6 +2417,14 @@ def test_backend_slurm_phase2_1_sstat():
               peaks.get(67890) == 250, diag=str(peaks))
         check("sstat: unparseable row silently skipped",
               99999 not in peaks, diag=str(peaks))
+        # Phase 2.11 P1 fix: sstat invocation must include `-a` (--allsteps) so .batch
+        # / .extern / .N records are returned. Without -a, sstat shows only the "main"
+        # step and MaxRSS comes back empty for all batch jobs (verified empirically on
+        # slurm 23.11.4 / Ubuntu 24.04 — `sstat -j 4` returns nothing, `sstat -a -j 4`
+        # returns `4.batch|975.50M`).
+        check("sstat cmd includes -a flag (--allsteps) so .batch records aren't hidden",
+              captured_sstat_cmd and " -a " in captured_sstat_cmd[0],
+              diag=str(captured_sstat_cmd))
     finally:
         sch.run_on = real_run_on
 

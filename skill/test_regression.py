@@ -1551,7 +1551,11 @@ def test_disk_full_classification():
               "status": "failed", "retry_count": 0,
               "_diagnosis": {"is_crash": True, "tail": "ENOSPC writing log", "reason": ""}}
     state["tasks"].append(parent)
+    saved_we = sch._write_escalation
+    esc_calls = []
+    sch._write_escalation = lambda task, cat, diag: esc_calls.append((task["id"], cat))
     new_id = sch._requeue_after_crash(parent, state)
+    sch._write_escalation = saved_we
     check("DISK_FULL → no retry created, escalation written instead", new_id is None)
     check("parent failure_category set to DISK_FULL", parent.get("failure_category") == "DISK_FULL")
 
@@ -2581,6 +2585,82 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_10_sbatch_stdin_form():
+    """Phase 2.10 P1 fix: SlurmBackend.launch uses `sbatch /dev/stdin` (kernel-level
+    stdin pipe), NOT `sbatch -` (slurm-CLI argv sentinel).
+
+    Real-world bug: on Ubuntu 24.04 with slurm 23.11.4 (apt's universe package),
+    `sbatch -` errors with "Unable to open file -" — the package's argv parser
+    doesn't treat `-` as a stdin sentinel. End-to-end SlurmBackend launches
+    failed at the sbatch step and the user got a cryptic error.
+
+    `/dev/stdin` works on every slurm version because slurm just opens it as a
+    file path; the kernel routes that to the same stdin pipe. No file leaks to
+    the compute node either way.
+    """
+    print("\n[51] Phase 2.10 sbatch reads stdin via /dev/stdin (universal across slurm versions)")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    sb_idx = src.find("class SlurmBackend(Backend):")
+    sb_kill_idx = src.find("def kill(self,", sb_idx)
+    sb_launch_body = src[sb_idx:sb_kill_idx]
+
+    check("SlurmBackend uses sbatch /dev/stdin (not sbatch -)",
+          '"sbatch", "/dev/stdin"' in sb_launch_body
+          and '"sbatch /dev/stdin"' in sb_launch_body,
+          diag=sb_launch_body[-1500:])
+    check("SlurmBackend does NOT use the broken `sbatch -` argv form",
+          '"sbatch", "-"' not in sb_launch_body
+          and ', "sbatch -"' not in sb_launch_body,
+          diag="found `sbatch -` form which fails on Ubuntu 24.04 slurm 23.11.4")
+
+    sb = sch.SlurmBackend()
+    real_subprocess_run = sch.subprocess.run
+    real_run_on = sch.run_on
+    captured_args = []
+
+    def fake_subprocess_run(args, input=None, capture_output=None, text=None, timeout=None):
+        captured_args.append(args)
+        class R: pass
+        r = R(); r.returncode = 0; r.stdout = "Submitted batch job 50\n"; r.stderr = ""
+        return r
+    sch.subprocess.run = fake_subprocess_run
+    sch.run_on = lambda *a, **k: (0, "", "")
+
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "remote-slurm": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
+                          "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                          "max_concurrent_running": None},
+        "local-slurm": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                         "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                         "max_concurrent_running": None},
+    }
+    try:
+        sb.launch({"id": "tr", "node": "remote-slurm", "cwd": "/work",
+                   "cmd": "python train.py", "cpu_cores": 1, "ram_mb": 1024,
+                   "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/stdin",
+                   "resume_flag": "", "resume_from": None})
+        last = captured_args[-1]
+        check("remote slurm launch invokes ssh ... 'sbatch /dev/stdin'",
+              "sbatch /dev/stdin" in " ".join(last),
+              diag=str(last))
+
+        captured_args.clear()
+        sb.launch({"id": "tl", "node": "local-slurm", "cwd": "/work",
+                   "cmd": "python train.py", "cpu_cores": 1, "ram_mb": 1024,
+                   "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/stdin-local",
+                   "resume_flag": "", "resume_from": None})
+        last = captured_args[-1]
+        check("local slurm launch invokes ['sbatch', '/dev/stdin']",
+              last[:2] == ["sbatch", "/dev/stdin"],
+              diag=str(last))
+    finally:
+        sch.subprocess.run = real_subprocess_run
+        sch.run_on = real_run_on
+        sch.NODES = saved_NODES
+
+
 def test_check_running_phase2_9_slurm_aware():
     """Phase 2.9 P2 fix: check_running() helper must route through the backend for
     slurm tasks too (which have remote_pids=[] and track via slurm_job_id).
@@ -3441,6 +3521,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_7_probe_failure_does_not_cache()
     test_backend_slurm_phase2_8_route_by_launch_artifacts()
     test_check_running_phase2_9_slurm_aware()
+    test_backend_slurm_phase2_10_sbatch_stdin_form()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

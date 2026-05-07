@@ -2581,6 +2581,119 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_8_route_by_launch_artifacts():
+    """Phase 2.8 P1 fix: HybridBackend._backend_for_task routes based on the task's
+    launch artifacts (slurm_job_id / remote_pids), not the per-node cache.
+
+    Bug before fix: routing consulted only slurm_job_id and the per-node cache.
+    If a node's cache flipped from 'local' → 'slurm' (e.g. Phase 2.7's re-probe
+    finding slurm after a transient blip), already-running tasks launched by
+    LocalBackend (which have remote_pids but no slurm_job_id) suddenly routed
+    to SlurmBackend. SlurmBackend.batch_probe skips them on `if not jid:
+    continue` → never probed, never transition to terminal, become zombies.
+    Same hazard for kill: SlurmBackend.kill returns "no slurm_job_id" and does
+    nothing, leaving the proc orphaned.
+
+    Fix: routing checks task['slurm_job_id'] AND task['remote_pids'] BEFORE
+    falling back to per-node cache. Launch artifacts are immutable — they
+    remember which backend launched the task — so cache flips can't reroute.
+    """
+    print("\n[49] Phase 2.8 _backend_for_task routes by launch artifacts, not cache")
+
+    hb = sch.HybridBackend()
+
+    # ---------- The bug scenario: cache flipped to slurm AFTER a local task launched ----------
+    hb._cache["nodeX"] = "slurm"  # cache says slurm
+    local_running = {
+        "id": "tlocal",
+        "status": "running",
+        "node": "nodeX",
+        "remote_pids": [12345],   # ← launched by LocalBackend
+        "slurm_job_id": None,
+    }
+    backend = hb._backend_for_task(local_running)
+    check("running task with remote_pids → LocalBackend even when cache says slurm",
+          backend is hb._local,
+          diag=f"got backend={type(backend).__name__}")
+
+    # ---------- Mirror: slurm task with slurm_job_id wins even if cache says local ----------
+    hb._cache["nodeY"] = "local"
+    slurm_running = {
+        "id": "tslurm",
+        "status": "running",
+        "node": "nodeY",
+        "remote_pids": [],
+        "slurm_job_id": 99999,
+    }
+    backend = hb._backend_for_task(slurm_running)
+    check("running task with slurm_job_id → SlurmBackend even when cache says local",
+          backend is hb._slurm,
+          diag=f"got backend={type(backend).__name__}")
+
+    # ---------- Queued task (no launch artifacts) → cache-based decision ----------
+    hb._cache["nodeZ"] = "slurm"
+    queued = {"id": "tq", "status": "queued", "node": "nodeZ"}
+    backend = hb._backend_for_task(queued)
+    check("queued task with no launch artifacts → cache-based (slurm)",
+          backend is hb._slurm)
+
+    hb._cache["nodeW"] = "local"
+    queued_local = {"id": "tql", "status": "queued", "node": "nodeW"}
+    backend = hb._backend_for_task(queued_local)
+    check("queued task with no launch artifacts → cache-based (local)",
+          backend is hb._local)
+
+    # ---------- Edge case: task with no node at all (just submitted) → LocalBackend default ----------
+    queued_unplaced = {"id": "tqu", "status": "queued"}
+    backend = hb._backend_for_task(queued_unplaced)
+    check("task with no node yet → LocalBackend default",
+          backend is hb._local)
+
+    # ---------- Defensive: both launch artifacts set (shouldn't happen) → slurm wins ----------
+    # SlurmBackend.launch sets remote_pids=[] (empty list, falsy), so this is an
+    # impossible state, but the routing must be unambiguous if it ever arises.
+    weird = {"id": "tw", "status": "running", "node": "nodeX",
+             "remote_pids": [9999], "slurm_job_id": 1}
+    backend = hb._backend_for_task(weird)
+    check("if both artifacts set: slurm_job_id wins (defensive ordering)",
+          backend is hb._slurm)
+
+    # ---------- End-to-end: batch_probe on mixed state with cache flip ----------
+    # Simulate the realistic scenario: nodeX was 'local' yesterday, two tasks launched
+    # via LocalBackend with remote_pids. Today watcher re-probed and cache flipped to
+    # 'slurm' (e.g. operator installed slurm there). batch_probe must still probe
+    # those local-launched tasks via LocalBackend — not silently skip them.
+    hb = sch.HybridBackend()
+    hb._cache["nodeX"] = "slurm"  # the cache flip
+
+    state = {
+        "tasks": [
+            {"id": "ta", "status": "running", "node": "nodeX",
+             "remote_pids": [101], "slurm_job_id": None},
+            {"id": "tb", "status": "running", "node": "nodeX",
+             "remote_pids": [102], "slurm_job_id": None},
+        ]
+    }
+
+    local_probe_calls = []
+    slurm_probe_calls = []
+    real_local_probe = hb._local.batch_probe
+    real_slurm_probe = hb._slurm.batch_probe
+    hb._local.batch_probe = lambda s: (local_probe_calls.append(list(t["id"] for t in s["tasks"])) or {})
+    hb._slurm.batch_probe = lambda s: (slurm_probe_calls.append(list(t["id"] for t in s["tasks"])) or {})
+    try:
+        hb.batch_probe(state)
+        check("batch_probe sends remote_pids tasks to LocalBackend (not silently skipped)",
+              local_probe_calls and set(local_probe_calls[0]) == {"ta", "tb"},
+              diag=f"local={local_probe_calls}, slurm={slurm_probe_calls}")
+        check("batch_probe sends ZERO local-launched tasks to SlurmBackend",
+              not slurm_probe_calls or not slurm_probe_calls[0],
+              diag=f"slurm={slurm_probe_calls}")
+    finally:
+        hb._local.batch_probe = real_local_probe
+        hb._slurm.batch_probe = real_slurm_probe
+
+
 def test_backend_slurm_phase2_7_probe_failure_does_not_cache():
     """Phase 2.7 P1 fix: HybridBackend._kind_for must NOT cache failure results.
 
@@ -3182,6 +3295,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_5_cd_guard()
     test_backend_slurm_phase2_6_docker_gpu_runtime_env()
     test_backend_slurm_phase2_7_probe_failure_does_not_cache()
+    test_backend_slurm_phase2_8_route_by_launch_artifacts()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

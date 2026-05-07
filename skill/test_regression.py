@@ -5483,6 +5483,147 @@ def test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_27_conda_sync_success_gate():
+    """Phase 3.0.27 P1 fix: explicit conda launch must verify the LATEST sync
+    to its target node succeeded — not just that the local path exists.
+
+    Pre-fix: 3.0.22 closed the local-path-missing hole, but it can't see
+    remote-side staleness. push_conda_env can fail (ssh blip, target disk
+    full, rsync timeout) while the local path is fine; preload only
+    notify()'d the failure. If the remote happened to have a stale env at
+    the same path (a prior sync that succeeded), the launch silently used
+    the stale env. Same blast-radius shape as the docker stale-tag P1.
+
+    Now: _CONDA_SYNC_OK marker per (node, env_path), TTL'd to STAGING_TTL_S.
+    Preload writes on success, clears on failure (failure overrides any
+    earlier success). Launch refuses to wrap when the marker is missing /
+    expired for a remote node + absolute path. Local nodes (no host) and
+    non-absolute conda specs (`conda:envname`) bypass the gate.
+    """
+    print("\n[83] Phase 3.0.27 P1 fix: explicit conda launch requires fresh sync marker")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_CONDA_SYNC_OK marker dict + helpers exist",
+          "_CONDA_SYNC_OK" in src
+          and "def _record_conda_sync_ok" in src
+          and "def _record_conda_sync_failed" in src
+          and "def _conda_sync_ok" in src)
+    check("preload records sync OK on success",
+          "_record_conda_sync_ok(node, env_path)" in src)
+    check("preload clears marker on push_conda_env failure AND exception",
+          src.count("_record_conda_sync_failed") >= 2)
+    fn_idx = src.find("def _maybe_wrap_docker")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("_maybe_wrap_docker conda branch consults _conda_sync_ok",
+          "_conda_sync_ok(node, spec_image)" in body)
+    check("conda gate skipped for local nodes (no host) and non-absolute specs",
+          "node_host and spec_image" in body
+          and "Path(spec_image).is_absolute()" in body)
+
+    # 2. Helper unit tests.
+    saved_marker = dict(sch._CONDA_SYNC_OK)
+    sch._CONDA_SYNC_OK.clear()
+    try:
+        sch._record_conda_sync_ok("n1", "/env/a")
+        check("record_ok → _conda_sync_ok returns True",
+              sch._conda_sync_ok("n1", "/env/a") is True)
+        sch._record_conda_sync_failed("n1", "/env/a")
+        check("record_failed clears prior OK marker → returns False",
+              sch._conda_sync_ok("n1", "/env/a") is False)
+        # TTL expiry behavior.
+        sch._CONDA_SYNC_OK[("n1", "/env/expired")] = time.time() - sch.STAGING_TTL_S - 60
+        check("expired marker → False (and popped)",
+              sch._conda_sync_ok("n1", "/env/expired") is False
+              and ("n1", "/env/expired") not in sch._CONDA_SYNC_OK)
+        # Missing key → False (not error).
+        check("missing key → False",
+              sch._conda_sync_ok("n1", "/none") is False)
+    finally:
+        sch._CONDA_SYNC_OK.clear()
+        sch._CONDA_SYNC_OK.update(saved_marker)
+
+    # 3. Behavioral via _maybe_wrap_docker.
+    saved_env_deploy = sch.env_deploy
+    saved_NODES = sch.NODES
+    saved_marker = dict(sch._CONDA_SYNC_OK)
+    sch.NODES = {
+        "remote1": {"host": "h1box"},
+        "local1":  {"host": None},  # local node — sync gate must NOT fire
+    }
+    class FakeED:
+        @staticmethod
+        def parse_env_spec(spec):
+            if spec.startswith("conda:"):
+                return ("conda", spec.split(":", 1)[1])
+            return ("none", "")
+    sch.env_deploy = FakeED
+    sch._CONDA_SYNC_OK.clear()
+
+    # Use a real existing path so the 3.0.22 local-path gate doesn't fire first.
+    import tempfile
+    tdir = tempfile.mkdtemp()
+    try:
+        env_path = tdir
+        # ---- Case A: remote node + no fresh sync marker → fail-fast ----
+        task = {"id": "tA", "node": "remote1", "env_spec": f"conda:{env_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("remote conda + no sync marker → fail (would risk stale remote env)",
+              err is not None
+              and "did not succeed" in err
+              and "preload_conda_failed" in err,
+              diag=f"err={err!r}")
+        check("conda fail-fast: inner cmd unchanged",
+              inner == "python a.py")
+
+        # ---- Case B: remote node + fresh sync marker → ok ----
+        sch._record_conda_sync_ok("remote1", env_path)
+        task = {"id": "tB", "node": "remote1", "env_spec": f"conda:{env_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("remote conda + fresh sync marker → ok (no error, inner unchanged)",
+              err is None and inner == "python a.py",
+              diag=f"err={err!r}")
+
+        # ---- Case C: remote node + sync failed (marker cleared) → fail ----
+        sch._record_conda_sync_ok("remote1", env_path)  # was OK
+        sch._record_conda_sync_failed("remote1", env_path)  # then preload failed
+        task = {"id": "tC", "node": "remote1", "env_spec": f"conda:{env_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("remote conda + sync failed (marker cleared) → fail",
+              err is not None,
+              diag=f"err={err!r}")
+
+        # ---- Case D: LOCAL node + no marker → ok (gate skipped, env IS local) ----
+        task = {"id": "tD", "node": "local1", "env_spec": f"conda:{env_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("local node (no host) → conda sync gate SKIPPED, no error",
+              err is None,
+              diag=f"err={err!r}")
+
+        # ---- Case E: non-absolute conda env-name → gate skipped ----
+        task = {"id": "tE", "node": "remote1", "env_spec": "conda:envname"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("non-absolute conda envname spec → gate SKIPPED (no rsync path)",
+              err is None,
+              diag=f"err={err!r}")
+
+        # ---- Case F: TTL expiry → fail (no fresh marker) ----
+        sch._CONDA_SYNC_OK[("remote1", env_path)] = time.time() - sch.STAGING_TTL_S - 60
+        task = {"id": "tF", "node": "remote1", "env_spec": f"conda:{env_path}"}
+        inner, err = sch._maybe_wrap_docker(task, "python a.py", "/work")
+        check("expired sync marker → fail (treated as no marker)",
+              err is not None,
+              diag=f"err={err!r}")
+    finally:
+        import shutil
+        shutil.rmtree(tdir, ignore_errors=True)
+        sch.env_deploy = saved_env_deploy
+        sch.NODES = saved_NODES
+        sch._CONDA_SYNC_OK.clear()
+        sch._CONDA_SYNC_OK.update(saved_marker)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7985,6 +8126,7 @@ if __name__ == "__main__":
     test_phase3_0_24_rebalance_pending_clears_placement_fields()
     test_phase3_0_25_zombie_descendants_not_alive()
     test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none()
+    test_phase3_0_27_conda_sync_success_gate()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

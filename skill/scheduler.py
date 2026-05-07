@@ -1811,6 +1811,11 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
         return (inner, f"invalid env_spec {spec!r}: {e}")
     if kind == "none":
         return (inner, None)
+    # Phase 3.0.27: pre-resolve node / node_host so the conda branch below can
+    # consult _conda_sync_ok() without tripping over the docker branch's later
+    # binding.
+    node = task.get("node")
+    node_host = NODES.get(node, {}).get("host") if node else None
     if kind == "conda":
         # Conda path: no cmd-wrapping needed — user's cmd already references absolute python
         # path that should now exist on target (preload rsync'd it). Bare `inner` is correct.
@@ -1830,10 +1835,27 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str,
                     f"launching now would risk running a stale remote env at "
                     f"the same path. Create/deploy the env locally first, "
                     f"then resubmit.")
+        # Phase 3.0.27 P1 fix: even when local path is fine, the latest
+        # push_conda_env to this node may have failed (ssh blip, target disk
+        # full, rsync timeout). Pre-fix, launch trusted preload to have
+        # synced — but preload's failure was only logged, never gated. If
+        # the remote happened to have a stale env at the same path (a prior
+        # sync that succeeded), the launch silently used it.
+        # Skip the check for local nodes (no host) and for non-absolute
+        # specs (conda activate <name>); both bypass the rsync path entirely.
+        if (node_host and spec_image
+                and Path(spec_image).is_absolute()
+                and not _conda_sync_ok(node, spec_image)):
+            return (inner,
+                    f"--env-spec conda:{spec_image} but the latest sync to "
+                    f"{node} did not succeed (or has not run yet) — refusing "
+                    f"to launch; would risk running a stale remote env. Wait "
+                    f"for the next dispatch cycle's preload, or check "
+                    f"~/.claude/scheduler/logs/watcher.log for "
+                    f"preload_conda_failed events to diagnose.")
         return (inner, None)
     chosen_image = spec_image or image
-    node = task.get("node")
-    node_host = NODES.get(node, {}).get("host") if node else None
+    # node / node_host already resolved above the conda branch (Phase 3.0.27).
     explicit = (kind == "docker")
     if not chosen_image:
         if explicit:
@@ -3353,6 +3375,39 @@ def _record_staging_failure(task_id, target):
     _STAGING_FAILED[(task_id, target)] = time.time()
 
 
+# Phase 3.0.27: conda preload sync-success markers with TTL. Successful
+# push_conda_env(node, env_path) records a timestamp here; failed sync clears
+# it. Launch (_maybe_wrap_docker) refuses to wrap an explicit conda task if
+# the latest sync attempt to its target node didn't succeed — stops the
+# silent "stale remote env runs" failure mode that the local-path check
+# alone (3.0.22) couldn't catch (sync may fail even when local path is fine).
+# Reuses STAGING_TTL_S for the staleness window; same semantic.
+_CONDA_SYNC_OK: dict = {}
+
+
+def _record_conda_sync_ok(node, env_path):
+    _CONDA_SYNC_OK[(node, env_path)] = time.time()
+
+
+def _record_conda_sync_failed(node, env_path):
+    """Drop any prior success marker so the next launch fails fast. Failed
+    sync is ALWAYS treated as authoritative — it overrides any earlier
+    success because the remote env may now be stale relative to local."""
+    _CONDA_SYNC_OK.pop((node, env_path), None)
+
+
+def _conda_sync_ok(node, env_path) -> bool:
+    """True iff the latest preload of (node, env_path) succeeded within
+    STAGING_TTL_S. Pops expired entries opportunistically."""
+    ts = _CONDA_SYNC_OK.get((node, env_path))
+    if ts is None:
+        return False
+    if (time.time() - ts) > STAGING_TTL_S:
+        _CONDA_SYNC_OK.pop((node, env_path), None)
+        return False
+    return True
+
+
 def _stage_for_migration(task: dict, target_node: str,
                          max_ckpt_mb: int = MIGRATION_MAX_CKPT_SIZE_MB) -> tuple:
     """Phase 3.0.4: rsync code + ckpt + verify env before migration.
@@ -4699,10 +4754,21 @@ def _preload_docker_images_outside_lock():
         try:
             node_host = NODES.get(node, {}).get("host")
             ok, msg = env_deploy.push_conda_env(node_host, env_path, env_path, timeout_s=3600)
+            # Phase 3.0.27 P1 fix: record sync result so launch can refuse to
+            # wrap when this cycle's sync didn't succeed. Pre-fix, only the
+            # local-path check (3.0.22) gated launch — but that check can't
+            # see remote-side staleness when local-side rsync FAILS yet local
+            # path still exists. A stale remote env at the same path would
+            # silently run.
+            if ok:
+                _record_conda_sync_ok(node, env_path)
+            else:
+                _record_conda_sync_failed(node, env_path)
             ev = "preload_conda_ok" if ok else "preload_conda_failed"
             notify(ev, {"node": node, "env_path": env_path, "msg": msg[:300] if not ok else ""},
                    feishu_enabled=False)
         except Exception as e:
+            _record_conda_sync_failed(node, env_path)
             notify("preload_conda_error",
                    {"node": node, "env_path": env_path, "error": str(e)[:200]},
                    feishu_enabled=False)

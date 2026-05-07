@@ -7289,7 +7289,17 @@ def test_phase3_2_0_claim_manager():
         with open(script_path, "w") as f:
             f.write(script)
 
+        # Phase 3.4.7: production setup ensures claims.json is never 0 bytes
+        # (crash-recovery distinguisher). Tests must mirror that.
+        claims_path = os.path.join(td, "claims.json")
+        def _ensure_init():
+            if (not os.path.exists(claims_path)
+                    or os.path.getsize(claims_path) == 0):
+                with open(claims_path, "w") as cf:
+                    cf.write('{"version":1,"claims":[]}')
+
         def run_op(op, payload, capacity=None):
+            _ensure_init()
             r = subprocess.run(
                 ["python3", script_path, op,
                  _json.dumps(payload), _json.dumps(capacity or {})],
@@ -8015,10 +8025,11 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
         wins, losses, drawn_iter = 0, 0, 0
         for _ in range(20):
             # Reset claims file each iteration so capacity is clean.
-            try:
-                os.unlink(os.path.join(td, "claims.json"))
-            except FileNotFoundError:
-                pass
+            # Phase 3.4.7: must INITIALIZE to default (not delete) — empty
+            # file is now treated as crash-corrupted; production setup
+            # always pre-writes the default.
+            with open(os.path.join(td, "claims.json"), "w") as cf:
+                cf.write('{"version":1,"claims":[]}')
             results = {}
             threads = [
                 threading.Thread(target=attempt, args=("h1:111", "tA", results)),
@@ -8399,8 +8410,18 @@ def test_phase3_4_0_cross_user_claim_io():
         script_path = os.path.join(td, "_claims.py")
         with open(script_path, "w") as f:
             f.write(script)
+        # Phase 3.4.7: mirror production setup — non-empty default
+        # so 0-byte means crash, not bootstrap.
+        claims_path = os.path.join(td, "claims.json")
+        def _ensure_init():
+            if (not os.path.exists(claims_path)
+                    or os.path.getsize(claims_path) == 0):
+                with open(claims_path, "w") as cf:
+                    cf.write('{"version":1,"claims":[]}')
+        _ensure_init()
 
         def run_op(op, payload, capacity=None):
+            _ensure_init()
             r = subprocess.run(
                 ["python3", script_path, op,
                  _json.dumps(payload), _json.dumps(capacity or {})],
@@ -8849,7 +8870,16 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
         with open(path, "w") as f:
             f.write(script)
 
+        # Phase 3.4.7: production setup writes default content; mirror.
+        claims_path = os.path.join(td, "claims.json")
+        def _ensure_init():
+            if (not os.path.exists(claims_path)
+                    or os.path.getsize(claims_path) == 0):
+                with open(claims_path, "w") as cf:
+                    cf.write('{"version":1,"claims":[]}')
+
         def claim(rec, cap):
+            _ensure_init()
             r = subprocess.run(
                 ["python3", path, "claim",
                  _json.dumps(rec), _json.dumps(cap)],
@@ -8858,8 +8888,9 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
             return _json.loads(r.stdout.strip().splitlines()[-1])
 
         def reset():
-            try: os.unlink(os.path.join(td, "claims.json"))
+            try: os.unlink(claims_path)
             except FileNotFoundError: pass
+            # _ensure_init() will rewrite default on next claim().
 
         now = time.time()
         base_rec = {"owner": "u", "scheduler_id": "S", "task_id": "tA",
@@ -8890,9 +8921,12 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
               r.get("ok") is False and "margin" in (r.get("conflict") or ""),
               diag=r)
 
-        # ---- 1/3 rule: 12000//3 = 4000. Big task = 5000 wants empty GPU.
-        # Stacking 5000 puts usage at 5000 > 4000 → reject (vram_need > default
-        # so no small-task exemption).
+        # ---- 1/3 rule (Phase 3.4.6 fix): the rule blocks STACKING new
+        # tasks onto a card where existing claimed VRAM is already past
+        # 1/3, NOT every claim that would itself exceed 1/3 of total.
+        # Local _gpu_fits checks `gpu.used_mb >= third`, not
+        # `gpu.used_mb + new >= third`. The first big task on an empty
+        # GPU MUST succeed.
         reset()
         rec = dict(base_rec, gpu_idx=0, vram_mb=5000)
         cap = {"cpu_cores": 12, "ram_mb": 100000,
@@ -8900,31 +8934,23 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
                "max_vram_per_task": None, "vram_margin_mb": 0,
                "third_pack_rule": True, "default_vram_mb": 512}
         r = claim(rec, cap)
-        check("first claim of 5000 (>1/3 of 12000) → blocked by 1/3 rule",
-              r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
-              diag=r)
-
-        # ---- 1/3 rule small-task exemption: 400MB task can stack past 1/3.
-        # Pre-fill with 4500MB claim from another scheduler, then try to
-        # add a 400MB small task — 1/3 rule alone would block (4500+400 = 4900
-        # > 4000 third) but small-task exemption (≤ default 512) allows it.
-        reset()
-        # Setup: existing 4500MB claim from a different scheduler.
-        existing = dict(base_rec, scheduler_id="OTHER", task_id="big",
-                         gpu_idx=0, vram_mb=4500)
-        cap = {"cpu_cores": 12, "ram_mb": 100000,
-               "gpu_vram_mb": {"0": 12000},
-               "max_vram_per_task": None, "vram_margin_mb": 0,
-               "third_pack_rule": True, "default_vram_mb": 512}
-        # Bypass 1/3 by setting third_pack_rule=False for the seed.
-        seed_cap = dict(cap, third_pack_rule=False)
-        r = claim(existing, seed_cap)
-        assert r.get("ok") is True, f"seed setup: {r}"
-        # Now try small task with the rule on.
-        rec = dict(base_rec, task_id="small", gpu_idx=0, vram_mb=400)
-        r = claim(rec, cap)
-        check("small task (≤ default_vram_mb) past 1/3 → allowed (exemption)",
+        check("first claim of 5000 on EMPTY 12GB GPU → ok (matches local _gpu_fits)",
               r.get("ok") is True, diag=r)
+        # Now the GPU has 5000MB claimed (≥ 1/3). Stacking another 1000MB
+        # task (> default_vram_mb=512) hits the 1/3 rule.
+        rec2 = dict(base_rec, task_id="tStack", gpu_idx=0, vram_mb=1000)
+        r2 = claim(rec2, cap)
+        check("second claim of 1000 onto already-past-1/3 GPU → blocked by 1/3 rule",
+              r2.get("ok") is False and "1/3" in (r2.get("conflict") or ""),
+              diag=r2)
+
+        # ---- 1/3 rule small-task exemption: 400MB task can stack past 1/3
+        # of an already-loaded GPU (≤ default_vram_mb=512).
+        # State from above: claims.json already has tA (5000MB) on GPU0.
+        rec3 = dict(base_rec, task_id="tSmall", gpu_idx=0, vram_mb=400)
+        r3 = claim(rec3, cap)
+        check("small task (≤ default_vram_mb) past 1/3 → allowed (exemption)",
+              r3.get("ok") is True, diag=r3)
 
         # ---- 1/3 rule disabled: large task on empty GPU succeeds.
         reset()
@@ -8947,6 +8973,170 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
         r = claim(rec, cap)
         check("small claim within all gates → ok",
               r.get("ok") is True, diag=r)
+
+
+def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
+    """Phase 3.4.6 + 3.4.7 + 3.4.8: three follow-up fixes after the cross-
+    user claims layer landed.
+
+    3.4.6 P1: 1/3 rule semantics matched local _gpu_fits — block on
+              EXISTING used past 1/3, not on (used + new). Empty GPU's
+              first big task succeeds.
+    3.4.7 P2: in-place truncate isn't crash-atomic. Distinguish
+              "bootstrap empty" (fine) from "post-crash empty" (lossy)
+              by writing a default `{"version":1,"claims":[]}` at setup
+              time, so any 0-byte read after that is a crash signal.
+              Script raises → main returns ok=false + "claims_corrupt"
+              error → caller sees CLAIM_ERROR (3.4.3) → operator
+              notices instead of silent over-commit.
+    3.4.8 P3: per-user script written via atomic tmp+rename to avoid
+              partial reads when same-user scheduler instances run
+              concurrent claim ops.
+    """
+    print("\n[103] Phase 3.4.6/7/8: 1/3-rule semantics + crash-corruption signal + atomic script deploy")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+
+    # 3.4.6 source guards
+    sc = sch._CLAIMS_REMOTE_SCRIPT
+    check("script: 1/3 rule checks GUSED (existing), not gused_after",
+          "if gused >= third and gused > 100" in sc,
+          diag="must mirror local _gpu_fits semantics")
+    # Comment in docstring may mention `gused_after` as historical context;
+    # what matters is the variable isn't ASSIGNED or USED in the rule.
+    check("script: 1/3 rule NO LONGER assigns/uses gused_after",
+          "gused_after =" not in sc and "gused_after >" not in sc,
+          diag="that variable was the bug — keep it out of code paths")
+
+    # 3.4.7 source guards
+    check("script load_from_fd raises on empty file (post-crash signal)",
+          "claims.json is empty" in sc and "raise RuntimeError" in sc)
+    check("main() catches the corrupt-state exception → claims_corrupt error",
+          "claims_corrupt" in sc)
+    setup = sch._claims_setup_cmd()
+    check("setup writes default content to claims.json when empty",
+          '{"version":1,"claims":[]}' in setup)
+    check("setup uses `if [ ! -s ... ]` to test for empty before init",
+          "[ ! -s " in setup)
+
+    # 3.4.8 source guards
+    check("setup writes per-user script via atomic tmp+rename",
+          "TMP_PATH=" in setup and "mv \"$TMP_PATH\" \"$SCRIPT_PATH\"" in setup)
+    check("tmp path is PID-suffixed for concurrent same-user safety",
+          ".tmp.$$" in setup)
+
+    # Behavioral: 3.4.6 — first 5GB claim on empty 12GB succeeds; second 1GB
+    # gets blocked; small (≤512MB) exempted.
+    import tempfile, subprocess, json as _json
+    with tempfile.TemporaryDirectory() as td:
+        script = sc.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        path = os.path.join(td, "_claims.py")
+        with open(path, "w") as f:
+            f.write(script)
+        claims_path = os.path.join(td, "claims.json")
+
+        def init():
+            with open(claims_path, "w") as cf:
+                cf.write('{"version":1,"claims":[]}')
+
+        def call(op, payload, capacity=None):
+            r = subprocess.run(
+                ["python3", path, op,
+                 _json.dumps(payload), _json.dumps(capacity or {})],
+                capture_output=True, text=True, timeout=10,
+            )
+            return _json.loads(r.stdout.strip().splitlines()[-1])
+
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 0,
+               "third_pack_rule": True, "default_vram_mb": 512}
+        now = time.time()
+        rec_big = {"owner": "u", "scheduler_id": "S", "task_id": "tBig",
+                   "gpu_idx": 0, "vram_mb": 5000, "cpu_cores": 1, "ram_mb": 1000,
+                   "claimed_at": now, "expires_at": now + 3600, "pid": None}
+
+        # 3.4.6 — first big task on empty GPU succeeds.
+        init()
+        r = call("claim", rec_big, cap)
+        check("3.4.6: first 5GB claim on empty 12GB GPU → ok (was incorrectly blocked)",
+              r.get("ok") is True, diag=r)
+
+        # ... and now stacking a 1GB task gets blocked by 1/3 rule.
+        rec_stack = dict(rec_big, task_id="tStack", vram_mb=1000)
+        r = call("claim", rec_stack, cap)
+        check("3.4.6: stacking 1GB onto already-past-1/3 GPU → blocked",
+              r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
+              diag=r)
+
+        # ... small (≤default) still allowed past 1/3.
+        rec_small = dict(rec_big, task_id="tSmall", vram_mb=400)
+        r = call("claim", rec_small, cap)
+        check("3.4.6: small task (≤default) past 1/3 → ok (small-task exemption)",
+              r.get("ok") is True, diag=r)
+
+        # 3.4.7 — empty file (post-truncate crash simulation) → claims_corrupt error.
+        # Init then truncate to simulate a crash mid-write.
+        init()
+        # Add a real claim so we know the empty-file read isn't bootstrap.
+        call("claim", rec_big, cap)
+        # Now simulate crash: open and truncate to 0.
+        with open(claims_path, "w") as f:
+            pass  # truncate
+        r = call("list", {})
+        check("3.4.7: post-crash 0-byte file → ok=False with claims_corrupt error",
+              r.get("ok") is False
+              and "claims_corrupt" in (r.get("error") or ""),
+              diag=r)
+        check("3.4.7: corrupt error message names the manual recovery hint",
+              "Manual recovery" in (r.get("error") or ""),
+              diag=r.get("error"))
+
+        # And: malformed JSON → also errors out (not silently treated as empty).
+        with open(claims_path, "w") as f:
+            f.write("{not json")
+        r = call("list", {})
+        check("3.4.7: malformed JSON → claims_corrupt error",
+              r.get("ok") is False and "claims_corrupt" in (r.get("error") or ""),
+              diag=r)
+
+    # 3.4.7 — claim() routes corrupt-state response to kind='error' (CLAIM_ERROR).
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    sch.NODES = {"n_on": {"name": "n_on", "host": "h", "enable_claims": True,
+                            "cpu_cores": 12, "ram_mb": 32000}}
+    try:
+        sch.run_on = lambda *a, **kw: (
+            0, '{"ok": false, "error": "claims_corrupt: claims.json is empty ..."}\n', "")
+        ok, info, kind = sch._ClaimManager.claim(
+            "n_on", {"id": "tT", "est_vram_mb": 1000,
+                      "cpu_cores": 1, "ram_mb": 500},
+            0,
+            {"name": "n_on", "gpus": [{"idx": 0, "total_mb": 12000}]})
+        check("3.4.7: claim() with corrupt-state response → kind='error'",
+              kind == "error", diag=kind)
+        check("3.4.7: claim() with corrupt-state response → info names corruption",
+              "claims_corrupt" in info, diag=info)
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+    # 3.4.8 — atomic deploy: setup writes to TMP_PATH then mv. Two concurrent
+    # heredoc writes never both target the same path.
+    setup = sch._claims_setup_cmd()
+    # The setup string contains both "cat > $TMP_PATH" and "mv ... $SCRIPT_PATH"
+    # in that order.
+    cat_idx = setup.find("cat > \"$TMP_PATH\"")
+    mv_idx = setup.find('mv "$TMP_PATH" "$SCRIPT_PATH"')
+    check("3.4.8: setup writes script to tmp BEFORE mv into place",
+          0 < cat_idx < mv_idx,
+          diag=f"cat={cat_idx} mv={mv_idx}")
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -11484,6 +11674,7 @@ if __name__ == "__main__":
     test_phase3_4_2_persistent_owner_id()
     test_phase3_4_3_claim_race_vs_claim_error()
     test_phase3_4_4_claim_replicates_gpu_fits_policy()
+    test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

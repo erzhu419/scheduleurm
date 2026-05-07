@@ -313,16 +313,33 @@ def _write_fd(fd, text):
         pass
 
 def load_from_fd(fd):
+    """Phase 3.4.7 P2: distinguish 'bootstrap empty' from 'corrupt empty'.
+    Setup writes a default `{"version":1,"claims":[]}` so claims.json is
+    NEVER 0 bytes during normal operation. A 0-byte file therefore means
+    a writer crashed between ftruncate(0) and the subsequent write — we
+    must not silently treat that as 'no claims', or the next op would
+    over-commit by re-issuing every running task's resources. Same for
+    JSON parse failures: surface as ParseError so the caller can return
+    a transport-error result; CLAIM_ERROR routes to the regular launch-
+    fail path (3.4.3) so the operator sees an actionable failure rather
+    than silent data loss.
+    """
     text = _read_fd(fd)
     if not text.strip():
-        return {"version": 1, "claims": []}
+        raise RuntimeError(
+            "claims.json is empty — likely a partial write (post-crash). "
+            "Manual recovery: inspect /tmp/scheduleurm/claims.json on the "
+            "node, or `rm` it ONLY if no scheduleurm tasks are running."
+        )
     try:
         data = json.loads(text)
-        if not isinstance(data, dict) or "claims" not in data:
-            return {"version": 1, "claims": []}
-        return data
-    except Exception:
-        return {"version": 1, "claims": []}
+    except Exception as e:
+        raise RuntimeError(
+            "claims.json failed to parse (%s) — likely a partial write. "
+            "Manual recovery as above." % str(e)[:120])
+    if not isinstance(data, dict) or "claims" not in data:
+        raise RuntimeError("claims.json missing required schema")
+    return data
 
 def save_to_fd(fd, data):
     _write_fd(fd, json.dumps(data))
@@ -349,7 +366,20 @@ def main():
     capacity = json.loads(sys.argv[3]) if len(sys.argv) > 3 else {}
     os.makedirs("/tmp/scheduleurm", exist_ok=True)
     fd = _open_shared_rw()
-    data = load_from_fd(fd)
+    try:
+        data = load_from_fd(fd)
+    except RuntimeError as e:
+        # Phase 3.4.7 P2: parse / empty failure means a writer crashed
+        # mid-truncate. Don't silently treat as no claims — return an
+        # error so caller's claim() routes to CLAIM_ERROR (3.4.3) and
+        # the operator sees the corrupted-state message.
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        print(json.dumps({"ok": False,
+                            "error": "claims_corrupt: " + str(e)}))
+        return
     claims = data.get("claims", [])
     now = time.time()
     fresh = gc_claims(claims, now)
@@ -394,18 +424,25 @@ def main():
             if gcap > 0 and (gcap - gused - vram_need) < vram_margin:
                 conflicts.append("gpu%s: post-claim free %dMB < margin %dMB" % (
                     gkey, gcap - gused - vram_need, vram_margin))
-            # 1/3 packing rule: don't push a card past 1/3 used. Small-task
-            # exemption: a task with vram_need ≤ default may stack past 1/3
-            # (compute-saturation check is the local-only safeguard for that
-            # case, run before claim is invoked).
+            # 1/3 packing rule. Phase 3.4.6 P1 fix: match local _gpu_fits
+            # semantics — block ONLY when the EXISTING claimed VRAM is past
+            # 1/3, not when (existing + this claim) would land past 1/3.
+            # Pre-fix used `gused_after` so the FIRST 5GB task on an empty
+            # 12GB GPU got rejected (5000 > 4000=12000/3) even though local
+            # _gpu_fits would have allowed it (gpu used=0). The rule is
+            # "don't STACK new tasks onto a card already past 1/3", not
+            # "no single task may exceed 1/3 of the card".
             if third_rule and gcap > 0:
                 third = gcap // 3
-                gused_after = gused + vram_need
-                if gused_after >= third and gused_after > 100:
+                if gused >= third and gused > 100:
+                    # Small-task exemption: allow stacking when this task is
+                    # ≤ default size (matches _gpu_fits's small_task branch).
+                    # Util-saturation half of that exemption is enforced by
+                    # local pick_placement before claim is even invoked.
                     if vram_need > default_vram:
                         conflicts.append(
-                            "gpu%s: claim would push usage to %dMB ≥ 1/3 of "
-                            "%dMB (packing rule)" % (gkey, gused_after, gcap))
+                            "gpu%s: existing claimed %dMB ≥ 1/3 of %dMB "
+                            "(packing rule)" % (gkey, gused, gcap))
         if conflicts:
             print(json.dumps({"ok": False, "conflict": "; ".join(conflicts), "claims_seen": len(fresh)}))
             return
@@ -487,26 +524,47 @@ def _claims_setup_cmd():
     file are usable by the calling OS user. Each user gets their own
     `_claims_${USER}.py` (sticky /tmp/scheduleurm prevents cross-user
     overwrite). claims.json + claims.lock stay shared, mode 0666 so any
-    user can read+write them under flock. Quoted heredoc means script
-    content goes through verbatim — no shell expansion in the Python."""
+    user can read+write them under flock.
+
+    Phase 3.4.7 P2: claims.json is initialized to a non-empty default
+    `{"version":1,"claims":[]}` if absent / 0 bytes, so the script can
+    treat any 0-byte read as "writer crashed mid-truncate, return error"
+    (instead of silently treating it as 'no claims').
+
+    Phase 3.4.8 P3: per-user script is deployed via atomic tmp+rename
+    within the user's own sticky-dir slot. Two concurrent same-user
+    `claim` ops would otherwise both `cat >` the same path simultaneously
+    — second writer truncates while first is still mid-write, leaving
+    a partial python file that `python3` errors on. Atomic mv prevents
+    half-deployed scripts.
+
+    Quoted heredoc body means script content goes through verbatim —
+    no shell expansion in the Python source.
+    """
     dir_q = shlex.quote(CLAIMS_DIR_REMOTE)
     lock_q = shlex.quote(CLAIMS_LOCK_REMOTE)
     file_q = shlex.quote(CLAIMS_FILE_REMOTE)
+    # Atomic per-user script deploy: write to a $$-suffixed tmp, then mv into
+    # place. Same user owns both, same dir → rename succeeds despite sticky.
     return (
         f"umask 0; "
         f"mkdir -p {dir_q} && chmod 1777 {dir_q} 2>/dev/null; "
         # Lock file shared 0666 so any user can flock it.
         f"touch {lock_q} 2>/dev/null && chmod 0666 {lock_q} 2>/dev/null; "
-        # Claims file: ensure exists + 0666. Created empty if absent so
-        # `flock + python script` doesn't have to handle the missing-file
-        # branch under sticky-dir constraints.
-        f"touch {file_q} 2>/dev/null && chmod 0666 {file_q} 2>/dev/null; "
-        # Per-user script. $USER is the OS user the ssh session runs as.
+        # Claims file: ensure exists, 0666, AND non-empty default so
+        # 0 bytes always signals a crash-corrupted state.
+        f"if [ ! -s {file_q} ]; then "
+        f"  printf '%s' '{{\"version\":1,\"claims\":[]}}' > {file_q} 2>/dev/null; "
+        f"fi; "
+        f"chmod 0666 {file_q} 2>/dev/null; "
+        # Per-user script via atomic tmp+rename.
         f"SCRIPT_PATH={CLAIMS_DIR_REMOTE}/_claims_${{USER:-anon}}.py; "
-        f"cat > \"$SCRIPT_PATH\" <<'PYEOF'\n"
+        f"TMP_PATH=\"${{SCRIPT_PATH}}.tmp.$$\"; "
+        f"cat > \"$TMP_PATH\" <<'PYEOF'\n"
         f"{_CLAIMS_REMOTE_SCRIPT}\n"
         f"PYEOF\n"
-        f"chmod 0666 \"$SCRIPT_PATH\" 2>/dev/null"
+        f"chmod 0666 \"$TMP_PATH\" 2>/dev/null && "
+        f"mv \"$TMP_PATH\" \"$SCRIPT_PATH\""
     )
 
 

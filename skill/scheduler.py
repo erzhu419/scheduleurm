@@ -1929,10 +1929,320 @@ class LocalBackend(Backend):
         return results
 
 
-# Singleton: Phase 1 has only one backend. Phase 2 will swap in slurm-aware
-# selection at this assignment. Tests reference _BACKEND directly to verify
-# backend identity and to swap in fakes for unit testing.
-_BACKEND: Backend = LocalBackend()
+class SlurmBackend(Backend):
+    """Submit via `sbatch` and let slurm own placement, queueing, and resource isolation.
+
+    Use case: target node is part of a real slurm cluster (or has slurm installed and
+    pointed at localhost). Slurm handles cross-user contention, fairness, GPU pinning
+    via cgroups — capabilities scheduleurm's LocalBackend doesn't have.
+
+    What scheduleurm STILL owns (not deferred to slurm): signature dedup, p80 history
+    estimation, resume injection, env-deploy (docker/conda) wrapping, skill/MCP UI.
+
+    What slurm owns: actual queueing across users, cgroup-based memory/CPU limits,
+    GPU enumeration via gres, walltime enforcement, scancel signaling.
+
+    Peak metrics tracking: NOT implemented in v1 — slurm enforces declared limits via
+    cgroups, so peak ≈ declared in practice. If sstat is available we could poll for
+    finer-grained tracking, but that requires the slurm accounting plugin to be on,
+    which many simple installs lack. v1 keeps it simple: liveness-only probe.
+    """
+    name = "slurm"
+
+    # Walltime defaults: slurm needs --time, and "no limit" is partition-default which
+    # might be only 1 hour on some clusters. We pick a generous floor + EWMA-derived
+    # ceiling so well-characterized signatures get a tight bound and unknowns don't
+    # get killed for being underestimated.
+    DEFAULT_WALLTIME_S = 24 * 3600       # for unknown signatures: 24h
+    EWMA_WALLTIME_MULT = 3.0             # known sig: 3× historical EWMA
+    MIN_WALLTIME_S = 3600                # never less than 1h regardless of EWMA
+    MAX_WALLTIME_S = 7 * 24 * 3600       # never more than 7d
+
+    @staticmethod
+    def _walltime_for(task: dict) -> int:
+        """Pick --time= value in seconds based on history EWMA, clamped to [MIN, MAX]."""
+        sig = task.get("signature") or ""
+        h = history_get(sig) or {}
+        ewma = int(h.get("dur_s_ewma", 0))
+        if ewma > 0:
+            t = int(ewma * SlurmBackend.EWMA_WALLTIME_MULT)
+        else:
+            t = SlurmBackend.DEFAULT_WALLTIME_S
+        return max(SlurmBackend.MIN_WALLTIME_S, min(SlurmBackend.MAX_WALLTIME_S, t))
+
+    @staticmethod
+    def _format_walltime(secs: int) -> str:
+        """Format seconds as slurm's HH:MM:SS or D-HH:MM:SS."""
+        days, rem = divmod(secs, 86400)
+        hours, rem = divmod(rem, 3600)
+        mins, _ = divmod(rem, 60)
+        if days > 0:
+            return f"{days}-{hours:02d}:{mins:02d}:00"
+        return f"{hours:02d}:{mins:02d}:00"
+
+    def _build_sbatch_script(self, task: dict, inner_cmd: str, log_path: str) -> str:
+        """Build the sbatch script as a string. Streamed via stdin to `sbatch -`."""
+        lines = ["#!/bin/bash"]
+        lines.append(f"#SBATCH --job-name=scheduleurm-{task['id']}")
+        lines.append(f"#SBATCH --output={log_path}")
+        lines.append(f"#SBATCH --error={log_path}")
+        cpu = int(task.get("cpu_cores") or DEFAULT_CPU_CORES)
+        if cpu > 0:
+            lines.append(f"#SBATCH --cpus-per-task={cpu}")
+        ram = int(task.get("ram_mb") or DEFAULT_RAM_MB)
+        if ram > 0:
+            lines.append(f"#SBATCH --mem={ram}M")
+        vram = int(task.get("est_vram_mb") or 0)
+        if vram > 0:
+            # Request 1 GPU; slurm's gres pinning sets CUDA_VISIBLE_DEVICES for us. We don't
+            # request `gpu:N` for >1 GPU because scheduleurm tasks are single-GPU by design;
+            # multi-GPU is the user's launcher's responsibility.
+            lines.append("#SBATCH --gres=gpu:1")
+        lines.append(f"#SBATCH --time={self._format_walltime(self._walltime_for(task))}")
+        # Optional slurm-specific fields if user set them on the task
+        for slurm_field, sbatch_flag in (
+            ("slurm_partition", "--partition"),
+            ("slurm_account",   "--account"),
+            ("slurm_qos",       "--qos"),
+        ):
+            v = task.get(slurm_field)
+            if v:
+                lines.append(f"#SBATCH {sbatch_flag}={v}")
+        # Body: cd cwd, then the (already _inject_python_u + _maybe_wrap_docker'd) inner cmd.
+        # Note: slurm does its OWN CUDA_VISIBLE_DEVICES via gres binding, so we don't export
+        # it here (and explicitly NOT inheriting it from the launching shell).
+        lines.append("")
+        if task.get("extra_env"):
+            for k, v in task["extra_env"].items():
+                lines.append(f"export {k}={shlex.quote(v)}")
+        lines.append(f"cd {shlex.quote(task['cwd'])}")
+        lines.append(inner_cmd)
+        return "\n".join(lines) + "\n"
+
+    def launch(self, task: dict) -> tuple[bool, str]:
+        # Slurm logs always go on the COMPUTE node; we use the same /tmp/sched_<id>.log
+        # convention as LocalBackend remote so _diagnose_terminal's tail-log path keeps working.
+        log_path = (f"{STATE_DIR}/logs/{task['id']}.log"
+                    if NODES[task["node"]]["host"] is None
+                    else f"/tmp/sched_{task['id']}.log")
+        cwd = task["cwd"]
+        inner = task["cmd"]
+        inner = _inject_python_u(inner)
+        resume_path = task.get("resume_from")
+        resume_flag = task.get("resume_flag") or ""
+        if resume_path and resume_flag:
+            inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
+        # Env-deploy wrapping (docker) runs the same as LocalBackend — sbatch script just
+        # contains `docker run ...` as its body. Slurm's gres binding sets the host-side
+        # CUDA_VISIBLE_DEVICES; the docker wrapper translates that into device pinning.
+        inner, docker_err = _maybe_wrap_docker(task, inner, cwd)
+        if docker_err:
+            return False, docker_err
+
+        # Pre-flight: cwd must exist on target node (same check as LocalBackend).
+        try:
+            rc_cwd, _, _ = run_on(task["node"], f"test -d {shlex.quote(cwd)}", timeout=10, check=False)
+        except Exception as e:
+            rc_cwd = 1
+        if rc_cwd != 0:
+            return False, f"cwd missing on {task['node']}: {cwd}"
+
+        script = self._build_sbatch_script(task, inner, log_path)
+        # Pipe script via stdin: sbatch -. Avoids leaving files on the compute node.
+        # We can't reuse run_on directly because it doesn't accept stdin. Inline the ssh.
+        host = NODES[task["node"]]["host"]
+        try:
+            if host is None:
+                proc = subprocess.run(
+                    ["sbatch", "-"], input=script, capture_output=True, text=True, timeout=30,
+                )
+            else:
+                proc = subprocess.run(
+                    ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
+                     host, "sbatch -"],
+                    input=script, capture_output=True, text=True, timeout=30,
+                )
+            if proc.returncode != 0:
+                return False, f"sbatch rc={proc.returncode}: {proc.stderr.strip()[:200]}"
+            # sbatch stdout: "Submitted batch job 12345"
+            job_id = None
+            for tok in proc.stdout.split():
+                if tok.isdigit():
+                    job_id = int(tok)
+                    break
+            if not job_id:
+                return False, f"could not parse job id from sbatch output: {proc.stdout[:200]}"
+            task["slurm_job_id"] = job_id
+            task["log_path"] = log_path
+            task["status"] = "running"
+            task["started_at"] = time.time()
+            task["peak_vram_mb"] = 0
+            task["peak_ram_mb"] = 0
+            # Empty for slurm tasks — there's no host-visible PID for scheduleurm to track.
+            # Liveness goes via squeue. _task_pids returns [] which is fine — kill/probe paths
+            # use slurm_job_id directly.
+            task["remote_pids"] = []
+            return True, f"slurm_job_id={job_id}"
+        except subprocess.TimeoutExpired:
+            return False, "sbatch timeout"
+        except Exception as e:
+            return False, f"sbatch exception: {e}"
+
+    def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
+        job_id = task.get("slurm_job_id")
+        if not job_id:
+            return False, "no slurm_job_id"
+        # `scancel <id>` is async (returns immediately, signals slurmctld). KillWait grace
+        # period is set in slurm.conf (default 30s SIGTERM → SIGKILL). We don't escalate
+        # ourselves — slurm handles it.
+        try:
+            run_on(task["node"], f"scancel {int(job_id)}", timeout=timeout, check=False)
+            return True, f"scancel {job_id}"
+        except Exception as e:
+            return False, str(e)[:200]
+
+    def batch_probe(self, state: dict) -> dict:
+        """One squeue per node for liveness. Peak VRAM/RAM/CPU: not tracked in v1 — see
+        SlurmBackend docstring. Returns 0 for those fields so the policy code's max-tracking
+        is a no-op. Liveness map: RUNNING/PENDING/CONFIGURING/COMPLETING → alive; everything
+        else (COMPLETED/FAILED/CANCELLED/TIMEOUT/NODE_FAIL/etc) → dead."""
+        by_node: dict = {}
+        for t in state["tasks"]:
+            if t["status"] != "running": continue
+            jid = t.get("slurm_job_id")
+            if not jid: continue
+            by_node.setdefault(t["node"], []).append(t)
+        results: dict = {}
+        if not by_node:
+            return results
+
+        ALIVE_STATES = {"PENDING", "CONFIGURING", "RUNNING", "COMPLETING", "RESIZING",
+                        "REQUEUED", "SUSPENDED"}
+
+        def _probe(node):
+            ids = ",".join(str(t["slurm_job_id"]) for t in by_node[node])
+            # `-h` no header, `-j` filter to specific ids, `-t all` include finished
+            # (squeue's default hides COMPLETED). `-o "%i %T"` minimal columns.
+            cmd = f"squeue -h -j {ids} -t all -o '%i %T' 2>/dev/null"
+            try:
+                rc, out, _ = run_on(node, cmd, timeout=15, check=False)
+                return out if rc == 0 else None
+            except Exception:
+                return None
+
+        nodes_list = list(by_node.keys())
+        with ThreadPoolExecutor(max_workers=len(nodes_list)) as ex:
+            outputs = dict(zip(nodes_list, ex.map(_probe, nodes_list)))
+
+        for node, out in outputs.items():
+            if out is None:
+                # ssh / squeue failed: emit 'unknown' so policy leaves state alone (don't
+                # mistakenly transition tasks to dead because of a transient ssh blip).
+                for t in by_node[node]:
+                    results[t["id"]] = {"state": "unknown", "alive_pids": [],
+                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+                continue
+            seen = {}  # job_id -> state-string
+            for line in out.splitlines():
+                bits = line.strip().split()
+                if len(bits) < 2: continue
+                try:
+                    seen[int(bits[0])] = bits[1].upper()
+                except ValueError: continue
+            for t in by_node[node]:
+                jid = t["slurm_job_id"]
+                slurm_state = seen.get(jid)
+                if slurm_state is None:
+                    # squeue doesn't know this job. Either it ran + got purged from accounting
+                    # (slurm.conf MinJobAge), OR our job_id is stale. Treat as dead — the
+                    # diagnose path will tail the log and decide success vs failure.
+                    state_norm = "dead"
+                elif slurm_state in ALIVE_STATES:
+                    state_norm = "alive"
+                else:
+                    state_norm = "dead"
+                results[t["id"]] = {"state": state_norm, "alive_pids": [],
+                                    "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+        return results
+
+
+class HybridBackend(Backend):
+    """Per-node routing: slurm-detected nodes → SlurmBackend, else LocalBackend.
+
+    Detection runs once per node per process lifetime (cached). Probes via
+    `command -v sbatch` over ssh; ssh failure or missing tools default to local.
+    Restarting the watcher re-runs detection.
+
+    Why not pick at startup? NODES is static config but slurm presence is a runtime
+    fact (a node can have slurm installed without scheduleurm config knowing). The
+    cache keeps the perf cost to one ssh round-trip per node per process.
+    """
+    name = "hybrid"
+
+    def __init__(self):
+        self._local = LocalBackend()
+        self._slurm = SlurmBackend()
+        self._cache: dict = {}  # node_name -> 'slurm' | 'local'
+
+    def _kind_for(self, node: str) -> str:
+        if node in self._cache:
+            return self._cache[node]
+        # Probe: sbatch + squeue both present?
+        cmd = ("command -v sbatch >/dev/null 2>&1 && "
+               "command -v squeue >/dev/null 2>&1 && echo HAS_SLURM")
+        try:
+            rc, out, _ = run_on(node, cmd, timeout=5, check=False)
+            kind = "slurm" if (rc == 0 and "HAS_SLURM" in out) else "local"
+        except Exception:
+            kind = "local"  # ssh failed entirely → assume local; user will see a clearer error at launch
+        self._cache[node] = kind
+        return kind
+
+    def _backend_for(self, node: str) -> Backend:
+        return self._slurm if self._kind_for(node) == "slurm" else self._local
+
+    def _backend_for_task(self, task: dict) -> Backend:
+        # Force slurm if task already has slurm_job_id (post-launch routing — even if cache
+        # was somehow cleared, the task itself remembers which backend launched it). This
+        # makes kill/probe paths bullet-proof against cache invalidation.
+        if task.get("slurm_job_id"):
+            return self._slurm
+        node = task.get("node")
+        if not node:
+            return self._local  # no node yet (queued task): launch path will re-route
+        return self._backend_for(node)
+
+    def launch(self, task: dict) -> tuple[bool, str]:
+        return self._backend_for_task(task).launch(task)
+
+    def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
+        return self._backend_for_task(task).kill(task, timeout=timeout)
+
+    def batch_probe(self, state: dict) -> dict:
+        """Split tasks per backend, probe each, merge results. Two ssh round-trips per node
+        in the worst case (one local probe + one slurm probe), but each backend's batch_probe
+        skips nodes with no relevant tasks so common case is one round-trip per node."""
+        # Synthesize per-backend state subsets so each backend only sees its own tasks.
+        local_tasks, slurm_tasks = [], []
+        for t in state["tasks"]:
+            if t["status"] != "running":
+                continue
+            if self._backend_for_task(t) is self._slurm:
+                slurm_tasks.append(t)
+            else:
+                local_tasks.append(t)
+        merged: dict = {}
+        if local_tasks:
+            merged.update(self._local.batch_probe({"tasks": local_tasks}))
+        if slurm_tasks:
+            merged.update(self._slurm.batch_probe({"tasks": slurm_tasks}))
+        return merged
+
+
+# Singleton: Phase 2 routes per-node via HybridBackend (slurm-detected → SlurmBackend,
+# else LocalBackend). Phase 3 will swap in MultiUserLocalBackend at this assignment.
+# Tests reference _BACKEND directly to verify backend identity and to swap in fakes.
+_BACKEND: Backend = HybridBackend()
 
 
 def launch(task):

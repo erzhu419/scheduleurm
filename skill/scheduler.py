@@ -4216,6 +4216,16 @@ MIGRATION_MAX_CWD_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CWD_SI
 # staging path. Default 1GB excludes .git/__pycache__/*.pyc (mirroring rsync's
 # excludes), which catches typical code dirs (≤100MB) with comfortable headroom.
 
+LAUNCH_MAX_CWD_SIZE_MB = int(os.environ.get("SCHEDULEURM_LAUNCH_MAX_CWD_SIZE_MB", "2048"))
+# Phase 3.4.10 P1 fix: cap for first-launch cwd staging (separate from
+# MIGRATION_MAX_CWD_SIZE_MB because semantics differ). When a queued task
+# is about to launch on a non-local target and the local cwd > this cap,
+# we PIN it to local instead of risking a slow / starved rsync. User-spec'd
+# default 2GB matches the rule "依赖 > 2GB 就坚持本地跑". Cap is applied
+# pre-rsync via local du; if the local working tree is huge (large data /
+# checkpoints inlined), the dispatch reroutes back to local rather than
+# attempting a multi-minute transfer that would starve other dispatches.
+
 
 def compute_node_load_seconds(state: dict) -> dict:
     """Phase 3.0.2: per-node load = sum of eta_seconds of in-flight tasks pinned to
@@ -4362,6 +4372,110 @@ def _conda_sync_ok(node, env_path) -> bool:
         _CONDA_SYNC_OK.pop((node, env_path), None)
         return False
     return True
+
+
+def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
+    """Phase 3.4.10 P1 fix: pre-launch sync of cwd from LOCAL (source-of-truth)
+    to a non-local target_node. Mirrors `_stage_for_migration`'s rsync semantics
+    but with source pinned to local — `local working tree` is authoritative,
+    not whatever happens to live on the chosen target.
+
+    Pre-fix gap: dispatch's first-launch path only did `test -d cwd` on target
+    (LocalBackend.launch line ~2918). If target had a stale clone, an old
+    snapshot, or even a same-named stub from an unrelated project, the test
+    passed and launch proceeded with WRONG code → ENV_MISSING failure → cwd
+    blocklisted forever for that node. Migration's `_stage_for_migration`
+    only triggers when a task moves between nodes, never on first launch.
+    Whole new nodes therefore stayed permanently un-synced.
+
+    Returns:
+      (True, msg)              — target ready (synced or already cached)
+      (False, "CAP_EXCEEDED:") — cwd > LAUNCH_MAX_CWD_SIZE_MB; caller pins local
+      (False, msg)             — rsync transport failure; caller treats as launch fail
+
+    Skip rules:
+      - target == local       — same machine, no-op
+      - cwd not on local      — local can't be source; bail (caller treats as fail)
+      - cache hit within TTL  — skip rsync (delta would be cheap anyway, but
+                                cache lookup is free)
+    """
+    cwd = task.get("cwd")
+    if not cwd:
+        return (False, "no cwd on task")
+    # Skip if target is local (source==target).
+    if NODES.get(target_node, {}).get("host") is None:
+        return (True, "target is local; nothing to sync")
+    # Source must be local; if cwd doesn't exist locally we can't be the
+    # source-of-truth, so don't try to rsync from nothing.
+    if not Path(cwd).exists():
+        return (False,
+                f"cwd {cwd} does not exist on local; can't seed target {target_node}")
+
+    cwd_key = ("local", target_node, cwd)
+    if _staging_cache_hit(cwd_key):
+        return (True, "cache hit (already synced within TTL)")
+
+    # Probe local cwd size with the same excludes the rsync below uses,
+    # otherwise the cap check would over-count (e.g. .git can be 500MB+
+    # while the actual code transfer is <50MB).
+    cwd_size_mb = 0
+    try:
+        r = subprocess.run(
+            ["du", "-sm",
+             "--exclude=.git", "--exclude=__pycache__", "--exclude=*.pyc",
+             "--exclude=results", "--exclude=results_*",
+             "--exclude=logs", "--exclude=logs_*",
+             "--exclude=experiment_output",
+             "--exclude=archive*", "--exclude=*.tar.gz",
+             cwd],
+            capture_output=True, text=True, timeout=30,
+        )
+        if r.returncode == 0:
+            head = (r.stdout or "").strip().split()
+            if head and head[0].isdigit():
+                cwd_size_mb = int(head[0])
+    except Exception:
+        cwd_size_mb = 0
+
+    if cwd_size_mb > LAUNCH_MAX_CWD_SIZE_MB:
+        return (False,
+                f"CAP_EXCEEDED: cwd {cwd} is {cwd_size_mb}MB > "
+                f"{LAUNCH_MAX_CWD_SIZE_MB}MB cap; pin to local instead of "
+                f"transferring to {target_node}")
+
+    tgt_host = NODES.get(target_node, {}).get("host")
+    if not tgt_host:
+        return (False, f"target node {target_node} has no host")
+
+    # Ensure target dir exists (mkdir -p is idempotent; cheap).
+    try:
+        run_on(target_node, f"mkdir -p {shlex.quote(cwd)}", timeout=10, check=False)
+    except Exception:
+        pass  # if mkdir fails the rsync below will too — surface the rsync error
+
+    src_path = cwd.rstrip("/") + "/"
+    dst_path = f"{tgt_host}:{cwd.rstrip('/')}/"
+    try:
+        r = subprocess.run(
+            ["rsync", "-az", "--partial",
+             "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
+             "--exclude=results/", "--exclude=results_*/",
+             "--exclude=logs/", "--exclude=logs_*/",
+             "--exclude=experiment_output/",
+             "--exclude=archive*/", "--exclude=*.tar.gz",
+             src_path, dst_path],
+            capture_output=True, text=True, timeout=600,
+        )
+        if r.returncode != 0:
+            return (False,
+                    f"rsync rc={r.returncode}: {(r.stderr or '').strip()[:200]}")
+    except subprocess.TimeoutExpired:
+        return (False, "rsync timeout (>600s)")
+    except Exception as e:
+        return (False, f"rsync exception: {str(e)[:200]}")
+
+    _STAGING_CACHE[cwd_key] = time.time()
+    return (True, f"synced ({cwd_size_mb}MB)")
 
 
 def _stage_for_migration(task: dict, target_node: str,
@@ -5369,6 +5483,75 @@ def _do_dispatch(state, nodes):
         if resume:
             t["resume_from"] = resume
             events.append({"type": "resume_found", "task_id": t["id"], "resume_from": resume})
+        # Phase 3.4.10 P1 fix: pre-launch cwd staging from LOCAL source-of-truth.
+        # Without this, dispatch's `test -d cwd` on target accepted any directory
+        # with the right name (including stale clones / unrelated stubs from
+        # other projects), then launch executed the wrong code → silent crash
+        # → ENV_MISSING blocklist for that node. The first-launch path was the
+        # only one without rsync coverage; migration already had it.
+        # Two failure modes handled:
+        #   - CAP_EXCEEDED (cwd > LAUNCH_MAX_CWD_SIZE_MB): pin to local, requeue
+        #     without bumping launch_fail_count — it's a routing decision, not
+        #     a launch error.
+        #   - rsync transport error: bump launch_fail_count, requeue (matches
+        #     the existing behaviour for cwd-missing failures).
+        target = t.get("node")
+        if target and NODES.get(target, {}).get("host"):
+            ok_stage, stage_msg = _stage_cwd_for_launch(t, target)
+            if not ok_stage:
+                if stage_msg.startswith("CAP_EXCEEDED:"):
+                    # Re-route to local. Don't count as launch failure since
+                    # the target is fine, the cwd is just too big to ship.
+                    t["status"] = "queued"
+                    t["require_node"] = "local"
+                    t["last_block_reason"] = (
+                        f"launch staging: {stage_msg}; pinned require_node=local"
+                    )
+                    t["node"] = None
+                    t["gpu_idx"] = None
+                    t.pop("launching_started_at", None)
+                    events.append({
+                        "type": "launch_capped",
+                        "task_id": t["id"],
+                        "task": t,
+                        "reason": stage_msg,
+                    })
+                    continue
+                # rsync failure: same retry path as a launch failure on this node.
+                attempted = t.get("node")
+                t["launch_fail_count"] = (t.get("launch_fail_count") or 0) + 1
+                if attempted:
+                    failed = t.setdefault("launch_failed_nodes", {})
+                    if not isinstance(failed, dict):
+                        failed = {}
+                        t["launch_failed_nodes"] = failed
+                    failed[attempted] = {
+                        "ts": time.time(),
+                        "attempt": t["launch_fail_count"],
+                        "error": f"stage_cwd: {stage_msg[:280]}",
+                    }
+                t["last_block_reason"] = (
+                    f"launch stage attempt {t['launch_fail_count']}/{MAX_LAUNCH_RETRY}: "
+                    f"{stage_msg}"
+                )
+                t["node"] = None
+                t["gpu_idx"] = None
+                if t["launch_fail_count"] >= MAX_LAUNCH_RETRY:
+                    t["status"] = "failed"
+                    try:
+                        _write_escalation(t, "LAUNCH_FAIL_CAP",
+                                          {"reason": stage_msg, "tail": stage_msg})
+                    except Exception:
+                        pass
+                    events.append({"type": "launch_failed_terminal",
+                                    "task_id": t["id"], "task": t,
+                                    "error": stage_msg})
+                else:
+                    t["status"] = "queued"
+                    events.append({"type": "launch_failed_retry",
+                                    "task_id": t["id"], "task": t,
+                                    "error": stage_msg})
+                continue
         # Item 5 follow-up (WAL): persist "launching" status BEFORE ssh so a SIGKILL during
         # the ssh window leaves a forensics breadcrumb. Watcher startup (item 5 recovery)
         # scans for stale `launching` tasks > LAUNCHING_RESET_S old and reverts them to

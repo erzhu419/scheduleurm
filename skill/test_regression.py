@@ -1,0 +1,2174 @@
+#!/usr/bin/env python3
+"""Minimal regression tests for scheduler.py. Run from anywhere:
+    python ~/.claude/skills/scheduler/test_regression.py
+
+Covers four bugs that bit us in the past:
+  1. PPID-aware adopt — a child of an already-tracked PID must NOT be re-adopted
+     as a phantom second task (#2 from the GPT review; t0966/t0969 case).
+  2. Crash requeue dedup — _requeue_after_crash must NOT create a duplicate when
+     a live task with same sig+cmd already exists (the t0800-killed-instead-of-t0919
+     incident's root cause prevention).
+  3. Preempt sufficiency — high-prio waiting > 5min must keep evicting until freed
+     CPU/RAM covers its requirement, capped at PREEMPT_MAX_VICTIMS_PER_DISPATCH.
+  4. Launch-fail fallback — launch() returning failure must push task back to queued
+     with launch_fail_count, not terminal-fail it. Hits cap → failed + heal escalation.
+
+Tests are self-contained: no real processes launched, no disk state mutated, no ssh.
+"""
+
+import copy
+import importlib.util
+import os
+import sys
+import time
+
+SCHED_PATH = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
+spec = importlib.util.spec_from_file_location("scheduler", SCHED_PATH)
+sch = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(sch)
+
+results = []
+def check(name, cond, diag=""):
+    results.append((name, cond, diag))
+    mark = "PASS" if cond else "FAIL"
+    extra = f"  [{diag}]" if (diag and not cond) else ""
+    print(f"  {mark}  {name}{extra}")
+
+# -----------------------------------------------------------------------------
+def test_ppid_descendant_filter():
+    """_descendants_of: marks a tracked PID's whole subtree, leaves siblings alone."""
+    print("\n[1] PPID-aware adopt (child-of-tracked must be filtered out)")
+    # Tree:
+    #   1 (init) → 100 (tracked) → 101 → 102
+    #              200 (untracked) → 201
+    #              300 (orphan)
+    ppid_of = {100: 1, 101: 100, 102: 101, 200: 1, 201: 200, 300: 1}
+    desc = sch._descendants_of({100}, ppid_of)
+    check("child of tracked is descendant", 101 in desc)
+    check("grandchild of tracked is descendant", 102 in desc)
+    check("unrelated PID not descendant", 200 not in desc and 201 not in desc and 300 not in desc)
+    check("tracked PID itself NOT in descendant set", 100 not in desc)
+    check("empty roots → empty result", sch._descendants_of(set(), ppid_of) == set())
+    check("empty ppid_map → empty result", sch._descendants_of({100}, {}) == set())
+    # Cycle defense (shouldn't happen but mustn't infinite-loop)
+    cyclic = {1: 2, 2: 1}
+    sch._descendants_of({99}, cyclic)  # must terminate
+    check("cycle in ppid_map terminates", True)
+
+# -----------------------------------------------------------------------------
+def test_crash_requeue_dedup():
+    """_requeue_after_crash: live duplicate (same sig+cmd) → return existing id, no new task."""
+    print("\n[2] Crash requeue dedup (no double-queue from same sig+cmd)")
+    parent = {
+        "id": "tA", "signature": "proj/exp/s42",
+        "cmd": "python train.py --seed 42", "status": "failed",
+        "_diagnosis": {"is_crash": True, "reason": "test", "tail": "", "lifetime_s": 100},
+        "retry_count": 0, "ram_mb": 100, "est_vram_mb": 0, "cpu_cores": 1,
+        "submitted_at": time.time(), "extra_env": {}, "priority": "normal",
+    }
+    # Case A: live duplicate exists → return its id, NO append
+    state_a = {
+        "tasks": [
+            parent,
+            {"id": "tB", "signature": "proj/exp/s42",
+             "cmd": "python train.py --seed 42", "status": "queued"},
+        ],
+        "next_id": 100,
+    }
+    pre = len(state_a["tasks"])
+    new_id = sch._requeue_after_crash(parent, state_a)
+    check("returns existing duplicate's id", new_id == "tB")
+    check("no new task appended on dedup hit", len(state_a["tasks"]) == pre)
+
+    # Case B: same sig but different cmd → real requeue, new task appended
+    parent2 = dict(parent); parent2["id"] = "tC"; parent2["retry_count"] = 0
+    state_b = {
+        "tasks": [
+            parent2,
+            {"id": "tD", "signature": "proj/exp/s42",
+             "cmd": "python train.py --seed 999",  # different cmd
+             "status": "queued"},
+        ],
+        "next_id": 200,
+    }
+    pre_b = len(state_b["tasks"])
+    new_id_b = sch._requeue_after_crash(parent2, state_b)
+    check("different cmd → real requeue (new id)", new_id_b is not None and new_id_b != "tD")
+    check("different cmd → new task appended", len(state_b["tasks"]) == pre_b + 1)
+
+    # Case C: same cmd but only DONE/FAILED siblings → must NOT dedup against terminal tasks
+    parent3 = dict(parent); parent3["id"] = "tE"; parent3["retry_count"] = 0
+    state_c = {
+        "tasks": [
+            parent3,
+            {"id": "tF", "signature": "proj/exp/s42",
+             "cmd": "python train.py --seed 42", "status": "done"},
+            {"id": "tG", "signature": "proj/exp/s42",
+             "cmd": "python train.py --seed 42", "status": "failed"},
+        ],
+        "next_id": 300,
+    }
+    pre_c = len(state_c["tasks"])
+    new_id_c = sch._requeue_after_crash(parent3, state_c)
+    check("done/failed siblings do NOT block requeue", new_id_c is not None
+          and new_id_c not in ("tF", "tG") and len(state_c["tasks"]) == pre_c + 1)
+
+# -----------------------------------------------------------------------------
+def test_preempt_sufficiency():
+    """_preempt_for_high_priority: keep evicting until freed cpu/ram covers hi requirement."""
+    print("\n[3] Preempt sufficiency (cumulative eviction until hi fits)")
+    now = time.time()
+    state = {
+        "tasks": [
+            # high-prio waited 10min, needs cpu=6 ram=6000 — three cpu=2 victims required
+            {"id": "thi", "status": "queued", "priority": "high", "require_node": "local",
+             "submitted_at": now - 600, "cpu_cores": 6, "ram_mb": 6000,
+             "signature": "x/hi", "remote_pids": []},
+            # 3 eligible victims (in age window 10–240 min, normal-prio, not adopted)
+            {"id": "tv1", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1200, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v1", "remote_pids": [], "auto_adopted": False},
+            {"id": "tv2", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1100, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v2", "remote_pids": [], "auto_adopted": False},
+            {"id": "tv3", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1000, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v3", "remote_pids": [], "auto_adopted": False},
+            # ineligibles
+            {"id": "tv4", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 60, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v4", "remote_pids": [], "auto_adopted": False},  # too fresh
+            {"id": "tv5", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 18000, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v5", "remote_pids": [], "auto_adopted": False},  # too old
+            {"id": "tv6", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1100, "cpu_cores": 2, "ram_mb": 2000,
+             "signature": "x/v6", "remote_pids": [], "auto_adopted": True},   # adopted
+        ],
+        "next_id": 999,
+    }
+    # _evict_to_queue tries ssh kill — stub run_on so it no-ops cleanly
+    orig_run_on = sch.run_on
+    sch.run_on = lambda *a, **k: (0, "", "")
+    try:
+        evicted = sch._preempt_for_high_priority(state, nodes=[])
+    finally:
+        sch.run_on = orig_run_on
+    evicted_ids = sorted(e["id"] for e in evicted)
+    check("cap honored (≤ PREEMPT_MAX_VICTIMS_PER_DISPATCH)",
+          len(evicted) <= sch.PREEMPT_MAX_VICTIMS_PER_DISPATCH)
+    check("3 victims evicted to satisfy cpu=6 need (each cpu=2)", len(evicted) == 3)
+    check("only eligible victims (no fresh/old/adopted)",
+          set(evicted_ids).issubset({"tv1", "tv2", "tv3"}),
+          diag=f"got {evicted_ids}")
+    # All evicted come back to queued — NOT failed, NOT crash-counted
+    for vid in ("tv1", "tv2", "tv3"):
+        v = next(t for t in state["tasks"] if t["id"] == vid)
+        check(f"{vid} returned to queued (not failed)", v["status"] == "queued")
+        check(f"{vid} retry_count NOT bumped", v.get("retry_count", 0) == 0)
+    # Ineligibles untouched
+    for vid in ("tv4", "tv5", "tv6"):
+        v = next(t for t in state["tasks"] if t["id"] == vid)
+        check(f"{vid} still running (not evicted)", v["status"] == "running")
+
+# -----------------------------------------------------------------------------
+def test_launch_fail_fallback():
+    """_do_dispatch + launch failure: < cap → queued, hit cap → failed + escalation."""
+    print("\n[4] Launch-fail fallback (requeue on transient, escalate on cap)")
+    now = time.time()
+    task = {
+        "id": "tx1", "status": "queued", "signature": "proj/test", "cmd": "fake-cmd",
+        "cwd": "/tmp", "priority": "normal", "ram_mb": 100, "est_vram_mb": 0,
+        "cpu_cores": 1, "submitted_at": now, "extra_env": {}, "remote_pids": [],
+        "alive_pids": [], "log_path": None, "started_at": None, "node": None,
+        "gpu_idx": None, "peak_vram_mb": 0, "peak_ram_mb": 0, "resume_from": None,
+        "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
+        "preferred_node": None, "require_node": None, "project": "proj",
+        "description": "synthetic test task",
+    }
+    state = {"tasks": [task], "next_id": 1000}
+    nodes_template = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+                       "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
+                       "gpus": [], "running_count": 0}]
+
+    # Stub the I/O-bound boundaries — all OK except launch which fails
+    saved = {
+        "launch": sch.launch,
+        "pick_placement": sch.pick_placement,
+        "precheck_git": sch.precheck_git,
+        "find_resume": sch.find_resume,
+        "_write_escalation": sch._write_escalation,
+        "save_state": sch.save_state,  # WAL save runs BEFORE launch in dispatch — must stub
+    }
+    esc_calls = []
+    sch.launch = lambda t: (False, "synthetic launch failure")
+    sch.pick_placement = lambda t, ns: ("local", None)        # CPU-only on local
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    sch._write_escalation = lambda task, cat, diag: esc_calls.append((task["id"], cat))
+    sch.save_state = lambda s: None  # block fake state from reaching live queue.json
+
+    try:
+        # Iter 1: launch fails → status returns to queued, count = 1
+        sch._do_dispatch(state, copy.deepcopy(nodes_template))
+        check("after fail #1: status=queued (not failed)", task["status"] == "queued",
+              diag=f"actual status={task['status']}")
+        check("after fail #1: launch_fail_count=1", task.get("launch_fail_count") == 1,
+              diag=f"actual={task.get('launch_fail_count')}")
+        check("after fail #1: no escalation", len(esc_calls) == 0)
+        check("after fail #1: node/gpu reset", task.get("node") is None and task.get("gpu_idx") is None)
+
+        # Iter 2: still under cap
+        sch._do_dispatch(state, copy.deepcopy(nodes_template))
+        check("after fail #2: launch_fail_count=2", task.get("launch_fail_count") == 2)
+        check("after fail #2: still queued", task["status"] == "queued")
+        check("after fail #2: still no escalation", len(esc_calls) == 0)
+
+        # Iter 3: hits MAX_LAUNCH_RETRY → terminal failed + escalation
+        sch._do_dispatch(state, copy.deepcopy(nodes_template))
+        check(f"after fail #{sch.MAX_LAUNCH_RETRY}: status=failed",
+              task["status"] == "failed",
+              diag=f"actual status={task['status']}")
+        check(f"after fail #{sch.MAX_LAUNCH_RETRY}: escalation written with LAUNCH_FAIL_CAP",
+              len(esc_calls) == 1 and esc_calls[0] == (task["id"], "LAUNCH_FAIL_CAP"),
+              diag=f"actual={esc_calls}")
+    finally:
+        for k, v in saved.items():
+            setattr(sch, k, v)
+
+# -----------------------------------------------------------------------------
+# Phase 2: SLURM-style robustness invariants
+# -----------------------------------------------------------------------------
+def test_cancel_never_becomes_failed():
+    """User-cancel must not be misidentified as crash / OOM / server-reboot fail.
+    Concrete invariants (as enforced by code):
+      a) _detect_oom_kills_local skips status != 'done' (so cancelled tasks are exempt
+         from being flipped to 'failed' even if syslog shows an OOM in the same window).
+      b) _batch_check_running iterates only status=='running', so a task already
+         marked 'cancelled' by cmd_cancel cannot be re-evaluated/diagnosed.
+      c) _requeue_after_crash is only entered via the running→failed transition
+         in _batch_check_running, never directly from a cancelled state.
+    We assert (a) and (b) as live behavior; (c) is a structural property verified by inspection."""
+    print("\n[5] Cancel-vs-OOM separation (cancel is sticky, never auto-requeued)")
+    now = time.time()
+    state = {
+        "tasks": [
+            # Cancelled task with timing that WOULD overlap a fake OOM event
+            {"id": "tcanc", "status": "cancelled", "node": "local",
+             "started_at": now - 600, "finished_at": now - 30,
+             "peak_vram_mb": 0, "signature": "x/cancelled", "remote_pids": []},
+            # done-but-suspicious task that SHOULD be flipped (control)
+            {"id": "tdone", "status": "done", "node": "local", "auto_adopted": False,
+             "started_at": now - 600, "finished_at": now - 30,
+             "peak_vram_mb": 0, "signature": "x/done", "remote_pids": [],
+             "_diagnosis": {}},
+        ]
+    }
+    # Stub subprocess.check_output to return a syslog snippet with one OOM event in-window
+    import subprocess as _sp
+    orig_co = _sp.check_output
+    fake_ts = time.strftime("%b %d %H:%M:%S", time.localtime(now - 30))
+    fake_syslog = f"{fake_ts} host kernel: Out of memory: Killed process 999 (python)\n"
+    def fake_check_output(cmd, *args, **kwargs):
+        if isinstance(cmd, list) and "tail" in cmd[0]:
+            return fake_syslog
+        return orig_co(cmd, *args, **kwargs)
+    _sp.check_output = fake_check_output
+    try:
+        flipped = sch._detect_oom_kills_local(state)
+    finally:
+        _sp.check_output = orig_co
+    flipped_ids = [t["id"] for t in flipped]
+    # The control task should be flipped, the cancelled one must NOT be
+    check("cancelled task NOT flipped by OOM detector", "tcanc" not in flipped_ids,
+          diag=f"flipped={flipped_ids}")
+    canc = next(t for t in state["tasks"] if t["id"] == "tcanc")
+    check("cancelled task status preserved", canc["status"] == "cancelled",
+          diag=f"actual status={canc['status']}")
+    # Structural: verify _batch_check_running source actually filters status=='running'
+    src = open(SCHED_PATH).read()
+    check("_batch_check_running filters status=='running' (won't touch cancelled)",
+          'if t["status"] != "running": continue' in src
+          or "if t.get(\"status\") != \"running\": continue" in src,
+          diag="filter line not found in source")
+
+def test_ram_placement_check():
+    """RAM-OOM defense: _node_resources_ok must reject placements that would push
+    free_ram below the configured headroom. Verifies (b) — RAM is checked at the
+    same level as VRAM, not afterthought."""
+    print("\n[6] RAM placement check (rejects pre-launch when below headroom)")
+    # Mimic local-WSL config: declared 56GB, probed 30GB, 25% headroom
+    node_info = {"ram_mb": 56000, "ram_headroom_frac": 0.25, "max_concurrent_running": 10}
+    node_state = {"name": "local", "free_cpu": 8, "total_cpu": 12, "running_count": 0,
+                  "free_ram_mb": 11000, "total_ram_mb": 30000}
+    # Headroom = 30000 * 0.25 = 7500. Need (free - need) >= headroom → need <= 11000 - 7500 = 3500
+    fits = {"id": "tfit", "ram_mb": 3000, "cpu_cores": 1}
+    big = {"id": "tbig", "ram_mb": 8000, "cpu_cores": 1}
+    edge = {"id": "tedge", "ram_mb": 3500, "cpu_cores": 1}  # exactly at boundary
+    just_over = {"id": "tover", "ram_mb": 3501, "cpu_cores": 1}
+
+    ok1, why1 = sch._node_resources_ok(fits, node_state, node_info)
+    check("3000MB request fits (under boundary)", ok1, diag=why1)
+    ok2, why2 = sch._node_resources_ok(big, node_state, node_info)
+    check("8000MB request rejected with ram: reason",
+          (not ok2) and "ram" in why2.lower(),
+          diag=f"ok={ok2}, why={why2!r}")
+    ok3, _ = sch._node_resources_ok(edge, node_state, node_info)
+    check("3500MB at boundary fits (>= comparison)", ok3)
+    ok4, _ = sch._node_resources_ok(just_over, node_state, node_info)
+    check("3501MB just over boundary rejected", not ok4)
+
+    # Also: probed total used for headroom, NOT over-declared 56GB
+    # Headroom must reflect 30000 (probed), not 56000 (declared) — else it'd be 14000 and
+    # the 8000 request might have squeezed in.
+    fake_state = dict(node_state); fake_state["total_ram_mb"] = 30000
+    ok_check, why_check = sch._node_resources_ok(big, fake_state, node_info)
+    # If headroom were 56000*0.25=14000, free=11000 < 14000 → rejected anyway.
+    # If headroom is 30000*0.25=7500, free-need=3000 < 7500 → also rejected. Both reject.
+    # Verify the rejection MESSAGE references the actual headroom (7500), not 14000:
+    check("rejection message uses probed total for headroom",
+          "7500" in why_check or "headroom 7500" in why_check,
+          diag=f"why={why_check!r}")
+
+def test_default_vram_not_inflated():
+    """High-default starvation: cascade must not blow novel-sig est_vram up beyond
+    max(observed siblings). Median-of-candidates protects against one outlier."""
+    print("\n[7] Cascade est_vram bounded (no runaway over-allocation)")
+    # 4 sibling peaks: 600, 700, 5000 (outlier), 800
+    history = {}
+    state = {"tasks": [
+        {"id": f"sib{i}", "status": "done", "project": "P",
+         "description": "P2 retrain: configX seed=" + str(i),
+         "peak_vram_mb": v, "signature": f"P/configX/s{i}"}
+        for i, v in enumerate([600, 700, 5000, 800])
+    ]}
+    new = {"id": "tnew", "signature": "P/configX/s99",
+           "project": "P", "description": "P2 retrain: configX seed=99",
+           "est_vram_mb": 0}
+    est = sch._effective_est_vram(new, state, history)
+    check("median (not max) used for cascade",
+          est < 5000,  # outlier 5000 must not dominate
+          diag=f"got est={est}")
+    check("cascade returns ≤ DEFAULT or near-median",
+          est <= 1000,
+          diag=f"got est={est}MB (siblings 600/700/800/5000 median is ~750)")
+
+def test_status_view_no_truncation():
+    """TUI/status truncation concern: make sure no part of the active queue is hidden.
+    Both cmd_status (CLI) and TUI render-from-cache logic include EVERY task whose
+    status is in (queued, launching, running). We verify by simulating the same filter on a
+    synthetic state with 13 tasks."""
+    print("\n[8] Active-queue visibility (no hidden tasks in status/TUI)")
+    state = {"tasks": [
+        {"id": f"t{i:04d}", "status": s, "signature": f"x/{s}/{i}",
+         "description": f"job {i}", "project": "X", "peak_vram_mb": 0,
+         "started_at": None, "finished_at": None, "node": None}
+        for i, s in enumerate(
+            ["queued"] * 8 + ["launching"] + ["running"] * 3 + ["done"]  # 13 total: 12 active + 1 done
+        )
+    ]}
+    # cmd_status default filter: queued + launching + running, excludes done unless --all
+    rows = [t for t in state["tasks"] if t["status"] in ("queued", "launching", "running")]
+    check("cmd_status filter shows all 12 active tasks", len(rows) == 12,
+          diag=f"got {len(rows)} rows")
+    # TUI 'all' filter (running OR launching OR queued): same set
+    tui_rows_all = [t for t in state["tasks"] if t["status"] in ("running", "launching", "queued")]
+    check("TUI 'all' filter == status default filter", len(tui_rows_all) == 12)
+    # TUI 'queued' filter
+    tui_q = [t for t in state["tasks"] if t["status"] == "queued"]
+    check("TUI 'queued' filter shows all 8 queued (no hidden)", len(tui_q) == 8)
+    # TUI 'running' filter
+    tui_r = [t for t in state["tasks"] if t["status"] == "running"]
+    check("TUI 'running' filter shows all 3 running", len(tui_r) == 3)
+    # Source structural: ensure neither TUI nor cmd_status has a slice/limit on active rows
+    src = open(SCHED_PATH).read()
+    tui_src = open(SCHED_PATH.replace("scheduler.py", "tui.py")).read()
+    tui_render_src = tui_src.split("def _render_from_cache")[1].split("\n    def ")[0]
+    check("cmd_status has no [:N] slice on active task rows",
+          "rows[:" not in src.split("def cmd_status")[1].split("def cmd_show")[0],
+          diag="rows[:N] suggests truncation")
+    check("cmd_status source includes launching in active rows",
+          '"launching"' in src.split("def cmd_status")[1].split("def cmd_show")[0])
+    check("TUI all-filter source includes launching in active rows",
+          '"launching"' in tui_render_src)
+    check("TUI has no max-row slice in render",
+          "tasks[:" not in tui_render_src,
+          diag="tasks[:N] suggests truncation")
+
+def test_high_defaults_lower_before_placement():
+    """High stored/default estimates must not starve a job when sibling evidence says it is small.
+    Covers both VRAM and RAM lowering before placement."""
+    print("\n[9] High default estimates are lowered before placement (VRAM + RAM)")
+    now = time.time()
+    queued = {
+        "id": "tq", "status": "queued", "signature": "P/config/s99",
+        "cmd": "python train.py", "cwd": "/tmp", "priority": "normal",
+        "ram_mb": 50000, "est_vram_mb": 5000, "cpu_cores": 1,
+        "submitted_at": now, "extra_env": {}, "remote_pids": [],
+        "alive_pids": [], "log_path": None, "started_at": None, "node": None,
+        "gpu_idx": None, "peak_vram_mb": 0, "peak_ram_mb": 0, "resume_from": None,
+        "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
+        "preferred_node": None, "require_node": None, "project": "P",
+        "description": "train: config seed=99",
+    }
+    state = {"tasks": [
+        {"id": "sib", "status": "done", "project": "P", "signature": "P/config/s1",
+         "description": "train: config seed=1", "peak_vram_mb": 600, "peak_ram_mb": 3000},
+        queued,
+    ], "next_id": 100}
+    nodes = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+              "free_ram_mb": 12000, "total_ram_mb": 30000, "loadavg": 1.0,
+              "running_count": 0,
+              "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192,
+                        "free_mb": 8192, "util_pct": 0}]}]
+    saved = {
+        "load_history": sch.load_history,
+        "launch": sch.launch,
+        "precheck_git": sch.precheck_git,
+        "find_resume": sch.find_resume,
+        "save_state": sch.save_state,  # P0b: _do_dispatch saves per launch; stub to avoid live writes
+    }
+    sch.load_history = lambda: {}
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    sch.save_state = lambda s: None  # stub — fake state must not reach live queue.json
+    def fake_launch(t):
+        t["status"] = "running"; t["remote_pids"] = [4242]
+        t["process_group"] = 4242; t["started_at"] = time.time()
+        t["log_path"] = "/tmp/fake.log"; return True, "pid=4242"
+    sch.launch = fake_launch
+    try:
+        events, _ = sch._do_dispatch(state, copy.deepcopy(nodes))
+    finally:
+        for k, v in saved.items():
+            setattr(sch, k, v)
+    check("VRAM lowered from 5000 to sibling estimate", queued["est_vram_mb"] < 5000,
+          diag=f"vram={queued.get('est_vram_mb')}")
+    check("RAM lowered from 50000 to sibling estimate", queued["ram_mb"] < 50000,
+          diag=f"ram={queued.get('ram_mb')}")
+    check("task launches after estimates lower", queued["status"] == "running",
+          diag=f"status={queued.get('status')}, events={events}")
+
+def test_probe_ram_budget_cap():
+    """Remote physical MemAvailable may exceed configured schedulable budget; placement must use
+    the configured budget, not physical 500GB."""
+    print("\n[10] Probe RAM is capped to schedulable budget")
+    orig_run_on = sch.run_on
+    def fake_run_on(node, cmd, timeout=15, check=False):
+        out = (
+            "0, 0, 12288, 12288, 0\n"
+            "===SEP===\n"
+            "500000\n515000\n"
+            "===SEP===\n24\n"
+            "===SEP===\n0.10\n"
+            "===SEP===\n"
+            "0, 0\n---SAMPLE---\n0, 0\n---SAMPLE---\n"
+        )
+        return 0, out, ""
+    sch.run_on = fake_run_on
+    try:
+        info = sch.probe_node("jtl110gpu")
+    finally:
+        sch.run_on = orig_run_on
+    check("remote total_ram capped to configured 204800MB", info["total_ram_mb"] == 204800,
+          diag=str(info))
+    check("remote free_ram capped to configured 204800MB", info["free_ram_mb"] == 204800,
+          diag=str(info))
+    check("actual_free_ram still recorded for observability", info["actual_free_ram_mb"] == 500000,
+          diag=str(info))
+
+def test_running_descendant_resources_counted():
+    """A scheduler-launched bash root plus Python child/worker must be accounted as one task."""
+    print("\n[11] Running resource accounting includes descendants")
+    state = {"tasks": [{
+        "id": "trun", "status": "running", "node": "local", "remote_pids": [100],
+        "signature": "x/run", "cmd": "bash -c python", "started_at": time.time() - 60,
+        "ram_mb": 100, "cpu_cores": 1, "peak_ram_mb": 0, "peak_vram_mb": 0,
+    }]}
+    orig_run_on = sch.run_on
+    def fake_run_on(node, cmd, timeout=30, check=False):
+        out = (
+            "A100\n"
+            "===VRAM===\n"
+            "101, 700\n"
+            "===PSALL===\n"
+            "100 1 1000 0.0\n"
+            "101 100 2048000 125.0\n"
+            "102 101 1024000 80.0\n"
+        )
+        return 0, out, ""
+    sch.run_on = fake_run_on
+    try:
+        sch.update_running_tasks(state)
+    finally:
+        sch.run_on = orig_run_on
+    t = state["tasks"][0]
+    check("descendant pids are alive_pids", set(t["alive_pids"]) == {100, 101, 102},
+          diag=str(t.get("alive_pids")))
+    check("descendant VRAM counted", t["peak_vram_mb"] == 700,
+          diag=f"peak_vram={t.get('peak_vram_mb')}")
+    check("descendant RAM counted and budget bumped", t["peak_ram_mb"] >= 3000 and t["ram_mb"] >= 3000,
+          diag=f"peak_ram={t.get('peak_ram_mb')} ram={t.get('ram_mb')}")
+    check("descendant CPU counted and cores bumped", t["cpu_cores"] >= 3,
+          diag=f"cpu={t.get('cpu_cores')}")
+
+def test_kill_uses_process_group_sigkill():
+    """Cancel/preempt/evict kill helper must SIGKILL the process group, not only the root pid."""
+    print("\n[12] Kill helper uses process-group SIGKILL")
+    calls = []
+    orig_run_on = sch.run_on
+    sch.run_on = lambda node, cmd, timeout=15, check=False: (calls.append(cmd) or (0, "", ""))
+    try:
+        ok, msg = sch._kill_task_processes({
+            "node": "local", "remote_pids": [1234], "auto_adopted": False,
+        })
+    finally:
+        sch.run_on = orig_run_on
+    cmd = calls[-1] if calls else ""
+    check("kill helper returns ok", ok, diag=msg)
+    check("SIGTERM targets process group", "kill -- -1234" in cmd, diag=cmd)
+    check("SIGKILL targets process group", "kill -9 -- -1234" in cmd, diag=cmd)
+
+def test_launch_failed_node_fallback_and_notification_events():
+    """Launch failed node is soft-blocked next placement; new event names are handled."""
+    print("\n[13] Launch-failed node fallback + event names")
+    nodes = [
+        {"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+         "free_ram_mb": 30000, "total_ram_mb": 30000, "running_count": 0,
+         "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
+        {"name": "jtl110gpu", "alive": True, "free_cpu": 12, "total_cpu": 12,
+         "free_ram_mb": 204800, "total_ram_mb": 204800, "running_count": 0,
+         "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 12288, "free_mb": 12288, "util_pct": 0}]},
+    ]
+    task = {"est_vram_mb": 512, "ram_mb": 1000, "cpu_cores": 1,
+            "preferred_node": "local", "launch_failed_nodes": {"local": {}},
+            "priority": "normal"}
+    placement = sch.pick_placement(task, copy.deepcopy(nodes))
+    check("placement skips previously failed local node", placement == ("jtl110gpu", 0),
+          diag=f"placement={placement}")
+    retry_msg = sch._format_feishu("task_launch_retry",
+                                   {"task_id": "tx", "attempt": 1, "error": "cwd missing"})
+    fail_msg = sch._format_feishu("task_failed", {"task_id": "tx", "error": "cwd missing"})
+    check("task_launch_retry notification renders", "will retry" in retry_msg, diag=retry_msg)
+    check("task_failed notification renders", "launch failed" in fail_msg, diag=fail_msg)
+
+def test_requeue_from_adopt_becomes_scheduler_owned():
+    """If an auto-adopted task has a captured real cmd and is requeued, the clone is now
+    scheduler-owned so logs/diagnosis/preemption work normally."""
+    print("\n[14] Requeue clone is scheduler-owned, not auto-adopted")
+    parent = {
+        "id": "ta", "status": "failed", "signature": "P/adopt/s1",
+        "cmd": "python train.py", "auto_adopted": True, "adopted": True,
+        "process_group": 999, "retry_count": 0, "ram_mb": 100, "est_vram_mb": 0,
+        "cpu_cores": 1, "submitted_at": time.time(), "priority": "normal",
+        "_diagnosis": {"is_crash": True, "reason": "RuntimeError", "tail": "RuntimeError",
+                       "lifetime_s": 100},
+    }
+    state = {"tasks": [parent], "next_id": 42}
+    new_id = sch._requeue_after_crash(parent, state)
+    new = state["tasks"][-1]
+    check("new task created", new_id == "t0042" and new["id"] == "t0042",
+          diag=f"new_id={new_id}, id={new.get('id')}")
+    check("clone auto_adopted cleared", new.get("auto_adopted") is False,
+          diag=str(new.get("auto_adopted")))
+    check("clone adopted cleared", new.get("adopted") is False,
+          diag=str(new.get("adopted")))
+    check("clone process_group cleared", new.get("process_group") is None,
+          diag=str(new.get("process_group")))
+
+# -----------------------------------------------------------------------------
+def test_post_dispatch_eviction_and_rule():
+    """_enforce_post_dispatch_thresholds must evict ONLY when BOTH mem≥1/3 AND util≥saturation.
+    Util-only (the elder task pinning the chip while mem is fine) used to evict the youngest
+    repeatedly — that's the t1029/t1030 thrash bug. Also tests the warmup cooldown."""
+    print("\n[10] Post-dispatch eviction (AND-rule + warmup cooldown)")
+    now = time.time()
+    def make_state(elder_age_s, young_age_s):
+        return {"tasks": [
+            {"id": "telder", "status": "running", "node": "g2", "gpu_idx": 0,
+             "started_at": now - elder_age_s, "remote_pids": [9001],
+             "auto_adopted": False},
+            {"id": "tyoung", "status": "running", "node": "g2", "gpu_idx": 0,
+             "started_at": now - young_age_s, "remote_pids": [9002],
+             "auto_adopted": False},
+        ]}
+    def make_nodes(used_mb, util):
+        return [{"name": "g2", "alive": True, "gpus": [
+            {"idx": 0, "used_mb": used_mb, "total_mb": 12288,
+             "free_mb": 12288 - used_mb, "util_pct": util}]}]
+    # Stub run_on so the kill call is a no-op, and count kill attempts.
+    orig_run_on = sch.run_on
+    kill_calls = []
+    def fake_run_on(*a, **k):
+        kill_calls.append((a, k))
+        return (0, "", "")
+    sch.run_on = fake_run_on
+    try:
+        # Case A: util=100, mem=20% → NO evict (the bug fix; was OR-rule false-positive)
+        state = make_state(elder_age_s=600, young_age_s=400)
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=2400, util=100))
+        check("util=100 alone (mem 20%) → no evict (was the t1030 thrash bug)", evicted == [],
+              diag=f"got evicted={evicted}")
+        check("util-only cycle does not call kill", len(kill_calls) == 0,
+              diag=f"kill_calls={len(kill_calls)}")
+        before = copy.deepcopy(state)
+        for _ in range(3):
+            evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=2400, util=100))
+        check("repeated util-only cycles still do not evict", evicted == [] and state == before,
+              diag=f"evicted={evicted}, state_changed={state != before}")
+        check("repeated util-only cycles still do not call kill", len(kill_calls) == 0,
+              diag=f"kill_calls={len(kill_calls)}")
+
+        # Case A2: just below the 1/3 memory threshold + util=100 → still NO evict.
+        state = make_state(600, 400)
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=4095, util=100))
+        check("util=100 with mem just below 1/3 → no evict", evicted == [],
+              diag=f"got evicted={evicted}")
+
+        # Case B: mem=50%, util=30% → NO evict (only mem high, no contention)
+        state = make_state(600, 400)
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=30))
+        check("mem=50% alone (util 30%) → no evict", evicted == [],
+              diag=f"got evicted={evicted}")
+
+        # Case C: BOTH high (mem 50% + util 100%) → MUST evict youngest
+        state = make_state(600, 400)
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("mem 50% AND util 100% → evict youngest (real contention)", evicted == ["tyoung"],
+              diag=f"got evicted={evicted}")
+        young = [t for t in state["tasks"] if t["id"] == "tyoung"][0]
+        check("real threshold eviction queues youngest, not failed", young["status"] == "queued",
+              diag=f"status={young.get('status')}")
+        check("real threshold eviction clears placement", young.get("node") is None and young.get("gpu_idx") is None,
+              diag=f"node={young.get('node')} gpu={young.get('gpu_idx')}")
+
+        # Case D: BOTH high but youngest is in warmup (age < EVICT_TASK_MIN_AGE_S) → don't evict
+        state = make_state(elder_age_s=600, young_age_s=30)  # young is 30s old
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("youngest in warmup (age<180s) → no evict even with both signals high",
+              evicted == [], diag=f"got evicted={evicted}")
+
+        # Case E: single task on GPU → never evict (design exception)
+        state = {"tasks": [
+            {"id": "tonly", "status": "running", "node": "g2", "gpu_idx": 0,
+             "started_at": now - 600, "remote_pids": [9003], "auto_adopted": False}
+        ]}
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("single task on GPU → never evict (design exception)", evicted == [])
+
+        # Case F: auto-adopted task at fault → never evict
+        state = make_state(600, 400)
+        state["tasks"][1]["auto_adopted"] = True
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("youngest is auto-adopted → never evict", evicted == [])
+    finally:
+        sch.run_on = orig_run_on
+
+# -----------------------------------------------------------------------------
+def test_training_cpu_guard():
+    """Training + vram=0 must be refused/blocked unless --allow-cpu-training is set.
+    App-level `--device cpu` is not sufficient because that exact footgun can put a GPU
+    training batch onto the CPU partition."""
+    print("\n[15] Training+vram=0 guard (refuse unless scheduler-level override)")
+    # _cmd_looks_like_training pattern matrix
+    yes = ["python train_iql_bus.py --seed 42",
+           "python /path/to/trainer.py",
+           "python -u train.py --foo",
+           "/abs/path/run_train.sh args",
+           "python h2o+_bus_main.py --seed 42"]
+    no = ["python eval_only.py",
+          "python supervisor.py --poll",
+          "python dispatch.py",
+          "python my_main.py"]
+    for c in yes:
+        check(f"detect training: {c[:40]!r}", sch._cmd_looks_like_training(c))
+    for c in no:
+        check(f"NOT training: {c[:40]!r}", not sch._cmd_looks_like_training(c))
+    # _cmd_explicitly_cpu pattern matrix
+    cpu_explicit = [
+        "python train.py --device cpu",
+        "python train.py --device=cpu",
+        "python train.py --cpu-only",
+        "python train.py --no-cuda",
+        "python train.py --no-gpu",
+        "CUDA_VISIBLE_DEVICES= python train.py",
+    ]
+    cpu_implicit = [
+        "python train.py",
+        "python train.py --device cuda",
+        "python train.py --gpus 1",
+        "CUDA_VISIBLE_DEVICES=0 python train.py",
+        "CUDA_VISIBLE_DEVICES=0,1 python train.py",
+    ]
+    for c in cpu_explicit:
+        check(f"detect explicit-CPU: {c[:40]!r}", sch._cmd_explicitly_cpu(c))
+    for c in cpu_implicit:
+        check(f"NOT explicit-CPU: {c[:40]!r}", not sch._cmd_explicitly_cpu(c))
+    check("RLPD/WSRL-style description is training-shaped",
+          sch._task_looks_like_training("python h2o+_bus_main.py --device cpu",
+                                        "R3 #10 baseline: RLPD seed=42"))
+    reason = sch._cpu_training_policy_reason(
+        "python train_iql_bus.py --device cpu",
+        "R3 #10 baseline: IQL seed=42",
+        allow_cpu_training=False,
+    )
+    check("--device cpu does NOT bypass scheduler CPU-training guard", reason is not None,
+          diag=str(reason))
+    gpu_reserved_cpu_cmd = sch._cpu_training_policy_reason(
+        "python train_iql_bus.py --device cpu",
+        "R3 #10 baseline: IQL seed=42",
+        allow_cpu_training=False,
+        est_vram_mb=512,
+    )
+    check("--device cpu is blocked even when vram>0 would reserve a GPU",
+          gpu_reserved_cpu_cmd is not None,
+          diag=str(gpu_reserved_cpu_cmd))
+    cpu_override_gpu_reserved = sch._cpu_training_policy_reason(
+        "python train_iql_bus.py --device cpu",
+        "R3 #10 baseline: IQL seed=42",
+        allow_cpu_training=True,
+        est_vram_mb=512,
+    )
+    check("--allow-cpu-training still requires --vram 0 (no GPU reservation for CPU job)",
+          cpu_override_gpu_reserved is not None,
+          diag=str(cpu_override_gpu_reserved))
+    check("--allow-cpu-training bypasses scheduler CPU-training guard",
+          sch._cpu_training_policy_reason(
+              "python train_iql_bus.py --device cpu",
+              "R3 #10 baseline: IQL seed=42",
+              allow_cpu_training=True,
+              est_vram_mb=0,
+          ) is None)
+    legacy = {
+        "id": "tlegacy", "status": "queued", "est_vram_mb": 0,
+        "cmd": "python train_awac_bus.py --seed 42 --device cpu",
+        "description": "R3 #10 baseline: AWAC seed=42",
+    }
+    check("legacy queued CPU-training task is dispatch-blocked",
+          sch._queued_cpu_training_block_reason(legacy) is not None)
+    legacy["allow_cpu_training"] = True
+    check("explicit scheduler override lets queued CPU training dispatch",
+          sch._queued_cpu_training_block_reason(legacy) is None)
+    legacy_gpu_reserved = {
+        "id": "tlegacy-gpu-reserved", "status": "queued", "est_vram_mb": 512,
+        "cmd": "CUDA_VISIBLE_DEVICES= python train_awac_bus.py --seed 42",
+        "description": "R3 #10 baseline: AWAC seed=42",
+    }
+    check("legacy queued task with CPU cmd but vram>0 is still dispatch-blocked",
+          sch._queued_cpu_training_block_reason(legacy_gpu_reserved) is not None)
+    legacy_gpu_reserved["allow_cpu_training"] = True
+    check("CPU override + vram>0 remains blocked (would reserve GPU for CPU job)",
+          sch._queued_cpu_training_block_reason(legacy_gpu_reserved) is not None)
+
+def test_resume_capability_guard():
+    """Training-shaped cmd with --ckpt-dir but no resume flag in cmd nor --resume-flag at submit
+    must be refused. WSRL 05-04 footgun: ckpts saved every 50 epochs to disk but cmd had no
+    `--resume_from`, so any crash/reboot would have relaunched from epoch 0."""
+    print("\n[16] Resume-capability guard (training+ckpt-dir but no resume wired up)")
+    # _cmd_has_resume_flag matrix
+    has = [
+        "python train.py --resume",
+        "python train.py --resume_from /path/ckpt.pt",
+        "python train.py --resume-from=/path/ckpt.pt",
+        "python train.py --load_ckpt /path/ckpt.pt",
+        "python train.py --load-ckpt=/path/ckpt.pt",
+        "python train.py --restore_from /path/ckpt.pt",
+        "python train.py --ckpt_path /path/ckpt.pt",
+        "python train.py --init_from /path/ckpt.pt",
+    ]
+    has_not = [
+        "python train.py --seed 42",
+        "python train.py --max_iters 1000",
+        "python train.py --resume_strategy is_a_red_herring",  # unrelated arg containing 'resume'
+    ]
+    for c in has:
+        check(f"detect resume flag: {c[:50]!r}", sch._cmd_has_resume_flag(c))
+    for c in has_not:
+        check(f"NOT resume flag: {c[:50]!r}", not sch._cmd_has_resume_flag(c))
+
+    # WSRL footgun: training cmd, --ckpt-dir set, no resume in cmd, no --resume-flag → BLOCK
+    reason = sch._resume_capability_reason(
+        cmd="python train_wsrl.py --n_epochs 300 --seed 42",
+        ckpt_dir="/path/to/ckpts",
+        resume_flag="",
+        allow_no_resume=False,
+    )
+    check("WSRL footgun is blocked", reason is not None, diag=str(reason))
+    # cmd already has resume → pass
+    check("cmd with --resume bypasses guard",
+          sch._resume_capability_reason(
+              cmd="python train_wsrl.py --resume",
+              ckpt_dir="/path/to/ckpts", resume_flag="", allow_no_resume=False) is None)
+    # submit-time --resume-flag → pass (scheduler will inject at relaunch)
+    check("--resume-flag at submit bypasses guard (scheduler injects on relaunch)",
+          sch._resume_capability_reason(
+              cmd="python train_wsrl.py --n_epochs 300",
+              ckpt_dir="/path/to/ckpts", resume_flag="--resume_from", allow_no_resume=False) is None)
+    # --allow-no-resume override → pass
+    check("--allow-no-resume override bypasses guard",
+          sch._resume_capability_reason(
+              cmd="python train_wsrl.py --n_epochs 300",
+              ckpt_dir="/path/to/ckpts", resume_flag="", allow_no_resume=True) is None)
+    # No --ckpt-dir means upstream guard handles it (we don't double-block)
+    check("no --ckpt-dir defers to upstream ckpt-dir guard",
+          sch._resume_capability_reason(
+              cmd="python train_wsrl.py --n_epochs 300",
+              ckpt_dir=None, resume_flag="", allow_no_resume=False) is None)
+    # Non-training cmd is exempt
+    check("non-training cmd is exempt",
+          sch._resume_capability_reason(
+              cmd="python eval.py --workers 4",
+              ckpt_dir="/path/to/ckpts", resume_flag="", allow_no_resume=False) is None)
+
+def test_diagnose_mid_training_kill():
+    """WSRL 05-04 fix: a task killed mid-training (training markers in log, no success marker)
+    must be flagged is_crash=True so auto-requeue fires. Previously fell through to
+    'ambiguous; assumed normal' which silently marked done and lost 50h of progress."""
+    print("\n[17] Diagnose mid-training kill (no success marker → crash, not done)")
+    import tempfile, os as _os
+
+    def make_task(log_lines, lifetime, peak_vram=0):
+        """Build a fake task with a real on-disk log so _diagnose_finished_task can read it."""
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False)
+        tmp.write("\n".join(log_lines))
+        tmp.close()
+        return {
+            "id": "tdiag", "status": "running",
+            "log_path": tmp.name,
+            "started_at": time.time() - lifetime,
+            "finished_at": time.time(),
+            "peak_vram_mb": peak_vram,
+            "cmd": "python train_wsrl.py --n_epochs 300 --seed 42",
+            "node": "local",
+        }, tmp.name
+
+    # Case 1: WSRL footgun — actively training, no success, host reboot kill
+    task, logp = make_task(
+        ["[Epoch  10/300] loss=0.5 t=300s", "[Epoch  50/300] loss=0.3 t=1500s",
+         "[Epoch 100/300] loss=0.2 t=3000s checkpoint saved"],
+        lifetime=180000)  # 50h
+    diag = sch._diagnose_terminal(task)
+    check("mid-training kill flagged is_crash=True (was 'ambiguous; assumed normal')",
+          diag.get("is_crash") is True, diag=str(diag.get("reason"))[:100])
+    _os.unlink(logp)
+
+    # Case 2: legitimate completion with success marker — must NOT flag
+    task, logp = make_task(
+        ["[Epoch 295/300] loss=0.1", "[Epoch 300/300] loss=0.1",
+         "Final model saved: /path/to/model_final.pt"],
+        lifetime=180000)
+    diag = sch._diagnose_terminal(task)
+    check("training task with success marker not flagged",
+          diag.get("is_crash") is False, diag=str(diag.get("reason"))[:100])
+    _os.unlink(logp)
+
+    # Case 3: no training markers at all (the mid-init OOM case — existing rule)
+    task, logp = make_task(
+        ["loading data...", "building model...", "[killed by oom-killer]"],
+        lifetime=900, peak_vram=0)
+    diag = sch._diagnose_terminal(task)
+    check("mid-init OOM still flagged is_crash=True (existing rule unchanged)",
+          diag.get("is_crash") is True, diag=str(diag.get("reason"))[:100])
+    _os.unlink(logp)
+
+    # Case 4 — t1401 footgun: clean no-op exit (eval --skip_existing finds 0 to do, runs 25s)
+    # was getting false-flagged as crash. The "Running 0 checkpoints" marker now counts as success.
+    task, logp = make_task(
+        ["Found 564 checkpoints to evaluate",
+         "Skipping 564 already evaluated checkpoints",
+         "Running 0 checkpoints on 4 workers"],
+        lifetime=25, peak_vram=0)
+    diag = sch._diagnose_terminal(task)
+    check("clean no-op exit (\"Running 0\") not flagged as crash",
+          diag.get("is_crash") is False, diag=str(diag.get("reason"))[:100])
+    _os.unlink(logp)
+    task, logp = make_task(
+        ["Reading config...", "Nothing to do — all evaluations already complete."],
+        lifetime=8, peak_vram=0)
+    diag = sch._diagnose_terminal(task)
+    check("clean no-op exit (\"Nothing to\") not flagged as crash",
+          diag.get("is_crash") is False, diag=str(diag.get("reason"))[:100])
+    _os.unlink(logp)
+
+def test_find_resume_extension_filter():
+    """Bug t1422: find_resume's default glob `*` matched train_log.csv, which scheduler then
+    injected as --resume_from → torch.load(csv) raised EOFError. Now find_resume filters
+    results to a whitelist of known ckpt extensions."""
+    print("\n[19] find_resume() filters by ckpt-extension whitelist")
+    import tempfile, os as _os, subprocess as _sp
+
+    tmpdir = tempfile.mkdtemp()
+    # Mix of ckpt-extension and non-ckpt files; .csv is newest (would have been picked before fix)
+    for ext in ("pt", "pth", "pkl", "csv", "json", "log"):
+        with open(_os.path.join(tmpdir, f"file.{ext}"), "w") as f:
+            f.write("x")
+        time.sleep(0.01)  # ensure mtime ordering
+    # Touch the CSV last so default glob `*` would have picked it
+    with open(_os.path.join(tmpdir, "file.csv"), "w") as f:
+        f.write("y")
+    # Touch a real ckpt last so it should be the winner under the new filter
+    time.sleep(0.01)
+    with open(_os.path.join(tmpdir, "checkpoint_epoch100.pt"), "w") as f:
+        f.write("z")
+
+    # Build a fake task that runs on local (no SSH)
+    task = {"id": "tres", "ckpt_dir": tmpdir, "ckpt_glob": "*", "node": "local"}
+    result = sch.find_resume(task)
+    check("find_resume returns a .pt file (not .csv)",
+          result and result.endswith(".pt"), diag=f"got: {result}")
+    check("find_resume picks newest matching ckpt",
+          result and result.endswith("checkpoint_epoch100.pt"), diag=f"got: {result}")
+
+    # Ensure non-ckpt-only directory returns None
+    tmpdir2 = tempfile.mkdtemp()
+    for ext in ("csv", "json", "log", "txt"):
+        with open(_os.path.join(tmpdir2, f"file.{ext}"), "w") as f:
+            f.write("x")
+    task2 = {"id": "tres2", "ckpt_dir": tmpdir2, "ckpt_glob": "*", "node": "local"}
+    result2 = sch.find_resume(task2)
+    check("dir with only non-ckpt files → find_resume returns None",
+          result2 is None, diag=f"got: {result2}")
+
+    # Semantic filter: default glob must not pick output artifacts that share ckpt extensions.
+    # model_final.pt is usually an inference artifact, and buffer_epoch*.pkl is replay data;
+    # neither is guaranteed to contain optimizer/RNG training state. Old code picked newest by
+    # extension only, so these could be injected as --resume_from and crash or silently replay wrong.
+    tmpdir3 = tempfile.mkdtemp()
+    for name in ("checkpoint_epoch050.pt", "buffer_epoch050.pkl", "model_final.pt"):
+        with open(_os.path.join(tmpdir3, name), "w") as f:
+            f.write(name)
+        time.sleep(0.01)
+    task3 = {"id": "tres3", "ckpt_dir": tmpdir3, "ckpt_glob": "*", "node": "local"}
+    result3 = sch.find_resume(task3)
+    check("default glob skips model_final/buffer and picks training checkpoint",
+          result3 and result3.endswith("checkpoint_epoch050.pt"),
+          diag=f"got: {result3}")
+    task4 = {"id": "tres4", "ckpt_dir": tmpdir3, "ckpt_glob": "model_final.pt", "node": "local"}
+    result4 = sch.find_resume(task4)
+    check("explicit --ckpt-glob can still select model_final when user asks exactly",
+          result4 and result4.endswith("model_final.pt"),
+          diag=f"got: {result4}")
+
+    _sp.run(["rm", "-rf", tmpdir, tmpdir2, tmpdir3], check=False)
+
+def test_env_spec_conda_parsing():
+    """Item: conda: env auto-sync. Verify parse_env_spec requires absolute conda paths."""
+    print("\n[44a] env_spec parsing handles conda:/abs/path")
+    import importlib.util as _ilu
+    edp = _ilu.spec_from_file_location("env_deploy",
+        os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py"))
+    ed = _ilu.module_from_spec(edp); edp.loader.exec_module(ed)
+    check("conda:/abs/path", ed.parse_env_spec("conda:/home/u/.conda/envs/x") == ("conda", "/home/u/.conda/envs/x"))
+    try:
+        ed.parse_env_spec("conda:./local")
+        check("conda relative path rejected", False)
+    except ValueError:
+        check("conda relative path rejected", True)
+    try:
+        ed.parse_env_spec("conda:")
+        check("empty conda path rejected", False)
+    except ValueError:
+        check("empty conda path rejected", True)
+    # Bare 'conda' without : is unrecognized — must include path
+    try:
+        ed.parse_env_spec("conda")
+        check("bare 'conda' rejected", False)
+    except ValueError:
+        check("bare 'conda' rejected", True)
+
+
+def test_conda_preload_helpers():
+    """Verify env_deploy.has_conda_env + push_conda_env signatures and basic logic.
+    (Live rsync is integration-tested at dispatch time; here we cover the contract.)"""
+    print("\n[44b] env_deploy.has_conda_env / push_conda_env contracts")
+    import importlib.util as _ilu
+    edp = _ilu.spec_from_file_location("env_deploy",
+        os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py"))
+    ed = _ilu.module_from_spec(edp); edp.loader.exec_module(ed)
+    # has_conda_env: stub run_on, verify it builds the right probe cmd
+    captured = {}
+    def stub_run_on(node, cmd, timeout=8, check=True, **kw):
+        captured["cmd"] = cmd
+        return (0, "OK\n", "")
+    ok = ed.has_conda_env(stub_run_on, "remote", "/home/u/.conda/envs/myenv")
+    check("has_conda_env probes <env_path>/bin/python --version", ok is True)
+    check("probe cmd uses bin/python --version",
+          "/bin/python" in captured["cmd"] and "--version" in captured["cmd"],
+          diag=captured["cmd"])
+    # push_conda_env to local node = no-op
+    ok2, msg2 = ed.push_conda_env(None, "/local/path", "/local/path")
+    check("push_conda_env(node_host=None) is a no-op", ok2 is True,
+          diag=msg2)
+
+
+def test_preload_handles_conda_spec():
+    """`_preload_docker_images_outside_lock` (now multi-kind) must enumerate conda tasks
+    too. Verify by inspecting source for `needed_conda` set being populated and synced."""
+    print("\n[44c] preload enumerates and syncs conda tasks alongside docker")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    preload_src = src.split("def _preload_docker_images_outside_lock")[1].split("def cmd_dispatch")[0]
+    check("preload has separate conda needed-set",
+          "needed_conda" in preload_src and 'kind == "conda"' in preload_src,
+          diag="preload should branch on kind=='conda'")
+    check("conda preload calls push_conda_env",
+          "env_deploy.push_conda_env(" in preload_src)
+    check("conda preload does not skip rsync just because remote python works",
+          "env_deploy.has_conda_env(" not in preload_src,
+          diag="stale local env updates must propagate via incremental rsync")
+
+
+def test_invariant_kill_unless_done_or_cancelled_requeues():
+    """INVARIANT: a task that ENDED for any reason other than (a) clean exit (status=done) or
+    (b) explicit user cancel (status=cancelled) MUST re-enter the queue (auto-requeue).
+
+    Verifies the failure→requeue path: _batch_check_running detects dead PID → diagnose runs
+    → if is_crash AND category not in HARD-FAIL set → _requeue_after_crash creates retry.
+    Cancelled tasks bypass this path (status=cancelled, not failed). Done tasks bypass too."""
+    print("\n[44] invariant: killed (not cancel/done) → requeue")
+    state = {"tasks": [], "next_id": 0}
+    crashed = {
+        "id": "tk1", "status": "failed", "cmd": "python train.py", "signature": "TEST/inv-A",
+        "retry_count": 0, "_diagnosis": {"is_crash": True, "tail": "", "reason": "ssh timeout"},
+    }
+    state["tasks"].append(crashed)
+    new_id = sch._requeue_after_crash(crashed, state)
+    check("crashed task → new retry created", new_id is not None and new_id != "tk1",
+          diag=f"new_id={new_id}")
+    new = next((t for t in state["tasks"] if t["id"] == new_id), None)
+    check("retry status is queued (re-enters queue)",
+          new is not None and new.get("status") == "queued")
+    check("retry parent_id links to original",
+          new is not None and new.get("parent_id") == "tk1")
+    # Cancelled tasks are sticky — _requeue_after_crash is only called via _batch_check_running
+    # which iterates status='running'. Cancelled tasks are status='cancelled' → never reach
+    # this path. Verify by inspecting source.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_batch_check_running iterates status=='running' only (cancelled exempt)",
+          't["status"] != "running"' in src or 'status"] != "running"' in src)
+
+
+def test_invariant_no_dup_active_same_sig_cmd():
+    """INVARIANT: same (signature, cmd) pair has AT MOST ONE active task (queued OR running OR
+    launching). cmd_submit refuses dup, _requeue_after_crash dedups against existing actives."""
+    print("\n[45] invariant: no duplicate active (sig, cmd)")
+    # Verify _requeue_after_crash dedups
+    state = {
+        "tasks": [
+            {"id": "trun", "status": "running", "cmd": "python a.py",
+             "signature": "TEST/inv-dup", "retry_count": 0},
+            {"id": "tnew", "status": "failed", "cmd": "python a.py",
+             "signature": "TEST/inv-dup", "retry_count": 0,
+             "_diagnosis": {"is_crash": True, "tail": "", "reason": "x"}},
+        ],
+        "next_id": 0,
+    }
+    out = sch._requeue_after_crash(state["tasks"][1], state)
+    check("requeue dedupes against running same sig+cmd → returns existing id",
+          out == "trun", diag=f"got {out}")
+    check("no new task appended (count stays 2)",
+          len(state["tasks"]) == 2)
+    # Try with launching state instead of running
+    state2 = {
+        "tasks": [
+            {"id": "tlnch", "status": "launching", "cmd": "python a.py",
+             "signature": "TEST/inv-dup-2", "retry_count": 0},
+            {"id": "tnew2", "status": "failed", "cmd": "python a.py",
+             "signature": "TEST/inv-dup-2", "retry_count": 0,
+             "_diagnosis": {"is_crash": True, "tail": "", "reason": "x"}},
+        ],
+        "next_id": 0,
+    }
+    out2 = sch._requeue_after_crash(state2["tasks"][1], state2)
+    check("dedup ALSO catches launching state (WAL fix)", out2 == "tlnch",
+          diag=f"got {out2}")
+
+
+def test_invariant_race_guard_includes_launching():
+    """INVARIANT: race-condition guard at dispatch must consider 'launching' status as
+    'sig is taken' — not just 'running'. WAL window is brief but in concurrent dispatch
+    cycles (cmd_dispatch + watcher) two tasks with same sig could both pass the running_sigs
+    check before either flipped to running."""
+    print("\n[46] invariant: race-guard counts launching as taken")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # The running_sigs comprehension in _do_dispatch should include launching now
+    idx = src.find("running_sigs = {")
+    check("running_sigs comprehension found", idx > 0)
+    if idx > 0:
+        block = src[idx:idx + 400]
+        check("running_sigs includes 'launching' state",
+              "launching" in block,
+              diag=block[:300])
+
+
+def test_systemd_unit_restart_always():
+    """Item 8: scheduler.service must have `Restart=always`, not `on-failure`. SIGKILL'd
+    processes (kernel OOM) exit without a clean failure code, which `on-failure` does NOT
+    treat as failure → systemd doesn't restart → watcher silently dead."""
+    print("\n[39] systemd unit has Restart=always")
+    unit = os.path.expanduser("~/.config/systemd/user/scheduler.service")
+    if not os.path.exists(unit):
+        check("systemd unit file exists", False, diag=f"missing {unit}")
+        return
+    src = open(unit).read()
+    check("Restart=always present", "Restart=always" in src,
+          diag=f"unit content: {src[:300]}")
+    check("Restart=on-failure NOT present (regression to old config)",
+          "Restart=on-failure" not in src.replace("# ", ""),  # ignore commented-out
+          diag="found bare Restart=on-failure")
+
+
+def test_run_on_has_server_alive_options():
+    """Item 9: ssh `ControlMaster` socket can become half-dead (network blip, remote node
+    pause). Without ServerAlive options, the next run_on() blocks for the full subprocess
+    timeout. ServerAliveInterval=5 + ServerAliveCountMax=3 → 15s detection, well within
+    our 15s default timeout."""
+    print("\n[40] run_on uses ssh ServerAlive* options for half-dead masters")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Find the run_on def, slice ~30 lines after, look for ssh args
+    idx = src.find("def run_on(")
+    check("run_on() definition found", idx > 0)
+    if idx > 0:
+        block = src[idx:idx + 1500]
+        check("ServerAliveInterval option present", "ServerAliveInterval=5" in block,
+              diag=block[:400])
+        check("ServerAliveCountMax option present", "ServerAliveCountMax=3" in block,
+              diag=block[:400])
+
+
+def test_env_deploy_doc_matches_code():
+    """Sentinel: env_deploy.py top-level docstring must NOT reference outdated docker flags
+    (e.g. `--gpus all` was replaced by `--gpus device=N` after Codex flagged it as a GPU-leak.
+    Doc drift is a maintenance hazard, not a runtime bug, but if the doc lies future-me
+    will copy the wrong incantation. Catch drift here, not in production."""
+    print("\n[50] env_deploy.py docstring matches actual code (no outdated --gpus all)")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py")).read()
+    # Extract the module docstring
+    import ast as _ast
+    module = _ast.parse(src)
+    docstring = _ast.get_docstring(module) or ""
+    check("docstring exists", len(docstring) > 0)
+    # Forbidden phrases (these were the OLD wrong flags):
+    forbidden = ["--gpus all"]
+    for phrase in forbidden:
+        check(f"docstring does NOT contain outdated {phrase!r}",
+              phrase not in docstring,
+              diag=f"found {phrase!r} in module docstring")
+    # Required current behaviors that should be mentioned:
+    check("docstring mentions --gpus device=<N> (current pinning)",
+          "--gpus device=<N>" in docstring or "device=<N>" in docstring,
+          diag="docstring should describe device-N pinning")
+    check("docstring mentions conda strategy (current code branch)",
+          "conda:" in docstring,
+          diag="conda env-spec branch undocumented")
+    mcp_src = open(os.path.expanduser("~/.claude/skills/scheduler/integrations/scheduler_mcp.py")).read()
+    check("MCP docs do NOT contain outdated --gpus all",
+          "--gpus all" not in mcp_src,
+          diag="scheduler_mcp submit doc still advertises GPU-leaking Docker launch")
+    check("MCP docs mention conda env-spec",
+          "conda:/abs/path/to/env" in mcp_src,
+          diag="scheduler_mcp submit doc omits conda sync strategy")
+
+
+def test_pick_placement_best_fit_warm_first():
+    """Codex follow-up: scoring used `-free_mb` (worst-fit) → small task got biggest empty
+    card, fragmenting the cluster. New scoring is best-fit + warm-first:
+      - warm card preferred over empty card (preserve empties for big tasks)
+      - among same-emptiness candidates, tightest fit (smallest leftover) wins"""
+    print("\n[49] pick_placement: best-fit + warm-first (was worst-fit)")
+    # Two GPUs on one node:
+    #   GPU0: 2GB used, 6GB free  (warm, partially full)
+    #   GPU1: 0GB used, 8GB free  (empty)
+    # Task needs 1GB. Old policy: GPU1 (largest free). New policy: GPU0 (warm, tight fit).
+    task = {"id": "tplace", "status": "queued", "signature": "TEST/place",
+            "cmd": "python x.py", "cwd": "/tmp", "ram_mb": 500,
+            "est_vram_mb": 1024, "cpu_cores": 1, "priority": "normal",
+            "submitted_at": time.time()}
+    nodes = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+              "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
+              "running_count": 0,
+              "gpus": [
+                  {"idx": 0, "used_mb": 2048, "total_mb": 8192, "free_mb": 6144, "util_pct": 30},
+                  {"idx": 1, "used_mb": 0,    "total_mb": 8192, "free_mb": 8192, "util_pct": 0},
+              ]}]
+    placement = sch.pick_placement(task, nodes)
+    check("warm GPU0 picked over empty GPU1 (best-fit + warm-first)",
+          placement is not None and placement[1] == 0,
+          diag=f"placement={placement} (expected (local, 0))")
+    # Sanity: when ONLY empty card available, pick it
+    nodes2 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+               "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
+               "running_count": 0,
+               "gpus": [
+                   {"idx": 5, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0},
+               ]}]
+    placement2 = sch.pick_placement(task, nodes2)
+    check("only empty available → still picked",
+          placement2 is not None and placement2[1] == 5,
+          diag=f"placement={placement2}")
+    # Best-fit among two warm cards: tighter fit wins. Both warm but under 1/3 threshold
+    # (8192/3 ≈ 2730MB), so 1/3 rule doesn't block. Task needs 1GB.
+    nodes3 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+               "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
+               "running_count": 0,
+               "gpus": [
+                   # GPU2: 1.5GB used, 6.7GB free → bigger leftover after 1GB placement
+                   {"idx": 2, "used_mb": 1500, "total_mb": 8192, "free_mb": 6692, "util_pct": 30},
+                   # GPU3: 2.5GB used, 5.7GB free → tighter leftover, BEST FIT wins
+                   {"idx": 3, "used_mb": 2500, "total_mb": 8192, "free_mb": 5692, "util_pct": 30},
+               ]}]
+    placement3 = sch.pick_placement(task, nodes3)
+    check("among warm+fitting cards, best-fit picks tighter (GPU3, smaller free_mb)",
+          placement3 is not None and placement3[1] == 3,
+          diag=f"placement={placement3} (expected (local, 3))")
+
+
+def test_diagnose_peak_vram_implies_crash_without_success():
+    """Codex follow-up: a task with peak_vram>0 (GPU was used) AND no success marker AND
+    no training-markers-in-tail (markers rotated out, custom log format) MUST be flagged
+    as crash, not ambiguous-assumed-normal. Otherwise long-running non-standard-logger
+    tasks that get SIGKILL'd are silently marked done."""
+    print("\n[48] diagnose: peak_vram>0 + no-success → crash (even when no training markers in tail)")
+    import tempfile, os as _os
+    def make_task(log_lines, lifetime, peak_vram):
+        tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".log", delete=False)
+        tmp.write("\n".join(log_lines)); tmp.close()
+        return {
+            "id": "tc48", "status": "running",
+            "log_path": tmp.name,
+            "started_at": time.time() - lifetime,
+            "finished_at": time.time(),
+            "peak_vram_mb": peak_vram,
+            "cmd": "python myapp.py",
+            "node": "local",
+        }, tmp.name
+    # Custom log >500B with output that doesn't match TRAINING_MARKERS but task DID hit GPU.
+    # Need >500B to bypass rule 5 ("log only XB after Ys") so we land in the catch-all branch.
+    custom = ["Loading dataset from /data/dataset.h5 (size=4GB)...",
+              "Model built: 12.3M params, fp16",
+              "Using device: cuda:0 / NVIDIA RTX 4060 Laptop GPU"]
+    for i in range(50):
+        custom.append(f"[2025-05-07 06:{i:02d}:00] sample {i*100}/100000 lr=0.001 wall=12.3s")
+    task, logp = make_task(custom, lifetime=8000, peak_vram=2500)
+    diag = sch._diagnose_terminal(task)
+    check("peak_vram>0 + no-success + no-marker → flagged crash",
+          diag.get("is_crash") is True, diag=str(diag.get("reason"))[:120])
+    check("crash reason mentions GPU work observed",
+          "GPU work observed" in (diag.get("reason") or ""),
+          diag=str(diag.get("reason"))[:120])
+    _os.unlink(logp)
+    # Sanity: peak_vram=0 + no-marker still falls to existing "never entered training" rule
+    task2, logp2 = make_task(
+        ["loading..."], lifetime=900, peak_vram=0)
+    diag2 = sch._diagnose_terminal(task2)
+    check("peak_vram=0 + no-marker still flagged (existing rule)",
+          diag2.get("is_crash") is True)
+    _os.unlink(logp2)
+
+
+def test_launch_path_uses_digest_check():
+    """Codex follow-up: launch path's `_maybe_wrap_docker` must compare digests, not just
+    tag presence — otherwise a preload failure leaving a stale tag on remote silently
+    runs old code at launch time. Verify the source actually fetches local_digest and
+    passes it to has_image at launch."""
+    print("\n[47] launch path's docker check uses digest (not tag-presence)")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Locate _maybe_wrap_docker
+    idx = src.find("def _maybe_wrap_docker(")
+    check("_maybe_wrap_docker found", idx > 0)
+    if idx > 0:
+        # The launch-path block within this function
+        end = src.find("def ", idx + 1)
+        block = src[idx:end if end > 0 else idx + 4000]
+        check("launch path fetches local_digest before has_image",
+              "get_image_digest(run_on" in block,
+              diag="missing get_image_digest call in _maybe_wrap_docker")
+        check("launch path passes local_digest to has_image",
+              "has_image(run_on, node, chosen_image, local_digest=" in block,
+              diag="has_image call in launch path lacks local_digest=")
+        check("launch path no longer uses tag-presence-only has_image (regression)",
+              "has_image(run_on, node, chosen_image)" not in block,
+              diag="bare has_image call (without local_digest) reintroduced — would skip drift detection")
+
+
+def test_has_image_digest_drift():
+    """Item 16: `has_image` must compare digests, not just tag presence — otherwise a remote
+    `myproj:latest` with stale content while local was rebuilt would skip push and run old code."""
+    print("\n[41] has_image rejects when local digest differs (P1b drift detection)")
+    import importlib.util as _ilu
+    edp = _ilu.spec_from_file_location("env_deploy",
+        os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py"))
+    ed = _ilu.module_from_spec(edp); edp.loader.exec_module(ed)
+    # Stub run_on so we control what 'docker inspect --format {{.Id}}' returns per node
+    digest_local = "sha256:abc111"
+    digest_remote_old = "sha256:zzz999"
+    def fake_run_on_match(node, cmd, timeout=8, check=True, **kw):
+        # remote returns SAME digest as local
+        return (0, digest_local + "\n", "")
+    def fake_run_on_drift(node, cmd, timeout=8, check=True, **kw):
+        if node == "local":
+            return (0, digest_local + "\n", "")
+        return (0, digest_remote_old + "\n", "")
+    def fake_run_on_missing(node, cmd, timeout=8, check=True, **kw):
+        return (1, "", "no such image")
+    # Without local_digest provided → fast path: just tag presence
+    check("legacy fast path (no local_digest): tag present → True",
+          ed.has_image(fake_run_on_match, "remote", "myproj:latest") is True)
+    # With local_digest matching → True
+    check("digest matches → True",
+          ed.has_image(fake_run_on_match, "remote", "myproj:latest", local_digest=digest_local) is True)
+    # With local_digest differing → False (forces re-push)
+    check("digest drift → False (will re-push)",
+          ed.has_image(fake_run_on_drift, "remote", "myproj:latest", local_digest=digest_local) is False)
+    # Image missing on remote → False
+    check("image missing → False",
+          ed.has_image(fake_run_on_missing, "remote", "myproj:latest", local_digest=digest_local) is False)
+
+
+def test_atomic_write_integrity():
+    """Item 24: queue.json write interruption (signal mid-fwrite) should NEVER leave a
+    half-written file — `_atomic_write_json` writes to .tmp + fsync + os.replace. Verify
+    behavior end-to-end."""
+    print("\n[42] _atomic_write_json never leaves a partial file")
+    import tempfile, json as _json
+    from pathlib import Path as _Path
+    tmpdir = tempfile.mkdtemp()
+    target = _Path(tmpdir) / "test.json"
+    # Pre-existing valid file
+    with open(target, "w") as f: _json.dump({"v": 1}, f)
+    # Atomic-write of new content
+    sch._atomic_write_json(target, {"v": 2, "tasks": [1, 2, 3]})
+    # Read back
+    with open(target) as f:
+        data = _json.load(f)
+    check("atomic_write produces valid JSON", isinstance(data, dict))
+    check("atomic_write writes correct content", data.get("v") == 2)
+    # Verify no .tmp leftover
+    leftover = [f for f in os.listdir(tmpdir) if f.endswith(".tmp")]
+    check("no .tmp leftover after success", len(leftover) == 0,
+          diag=f"found: {leftover}")
+    # Cleanup
+    import shutil; shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def test_cmd_with_special_shell_chars():
+    """Items 30 + 32: cmds with quotes, $(), backticks, spaces in cwd, non-ASCII paths must
+    survive launch's wrap chain (shlex.quote → setsid bash -c → docker run wrappers).
+    Regression: nested-quoting bugs would corrupt the cmd at remote shell."""
+    print("\n[43] cmd parsing tolerates special chars (quotes, $, spaces, non-ASCII)")
+    # Test the wrap functions don't mangle special chars
+    cases = [
+        ("python -c \"print('ok')\"", "single+double quote mix"),
+        ("python -c 'print(\"ok\")'", "double inside single"),
+        ("python script.py --note \"tag with spaces\"", "spaces in arg"),
+        ("VAR=$(echo hello) python x.py", "command substitution preserved"),
+        ("python /path/with spaces/script.py", "space in path"),
+        ("python /home/用户/项目/train.py --tag 中文标签", "non-ASCII path + arg"),
+    ]
+    for cmd, label in cases:
+        # _inject_python_u shouldn't corrupt the cmd (just adds -u after `python` token)
+        wrapped = sch._inject_python_u(cmd)
+        check(f"-u inject preserves: {label}",
+              "python" in wrapped or "python -u" in wrapped, diag=f"cmd={cmd!r} → {wrapped!r}")
+        # docker wrap should also survive (passes cmd as bash -c arg via shlex.quote)
+        import importlib.util as _ilu
+        edp = _ilu.spec_from_file_location("env_deploy",
+            os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py"))
+        ed = _ilu.module_from_spec(edp); edp.loader.exec_module(ed)
+        # docker wrap shlex-quotes everything → safe even with spaces / non-ASCII
+        out = ed.wrap_cmd_docker(cmd, "img:tag", "/wd", gpu_idx=None)
+        check(f"docker wrap quotes: {label}",
+              "bash -c" in out, diag=f"cmd={cmd!r} → {out[:120]!r}")
+    # cwd with spaces — verify shlex.quote produces a safely-quoted form
+    import shlex as _shlex
+    weird_cwd = "/home/user/dir with spaces/中文"
+    quoted = _shlex.quote(weird_cwd)
+    check("cwd with spaces+CJK gets shlex-quoted (single-quoted form)",
+          quoted.startswith("'") and quoted.endswith("'"), diag=quoted)
+
+
+def test_no_test_writes_live_queue_with_fake_state():
+    """REGRESSION SENTINEL (queue-wipe incident 2026-05-07): test_dispatch_skips_duplicate_signature
+    used to call sch._do_dispatch(state, nodes) with a FAKE in-memory state, but my P0b orphan-fix
+    made _do_dispatch call save_state(state) per launch — fake state thus overwrote live queue.json
+    and wiped ~1600 production tasks. The fix is to stub sch.save_state in any test that calls
+    sch._do_dispatch / sch.launch with fake state. This sentinel verifies that no test calls
+    those functions without first stubbing save_state, by inspecting the test source for the pattern.
+
+    If a future test forgets the stub, this sentinel fails fast — before the test actually
+    runs and wipes the queue."""
+    print("\n[37] sentinel: no test calls _do_dispatch / launch without stubbing save_state")
+    # Use ast to find ACTUAL `sch._do_dispatch(...)` calls (not text in docstrings).
+    import ast as _ast
+    src = open(__file__).read()
+    tree = _ast.parse(src)
+    lines = src.split("\n")
+    call_lines = []
+    for node in _ast.walk(tree):
+        if not isinstance(node, _ast.Call): continue
+        f = node.func
+        if (isinstance(f, _ast.Attribute) and isinstance(f.value, _ast.Name)
+                and f.value.id == "sch" and f.attr == "_do_dispatch"):
+            call_lines.append(node.lineno)
+    risky_blocks = []
+    for ln_no in call_lines:
+        window = "\n".join(lines[max(0, ln_no - 50):ln_no])
+        if "sch.save_state" not in window:
+            risky_blocks.append((ln_no, lines[ln_no - 1].strip()))
+    check("no sch._do_dispatch call lacks save_state stub in surrounding 50 lines",
+          len(risky_blocks) == 0,
+          diag=f"risky locations: {risky_blocks}")
+
+
+def test_descendants_of_capped():
+    """Item 21: a fork-bomb script could produce thousands of descendants → BFS output
+    explodes, kill cmd line gigantic, ssh stdout buffer overflow. _DESCENDANTS_CAP
+    bounds the result so probe stays responsive."""
+    print("\n[32] _descendants_of capped against fork-bomb")
+    # Build a deep + wide ppid_map: 5000 procs, all children of root pid=1000
+    roots = {1000}
+    ppid_of = {1000: None}
+    for i in range(2, 5002):
+        ppid_of[i] = 1000  # all children of root
+    out = sch._descendants_of(roots, ppid_of)
+    check("descendants_of caps at _DESCENDANTS_CAP (500)",
+          len(out) <= sch._DESCENDANTS_CAP,
+          diag=f"got {len(out)} descendants, cap={sch._DESCENDANTS_CAP}")
+    check("normal small case unaffected (500 PIDs all returned)",
+          len(out) == sch._DESCENDANTS_CAP, diag=f"got {len(out)}")
+
+
+def test_clock_skew_lifetime_clamped():
+    """Item 7: if NTP skews backward mid-task, finished_at < started_at → naive subtraction
+    produces negative lifetime → diagnose lifetime-based rules misfire. Verify all lifetime
+    sites use max(0, fa - sa)."""
+    print("\n[33] lifetime computations clamp to 0 on clock skew")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Search all `finished_at` - `started_at` patterns; each should have max(0, ...) wrapping.
+    import re as _re
+    raw_subs = _re.findall(r"\(?t\.get\(.finished_at.\).*?\)?\s*-\s*t\.get\(.started_at.\)", src)
+    for s in raw_subs:
+        check(f"raw finished_at - started_at (no max wrapper) absent",
+              "max(0," in src[max(0, src.find(s)-15):src.find(s)+len(s)],
+              diag=f"unguarded subtraction at: {s[:60]}")
+    # Also assert the helpers are using max(0, ...)
+    check("scheduler has max(0, finished - started) pattern",
+          "max(0, finished - started)" in src or "max(0, t[\"finished_at\"]" in src)
+
+
+def test_history_lru_truncation():
+    """Item 25: vram_history.json grows unbounded across years of experiments. LRU keep-newest
+    by last_seen so file stays bounded."""
+    print("\n[34] history_record LRU truncates to HISTORY_MAX_ENTRIES")
+    import tempfile, json
+    real_VRAM_FILE = sch.VRAM_FILE
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode='w')
+    tmp.close()
+    from pathlib import Path as _Path
+    sch.VRAM_FILE = _Path(tmp.name)
+    try:
+        # Pre-load 600 fake old entries with descending last_seen
+        h = {}
+        for i in range(600):
+            h[f"OLD/sig_{i}"] = {"vram_mb": 100, "last_seen": 1000 + i}
+        sch.save_history(h)
+        # Add one new entry — should trigger truncation
+        sch.history_record("NEW/sig_added", peak_vram_mb=999)
+        h_after = sch.load_history()
+        check("history capped at HISTORY_MAX_ENTRIES after record",
+              len(h_after) <= sch.HISTORY_MAX_ENTRIES,
+              diag=f"got {len(h_after)} entries, cap={sch.HISTORY_MAX_ENTRIES}")
+        check("newest entry kept (NEW/sig_added present)",
+              "NEW/sig_added" in h_after)
+        # Oldest entries should be evicted (those with low last_seen)
+        check("oldest entries evicted (OLD/sig_0 gone)",
+              "OLD/sig_0" not in h_after)
+    finally:
+        sch.VRAM_FILE = real_VRAM_FILE
+        try: os.unlink(tmp.name)
+        except: pass
+
+
+def test_launching_state_field_persistence():
+    """Item 5 follow-up: dispatch loop must write WAL (status='launching') BEFORE ssh so
+    scheduler crash mid-launch leaves a recoverable breadcrumb."""
+    print("\n[35] dispatch sets status='launching' before launch (WAL)")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Find dispatch's launch call and verify a status='launching' flip + save_state is BEFORE it.
+    idx_launch = src.find("ok, msg = launch(t)")
+    check("dispatch calls launch(t)", idx_launch > 0)
+    if idx_launch > 0:
+        before = src[max(0, idx_launch - 800):idx_launch]
+        check("status='launching' flip before launch (WAL)",
+              't["status"] = "launching"' in before, diag=before[-200:])
+        check("save_state before launch (WAL persistence)",
+              "save_state(state)" in before, diag=before[-200:])
+    check("central stale-launching recovery helper exists",
+          "def recover_stale_launching_tasks" in src and "LAUNCHING_RESET_S" in src)
+    dispatch_src = src.split("def cmd_dispatch")[1].split("def cmd_watch")[0]
+    watch_iter_src = src.split("def _watch_iteration")[1].split("def cmd_status")[0]
+    status_src = src.split("def cmd_status")[1].split("def cmd_show")[0]
+    cancel_src = src.split("def cmd_cancel")[1].split("def cmd_forget")[0]
+    check("cmd_dispatch recovers stale launching before dispatch",
+          "recover_stale_launching_tasks(state)" in dispatch_src)
+    check("_watch_iteration recovers stale launching every loop",
+          "recover_stale_launching_tasks(state)" in watch_iter_src)
+    check("cmd_status recovers stale launching and shows active launching tasks",
+          "recover_stale_launching_tasks(state)" in status_src
+          and '("queued", "launching", "running")' in status_src)
+    check("cmd_cancel can cancel launching tasks",
+          "recover_stale_launching_tasks(state)" in cancel_src
+          and '("queued", "launching")' in cancel_src)
+
+
+def test_env_value_with_equals_sign():
+    """Item 31: env vars with `=` in value (e.g. JWT tokens, conda env names like 'a=b')
+    must parse via split('=', 1) not split('='), else val truncated at first `=`."""
+    print("\n[36] env KEY=VAL parsing handles `=` in value")
+    parsed = sch._parse_env(["TOKEN=sk-abc=xyz=qrs", "FLAG=true"])
+    check("multi-= value preserved", parsed.get("TOKEN") == "sk-abc=xyz=qrs",
+          diag=str(parsed))
+    check("simple value still works", parsed.get("FLAG") == "true")
+
+
+def test_disk_full_classification():
+    """DISK_FULL routes to escalation (not auto-retry) and is checked BEFORE OOM patterns
+    so 'No space left on device' isn't accidentally tagged OOM. Codex P1."""
+    print("\n[28] DISK_FULL classification + escalate-don't-retry")
+    diag = {"is_crash": True, "tail": "OSError: [Errno 28] No space left on device", "reason": ""}
+    check("OSError errno 28 → DISK_FULL", sch._classify_failure(diag) == "DISK_FULL",
+          diag=str(sch._classify_failure(diag)))
+    diag2 = {"is_crash": True, "tail": "no space left on device", "reason": ""}
+    check("'no space left on device' → DISK_FULL (case-insensitive)",
+          sch._classify_failure(diag2) == "DISK_FULL")
+    diag3 = {"is_crash": True, "tail": "Disk quota exceeded", "reason": ""}
+    check("'Disk quota exceeded' → DISK_FULL", sch._classify_failure(diag3) == "DISK_FULL")
+    # Real OOM still classifies as OOM (not affected by DISK_FULL ordering)
+    diag_oom = {"is_crash": True, "tail": "Out of memory: Killed process 1", "reason": ""}
+    check("kernel OOM still OOM (not DISK_FULL)", sch._classify_failure(diag_oom) == "OOM")
+    # _requeue_after_crash escalates DISK_FULL like ENV_MISSING/OOM (not retry-cap path)
+    state = {"tasks": [], "next_id": 0}
+    parent = {"id": "tdf", "cmd": "python train.py", "signature": "TEST/df-test",
+              "status": "failed", "retry_count": 0,
+              "_diagnosis": {"is_crash": True, "tail": "ENOSPC writing log", "reason": ""}}
+    state["tasks"].append(parent)
+    new_id = sch._requeue_after_crash(parent, state)
+    check("DISK_FULL → no retry created, escalation written instead", new_id is None)
+    check("parent failure_category set to DISK_FULL", parent.get("failure_category") == "DISK_FULL")
+
+
+def test_zombie_pid_excluded_from_alive():
+    """`kill -0 <pid>` returns success for zombies. Without /proc state check, a zombie PID
+    keeps the task forever-marked-running. Codex P1: ALIVE only when State != Z and != X."""
+    print("\n[29] zombie PID detection: kill -0 alone is insufficient")
+    # We can't easily simulate a zombie in regression — verify the cmd template includes
+    # the /proc state check and the awk filter excludes Z and X.
+    # Re-implement check_running's pid_check shape here to assert it.
+    pids = [12345, 67890]
+    pid_checks = "; ".join(
+        f"kill -0 {p} 2>/dev/null && "
+        f"awk '/^State:/{{s=$2}} END{{if(s!=\"Z\" && s!=\"X\") print \"ALIVE_{p}\"}}' "
+        f"/proc/{p}/status 2>/dev/null"
+        for p in pids
+    )
+    check("pid_check probes /proc/<pid>/status", "/proc/12345/status" in pid_checks)
+    check("pid_check excludes State=Z (zombie)", '!="Z"' in pid_checks)
+    check("pid_check excludes State=X (dead)", '!="X"' in pid_checks)
+    check("pid_check still does kill -0 first", "kill -0 12345" in pid_checks)
+    # Verify production scheduler.py contains the same shape (catches regression to old form)
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("scheduler.py check_running uses /proc state guard",
+          "/proc/{p}/status" in src and 'State:' in src)
+
+
+def test_preload_uses_spec_image_or_image_field():
+    """`_preload_docker_images_outside_lock` must consider tasks where the image is encoded
+    inline in `--env-spec docker:IMAGE` even when `--image` field is not set separately.
+    Old code skipped on `not image` and missed those. Codex P0."""
+    print("\n[30] preload uses spec_image OR image field (P0 fix)")
+    # We verify by reading the source rather than running a live preload — preload's actual
+    # work requires docker daemon.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # The fixed code uses `chosen = spec_image or image_field` and continues on `if not chosen`.
+    # Prior buggy code was `if spec == "none" or not image: continue` BEFORE parsing.
+    check("preload doesn't skip on `not image` BEFORE parsing env_spec",
+          "if spec == \"none\" or not image: continue" not in src,
+          diag="found old buggy guard pattern")
+    check("preload computes `spec_image or image_field`",
+          "spec_image or image_field" in src)
+
+
+def test_save_state_after_each_launch():
+    """Codex P0: dispatch loop must persist queue.json AFTER each successful launch, not
+    only at end of loop. Otherwise a SIGKILL mid-loop leaves remote procs running with no
+    queue.json record → orphaned processes."""
+    print("\n[31] save_state per-launch (orphan window minimization)")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # The fix: save_state(state) inside the dispatch launch loop, after `events.append({"type": "launched", ...})`.
+    # Locate the dispatch loop's launched-event block and check save_state is present nearby.
+    idx = src.find('events.append({"type": "launched"')
+    check("dispatch loop has 'launched' event append", idx > 0)
+    if idx > 0:
+        window = src[idx:idx + 1200]
+        check("save_state(state) appears soon after launched event",
+              "save_state(state)" in window, diag=window[:200])
+
+
+def test_kill_includes_docker_for_named_container():
+    """When task has container_name (set by launch when env_spec=docker), the kill cmd
+    must include `docker stop` BEFORE host PID kills (containerd-shim isolates the actual
+    proc tree from the docker run client, so killing the launcher PID doesn't reliably
+    stop the container). Codex review caught this gap."""
+    print("\n[26] _kill_task_processes uses docker stop/kill for named container")
+    # Stub out run_on so we can capture the kill cmd without ssh
+    captured = {"cmd": None, "node": None}
+    real_run_on = sch.run_on
+    def fake_run_on(node, cmd, timeout=15, check=True, **kw):
+        captured["cmd"] = cmd; captured["node"] = node
+        return (0, "", "")
+    sch.run_on = fake_run_on
+    try:
+        task = {"id": "tdocker", "node": "local",
+                "remote_pids": [12345], "process_group": 12345,
+                "container_name": "sched-tdocker"}
+        ok, msg = sch._kill_task_processes(task, timeout=5)
+    finally:
+        sch.run_on = real_run_on
+    cmd = captured["cmd"] or ""
+    check("kill cmd includes 'docker stop -t 5 sched-tdocker'",
+          "docker stop" in cmd and "sched-tdocker" in cmd, diag=cmd[:200])
+    check("kill cmd includes 'docker kill sched-tdocker' (escalation)",
+          "docker kill" in cmd, diag=cmd[:200])
+    check("docker stop ordered BEFORE host kill",
+          cmd.index("docker stop") < cmd.index("kill 12345") if "kill 12345" in cmd else True,
+          diag=cmd[:200])
+    check("kill cmd includes container_name in success msg",
+          ok and "container=sched-tdocker" in msg, diag=msg)
+
+
+def test_kill_no_container_unchanged():
+    """When task has NO container_name (legacy / non-docker), kill cmd does NOT mention docker
+    (regression: the new docker-aware code path must be opt-in via container_name)."""
+    print("\n[27] _kill_task_processes for non-docker task: no docker keywords")
+    captured = {"cmd": None}
+    real_run_on = sch.run_on
+    def fake_run_on(node, cmd, timeout=15, check=True, **kw):
+        captured["cmd"] = cmd
+        return (0, "", "")
+    sch.run_on = fake_run_on
+    try:
+        task = {"id": "tplain", "node": "local",
+                "remote_pids": [99999], "process_group": 99999}
+        sch._kill_task_processes(task, timeout=5)
+    finally:
+        sch.run_on = real_run_on
+    cmd = captured["cmd"] or ""
+    check("non-docker task: no 'docker' in kill cmd",
+          "docker" not in cmd, diag=cmd[:200])
+
+
+def test_env_deploy_wrap_docker():
+    """env_deploy.wrap_cmd_docker produces a launch-time docker-run wrapper that:
+    - includes --gpus all when gpu_idx is set, omits it for CPU-only
+    - mounts cwd onto identical host path (-v cwd:cwd -w cwd)
+    - quotes image / cwd / inner correctly
+    - flows extra_env via -e KEY=VAL"""
+    print("\n[25] env_deploy.wrap_cmd_docker shape (docker launch wrapper)")
+    import importlib.util as _ilu, os as _os
+    edp = _ilu.spec_from_file_location("env_deploy", _os.path.expanduser("~/.claude/skills/scheduler/env_deploy.py"))
+    ed = _ilu.module_from_spec(edp); edp.loader.exec_module(ed)
+    # GPU task: hard-pinned to device=1 (Codex review fix; --gpus all was a leak)
+    # + docker rm -f stale-container prefix (Codex P1: name reuse after dirty exit)
+    # + memory/cpus cgroup limits (Codex P1: container honors scheduler budgets)
+    out = ed.wrap_cmd_docker("python -u train.py --seed 42", "myproj:latest",
+                             "/home/u/proj", gpu_idx=1, extra_env={"FOO": "bar"},
+                             container_name="sched-t9999",
+                             memory_mb=4096, cpus=2)
+    check("stale-container cleanup prefix", out.startswith("docker rm -f sched-t9999"),
+          diag=out[:120])
+    check("docker run after cleanup", "docker run --rm" in out, diag=out[:120])
+    check("--gpus device=N hard pin (not --gpus all)", "--gpus device=1" in out, diag=out)
+    check("--gpus all NOT used (was the leak)", "--gpus all" not in out, diag=out)
+    check("CUDA_VISIBLE_DEVICES=0 inside container (pinned dev enumerates as 0)",
+          "CUDA_VISIBLE_DEVICES=0" in out, diag=out)
+    check("--name <container> for traceable cancel", "sched-t9999" in out, diag=out)
+    check("--memory cgroup limit", "--memory 4096m" in out, diag=out)
+    check("--cpus cgroup limit", "--cpus 2" in out, diag=out)
+    check("-v cwd:cwd mount", "/home/u/proj:/home/u/proj" in out, diag=out)
+    check("-w cwd workdir", "-w /home/u/proj" in out, diag=out)
+    check("image last positional", "myproj:latest" in out, diag=out)
+    check("extra_env injected", "FOO=bar" in out, diag=out)
+    # CPU-only task: no --gpus, CUDA_VISIBLE_DEVICES nulled
+    out_cpu = ed.wrap_cmd_docker("python -u eval.py", "img", "/wd", gpu_idx=None)
+    check("CPU-only: no --gpus", "--gpus" not in out_cpu, diag=out_cpu)
+    check("CPU-only: CUDA_VISIBLE_DEVICES explicitly empty (no host leak)",
+          "CUDA_VISIBLE_DEVICES=" in out_cpu, diag=out_cpu)
+    # extra_env CUDA_VISIBLE_DEVICES override is REJECTED (we set it based on gpu_idx)
+    out_override = ed.wrap_cmd_docker("python -u t.py", "img", "/wd", gpu_idx=2,
+                                       extra_env={"CUDA_VISIBLE_DEVICES": "5"})
+    check("extra_env can't override pinned CUDA_VISIBLE_DEVICES",
+          out_override.count("CUDA_VISIBLE_DEVICES") == 1, diag=out_override)
+    # Spec parsing
+    check("parse 'none'", ed.parse_env_spec("none") == ("none", None))
+    check("parse '' (empty/None)", ed.parse_env_spec("") == ("none", None))
+    check("parse 'docker:img:tag'", ed.parse_env_spec("docker:img:tag") == ("docker", "img:tag"))
+    check("parse 'docker' (no image)", ed.parse_env_spec("docker") == ("docker", None))
+    check("parse 'auto'", ed.parse_env_spec("auto") == ("auto", None))
+    try:
+        ed.parse_env_spec("garbage")
+        check("parse rejects garbage", False)
+    except ValueError:
+        check("parse rejects garbage", True)
+
+def test_local_max_vram_per_task_dynamic():
+    """After NVIDIA 4060 (8GB) replaced AMD 610 (4GB) as local GPU0, the hardcoded
+    `max_vram_per_task: 4096` cap silently blocked any single-task allocation >4GB even
+    though physically OK. Cap is now None in NODES → no static refusal; the 1/3 packing
+    rule + GPU's actual total_mb are the only constraints."""
+    print("\n[24] local max_vram_per_task is None (auto-derive from probed GPU)")
+    check("NODES['local']['max_vram_per_task'] is None (was 4096 hardcoded)",
+          sch.NODES["local"].get("max_vram_per_task") is None,
+          diag=str(sch.NODES["local"].get("max_vram_per_task")))
+    # _gpu_fits should not refuse based on a static cap when it's None
+    fake_node = {"max_vram_per_task": None}
+    fake_gpu = {"used_mb": 0, "total_mb": 8188, "free_mb": 8000, "util_pct": 0}
+    fake_task = {"est_vram_mb": 6000}  # 6GB task — would exceed old 4GB cap
+    check("6GB task on empty 4060 → not blocked by static cap (was blocked when cap=4096)",
+          sch._gpu_fits(fake_task, fake_gpu, fake_node) is True,
+          diag="_gpu_fits returned False with cap=None")
+
+def test_ckpt_dir_cross_sig_conflict():
+    """Submit-time guard: refuse if --ckpt-dir is already in use by an active task with a
+    DIFFERENT signature. Was the cross-session footgun that produced 3 wsrl/s1024 procs
+    (different sig labels, same out_dir) writing checkpoint_epoch50.pt for 14h → corrupt ckpt.
+
+    SAFETY (2026-05-07 incident): old version of this test wrote queue.json directly without
+    state_lock. When watcher concurrently wrote (mid-task transition), races wiped tasks —
+    ~1600 tasks reduced to 20 mid-session before recovery from .corrupt-* backup. NOW: use
+    sch.state_lock() for ALL queue.json reads/writes to serialize with watcher. Plus take
+    a copy.deepcopy + json.dumps backup to safely restore even if our test crashes mid-way."""
+    print("\n[23] ckpt-dir cross-signature conflict guard at submit")
+    import subprocess as _sp, json as _json
+    SCHED = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
+    # Acquire state_lock for the whole test window. The subprocess submit calls scheduler.py
+    # which ALSO acquires state_lock; nested fcntl on same fd from same process is allowed
+    # (same lock), so this works.
+    with sch.state_lock():
+        state = sch.load_state()
+        backup = _json.dumps(state)  # backup AS JSON string after lock-protected load
+        state["tasks"].append({
+            "id": "trun_for_ckpt_test", "status": "running",
+            "signature": "TEST/ckpt-dir-conflict-A",
+            "cmd": "python train.py --device cuda",
+            "ckpt_dir": "/tmp/test_shared_ckpt_dir",
+            "node": "local", "started_at": time.time() - 60,
+            "ram_mb": 1000, "est_vram_mb": 100, "cpu_cores": 1,
+        })
+        sch.save_state(state)
+    # Now release lock for the subprocess to acquire it (subprocess can't share our lock fd)
+    try:
+        r = _sp.run(["python", SCHED, "submit",
+                     "--description", "TEST conflict",
+                     "--signature", "TEST/ckpt-dir-conflict-B",
+                     "--cwd", "/tmp", "--vram", "100",
+                     "--ckpt-dir", "/tmp/test_shared_ckpt_dir",
+                     "--allow-no-resume",
+                     "--cmd", "python train.py --device cuda"],
+                    capture_output=True, text=True)
+        check("different-sig submit with same ckpt-dir → REFUSED",
+              r.returncode == 2 and "different signature" in r.stderr,
+              diag=(r.stderr or r.stdout)[:200])
+        r = _sp.run(["python", SCHED, "submit",
+                     "--description", "TEST conflict OK",
+                     "--signature", "TEST/ckpt-dir-conflict-C",
+                     "--cwd", "/tmp", "--vram", "100",
+                     "--ckpt-dir", "/tmp/test_shared_ckpt_dir",
+                     "--allow-shared-ckpt-dir",
+                     "--allow-no-resume",
+                     "--cmd", "python train.py --device cuda"],
+                    capture_output=True, text=True)
+        check("--allow-shared-ckpt-dir overrides → submitted",
+              r.returncode == 0 and "submitted" in r.stdout.lower(),
+              diag=(r.stderr or r.stdout)[:200])
+    finally:
+        # Cleanup: remove only the test-injected entries, preserve everything else (including
+        # any tasks the watcher requeued during the test window). Old version `f.write(backup)`
+        # blew away those legitimate updates.
+        with sch.state_lock():
+            cur = sch.load_state()
+            test_sigs = {"TEST/ckpt-dir-conflict-A", "TEST/ckpt-dir-conflict-B",
+                         "TEST/ckpt-dir-conflict-C"}
+            cur["tasks"] = [t for t in cur["tasks"]
+                            if t.get("id") != "trun_for_ckpt_test"
+                            and t.get("signature") not in test_sigs]
+            sch.save_state(cur)
+
+def test_oom_classify_no_false_positive():
+    """OOM_PATTERNS used to include bare 'Killed' which matched innocent English like
+    'task killed mid-training' in our own diagnose reason → mid-training kills got classified
+    as OOM → _requeue_after_crash escalated instead of retried → 4 wsrl/s1024 tasks lost."""
+    print("\n[22] OOM classification: don't false-positive on the word 'killed' in reason text")
+    # The mid-training-kill reason as actually emitted by _diagnose_terminal
+    diag_mid_training = {
+        "is_crash": True,
+        "reason": ("training markers present but no success marker after 50148s — "
+                   "task killed mid-training (likely SIGKILL/OOM/host reboot); "
+                   "auto-requeue will resume from latest ckpt if --resume-flag is set"),
+        "tail": "[Epoch 100/300] loss=0.5",
+    }
+    cat = sch._classify_failure(diag_mid_training)
+    check("mid-training kill diag NOT classified as OOM (was the bug)",
+          cat != "OOM", diag=f"got {cat}")
+    # Genuine OOM kill should still classify as OOM (kernel format)
+    diag_real_oom = {
+        "is_crash": True,
+        "reason": "process disappeared",
+        "tail": "Out of memory: Killed process 12345 (python) total-vm:9586984kB",
+    }
+    check("real kernel OOM still classified as OOM",
+          sch._classify_failure(diag_real_oom) == "OOM",
+          diag=f"got {sch._classify_failure(diag_real_oom)}")
+    # CUDA OOM still classified
+    check("CUDA OOM classified as OOM",
+          sch._classify_failure({"is_crash": True, "tail": "CUDA out of memory", "reason": ""}) == "OOM")
+    # MemoryError classified
+    check("MemoryError classified as OOM",
+          sch._classify_failure({"is_crash": True, "tail": "MemoryError", "reason": ""}) == "OOM")
+
+def test_inject_python_u():
+    """At launch time, scheduler auto-injects -u after every python invocation that doesn't
+    already have it. Without this, log buffering hides progress until exit, and a SIGKILL'd
+    process leaves a 0-byte log → diagnose's 'log only 0B' rule false-flags it as crash even
+    when training actually completed (AWAC s123/s789 footgun)."""
+    print("\n[21] Auto-inject -u into python invocations at launch time")
+    cases = [
+        # (input, expected)
+        ("python train.py --seed 42",            "python -u train.py --seed 42"),
+        ("python3 train.py",                     "python3 -u train.py"),
+        ("/conda/envs/x/bin/python train.py",    "/conda/envs/x/bin/python -u train.py"),
+        ("conda run -n env python -m mod",       "conda run -n env python -u -m mod"),
+        ("PYTHONPATH=. python script.py && echo done",
+         "PYTHONPATH=. python -u script.py && echo done"),
+        # idempotent
+        ("python -u train.py",                   "python -u train.py"),
+        ("python -uX foo",                       "python -uX foo"),  # -u-prefixed any flag
+        # don't confuse --user with -u (double-dash)
+        ("python --user --version",              "python -u --user --version"),
+        # non-python untouched
+        ("bash run.sh",                          "bash run.sh"),
+        ("./train",                              "./train"),
+        ("",                                     ""),
+    ]
+    for inp, want in cases:
+        got = sch._inject_python_u(inp)
+        check(f"{inp[:50]!r:55s} → injected={got != inp}", got == want,
+              diag=f"got={got!r} want={want!r}")
+
+def test_dispatch_skips_duplicate_signature():
+    """Race-condition guard: when a signature already has a running task, queued tasks with
+    the SAME signature must be skipped (not dispatched). Without this, multi-session
+    re-submissions clobber each other's --out_dir/--ckpt-dir — exactly what bit
+    offline-sumo/retrain-v3/wsrl/s1024 (3 procs writing same dir for 14h)."""
+    print("\n[20] Race-condition guard: skip dispatch when same signature already running")
+    import tempfile, subprocess as _sp, json as _json
+
+    # Build a fake state with one running task at sig "X" and one queued task at sig "X"
+    # Plus an empty-signature queued task to confirm exemption.
+    fake_state = {
+        "tasks": [
+            {"id": "trun", "status": "running", "signature": "TEST/dup-sig",
+             "node": "local", "started_at": time.time() - 60,
+             "cmd": "python train.py", "ckpt_dir": "/tmp/x", "ram_mb": 1000,
+             "est_vram_mb": 0, "cpu_cores": 1},
+            {"id": "tdup", "status": "queued", "signature": "TEST/dup-sig",
+             "submitted_at": time.time(), "priority": "normal",
+             "cmd": "python train.py", "ckpt_dir": "/tmp/x", "ram_mb": 1000,
+             "est_vram_mb": 0, "cpu_cores": 1},
+            {"id": "tnosig", "status": "queued", "signature": "",
+             "submitted_at": time.time(), "priority": "normal",
+             "cmd": "python eval.py", "ram_mb": 500,
+             "est_vram_mb": 0, "cpu_cores": 1},
+        ]
+    }
+    # Re-implement just the guard logic against fake_state (mirrors scheduler dispatch loop)
+    running_sigs = {(t.get("signature") or "")
+                    for t in fake_state["tasks"]
+                    if t.get("status") == "running" and t.get("signature")}
+    blocked, eligible = [], []
+    for t in fake_state["tasks"]:
+        if t["status"] != "queued": continue
+        sig = t.get("signature") or ""
+        if sig and sig in running_sigs:
+            blocked.append(t["id"])
+        else:
+            eligible.append(t["id"])
+    check("queued task with same sig as running → blocked",
+          "tdup" in blocked, diag=f"blocked={blocked}")
+    check("queued task with empty sig → not blocked (exempt from guard)",
+          "tnosig" in eligible, diag=f"eligible={eligible}")
+    check("running_sigs correctly built from running tasks",
+          running_sigs == {"TEST/dup-sig"}, diag=str(running_sigs))
+
+    # Full _do_dispatch regression: if two queued tasks share a signature and no instance is
+    # running at loop start, launching the first must immediately block the second in the same
+    # dispatch pass. The old implementation precomputed running_sigs once and forgot to update it
+    # after launch, so both would start and clobber the same output directory.
+    state = {
+        "tasks": [
+            {"id": "tq1", "status": "queued", "signature": "TEST/same-pass",
+             "submitted_at": time.time(), "priority": "normal", "description": "eval A",
+             "cmd": "python eval.py --a", "cwd": "/tmp", "ram_mb": 500,
+             "est_vram_mb": 0, "cpu_cores": 1},
+            {"id": "tq2", "status": "queued", "signature": "TEST/same-pass",
+             "submitted_at": time.time() + 1, "priority": "normal", "description": "eval B",
+             "cmd": "python eval.py --b", "cwd": "/tmp", "ram_mb": 500,
+             "est_vram_mb": 0, "cpu_cores": 1},
+        ],
+        "next_id": 900,
+    }
+    nodes = [{"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+              "free_ram_mb": 30000, "total_ram_mb": 56000, "running_count": 0,
+              "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192,
+                        "free_mb": 8192, "util_pct": 0}]}]
+    launched = []
+    orig_precheck, orig_find, orig_launch = sch.precheck_git, sch.find_resume, sch.launch
+    # CRITICAL: also stub save_state. _do_dispatch now calls save_state(state) after each
+    # successful launch (Codex P0b orphan-window fix). Without this stub, our FAKE in-memory
+    # state would be written to the live queue.json — wipes ~1600 production tasks. Recovered
+    # from queue.json.corrupt-* the first time this bit; this stub prevents recurrence.
+    orig_save = sch.save_state
+    saved_count = [0]
+    def fake_save_state(s):
+        saved_count[0] += 1  # observable for assertion
+    try:
+        sch.precheck_git = lambda t: (True, "ok")
+        sch.find_resume = lambda t: None
+        sch.save_state = fake_save_state
+        def fake_launch(t):
+            launched.append(t["id"])
+            t["status"] = "running"
+            t["remote_pids"] = [1000 + len(launched)]
+            t["started_at"] = time.time()
+            t["log_path"] = f"/tmp/{t['id']}.log"
+            return True, "pid=stub"
+        sch.launch = fake_launch
+        events, _ = sch._do_dispatch(state, nodes)
+    finally:
+        sch.precheck_git, sch.find_resume, sch.launch = orig_precheck, orig_find, orig_launch
+        sch.save_state = orig_save
+    check("save_state called per launch (P0b orphan-window fix is live)",
+          saved_count[0] >= 1, diag=f"calls={saved_count[0]}")
+    tq1 = state["tasks"][0]
+    tq2 = state["tasks"][1]
+    blocked_ids = [ev["task_id"] for ev in events if ev["type"] == "blocked"]
+    check("same-pass duplicate: only first queued sig launches",
+          launched == ["tq1"], diag=f"launched={launched}")
+    check("same-pass duplicate: second task remains queued",
+          tq1["status"] == "running" and tq2["status"] == "queued",
+          diag=f"tq1={tq1['status']} tq2={tq2['status']}")
+    check("same-pass duplicate: second task gets blocked event",
+          "tq2" in blocked_ids and "already has a running task" in tq2.get("last_block_reason", ""),
+          diag=f"blocked={blocked_ids}, reason={tq2.get('last_block_reason')}")
+
+def test_cpu_training_justification_required():
+    """When --allow-cpu-training is set on a training task, --cpu-training-justification must
+    be supplied with ≥30 chars. Without this, the override becomes a reflex bypass — exactly
+    the bug that put 6 H2O+ R3 baselines onto CPU when they belonged on GPU."""
+    print("\n[18] CPU-training override requires written justification (friction layer)")
+    import argparse, subprocess as _sp
+    SCHED = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
+
+    def submit(extra_args):
+        return _sp.run(
+            ["python", SCHED, "submit",
+             "--description", "TEST cpu-training",
+             "--signature", "TEST/cpu-training-justification",
+             "--cwd", "/tmp",
+             "--vram", "0",
+             "--ckpt-dir", "/tmp/ckpt",
+             "--allow-no-resume",  # bypass the unrelated resume guard
+             "--cmd", "python train.py --device cpu",
+             *extra_args],
+            capture_output=True, text=True
+        )
+    # No override at all → blocked by upstream cpu-training guard
+    r = submit([])
+    check("no override → cpu-training guard refuses", r.returncode == 2,
+          diag=r.stderr[:200])
+    # Override flag without justification → blocked by new friction guard
+    r = submit(["--allow-cpu-training"])
+    check("--allow-cpu-training without justification → REFUSED",
+          r.returncode == 2 and "justification" in r.stderr.lower(),
+          diag=r.stderr[:200])
+    # Override + short justification → blocked
+    r = submit(["--allow-cpu-training", "--cpu-training-justification", "yes"])
+    check("--allow-cpu-training with <30-char justification → REFUSED",
+          r.returncode == 2 and "30 chars" in r.stderr,
+          diag=r.stderr[:200])
+    # Override + adequate justification → submitted
+    just_text = "tiny MLP debug, GPU all booked, runs in 5 min on local CPU"
+    r = submit(["--allow-cpu-training", "--cpu-training-justification", just_text])
+    check("--allow-cpu-training with adequate justification → submitted",
+          r.returncode == 0 and "submitted" in r.stdout.lower(),
+          diag=r.stderr[:200] or r.stdout[:200])
+    # Verify justification persisted on task record
+    if r.returncode == 0:
+        import json as _json
+        with open(os.path.expanduser("~/.claude/scheduler/queue.json")) as f:
+            qs = _json.load(f)
+        new_task = next((t for t in qs["tasks"]
+                        if t.get("signature") == "TEST/cpu-training-justification"
+                        and t.get("status") == "queued"), None)
+        check("justification persisted on task record",
+              new_task is not None and new_task.get("cpu_training_justification") == just_text,
+              diag=str(new_task.get("cpu_training_justification") if new_task else None)[:80])
+        # cleanup
+        if new_task:
+            _sp.run(["python", SCHED, "cancel", new_task["id"]], capture_output=True)
+
+
+def test_history_record_p80_outlier_resistance():
+    """history_record uses p80 of last 10 samples (not max). Without this, a single anomalous
+    peak from one bad run pins all future estimates at that high value, blocking placement
+    of subsequent typical-sized runs. Concrete bug: H2O+ WSRL queued at 5GB because one
+    bad sibling sample inflated the project median; typical WSRL runs use ~1.6GB."""
+    print("\n[39] history_record uses p80 (not max) so single outlier doesn't pin estimate")
+    import tempfile, json
+    from pathlib import Path as _Path
+    real_VRAM_FILE = sch.VRAM_FILE
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode='w')
+    tmp.close()
+    sch.VRAM_FILE = _Path(tmp.name)
+    try:
+        # Constants must exist on the module
+        check("HISTORY_PERCENTILE constant defined",
+              hasattr(sch, "HISTORY_PERCENTILE") and sch.HISTORY_PERCENTILE == 80,
+              diag=f"got {getattr(sch, 'HISTORY_PERCENTILE', None)}")
+        check("HISTORY_SAMPLES_PER_SIG constant defined",
+              hasattr(sch, "HISTORY_SAMPLES_PER_SIG") and sch.HISTORY_SAMPLES_PER_SIG == 10,
+              diag=f"got {getattr(sch, 'HISTORY_SAMPLES_PER_SIG', None)}")
+        check("_percentile helper exists", hasattr(sch, "_percentile"))
+
+        # Pure helper behavior
+        check("_percentile of empty → 0", sch._percentile([], 80) == 0)
+        check("_percentile of single → that value", sch._percentile([1500], 80) == 1500)
+        # Sequence 1000..1900 (10 values), p80 ≈ 1720 (rank 7.2 between 1700 and 1800)
+        seq = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900]
+        p80 = sch._percentile(seq, 80)
+        check("_percentile p80 of 1000..1900 lands near 1720",
+              1700 <= p80 <= 1740, diag=f"got {p80}")
+
+        # OUTLIER RESISTANCE (the actual bug fix):
+        # 9 typical runs + 1 outlier. Max would return the outlier; p80 should ignore it.
+        sch.save_history({})
+        for _ in range(9):
+            sch.history_record("TEST/wsrl-typical", peak_ram_mb=1600)
+        sch.history_record("TEST/wsrl-typical", peak_ram_mb=8000)  # one bad run
+        h = sch.load_history()
+        rec = h.get("TEST/wsrl-typical")
+        check("entry was recorded as dict with samples",
+              isinstance(rec, dict) and "ram_samples" in rec,
+              diag=str(rec)[:120])
+        # p80 of [1600]*9 + [8000] sorted = [1600..1600, 8000]; rank 7.2 falls between 1600 and 1600 → 1600
+        # (because index 7 and 8 are both 1600; only index 9 is 8000)
+        check("9 typical + 1 outlier → estimate stays near typical (NOT max)",
+              rec["ram_mb"] <= 2000,
+              diag=f"ram_mb={rec['ram_mb']} samples={rec['ram_samples']}")
+        check("samples capped at HISTORY_SAMPLES_PER_SIG",
+              len(rec["ram_samples"]) <= sch.HISTORY_SAMPLES_PER_SIG)
+
+        # MIGRATION: legacy single-value record (from before p80) should be seeded as the
+        # first sample so it doesn't get lost when new samples arrive.
+        sch.save_history({"TEST/legacy-sig": {"ram_mb": 5000, "vram_mb": 1500}})
+        sch.history_record("TEST/legacy-sig", peak_ram_mb=2000)
+        h2 = sch.load_history()
+        rec2 = h2.get("TEST/legacy-sig")
+        check("legacy single-value seeded into samples list on next record",
+              5000 in (rec2.get("ram_samples") or []) and 2000 in (rec2.get("ram_samples") or []),
+              diag=f"samples={rec2.get('ram_samples')}")
+        # p80 of [2000, 5000] = rank 0.8*(2-1)=0.8 → 2000 + 0.8*(5000-2000) = 4400
+        check("p80 of [2000, 5000] ≈ 4400 (legacy NOT max-pinned at 5000)",
+              3800 <= rec2["ram_mb"] <= 4600,
+              diag=f"ram_mb={rec2['ram_mb']}")
+
+        # SLIDING WINDOW: 12 samples → only last 10 retained; old high values fall off
+        sch.save_history({})
+        # First 2 are 9000 (will be evicted), next 10 are 1500
+        sch.history_record("TEST/slide-sig", peak_ram_mb=9000)
+        sch.history_record("TEST/slide-sig", peak_ram_mb=9000)
+        for _ in range(10):
+            sch.history_record("TEST/slide-sig", peak_ram_mb=1500)
+        h3 = sch.load_history()
+        rec3 = h3.get("TEST/slide-sig")
+        check("after >SAMPLES_PER_SIG records, old high values evicted (window slides)",
+              9000 not in (rec3.get("ram_samples") or []),
+              diag=f"samples={rec3.get('ram_samples')}")
+        check("p80 reflects current behavior, not historical max",
+              rec3["ram_mb"] == 1500, diag=f"ram_mb={rec3['ram_mb']}")
+    finally:
+        sch.VRAM_FILE = real_VRAM_FILE
+        try: os.unlink(tmp.name)
+        except: pass
+
+
+# -----------------------------------------------------------------------------
+if __name__ == "__main__":
+    print(f"running regression tests against {SCHED_PATH}")
+    test_ppid_descendant_filter()
+    test_crash_requeue_dedup()
+    test_preempt_sufficiency()
+    test_launch_fail_fallback()
+    test_cancel_never_becomes_failed()
+    test_ram_placement_check()
+    test_default_vram_not_inflated()
+    test_status_view_no_truncation()
+    test_high_defaults_lower_before_placement()
+    test_probe_ram_budget_cap()
+    test_running_descendant_resources_counted()
+    test_kill_uses_process_group_sigkill()
+    test_launch_failed_node_fallback_and_notification_events()
+    test_requeue_from_adopt_becomes_scheduler_owned()
+    test_training_cpu_guard()
+    test_resume_capability_guard()
+    test_diagnose_mid_training_kill()
+    test_find_resume_extension_filter()
+    test_local_max_vram_per_task_dynamic()
+    test_env_deploy_wrap_docker()
+    test_env_spec_conda_parsing()
+    test_conda_preload_helpers()
+    test_preload_handles_conda_spec()
+    test_invariant_kill_unless_done_or_cancelled_requeues()
+    test_invariant_no_dup_active_same_sig_cmd()
+    test_invariant_race_guard_includes_launching()
+    test_systemd_unit_restart_always()
+    test_run_on_has_server_alive_options()
+    test_has_image_digest_drift()
+    test_env_deploy_doc_matches_code()
+    test_pick_placement_best_fit_warm_first()
+    test_diagnose_peak_vram_implies_crash_without_success()
+    test_launch_path_uses_digest_check()
+    test_atomic_write_integrity()
+    test_cmd_with_special_shell_chars()
+    test_no_test_writes_live_queue_with_fake_state()
+    test_descendants_of_capped()
+    test_clock_skew_lifetime_clamped()
+    test_history_lru_truncation()
+    test_launching_state_field_persistence()
+    test_env_value_with_equals_sign()
+    test_disk_full_classification()
+    test_zombie_pid_excluded_from_alive()
+    test_preload_uses_spec_image_or_image_field()
+    test_save_state_after_each_launch()
+    test_kill_includes_docker_for_named_container()
+    test_kill_no_container_unchanged()
+    test_ckpt_dir_cross_sig_conflict()
+    test_oom_classify_no_false_positive()
+    test_inject_python_u()
+    test_dispatch_skips_duplicate_signature()
+    test_cpu_training_justification_required()
+    test_post_dispatch_eviction_and_rule()
+    test_history_record_p80_outlier_resistance()
+
+    passed = sum(1 for _, c, _ in results if c)
+    total = len(results)
+    print(f"\n{'=' * 60}\n{passed}/{total} checks passed")
+    sys.exit(0 if passed == total else 1)

@@ -1,0 +1,21 @@
+[Unit]
+Description=scheduler watcher — multi-resource (CPU + RAM + VRAM) auto-discover, dispatch, monitor across local + jtl110gpu nodes
+Documentation=file:%h/.claude/skills/scheduler/SKILL.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.claude/skills/scheduler/scheduler.py watch
+# Restart=always (was on-failure): SIGKILL'd processes (kernel OOM) exit with no clean
+# status, which `on-failure` would NOT count as failure → systemd wouldn't restart. Codex P1.
+# `always` covers SIGKILL + clean-exit-with-error + crash uniformly. Watcher itself is idempotent
+# on restart (post_reboot_triage + diagnose loop handles whatever state it inherits).
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

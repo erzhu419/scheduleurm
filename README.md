@@ -199,6 +199,7 @@ Tunables (all env-var overridable; no code edit; takes effect after watcher rest
 | `SCHEDULEURM_MIGRATION_MAX_CWD_SIZE_MB` | `1024` | Reject migration if cwd > this size (excludes .git/__pycache__/*.pyc, mirroring rsync excludes) |
 | `SCHEDULEURM_MIGRATION_COOLDOWN_S` | `1800` | Same task cannot be migrated again within this many seconds (anti-oscillation) |
 | `SCHEDULEURM_MIGRATION_MIN_SOURCE_LOAD_S` | `600` | Absolute floor on source eta_load — load_ratio alone allows trivial imbalances (target=0s, source=2s, ratio=2x → would migrate a 600s task to save 2s) |
+| `SCHEDULEURM_STAGING_TTL_S` | `600` | TTL on _STAGING_CACHE / _STAGED_TASKS entries; older than this forces re-rsync to pick up content edits while the task waited in queue |
 
 Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log` (JSONL, also pushed to Feishu when configured), prints a `MIGRATE from → to (eta=...s)` line on `scheduler dispatch`, and rewrites the task's `preferred_node` + sets `last_block_reason` so it's visible in `scheduler status` too. Sibling `task_preempted` events surface the same way for high-prio preemption.
 

@@ -3186,10 +3186,33 @@ MIGRATION_MAX_CKPT_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CKPT_
 # task stays on source. Rationale: rsync of a 5+GB ckpt takes minutes, often longer
 # than just letting source's queue drain naturally. User-spec'd default is 2GB.
 
-# Cache for staged paths so we don't redundantly rsync. Key: (source_node, target_node, path)
-# Reset on watcher restart (in-memory only) — that's fine, rsync's delta algorithm makes
-# re-runs of unchanged paths trivial (~1s for unchanged).
-_STAGING_CACHE: set = set()
+STAGING_TTL_S = int(os.environ.get("SCHEDULEURM_STAGING_TTL_S", "600"))
+# Phase 3.0.17 P2 fix: TTL on staging caches. Pre-fix _STAGING_CACHE was a plain
+# set — once a (src,tgt,path) was added, it survived until process restart, so a
+# user editing code in cwd OR placing a fresher ckpt would silently get
+# overridden by stale staged content on the next migration. Now entries are
+# tagged with their staging timestamp; lookups treat anything older than
+# STAGING_TTL_S as a miss and force a re-rsync. rsync's delta algorithm keeps
+# re-rsync cheap (~1s for unchanged content), so the default 10 min TTL is the
+# right tradeoff: short enough to pick up content edits within a session,
+# long enough to avoid needless ssh round-trips.
+
+# Cache for staged paths so we don't redundantly rsync. dict key: (source_node,
+# target_node, path); value: timestamp of last successful rsync (TTL-checked).
+# Reset on watcher restart (in-memory only).
+_STAGING_CACHE: dict = {}
+
+
+def _staging_cache_hit(key) -> bool:
+    """Return True iff the cache has a non-stale entry for `key`. Removes stale
+    entries opportunistically so the next call falls through to re-rsync."""
+    ts = _STAGING_CACHE.get(key)
+    if ts is None:
+        return False
+    if (time.time() - ts) > STAGING_TTL_S:
+        _STAGING_CACHE.pop(key, None)
+        return False
+    return True
 
 
 def _stage_for_migration(task: dict, target_node: str,
@@ -3224,7 +3247,7 @@ def _stage_for_migration(task: dict, target_node: str,
 
     # Step 2: cwd
     cwd_key = (source_node, target_node, cwd)
-    if cwd_key not in _STAGING_CACHE:
+    if not _staging_cache_hit(cwd_key):
         try:
             rc, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
                               timeout=5, check=False)
@@ -3297,7 +3320,7 @@ def _stage_for_migration(task: dict, target_node: str,
                     return (False, "cwd still missing after rsync")
             except Exception as e:
                 return (False, f"post-rsync ssh check failed: {e}")
-        _STAGING_CACHE.add(cwd_key)
+        _STAGING_CACHE[cwd_key] = time.time()
 
     # Step 3: ckpt_dir (if set)
     ckpt_dir = task.get("ckpt_dir")
@@ -3363,7 +3386,7 @@ def _stage_for_migration(task: dict, target_node: str,
         # silently restarting from step 0. Now we reject remote→remote (same as cwd
         # does) and only cache after a verified rsync.
         ckpt_key = (source_node, target_node, ckpt_dir) if ckpt_dir else None
-        if ckpt_dir and size_mb > 0 and ckpt_key not in _STAGING_CACHE:
+        if ckpt_dir and size_mb > 0 and not _staging_cache_hit(ckpt_key):
             src_info = NODES.get(source_node or "", {})
             src_host = src_info.get("host")
             tgt_info = NODES.get(target_node, {})
@@ -3404,7 +3427,7 @@ def _stage_for_migration(task: dict, target_node: str,
             except Exception as e:
                 return (False, f"post-rsync ckpt check failed: {e}")
             # Only cache on successful + verified rsync
-            _STAGING_CACHE.add(ckpt_key)
+            _STAGING_CACHE[ckpt_key] = time.time()
 
     # Step 4: env probe — extract python path from cmd
     cmd_str = task.get("cmd") or ""
@@ -3434,8 +3457,20 @@ def _can_migrate_to(task: dict, target_node: str, timeout_s: int = 5) -> bool:
 
     Pre-Phase-3.0.5: this called _stage_for_migration directly, which would block
     cmd_submit / cancel / status / watcher for up to 600s during ckpt rsync inside
-    the global lock. Now it's a pure dict membership check — milliseconds."""
-    return (task.get("id"), target_node) in _STAGED_TASKS
+    the global lock. Now it's a pure dict membership check — milliseconds.
+
+    Phase 3.0.17 P2 fix: TTL on the cache. A staging entry older than
+    STAGING_TTL_S is treated as a miss so the next dispatch cycle re-stages
+    against current source content — protects against silent reuse of stale
+    staged code/ckpt while the task waits in the queue."""
+    key = (task.get("id"), target_node)
+    ts = _STAGED_TASKS.get(key)
+    if ts is None:
+        return False
+    if (time.time() - ts) > STAGING_TTL_S:
+        _STAGED_TASKS.pop(key, None)
+        return False
+    return True
 
 
 # Process-local staging cache — populated by _stage_migration_candidates_outside_lock,

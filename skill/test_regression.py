@@ -4286,6 +4286,150 @@ def test_phase3_0_16_ckpt_size_probe_fail_closed():
         sch.subprocess.run = saved_sp_run
 
 
+def test_phase3_0_17_staging_cache_ttl():
+    """Phase 3.0.17 P2 fix: staging caches must time out so they don't silently
+    serve stale content.
+
+    Pre-fix: `_STAGING_CACHE` was a plain set. Once a (src,tgt,path) was added
+    on first rsync, it survived until process restart. If the user edited code
+    in cwd OR placed a fresher ckpt while the task waited in queue, the next
+    migration cycle's `_can_migrate_to` / `_stage_for_migration` would skip
+    re-rsync and the task launched on target with stale staged content.
+
+    `_STAGED_TASKS` had timestamps but no TTL check — same problem.
+
+    Now: STAGING_TTL_S (default 600s, env-overridable). _staging_cache_hit
+    helper returns False for entries older than TTL and pops them.
+    _can_migrate_to applies the same TTL check to _STAGED_TASKS.
+    """
+    print("\n[74] Phase 3.0.17 P2 fix: staging cache TTL stops silent stale-content reuse")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("STAGING_TTL_S env-overridable constant exists",
+          "STAGING_TTL_S = int(os.environ.get(" in src
+          and "SCHEDULEURM_STAGING_TTL_S" in src)
+    check("_staging_cache_hit helper exists with TTL semantics",
+          "def _staging_cache_hit" in src and "STAGING_TTL_S" in src)
+    check("_STAGING_CACHE is a dict (timestamped), not a set",
+          "_STAGING_CACHE: dict = {}" in src)
+    check("_can_migrate_to enforces STAGING_TTL_S",
+          "STAGING_TTL_S" in src[src.find("def _can_migrate_to"):src.find(
+              "def ", src.find("def _can_migrate_to") + 5)])
+
+    # 2. Behavioral: _staging_cache_hit returns True for fresh, False for stale.
+    saved_cache = sch._STAGING_CACHE.copy()
+    sch._STAGING_CACHE.clear()
+    try:
+        fresh_key = ("src", "tgt", "/fresh")
+        stale_key = ("src", "tgt", "/stale")
+        sch._STAGING_CACHE[fresh_key] = time.time()
+        sch._STAGING_CACHE[stale_key] = time.time() - sch.STAGING_TTL_S - 60
+        check("fresh staging entry → cache hit",
+              sch._staging_cache_hit(fresh_key) is True)
+        check("stale staging entry (TTL+60 ago) → cache miss",
+              sch._staging_cache_hit(stale_key) is False)
+        check("stale entry was popped on miss (forces re-rsync next call)",
+              stale_key not in sch._STAGING_CACHE)
+        check("fresh entry NOT popped",
+              fresh_key in sch._STAGING_CACHE)
+
+        # Boundary: TTL - 1 → hit; TTL + 1 → miss.
+        boundary_under = ("src", "tgt", "/under")
+        boundary_over  = ("src", "tgt", "/over")
+        sch._STAGING_CACHE[boundary_under] = time.time() - sch.STAGING_TTL_S + 1
+        sch._STAGING_CACHE[boundary_over]  = time.time() - sch.STAGING_TTL_S - 1
+        check("entry aged TTL-1 → hit",
+              sch._staging_cache_hit(boundary_under) is True)
+        check("entry aged TTL+1 → miss",
+              sch._staging_cache_hit(boundary_over) is False)
+
+        # Missing entry → False.
+        check("missing key → False (not error)",
+              sch._staging_cache_hit(("none", "x", "/y")) is False)
+    finally:
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE.update(saved_cache)
+
+    # 3. _can_migrate_to applies the same TTL semantics to _STAGED_TASKS.
+    saved_staged = dict(sch._STAGED_TASKS)
+    sch._STAGED_TASKS.clear()
+    try:
+        sch._STAGED_TASKS[("tFresh", "tgt")] = time.time()
+        sch._STAGED_TASKS[("tStale", "tgt")] = time.time() - sch.STAGING_TTL_S - 60
+        check("_can_migrate_to fresh → True",
+              sch._can_migrate_to({"id": "tFresh"}, "tgt") is True)
+        check("_can_migrate_to stale → False (TTL expired)",
+              sch._can_migrate_to({"id": "tStale"}, "tgt") is False)
+        check("stale _STAGED_TASKS entry popped on miss",
+              ("tStale", "tgt") not in sch._STAGED_TASKS)
+        check("fresh _STAGED_TASKS entry preserved",
+              ("tFresh", "tgt") in sch._STAGED_TASKS)
+        check("_can_migrate_to missing entry → False",
+              sch._can_migrate_to({"id": "tNone"}, "tgt") is False)
+    finally:
+        sch._STAGED_TASKS.clear()
+        sch._STAGED_TASKS.update(saved_staged)
+
+    # 4. End-to-end: stale cwd cache forces a re-rsync on next stage attempt.
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    saved_sp_run = sch.subprocess.run
+    saved_cache = sch._STAGING_CACHE.copy()
+    sch.NODES = {
+        "src": {"host": None}, "tgt": {"host": "tgtbox"},
+    }
+    rsync_count = {"n": 0}
+    class R:
+        def __init__(self, rc=0):
+            self.returncode = rc; self.stdout = ""; self.stderr = ""
+    def fake_rsync(*a, **kw):
+        rsync_count["n"] += 1
+        return R(0)
+    sch.subprocess.run = fake_rsync
+    def fake_run_on(node, cmd, timeout=15, check=False):
+        if "test -d /code" in cmd:
+            return (1, "", "")  # cwd missing on target → triggers rsync
+        if "du -sm" in cmd and "--exclude=.git" in cmd:
+            return (0, "10\n", "")
+        if "test -x" in cmd: return (0, "", "")
+        return (0, "", "")
+    sch.run_on = fake_run_on
+    sch._STAGING_CACHE.clear()
+    try:
+        # Pre-load a STALE cwd cache entry. Should be ignored → rsync happens.
+        sch._STAGING_CACHE[("src", "tgt", "/code")] = time.time() - sch.STAGING_TTL_S - 60
+        rsync_count["n"] = 0
+        ok, _ = sch._stage_for_migration(
+            {"id": "tStaleE2E", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("stale cwd cache entry → rsync RE-RUN (not silently skipped)",
+              rsync_count["n"] >= 1, diag=f"rsync_count={rsync_count['n']}")
+
+        # Pre-load a FRESH cwd cache entry. Should skip rsync (cache hit).
+        # However our mock has cwd missing on target, so the rsync would still
+        # need to run for correctness. Let me adjust: have target say cwd
+        # already present so the cache-hit fast-path triggers (the cache hit
+        # only saves the test-d + rsync round-trip when cwd is on target).
+        # Actually the code path is: `if not _staging_cache_hit(cwd_key):` →
+        # only enter the test-d + rsync block if cache miss. If cache hit, skip
+        # entire block. So fresh entry should mean rsync_count stays 0.
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE[("src", "tgt", "/code")] = time.time()
+        rsync_count["n"] = 0
+        ok, _ = sch._stage_for_migration(
+            {"id": "tFreshE2E", "cwd": "/code", "preferred_node": "src",
+             "cmd": "/abs/python a.py"}, "tgt")
+        check("fresh cwd cache entry → rsync SKIPPED (cache hit)",
+              rsync_count["n"] == 0, diag=f"rsync_count={rsync_count['n']}")
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+        sch.subprocess.run = saved_sp_run
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE.update(saved_cache)
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -6768,6 +6912,7 @@ if __name__ == "__main__":
     test_phase3_0_14_min_source_load_and_cwd_size_cap()
     test_phase3_0_15_migrated_task_pins_to_staged_node()
     test_phase3_0_16_ckpt_size_probe_fail_closed()
+    test_phase3_0_17_staging_cache_ttl()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

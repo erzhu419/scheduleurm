@@ -2048,12 +2048,19 @@ class SlurmBackend(Backend):
         return "\n".join(lines) + "\n"
 
     def launch(self, task: dict) -> tuple[bool, str]:
-        # Slurm logs always go on the COMPUTE node; we use the same /tmp/sched_<id>.log
-        # convention as LocalBackend remote so _diagnose_terminal's tail-log path keeps working.
+        # Phase 2.4 P1 fix: slurm-managed jobs run on a compute node (slurm-chosen),
+        # but scheduler tails via the login node. /tmp is per-node-local on virtually
+        # every cluster — writing to /tmp/sched_<id>.log on compute-N would leave the
+        # login node tailing a non-existent path → diagnose sees 0 bytes → false-
+        # classified as crash → wasteful re-queue.
+        # Use a path that's guaranteed shared: under the user's cwd, which IS on a
+        # shared FS (otherwise slurm couldn't run their code from there). The pre-flight
+        # `test -d cwd` already passes; we add `mkdir -p .scheduleurm` to it so sbatch's
+        # --output directive can write there.
+        cwd = task["cwd"]
         log_path = (f"{STATE_DIR}/logs/{task['id']}.log"
                     if NODES[task["node"]]["host"] is None
-                    else f"/tmp/sched_{task['id']}.log")
-        cwd = task["cwd"]
+                    else f"{cwd}/.scheduleurm/{task['id']}.log")
         inner = task["cmd"]
         inner = _inject_python_u(inner)
         resume_path = task.get("resume_from")
@@ -2068,12 +2075,22 @@ class SlurmBackend(Backend):
             return False, docker_err
 
         # Pre-flight: cwd must exist on target node (same check as LocalBackend).
+        # Pre-flight: cwd must exist on target node + ensure log dir exists. The mkdir
+        # is on the LOGIN node here, but since cwd is on shared FS, the directory will
+        # also be visible from the compute node when sbatch's --output= writes to it.
+        # Without `mkdir -p`, sbatch's first write would fail because the parent dir
+        # doesn't exist yet (slurm doesn't autocreate output parent dirs).
+        log_dir = os.path.dirname(log_path)
         try:
-            rc_cwd, _, _ = run_on(task["node"], f"test -d {shlex.quote(cwd)}", timeout=10, check=False)
+            rc_cwd, _, _ = run_on(
+                task["node"],
+                f"test -d {shlex.quote(cwd)} && mkdir -p {shlex.quote(log_dir)}",
+                timeout=10, check=False,
+            )
         except Exception as e:
             rc_cwd = 1
         if rc_cwd != 0:
-            return False, f"cwd missing on {task['node']}: {cwd}"
+            return False, f"cwd missing or log_dir uncreatable on {task['node']}: {cwd}"
 
         script = self._build_sbatch_script(task, inner, log_path)
         # Pipe script via stdin: sbatch -. Avoids leaving files on the compute node.

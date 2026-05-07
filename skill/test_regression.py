@@ -2581,6 +2581,116 @@ def test_backend_slurm_phase2_2_adopt_skip():
         sch.NODES = _NODES_BACKUP
 
 
+def test_backend_slurm_phase2_4_log_path_shared_fs():
+    """Phase 2.4 P1 fix: SlurmBackend log_path must live on a shared filesystem so the
+    compute node (where slurm runs the job) and the login node (where scheduler tails
+    the log) see the same file. /tmp is per-node-local on every cluster I've seen, so
+    using /tmp/sched_<id>.log on a remote slurm node leaves diagnose tailing a
+    non-existent file → 0-byte read → false-classified as crash → wasteful re-queue.
+
+    Fix: write under <cwd>/.scheduleurm/<id>.log. cwd is presumed shared (otherwise
+    slurm couldn't run user's code from there). Pre-flight cwd-test now also creates
+    the log dir so sbatch's --output= write doesn't fail on missing parent.
+    """
+    print("\n[45] Phase 2.4 SlurmBackend log path on shared FS (cwd-relative, not /tmp)")
+    sb = sch.SlurmBackend()
+
+    # ---------- Source guard: no /tmp/sched_ for remote slurm ----------
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # SlurmBackend.launch should use cwd-relative path for remote nodes.
+    sb_launch_idx = src.find("def launch(self, task: dict)", src.find("class SlurmBackend"))
+    sb_kill_idx = src.find("def kill(self,", sb_launch_idx)
+    launch_body = src[sb_launch_idx:sb_kill_idx]
+    check("SlurmBackend.launch uses cwd-relative log path (not /tmp)",
+          ".scheduleurm" in launch_body and "{cwd}" in launch_body,
+          diag=launch_body[:600])
+    check("SlurmBackend pre-flight cwd test now also mkdir -p log_dir",
+          "mkdir -p" in launch_body, diag=launch_body[:600])
+
+    # ---------- Functional: launch on remote slurm node uses cwd-relative path ----------
+    real_subprocess_run = sch.subprocess.run
+    real_run_on = sch.run_on
+    captured = {}
+    def fake_subprocess_run(args, input=None, capture_output=None, text=None, timeout=None):
+        captured["args"] = args
+        captured["input"] = input
+        class R: pass
+        r = R(); r.returncode = 0; r.stdout = "Submitted batch job 99\n"; r.stderr = ""
+        return r
+    preflight_cmds = []
+    def fake_run_on(node, cmd, timeout=15, check=True):
+        preflight_cmds.append(cmd)
+        return (0, "", "")
+    sch.subprocess.run = fake_subprocess_run
+    sch.run_on = fake_run_on
+
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "remote-slurm": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
+                         "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                         "max_concurrent_running": None},
+    }
+    try:
+        task = {
+            "id": "tlog", "node": "remote-slurm", "cwd": "/shared/home/me/proj",
+            "cmd": "python train.py", "cpu_cores": 2, "ram_mb": 4096,
+            "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/log-path",
+            "resume_flag": "", "resume_from": None,
+        }
+        ok, msg = sb.launch(task)
+        check("launch succeeds against remote slurm node", ok, diag=msg)
+        # Assert no /tmp/sched_ in the captured sbatch script
+        check("sbatch script does NOT use /tmp/sched_<id>.log for remote slurm",
+              "/tmp/sched_" not in (captured["input"] or ""),
+              diag=(captured.get("input") or "")[:400])
+        # Assert cwd-relative log dir
+        check("sbatch script uses cwd-relative log path",
+              "/shared/home/me/proj/.scheduleurm/tlog.log" in (captured["input"] or ""),
+              diag=(captured.get("input") or "")[:400])
+        # Pre-flight check: cwd test + mkdir log_dir issued
+        any_preflight_with_mkdir = any(
+            "test -d" in c and "mkdir -p" in c and ".scheduleurm" in c
+            for c in preflight_cmds
+        )
+        check("pre-flight cwd test issues mkdir -p .scheduleurm",
+              any_preflight_with_mkdir,
+              diag=str(preflight_cmds))
+        # Task record stores the cwd-relative log path so diagnose tails the right place
+        check("task['log_path'] points at cwd-relative path",
+              task.get("log_path") == "/shared/home/me/proj/.scheduleurm/tlog.log",
+              diag=str(task.get("log_path")))
+    finally:
+        sch.subprocess.run = real_subprocess_run
+        sch.run_on = real_run_on
+        sch.NODES = saved_NODES
+
+    # ---------- Local slurm node (host=None): keep using STATE_DIR/logs (already shared) ----------
+    sch.subprocess.run = fake_subprocess_run
+    sch.run_on = fake_run_on
+    captured = {}
+    sch.NODES = {
+        "local-slurm": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                         "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                         "max_concurrent_running": None},
+    }
+    try:
+        task = {
+            "id": "tloc", "node": "local-slurm", "cwd": "/tmp/proj",
+            "cmd": "python train.py", "cpu_cores": 2, "ram_mb": 4096,
+            "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/log-path-local",
+            "resume_flag": "", "resume_from": None,
+        }
+        ok, msg = sb.launch(task)
+        check("local-slurm launch ok", ok, diag=msg)
+        check("local slurm uses STATE_DIR/logs (already on local FS — no shared-fs concern)",
+              str(sch.STATE_DIR) in (task.get("log_path") or ""),
+              diag=str(task.get("log_path")))
+    finally:
+        sch.subprocess.run = real_subprocess_run
+        sch.run_on = real_run_on
+        sch.NODES = saved_NODES
+
+
 def test_backend_slurm_phase2_3_bypass_local_capacity():
     """Phase 2.3 P1 fix: pick_placement must NOT gate slurm nodes on local capacity.
 
@@ -2784,6 +2894,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_1_sstat()
     test_backend_slurm_phase2_2_adopt_skip()
     test_backend_slurm_phase2_3_bypass_local_capacity()
+    test_backend_slurm_phase2_4_log_path_shared_fs()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

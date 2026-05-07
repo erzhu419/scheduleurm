@@ -3226,28 +3226,55 @@ def _stage_for_migration(task: dict, target_node: str,
                     f"ckpt_dir {ckpt_dir} is {size_mb}MB > max {max_ckpt_mb}MB; "
                     f"migration aborted (rsync would take too long)")
 
-        # Stage ckpt (similar two-host limitation as cwd)
+        # Stage ckpt (same two-host limitation as cwd: rsync needs one side local).
+        # Phase 3.0.6 P1 fix: prior code had _STAGING_CACHE.add(ckpt_key) OUTSIDE the
+        # rsync branch — when remote→remote was skipped (no rsync attempted) the cache
+        # was still populated and the function returned success. Migration would then
+        # commit and the resume task would start on target without a checkpoint —
+        # silently restarting from step 0. Now we reject remote→remote (same as cwd
+        # does) and only cache after a verified rsync.
         ckpt_key = (source_node, target_node, ckpt_dir)
         if size_mb > 0 and ckpt_key not in _STAGING_CACHE:
             src_info = NODES.get(source_node or "", {})
             src_host = src_info.get("host")
             tgt_info = NODES.get(target_node, {})
             tgt_host = tgt_info.get("host")
-            if not (src_host and tgt_host):  # one side local → rsync OK
-                src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
-                dst_path = (f"{tgt_host}:" if tgt_host else "") + ckpt_dir.rstrip("/") + "/"
-                try:
-                    run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}",
-                           timeout=10, check=False)
-                    import subprocess as _sp
-                    r = _sp.run(["rsync", "-az", "--partial",
-                                 src_path, dst_path],
-                                capture_output=True, text=True, timeout=600)
-                    if r.returncode != 0:
-                        return (False, f"rsync ckpt failed rc={r.returncode}: "
-                                       f"{r.stderr.strip()[:200]}")
-                except Exception as e:
-                    return (False, f"rsync ckpt exception: {e}")
+            if src_host and tgt_host:
+                # Remote→remote: refuse (parity with cwd). The migrated task would
+                # otherwise resume-from-zero on target — worse than not migrating.
+                return (False,
+                        f"ckpt_dir {ckpt_dir} ({size_mb}MB) needs rsync but "
+                        f"remote→remote not supported (src={src_host}, tgt={tgt_host}); "
+                        f"task would lose its checkpoint on migration. User must "
+                        f"sync ckpt manually OR via shared NFS")
+            src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
+            dst_path = (f"{tgt_host}:" if tgt_host else "") + ckpt_dir.rstrip("/") + "/"
+            try:
+                run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}",
+                       timeout=10, check=False)
+                import subprocess as _sp
+                r = _sp.run(["rsync", "-az", "--partial",
+                             src_path, dst_path],
+                            capture_output=True, text=True, timeout=600)
+                if r.returncode != 0:
+                    return (False, f"rsync ckpt failed rc={r.returncode}: "
+                                   f"{r.stderr.strip()[:200]}")
+            except _sp.TimeoutExpired:
+                return (False, "rsync ckpt timeout (>10min)")
+            except Exception as e:
+                return (False, f"rsync ckpt exception: {e}")
+            # Verify rsync put files at the target — if the dir is empty, treat as
+            # failure (don't migrate a resume task to an empty ckpt path).
+            try:
+                rc2, out2, _ = run_on(target_node,
+                                      f"ls -1 {shlex.quote(ckpt_dir)} 2>/dev/null | head -1",
+                                      timeout=5, check=False)
+                if rc2 != 0 or not (out2 or "").strip():
+                    return (False, f"ckpt_dir {ckpt_dir} appears empty on {target_node} "
+                                   f"after rsync (rc={rc2}); migration aborted")
+            except Exception as e:
+                return (False, f"post-rsync ckpt check failed: {e}")
+            # Only cache on successful + verified rsync
             _STAGING_CACHE.add(ckpt_key)
 
     # Step 4: env probe — extract python path from cmd

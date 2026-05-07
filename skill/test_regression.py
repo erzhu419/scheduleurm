@@ -2191,6 +2191,179 @@ def test_backend_abstraction_phase1():
         sch._BACKEND = saved
 
 
+def test_backend_slurm_phase2():
+    """Phase 2: SlurmBackend (sbatch / scancel / squeue) + HybridBackend (per-node routing).
+
+    These tests don't require slurm to be installed — run_on is monkey-patched to return
+    canned outputs that mimic real sbatch / squeue / scancel responses. Exercises:
+    - sbatch script generation: directives derived from task fields (cpu/ram/gres/time)
+    - launch parses 'Submitted batch job N' correctly
+    - kill issues `scancel <id>`
+    - batch_probe maps squeue states to alive/dead correctly
+    - HybridBackend routes per-node based on cached detection result
+    """
+    print("\n[41] Phase 2 SlurmBackend + HybridBackend")
+    check("SlurmBackend defined", hasattr(sch, "SlurmBackend"))
+    check("HybridBackend defined", hasattr(sch, "HybridBackend"))
+    check("SlurmBackend subclasses Backend",
+          issubclass(getattr(sch, "SlurmBackend", type), sch.Backend))
+    check("HybridBackend subclasses Backend",
+          issubclass(getattr(sch, "HybridBackend", type), sch.Backend))
+    check("singleton _BACKEND is HybridBackend (Phase 2 routing)",
+          isinstance(sch._BACKEND, sch.HybridBackend))
+
+    # ---------- SlurmBackend.launch: sbatch script generation ----------
+    sb = sch.SlurmBackend()
+    task = {
+        "id": "t9001", "node": "local", "cwd": "/tmp",
+        "cmd": "python train.py --seed 42",
+        "cpu_cores": 4, "ram_mb": 8192, "est_vram_mb": 4000,
+        "extra_env": {"FOO": "bar"},
+        "signature": "TEST/slurm-script-gen",
+        "resume_flag": "", "resume_from": None,
+    }
+    script = sb._build_sbatch_script(task, "python -u train.py --seed 42", "/tmp/sched_t9001.log")
+    check("script starts with shebang", script.startswith("#!/bin/bash"))
+    check("script has --job-name with task id",
+          "#SBATCH --job-name=scheduleurm-t9001" in script, diag=script[:300])
+    check("script has --cpus-per-task=4", "#SBATCH --cpus-per-task=4" in script)
+    check("script has --mem=8192M", "#SBATCH --mem=8192M" in script)
+    check("script has --gres=gpu:1 (vram > 0)", "#SBATCH --gres=gpu:1" in script)
+    check("script sets --output and --error to log path",
+          "#SBATCH --output=/tmp/sched_t9001.log" in script
+          and "#SBATCH --error=/tmp/sched_t9001.log" in script)
+    check("script has --time= directive", "#SBATCH --time=" in script, diag=script[:400])
+    check("script exports extra_env", "export FOO=bar" in script)
+    check("script cd's to cwd", "cd /tmp" in script)
+    check("script body has the inner cmd", "python -u train.py --seed 42" in script)
+
+    # CPU-only task should NOT request GPU
+    task_cpu = dict(task)
+    task_cpu["est_vram_mb"] = 0
+    script_cpu = sb._build_sbatch_script(task_cpu, "python -u eval.py", "/tmp/log.log")
+    check("CPU-only task: no --gres=gpu directive",
+          "--gres=gpu" not in script_cpu, diag=script_cpu)
+
+    # Walltime: known signature uses 3× EWMA, clamped
+    real_history_get = sch.history_get
+    sch.history_get = lambda sig: {"dur_s_ewma": 7200, "dur_s_runs": 5} if sig == "TEST/has-history" else None
+    try:
+        check("walltime for unknown sig defaults to 24h",
+              sb._walltime_for({"signature": "TEST/no-history"}) == 24 * 3600)
+        # 7200s × 3 = 21600s = 6h; clamps to MIN_WALLTIME_S=3600 floor (passes; 6h > 1h)
+        check("walltime for known sig = 3× EWMA",
+              sb._walltime_for({"signature": "TEST/has-history"}) == 21600)
+        # Walltime format: 06:00:00 for 6h
+        check("walltime format: HH:MM:SS for sub-day",
+              sb._format_walltime(21600) == "06:00:00")
+        check("walltime format: D-HH:MM:SS for multi-day",
+              sb._format_walltime(2 * 86400 + 3600) == "2-01:00:00")
+    finally:
+        sch.history_get = real_history_get
+
+    # ---------- SlurmBackend.launch: monkey-patched subprocess ----------
+    # We patch subprocess.run because launch() uses it for sbatch stdin pipe (not run_on).
+    real_subprocess_run = sch.subprocess.run
+    captured = {}
+    def fake_subprocess_run(args, input=None, capture_output=None, text=None, timeout=None):
+        captured["args"] = args
+        captured["input"] = input
+        class R: pass
+        r = R()
+        r.returncode = 0
+        r.stdout = "Submitted batch job 12345\n"
+        r.stderr = ""
+        return r
+    sch.subprocess.run = fake_subprocess_run
+    real_run_on = sch.run_on
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (0, "", "")  # cwd test passes
+    try:
+        ok, msg = sb.launch({
+            "id": "t9002", "node": "local", "cwd": "/tmp",
+            "cmd": "python train.py", "cpu_cores": 2, "ram_mb": 4096,
+            "est_vram_mb": 0, "extra_env": {}, "signature": "TEST/launch",
+            "resume_flag": "", "resume_from": None,
+        })
+        check("launch returns ok", ok, diag=msg)
+        check("launch parses slurm_job_id", "slurm_job_id=12345" in msg)
+        # The captured input should be the sbatch script
+        check("launch piped sbatch script via stdin (input arg)",
+              captured.get("input") and "#SBATCH" in captured["input"])
+    finally:
+        sch.subprocess.run = real_subprocess_run
+        sch.run_on = real_run_on
+
+    # ---------- SlurmBackend.kill: scancel routing ----------
+    kill_calls = []
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (kill_calls.append((node, cmd)) or (0, "", ""))
+    try:
+        ok, msg = sb.kill({"id": "tK", "node": "local", "slurm_job_id": 99})
+        check("kill ok when slurm_job_id present", ok)
+        check("kill issued scancel <id>", any("scancel 99" in c[1] for c in kill_calls),
+              diag=str(kill_calls))
+        ok2, msg2 = sb.kill({"id": "tNoJid", "node": "local"})
+        check("kill rejects task without slurm_job_id", not ok2 and "no slurm_job_id" in msg2)
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- SlurmBackend.batch_probe: squeue parsing ----------
+    canned_squeue = "100 RUNNING\n101 PENDING\n102 COMPLETED\n103 FAILED\n"
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (
+        (0, canned_squeue, "") if "squeue" in cmd else (0, "", "")
+    )
+    try:
+        state = {"tasks": [
+            {"id": "ta", "status": "running", "node": "local", "slurm_job_id": 100},
+            {"id": "tb", "status": "running", "node": "local", "slurm_job_id": 101},
+            {"id": "tc", "status": "running", "node": "local", "slurm_job_id": 102},
+            {"id": "td", "status": "running", "node": "local", "slurm_job_id": 103},
+            {"id": "te", "status": "running", "node": "local", "slurm_job_id": 999},  # not in squeue output
+        ]}
+        res = sb.batch_probe(state)
+        check("RUNNING → alive", res["ta"]["state"] == "alive", diag=str(res.get("ta")))
+        check("PENDING → alive (still queued in slurm)", res["tb"]["state"] == "alive")
+        check("COMPLETED → dead", res["tc"]["state"] == "dead")
+        check("FAILED → dead", res["td"]["state"] == "dead")
+        check("absent from squeue → dead (purged or stale)", res["te"]["state"] == "dead")
+        # All entries have peak fields zeroed (Phase 2 v1 doesn't track via slurm)
+        check("vram_mb is 0 for all slurm probes",
+              all(v["vram_mb"] == 0 for v in res.values()))
+    finally:
+        sch.run_on = real_run_on
+
+    # squeue ssh failure → all tasks should be 'unknown' (don't transition silently)
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (1, "", "ssh fail")
+    try:
+        state = {"tasks": [{"id": "tx", "status": "running", "node": "local", "slurm_job_id": 555}]}
+        res = sb.batch_probe(state)
+        check("squeue failure → 'unknown' (not 'dead')", res["tx"]["state"] == "unknown")
+    finally:
+        sch.run_on = real_run_on
+
+    # ---------- HybridBackend routing ----------
+    hb = sch.HybridBackend()
+    # Force cache for predictable routing
+    hb._cache["fake-slurm-node"] = "slurm"
+    hb._cache["fake-local-node"] = "local"
+    check("HybridBackend routes slurm-cached node to SlurmBackend",
+          hb._backend_for("fake-slurm-node") is hb._slurm)
+    check("HybridBackend routes non-slurm node to LocalBackend",
+          hb._backend_for("fake-local-node") is hb._local)
+    # Task with slurm_job_id ALWAYS routes to slurm (cache-independent — defensive)
+    check("task with slurm_job_id routes to SlurmBackend regardless of cache",
+          hb._backend_for_task({"slurm_job_id": 1, "node": "fake-local-node"}) is hb._slurm)
+    # Task without job_id and unknown node → falls back to local probe path. Without ssh
+    # access run_on raises; cache catches the exception and returns 'local'.
+    sch.run_on = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("no ssh"))
+    try:
+        hb2 = sch.HybridBackend()  # fresh cache
+        kind = hb2._kind_for("never-heard-of")
+        check("ssh failure during slurm probe → defaults to local",
+              kind == "local", diag=f"got {kind}")
+    finally:
+        sch.run_on = real_run_on
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -2249,6 +2422,7 @@ if __name__ == "__main__":
     test_post_dispatch_eviction_and_rule()
     test_history_record_p80_outlier_resistance()
     test_backend_abstraction_phase1()
+    test_backend_slurm_phase2()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -122,6 +122,36 @@ python3 $sch cancel t0042
 
 完整子命令：`python3 scheduler.py --help`。
 
+## 跟 Slurm 共存（Phase 2）
+
+如果目标节点装了 `sbatch` 和 `squeue`，scheduleurm 会**自动通过 slurm 跑**——生成一份 `sbatch`
+脚本（带 `--gres=gpu:1`、`--mem`、`--cpus-per-task`、`--time` 是历史 EWMA × 3、body 是你的
+`--cmd`），通过 `sbatch -` 用 stdin 提交（脚本不落盘到节点），靠 `squeue` 跟踪生死，靠 `scancel`
+取消。检测是按节点的，进程生命周期内缓存。
+
+| 目标节点 | 你拿到什么 |
+|---|---|
+| 装了 slurm | scheduleurm 生成 sbatch，slurm 处理跨用户排队 + cgroup 隔离 + walltime。scheduleurm 仍然做 signature 去重、history 估计、resume 注入 |
+| 没装 slurm | scheduleurm 直接 `ssh + nohup + setsid`，跟之前完全一样 |
+| 混合集群 | 按节点判断 —— A 节点走 slurm，B 节点走 ssh+nohup，路由自动处理 |
+
+scheduleurm 在 slurm 节点上**仍然**owns 的（因为 slurm 不做这些）：每 signature 的 p80 历史
+估计、ckpt resume flag 自动注入、跨任务 `--ckpt-dir` 冲突检测、env-deploy（docker/conda）
+包装、MCP/skill UI、外部启动进程的自动 adopt。
+
+slurm **接管**的：跨用户队列排序、cgroup 内存/CPU 上限、walltime 强制、`--gres` GPU 绑定。
+通过 `sstat`/`sacct` 抓 peak VRAM/RAM 在 v1 没启用 —— slurm 已经强制 declared 上限，所以
+peak ≈ declared。
+
+类层次：
+- `Backend`（ABC）—— `launch` / `kill` / `batch_probe`
+- `LocalBackend` —— 当前的 `ssh + nohup` 路径
+- `SlurmBackend` —— `sbatch` / `scancel` / `squeue`
+- `HybridBackend` —— 按节点路由；`_BACKEND` 实际就是这个
+
+Phase 3（计划中）会加 `MultiUserLocalBackend`，处理"节点没 slurm **且**多个 scheduleurm 用户
+同时用"的场景（`/tmp/scheduleurm/` 协作共享状态）。
+
 ## 架构（一屏看完）
 
 ```

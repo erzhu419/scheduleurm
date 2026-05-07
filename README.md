@@ -122,6 +122,39 @@ python3 $sch cancel t0042
 
 Full subcommand list: `python3 scheduler.py --help`.
 
+## Slurm coexistence (Phase 2)
+
+If a target node has `sbatch` and `squeue` installed, scheduleurm **automatically routes
+through slurm** — generating an `sbatch` script (with `--gres=gpu:1`, `--mem`, `--cpus-per-task`,
+`--time` from history EWMA × 3, and your task's `--cmd` as body), submitting it via
+`sbatch -` (script piped through stdin so nothing lands on the node's filesystem), tracking
+liveness via `squeue`, and killing via `scancel`. Detection is per-node and cached for the
+process lifetime.
+
+| Target node | What you get |
+|---|---|
+| Has slurm | scheduleurm generates sbatch, slurm handles cross-user contention + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
+| No slurm | scheduleurm runs `ssh + nohup + setsid` directly; everything as before |
+| Mixed cluster | Per-node — node A can be slurm, node B can be ssh+nohup, scheduleurm routes correctly |
+
+What scheduleurm keeps owning even on slurm nodes (because slurm doesn't): per-signature p80
+history estimation, automatic resume-from-checkpoint flag injection, cross-task `--ckpt-dir`
+conflict detection, env-deploy (docker/conda) wrapping, MCP/skill UI, auto-adoption of
+externally-launched processes.
+
+What slurm owns when present: queue ordering across users, cgroup-based memory/CPU caps,
+walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `sstat`/`sacct`
+isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.
+
+The class hierarchy:
+- `Backend` (ABC) — `launch` / `kill` / `batch_probe`
+- `LocalBackend` — current `ssh + nohup` path
+- `SlurmBackend` — `sbatch` / `scancel` / `squeue`
+- `HybridBackend` — per-node routing; this is what `_BACKEND` actually is
+
+Phase 3 (planned) will add `MultiUserLocalBackend` for the case where a node has *no* slurm
+**and** multiple scheduleurm users contend (cooperative shared state at `/tmp/scheduleurm/`).
+
 ## Architecture (one screen)
 
 ```

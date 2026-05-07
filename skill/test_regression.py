@@ -3259,6 +3259,9 @@ def test_phase3_0_4_staging():
             return (0, "", "") if cwd_state[0] else (1, "", "")
         if "du -sm /ckpt" in cmd:
             return (0, "1500\n", "")  # 1.5GB ckpt — under cap
+        if "ls -1 /ckpt" in cmd:
+            # post-rsync verify: return a fake ckpt file so empty-dir check passes
+            return (0, "model_epoch_50.pt\n", "")
         if "mkdir -p" in cmd or "test -x" in cmd:
             return (0, "", "")
         return (0, "", "")
@@ -3303,6 +3306,64 @@ def test_phase3_0_4_staging():
             "tgt"
         )
         check("source==target → ok, no-op", ok and "nothing to stage" in msg)
+    finally:
+        pass
+
+    # ---------- Case G2 (Phase 3.0.6 P1 fix): remote→remote ckpt — refused ----------
+    # Pre-fix: branch silently skipped rsync + STILL added to _STAGING_CACHE + returned
+    # success → migration commits, task starts on target without ckpt → resume from
+    # scratch. Now: explicit rejection like cwd has, and cache only on real rsync.
+    sch._STAGING_CACHE.clear()
+    sch.run_on = mk_run_on([
+        ("test -d /work", (0, "", "")),       # cwd already on target
+        ("du -sm /ckpt", (0, "500\n", "")),   # ckpt is 500MB on source
+    ])
+    rsync_calls.clear()
+    sch.subprocess.run = fake_subprocess_run
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tG2", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src",  # src has host=srcbox (remote)
+             "cmd": "python a.py"},
+            "tgt_remote"  # also remote (host=tgtbox)
+        )
+        check("remote→remote ckpt → REJECTED (would lose ckpt on migration)",
+              not ok and "remote→remote not supported" in msg
+              and "checkpoint" in msg, diag=msg)
+        check("rejected ckpt is NOT cached (would falsely succeed next time)",
+              ("src", "tgt_remote", "/ckpt") not in sch._STAGING_CACHE,
+              diag=str(sch._STAGING_CACHE))
+        check("no rsync attempted in remote→remote ckpt case",
+              not any("rsync" in (str(a) if a else "") for a in rsync_calls))
+    finally:
+        pass
+
+    # ---------- Case G3: ckpt rsync verifies non-empty target dir ----------
+    # Pre-fix: rsync returncode=0 didn't guarantee files actually arrived (silent rsync
+    # filter exclude / network stall). Add post-rsync ls check.
+    sch._STAGING_CACHE.clear()
+    cwd_state[0] = 1  # cwd already there
+    def fake_run_on_empty_ckpt(node, cmd, timeout=15, check=True):
+        if "test -d /work" in cmd: return (0, "", "")
+        if "du -sm /ckpt" in cmd: return (0, "100\n", "")  # 100MB ckpt on source
+        if "mkdir -p" in cmd: return (0, "", "")
+        if "ls -1 /ckpt" in cmd:
+            return (0, "", "")  # ← rsync "succeeded" but target dir empty
+        if "test -x" in cmd: return (0, "", "")
+        return (0, "", "")
+    sch.run_on = fake_run_on_empty_ckpt
+    rsync_calls.clear()
+    sch.subprocess.run = fake_subprocess_run  # rsync rc=0
+    try:
+        ok, msg = sch._stage_for_migration(
+            {"id": "tG3", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"},
+            "tgt"
+        )
+        check("rsync rc=0 but ckpt dir empty on target → fail (don't migrate to empty)",
+              not ok and "appears empty" in msg, diag=msg)
+        check("empty post-rsync ckpt is NOT cached",
+              ("src", "tgt", "/ckpt") not in sch._STAGING_CACHE)
     finally:
         pass
 

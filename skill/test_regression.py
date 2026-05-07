@@ -4127,6 +4127,165 @@ def test_phase3_0_15_migrated_task_pins_to_staged_node():
         sch._launch_failed_nodes_for_task = saved_launch_failed
 
 
+def test_phase3_0_16_ckpt_size_probe_fail_closed():
+    """Phase 3.0.16 P1 fix: ckpt_dir size probe failure must fail-closed.
+
+    Pre-fix: when `du -sm <ckpt_dir>` failed (rc!=0, non-digit output, ssh
+    blip, permission error), `size_mb` defaulted to 0. The rsync gate
+    `if size_mb > 0` then SKIPPED the actual transfer, but the function
+    still returned `(True, "staged (cwd + ckpt + env)")`. Migration committed,
+    resume task launched on target with no ckpt → silent step-0 restart.
+    Same blast-radius shape as 3.0.6 / 3.0.15 — wasted compute on a
+    quietly-broken resume.
+
+    Now: explicit existence test on source first.
+      - source has no source_node OR ckpt_dir absent on source → no ckpt to
+        stage (legitimate first-launch case); skip rsync, success.
+      - ckpt_dir present on source → size MUST be determinable. du failure
+        = unknown size = fail-closed return.
+    """
+    print("\n[73] Phase 3.0.16 P1 fix: ckpt size probe failure → fail-closed")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    stage_idx = src.find("def _stage_for_migration")
+    stage_end = src.find("\ndef ", stage_idx + 5)
+    body = src[stage_idx:stage_end]
+    check("ckpt step has source-side existence check (test -d)",
+          "test -d" in body and "src_present" in body)
+    check("ckpt step uses fail-closed sentinel for unknown size",
+          "size_mb < 0" in body or "size_mb == -1" in body)
+    check("ckpt size probe failure returns False, not silent True",
+          "fail-closed" in body and "step-0 restart" in body)
+
+    # 2. Behavioral. Mock NODES + run_on + subprocess.
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    saved_sp_run = sch.subprocess.run
+    sch.NODES = {
+        "src": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                "max_concurrent_running": None},
+        "tgt": {"host": "tgtbox", "cpu_cores": 12, "ram_mb": 32000,
+                "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                "max_concurrent_running": None},
+    }
+    class R:
+        def __init__(self, rc=0):
+            self.returncode = rc
+            self.stdout = ""
+            self.stderr = ""
+    sch.subprocess.run = lambda *a, **kw: R(0)  # rsync succeeds when called
+
+    try:
+        # ---- Case A: ckpt_dir set, but du fails (rc=1, ssh/perm error) ----
+        sch._STAGING_CACHE.clear()
+        def run_on_du_fails(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd: return (0, "", "")  # ckpt EXISTS on source
+            if "du -sm /ckpt" in cmd: return (1, "", "permission denied")
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_du_fails
+        ok, msg = sch._stage_for_migration(
+            {"id": "tA", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("ckpt exists + du fails → returns False (fail-closed, not silent True)",
+              ok is False, diag=f"got ok={ok} msg={msg!r}")
+        check("fail-closed message mentions step-0 restart risk",
+              "step-0 restart" in msg or "fail-closed" in msg, diag=msg)
+
+        # ---- Case B: ckpt_dir set, du returns garbage (non-digit output) ----
+        sch._STAGING_CACHE.clear()
+        def run_on_du_garbage(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd: return (0, "", "")
+            if "du -sm /ckpt" in cmd: return (0, "not-a-number\n", "")
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_du_garbage
+        ok, msg = sch._stage_for_migration(
+            {"id": "tB", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("ckpt exists + du returns non-digit garbage → fail-closed",
+              ok is False, diag=f"got ok={ok} msg={msg!r}")
+
+        # ---- Case C: ckpt_dir set, but `test -d ckpt` ssh raises exception ----
+        sch._STAGING_CACHE.clear()
+        def run_on_test_ssh_raises(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd:
+                raise RuntimeError("ssh: connection timeout")
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_test_ssh_raises
+        ok, msg = sch._stage_for_migration(
+            {"id": "tC", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("ckpt source-side existence ssh exception → fail-closed (not silent ok)",
+              ok is False, diag=f"got ok={ok} msg={msg!r}")
+        check("ssh exception message mentions reachability and step-0 risk",
+              ("reachability" in msg or "fail-closed" in msg)
+              and ("step-0" in msg or "rsyncing" in msg), diag=msg)
+
+        # ---- Case D: ckpt_dir set, but absent on source (first-launch case) ----
+        # This is legitimate: task hasn't created its ckpt yet. Should succeed,
+        # skipping the ckpt rsync and not mentioning ckpt in the success message.
+        sch._STAGING_CACHE.clear()
+        def run_on_ckpt_absent(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd: return (1, "", "")  # absent on source
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_ckpt_absent
+        ok, msg = sch._stage_for_migration(
+            {"id": "tD", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("ckpt absent on source (first launch) → success, skip ckpt rsync",
+              ok is True, diag=f"got ok={ok} msg={msg!r}")
+        check("absent-ckpt success message does NOT claim '+ ckpt'",
+              "ckpt" not in msg or "+ ckpt" not in msg, diag=msg)
+
+        # ---- Case E: happy path — ckpt exists, du succeeds, size in cap ----
+        sch._STAGING_CACHE.clear()
+        def run_on_happy(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd: return (0, "", "")
+            if "du -sm /ckpt" in cmd: return (0, "500\n", "")
+            if "ls -1 /ckpt" in cmd: return (0, "model.pt\n", "")
+            if "mkdir -p" in cmd: return (0, "", "")
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_happy
+        ok, msg = sch._stage_for_migration(
+            {"id": "tE", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("happy path: ckpt exists + du works + within cap → ok",
+              ok is True, diag=f"got ok={ok} msg={msg!r}")
+        check("happy path: success message mentions ckpt was staged",
+              "ckpt" in msg, diag=msg)
+
+        # ---- Case F: ckpt exists + size 0 (empty dir, but reachable) → success,
+        # no rsync (nothing to transfer). NOT fail-closed (probe succeeded).
+        sch._STAGING_CACHE.clear()
+        def run_on_empty(node, cmd, timeout=15, check=False):
+            if "test -d /work" in cmd: return (0, "", "")
+            if "test -d /ckpt" in cmd: return (0, "", "")
+            if "du -sm /ckpt" in cmd: return (0, "0\n", "")  # empty dir
+            if "test -x" in cmd: return (0, "", "")
+            return (0, "", "")
+        sch.run_on = run_on_empty
+        ok, msg = sch._stage_for_migration(
+            {"id": "tF", "cwd": "/work", "ckpt_dir": "/ckpt",
+             "preferred_node": "src", "cmd": "/abs/python a.py"}, "tgt")
+        check("ckpt exists + size 0 (empty dir) → success, no rsync attempted",
+              ok is True, diag=f"got ok={ok} msg={msg!r}")
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+        sch.subprocess.run = saved_sp_run
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -4602,6 +4761,7 @@ def test_phase3_0_4_staging():
     sch._STAGING_CACHE.clear()
     sch.run_on = mk_run_on([
         ("test -d /work", (0, "", "")),
+        ("test -d /ckpt", (0, "", "")),  # Phase 3.0.16: source-side ckpt existence
         ("du -sm /ckpt", (0, "5000\n", "")),  # 5GB ckpt
         ("test -x", (0, "", "")),
     ])
@@ -4626,6 +4786,8 @@ def test_phase3_0_4_staging():
     def fake_run_on_D(node, cmd, timeout=15, check=True):
         if "test -d /work" in cmd:
             return (0, "", "") if cwd_state[0] else (1, "", "")
+        if "test -d /ckpt" in cmd:  # Phase 3.0.16: source-side existence
+            return (0, "", "")
         if "du -sm /ckpt" in cmd:
             return (0, "1500\n", "")  # 1.5GB ckpt — under cap
         if "ls -1 /ckpt" in cmd:
@@ -4685,6 +4847,7 @@ def test_phase3_0_4_staging():
     sch._STAGING_CACHE.clear()
     sch.run_on = mk_run_on([
         ("test -d /work", (0, "", "")),       # cwd already on target
+        ("test -d /ckpt", (0, "", "")),       # Phase 3.0.16: source-side existence
         ("du -sm /ckpt", (0, "500\n", "")),   # ckpt is 500MB on source
     ])
     rsync_calls.clear()
@@ -4714,6 +4877,7 @@ def test_phase3_0_4_staging():
     cwd_state[0] = 1  # cwd already there
     def fake_run_on_empty_ckpt(node, cmd, timeout=15, check=True):
         if "test -d /work" in cmd: return (0, "", "")
+        if "test -d /ckpt" in cmd: return (0, "", "")  # Phase 3.0.16: source has it
         if "du -sm /ckpt" in cmd: return (0, "100\n", "")  # 100MB ckpt on source
         if "mkdir -p" in cmd: return (0, "", "")
         if "ls -1 /ckpt" in cmd:
@@ -6603,6 +6767,7 @@ if __name__ == "__main__":
     test_phase3_0_13_rebalance_pending_outside_lock()
     test_phase3_0_14_min_source_load_and_cwd_size_cap()
     test_phase3_0_15_migrated_task_pins_to_staged_node()
+    test_phase3_0_16_ckpt_size_probe_fail_closed()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

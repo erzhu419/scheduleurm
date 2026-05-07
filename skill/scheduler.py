@@ -213,7 +213,12 @@ def save_history(h): _atomic_write_json(VRAM_FILE, h)
 CLAIMS_DIR_REMOTE = "/tmp/scheduleurm"
 CLAIMS_FILE_REMOTE = CLAIMS_DIR_REMOTE + "/claims.json"
 CLAIMS_LOCK_REMOTE = CLAIMS_DIR_REMOTE + "/claims.lock"
-CLAIMS_SCRIPT_REMOTE = CLAIMS_DIR_REMOTE + "/_claims.py"
+# Phase 3.4.0: per-user script path. Sticky bit on /tmp/scheduleurm prevents
+# user A from overwriting user B's script. Each user maintains their own copy
+# at /tmp/scheduleurm/_claims_${USER}.py — they all read/write the same shared
+# claims.json + claims.lock under flock. Setup + op cmds resolve $USER on
+# the remote shell so this works regardless of who's ssh'ing in.
+CLAIMS_SCRIPT_REMOTE_TMPL = CLAIMS_DIR_REMOTE + "/_claims_${USER}.py"
 CLAIM_LOCK_TIMEOUT_S = int(os.environ.get("SCHEDULEURM_CLAIM_LOCK_TIMEOUT_S", "30"))
 CLAIM_TTL_S = int(os.environ.get("SCHEDULEURM_CLAIM_TTL_S", "3600"))
 
@@ -228,40 +233,99 @@ CLAIM_TTL_S = int(os.environ.get("SCHEDULEURM_CLAIM_TTL_S", "3600"))
 _CLAIMS_REMOTE_SCRIPT = '''#!/usr/bin/env python3
 """scheduleurm remote claims daemon — deployed by _ClaimManager.
 
-Caller wraps invocations in flock so the file mutates atomically.
+Caller wraps invocations in flock so the file mutates atomically. Designed
+to work across OS users sharing the same node:
+  - claims.json is opened r+w with mode 0666 (set + fchmod); writes happen
+    in-place via truncate+write under flock — never via tmp+rename, because
+    rename(my_tmp, other_users_file) fails in a sticky directory like /tmp.
+  - alive() returns True on PermissionError (kill(pid, 0) → EPERM means
+    the process exists but is owned by another user); returning False would
+    let one user's GC drop another user's still-running claim and let the
+    GPU get over-committed.
 """
 import errno, json, os, sys, time
 
 CLAIMS_FILE = "/tmp/scheduleurm/claims.json"
 
+# Phase 3.4.0: ensure new files are 0666 so any OS user sharing the node
+# can update the same claims.json under flock.
+os.umask(0)
+
 def alive(pid):
+    """True iff the PID exists on this node (regardless of owner).
+
+    Phase 3.4.1 P0 fix: PermissionError from os.kill(pid, 0) means EPERM —
+    the process exists but is owned by a different user. Returning False
+    here treated other-user claims' PIDs as dead → one user's GC pass would
+    drop another user's still-running claim → over-commit. Cross-OS-user
+    correctness needs PermissionError → alive=True.
+    """
     if not pid:
         return False
     try:
         os.kill(int(pid), 0)
         return True
-    except (ProcessLookupError, PermissionError, ValueError):
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # process exists, owned by another user
+    except ValueError:
         return False
     except OSError as e:
+        # ESRCH = no such process; anything else (EPERM / EINVAL / ...) means
+        # the process exists or the kernel rejected the probe — treat as alive
+        # so we never drop a live claim on a benign error.
         return e.errno != errno.ESRCH
 
-def load():
-    if not os.path.exists(CLAIMS_FILE):
+def _open_shared_rw():
+    """Open claims.json for in-place read+write under flock. Creates with
+    0666 if missing; chmods to 0666 even when it existed (so a pre-3.4.0
+    file with 0644 / 0600 from a prior writer becomes shareable). Returns
+    fd (caller closes)."""
+    fd = os.open(CLAIMS_FILE, os.O_RDWR | os.O_CREAT, 0o666)
+    try:
+        os.fchmod(fd, 0o666)
+    except (PermissionError, OSError):
+        # Not the owner; mode stays as-is. Sticky dir lets us still truncate
+        # and write through the fd we already hold open.
+        pass
+    return fd
+
+def _read_fd(fd):
+    """Read entire content of fd (already at offset 0 or rewind here)."""
+    os.lseek(fd, 0, os.SEEK_SET)
+    chunks = []
+    while True:
+        b = os.read(fd, 65536)
+        if not b:
+            break
+        chunks.append(b)
+    return b"".join(chunks).decode("utf-8", errors="replace")
+
+def _write_fd(fd, text):
+    """Truncate fd to 0 and write text. In-place rewrite — no rename needed."""
+    os.lseek(fd, 0, os.SEEK_SET)
+    os.ftruncate(fd, 0)
+    os.write(fd, text.encode("utf-8"))
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+
+def load_from_fd(fd):
+    text = _read_fd(fd)
+    if not text.strip():
         return {"version": 1, "claims": []}
     try:
-        with open(CLAIMS_FILE) as f:
-            data = json.load(f)
+        data = json.loads(text)
         if not isinstance(data, dict) or "claims" not in data:
             return {"version": 1, "claims": []}
         return data
     except Exception:
         return {"version": 1, "claims": []}
 
-def save(data):
-    tmp = CLAIMS_FILE + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(data, f)
-    os.rename(tmp, CLAIMS_FILE)
+def save_to_fd(fd, data):
+    _write_fd(fd, json.dumps(data))
 
 def is_stale(c, now):
     """Stale = TTL expired AND (no pid OR pid dead). A live pid past TTL is
@@ -284,7 +348,8 @@ def main():
     payload = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
     capacity = json.loads(sys.argv[3]) if len(sys.argv) > 3 else {}
     os.makedirs("/tmp/scheduleurm", exist_ok=True)
-    data = load()
+    fd = _open_shared_rw()
+    data = load_from_fd(fd)
     claims = data.get("claims", [])
     now = time.time()
     fresh = gc_claims(claims, now)
@@ -319,14 +384,14 @@ def main():
             return
         fresh.append(payload)
         data["claims"] = fresh
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True}))
     elif op == "release":
         sid = payload.get("scheduler_id")
         tid = payload.get("task_id")
         kept = [c for c in fresh if not (c.get("scheduler_id") == sid and c.get("task_id") == tid)]
         data["claims"] = kept
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True, "removed": len(fresh) - len(kept)}))
     elif op == "update_pid":
         sid = payload.get("scheduler_id")
@@ -338,7 +403,7 @@ def main():
                 c["pid"] = int(pid) if pid else None
                 updated += 1
         data["claims"] = fresh
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True, "updated": updated}))
     elif op == "renew":
         sid = payload.get("scheduler_id")
@@ -351,7 +416,7 @@ def main():
                     c["expires_at"] = float(new_exp)
                 renewed += 1
         data["claims"] = fresh
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True, "renewed": renewed}))
     elif op == "renew_many":
         # Bulk renew for one scheduler. Watcher sends our running task ids
@@ -367,35 +432,54 @@ def main():
                     c["expires_at"] = float(new_exp)
                 renewed += 1
         data["claims"] = fresh
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True, "renewed": renewed,
                           "removed_stale": len(claims) - len(fresh)}))
     elif op == "gc":
         data["claims"] = fresh
-        save(data)
+        save_to_fd(fd, data)
         print(json.dumps({"ok": True, "removed": len(claims) - len(fresh)}))
     elif op == "list":
         if len(fresh) != len(claims):
             data["claims"] = fresh
-            save(data)
+            save_to_fd(fd, data)
         print(json.dumps({"ok": True, "claims": fresh, "removed_stale": len(claims) - len(fresh)}))
     else:
         print(json.dumps({"ok": False, "error": "unknown op " + repr(op)}))
+    try:
+        os.close(fd)
+    except OSError:
+        pass
 
 main()
 '''
 
 
 def _claims_setup_cmd():
-    """Shell snippet that ensures the remote claims script is present.
-    Quoted heredoc means the script content goes through verbatim — no shell
-    expansion of `$`, backticks, etc. inside the Python source."""
+    """Shell snippet that ensures the remote claims script + lock + claims
+    file are usable by the calling OS user. Each user gets their own
+    `_claims_${USER}.py` (sticky /tmp/scheduleurm prevents cross-user
+    overwrite). claims.json + claims.lock stay shared, mode 0666 so any
+    user can read+write them under flock. Quoted heredoc means script
+    content goes through verbatim — no shell expansion in the Python."""
+    dir_q = shlex.quote(CLAIMS_DIR_REMOTE)
+    lock_q = shlex.quote(CLAIMS_LOCK_REMOTE)
+    file_q = shlex.quote(CLAIMS_FILE_REMOTE)
     return (
-        f"mkdir -p {shlex.quote(CLAIMS_DIR_REMOTE)} && "
-        f"chmod 1777 {shlex.quote(CLAIMS_DIR_REMOTE)} 2>/dev/null; "
-        f"cat > {shlex.quote(CLAIMS_SCRIPT_REMOTE)} <<'PYEOF'\n"
+        f"umask 0; "
+        f"mkdir -p {dir_q} && chmod 1777 {dir_q} 2>/dev/null; "
+        # Lock file shared 0666 so any user can flock it.
+        f"touch {lock_q} 2>/dev/null && chmod 0666 {lock_q} 2>/dev/null; "
+        # Claims file: ensure exists + 0666. Created empty if absent so
+        # `flock + python script` doesn't have to handle the missing-file
+        # branch under sticky-dir constraints.
+        f"touch {file_q} 2>/dev/null && chmod 0666 {file_q} 2>/dev/null; "
+        # Per-user script. $USER is the OS user the ssh session runs as.
+        f"SCRIPT_PATH={CLAIMS_DIR_REMOTE}/_claims_${{USER:-anon}}.py; "
+        f"cat > \"$SCRIPT_PATH\" <<'PYEOF'\n"
         f"{_CLAIMS_REMOTE_SCRIPT}\n"
-        f"PYEOF"
+        f"PYEOF\n"
+        f"chmod 0666 \"$SCRIPT_PATH\" 2>/dev/null"
     )
 
 
@@ -406,9 +490,11 @@ def _claims_remote_op(node, op, payload, capacity=None, timeout_s=30):
     heredoc bytes are negligible)."""
     payload_arg = shlex.quote(json.dumps(payload))
     capacity_arg = shlex.quote(json.dumps(capacity or {}))
+    # Per-user script path (Phase 3.4.0). $USER expanded by the remote shell.
     op_cmd = (
+        f"SCRIPT_PATH={CLAIMS_DIR_REMOTE}/_claims_${{USER:-anon}}.py; "
         f"flock -x -w {CLAIM_LOCK_TIMEOUT_S} {shlex.quote(CLAIMS_LOCK_REMOTE)} "
-        f"python3 {shlex.quote(CLAIMS_SCRIPT_REMOTE)} {shlex.quote(op)} "
+        f"python3 \"$SCRIPT_PATH\" {shlex.quote(op)} "
         f"{payload_arg} {capacity_arg}"
     )
     full = _claims_setup_cmd() + "\n" + op_cmd

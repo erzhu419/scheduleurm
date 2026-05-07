@@ -7434,17 +7434,17 @@ def test_phase3_2_0_claim_manager():
     def fake_run_on(node, cmd, timeout=30, check=False):
         captured.append((node, cmd))
         # Simple dispatch: parse the op token (after `_claims.py`)
-        if "_claims.py claim " in cmd:
+        if "\"$SCRIPT_PATH\" claim " in cmd:
             return (0, '{"ok": true}\n', "")
-        if "_claims.py release " in cmd:
+        if "\"$SCRIPT_PATH\" release " in cmd:
             return (0, '{"ok": true, "removed": 1}\n', "")
-        if "_claims.py renew " in cmd:
+        if "\"$SCRIPT_PATH\" renew " in cmd:
             return (0, '{"ok": true, "renewed": 1}\n', "")
-        if "_claims.py update_pid " in cmd:
+        if "\"$SCRIPT_PATH\" update_pid " in cmd:
             return (0, '{"ok": true, "updated": 1}\n', "")
-        if "_claims.py gc " in cmd:
+        if "\"$SCRIPT_PATH\" gc " in cmd:
             return (0, '{"ok": true, "removed": 2}\n', "")
-        if "_claims.py list " in cmd:
+        if "\"$SCRIPT_PATH\" list" in cmd:
             return (0, '{"ok": true, "claims": [{"task_id": "x"}]}\n', "")
         return (1, "", "unmatched")
     sch.run_on = fake_run_on
@@ -7634,11 +7634,11 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
     def mock_run_on(node, cmd, timeout=20, check=False):
         captured.append((node, cmd))
         # claims script ops → simulate ok
-        if "_claims.py claim " in cmd:
+        if "\"$SCRIPT_PATH\" claim " in cmd:
             return (0, '{"ok": true}\n', "")
-        if "_claims.py release " in cmd:
+        if "\"$SCRIPT_PATH\" release " in cmd:
             return (0, '{"ok": true, "removed": 1}\n', "")
-        if "_claims.py update_pid " in cmd:
+        if "\"$SCRIPT_PATH\" update_pid " in cmd:
             return (0, '{"ok": true, "updated": 1}\n', "")
         # cwd preflight
         if "test -d " in cmd:
@@ -7663,17 +7663,17 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         check("happy: launch ok",
               ok is True and "pid=4242" in msg, diag=msg)
         check("happy: claim was ssh'd BEFORE the setsid bash launch",
-              any("_claims.py claim" in c for n, c in captured)
+              any('"$SCRIPT_PATH" claim' in c for n, c in captured)
               and any("setsid bash" in c for n, c in captured))
         # Ensure ordering: claim cmd index < setsid index
         claim_i = next(i for i, (_, c) in enumerate(captured)
-                        if "_claims.py claim" in c)
+                        if '"$SCRIPT_PATH" claim' in c)
         launch_i = next(i for i, (_, c) in enumerate(captured)
                          if "setsid bash" in c)
         check("happy: claim happens BEFORE ssh+nohup (race-free)",
               claim_i < launch_i, diag=f"claim={claim_i} launch={launch_i}")
         check("happy: update_pid was sent after PID parsed",
-              any("_claims.py update_pid" in c for n, c in captured))
+              any('"$SCRIPT_PATH" update_pid' in c for n, c in captured))
 
         # 2b. Disabled node: NO claim ssh (fast path).
         captured.clear()
@@ -7685,14 +7685,14 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         check("disabled node: launch ok",
               ok is True, diag=msg)
         check("disabled node: NO claims-script ssh issued",
-              not any("_claims.py" in c for n, c in captured),
+              not any('"$SCRIPT_PATH"' in c or "_claims_" in c for n, c in captured),
               diag=str(captured))
 
         # 2c. Claim conflict: ssh returns conflict → CLAIM_RACE sentinel.
         captured.clear()
         sch.run_on = lambda node, cmd, **kw: (
             (0, '{"ok": false, "conflict": "gpu0: full"}\n', "")
-            if "_claims.py claim " in cmd
+            if "\"$SCRIPT_PATH\" claim " in cmd
             else (0, "", "")
         )
         task = {"id": "tRace", "node": "n_on", "cwd": "/work",
@@ -7710,9 +7710,9 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         # Track release calls to confirm.
         rel_calls = []
         def mock_with_failing_launch(node, cmd, timeout=20, check=False):
-            if "_claims.py claim " in cmd:
+            if "\"$SCRIPT_PATH\" claim " in cmd:
                 return (0, '{"ok": true}\n', "")
-            if "_claims.py release " in cmd:
+            if "\"$SCRIPT_PATH\" release " in cmd:
                 rel_calls.append(cmd)
                 return (0, '{"ok": true, "removed": 1}\n', "")
             if "test -d " in cmd:
@@ -7735,7 +7735,7 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         # (no launch_fail_count increment, status back to queued).
         sch.run_on = lambda node, cmd, **kw: (
             (0, '{"ok": false, "conflict": "ram: too tight"}\n', "")
-            if "_claims.py claim " in cmd
+            if "\"$SCRIPT_PATH\" claim " in cmd
             else (0, "", "")
         )
         # Stub a minimal dispatch context so _do_dispatch can run.
@@ -7784,7 +7784,7 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         rel_calls = []
         sch.run_on = lambda node, cmd, **kw: (
             (rel_calls.append(cmd), (0, '{"ok": true, "removed": 1}\n', ""))[1]
-            if "_claims.py release " in cmd else (0, "", "")
+            if "\"$SCRIPT_PATH\" release " in cmd else (0, "", "")
         )
         # Stub kill to no-op
         saved_kill = sch._kill_task_processes
@@ -7794,7 +7794,7 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
                       "process_group": 1, "started_at": time.time()}
             sch._evict_to_queue(victim, {"tasks": [victim]}, "test")
             check("evict releases claim BEFORE clearing node",
-                  any("_claims.py release " in c for c in rel_calls),
+                  any("\"$SCRIPT_PATH\" release " in c for c in rel_calls),
                   diag=str(rel_calls))
         finally:
             sch._kill_task_processes = saved_kill
@@ -7852,7 +7852,7 @@ def test_phase3_2_2_probe_folds_pending_claims():
     # Mock claims.list to return controlled records on n_on.
     claims_response = {"n_on": [], "n_off": []}
     def mock_run_on(node, cmd, **kw):
-        if "_claims.py list" in cmd:
+        if "\"$SCRIPT_PATH\" list" in cmd:
             return (0, '{"ok": true, "claims": '
                     + __import__("json").dumps(claims_response.get(node, []))
                     + '}\n', "")
@@ -8053,7 +8053,7 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
     # Shared claims state across our two simulated schedulers.
     shared_claims = []
     def mock_run_on(node, cmd, **kw):
-        if "_claims.py claim " in cmd:
+        if "\"$SCRIPT_PATH\" claim " in cmd:
             # parse the record from cmd argv (last single-quoted JSON before capacity)
             import re as _re
             quoted = _re.findall(r"'(\{[^']*\})'", cmd)
@@ -8080,7 +8080,7 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
                     return (0, '{"ok": false, "conflict": "gpu over"}\n', "")
             shared_claims.append(rec)
             return (0, '{"ok": true}\n', "")
-        if "_claims.py list" in cmd:
+        if "\"$SCRIPT_PATH\" list" in cmd:
             return (0, '{"ok": true, "claims": '
                     + _json.dumps(shared_claims) + '}\n', "")
         return (0, "", "")
@@ -8334,6 +8334,204 @@ def test_phase3_3_local_windows_host_metrics():
           "(WSL)" not in line2 and "(host)" not in line2, diag=line2)
     check("TUI line omits (nvml/compute) tag when no util_pct_compute",
           "nvml/compute" not in line2, diag=line2)
+
+
+def test_phase3_4_0_cross_user_claim_io():
+    """Phase 3.4.0 + 3.4.1: claims layer must work across OS users.
+
+    Reviewer's P0 findings:
+      (3.4.0) `cat > /tmp/scheduleurm/_claims.py` collides on shared sticky
+              dir — second user can't overwrite first user's script.
+              Similarly, save() used os.rename(tmp, claims.json) which fails
+              cross-user in sticky dirs (only the owner can rename over).
+              Fix: per-user script path /tmp/scheduleurm/_claims_${USER}.py;
+              mode 0666 on shared lock + claims; in-place truncate+write
+              (no rename) so any user can update under flock.
+
+      (3.4.1) alive() returned False on PermissionError — but EPERM from
+              kill(pid, 0) means the process EXISTS but is owned by another
+              user. Returning False let one user's GC drop another user's
+              still-running claim → over-commit. Fix: PermissionError → True.
+    """
+    print("\n[99] Phase 3.4.0 + 3.4.1: cross-OS-user claim file safety + PID liveness")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    # Source has the f-string-escaped form ${{USER:-anon}}; runtime output has ${USER:-anon}.
+    check("setup_cmd uses per-user script path (${USER:-anon})",
+          '_claims_${{USER:-anon}}.py' in src)
+    check("setup_cmd chmods lock + claims to 0666 for shared write",
+          "chmod 0666" in src
+          and "claims.lock" in src and "claims.json" in src)
+    check("setup_cmd uses umask 0 so created files are world-rw",
+          "umask 0" in src)
+    check("remote script opens claims.json r+w (no rename) for in-place update",
+          "_open_shared_rw" in src
+          and "os.O_RDWR | os.O_CREAT" in src
+          and "fchmod" in src)
+    check("remote script no longer uses os.rename (sticky-dir cross-user fail)",
+          "os.rename(tmp, CLAIMS_FILE)" not in src,
+          diag="rename(my_tmp, others_file) fails in sticky dir under another user")
+    check("remote script truncates + writes via fd (atomic under flock)",
+          "_write_fd" in src
+          and "os.ftruncate(fd, 0)" in src)
+    check("alive() treats PermissionError as alive (EPERM = exists, owned by other user)",
+          "except PermissionError:" in src
+          and "return True" in src.split("except PermissionError:")[1][:200],
+          diag="PermissionError must NOT short-circuit to dead")
+    check("OSError fallback in alive() preserves alive when errno != ESRCH",
+          "errno != errno.ESRCH" in src)
+
+    # 2. Behavioral: run the actual script across two-user scenario by writing
+    # claims.json with restricted ownership-mimicking mode.
+    import tempfile, subprocess, json as _json, stat as _stat
+    with tempfile.TemporaryDirectory() as td:
+        # Deploy the script with CLAIMS_FILE redirected to tmp.
+        script = sch._CLAIMS_REMOTE_SCRIPT.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        script_path = os.path.join(td, "_claims.py")
+        with open(script_path, "w") as f:
+            f.write(script)
+
+        def run_op(op, payload, capacity=None):
+            r = subprocess.run(
+                ["python3", script_path, op,
+                 _json.dumps(payload), _json.dumps(capacity or {})],
+                capture_output=True, text=True, timeout=10,
+            )
+            try:
+                return _json.loads(r.stdout.strip().splitlines()[-1])
+            except Exception:
+                return {"_rc": r.returncode, "_stdout": r.stdout, "_stderr": r.stderr}
+
+        # 2a. First-write creates claims.json with 0666 (umask 0 in script).
+        now = time.time()
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000}}
+        rec_a = {"owner": "userA", "scheduler_id": "A", "task_id": "tA",
+                 "gpu_idx": 0, "vram_mb": 2000, "cpu_cores": 2, "ram_mb": 1500,
+                 "claimed_at": now, "expires_at": now + 3600, "pid": None}
+        r = run_op("claim", rec_a, cap)
+        check("first claim creates claims.json",
+              r.get("ok") is True, diag=r)
+        claims_file = os.path.join(td, "claims.json")
+        check("created claims.json exists",
+              os.path.exists(claims_file))
+        mode = _stat.S_IMODE(os.stat(claims_file).st_mode)
+        check("claims.json created with 0666 mode (any user can update)",
+              mode == 0o666, diag=f"got mode {oct(mode)}")
+
+        # 2b. Subsequent op rewrites IN PLACE (same inode) — no rename.
+        ino_before = os.stat(claims_file).st_ino
+        r = run_op("release", {"scheduler_id": "A", "task_id": "tA"})
+        check("release succeeds",
+              r.get("ok") is True, diag=r)
+        ino_after = os.stat(claims_file).st_ino
+        check("update is IN-PLACE: inode unchanged across op (no rename)",
+              ino_before == ino_after,
+              diag=f"before={ino_before} after={ino_after}")
+
+        # 2c. Even when claims.json has a non-0666 mode (simulating a pre-3.4.0
+        # writer that left 0644), the next op's fchmod brings it back to 0666.
+        os.chmod(claims_file, 0o644)
+        r = run_op("list", {})
+        check("op against 0644 claims.json still succeeds (fchmod relaxes)",
+              r.get("ok") is True, diag=r)
+        mode = _stat.S_IMODE(os.stat(claims_file).st_mode)
+        check("after op: claims.json restored to 0666",
+              mode == 0o666, diag=f"got mode {oct(mode)}")
+
+        # 2d. Even if the file is read-only AND fchmod silently fails (the
+        # cross-user case where we don't own it), in-place truncate+write
+        # still works because we hold an open fd from the initial r+w mode.
+        # Simulate: file with 0666 mode but with content we want to overwrite.
+        with open(claims_file, "w") as f:
+            f.write('{"version":1,"claims":[{"task_id":"stale","scheduler_id":"X",'
+                    '"expires_at":' + str(now - 3600) + ',"pid":null,'
+                    '"vram_mb":0,"cpu_cores":0,"ram_mb":0,"gpu_idx":null}]}')
+        r = run_op("gc", {})
+        check("gc op overwrites in-place (truncate+write, not rename)",
+              r.get("ok") is True and r.get("removed") == 1, diag=r)
+
+        # 3. PermissionError → alive=True. Test the SCRIPT'S `alive()` by
+        # importing its body via runpy with a faked os.kill that raises
+        # PermissionError on the target PID.
+        # Approach: extract the alive() function from the script source, exec
+        # it locally with a stubbed os.kill, verify behavior on each error.
+        ns = {}
+        # Pull the alive function definition out — it's the first def alive().
+        sc = sch._CLAIMS_REMOTE_SCRIPT
+        a_idx = sc.find("def alive(pid):")
+        a_end = sc.find("\ndef ", a_idx + 5)
+        body = sc[a_idx:a_end]
+        # Stub `os.kill` so we control which exception fires.
+        import types as _types
+        fake_os = _types.ModuleType("fake_os")
+        for k in dir(os):
+            if not k.startswith("_"):
+                try:
+                    setattr(fake_os, k, getattr(os, k))
+                except AttributeError:
+                    pass
+        kill_behavior = {"mode": "alive"}
+        def fake_kill(pid, sig):
+            m = kill_behavior["mode"]
+            if m == "alive":
+                return None
+            if m == "noproc":
+                raise ProcessLookupError()
+            if m == "perm":
+                raise PermissionError()
+            if m == "value":
+                raise ValueError()
+            if m == "esrch":
+                e = OSError()
+                e.errno = __import__("errno").ESRCH
+                raise e
+            if m == "einval":
+                e = OSError()
+                e.errno = __import__("errno").EINVAL
+                raise e
+        fake_os.kill = fake_kill
+        ns["os"] = fake_os
+        ns["errno"] = __import__("errno")
+        exec(body, ns)
+        alive = ns["alive"]
+
+        kill_behavior["mode"] = "alive"
+        check("alive(pid) when kill returns ok → True",
+              alive(12345) is True)
+        kill_behavior["mode"] = "noproc"
+        check("ProcessLookupError → False (process truly gone)",
+              alive(12345) is False)
+        kill_behavior["mode"] = "perm"
+        check("PermissionError → True (exists but other user's PID — 3.4.1 fix)",
+              alive(12345) is True,
+              diag="reverting this would let one user's GC drop another's live claim")
+        kill_behavior["mode"] = "esrch"
+        check("OSError ESRCH → False (no such process)",
+              alive(12345) is False)
+        kill_behavior["mode"] = "einval"
+        check("OSError EINVAL → True (any non-ESRCH OSError treated as alive)",
+              alive(12345) is True)
+        check("alive(0) / alive(None) → False (no pid)",
+              alive(0) is False and alive(None) is False)
+
+    # 4. Setup cmd structure tests (purely string composition).
+    setup = sch._claims_setup_cmd()
+    check("setup cmd ensures lock file is 0666",
+          "chmod 0666" in setup and "claims.lock" in setup)
+    check("setup cmd ensures claims.json is 0666",
+          setup.count("chmod 0666") >= 2 and "claims.json" in setup)
+    check("setup cmd writes per-user script under ${USER:-anon}",
+          "_claims_${USER:-anon}.py" in setup)
+    check("setup cmd umasks 0 before file ops",
+          "umask 0" in setup)
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -10867,6 +11065,7 @@ if __name__ == "__main__":
     test_phase3_2_2_probe_folds_pending_claims()
     test_phase3_2_3_concurrent_schedulers_only_one_wins()
     test_phase3_3_local_windows_host_metrics()
+    test_phase3_4_0_cross_user_claim_io()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

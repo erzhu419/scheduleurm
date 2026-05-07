@@ -4787,6 +4787,213 @@ def cmd_rebalance_pending(args):
                 print(f"  {tid} jid={jid}: {err}")
 
 
+def cmd_install_slurm(args):
+    """Install slurm on one or more nodes via 3-tier fallback chain.
+
+    Tier 1 (preferred): ssh node, run install_slurm_node.sh with --tag (script does git
+            clone on the node itself + source build).
+    Tier 2 (fallback): if local has slurm-src cache (or we clone it), rsync to node, then
+            ssh + run script with --source-dir.
+    Tier 3 (final fallback): give up. Node will continue to use LocalBackend (ssh+nohup);
+            scheduleurm operates fine without slurm on that node.
+
+    Usage:
+        scheduler.py install-slurm                    # all nodes (default)
+        scheduler.py install-slurm --node jtl110gpu   # single node
+        scheduler.py install-slurm --tag slurm-23.11.10-1
+        scheduler.py install-slurm --sudo-pass cshw2406  # for ssh+sudo on remotes
+
+    Side effects: creates ~/.cache/scheduleurm/slurm-src/ as the local source cache.
+    """
+    import shutil
+    SRC_TAG = args.tag or "slurm-23.11.10-1"
+    SCRIPT = Path(__file__).resolve().parent / "scripts" / "install_slurm_node.sh"
+    if not SCRIPT.exists():
+        print(f"ERROR: install script missing at {SCRIPT}")
+        return 2
+
+    LOCAL_CACHE = Path.home() / ".cache" / "scheduleurm" / "slurm-src"
+
+    targets = [args.node] if args.node else list(NODES.keys())
+
+    def _ensure_local_cache():
+        """Tier-2 prerequisite: clone slurm source on the local box for rsync to nodes
+        that can't reach github. Idempotent — re-uses existing checkout if it matches the
+        requested tag."""
+        if LOCAL_CACHE.exists():
+            try:
+                cur_tag = subprocess.check_output(
+                    ["git", "-C", str(LOCAL_CACHE), "describe", "--tags", "--exact-match"],
+                    stderr=subprocess.DEVNULL, timeout=5
+                ).decode().strip()
+                if cur_tag == SRC_TAG:
+                    print(f"  local source cache already at {SRC_TAG}: {LOCAL_CACHE}")
+                    return True
+                print(f"  local cache at {cur_tag}, refreshing to {SRC_TAG}")
+            except Exception:
+                pass
+            shutil.rmtree(LOCAL_CACHE, ignore_errors=True)
+        LOCAL_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        print(f"  cloning {SRC_TAG} from github → {LOCAL_CACHE} (one-time)")
+        try:
+            r = subprocess.run(
+                ["git", "clone", "--depth", "1", "--branch", SRC_TAG,
+                 "https://github.com/SchedMD/slurm.git", str(LOCAL_CACHE)],
+                capture_output=True, text=True, timeout=600,
+            )
+            if r.returncode != 0:
+                print(f"  github clone FAILED: {r.stderr.strip()[:300]}")
+                return False
+        except Exception as e:
+            print(f"  github clone exception: {e}")
+            return False
+        return True
+
+    def _try_tier1_github_on_node(node, host):
+        """ssh node, run script with --tag — script does git clone there."""
+        print(f"  [tier 1] github clone on {node}")
+        cmd = (f"bash -s -- --tag {shlex.quote(SRC_TAG)}"
+               + (f" --sudo-pass=-" if args.sudo_pass else ""))
+        # Stdin: optional sudo password (1 line) followed by script content
+        # When --sudo-pass=- is set, the script reads stdin for pass first, then executes.
+        # But 'bash -s' itself also reads from stdin. We need a different approach:
+        # ssh ... 'cat > /tmp/sched-slurm.sh; bash /tmp/sched-slurm.sh ARGS' < script
+        # Then sudo pass goes via env var instead. Simplest: env-var.
+        env_prefix = f"SUDO_PASS={shlex.quote(args.sudo_pass)} " if args.sudo_pass else ""
+        # Stage script + run, passing sudo via --sudo-pass arg literally
+        sudo_arg = f"--sudo-pass {shlex.quote(args.sudo_pass)}" if args.sudo_pass else ""
+        full = (
+            f"cat > /tmp/sched-install-slurm.sh && chmod +x /tmp/sched-install-slurm.sh && "
+            f"/tmp/sched-install-slurm.sh --tag {shlex.quote(SRC_TAG)} {sudo_arg}"
+        )
+        try:
+            with open(SCRIPT, "rb") as f:
+                script_bytes = f.read()
+            proc = subprocess.run(
+                ["ssh", "-o", "ConnectTimeout=10", "-o", "BatchMode=yes",
+                 host, full],
+                input=script_bytes, capture_output=True, timeout=2400,
+            )
+            stdout = proc.stdout.decode(errors="replace")
+            stderr = proc.stderr.decode(errors="replace")
+            print((stdout + stderr)[-2000:])
+            if proc.returncode == 0:
+                return ("source-installed", "")
+            if proc.returncode == 2:
+                return ("already-installed", "")
+            if proc.returncode == 3:
+                return ("source-acquisition-failed", stderr[-500:])
+            return (f"failed-rc{proc.returncode}", stderr[-500:])
+        except subprocess.TimeoutExpired:
+            return ("timeout", "ssh timeout (40 min)")
+        except Exception as e:
+            return ("ssh-error", str(e)[:200])
+
+    def _try_tier2_rsync(node, host):
+        """rsync local-cache slurm src to node + ssh + run script with --source-dir."""
+        print(f"  [tier 2] rsync local cache {LOCAL_CACHE} → {host}:/tmp/sched-slurm-src/")
+        try:
+            r = subprocess.run(
+                ["rsync", "-az", "--delete",
+                 str(LOCAL_CACHE) + "/",
+                 f"{host}:/tmp/sched-slurm-src/"],
+                capture_output=True, text=True, timeout=900,
+            )
+            if r.returncode != 0:
+                return ("rsync-failed", r.stderr.strip()[:300])
+        except subprocess.TimeoutExpired:
+            return ("rsync-timeout", "rsync >15min")
+        except Exception as e:
+            return ("rsync-error", str(e)[:200])
+
+        sudo_arg = f"--sudo-pass {shlex.quote(args.sudo_pass)}" if args.sudo_pass else ""
+        full = (
+            f"cat > /tmp/sched-install-slurm.sh && chmod +x /tmp/sched-install-slurm.sh && "
+            f"/tmp/sched-install-slurm.sh --source-dir /tmp/sched-slurm-src {sudo_arg}"
+        )
+        try:
+            with open(SCRIPT, "rb") as f:
+                script_bytes = f.read()
+            proc = subprocess.run(
+                ["ssh", "-o", "ConnectTimeout=10", "-o", "BatchMode=yes",
+                 host, full],
+                input=script_bytes, capture_output=True, timeout=2400,
+            )
+            stdout = proc.stdout.decode(errors="replace")
+            stderr = proc.stderr.decode(errors="replace")
+            print((stdout + stderr)[-2000:])
+            if proc.returncode == 0:
+                return ("rsync-installed", "")
+            if proc.returncode == 2:
+                return ("already-installed", "")
+            return (f"failed-rc{proc.returncode}", stderr[-500:])
+        except subprocess.TimeoutExpired:
+            return ("timeout", "ssh build timeout")
+        except Exception as e:
+            return ("ssh-error", str(e)[:200])
+
+    def _run_local():
+        """Local box: just exec the script directly (no ssh)."""
+        sudo_arg = ["--sudo-pass", args.sudo_pass] if args.sudo_pass else []
+        try:
+            r = subprocess.run(
+                [str(SCRIPT), "--tag", SRC_TAG] + sudo_arg,
+                timeout=2400,
+            )
+            if r.returncode == 0:
+                return ("source-installed", "")
+            if r.returncode == 2:
+                return ("already-installed", "")
+            if r.returncode == 3:
+                return ("github-unreachable-locally", "")
+            return (f"failed-rc{r.returncode}", "")
+        except subprocess.TimeoutExpired:
+            return ("timeout", "local build >40min")
+        except Exception as e:
+            return ("error", str(e)[:200])
+
+    results = {}
+    for node in targets:
+        info = NODES.get(node, {})
+        host = info.get("host")
+        print(f"\n========== {node} ({'local' if host is None else host}) ==========")
+        if host is None:
+            # Local — just run the script
+            outcome, detail = _run_local()
+            results[node] = outcome
+            print(f"  → {outcome}")
+            continue
+
+        # Remote: tier 1 → tier 2 → fail
+        outcome, detail = _try_tier1_github_on_node(node, host)
+        if outcome in ("source-installed", "already-installed"):
+            results[node] = outcome
+            print(f"  → {outcome} (tier 1)")
+            continue
+        print(f"  tier 1 outcome: {outcome} — falling back")
+        if not _ensure_local_cache():
+            results[node] = "no-local-cache"
+            print(f"  → cannot establish local cache; tier 3 = LocalBackend fallback")
+            continue
+        outcome2, detail2 = _try_tier2_rsync(node, host)
+        if outcome2 in ("rsync-installed", "already-installed"):
+            results[node] = outcome2
+            print(f"  → {outcome2} (tier 2)")
+            continue
+        results[node] = f"failed-{outcome2}"
+        print(f"  tier 2 outcome: {outcome2}; tier 3 = LocalBackend fallback (no slurm install)")
+
+    print("\n========== summary ==========")
+    for node, outcome in results.items():
+        print(f"  {node}: {outcome}")
+
+    # Reset HybridBackend cache so next dispatch re-probes (picks up new slurm if installed)
+    if hasattr(_BACKEND, "_cache"):
+        for n in results:
+            _BACKEND._cache.pop(n, None)
+        print("\n  HybridBackend slurm-detect cache cleared for these nodes; restart watcher to take effect.")
+
+
 def cmd_adopt(args):
     """Register externally-launched process(es) as a tracked task. Verifies PIDs alive and on the claimed GPU."""
     pids = list(args.pids)
@@ -5053,6 +5260,12 @@ def main():
     s = sub.add_parser("rebalance-pending", help="Pull slurm-PENDING tasks back into scheduleurm queue for re-dispatch (RUNNING tasks untouched)")
     s.add_argument("--yes", action="store_true", help="Apply (without --yes prints dry-run plan)")
     s.set_defaults(func=cmd_rebalance_pending)
+
+    s = sub.add_parser("install-slurm", help="Install slurm + munge on a node from source (3-tier fallback: github → rsync local → LocalBackend)")
+    s.add_argument("--node", help="Single node to install on (default: all nodes in NODES)")
+    s.add_argument("--tag", help="Slurm git tag (default: slurm-23.11.10-1)")
+    s.add_argument("--sudo-pass", help="Sudo password for the target node (use for non-passwordless sudo)")
+    s.set_defaults(func=cmd_install_slurm)
 
     s = sub.add_parser("adopt", help="Register externally-launched PIDs as a tracked task")
     s.add_argument("--node", required=True, choices=list(NODES.keys()))

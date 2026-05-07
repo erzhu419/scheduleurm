@@ -2045,6 +2045,14 @@ class LocalBackend(Backend):
             env_prefix = 'export CUDA_VISIBLE_DEVICES=""; '
         else:
             env_prefix = f"export CUDA_VISIBLE_DEVICES={gpu_idx}; "
+        # Phase 3.0.28 P1 fix: inject SCHEDULEURM_TASK_ID so WAL orphan recovery
+        # can identify a launched-but-not-yet-saved process. If scheduler dies
+        # between LocalBackend.launch returning success and save_state flushing
+        # status=running + remote_pids, the orphan still has this marker in
+        # /proc/<pid>/environ — _try_recover_orphan_local_task scans for it on
+        # the candidate node and adopts the orphan instead of reverting +
+        # double-launching the task.
+        env_prefix += f"export SCHEDULEURM_TASK_ID={shlex.quote(task.get('id') or '')}; "
         # Phase 3.0.23 P2 fix: filter extra_env at the export site so legacy
         # state.json entries with invalid / reserved keys can't break the
         # export shell or override CUDA_VISIBLE_DEVICES set above.
@@ -3137,7 +3145,14 @@ _ENV_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 # Letting --env override `CUDA_VISIBLE_DEVICES` would let a user-submitted task
 # read a different GPU than the one it was scheduled onto, breaking VRAM
 # accounting + the 1/3 packing rule + everything downstream.
-_RESERVED_ENV_KEYS = frozenset({"CUDA_VISIBLE_DEVICES"})
+_RESERVED_ENV_KEYS = frozenset({
+    "CUDA_VISIBLE_DEVICES",
+    # Phase 3.0.28: SCHEDULEURM_TASK_ID is injected by LocalBackend.launch so
+    # the WAL orphan-recovery scanner can find a launched-but-not-yet-saved
+    # process via /proc/<pid>/environ. User overriding this would defeat the
+    # invariant ("no double-launch after scheduler crash mid-launch").
+    "SCHEDULEURM_TASK_ID",
+})
 
 
 def _safe_extra_env_items(extra_env):
@@ -4571,6 +4586,76 @@ def _try_recover_orphan_slurm_job(task: dict, node: str) -> bool:
     return False
 
 
+def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
+    """Phase 3.0.28 P1 fix: LocalBackend counterpart to _try_recover_orphan_slurm_job.
+
+    LocalBackend.launch injects SCHEDULEURM_TASK_ID=<id> into the launched
+    process's environment. If scheduler died after the launch returned but
+    before save_state could record remote_pids/status=running, the orphan
+    process still has the marker. Walk /proc/*/environ on the candidate node;
+    if a non-zombie process has the marker, adopt it onto the task record so
+    we don't revert + double-launch when dispatch next runs.
+
+    Returns True iff an orphan was found + adopted.
+    """
+    tid = task.get("id") or ""
+    if not tid:
+        return False
+    # Walk every PID and grep its environ for our marker. -a forces grep into
+    # binary mode so NUL-separated environ entries are scanned. The trailing
+    # boundary (env var ends with \0) is captured by `\b` since SCHEDULEURM_
+    # TASK_ID values won't contain leading word chars after the id (task ids
+    # are tNNNN).
+    cmd = (
+        "for p in $(ps -eo pid= 2>/dev/null); do "
+        f"  if grep -aqE 'SCHEDULEURM_TASK_ID={tid}\\b' /proc/$p/environ 2>/dev/null; then "
+        "    sid=$(ps -o sid= -p $p 2>/dev/null | tr -d ' '); "
+        "    pgid=$(ps -o pgid= -p $p 2>/dev/null | tr -d ' '); "
+        "    state=$(awk '/^State:/ {print $2}' /proc/$p/status 2>/dev/null); "
+        "    echo \"$p|$sid|$pgid|$state\"; "
+        "  fi; "
+        "done"
+    )
+    try:
+        rc, out, _ = run_on(node, cmd, timeout=20, check=False)
+        if rc != 0:
+            return False
+    except Exception:
+        return False
+    candidates = []  # (pid, pgid, is_session_leader)
+    for line in (out or "").splitlines():
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) < 4:
+            continue
+        try:
+            p_, s_, pg_ = int(parts[0]), int(parts[1]), int(parts[2])
+        except ValueError:
+            continue
+        st = parts[3]
+        if st and st[0] in ("Z", "X"):
+            continue  # zombie / dead — not adoption-worthy (3.0.25 semantics)
+        candidates.append((p_, pg_, p_ == s_))
+    if not candidates:
+        return False
+    # Prefer the session leader (the setsid'd root bash); fall back to lowest
+    # PID otherwise. Stable choice across re-runs.
+    candidates.sort(key=lambda c: (0 if c[2] else 1, c[0]))
+    pid, pgid, _is_leader = candidates[0]
+    task["status"] = "running"
+    task["remote_pids"] = [pid]
+    task["alive_pids"] = [pid]
+    task["process_group"] = pgid
+    task["started_at"] = task.get("launching_started_at") or time.time()
+    task["peak_vram_mb"] = 0
+    task["peak_ram_mb"] = 0
+    task.pop("launching_started_at", None)
+    task["last_block_reason"] = (
+        f"WAL recovery: adopted orphan local PID {pid} (pgid={pgid}) on {node} "
+        f"matching SCHEDULEURM_TASK_ID={tid}; avoids double-launch"
+    )
+    return True
+
+
 def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: int = LAUNCHING_RESET_S) -> int:
     """Revert stale WAL launch markers to queued under state_lock.
 
@@ -4584,6 +4669,9 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
     present in squeue). If yes, adopt the orphan onto the task — prevents
     double-submission when the next dispatch tries to re-launch.
 
+    Phase 3.0.28 P1: same recovery path for LocalBackend tasks via the
+    SCHEDULEURM_TASK_ID env-var marker injected at launch.
+
     Returns count of tasks reverted (NOT including those recovered as orphans).
     """
     now = time.time() if now is None else now
@@ -4594,11 +4682,15 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
         age = now - (t.get("launching_started_at") or now)
         if age < reset_s:
             continue
-        # Phase 2.15 P2: try slurm-orphan recovery first. The check is per-task:
-        # only slurm-routed nodes have orphans to recover.
+        # Phase 2.15 / 3.0.28: orphan recovery before revert. Per-task: slurm
+        # nodes use squeue+name; local nodes use the SCHEDULEURM_TASK_ID env
+        # marker via /proc/*/environ.
         node = t.get("node")
         if node and not _BACKEND.requires_local_capacity_check(node):
             if _try_recover_orphan_slurm_job(t, node):
+                continue  # adopted; do not revert
+        elif node:
+            if _try_recover_orphan_local_task(t, node):
                 continue  # adopted; do not revert
         t["status"] = "queued"
         t["last_block_reason"] = (

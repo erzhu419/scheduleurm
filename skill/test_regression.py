@@ -5624,6 +5624,160 @@ def test_phase3_0_27_conda_sync_success_gate():
         sch._CONDA_SYNC_OK.update(saved_marker)
 
 
+def test_phase3_0_28_local_wal_orphan_recovery():
+    """Phase 3.0.28 P1 fix: LocalBackend WAL orphan recovery prevents
+    double-launch after a scheduler crash mid-launch.
+
+    Pre-fix: SlurmBackend had _try_recover_orphan_slurm_job (Phase 2.15), but
+    LocalBackend had no equivalent. The window: LocalBackend.launch persists
+    status='launching' (WAL save_state) BEFORE the ssh+nohup. If the launch
+    succeeds but scheduler dies before the post-launch save_state can flush
+    status=running + remote_pids, recover_stale_launching_tasks just reverts
+    launching → queued. Next dispatch then re-launches, and the original
+    process is still running on the node — the auto-adopt machinery later
+    creates a SECOND task record for it. Two copies of the same workload.
+
+    Now: LocalBackend.launch injects SCHEDULEURM_TASK_ID=<id> as an env var.
+    _try_recover_orphan_local_task scans /proc/*/environ on the candidate
+    node for the marker; on a hit it adopts the orphan onto the existing
+    task record (status=running, remote_pids/process_group restored) so
+    the revert→requeue→re-launch path is bypassed.
+    """
+    print("\n[84] Phase 3.0.28 P1 fix: LocalBackend WAL orphan recovery (no double-launch)")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("SCHEDULEURM_TASK_ID is reserved (user can't override the marker)",
+          "_RESERVED_ENV_KEYS" in src
+          and "SCHEDULEURM_TASK_ID" in src.split("_RESERVED_ENV_KEYS")[1].split("})")[0])
+    lb_idx = src.find("class LocalBackend")
+    lb_end = src.find("\nclass ", lb_idx + 5)
+    lb_body = src[lb_idx:lb_end]
+    check("LocalBackend.launch exports SCHEDULEURM_TASK_ID",
+          "export SCHEDULEURM_TASK_ID=" in lb_body)
+    check("_try_recover_orphan_local_task helper exists",
+          "def _try_recover_orphan_local_task" in src)
+    rec_idx = src.find("def recover_stale_launching_tasks")
+    rec_end = src.find("\ndef ", rec_idx + 5)
+    rec_body = src[rec_idx:rec_end]
+    check("recover_stale_launching_tasks calls local-orphan path for non-slurm nodes",
+          "_try_recover_orphan_local_task" in rec_body)
+    check("local-orphan probe scans /proc/*/environ for the marker",
+          "SCHEDULEURM_TASK_ID" in src[src.find("def _try_recover_orphan_local_task"):]
+          and "/proc/$p/environ" in src[src.find("def _try_recover_orphan_local_task"):])
+
+    # 2. Behavioral test of _try_recover_orphan_local_task.
+    saved_run_on = sch.run_on
+    try:
+        # ---- Case A: orphan found, alive, session leader → adopted ----
+        # Probe returns: pid=12345, sid=12345 (leader), pgid=12345, state=S
+        def probe_alive_leader(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=" in cmd and "/proc/$p/environ" in cmd:
+                return (0, "12345|12345|12345|S\n", "")
+            return (0, "", "")
+        sch.run_on = probe_alive_leader
+        task = {"id": "t0042", "status": "launching", "node": "n1",
+                "launching_started_at": time.time() - 120, "remote_pids": []}
+        adopted = sch._try_recover_orphan_local_task(task, "n1")
+        check("orphan found alive → adopted=True",
+              adopted is True)
+        check("adopted task: status=running",
+              task["status"] == "running")
+        check("adopted task: remote_pids set to leader pid",
+              task["remote_pids"] == [12345])
+        check("adopted task: process_group set",
+              task.get("process_group") == 12345)
+        check("adopted task: launching_started_at popped",
+              "launching_started_at" not in task)
+        check("adopted task: started_at set",
+              isinstance(task.get("started_at"), float))
+        check("adopted task: last_block_reason mentions WAL recovery + the matched id",
+              "WAL recovery" in (task.get("last_block_reason") or "")
+              and "t0042" in (task.get("last_block_reason") or ""))
+
+        # ---- Case B: zombie match → NOT adopted (3.0.25 semantics) ----
+        def probe_zombie(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=" in cmd:
+                return (0, "12345|12345|12345|Z\n", "")
+            return (0, "", "")
+        sch.run_on = probe_zombie
+        task = {"id": "t0043", "status": "launching", "node": "n1",
+                "launching_started_at": time.time() - 120, "remote_pids": []}
+        adopted = sch._try_recover_orphan_local_task(task, "n1")
+        check("zombie orphan → NOT adopted",
+              adopted is False and task["status"] == "launching")
+
+        # ---- Case C: no match → adopted=False (caller reverts) ----
+        def probe_empty(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=" in cmd:
+                return (0, "", "")
+            return (0, "", "")
+        sch.run_on = probe_empty
+        task = {"id": "t0044", "status": "launching", "node": "n1",
+                "launching_started_at": time.time() - 120, "remote_pids": []}
+        adopted = sch._try_recover_orphan_local_task(task, "n1")
+        check("no orphan match → adopted=False (revert path takes over)",
+              adopted is False and task["status"] == "launching")
+
+        # ---- Case D: probe rc != 0 → adopted=False ----
+        sch.run_on = lambda *a, **k: (1, "", "ssh blip")
+        task = {"id": "t0045", "status": "launching", "node": "n1",
+                "launching_started_at": time.time() - 120, "remote_pids": []}
+        adopted = sch._try_recover_orphan_local_task(task, "n1")
+        check("probe ssh failure → adopted=False",
+              adopted is False)
+
+        # ---- Case E: prefer session leader over a non-leader match ----
+        # Two PIDs match: 99 (non-leader, sid=12345) and 12345 (leader, sid==pid).
+        def probe_two(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=" in cmd:
+                return (0,
+                        "99|12345|12345|S\n"      # descendant, not leader
+                        "12345|12345|12345|S\n",  # leader
+                        "")
+            return (0, "", "")
+        sch.run_on = probe_two
+        task = {"id": "t0046", "status": "launching", "node": "n1",
+                "launching_started_at": time.time() - 120, "remote_pids": []}
+        adopted = sch._try_recover_orphan_local_task(task, "n1")
+        check("multiple matches → leader (sid==pid) preferred",
+              adopted is True and task["remote_pids"] == [12345])
+
+        # ---- Case F: missing task id → False (defensive) ----
+        sch.run_on = probe_alive_leader
+        adopted = sch._try_recover_orphan_local_task(
+            {"id": "", "status": "launching", "node": "n1",
+             "launching_started_at": time.time() - 120}, "n1")
+        check("missing task id → False (no probe issued, no adoption)",
+              adopted is False)
+    finally:
+        sch.run_on = saved_run_on
+
+    # 3. End-to-end: recover_stale_launching_tasks for a local task with a
+    # matching orphan adopts it instead of reverting to queued.
+    saved_run_on = sch.run_on
+    saved_backend = sch._BACKEND
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["lnode"] = "local"
+    sch._BACKEND = fake_hb
+    sch.run_on = lambda node, cmd, **kw: (
+        (0, "7777|7777|7777|S\n", "") if "SCHEDULEURM_TASK_ID=tE2E" in cmd else (0, "", "")
+    )
+    try:
+        state = {"tasks": [{
+            "id": "tE2E", "status": "launching", "node": "lnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+        }]}
+        reverted = sch.recover_stale_launching_tasks(state, now=time.time())
+        t = state["tasks"][0]
+        check("end-to-end: local launching task with orphan → adopted (NOT reverted)",
+              reverted == 0 and t["status"] == "running" and t["remote_pids"] == [7777],
+              diag=str(t))
+    finally:
+        sch._BACKEND = saved_backend
+        sch.run_on = saved_run_on
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7097,23 +7251,29 @@ def test_backend_slurm_phase2_15_orphan_recovery():
         sch._BACKEND = saved_backend
         sch.run_on = real_run_on
 
-    # ---------- Case F: local-routed launching task → no slurm probe, just revert ----------
-    # Local nodes don't have slurm orphans by definition; the recovery path must NOT
-    # do an ssh probe for them (cost + irrelevant).
+    # ---------- Case F: local-routed launching task → local orphan probe (Phase 3.0.28) ----------
+    # Local nodes don't have slurm orphans by definition, but they DO have a local
+    # orphan recovery path (Phase 3.0.28): scan /proc/*/environ for the
+    # SCHEDULEURM_TASK_ID marker injected at launch. Recovery uses ONE probe
+    # (the /proc grep), not the slurm squeue path.
     fake_hb = sch.HybridBackend()
     fake_hb._cache["localnode"] = "local"
     sch._BACKEND = fake_hb
-    probe_count = []
-    sch.run_on = lambda *a, **k: (probe_count.append(1) or (0, "", ""))
+    probe_cmds = []
+    sch.run_on = lambda node, cmd, **k: (probe_cmds.append(cmd) or (0, "", ""))
     try:
         state = {"tasks": [{
             "id": "tF", "status": "launching", "node": "localnode",
             "launching_started_at": stale, "remote_pids": [],
         }]}
         sch.recover_stale_launching_tasks(state, now=now)
-        check("local-routed launching task → no slurm orphan probe issued",
-              len(probe_count) == 0, diag=f"made {len(probe_count)} probes")
-        check("local-routed launching task → reverted normally",
+        check("local-routed launching task → local orphan probe issued (NOT squeue)",
+              any("SCHEDULEURM_TASK_ID" in c for c in probe_cmds),
+              diag=f"probe cmds: {probe_cmds!r}")
+        check("local-routed launching task → no slurm squeue probe issued",
+              not any("squeue" in c for c in probe_cmds),
+              diag=f"probe cmds: {probe_cmds!r}")
+        check("local-routed launching task → reverted normally (no orphan found)",
               state["tasks"][0]["status"] == "queued")
     finally:
         sch._BACKEND = saved_backend
@@ -8127,6 +8287,7 @@ if __name__ == "__main__":
     test_phase3_0_25_zombie_descendants_not_alive()
     test_phase3_0_26_auto_docker_no_local_digest_falls_back_to_none()
     test_phase3_0_27_conda_sync_success_gate()
+    test_phase3_0_28_local_wal_orphan_recovery()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

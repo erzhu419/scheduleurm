@@ -2101,11 +2101,80 @@ class SlurmBackend(Backend):
         except Exception as e:
             return False, str(e)[:200]
 
+    @staticmethod
+    def _parse_size_to_mb(s: str):
+        """Parse slurm-formatted memory string ('512000K' / '1G' / '800M' / '2T' / bare digits)
+        into MB. Returns None on parse failure (so caller can skip silently).
+
+        Slurm reports memory with K/M/G/T suffix. Bare numbers (no suffix) are KiB by sstat
+        convention. We convert everything to MB (binary), rounded down to int."""
+        s = (s or "").strip()
+        if not s:
+            return None
+        unit = ""
+        if s[-1].upper() in ("K", "M", "G", "T"):
+            unit = s[-1].upper()
+            num_str = s[:-1]
+        else:
+            num_str = s
+        try:
+            val = float(num_str)
+        except ValueError:
+            return None
+        # Bare digits = KiB; suffixed = corresponding binary unit. All → MB.
+        factor_to_mb = {"": 1.0 / 1024, "K": 1.0 / 1024, "M": 1.0, "G": 1024.0, "T": 1024.0 * 1024}.get(unit)
+        if factor_to_mb is None:
+            return None
+        return int(val * factor_to_mb)
+
+    def _query_sstat_peaks(self, node: str, job_ids: list) -> dict:
+        """Query `sstat` for MaxRSS of running slurm jobs on `node`. Returns
+        {job_id: ram_mb} for jobs where sstat returned parseable data. Missing entries
+        mean the caller should skip peak-update for that task — sstat may legitimately
+        be unavailable (accounting plugin off, recent submission not yet flushed, etc.)
+        and we degrade silently rather than re-classify the task.
+
+        Why sstat (not sacct): sstat reports LIVE peaks for running jobs and is cheaper.
+        sacct is for completed jobs and lives in the accounting DB; v2.1 doesn't pull
+        from it (one final sample missed at transition is acceptable; mid-run sampling
+        every 60s captures the true peak well enough for p80 history)."""
+        if not job_ids:
+            return {}
+        ids = ",".join(str(j) for j in job_ids)
+        # -P pipe-delim, --noheader, format=JobID|MaxRSS. 2>/dev/null swallows errors when
+        # sstat exists but accounting isn't configured (e.g. JobAcctGatherType=none).
+        cmd = f"sstat -j {ids} -P --noheader --format=JobID,MaxRSS 2>/dev/null"
+        try:
+            rc, out, _ = run_on(node, cmd, timeout=10, check=False)
+        except Exception:
+            return {}
+        if rc != 0 or not out.strip():
+            return {}
+        peaks: dict = {}
+        for line in out.splitlines():
+            bits = line.strip().split("|")
+            if len(bits) < 2:
+                continue
+            # JobID can be "12345.batch" / "12345.extern" / "12345.0" (per-step records);
+            # we want the max across all steps, keyed by base job id.
+            base = bits[0].split(".")[0]
+            try:
+                jid = int(base)
+            except ValueError:
+                continue
+            mb = self._parse_size_to_mb(bits[1])
+            if mb is None:
+                continue
+            peaks[jid] = max(peaks.get(jid, 0), mb)
+        return peaks
+
     def batch_probe(self, state: dict) -> dict:
-        """One squeue per node for liveness. Peak VRAM/RAM/CPU: not tracked in v1 — see
-        SlurmBackend docstring. Returns 0 for those fields so the policy code's max-tracking
-        is a no-op. Liveness map: RUNNING/PENDING/CONFIGURING/COMPLETING → alive; everything
-        else (COMPLETED/FAILED/CANCELLED/TIMEOUT/NODE_FAIL/etc) → dead."""
+        """One squeue per node for liveness, then a best-effort sstat for live RAM peaks
+        (Phase 2.1). VRAM/CPU still not tracked: VRAM lacks a portable slurm field across
+        versions; CPU is enforced by slurm cgroup so tracking adds little value. Liveness
+        map: RUNNING/PENDING/CONFIGURING/COMPLETING → alive; everything else → dead. If
+        sstat fails (no accounting plugin / sstat not in PATH / parse error), ram_mb
+        stays 0 and the caller's max-tracking is a no-op — same as v1 behavior."""
         by_node: dict = {}
         for t in state["tasks"]:
             if t["status"] != "running": continue
@@ -2120,21 +2189,27 @@ class SlurmBackend(Backend):
                         "REQUEUED", "SUSPENDED"}
 
         def _probe(node):
-            ids = ",".join(str(t["slurm_job_id"]) for t in by_node[node])
-            # `-h` no header, `-j` filter to specific ids, `-t all` include finished
+            ids_list = [t["slurm_job_id"] for t in by_node[node]]
+            ids = ",".join(str(i) for i in ids_list)
+            # squeue: liveness. `-h` no header, `-j` filter, `-t all` include finished
             # (squeue's default hides COMPLETED). `-o "%i %T"` minimal columns.
             cmd = f"squeue -h -j {ids} -t all -o '%i %T' 2>/dev/null"
             try:
                 rc, out, _ = run_on(node, cmd, timeout=15, check=False)
-                return out if rc == 0 else None
+                squeue_out = out if rc == 0 else None
             except Exception:
-                return None
+                squeue_out = None
+            # sstat: live RAM peaks (Phase 2.1). Best-effort; failure → empty dict.
+            # Same ssh round-trip would be ideal but sstat exits non-zero on jobs without
+            # accounting data, polluting our error signal — so we keep them separate.
+            sstat_peaks = self._query_sstat_peaks(node, ids_list) if squeue_out is not None else {}
+            return (squeue_out, sstat_peaks)
 
         nodes_list = list(by_node.keys())
         with ThreadPoolExecutor(max_workers=len(nodes_list)) as ex:
             outputs = dict(zip(nodes_list, ex.map(_probe, nodes_list)))
 
-        for node, out in outputs.items():
+        for node, (out, sstat_peaks) in outputs.items():
             if out is None:
                 # ssh / squeue failed: emit 'unknown' so policy leaves state alone (don't
                 # mistakenly transition tasks to dead because of a transient ssh blip).
@@ -2161,8 +2236,13 @@ class SlurmBackend(Backend):
                     state_norm = "alive"
                 else:
                     state_norm = "dead"
+                # sstat peak (Phase 2.1): only fold for ALIVE tasks. Dead-state probes don't
+                # fold peaks because the policy code calls history_record on transition with
+                # whatever peak_ram_mb is at that point — sstat won't return useful data for
+                # already-finished jobs anyway (that's sacct's domain).
+                ram_mb = sstat_peaks.get(jid, 0) if state_norm == "alive" else 0
                 results[t["id"]] = {"state": state_norm, "alive_pids": [],
-                                    "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+                                    "vram_mb": 0, "ram_mb": ram_mb, "pcpu": 0.0}
         return results
 
 

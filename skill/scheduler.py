@@ -578,11 +578,25 @@ def _kill_task_processes(task, timeout=15):
     return _BACKEND.kill(task, timeout=timeout)
 
 def check_running(task):
-    """Returns 'alive' if ANY tracked PID is alive, 'dead' if all dead, 'unknown' on probe failure.
-    Folds VRAM/RAM into peak trackers and updates alive_pids on the task. Thin wrapper around
-    Backend.batch_probe over a single-task state."""
-    if not _task_pids(task):
-        return "dead"
+    """Returns 'alive' if backend reports the task's tracked artifact is alive,
+    'dead' if backend reports terminal OR has no tracking info for the task, 'unknown'
+    on probe failure. Folds VRAM/RAM into peak trackers when alive.
+
+    Thin wrapper around Backend.batch_probe over a single-task state. Backend decides
+    which artifact to consult (PIDs for LocalBackend, slurm_job_id for SlurmBackend).
+
+    Phase 2.9 P2 fix: previously had `if not _task_pids(task): return "dead"` early-
+    return. That bypassed the backend entirely, so slurm tasks (which SlurmBackend.launch
+    sets remote_pids=[] for, tracking via slurm_job_id instead) were always reported
+    dead even when squeue would say RUNNING. The check_running helper's semantics were
+    broken even though the main _batch_check_running path was unaffected (it routes
+    via _BACKEND.batch_probe directly without the early-return).
+
+    Now we let the backend decide. Each backend's batch_probe already filters tasks
+    lacking its tracking artifact: LocalBackend skips on `not pids`, SlurmBackend
+    skips on `not jid`. A task with neither falls through to `if not res: return "dead"`
+    naturally. No extra ssh cost — both backends short-circuit when by_node is empty.
+    """
     fake_state = {"tasks": [task]}
     res = _BACKEND.batch_probe(fake_state).get(task["id"])
     if not res:

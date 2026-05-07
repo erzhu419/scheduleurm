@@ -574,103 +574,29 @@ def _task_process_groups(task):
     return sorted(groups)
 
 def _kill_task_processes(task, timeout=15):
-    """Best-effort terminate for a tracked task. SIGTERM first, then SIGKILL for both
-    process groups and explicit PIDs. For docker-wrapped tasks, also `docker kill <name>`
-    BEFORE the host PID kills — host `kill <docker run pid>` doesn't reliably stop the
-    container because containerd-shim isolates the actual proc tree. Codex review caught
-    this. Returns (ok, msg); callers still decide state changes."""
-    node = task.get("node")
-    if not node:
-        return False, "no node"
-    pids = [int(p) for p in _task_pids(task) if p]
-    pgids = _task_process_groups(task)
-    container = task.get("container_name")
-    if not pids and not pgids and not container:
-        return False, "no pids"
-    parts = []
-    if container:
-        # SIGTERM first via `docker stop` (10s grace), then SIGKILL via `docker kill`.
-        # Both are no-ops if the container already exited; `|| true` keeps the pipeline alive.
-        parts.append(f"docker stop -t 5 {shlex.quote(container)} 2>/dev/null || true")
-    parts += [f"kill -- -{g} 2>/dev/null" for g in pgids]
-    parts += [f"kill {p} 2>/dev/null" for p in pids]
-    parts.append("sleep 1")
-    if container:
-        parts.append(f"docker kill {shlex.quote(container)} 2>/dev/null || true")
-    parts += [f"kill -9 -- -{g} 2>/dev/null" for g in pgids]
-    parts += [f"kill -9 {p} 2>/dev/null" for p in pids]
-    parts.append("true")
-    cmd = "; ".join(parts)
-    try:
-        run_on(node, cmd, timeout=timeout, check=False)
-        bits = []
-        if container: bits.append(f"container={container}")
-        if pgids: bits.append(f"pgids={pgids}")
-        if pids: bits.append(f"pids={pids}")
-        return True, " ".join(bits)
-    except Exception as e:
-        return False, str(e)[:200]
+    """Thin wrapper: delegates to the active Backend. See Backend.kill."""
+    return _BACKEND.kill(task, timeout=timeout)
 
 def check_running(task):
-    """Returns 'alive' if ANY tracked PID is alive, 'dead' if all dead. Updates peak_vram_mb + peak_ram_mb."""
-    pids = _task_pids(task)
-    if not pids:
+    """Returns 'alive' if ANY tracked PID is alive, 'dead' if all dead, 'unknown' on probe failure.
+    Folds VRAM/RAM into peak trackers and updates alive_pids on the task. Thin wrapper around
+    Backend.batch_probe over a single-task state."""
+    if not _task_pids(task):
         return "dead"
-    pids_csv = ",".join(str(p) for p in pids)
-    # Codex P1: `kill -0 <pid>` returns success for zombies too — they'd keep the task
-    # forever-marked-running. Augment with /proc/<pid>/status check: only count ALIVE if
-    # State is NOT Z (zombie) or X (dead).
-    pid_checks = "; ".join(
-        f"kill -0 {p} 2>/dev/null && "
-        f"awk '/^State:/{{s=$2}} END{{if(s!=\"Z\" && s!=\"X\") print \"ALIVE_{p}\"}}' "
-        f"/proc/{p}/status 2>/dev/null"
-        for p in pids
-    )
-    # Suffix `; true` so the WHOLE pipeline always exits 0 — `ps -p <dead_pid>` returns rc=1
-    # which would otherwise be mistaken for "ssh failed" and the task would stay "running" forever.
-    # Source of truth for liveness is the stdout content (ALIVE_<pid> lines), not the exit code.
-    cmd = (f"({pid_checks}; true); echo '===VRAM==='; "
-           f"nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
-           f"echo '===RSS==='; "
-           f"ps -o pid=,rss= -p {pids_csv} 2>/dev/null; true")
-    try:
-        rc, out, _ = run_on(task["node"], cmd, timeout=10, check=False)
-    except Exception:
+    fake_state = {"tasks": [task]}
+    res = _BACKEND.batch_probe(fake_state).get(task["id"])
+    if not res:
+        return "dead"
+    if res["state"] == "unknown":
         return "unknown"
-    # rc != 0 here only if ssh / bash itself failed (e.g. node unreachable) — keep as "unknown" then.
-    if rc != 0: return "unknown"
-    lines = [l.strip() for l in out.splitlines() if l.strip()]
-    vram_sep = lines.index("===VRAM===") if "===VRAM===" in lines else len(lines)
-    rss_sep = lines.index("===RSS===") if "===RSS===" in lines else len(lines)
-    alive_pids = {int(l.split("_", 1)[1]) for l in lines[:vram_sep] if l.startswith("ALIVE_")}
-    if not alive_pids:
+    if res["state"] == "dead":
         return "dead"
-    pid_set = set(pids)
-    # Sum VRAM across alive tracked PIDs (multi-worker aggregates).
-    total_vram = 0
-    for pl in lines[vram_sep+1:rss_sep]:
-        parts = [x.strip() for x in pl.split(",")]
-        if len(parts) < 2: continue
-        try:
-            ppid, mb = int(parts[0]), int(parts[1])
-        except ValueError: continue
-        if ppid in pid_set and ppid in alive_pids:
-            total_vram += mb
-    if total_vram > 0:
-        task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), total_vram)
-    # Sum RSS (KB → MB) across alive tracked PIDs.
-    total_ram_mb = 0
-    for rl in lines[rss_sep+1:]:
-        bits = rl.split()
-        if len(bits) < 2: continue
-        try:
-            ppid, rss_kb = int(bits[0]), int(bits[1])
-        except ValueError: continue
-        if ppid in pid_set and ppid in alive_pids:
-            total_ram_mb += rss_kb // 1024
-    if total_ram_mb > 0:
-        task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), total_ram_mb)
-    task["alive_pids"] = sorted(alive_pids)
+    # alive: fold deltas into peak trackers (max-tracking — peak only goes up)
+    if res["vram_mb"] > 0:
+        task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), res["vram_mb"])
+    if res["ram_mb"] > 0:
+        task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), res["ram_mb"])
+    task["alive_pids"] = res["alive_pids"]
     return "alive"
 
 CRASH_PATTERNS = [
@@ -1201,164 +1127,109 @@ def _requeue_after_crash(parent, state):
     return new_id
 
 def _batch_check_running(state):
-    """ONE ssh per node to check liveness + VRAM + RSS for ALL running tasks. Replaces the old
-    per-task check_running (which did N sequential ssh round-trips and held state_lock for minutes).
-    Updates peak_vram_mb / peak_ram_mb / alive_pids per task; transitions to 'done' when all PIDs dead.
-    Also diagnoses terminal tasks for crashes (sets t['_diagnosis'] for caller to surface as event)."""
-    by_node = {}        # node -> [(task, pids), ...]
-    pids_per_node = {}  # node -> set of all pids across tasks on this node
+    """One round-trip per node to check liveness + VRAM + RSS for ALL running tasks. Probe
+    is delegated to _BACKEND.batch_probe (Phase 1 abstraction); this function keeps all the
+    policy logic: transition to done/failed, diagnose terminal tasks, fold history, upward-
+    track ram_mb / cpu_cores estimates from observed peaks. Sets t['_diagnosis'] for caller
+    to surface as event."""
+    import math as _math
+
+    probe_results = _BACKEND.batch_probe(state)
+    if not probe_results:
+        return
+
     for t in state["tasks"]:
         if t["status"] != "running": continue
-        node = t.get("node")
-        if not node: continue
-        pids = _task_pids(t)
-        if not pids: continue
-        by_node.setdefault(node, []).append((t, pids))
-        pids_per_node.setdefault(node, set()).update(pids)
-    if not by_node: return
-
-    def _probe(node):
-        all_pids = sorted(pids_per_node[node])
-        # Same zombie guard as check_running (Codex P1)
-        pid_checks = "; ".join(
-            f"kill -0 {p} 2>/dev/null && "
-            f"awk '/^State:/{{s=$2}} END{{if(s!=\"Z\" && s!=\"X\") print \"A{p}\"}}' "
-            f"/proc/{p}/status 2>/dev/null"
-            for p in all_pids
-        )
-        cmd = (f"({pid_checks}; true); echo '===VRAM==='; "
-               f"nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
-               f"echo '===PSALL==='; "
-               f"ps -eo pid=,ppid=,rss=,pcpu= 2>/dev/null; true")
-        try:
-            rc, out, _ = run_on(node, cmd, timeout=30, check=False)
-            return out if rc == 0 else None
-        except Exception:
-            return None
-
-    nodes_list = list(by_node.keys())
-    with ThreadPoolExecutor(max_workers=len(nodes_list)) as ex:
-        outputs = dict(zip(nodes_list, ex.map(_probe, nodes_list)))
-
-    import math as _math
-    for node, out in outputs.items():
-        if out is None: continue  # ssh failed for this node — leave tasks unchanged
-        lines = [l.strip() for l in out.splitlines() if l.strip()]
-        vram_sep = lines.index("===VRAM===") if "===VRAM===" in lines else len(lines)
-        ps_sep = lines.index("===PSALL===") if "===PSALL===" in lines else len(lines)
-        alive_roots = {int(l[1:]) for l in lines[:vram_sep] if l.startswith("A") and l[1:].isdigit()}
-        vram_per_pid = {}
-        for pl in lines[vram_sep+1:ps_sep]:
-            parts = [x.strip() for x in pl.split(",")]
-            if len(parts) < 2: continue
-            try: ppid, mb = int(parts[0]), int(parts[1])
-            except ValueError: continue
-            vram_per_pid[ppid] = vram_per_pid.get(ppid, 0) + mb
-        rss_per_pid, pcpu_per_pid, ppid_of = {}, {}, {}
-        for rl in lines[ps_sep+1:]:
-            bits = rl.split()
-            if len(bits) < 4: continue
-            try:
-                ppid, parent_pid, rss_kb = int(bits[0]), int(bits[1]), int(bits[2])
-                pc = float(bits[3])
-            except ValueError: continue
-            ppid_of[ppid] = parent_pid
-            rss_per_pid[ppid] = rss_kb // 1024
-            pcpu_per_pid[ppid] = pc
-
-        for t, pids in by_node[node]:
-            pid_set = set(pids)
-            # Scheduler launches a setsid bash wrapper, so the recorded PID is often the
-            # process-group leader while the real Python process and dataloader/eval workers
-            # are descendants. Count the whole live descendant tree for liveness + resources;
-            # otherwise RAM/CPU/VRAM are badly under-reported and child workers look external.
-            expanded_pid_set = pid_set | _descendants_of(pid_set, ppid_of)
-            this_alive = expanded_pid_set & (alive_roots | set(rss_per_pid))
-            if not this_alive:
-                t["status"] = "done"
-                t["finished_at"] = time.time()
-                # Diagnose: did it complete normally, or crash? Tail log + check patterns + lifetime.
-                diag = _diagnose_terminal(t)
-                t["_diagnosis"] = diag  # caller (watcher) reads + emits task_crashed if needed
-                # Belt-and-suspenders: never let heuristics flip an auto-adopted task to "failed".
-                # Adopted tasks have no scheduler-owned log so heuristics like "log 0B after Ns"
-                # systematically misfire on them. _diagnose_terminal already early-returns False
-                # for adopted; this guard is in case that path is ever bypassed in a refactor.
-                if diag["is_crash"] and not t.get("auto_adopted"):
-                    t["status"] = "failed"  # distinguish in queue.json
-                    t["last_block_reason"] = diag["reason"]
-                    new_id = _requeue_after_crash(t, state)
-                    if new_id:
-                        t["requeued_as"] = new_id
-                # Universal "incomplete" check: lifetime far below historical EWMA → likely killed/crashed,
-                # mark + auto-requeue (unless user explicitly cancelled, in which case status was already
-                # set to 'cancelled' before this code runs and we never get here). Works for both
-                # scheduler-launched AND auto-adopted tasks (now that adopt captures cmdline).
-                elif (not diag.get("is_crash")
-                      and t.get("status") == "done"  # not already failed/cancelled
-                      and t.get("started_at") and t.get("finished_at")):
-                    sig = t.get("signature") or ""
-                    h = history_get(sig) or {}
-                    expected = int(h.get("dur_s_ewma", 0))
-                    runs = int(h.get("dur_s_runs", 0))
-                    lifetime = max(0, t["finished_at"] - t["started_at"])
-                    # Need at least 2 historical samples before trusting the EWMA threshold.
-                    if expected > 0 and runs >= 2 and lifetime < 0.5 * expected:
-                        t["status"] = "failed"
-                        t["last_block_reason"] = (f"incomplete: ran {int(lifetime)}s "
-                                                   f"({int(100*lifetime/expected)}% of EWMA {expected}s); "
-                                                   f"likely killed/crashed (not user-cancelled)")
-                        cmd_real = bool(t.get("cmd")) and not t["cmd"].startswith("(auto-adopted")
-                        if cmd_real:
-                            new_id = _requeue_after_crash(t, state)
-                            if new_id:
-                                t["requeued_as"] = new_id
-                duration_s = 0
-                if t.get("started_at") and t.get("finished_at"):
-                    duration_s = max(0, int(t["finished_at"] - t["started_at"]))
-                history_record(
-                    t.get("signature"),
-                    peak_vram_mb=t.get("peak_vram_mb", 0),
-                    peak_ram_mb=t.get("peak_ram_mb", 0),
-                    cpu_cores=t.get("cpu_cores", 0),
-                    duration_s=duration_s,
-                )
-                continue
-            t["alive_pids"] = sorted(this_alive)
-            total_vram = sum(vram_per_pid.get(p, 0) for p in this_alive)
-            if total_vram > 0:
-                t["peak_vram_mb"] = max(t.get("peak_vram_mb", 0), total_vram)
-            total_ram = sum(rss_per_pid.get(p, 0) for p in this_alive)
-            if total_ram > 0:
-                t["peak_ram_mb"] = max(t.get("peak_ram_mb", 0), total_ram)
-                # B: upward-track ram_mb when actual RSS exceeds declared budget. Closes the
-                # gap where a task submits with ram_mb=8000 but really uses 15GB; without this,
-                # next dispatch's RAM headroom check trusts the (lying) declared 8GB and packs
-                # more tasks until WSL OOM. Apply to ALL tasks (scheduler-launched + adopted).
-                # Down-direction is handled separately (lower-only) to avoid noise from transient
-                # GC dips. Always-bump-up is correct since OOM blast-radius is asymmetric.
-                declared_ram = t.get("ram_mb", DEFAULT_RAM_MB)
-                # Add 10% slack so we don't constantly bump on minor fluctuations
-                if total_ram > declared_ram * 1.1:
-                    t["ram_mb"] = total_ram
-            # Refresh cpu_cores based on real %CPU. For ALL tasks now (was auto_adopted only):
-            # SUMO/RL retrains often declare cpu_cores=2 at submit but actually use 7-8 cores
-            # (libsumo + multi-step env). Without upward tracking, dispatch packs too many.
-            total_pcpu = sum(pcpu_per_pid.get(p, 0.0) for p in this_alive)
-            if total_pcpu > 0:
-                new_cpu = max(1, _math.ceil(total_pcpu / 100.0))
-                cur_cpu = t.get("cpu_cores", DEFAULT_CPU_CORES)
-                if t.get("auto_adopted"):
-                    # Adopted: lower-only (legacy len(pids) overcount fix).
-                    if new_cpu < cur_cpu:
-                        t["cpu_cores"] = new_cpu
-                else:
-                    # Scheduler-launched: upward tracking when sustained, lower only on big over-count
-                    # (mirrors the _refresh_adopted_resources pattern from earlier).
-                    if new_cpu > cur_cpu:
-                        t["cpu_cores"] = new_cpu
-                    elif cur_cpu > new_cpu * 2.5:
-                        t["cpu_cores"] = new_cpu
+        res = probe_results.get(t["id"])
+        if res is None or res["state"] == "unknown":
+            # ssh failed for this node OR task wasn't probed — leave state alone.
+            continue
+        if res["state"] == "dead":
+            t["status"] = "done"
+            t["finished_at"] = time.time()
+            # Diagnose: did it complete normally, or crash? Tail log + check patterns + lifetime.
+            diag = _diagnose_terminal(t)
+            t["_diagnosis"] = diag  # caller (watcher) reads + emits task_crashed if needed
+            # Belt-and-suspenders: never let heuristics flip an auto-adopted task to "failed".
+            # Adopted tasks have no scheduler-owned log so heuristics like "log 0B after Ns"
+            # systematically misfire on them. _diagnose_terminal already early-returns False
+            # for adopted; this guard is in case that path is ever bypassed in a refactor.
+            if diag["is_crash"] and not t.get("auto_adopted"):
+                t["status"] = "failed"  # distinguish in queue.json
+                t["last_block_reason"] = diag["reason"]
+                new_id = _requeue_after_crash(t, state)
+                if new_id:
+                    t["requeued_as"] = new_id
+            # Universal "incomplete" check: lifetime far below historical EWMA → likely killed/crashed,
+            # mark + auto-requeue (unless user explicitly cancelled, in which case status was already
+            # set to 'cancelled' before this code runs and we never get here). Works for both
+            # scheduler-launched AND auto-adopted tasks (now that adopt captures cmdline).
+            elif (not diag.get("is_crash")
+                  and t.get("status") == "done"  # not already failed/cancelled
+                  and t.get("started_at") and t.get("finished_at")):
+                sig = t.get("signature") or ""
+                h = history_get(sig) or {}
+                expected = int(h.get("dur_s_ewma", 0))
+                runs = int(h.get("dur_s_runs", 0))
+                lifetime = max(0, t["finished_at"] - t["started_at"])
+                # Need at least 2 historical samples before trusting the EWMA threshold.
+                if expected > 0 and runs >= 2 and lifetime < 0.5 * expected:
+                    t["status"] = "failed"
+                    t["last_block_reason"] = (f"incomplete: ran {int(lifetime)}s "
+                                               f"({int(100*lifetime/expected)}% of EWMA {expected}s); "
+                                               f"likely killed/crashed (not user-cancelled)")
+                    cmd_real = bool(t.get("cmd")) and not t["cmd"].startswith("(auto-adopted")
+                    if cmd_real:
+                        new_id = _requeue_after_crash(t, state)
+                        if new_id:
+                            t["requeued_as"] = new_id
+            duration_s = 0
+            if t.get("started_at") and t.get("finished_at"):
+                duration_s = max(0, int(t["finished_at"] - t["started_at"]))
+            history_record(
+                t.get("signature"),
+                peak_vram_mb=t.get("peak_vram_mb", 0),
+                peak_ram_mb=t.get("peak_ram_mb", 0),
+                cpu_cores=t.get("cpu_cores", 0),
+                duration_s=duration_s,
+            )
+            continue
+        # alive: fold deltas, upward-track ram_mb / cpu_cores estimates
+        t["alive_pids"] = res["alive_pids"]
+        total_vram = res["vram_mb"]
+        if total_vram > 0:
+            t["peak_vram_mb"] = max(t.get("peak_vram_mb", 0), total_vram)
+        total_ram = res["ram_mb"]
+        if total_ram > 0:
+            t["peak_ram_mb"] = max(t.get("peak_ram_mb", 0), total_ram)
+            # B: upward-track ram_mb when actual RSS exceeds declared budget. Closes the
+            # gap where a task submits with ram_mb=8000 but really uses 15GB; without this,
+            # next dispatch's RAM headroom check trusts the (lying) declared 8GB and packs
+            # more tasks until WSL OOM. Apply to ALL tasks (scheduler-launched + adopted).
+            # Down-direction is handled separately (lower-only) to avoid noise from transient
+            # GC dips. Always-bump-up is correct since OOM blast-radius is asymmetric.
+            declared_ram = t.get("ram_mb", DEFAULT_RAM_MB)
+            # Add 10% slack so we don't constantly bump on minor fluctuations
+            if total_ram > declared_ram * 1.1:
+                t["ram_mb"] = total_ram
+        # Refresh cpu_cores based on real %CPU. For ALL tasks now (was auto_adopted only):
+        # SUMO/RL retrains often declare cpu_cores=2 at submit but actually use 7-8 cores
+        # (libsumo + multi-step env). Without upward tracking, dispatch packs too many.
+        total_pcpu = res["pcpu"]
+        if total_pcpu > 0:
+            new_cpu = max(1, _math.ceil(total_pcpu / 100.0))
+            cur_cpu = t.get("cpu_cores", DEFAULT_CPU_CORES)
+            if t.get("auto_adopted"):
+                # Adopted: lower-only (legacy len(pids) overcount fix).
+                if new_cpu < cur_cpu:
+                    t["cpu_cores"] = new_cpu
+            else:
+                # Scheduler-launched: upward tracking when sustained, lower only on big over-count
+                # (mirrors the _refresh_adopted_resources pattern from earlier).
+                if new_cpu > cur_cpu:
+                    t["cpu_cores"] = new_cpu
+                elif cur_cpu > new_cpu * 2.5:
+                    t["cpu_cores"] = new_cpu
 
 def update_running_tasks(state):
     """Batched version — one ssh per node instead of one per task. See _batch_check_running."""
@@ -1749,114 +1620,324 @@ def _maybe_wrap_docker(task: dict, inner: str, cwd: str) -> tuple[str, Optional[
     return (wrapped, None)
 
 
-def launch(task):
-    """Start the task via nohup, capture remote PID. Mutates task in-place. Returns (ok, msg)."""
-    log_path = f"{STATE_DIR}/logs/{task['id']}.log" if NODES[task["node"]]["host"] is None \
-               else f"/tmp/sched_{task['id']}.log"
-    cwd = task["cwd"]
-    inner = task["cmd"]
-    # `-u` injection for python invocations: without unbuffered stdout, python's full-buffering
-    # mode (when stdout is a file) holds output in a 4KB block until process exit OR explicit
-    # flush. If the process is SIGKILL'd (eviction, OOM, watcher kill) BEFORE the buffer fills,
-    # the log ends up 0 bytes — which trips the diagnose's "log only 0B → crash" rule even when
-    # the process actually saved its model and was about to print "Final model saved". Footgun:
-    # AWAC s123/s789 trained 100k steps + saved awac_final.pt, were marked failed solely because
-    # log buffer never flushed. Auto-inject -u so this can't bite again.
-    inner = _inject_python_u(inner)
-    # Resume injection: if find_resume() located a checkpoint AND submit declared --resume-flag,
-    # append `<flag> <ckpt_path>` to the cmd. Without this the resume_from metadata is dead —
-    # the script never sees the path. Empty resume_flag (default) opts out: cmd unchanged.
-    resume_path = task.get("resume_from")
-    resume_flag = task.get("resume_flag") or ""
-    if resume_path and resume_flag:
-        inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
-    # Env-deploy wrapping (docker). Done AFTER -u + resume injection so the inner shell cmd
-    # is fully assembled before being wrapped in `docker run`. For env_spec='none' this is a
-    # no-op; for 'auto', probes target and falls back to 'none' if docker isn't accessible;
-    # for explicit 'docker' returns an error that fails the launch fast (per Codex review,
-    # silent host fallback was unsafe).
-    inner, docker_err = _maybe_wrap_docker(task, inner, cwd)
-    if docker_err:
-        return False, docker_err
-    # Pre-flight: cwd must exist on target node. Skips a wasted launch + 2-3 retry cycles +
-    # eventual ENV_MISSING escalation when a node simply doesn't have the repo synced.
-    try:
-        rc_cwd, _, err_cwd = run_on(task["node"], f"test -d {shlex.quote(cwd)}", timeout=10, check=False)
-    except Exception as e:
-        rc_cwd, err_cwd = 1, str(e)
-    if rc_cwd != 0:
-        return False, f"cwd missing on {task['node']}: {cwd}"
-    # Set CUDA_VISIBLE_DEVICES. For GPU tasks: pin to assigned GPU (will appear as device 0 inside).
-    # For CPU-only tasks (gpu_idx=None): set empty string so CUDA truly sees no GPUs — the literal
-    # string "None" is NOT a valid CUDA value and would not disable GPU access.
-    gpu_idx = task.get("gpu_idx")
-    if gpu_idx is None:
-        env_prefix = 'export CUDA_VISIBLE_DEVICES=""; '
-    else:
-        env_prefix = f"export CUDA_VISIBLE_DEVICES={gpu_idx}; "
-    if task.get("extra_env"):
-        for k, v in task["extra_env"].items():
-            env_prefix += f"export {k}={shlex.quote(v)}; "
-    # setsid creates a new session + process group leader, so `cancel --force`'s `kill -- -<pid>`
-    # reliably catches every worker child. The </dev/null is so the launched process doesn't
-    # inherit ssh's stdin pipe (which would otherwise keep the ssh-side bash alive).
-    full = (f"mkdir -p {shlex.quote(os.path.dirname(log_path))}; "
-            f"cd {shlex.quote(cwd)} && {env_prefix} "
-            f"setsid bash -c {shlex.quote(inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null & echo PID=$!")
-    try:
-        rc, out, err = run_on(task["node"], full, timeout=20, check=False)
-        if rc != 0:
-            return False, f"launch rc={rc}: {err.strip()[:200]}"
-        pid = None
-        for line in out.splitlines():
-            line = line.strip()
-            if line.startswith("PID="):
-                try: pid = int(line[4:])
-                except ValueError: pass
-        if not pid:
-            return False, f"could not parse PID from launch output: {out[:200]}"
-        task["remote_pids"] = [pid]
-        task["process_group"] = pid
-        task["log_path"] = log_path
-        task["status"] = "running"
-        task["started_at"] = time.time()
-        task["peak_vram_mb"] = 0
-        task["peak_ram_mb"] = 0
-        # Docker container PID resolution. The PID we just captured is the host-side bash
-        # that ran `docker run` — NOT the python proc inside the container. With containerd-shim
-        # the container's actual proc tree is detached, so liveness checks (`kill -0`),
-        # peak-RAM tracking via `ps -o rss`, and adopt-dedup based on `remote_pids` all break.
-        # Codex review caught this. Fix: ask docker for the container's main PID, append it
-        # to remote_pids so the existing tracking machinery sees the right host-visible
-        # process. nvidia-smi compute-apps already returns container-proc PIDs as host PIDs
-        # via nvidia-container-toolkit, so once remote_pids has the right value, peak_vram
-        # tracking + auto-adopt-dedup both light up correctly.
-        cname = task.get("container_name")
-        if cname:
-            container_pid = None
-            for _ in range(6):  # ~3s total: container start can take a moment
+# ---------- backend abstraction (Phase 1) ----------
+# Backend isolates the "how a task gets started/killed/probed on a node" decisions
+# from scheduler policy (placement, history, dedup, diagnose). Single backend in
+# Phase 1 (LocalBackend = ssh + nohup). Phase 2 will add SlurmBackend (sbatch/squeue
+# /scancel) and Phase 3 will add MultiUserLocalBackend (cooperative shared state).
+# The top-level functions launch() / _kill_task_processes() / check_running() /
+# _batch_check_running() are kept as thin wrappers so existing call sites and tests
+# don't need to change — only the bodies move.
+
+class Backend:
+    """Abstract: how we make a task run on a node.
+
+    Implementations must be stateless (or hold only ephemeral state) — the source-
+    of-truth task records live in queue.json, accessed under state_lock.
+    """
+    name = "abstract"
+
+    def launch(self, task: dict) -> tuple[bool, str]:
+        """Submit task to its assigned node.
+
+        Mutates task in-place: sets status='running', started_at, log_path,
+        peak_*_mb=0, plus backend-specific tracking handles (remote_pids /
+        container_main_pid for Local; slurm_job_id for Slurm).
+
+        Returns (ok, msg). On failure task should be re-queueable: caller will
+        flip status back to 'queued' and retry/escalate per failure category.
+        """
+        raise NotImplementedError
+
+    def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
+        """Best-effort terminate. SIGTERM first, then SIGKILL. Idempotent — calling
+        on an already-dead task should still return ok. Returns (ok, msg)."""
+        raise NotImplementedError
+
+    def batch_probe(self, state: dict) -> dict:
+        """One round-trip per node, batch-probe liveness + current resource use for
+        ALL tasks on this backend's nodes that are in status='running'.
+
+        Returns: {task_id: {
+            'state': 'alive' | 'dead' | 'unknown',
+            'alive_pids': list[int],   # PIDs verified alive (incl. expanded descendants); [] OK
+            'vram_mb': int,            # current VRAM total across alive PIDs; 0 if unknown
+            'ram_mb':  int,            # current RSS total in MB; 0 if unknown
+            'pcpu':    float,          # current %cpu total; 0.0 if unknown
+        }}.
+        Caller folds the deltas into peak_*_mb (max-tracking), updates alive_pids,
+        and runs transition + diagnose + history-fold policy.
+        """
+        raise NotImplementedError
+
+
+class LocalBackend(Backend):
+    """ssh + nohup + setsid pattern. Tracks tasks by host-visible PIDs.
+
+    For docker-wrapped tasks, the captured PID is the actual container main proc
+    (resolved via `docker inspect --format {{.State.Pid}}` after launch) — not
+    the docker-run client PID, which would be detached from the real proc tree
+    by containerd-shim.
+    """
+    name = "local"
+
+    def launch(self, task: dict) -> tuple[bool, str]:
+        """Start the task via nohup, capture remote PID. Mutates task in-place. Returns (ok, msg)."""
+        log_path = f"{STATE_DIR}/logs/{task['id']}.log" if NODES[task["node"]]["host"] is None \
+                   else f"/tmp/sched_{task['id']}.log"
+        cwd = task["cwd"]
+        inner = task["cmd"]
+        # `-u` injection for python invocations: without unbuffered stdout, python's full-buffering
+        # mode (when stdout is a file) holds output in a 4KB block until process exit OR explicit
+        # flush. If the process is SIGKILL'd (eviction, OOM, watcher kill) BEFORE the buffer fills,
+        # the log ends up 0 bytes — which trips the diagnose's "log only 0B → crash" rule even when
+        # the process actually saved its model and was about to print "Final model saved". Footgun:
+        # AWAC s123/s789 trained 100k steps + saved awac_final.pt, were marked failed solely because
+        # log buffer never flushed. Auto-inject -u so this can't bite again.
+        inner = _inject_python_u(inner)
+        # Resume injection: if find_resume() located a checkpoint AND submit declared --resume-flag,
+        # append `<flag> <ckpt_path>` to the cmd. Without this the resume_from metadata is dead —
+        # the script never sees the path. Empty resume_flag (default) opts out: cmd unchanged.
+        resume_path = task.get("resume_from")
+        resume_flag = task.get("resume_flag") or ""
+        if resume_path and resume_flag:
+            inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
+        # Env-deploy wrapping (docker). Done AFTER -u + resume injection so the inner shell cmd
+        # is fully assembled before being wrapped in `docker run`. For env_spec='none' this is a
+        # no-op; for 'auto', probes target and falls back to 'none' if docker isn't accessible;
+        # for explicit 'docker' returns an error that fails the launch fast (per Codex review,
+        # silent host fallback was unsafe).
+        inner, docker_err = _maybe_wrap_docker(task, inner, cwd)
+        if docker_err:
+            return False, docker_err
+        # Pre-flight: cwd must exist on target node. Skips a wasted launch + 2-3 retry cycles +
+        # eventual ENV_MISSING escalation when a node simply doesn't have the repo synced.
+        try:
+            rc_cwd, _, err_cwd = run_on(task["node"], f"test -d {shlex.quote(cwd)}", timeout=10, check=False)
+        except Exception as e:
+            rc_cwd, err_cwd = 1, str(e)
+        if rc_cwd != 0:
+            return False, f"cwd missing on {task['node']}: {cwd}"
+        # Set CUDA_VISIBLE_DEVICES. For GPU tasks: pin to assigned GPU (will appear as device 0 inside).
+        # For CPU-only tasks (gpu_idx=None): set empty string so CUDA truly sees no GPUs — the literal
+        # string "None" is NOT a valid CUDA value and would not disable GPU access.
+        gpu_idx = task.get("gpu_idx")
+        if gpu_idx is None:
+            env_prefix = 'export CUDA_VISIBLE_DEVICES=""; '
+        else:
+            env_prefix = f"export CUDA_VISIBLE_DEVICES={gpu_idx}; "
+        if task.get("extra_env"):
+            for k, v in task["extra_env"].items():
+                env_prefix += f"export {k}={shlex.quote(v)}; "
+        # setsid creates a new session + process group leader, so `cancel --force`'s `kill -- -<pid>`
+        # reliably catches every worker child. The </dev/null is so the launched process doesn't
+        # inherit ssh's stdin pipe (which would otherwise keep the ssh-side bash alive).
+        full = (f"mkdir -p {shlex.quote(os.path.dirname(log_path))}; "
+                f"cd {shlex.quote(cwd)} && {env_prefix} "
+                f"setsid bash -c {shlex.quote(inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null & echo PID=$!")
+        try:
+            rc, out, err = run_on(task["node"], full, timeout=20, check=False)
+            if rc != 0:
+                return False, f"launch rc={rc}: {err.strip()[:200]}"
+            pid = None
+            for line in out.splitlines():
+                line = line.strip()
+                if line.startswith("PID="):
+                    try: pid = int(line[4:])
+                    except ValueError: pass
+            if not pid:
+                return False, f"could not parse PID from launch output: {out[:200]}"
+            task["remote_pids"] = [pid]
+            task["process_group"] = pid
+            task["log_path"] = log_path
+            task["status"] = "running"
+            task["started_at"] = time.time()
+            task["peak_vram_mb"] = 0
+            task["peak_ram_mb"] = 0
+            # Docker container PID resolution. The PID we just captured is the host-side bash
+            # that ran `docker run` — NOT the python proc inside the container. With containerd-shim
+            # the container's actual proc tree is detached, so liveness checks (`kill -0`),
+            # peak-RAM tracking via `ps -o rss`, and adopt-dedup based on `remote_pids` all break.
+            # Codex review caught this. Fix: ask docker for the container's main PID, append it
+            # to remote_pids so the existing tracking machinery sees the right host-visible
+            # process. nvidia-smi compute-apps already returns container-proc PIDs as host PIDs
+            # via nvidia-container-toolkit, so once remote_pids has the right value, peak_vram
+            # tracking + auto-adopt-dedup both light up correctly.
+            cname = task.get("container_name")
+            if cname:
+                container_pid = None
+                for _ in range(6):  # ~3s total: container start can take a moment
+                    try:
+                        rc2, out2, _ = run_on(
+                            task["node"],
+                            f"docker inspect --format '{{{{.State.Pid}}}}' {shlex.quote(cname)} 2>/dev/null",
+                            timeout=4, check=False,
+                        )
+                    except Exception:
+                        rc2, out2 = 1, ""
+                    s = out2.strip() if rc2 == 0 else ""
+                    if s.isdigit() and int(s) > 0:
+                        container_pid = int(s)
+                        break
+                    time.sleep(0.5)
+                if container_pid:
+                    # Replace the docker-run bash PID with the actual container PID so liveness +
+                    # peak tracking lock onto the real proc. Keep process_group=launcher_pid so
+                    # `kill -- -<pgid>` still catches the docker client too if needed.
+                    task["remote_pids"] = [container_pid]
+                    task["container_main_pid"] = container_pid
+            return True, f"pid={pid}" + (f" container={cname}@{task.get('container_main_pid')}" if cname else "")
+        except Exception as e:
+            return False, f"launch exception: {e}"
+
+    def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
+        """Best-effort terminate for a tracked task. SIGTERM first, then SIGKILL for both
+        process groups and explicit PIDs. For docker-wrapped tasks, also `docker kill <name>`
+        BEFORE the host PID kills — host `kill <docker run pid>` doesn't reliably stop the
+        container because containerd-shim isolates the actual proc tree. Codex review caught
+        this. Returns (ok, msg); callers still decide state changes."""
+        node = task.get("node")
+        if not node:
+            return False, "no node"
+        pids = [int(p) for p in _task_pids(task) if p]
+        pgids = _task_process_groups(task)
+        container = task.get("container_name")
+        if not pids and not pgids and not container:
+            return False, "no pids"
+        parts = []
+        if container:
+            # SIGTERM first via `docker stop` (10s grace), then SIGKILL via `docker kill`.
+            # Both are no-ops if the container already exited; `|| true` keeps the pipeline alive.
+            parts.append(f"docker stop -t 5 {shlex.quote(container)} 2>/dev/null || true")
+        parts += [f"kill -- -{g} 2>/dev/null" for g in pgids]
+        parts += [f"kill {p} 2>/dev/null" for p in pids]
+        parts.append("sleep 1")
+        if container:
+            parts.append(f"docker kill {shlex.quote(container)} 2>/dev/null || true")
+        parts += [f"kill -9 -- -{g} 2>/dev/null" for g in pgids]
+        parts += [f"kill -9 {p} 2>/dev/null" for p in pids]
+        parts.append("true")
+        cmd = "; ".join(parts)
+        try:
+            run_on(node, cmd, timeout=timeout, check=False)
+            bits = []
+            if container: bits.append(f"container={container}")
+            if pgids: bits.append(f"pgids={pgids}")
+            if pids: bits.append(f"pids={pids}")
+            return True, " ".join(bits)
+        except Exception as e:
+            return False, str(e)[:200]
+
+    def batch_probe(self, state: dict) -> dict:
+        """ONE ssh per node to probe liveness + VRAM + RSS + %CPU for ALL tasks on this
+        backend's nodes. Returns {task_id: probe_dict} with backend-agnostic shape (see
+        Backend.batch_probe docstring).
+
+        For LocalBackend, the per-node ssh runs `kill -0` + `awk` against /proc/<pid>/status
+        for liveness (zombie-aware), `nvidia-smi --query-compute-apps` for VRAM, and `ps -eo
+        pid,ppid,rss,pcpu` for the rest of the process tree. Descendant expansion via ppid_of
+        catches setsid-wrapped workers that don't appear in the recorded remote_pids list.
+        """
+        by_node = {}        # node -> [(task, pids), ...]
+        pids_per_node = {}  # node -> set of all pids across tasks on this node
+        for t in state["tasks"]:
+            if t["status"] != "running": continue
+            node = t.get("node")
+            if not node: continue
+            pids = _task_pids(t)
+            if not pids: continue
+            by_node.setdefault(node, []).append((t, pids))
+            pids_per_node.setdefault(node, set()).update(pids)
+        results: dict = {}
+        if not by_node:
+            return results
+
+        def _probe(node):
+            all_pids = sorted(pids_per_node[node])
+            # Zombie guard (Codex P1): kill -0 returns 0 for zombies too. Augment with /proc state
+            # check: only count ALIVE if State is NOT Z (zombie) or X (dead).
+            pid_checks = "; ".join(
+                f"kill -0 {p} 2>/dev/null && "
+                f"awk '/^State:/{{s=$2}} END{{if(s!=\"Z\" && s!=\"X\") print \"A{p}\"}}' "
+                f"/proc/{p}/status 2>/dev/null"
+                for p in all_pids
+            )
+            cmd = (f"({pid_checks}; true); echo '===VRAM==='; "
+                   f"nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
+                   f"echo '===PSALL==='; "
+                   f"ps -eo pid=,ppid=,rss=,pcpu= 2>/dev/null; true")
+            try:
+                rc, out, _ = run_on(node, cmd, timeout=30, check=False)
+                return out if rc == 0 else None
+            except Exception:
+                return None
+
+        nodes_list = list(by_node.keys())
+        with ThreadPoolExecutor(max_workers=len(nodes_list)) as ex:
+            outputs = dict(zip(nodes_list, ex.map(_probe, nodes_list)))
+
+        for node, out in outputs.items():
+            if out is None:
+                # ssh failed for this node — emit 'unknown' for every task on it so caller leaves
+                # state alone. Without this, a transient ssh blip would silently treat tasks as dead.
+                for t, _ in by_node[node]:
+                    results[t["id"]] = {"state": "unknown", "alive_pids": [],
+                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+                continue
+            lines = [l.strip() for l in out.splitlines() if l.strip()]
+            vram_sep = lines.index("===VRAM===") if "===VRAM===" in lines else len(lines)
+            ps_sep = lines.index("===PSALL===") if "===PSALL===" in lines else len(lines)
+            alive_roots = {int(l[1:]) for l in lines[:vram_sep] if l.startswith("A") and l[1:].isdigit()}
+            vram_per_pid = {}
+            for pl in lines[vram_sep+1:ps_sep]:
+                parts = [x.strip() for x in pl.split(",")]
+                if len(parts) < 2: continue
+                try: ppid_, mb = int(parts[0]), int(parts[1])
+                except ValueError: continue
+                vram_per_pid[ppid_] = vram_per_pid.get(ppid_, 0) + mb
+            rss_per_pid, pcpu_per_pid, ppid_of = {}, {}, {}
+            for rl in lines[ps_sep+1:]:
+                bits = rl.split()
+                if len(bits) < 4: continue
                 try:
-                    rc2, out2, _ = run_on(
-                        task["node"],
-                        f"docker inspect --format '{{{{.State.Pid}}}}' {shlex.quote(cname)} 2>/dev/null",
-                        timeout=4, check=False,
-                    )
-                except Exception:
-                    rc2, out2 = 1, ""
-                s = out2.strip() if rc2 == 0 else ""
-                if s.isdigit() and int(s) > 0:
-                    container_pid = int(s)
-                    break
-                time.sleep(0.5)
-            if container_pid:
-                # Replace the docker-run bash PID with the actual container PID so liveness +
-                # peak tracking lock onto the real proc. Keep process_group=launcher_pid so
-                # `kill -- -<pgid>` still catches the docker client too if needed.
-                task["remote_pids"] = [container_pid]
-                task["container_main_pid"] = container_pid
-        return True, f"pid={pid}" + (f" container={cname}@{task.get('container_main_pid')}" if cname else "")
-    except Exception as e:
-        return False, f"launch exception: {e}"
+                    p_, parent_, rss_kb = int(bits[0]), int(bits[1]), int(bits[2])
+                    pc = float(bits[3])
+                except ValueError: continue
+                ppid_of[p_] = parent_
+                rss_per_pid[p_] = rss_kb // 1024
+                pcpu_per_pid[p_] = pc
+
+            for t, pids in by_node[node]:
+                pid_set = set(pids)
+                # Descendant expansion: setsid bash wrapper means the recorded PID is the
+                # process-group leader; the real Python proc + workers are descendants. Count
+                # the whole live tree for liveness + resources, otherwise RAM/CPU/VRAM are badly
+                # under-reported and child workers look external.
+                expanded_pid_set = pid_set | _descendants_of(pid_set, ppid_of)
+                this_alive = expanded_pid_set & (alive_roots | set(rss_per_pid))
+                if not this_alive:
+                    results[t["id"]] = {"state": "dead", "alive_pids": [],
+                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+                    continue
+                results[t["id"]] = {
+                    "state": "alive",
+                    "alive_pids": sorted(this_alive),
+                    "vram_mb": sum(vram_per_pid.get(p, 0) for p in this_alive),
+                    "ram_mb":  sum(rss_per_pid.get(p, 0) for p in this_alive),
+                    "pcpu":    sum(pcpu_per_pid.get(p, 0.0) for p in this_alive),
+                }
+        return results
+
+
+# Singleton: Phase 1 has only one backend. Phase 2 will swap in slurm-aware
+# selection at this assignment. Tests reference _BACKEND directly to verify
+# backend identity and to swap in fakes for unit testing.
+_BACKEND: Backend = LocalBackend()
+
+
+def launch(task):
+    """Thin wrapper: delegates to the active Backend. See Backend.launch."""
+    return _BACKEND.launch(task)
 
 # ---------- subcommands ----------
 def _cmd_looks_like_training(cmd: str) -> bool:

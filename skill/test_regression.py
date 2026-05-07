@@ -3027,6 +3027,125 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_backend_slurm_phase2_16_1_rebalance_pending():
+    """Phase 2.16.1: cmd_rebalance_pending pulls slurm-PENDING tasks back to scheduleurm
+    queue (scancel + revert to status=queued) so they can re-dispatch under current
+    throttle policy. Critical safety: must NEVER touch RUNNING tasks (mid-training)
+    or LocalBackend tasks.
+    """
+    print("\n[57] Phase 2.16.1 rebalance-pending: scancel slurm-PENDING + revert to queued")
+    check("cmd_rebalance_pending exists",
+          callable(getattr(sch, "cmd_rebalance_pending", None)))
+
+    saved_save = sch.save_state
+    saved_load = sch.load_state
+    saved_run_on = sch.run_on
+    saved_lock = sch.state_lock
+
+    captured_kept = {}
+    def fake_save(s):
+        captured_kept["state"] = s
+    fake_state = {
+        "next_id": 100,
+        "tasks": [
+            # PENDING slurm task — should be rebalanced
+            {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1,
+             "slurm_state": "PENDING", "remote_pids": [],
+             "signature": "TEST/A", "cmd": "python train.py", "ckpt_dir": "/d/A"},
+            # CONFIGURING slurm task — should also be rebalanced
+            {"id": "tB", "status": "running", "node": "n2", "slurm_job_id": 2,
+             "slurm_state": "CONFIGURING", "remote_pids": [],
+             "signature": "TEST/B", "cmd": "python eval.py"},
+            # Just-submitted (slurm_state=None) — should be rebalanced
+            {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3,
+             "slurm_state": None, "remote_pids": [],
+             "signature": "TEST/C", "cmd": "python long.py"},
+            # RUNNING slurm task — must NOT be touched (mid-training)
+            {"id": "tR", "status": "running", "node": "n1", "slurm_job_id": 4,
+             "slurm_state": "RUNNING", "remote_pids": [],
+             "signature": "TEST/R", "cmd": "python big.py",
+             "started_at": time.time() - 600, "log_path": "/var/log/r.log"},
+            # COMPLETING — also untouched
+            {"id": "tCM", "status": "running", "node": "n2", "slurm_job_id": 5,
+             "slurm_state": "COMPLETING", "remote_pids": []},
+            # LocalBackend task — no slurm_job_id, untouched
+            {"id": "tL", "status": "running", "node": "n1",
+             "remote_pids": [9001], "slurm_job_id": None,
+             "signature": "TEST/local", "cmd": "python local.py"},
+            # queued tasks — untouched
+            {"id": "tQ", "status": "queued", "signature": "TEST/Q"},
+        ],
+    }
+    scancel_calls = []
+
+    sch.load_state = lambda: fake_state
+    sch.save_state = fake_save
+    sch.run_on = lambda node, cmd, timeout=10, check=True: (
+        scancel_calls.append((node, cmd)) or (0, "", "")
+        if "scancel" in cmd else (0, "", "")
+    )
+    from contextlib import contextmanager as _cm
+    @_cm
+    def fake_lock():
+        yield
+    sch.state_lock = fake_lock
+
+    class Args:
+        def __init__(self, yes): self.yes = yes
+
+    try:
+        # Dry run: NO save, prints plan only
+        captured_kept.clear()
+        scancel_calls.clear()
+        sch.cmd_rebalance_pending(Args(yes=False))
+        check("dry run: no save_state call",
+              "state" not in captured_kept,
+              diag="dry run should not write state")
+        check("dry run: no scancel issued",
+              len(scancel_calls) == 0)
+
+        # Apply: should rebalance tA, tB, tC; leave tR, tCM, tL, tQ untouched
+        captured_kept.clear()
+        scancel_calls.clear()
+        sch.cmd_rebalance_pending(Args(yes=True))
+
+        # Snapshot post-state
+        post = {t["id"]: t for t in fake_state["tasks"]}
+        check("tA (PENDING) → status='queued'", post["tA"]["status"] == "queued")
+        check("tA → slurm_job_id cleared", post["tA"].get("slurm_job_id") is None)
+        check("tA → remote_pids cleared to []", post["tA"]["remote_pids"] == [])
+        check("tA → signature preserved (resume relies on it)",
+              post["tA"]["signature"] == "TEST/A")
+        check("tA → cmd preserved", post["tA"]["cmd"] == "python train.py")
+        check("tA → ckpt_dir preserved (resume injection on next dispatch)",
+              post["tA"].get("ckpt_dir") == "/d/A")
+
+        check("tB (CONFIGURING) → queued", post["tB"]["status"] == "queued")
+        check("tC (just-submitted, slurm_state=None) → queued",
+              post["tC"]["status"] == "queued")
+
+        check("tR (RUNNING) → STILL running (untouched)",
+              post["tR"]["status"] == "running" and post["tR"]["slurm_job_id"] == 4)
+        check("tCM (COMPLETING) → STILL running",
+              post["tCM"]["status"] == "running" and post["tCM"]["slurm_job_id"] == 5)
+        check("tL (LocalBackend) → untouched (no slurm_job_id)",
+              post["tL"]["status"] == "running" and post["tL"]["remote_pids"] == [9001])
+        check("tQ (queued) → STILL queued",
+              post["tQ"]["status"] == "queued")
+
+        # scancel issued for the 3 rebalanced
+        scancel_jids = sorted(
+            int(c[1].split()[1]) for c in scancel_calls if "scancel" in c[1]
+        )
+        check("scancel issued for jids 1, 2, 3 (tA, tB, tC)",
+              scancel_jids == [1, 2, 3], diag=str(scancel_calls))
+    finally:
+        sch.save_state = saved_save
+        sch.load_state = saved_load
+        sch.run_on = saved_run_on
+        sch.state_lock = saved_lock
+
+
 def test_backend_slurm_phase2_15_orphan_recovery():
     """Phase 2.15 P2: WAL recovery for orphaned slurm jobs.
 
@@ -4164,6 +4283,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_14_ui_and_launch_notification()
     test_backend_slurm_phase2_15_orphan_recovery()
     test_backend_slurm_phase2_16_pending_throttle()
+    test_backend_slurm_phase2_16_1_rebalance_pending()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

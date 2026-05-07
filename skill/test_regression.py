@@ -7758,11 +7758,16 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
         # backend.launch() call this test exercises. Bypass it for this test
         # since cwd="/work" is a fake path; the staging logic itself has its
         # own dedicated test block.
+        # Phase 3.4.11 P1: dispatch now uses _stage_cwd_check (fast probe)
+        # instead of _stage_cwd_for_launch — bypass the probe too so the
+        # CLAIM_RACE / CLAIM_ERROR launch path is reachable with mock cwd.
         saved_stage = sch._stage_cwd_for_launch
+        saved_check = sch._stage_cwd_check
         sch.save_state = lambda s: None
         sch.precheck_git = lambda t: (True, "")
         sch.find_resume = lambda t: None
         sch._stage_cwd_for_launch = lambda t, n: (True, "test bypass")
+        sch._stage_cwd_check = lambda target, cwd: "ready"
         state = {"next_id": 100, "tasks": [{
             "id": "tDR", "status": "queued", "priority": "normal",
             "submitted_at": time.time(), "cwd": "/work",
@@ -7798,6 +7803,7 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
             sch.precheck_git = saved_pre
             sch.find_resume = saved_resume
             sch._stage_cwd_for_launch = saved_stage
+            sch._stage_cwd_check = saved_check
 
         # 3. _evict_to_queue releases the claim before clearing node.
         rel_calls = []
@@ -8764,6 +8770,7 @@ def test_phase3_4_3_claim_race_vs_claim_error():
     saved_resume = sch.find_resume
     saved_run = sch.run_on
     saved_stage = sch._stage_cwd_for_launch
+    saved_check = sch._stage_cwd_check
     sch.NODES = {"n_on": {"name": "n_on", "host": "h", "enable_claims": True,
                             "cpu_cores": 12, "ram_mb": 32000,
                             "ram_headroom_frac": 0.10,
@@ -8772,10 +8779,11 @@ def test_phase3_4_3_claim_race_vs_claim_error():
     sch.save_state = lambda s: None
     sch.precheck_git = lambda t: (True, "")
     sch.find_resume = lambda t: None
-    # Phase 3.4.10 P1: bypass new pre-launch staging step — this test exercises
-    # the launch-time CLAIM_ERROR path with cwd="/work" (mock); the staging
-    # logic itself has its own dedicated test block.
+    # Phase 3.4.10/3.4.11: bypass pre-launch staging step + cache-only probe —
+    # this test exercises the launch-time CLAIM_ERROR path with cwd="/work"
+    # (mock); the staging logic itself has its own dedicated test block.
     sch._stage_cwd_for_launch = lambda t, n: (True, "test bypass")
+    sch._stage_cwd_check = lambda target, cwd: "ready"
     # cwd preflight (test -d) runs BEFORE claim. Pass it; fail only the
     # claims-script ssh so the CLAIM_ERROR path is the actual failure.
     def fake_run(node, cmd, **kw):
@@ -8823,6 +8831,7 @@ def test_phase3_4_3_claim_race_vs_claim_error():
         sch.run_on = saved_run
         sch.NODES = saved_NODES
         sch._stage_cwd_for_launch = saved_stage
+        sch._stage_cwd_check = saved_check
 
 
 def test_phase3_4_4_claim_replicates_gpu_fits_policy():
@@ -9260,16 +9269,30 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
           "_STAGING_CACHE[cwd_key] = time.time()" in fn,
           diag="next dispatch within TTL skips rsync via cache hit")
 
-    # ---- Dispatch wiring guard: CAP_EXCEEDED → require_node=local + revert ----
-    # Find the dispatch loop body that calls _stage_cwd_for_launch.
-    check("3.4.10: dispatch invokes _stage_cwd_for_launch before launch()",
-          "_stage_cwd_for_launch(t, target)" in src,
-          diag="must run BEFORE launch() so wrong-code launch never happens")
-    check("3.4.10: CAP_EXCEEDED routes to require_node=local + revert queued",
-          'stage_msg.startswith("CAP_EXCEEDED:")' in src
+    # ---- Dispatch wiring guard: cache-only probe (3.4.11 P1 refactor) ----
+    # 3.4.10 originally invoked _stage_cwd_for_launch synchronously inside
+    # _do_dispatch (under state_lock) — that was a P1 bug because the rsync
+    # could hold the lock for up to 10 min. 3.4.11 split it: the slow rsync
+    # runs OUTSIDE the lock (via _stage_launch_candidates_outside_lock),
+    # _do_dispatch only does a constant-time cache probe via _stage_cwd_check.
+    check("3.4.11: dispatch uses _stage_cwd_check (cache-only) before launch()",
+          "_stage_cwd_check(target, cwd_for_stage)" in src,
+          diag="never call rsync inside state_lock — would block submit/cancel/status")
+    check("3.4.11: outside-lock helper _stage_launch_candidates_outside_lock defined",
+          "def _stage_launch_candidates_outside_lock()" in src,
+          diag="mirrors _stage_migration_candidates_outside_lock pattern")
+    check("3.4.11: cmd_dispatch + watcher invoke _stage_launch_candidates_outside_lock",
+          src.count("_stage_launch_candidates_outside_lock()") >= 2,
+          diag="must run before BOTH cmd_dispatch state_lock AND _watch_iteration state_lock")
+    check("3.4.11: cap_exceeded route → require_node=local + revert queued (no fail-count bump)",
+          'stage_state == "cap_exceeded"' in src
           and 't["require_node"] = "local"' in src,
-          diag="size-cap is a routing decision, not a launch failure — no fail-count bump")
-    check("3.4.10: launch_capped event emitted for CAP_EXCEEDED branch",
+          diag="size-cap is a routing decision, not a launch failure")
+    check("3.4.11: needs_stage route → defer this cycle, no fail-count bump",
+          'stage_state == "needs_stage"' in src
+          and '"type": "launch_stage_deferred"' in src,
+          diag="defer to next cycle so outside-lock can rsync without holding state_lock")
+    check("3.4.11: launch_capped event emitted on cap_exceeded",
           '"type": "launch_capped"' in src,
           diag="surfaces in events log so operator sees why a task got pinned")
 
@@ -9481,6 +9504,187 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
               tC.get("status") == "cancelled"
               and tC.get("result_synced_at") is None,
               diag=str(tC))
+    finally:
+        sch.NODES = saved_NODES
+        sch.load_state = saved_load
+        sch.save_state = saved_save
+        sch._sync_one_result = saved_sync_one
+
+    # ============================================================
+    # Phase 3.4.11 P1/P2 fixes — outside-lock launch staging,
+    # rsync --delete, concurrent-rsync guard for result sync
+    # ============================================================
+    print("\n[Phase 3.4.11] outside-lock launch staging + rsync --delete + result-sync claim marker")
+
+    src = open(sch.__file__).read()
+
+    # ---- P1: outside-lock launch staging architecture ----
+    fn_check = src.split("def _stage_cwd_check(")[1].split("\ndef ")[0]
+    check("3.4.11 P1: _stage_cwd_check returns 'ready' for local target (host=None)",
+          'NODES.get(target_node, {}).get("host") is None' in fn_check
+          and 'return "ready"' in fn_check,
+          diag="local target has nothing to sync")
+    check("3.4.11 P1: _stage_cwd_check returns 'ready' on _STAGING_CACHE hit",
+          "_staging_cache_hit(cwd_key)" in fn_check
+          and 'return "ready"' in fn_check)
+    check("3.4.11 P1: _stage_cwd_check returns 'cap_exceeded' on _STAGING_CAP_EXCEEDED hit (TTL'd)",
+          "_STAGING_CAP_EXCEEDED" in fn_check
+          and 'return "cap_exceeded"' in fn_check)
+    check("3.4.11 P1: _stage_cwd_check returns 'needs_stage' on cache miss",
+          'return "needs_stage"' in fn_check,
+          diag="dispatch defers to next cycle; outside-lock helper rsyncs in between")
+
+    fn_outside = src.split("def _stage_launch_candidates_outside_lock()")[1].split("\ndef ")[0]
+    check("3.4.11 P1: outside-lock helper short-locks for snapshot only",
+          "with state_lock():" in fn_outside,
+          diag="snapshot under SHORT lock; rsync OUTSIDE")
+    check("3.4.11 P1: outside-lock helper iterates queued tasks only",
+          't.get("status") != "queued"' in fn_outside)
+    check("3.4.11 P1: outside-lock helper skips already-cached (target, cwd) pairs",
+          "_staging_cache_hit(cwd_key)" in fn_outside
+          and "_STAGING_CAP_EXCEEDED.get(cwd_key)" in fn_outside,
+          diag="avoid redundant ssh round-trips when caches are warm")
+    check("3.4.11 P1: outside-lock helper calls _stage_cwd_for_launch outside the lock",
+          "_stage_cwd_for_launch" in fn_outside,
+          diag="real rsync must NOT hold state_lock")
+
+    # ---- P1 behavioral: _stage_cwd_check fast-path returns ----
+    saved_NODES = sch.NODES
+    try:
+        sch.NODES = {
+            "local": {"host": None},
+            "remote": {"host": "user@host"},
+        }
+        # local target → ready
+        check("3.4.11 P1 behavior: target=local → 'ready' (no rsync needed)",
+              sch._stage_cwd_check("local", "/some/cwd") == "ready")
+
+        # remote, no cache entries → needs_stage
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CAP_EXCEEDED.clear()
+        check("3.4.11 P1 behavior: cold cache → 'needs_stage'",
+              sch._stage_cwd_check("remote", "/some/cwd") == "needs_stage")
+
+        # remote with fresh cache → ready
+        cwd_key = ("local", "remote", "/some/cwd")
+        sch._STAGING_CACHE[cwd_key] = time.time()
+        check("3.4.11 P1 behavior: fresh _STAGING_CACHE entry → 'ready'",
+              sch._stage_cwd_check("remote", "/some/cwd") == "ready")
+        sch._STAGING_CACHE.pop(cwd_key, None)
+
+        # remote with cap_exceeded marker → cap_exceeded
+        sch._STAGING_CAP_EXCEEDED[cwd_key] = time.time()
+        check("3.4.11 P1 behavior: fresh _STAGING_CAP_EXCEEDED → 'cap_exceeded'",
+              sch._stage_cwd_check("remote", "/some/cwd") == "cap_exceeded")
+        sch._STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+
+        # Stale CAP_EXCEEDED (older than STAGING_TTL_S) → reverts to needs_stage
+        sch._STAGING_CAP_EXCEEDED[cwd_key] = time.time() - sch.STAGING_TTL_S - 10
+        check("3.4.11 P1 behavior: stale _STAGING_CAP_EXCEEDED → 'needs_stage' (auto recovery)",
+              sch._stage_cwd_check("remote", "/some/cwd") == "needs_stage")
+        sch._STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+    finally:
+        sch.NODES = saved_NODES
+
+    # ---- P2-1: rsync --delete in launch staging ----
+    fn_launch = src.split("def _stage_cwd_for_launch")[1].split("\ndef ")[0]
+    check("3.4.11 P2-1: _stage_cwd_for_launch rsync uses --delete (enforces source-of-truth)",
+          '"--delete"' in fn_launch,
+          diag="without --delete, files renamed/deleted on local linger on remote")
+    check("3.4.11 P2-1: --delete still excludes results/logs/experiment_output (preserves outputs)",
+          '"--exclude=results/"' in fn_launch
+          and '"--exclude=logs/"' in fn_launch
+          and '"--exclude=experiment_output/"' in fn_launch,
+          diag="exclude pattern protects from BOTH transfer and delete passes")
+    check("3.4.11 P2-1: CAP_EXCEEDED branch populates _STAGING_CAP_EXCEEDED cache",
+          "_STAGING_CAP_EXCEEDED[cwd_key] = time.time()" in fn_launch,
+          diag="dispatch's fast probe reads this cache without re-running du")
+    check("3.4.11 P2-1: success branch clears stale _STAGING_CAP_EXCEEDED entry",
+          "_STAGING_CAP_EXCEEDED.pop(cwd_key, None)" in fn_launch,
+          diag="user-shrunk cwd recovers without waiting for TTL expiry")
+
+    # ---- P2-2: result sync claim marker ----
+    fn_sync = src.split("def _sync_completed_results_outside_lock")[1].split("\ndef ")[0]
+    check("3.4.11 P2-2: result sync sets result_syncing_at under lock during snapshot",
+          't["result_syncing_at"] = now' in fn_sync,
+          diag="atomic claim prevents two sessions rsync'ing the same task concurrently")
+    check("3.4.11 P2-2: result sync skips tasks with fresh result_syncing_at",
+          "syncing_at = t.get(\"result_syncing_at\")" in fn_sync
+          and "stale_threshold" in fn_sync,
+          diag="another worker holds the claim; back off")
+    check("3.4.11 P2-2: stale claim (older than RESULT_SYNC_TIMEOUT_S + grace) is reclaimable",
+          "RESULT_SYNC_STALE_GRACE_S" in fn_sync
+          and "result_sync_claim_reclaimed" in fn_sync,
+          diag="dead-process leak self-heals after timeout + grace")
+    check("3.4.11 P2-2: commit phase clears result_syncing_at unconditionally",
+          't.pop("result_syncing_at", None)' in fn_sync,
+          diag="success OR failure both release the claim")
+    check("3.4.11 P2-2: cmd_submit initializes result_syncing_at field",
+          '"result_syncing_at": None' in src,
+          diag="task record carries the claim slot from creation")
+
+    # ---- P2-2 behavioral: concurrent guard skips fresh claims ----
+    saved_NODES = sch.NODES
+    saved_load = sch.load_state
+    saved_save = sch.save_state
+    saved_sync_one = sch._sync_one_result
+    try:
+        sch.NODES = {
+            "local": {"host": None},
+            "remote": {"host": "user@host"},
+        }
+        # Case A: another session is already rsync'ing → skip
+        synced_ids = []
+        sch._sync_one_result = lambda c: (synced_ids.append(c["id"]), (True, "ok"))[1]
+        state_with_fresh_claim = {"tasks": [
+            {"id": "tBusy", "status": "done", "result_dir": "/r/tBusy",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 0,
+             "result_syncing_at": time.time() - 5},  # fresh claim, 5s ago
+        ]}
+        sch.load_state = lambda: state_with_fresh_claim
+        sch.save_state = lambda s: None
+        sch._sync_completed_results_outside_lock()
+        check("3.4.11 P2-2 behavior: fresh result_syncing_at → skipped (no concurrent rsync)",
+              synced_ids == [], diag=str(synced_ids))
+
+        # Case B: stale claim (>timeout+grace) → reclaimed
+        synced_ids.clear()
+        stale_ts = time.time() - sch.RESULT_SYNC_TIMEOUT_S - sch.RESULT_SYNC_STALE_GRACE_S - 10
+        state_with_stale_claim = {"tasks": [
+            {"id": "tStale", "status": "done", "result_dir": "/r/tStale",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 0,
+             "result_syncing_at": stale_ts},
+        ]}
+        sch.load_state = lambda: state_with_stale_claim
+        sch._sync_completed_results_outside_lock()
+        check("3.4.11 P2-2 behavior: stale result_syncing_at → reclaimed (synced)",
+              synced_ids == ["tStale"], diag=str(synced_ids))
+        # After commit, syncing_at should be cleared
+        tStale = state_with_stale_claim["tasks"][0]
+        check("3.4.11 P2-2 behavior: commit phase cleared result_syncing_at",
+              tStale.get("result_syncing_at") is None
+              and tStale.get("result_synced_at") is not None,
+              diag=str(tStale))
+
+        # Case C: failure path also clears syncing_at (claim released even on failure)
+        sch._sync_one_result = lambda c: (False, "rsync rc=23")
+        synced_ids.clear()
+        state_fail = {"tasks": [
+            {"id": "tF", "status": "done", "result_dir": "/r/tF",
+             "node": "remote", "result_synced_at": None,
+             "result_sync_attempts": 0,
+             "result_syncing_at": None},
+        ]}
+        sch.load_state = lambda: state_fail
+        sch._sync_completed_results_outside_lock()
+        tF = state_fail["tasks"][0]
+        check("3.4.11 P2-2 behavior: failure clears result_syncing_at + bumps attempts",
+              tF.get("result_syncing_at") is None
+              and tF.get("result_sync_attempts") == 1
+              and tF.get("result_synced_at") is None,
+              diag=str(tF))
     finally:
         sch.NODES = saved_NODES
         sch.load_state = saved_load

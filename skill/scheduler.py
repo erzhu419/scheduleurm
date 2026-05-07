@@ -4044,6 +4044,11 @@ def cmd_submit(args):
             "result_synced_at": None,
             "result_sync_error": None,
             "result_sync_attempts": 0,
+            # Phase 3.4.11 P2: claim marker for concurrent-rsync prevention.
+            # Set by _sync_completed_results_outside_lock under state_lock
+            # before rsync; cleared on commit phase. Stale claims older
+            # than RESULT_SYNC_TIMEOUT_S + grace are reclaimable.
+            "result_syncing_at": None,
             "extra_env": _parse_env(args.env),
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
@@ -4387,6 +4392,42 @@ def _conda_sync_ok(node, env_path) -> bool:
     return True
 
 
+# Phase 3.4.11 P1 fix: cap-exceeded cache. Populated by _stage_cwd_for_launch
+# when local cwd > LAUNCH_MAX_CWD_SIZE_MB; consulted by _stage_cwd_check (the
+# fast inside-lock probe) so dispatch can pin the task to local without
+# re-running `du`. TTL'd via STAGING_TTL_S so a user shrinking cwd recovers
+# automatically on the next outside-lock pre-staging pass.
+_STAGING_CAP_EXCEEDED: dict = {}
+
+
+def _stage_cwd_check(target_node: str, cwd: str):
+    """Phase 3.4.11 P1 fix: FAST inside-lock probe of staging state.
+    Returns one of:
+      "ready"        — target == local, OR _STAGING_CACHE has fresh entry
+      "cap_exceeded" — _STAGING_CAP_EXCEEDED has fresh entry
+      "needs_stage"  — cache miss; dispatch must defer this cycle and let
+                       the next outside-lock pass run _stage_cwd_for_launch
+
+    NEVER does ssh / rsync / du. Constant-time dict lookup + TTL check.
+    Caller (inside _do_dispatch, under state_lock) routes:
+      "ready"        → proceed with launch
+      "cap_exceeded" → set require_node=local + revert queued
+      "needs_stage"  → emit launch_stage_deferred event, leave queued
+    """
+    if NODES.get(target_node, {}).get("host") is None:
+        return "ready"  # local target, nothing to sync
+    cwd_key = ("local", target_node, cwd)
+    if _staging_cache_hit(cwd_key):
+        return "ready"
+    ts = _STAGING_CAP_EXCEEDED.get(cwd_key)
+    if ts is not None:
+        if (time.time() - ts) > STAGING_TTL_S:
+            _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+        else:
+            return "cap_exceeded"
+    return "needs_stage"
+
+
 def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
     """Phase 3.4.10 P1 fix: pre-launch sync of cwd from LOCAL (source-of-truth)
     to a non-local target_node. Mirrors `_stage_for_migration`'s rsync semantics
@@ -4451,6 +4492,11 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
         cwd_size_mb = 0
 
     if cwd_size_mb > LAUNCH_MAX_CWD_SIZE_MB:
+        # Phase 3.4.11 P1 fix: cache the cap-exceeded determination so the
+        # inside-lock fast probe can return without re-running du. TTL'd
+        # via STAGING_TTL_S; if user shrinks cwd, TTL expiry forces a
+        # fresh check on the next outside-lock pre-staging cycle.
+        _STAGING_CAP_EXCEEDED[cwd_key] = time.time()
         return (False,
                 f"CAP_EXCEEDED: cwd {cwd} is {cwd_size_mb}MB > "
                 f"{LAUNCH_MAX_CWD_SIZE_MB}MB cap; pin to local instead of "
@@ -4469,8 +4515,15 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
     src_path = cwd.rstrip("/") + "/"
     dst_path = f"{tgt_host}:{cwd.rstrip('/')}/"
     try:
+        # Phase 3.4.11 P2 fix: --delete enforces "local is source-of-truth"
+        # semantics. Without it, files that were renamed/deleted on local
+        # remain on remote, so a stale code path could still execute (e.g.
+        # an old `train_v1.py` that local replaced with `train_v2.py`).
+        # The exclude list applies to BOTH transfer and delete passes, so
+        # `results/`, `logs/`, `experiment_output/` etc. on remote are
+        # NEVER removed — they live outside the rsync set.
         r = subprocess.run(
-            ["rsync", "-az", "--partial",
+            ["rsync", "-az", "--partial", "--delete",
              "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
              "--exclude=results/", "--exclude=results_*/",
              "--exclude=logs/", "--exclude=logs_*/",
@@ -4488,7 +4541,100 @@ def _stage_cwd_for_launch(task: dict, target_node: str) -> tuple:
         return (False, f"rsync exception: {str(e)[:200]}")
 
     _STAGING_CACHE[cwd_key] = time.time()
+    # Cap was previously cached but cwd has been re-checked successfully —
+    # clear any stale CAP_EXCEEDED entry so stage_cwd_check returns "ready".
+    _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
     return (True, f"synced ({cwd_size_mb}MB)")
+
+
+def _stage_launch_candidates_outside_lock():
+    """Phase 3.4.11 P1 fix: pre-launch cwd staging OUTSIDE the global state_lock.
+
+    Pre-fix: _stage_cwd_for_launch (added in Phase 3.4.10) was called
+    synchronously from inside _do_dispatch, which itself runs under
+    state_lock from cmd_dispatch / _watch_iteration. A 600s rsync would
+    therefore block submit/cancel/status/watcher for up to 10 min — exactly
+    the foot-gun migration staging avoided in Phase 3.0.5.
+
+    Now: this helper runs BEFORE the main lock (mirrors
+    _stage_migration_candidates_outside_lock). It scans queued tasks under
+    a SHORT lock, releases, runs rsync per (target, cwd) outside the lock,
+    populates _STAGING_CACHE / _STAGING_CAP_EXCEEDED. _do_dispatch's
+    launch site uses _stage_cwd_check (constant-time lookup), never rsync.
+
+    Target prediction: for each queued task, the candidate target nodes are
+      - the explicit pin (require_node or preferred_node) if set, OR
+      - every non-local node in NODES (so any pick_placement choice gets
+        cache hit)
+    rsync to already-cached (target, cwd) pairs short-circuits via
+    `_staging_cache_hit`, so the per-cycle cost is bounded:
+      worst: O(queued_tasks × non_local_nodes) ssh round-trips on cold start
+      typical: O(0) once caches are warm (10min TTL)
+    """
+    try:
+        with state_lock():
+            state = load_state()
+        # Build (target, cwd) candidate set from queued tasks.
+        candidates: set = set()
+        for t in state.get("tasks", []):
+            if t.get("status") != "queued":
+                continue
+            cwd = t.get("cwd")
+            if not cwd:
+                continue
+            pin = t.get("require_node") or t.get("preferred_node")
+            if pin:
+                tgts = [pin]
+            else:
+                tgts = list(NODES.keys())
+            for tn in tgts:
+                # Skip local — _stage_cwd_for_launch short-circuits anyway,
+                # but we save a function call by filtering here.
+                if NODES.get(tn, {}).get("host") is None:
+                    continue
+                # Skip if both caches already say something definitive.
+                cwd_key = ("local", tn, cwd)
+                if _staging_cache_hit(cwd_key):
+                    continue
+                # CAP_EXCEEDED with fresh TTL → already known too big; skip
+                # rsync attempt. _stage_cwd_check will return "cap_exceeded"
+                # to dispatch which routes to require_node=local.
+                cap_ts = _STAGING_CAP_EXCEEDED.get(cwd_key)
+                if cap_ts is not None and (time.time() - cap_ts) <= STAGING_TTL_S:
+                    continue
+                candidates.add((tn, cwd))
+    except Exception as e:
+        try:
+            notify("launch_staging_snapshot_error", {"error": str(e)[:200]},
+                   feishu_enabled=False)
+        except Exception:
+            pass
+        return
+
+    if not candidates:
+        return
+
+    for tn, cwd in candidates:
+        try:
+            ok, msg = _stage_cwd_for_launch({"cwd": cwd}, tn)
+            if not ok and not msg.startswith("CAP_EXCEEDED:"):
+                # Transport failure — log but don't fail the whole pre-stage
+                # pass. _stage_cwd_for_launch DID NOT update _STAGING_CACHE
+                # so dispatch's _stage_cwd_check returns "needs_stage" and
+                # the task defers to the next cycle (which retries).
+                try:
+                    notify("launch_staging_failed",
+                           {"target": tn, "cwd": cwd, "reason": msg[:200]},
+                           feishu_enabled=False)
+                except Exception:
+                    pass
+        except Exception as e:
+            try:
+                notify("launch_staging_exception",
+                       {"target": tn, "cwd": cwd, "error": str(e)[:200]},
+                       feishu_enabled=False)
+            except Exception:
+                pass
 
 
 def _stage_for_migration(task: dict, target_node: str,
@@ -4886,6 +5032,15 @@ def _sync_one_result(candidate: dict) -> tuple:
         return (False, f"rsync exception: {str(e)[:200]}")
 
 
+# Phase 3.4.11 P2 fix: stale-marker grace window. If a session's rsync
+# died (host crash, SIGKILL during transfer, etc.) the result_syncing_at
+# field would never get cleared. Treat any marker older than
+# RESULT_SYNC_TIMEOUT_S + this grace as orphaned so another session can
+# reclaim. Grace is 10 min on top of the 30 min timeout = 40 min worst case
+# before a stuck task becomes eligible again.
+RESULT_SYNC_STALE_GRACE_S = int(os.environ.get("SCHEDULEURM_RESULT_SYNC_STALE_GRACE_S", "600"))
+
+
 def _sync_completed_results_outside_lock():
     """Phase 3.5: pull results back to local for tasks transitioned to
     status='done' with result_dir set. Three phases (short lock → rsync
@@ -4899,38 +5054,67 @@ def _sync_completed_results_outside_lock():
         chronically broken nodes that would otherwise hammer rsync
         every cycle indefinitely)
       - local node (host=None)     — files already here
+      - result_syncing_at fresh    — Phase 3.4.11 P2 fix: another session
+        (watcher OR ad-hoc dispatch) is currently rsync'ing this task.
+        Concurrent rsyncs to the same local dst would race and corrupt
+        the result tree. Marker is reclaimed after RESULT_SYNC_TIMEOUT_S
+        + RESULT_SYNC_STALE_GRACE_S so a dead-process leak self-heals.
 
     Migration mid-run + eval flows are NOT triggered here. Migration's
     own staging path (Phase 3.0.4) handles ckpt+cwd between nodes; eval
     submissions reference ckpt_dir directly. result_dir is intentionally
     a separate field so the user explicitly chooses what comes back.
     """
+    stale_threshold = RESULT_SYNC_TIMEOUT_S + RESULT_SYNC_STALE_GRACE_S
+    candidates = []
     try:
+        # Phase 3.4.11 P2 fix: claim each candidate atomically by writing
+        # `result_syncing_at` under the lock. save_state at the end of this
+        # block makes the claims visible to any concurrent dispatch /
+        # watcher invocation that runs the snapshot phase before our rsync
+        # finishes.
         with state_lock():
             state = load_state()
-        candidates = []
-        for t in state.get("tasks", []):
-            if t.get("status") != "done":
-                continue
-            rd = t.get("result_dir")
-            if not rd:
-                continue
-            if t.get("result_synced_at"):
-                continue
-            if int(t.get("result_sync_attempts") or 0) >= RESULT_SYNC_MAX_ATTEMPTS:
-                continue
-            node = t.get("node")
-            if not node:
-                continue
-            host = NODES.get(node, {}).get("host")
-            if not host:
-                continue  # local node — already on this box
-            candidates.append({
-                "id": t["id"],
-                "host": host,
-                "result_dir": rd,
-                "local_result_dir": t.get("local_result_dir") or rd,
-            })
+            now = time.time()
+            for t in state.get("tasks", []):
+                if t.get("status") != "done":
+                    continue
+                rd = t.get("result_dir")
+                if not rd:
+                    continue
+                if t.get("result_synced_at"):
+                    continue
+                if int(t.get("result_sync_attempts") or 0) >= RESULT_SYNC_MAX_ATTEMPTS:
+                    continue
+                node = t.get("node")
+                if not node:
+                    continue
+                host = NODES.get(node, {}).get("host")
+                if not host:
+                    continue  # local node — already on this box
+                # Concurrent-rsync guard: skip if another session is mid-rsync.
+                syncing_at = t.get("result_syncing_at")
+                if syncing_at:
+                    age = now - float(syncing_at)
+                    if age < stale_threshold:
+                        continue  # another worker has it; back off
+                    # Stale claim — caller died. Log + reclaim below.
+                    try:
+                        notify("result_sync_claim_reclaimed", {
+                            "task_id": t["id"], "stale_age_s": int(age),
+                        }, feishu_enabled=False)
+                    except Exception:
+                        pass
+                # Claim the task atomically.
+                t["result_syncing_at"] = now
+                candidates.append({
+                    "id": t["id"],
+                    "host": host,
+                    "result_dir": rd,
+                    "local_result_dir": t.get("local_result_dir") or rd,
+                })
+            if candidates:
+                save_state(state)
     except Exception as e:
         try:
             notify("result_sync_snapshot_error", {"error": str(e)[:200]},
@@ -4962,9 +5146,12 @@ def _sync_completed_results_outside_lock():
                 t = by_id.get(tid)
                 if not t:
                     continue
-                # Defensive: only commit if task is still in `done` state
-                # and the same result_dir we synced. If it transitioned
-                # away (cancelled, forgotten, requeued) skip the write.
+                # Defensive: only commit if task is still in `done` state.
+                # If it transitioned away (cancelled, forgotten, requeued)
+                # leave the claim cleared and skip the result mutations.
+                # Always clear result_syncing_at — we either succeeded or
+                # bumped attempts; either way our claim is released.
+                t.pop("result_syncing_at", None)
                 if t.get("status") != "done":
                     continue
                 if ok:
@@ -5639,63 +5826,54 @@ def _do_dispatch(state, nodes):
         #     a launch error.
         #   - rsync transport error: bump launch_fail_count, requeue (matches
         #     the existing behaviour for cwd-missing failures).
+        # Phase 3.4.11 P1 fix: cache-only probe — never block lock on rsync.
+        # Pre-launch staging (rsync local→target) runs in
+        # _stage_launch_candidates_outside_lock BEFORE this dispatch ever
+        # acquires state_lock. Here we just consult the cache state:
+        #   "ready"        → proceed with launch
+        #   "cap_exceeded" → cwd > 2GB; re-route to local (no fail-count bump)
+        #   "needs_stage"  → cache miss; defer this cycle, next outside-lock
+        #                    pass will rsync, the cycle after launches
         target = t.get("node")
-        if target and NODES.get(target, {}).get("host"):
-            ok_stage, stage_msg = _stage_cwd_for_launch(t, target)
-            if not ok_stage:
-                if stage_msg.startswith("CAP_EXCEEDED:"):
-                    # Re-route to local. Don't count as launch failure since
-                    # the target is fine, the cwd is just too big to ship.
-                    t["status"] = "queued"
-                    t["require_node"] = "local"
-                    t["last_block_reason"] = (
-                        f"launch staging: {stage_msg}; pinned require_node=local"
-                    )
-                    t["node"] = None
-                    t["gpu_idx"] = None
-                    t.pop("launching_started_at", None)
-                    events.append({
-                        "type": "launch_capped",
-                        "task_id": t["id"],
-                        "task": t,
-                        "reason": stage_msg,
-                    })
-                    continue
-                # rsync failure: same retry path as a launch failure on this node.
-                attempted = t.get("node")
-                t["launch_fail_count"] = (t.get("launch_fail_count") or 0) + 1
-                if attempted:
-                    failed = t.setdefault("launch_failed_nodes", {})
-                    if not isinstance(failed, dict):
-                        failed = {}
-                        t["launch_failed_nodes"] = failed
-                    failed[attempted] = {
-                        "ts": time.time(),
-                        "attempt": t["launch_fail_count"],
-                        "error": f"stage_cwd: {stage_msg[:280]}",
-                    }
+        cwd_for_stage = t.get("cwd")
+        if target and cwd_for_stage and NODES.get(target, {}).get("host"):
+            stage_state = _stage_cwd_check(target, cwd_for_stage)
+            if stage_state == "cap_exceeded":
+                t["status"] = "queued"
+                t["require_node"] = "local"
                 t["last_block_reason"] = (
-                    f"launch stage attempt {t['launch_fail_count']}/{MAX_LAUNCH_RETRY}: "
-                    f"{stage_msg}"
+                    f"launch staging: cwd > {LAUNCH_MAX_CWD_SIZE_MB}MB cap "
+                    f"for {target}; pinned require_node=local"
                 )
                 t["node"] = None
                 t["gpu_idx"] = None
-                if t["launch_fail_count"] >= MAX_LAUNCH_RETRY:
-                    t["status"] = "failed"
-                    try:
-                        _write_escalation(t, "LAUNCH_FAIL_CAP",
-                                          {"reason": stage_msg, "tail": stage_msg})
-                    except Exception:
-                        pass
-                    events.append({"type": "launch_failed_terminal",
-                                    "task_id": t["id"], "task": t,
-                                    "error": stage_msg})
-                else:
-                    t["status"] = "queued"
-                    events.append({"type": "launch_failed_retry",
-                                    "task_id": t["id"], "task": t,
-                                    "error": stage_msg})
+                t.pop("launching_started_at", None)
+                events.append({
+                    "type": "launch_capped",
+                    "task_id": t["id"],
+                    "task": t,
+                    "reason": f"cwd > {LAUNCH_MAX_CWD_SIZE_MB}MB",
+                })
                 continue
+            if stage_state == "needs_stage":
+                # Defer this cycle. Don't bump launch_fail_count — staging
+                # hasn't been attempted yet (it's an outside-lock concern).
+                t["status"] = "queued"
+                t["last_block_reason"] = (
+                    f"launch staging: cwd not yet rsynced to {target}; "
+                    f"will retry next dispatch cycle"
+                )
+                t["node"] = None
+                t["gpu_idx"] = None
+                t.pop("launching_started_at", None)
+                events.append({
+                    "type": "launch_stage_deferred",
+                    "task_id": t["id"],
+                    "task": t,
+                    "reason": f"awaiting outside-lock rsync to {target}",
+                })
+                continue
+            # stage_state == "ready" — fall through to launch
         # Item 5 follow-up (WAL): persist "launching" status BEFORE ssh so a SIGKILL during
         # the ssh window leaves a forensics breadcrumb. Watcher startup (item 5 recovery)
         # scans for stale `launching` tasks > LAUNCHING_RESET_S old and reverts them to
@@ -6467,6 +6645,15 @@ def cmd_dispatch(args):
         _stage_migration_candidates_outside_lock()
     except Exception as _e:
         notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
+    # Phase 3.4.11 P1 fix: pre-launch cwd staging OUTSIDE state_lock so the
+    # 600s rsync timeout never blocks submit/cancel/status/watcher. Helper
+    # populates _STAGING_CACHE / _STAGING_CAP_EXCEEDED; _do_dispatch's
+    # launch site uses _stage_cwd_check (cache lookup, never rsync).
+    try:
+        _stage_launch_candidates_outside_lock()
+    except Exception as _e:
+        notify("launch_staging_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
     # Phase 3.5: pull results back from remote nodes for tasks that
     # transitioned to status='done' since the previous dispatch. Outside-
@@ -7252,6 +7439,13 @@ def _watch_iteration(args):
         _stage_migration_candidates_outside_lock()
     except Exception as _e:
         notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
+    # Phase 3.4.11 P1 fix: pre-launch cwd staging OUTSIDE state_lock (see
+    # cmd_dispatch comment for rationale).
+    try:
+        _stage_launch_candidates_outside_lock()
+    except Exception as _e:
+        notify("launch_staging_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
     # Phase 3.5: pull results back from remote nodes for done tasks
     # opted in via --result-dir. Outside-lock so multi-GB rsync doesn't

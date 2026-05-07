@@ -5867,6 +5867,117 @@ def test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch():
           diag=f"got {elapsed_pending}")
 
 
+def test_phase3_0_30_slurm_completed_log_scan_for_crash():
+    """Phase 3.0.30 P2 fix: slurm COMPLETED is trust-but-verify. Scan the log
+    tail for explicit crash patterns; if any match, override is_crash=True.
+
+    Pre-fix: terminal_ok=True (slurm COMPLETED) was treated as authoritative
+    success. But a pipeline like `python train.py | tee log` returns rc=0
+    when the LEFT side traceback'd — without `set -o pipefail`, tee's exit
+    code wins and slurm reports COMPLETED. Crashed runs masquerade as
+    successful, no auto-requeue, eval downstream uses garbage results.
+
+    Now: lightweight tail scan for CRASH_PATTERNS only (no lifetime / marker
+    heuristics — those are reserved for the no-slurm-signal path so that a
+    legitimately fast COMPLETED job, e.g. `--skip_existing` no-op, isn't
+    re-classified as a crash on lifetime grounds).
+    """
+    print("\n[86] Phase 3.0.30 P2 fix: slurm COMPLETED log scan catches hidden crashes")
+
+    # 1. Source guard.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("_scan_completed_log_for_crash helper exists",
+          "def _scan_completed_log_for_crash" in src)
+    check("helper scans CRASH_PATTERNS only (no lifetime/marker heuristics)",
+          "CRASH_PATTERNS" in src.split("def _scan_completed_log_for_crash")[1].split("\ndef ")[0]
+          and "TRAINING_MARKERS" not in src.split("def _scan_completed_log_for_crash")[1].split("\ndef ")[0])
+    # The terminal_ok=True branch must call the scanner before trusting.
+    check("terminal_ok=True branch calls _scan_completed_log_for_crash",
+          "_scan_completed_log_for_crash(t)" in src)
+
+    # 2. Helper unit tests against a real local file.
+    import tempfile
+    saved_NODES = sch.NODES
+    sch.NODES = {"local": {"host": None}}
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            ok_log = os.path.join(td, "ok.log")
+            crash_log = os.path.join(td, "crash.log")
+            empty_log = os.path.join(td, "empty.log")
+            with open(ok_log, "w") as f:
+                f.write("Epoch 100/100 loss=0.001\nTraining complete\nFinal model saved\n")
+            with open(crash_log, "w") as f:
+                f.write("Epoch 5/100 loss=2.3\n")
+                f.write("Traceback (most recent call last):\n")
+                f.write('  File "train.py", line 42, in <module>\n')
+                f.write("    model.forward(x)\n")
+                f.write("RuntimeError: CUDA out of memory\n")
+            open(empty_log, "w").close()  # 0 bytes
+
+            # ---- Case A: clean log → no crash detected ----
+            ok_task = {"id": "tA", "node": "local", "log_path": ok_log,
+                       "started_at": time.time() - 100,
+                       "finished_at": time.time()}
+            matched, reason = sch._scan_completed_log_for_crash(ok_task)
+            check("clean log → no crash detected",
+                  matched is False, diag=f"got {matched}/{reason}")
+
+            # ---- Case B: log with traceback → crash detected ----
+            crash_task = {"id": "tB", "node": "local", "log_path": crash_log,
+                          "started_at": time.time() - 100,
+                          "finished_at": time.time()}
+            matched, reason = sch._scan_completed_log_for_crash(crash_task)
+            check("log with Traceback → crash detected",
+                  matched is True
+                  and ("Traceback" in reason or "CUDA out of memory" in reason
+                       or "RuntimeError" in reason),
+                  diag=f"got {matched}/{reason}")
+            check("crash reason mentions slurm-COMPLETED-but-log",
+                  "slurm reported COMPLETED" in reason, diag=reason)
+
+            # ---- Case C: empty log → conservative no-crash ----
+            empty_task = {"id": "tC", "node": "local", "log_path": empty_log,
+                          "started_at": time.time() - 100,
+                          "finished_at": time.time()}
+            matched, reason = sch._scan_completed_log_for_crash(empty_task)
+            check("empty log → conservative no-crash",
+                  matched is False, diag=f"got {matched}/{reason}")
+
+            # ---- Case D: no log_path → no-crash (defensive) ----
+            no_log_task = {"id": "tD", "node": "local",
+                           "started_at": time.time() - 100,
+                           "finished_at": time.time()}
+            matched, reason = sch._scan_completed_log_for_crash(no_log_task)
+            check("no log_path → no-crash (no scan attempted)",
+                  matched is False)
+
+            # ---- Case E: auto_adopted → skip scan ----
+            adopted_task = {"id": "tE", "node": "local", "log_path": crash_log,
+                            "auto_adopted": True,
+                            "started_at": time.time() - 100,
+                            "finished_at": time.time()}
+            matched, reason = sch._scan_completed_log_for_crash(adopted_task)
+            check("auto_adopted task → no scan even if log shows crash",
+                  matched is False)
+
+            # ---- Case F: missing file (ssh blip simulation for remote) ----
+            sch.NODES = {"local": {"host": None}, "remote": {"host": "rbox"}}
+            saved_run_on = sch.run_on
+            try:
+                sch.run_on = lambda node, cmd, **kw: (1, "", "ssh: timed out")
+                remote_task = {"id": "tF", "node": "remote",
+                               "log_path": "/tmp/whatever",
+                               "started_at": time.time() - 100,
+                               "finished_at": time.time()}
+                matched, reason = sch._scan_completed_log_for_crash(remote_task)
+                check("remote ssh failure → no-crash (conservative on probe failure)",
+                      matched is False)
+            finally:
+                sch.run_on = saved_run_on
+    finally:
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -8378,6 +8489,7 @@ if __name__ == "__main__":
     test_phase3_0_27_conda_sync_success_gate()
     test_phase3_0_28_local_wal_orphan_recovery()
     test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch()
+    test_phase3_0_30_slurm_completed_log_scan_for_crash()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

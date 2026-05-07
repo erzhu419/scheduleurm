@@ -669,6 +669,53 @@ TRAINING_MARKERS = [
 EARLY_DEATH_SECONDS = 120   # any task dying within this window is treated as crash regardless of log
 SHORT_LIVE_SECONDS = 600    # task < this AND no success marker AND no error trace → suspected crash
 
+def _scan_completed_log_for_crash(task) -> tuple[bool, str]:
+    """Phase 3.0.30 P2: lightweight crash-pattern scan for slurm COMPLETED.
+
+    Pre-fix the slurm terminal_ok=True path trusted slurm's exit code
+    unconditionally and never read the log. But pipelines like
+    `python train.py | tee out.log` exit rc=0 (tee succeeds) when the LEFT
+    side traceback'd — without `set -o pipefail`, slurm sees COMPLETED.
+    Scan the log tail for CRASH_PATTERNS only; do NOT apply the lifetime /
+    training-marker / success-pattern heuristics from _diagnose_terminal —
+    those are reserved for the no-slurm-signal path. Reviewer's request:
+    "只做明确错误模式覆盖".
+
+    Returns (matched: bool, reason: str). On tail-fetch failure returns
+    (False, "") — be conservative; don't add false crashes when we can't
+    read the log.
+    """
+    log_path = task.get("log_path")
+    if not log_path or task.get("auto_adopted"):
+        return (False, "")
+    tail_text = ""
+    try:
+        node = task.get("node")
+        if node and NODES.get(node, {}).get("host") is None:
+            lp = Path(log_path)
+            if lp.exists():
+                sz = lp.stat().st_size
+                with open(lp, "rb") as f:
+                    f.seek(max(0, sz - 4096))
+                    tail_text = f.read().decode("utf-8", errors="replace")
+        elif node:
+            rc, out, _ = run_on(node,
+                f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null",
+                timeout=10, check=False)
+            if rc == 0 and out:
+                tail_text = out
+    except Exception:
+        return (False, "")
+    if not tail_text:
+        return (False, "")
+    matched = [p for p in CRASH_PATTERNS if p in tail_text]
+    if matched:
+        return (True,
+                f"slurm reported COMPLETED but log tail contains crash "
+                f"pattern(s): {', '.join(matched[:3])}")
+    return (False, "")
+
+
 def _diagnose_terminal(task):
     """Inspect a just-finished task to classify normal-exit vs crash. Returns dict with is_crash + reason + log tail.
     For auto-adopted tasks (which scheduler didn't launch and has no log_path), we cannot reliably diagnose
@@ -1202,15 +1249,33 @@ def _batch_check_running(state):
                 f"slurm terminal state {backend_state}" if backend_state else ""
             )
             if terminal_ok is True:
-                diag = {
-                    "is_crash": False,
-                    "reason": terminal_reason or "slurm terminal state COMPLETED",
-                    "tail": "(slurm reported COMPLETED; log not required for success)",
-                    "lifetime_s": int(max(0, t["finished_at"] - (t.get("started_at") or t["finished_at"]))),
-                    "log_size": 0,
-                    "log_path": t.get("log_path"),
-                    "success_marker": f"SLURM_{backend_state or 'COMPLETED'}",
-                }
+                # Phase 3.0.30 P2 fix: trust-but-verify. A slurm COMPLETED can
+                # mask a hidden Python crash if cmd is `python ... | tee log`
+                # without `set -o pipefail` — tee returns 0, slurm sees rc=0.
+                # Scan the log tail for explicit crash patterns only (no
+                # lifetime / marker heuristics; those are for the no-slurm-
+                # signal path).
+                crash_matched, crash_reason = _scan_completed_log_for_crash(t)
+                if crash_matched:
+                    diag = {
+                        "is_crash": True,
+                        "reason": crash_reason,
+                        "tail": "(see log_path; pattern detected in tail)",
+                        "lifetime_s": int(max(0, t["finished_at"] - (t.get("started_at") or t["finished_at"]))),
+                        "log_size": 0,
+                        "log_path": t.get("log_path"),
+                        "success_marker": None,
+                    }
+                else:
+                    diag = {
+                        "is_crash": False,
+                        "reason": terminal_reason or "slurm terminal state COMPLETED",
+                        "tail": "(slurm reported COMPLETED; log not required for success)",
+                        "lifetime_s": int(max(0, t["finished_at"] - (t.get("started_at") or t["finished_at"]))),
+                        "log_size": 0,
+                        "log_path": t.get("log_path"),
+                        "success_marker": f"SLURM_{backend_state or 'COMPLETED'}",
+                    }
             else:
                 # Diagnose: did it complete normally, or crash? Tail log + check patterns + lifetime.
                 diag = _diagnose_terminal(t)

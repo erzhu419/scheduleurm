@@ -49,10 +49,17 @@ Requires: Python 3.10+, `nvidia-smi` on each GPU node, passwordless SSH for remo
 ```bash
 git clone https://github.com/erzhu419/scheduleurm.git
 cd scheduleurm
-./install.sh           # copies skill to ~/.claude/skills/scheduler/, installs systemd unit
+./install.sh                  # COPY mode: cp skill files to ~/.claude/skills/scheduler/
+# OR
+./install.sh --link           # LINK mode: symlink ~/.claude/skills/scheduler -> clone/skill
+                              #            edits in the clone are picked up immediately
+                              #            (recommended if you plan to git pull / hack on it)
 # OR
 ./install.sh --no-systemd     # skip watcher unit; you'll run watch by hand
+                              # (combinable with --link)
 ```
+
+**COPY vs LINK in one line:** COPY is "install once, forget"; LINK is "develop here, no copy step". After `--link`, `git pull` updates the live skill; `systemctl --user restart scheduler` picks up scheduler.py changes in the running watcher. Don't move/delete the clone in LINK mode — the symlink would break.
 
 Verify:
 ```bash

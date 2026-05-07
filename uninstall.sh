@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# scheduleurm uninstall — removes the skill files and the systemd unit.
+# scheduleurm uninstall — removes the skill installation and the systemd unit.
+# Handles both COPY mode (real directory) and LINK mode (symlink to clone).
 # Does NOT touch ~/.claude/scheduler/ (queue.json, vram_history.json, logs).
 # Pass --purge-state to also wipe state.
 set -euo pipefail
@@ -20,8 +21,14 @@ if [[ -f "$UNIT_DST" ]]; then
     systemctl --user daemon-reload || true
 fi
 
-if [[ -d "$SKILL_DST" ]]; then
-    echo "==> removing $SKILL_DST"
+# Symlink case: rm -f (NOT rm -rf, NEVER with trailing slash) just removes the link.
+# Directory case: rm -rf the actual files.
+if [[ -L "$SKILL_DST" ]]; then
+    target=$(readlink "$SKILL_DST")
+    echo "==> removing symlink $SKILL_DST  (was -> $target)"
+    rm -f "$SKILL_DST"
+elif [[ -d "$SKILL_DST" ]]; then
+    echo "==> removing skill directory $SKILL_DST"
     rm -rf "$SKILL_DST"
 fi
 

@@ -6276,6 +6276,192 @@ def test_phase3_0_32_orphan_recovery_restores_log_and_docker_artifacts():
         sch.STATE_DIR = saved_state_dir
 
 
+def test_phase3_0_33_terminal_orphan_classification():
+    """Phase 3.0.33 P1 fix: orphan recovery must classify TERMINAL orphans
+    (not just alive ones) so a task that completed within the launch-save
+    window doesn't get re-queued + re-launched.
+
+    Pre-fix flow:
+      - alive orphan probe finds nothing (process already exited)
+      - revert path runs → status=queued
+      - next dispatch sbatches / re-launches
+      - duplicate run
+
+    Now: after the alive-orphan probe returns False, recovery looks for
+    terminal evidence. SlurmBackend extends squeue to terminal states:
+    COMPLETED → done; other terminal → failed (with auto-requeue).
+    LocalBackend probes the deterministic log_path; if present with
+    content, runs _diagnose_terminal and classifies done/failed.
+    """
+    print("\n[89] Phase 3.0.33 P1 fix: terminal-orphan classification (no double-run on fast tasks)")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    sb_idx = src.find("def _try_recover_orphan_slurm_job")
+    sb_end = src.find("\ndef ", sb_idx + 5)
+    sb_body = src[sb_idx:sb_end]
+    check("slurm orphan recovery handles terminal states (no longer skips)",
+          "slurm_state not in _SLURM_ALIVE_STATES" in sb_body
+          and 'task["status"] = "done"' in sb_body
+          and 'task["status"] = "failed"' in sb_body)
+    check("slurm terminal-orphan COMPLETED triggers log scan via 3.0.30 helper",
+          "_scan_completed_log_for_crash" in sb_body)
+    check("_try_finalize_terminal_local_task helper exists",
+          "def _try_finalize_terminal_local_task" in src)
+    rec_idx = src.find("def recover_stale_launching_tasks")
+    rec_end = src.find("\ndef ", rec_idx + 5)
+    rec_body = src[rec_idx:rec_end]
+    check("recover_stale_launching_tasks calls local terminal helper after alive probe",
+          "_try_finalize_terminal_local_task" in rec_body)
+
+    # 2. Slurm terminal-orphan: COMPLETED → done.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    sch.NODES = {"slurmnode": {"host": None}}
+
+    sch.run_on = lambda node, cmd, **kw: (
+        (0, "12345 COMPLETED\n", "") if "squeue -h -n scheduleurm-tA" in cmd
+        else (0, "", "")
+    )
+    try:
+        state = {"next_id": 100, "tasks": [{
+            "id": "tA", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python a.py", "cwd": "/work",
+        }]}
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        check("slurm COMPLETED orphan → adopted=True (NOT skipped)",
+              adopted is True)
+        t = state["tasks"][0]
+        check("slurm COMPLETED → status=done",
+              t.get("status") == "done", diag=str(t))
+        check("slurm COMPLETED → slurm_state recorded",
+              t.get("slurm_state") == "COMPLETED")
+        check("slurm COMPLETED → started_at + finished_at set",
+              t.get("started_at") and t.get("finished_at"))
+
+        # 3. Slurm terminal-orphan: FAILED → status=failed + auto-requeue
+        sch.run_on = lambda node, cmd, **kw: (
+            (0, "67890 FAILED\n", "") if "squeue -h -n scheduleurm-tB" in cmd
+            else (0, "", "")
+        )
+        state = {"next_id": 200, "tasks": [{
+            "id": "tB", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python b.py", "cwd": "/work", "retry_count": 0,
+        }]}
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        check("slurm FAILED orphan → adopted=True",
+              adopted is True)
+        t = state["tasks"][0]
+        check("slurm FAILED → status=failed",
+              t.get("status") == "failed")
+        check("slurm FAILED → auto-requeue created a retry clone",
+              t.get("requeued_as") is not None
+              and any(x.get("id") == t["requeued_as"] and x["status"] == "queued"
+                       for x in state["tasks"]),
+              diag=f"requeued_as={t.get('requeued_as')}")
+
+        # 4. Slurm: no orphan in squeue → returns False (revert path takes over)
+        sch.run_on = lambda *a, **k: (0, "", "")
+        state = {"next_id": 300, "tasks": [{
+            "id": "tC", "status": "launching", "node": "slurmnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python c.py", "cwd": "/work",
+        }]}
+        adopted = sch._try_recover_orphan_slurm_job(state["tasks"][0], "slurmnode", state)
+        check("no orphan in squeue → adopted=False (caller reverts)",
+              adopted is False)
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+    # 5. LocalBackend terminal-orphan via log_path.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    saved_state_dir = sch.STATE_DIR
+    import tempfile
+    tdir = tempfile.mkdtemp()
+    log_dir = os.path.join(tdir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    sch.STATE_DIR = tdir
+    sch.NODES = {"localnode": {"host": None}}
+
+    try:
+        # ---- Case L1: log present, looks-clean → status=done ----
+        log_a = os.path.join(log_dir, "tL1.log")
+        with open(log_a, "w") as f:
+            f.write("Epoch 100/100\nTraining complete\nFinal model saved\n")
+        state = {"next_id": 400, "tasks": [{
+            "id": "tL1", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python a.py", "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("local log present + clean → finalized=True",
+              finalized is True)
+        check("local clean log → status=done",
+              state["tasks"][0]["status"] == "done")
+
+        # ---- Case L2: log present, soft-crash (APP_BUG) → status=failed + requeue.
+        # Use an AssertionError so _classify_failure returns APP_BUG (eligible
+        # for auto-requeue), NOT OOM (which would escalate, not requeue).
+        log_b = os.path.join(log_dir, "tL2.log")
+        with open(log_b, "w") as f:
+            f.write("Epoch 5/100\n")
+            f.write("Traceback (most recent call last):\n")
+            f.write("AssertionError: invariant violated\n")
+        state = {"next_id": 500, "tasks": [{
+            "id": "tL2", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python b.py", "cwd": "/work", "retry_count": 0,
+            "signature": "TEST/L2",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("local log present + crash patterns → finalized=True",
+              finalized is True)
+        check("local crash log → status=failed",
+              state["tasks"][0]["status"] == "failed")
+        check("local soft-crash → auto-requeue created a retry clone",
+              state["tasks"][0].get("requeued_as") is not None
+              and any(x["status"] == "queued" for x in state["tasks"]),
+              diag=str(state["tasks"]))
+
+        # ---- Case L3: log missing → finalized=False (revert path takes over) ----
+        state = {"next_id": 600, "tasks": [{
+            "id": "tL3", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python c.py", "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("local log missing → finalized=False (caller reverts)",
+              finalized is False)
+        check("local log missing → status unchanged (still launching)",
+              state["tasks"][0]["status"] == "launching")
+
+        # ---- Case L4: log present but 0 bytes → finalized=False ----
+        log_d = os.path.join(log_dir, "tL4.log")
+        open(log_d, "w").close()  # empty file
+        state = {"next_id": 700, "tasks": [{
+            "id": "tL4", "status": "launching", "node": "localnode",
+            "launching_started_at": time.time() - 600, "remote_pids": [],
+            "cmd": "python d.py", "cwd": "/work",
+        }]}
+        finalized = sch._try_finalize_terminal_local_task(
+            state["tasks"][0], "localnode", state)
+        check("local log present but empty → finalized=False",
+              finalized is False)
+    finally:
+        import shutil
+        shutil.rmtree(tdir, ignore_errors=True)
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+        sch.STATE_DIR = saved_state_dir
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7711,7 +7897,11 @@ def test_backend_slurm_phase2_15_orphan_recovery():
         sch._BACKEND = saved_backend
         sch.run_on = real_run_on
 
-    # ---------- Case D: orphan but TERMINAL state → revert (don't adopt dead job) ----------
+    # ---------- Case D: orphan in TERMINAL state → classify done/failed (Phase 3.0.33) ----------
+    # Pre-3.0.33 the recovery `continue`d past terminal slurm records (treating
+    # them as "let revert path requeue + sbatch again"). That broke the
+    # invariant that a task never runs twice — the orphan ALREADY ran and
+    # finished. Now: COMPLETED → done; non-COMPLETED terminal → failed.
     fake_hb = sch.HybridBackend()
     fake_hb._cache["slurmnode"] = "slurm"
     sch._BACKEND = fake_hb
@@ -7724,10 +7914,13 @@ def test_backend_slurm_phase2_15_orphan_recovery():
             "launching_started_at": stale, "remote_pids": [],
         }]}
         sch.recover_stale_launching_tasks(state, now=now)
-        check("orphan in TERMINAL state → revert (don't adopt dead job)",
-              state["tasks"][0]["status"] == "queued"
-              and state["tasks"][0].get("slurm_job_id") is None,
+        check("orphan in TERMINAL COMPLETED → status=done (NOT requeued)",
+              state["tasks"][0]["status"] == "done"
+              and state["tasks"][0].get("slurm_job_id") == 5555
+              and state["tasks"][0].get("slurm_state") == "COMPLETED",
               diag=str(state["tasks"][0]))
+        check("orphan in TERMINAL COMPLETED → last_block_reason cites WAL recovery",
+              "WAL recovery" in (state["tasks"][0].get("last_block_reason") or ""))
     finally:
         sch._BACKEND = saved_backend
         sch.run_on = real_run_on
@@ -8790,6 +8983,7 @@ if __name__ == "__main__":
     test_phase3_0_30_slurm_completed_log_scan_for_crash()
     test_phase3_0_31_launch_side_docker_push_no_longer_holds_lock()
     test_phase3_0_32_orphan_recovery_restores_log_and_docker_artifacts()
+    test_phase3_0_33_terminal_orphan_classification()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

@@ -600,12 +600,22 @@ class _ClaimManager:
     @classmethod
     def claim(cls, node: str, task: dict, gpu_idx: Optional[int],
               node_state: Optional[dict] = None) -> tuple:
-        """Atomically claim resources for `task` on `node`. Returns
-        (ok: bool, info). info on success is the claim record (caller
-        must keep it to release on failure); info on failure is a string
-        describing the conflict."""
+        """Atomically claim resources for `task` on `node`.
+
+        Phase 3.4.3 P1 fix: distinguishes a capacity CONFLICT (legitimate
+        contention, retry) from a transport / setup ERROR (ssh failure,
+        flock failure, missing python3, parse error — these need to count
+        as launch failures so MAX_LAUNCH_RETRY → APP_BUG_CAP escalation
+        eventually fires; otherwise the task loops in queue forever).
+
+        Returns a 3-tuple (ok, info, kind):
+          (True,  claim_record, "ok")        — claim succeeded
+          (False, conflict_msg, "conflict")  — capacity rejection (retry)
+          (False, error_msg,    "error")     — transport/setup failure
+        Disabled-node fast path returns (True, {...}, "ok").
+        """
         if not cls.enabled_for(node):
-            return (True, {"reason": "claims disabled for this node"})
+            return (True, {"reason": "claims disabled for this node"}, "ok")
         now = time.time()
         ttl = cls._ttl_for(node)
         try:
@@ -627,9 +637,15 @@ class _ClaimManager:
         capacity = cls._build_capacity(node, node_state)
         result = _claims_remote_op(node, "claim", record, capacity)
         if result.get("ok"):
-            return (True, record)
-        return (False, result.get("conflict") or result.get("error")
-                or "claim refused")
+            return (True, record, "ok")
+        # The remote script puts capacity rejections in `conflict` and
+        # leaves `error` empty. Transport / setup failures (rc != 0, ssh
+        # exception, parse error) come back via _claims_remote_op with
+        # `error` set and `conflict` absent. Distinguishing them is the
+        # whole point of this fix.
+        if result.get("conflict"):
+            return (False, result["conflict"], "conflict")
+        return (False, result.get("error") or "claim transport failed", "error")
 
     @classmethod
     def release(cls, node: str, task_id: str) -> bool:
@@ -2808,10 +2824,19 @@ class LocalBackend(Backend):
         # increment) rather than a real launch failure.
         claim_record = None
         if _ClaimManager.enabled_for(task["node"]):
-            ok_claim, info = _ClaimManager.claim(
+            ok_claim, info, kind = _ClaimManager.claim(
                 task["node"], task, task.get("gpu_idx"), node_state)
             if not ok_claim:
-                return False, f"CLAIM_RACE: {info}"
+                # Phase 3.4.3 P1 fix: distinguish CAPACITY conflict from
+                # TRANSPORT error. Conflict → CLAIM_RACE: dispatch treats
+                # as contention (queued, no fail count increment, retry
+                # next cycle). Transport error → CLAIM_ERROR: dispatch
+                # treats as a real launch failure so MAX_LAUNCH_RETRY +
+                # escalation can fire (otherwise a node with permission /
+                # python3 / flock issues would loop tasks forever).
+                if kind == "conflict":
+                    return False, f"CLAIM_RACE: {info}"
+                return False, f"CLAIM_ERROR: {info}"
             claim_record = info
 
         def _release_and_fail(msg):

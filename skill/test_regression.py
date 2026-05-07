@@ -3304,6 +3304,141 @@ def test_phase3_0_10_migration_event_visibility():
           diag=msg_p)
 
 
+def test_phase3_0_11_migration_target_respects_blocked_and_launch_failed():
+    """Phase 3.0.11 P2 fix: migration must skip a candidate whose target node is
+    already known-bad for that task — either via env_missing/python_import
+    escalation (_blocked_nodes_for_task) or via prior launch failure
+    (_launch_failed_nodes_for_task).
+
+    Pre-fix: _identify_migration_candidates picked the lightest-loaded alive node
+    as target without consulting the task's own block lists. Result: rsync
+    succeeded staging cwd+ckpt to target, but on the next dispatch pick_placement
+    excluded target for THIS task and fell back to a different node (possibly a
+    third one where the ckpt was NEVER staged) → resume task silently restarts
+    from step 0. Same blast radius shape as the 3.0.6 remote→remote bug.
+
+    Now: filter both inside _identify_migration_candidates (skip rsync) AND inside
+    _consider_migration (defensive recheck — staging ran outside the lock so
+    block lists could have updated since).
+    """
+    print("\n[68] Phase 3.0.11 P2 fix: migration target respects blocked / launch_failed lists")
+
+    # 1. Source guard: both call sites consult the helpers.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    iden_idx = src.find("def _identify_migration_candidates")
+    iden_end = src.find("\ndef ", iden_idx + 5)
+    iden_body = src[iden_idx:iden_end]
+    check("_identify_migration_candidates calls _blocked_nodes_for_task",
+          "_blocked_nodes_for_task" in iden_body)
+    check("_identify_migration_candidates calls _launch_failed_nodes_for_task",
+          "_launch_failed_nodes_for_task" in iden_body)
+
+    cm_idx = src.find("def _consider_migration")
+    cm_end = src.find("\ndef ", cm_idx + 5)
+    cm_body = src[cm_idx:cm_end]
+    check("_consider_migration also calls _blocked_nodes_for_task (defensive)",
+          "_blocked_nodes_for_task" in cm_body)
+    check("_consider_migration also calls _launch_failed_nodes_for_task (defensive)",
+          "_launch_failed_nodes_for_task" in cm_body)
+
+    # 2. Behavioral test of _identify_migration_candidates with blocked / launch_failed.
+    saved_blocked = sch._blocked_nodes_for_task
+    saved_launch_failed = sch._launch_failed_nodes_for_task
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "loaded": {"name": "loaded"},
+        "free":   {"name": "free"},
+    }
+    # Per-task blocking: tBlocked has target='free' in its blocked set; tFailed has
+    # target='free' in its launch_failed set; tOK has neither and should pass.
+    def fake_blocked(task):
+        if task.get("id") == "tBlocked":
+            return {"free"}
+        return set()
+    def fake_launch_failed(task):
+        if task.get("id") == "tFailed":
+            return {"free"}
+        return set()
+    sch._blocked_nodes_for_task = fake_blocked
+    sch._launch_failed_nodes_for_task = fake_launch_failed
+    try:
+        eta = sch.MIGRATION_MIN_TASK_ETA_S + 600
+        running_a = {"id": "rA", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        running_b = {"id": "rB", "status": "running", "node": "loaded",
+                     "eta_seconds": 5000, "started_at": time.time() - 100}
+        # Three migration candidates pinned to loaded; only tOK should pass.
+        tBlocked = {"id": "tBlocked", "status": "queued", "preferred_node": "loaded",
+                    "eta_seconds": eta, "submitted_at": time.time(),
+                    "priority": "normal", "description": "env-blocked on target"}
+        tFailed = {"id": "tFailed", "status": "queued", "preferred_node": "loaded",
+                   "eta_seconds": eta, "submitted_at": time.time() + 1,
+                   "priority": "normal", "description": "launch-failed on target"}
+        tOK = {"id": "tOK", "status": "queued", "preferred_node": "loaded",
+               "eta_seconds": eta, "submitted_at": time.time() + 2,
+               "priority": "normal", "description": "fine"}
+        state = {"tasks": [running_a, running_b, tBlocked, tFailed, tOK]}
+        nodes = [
+            {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 2,
+             "slurm_pending_count": 0},
+            {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
+             "gpus": [], "max_concurrent_running": 999, "running_count": 0,
+             "slurm_pending_count": 0},
+        ]
+        identified = sch._identify_migration_candidates(state, nodes, max_candidates=10)
+        identified_ids = [c["id"] for c, _ in identified]
+        check("env-blocked candidate (tBlocked) NOT in staging snapshot",
+              "tBlocked" not in identified_ids,
+              diag=f"got {identified_ids}")
+        check("launch-failed candidate (tFailed) NOT in staging snapshot",
+              "tFailed" not in identified_ids,
+              diag=f"got {identified_ids}")
+        check("clean candidate (tOK) IS in staging snapshot",
+              "tOK" in identified_ids,
+              diag=f"got {identified_ids}")
+        # All identified candidates target the lightest-loaded node ('free').
+        check("all identified candidates target the lightest node ('free')",
+              all(tgt == "free" for _, tgt in identified))
+
+        # 3. Behavioral test of _consider_migration — only tOK migrates;
+        # tBlocked/tFailed left in place (preferred_node still 'loaded').
+        # _can_migrate_to mocked to True so staging-cache is irrelevant for this test.
+        saved_can_migrate = sch._can_migrate_to
+        sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+        try:
+            migrated = sch._consider_migration(state, nodes)
+            check("_consider_migration migrates exactly one task",
+                  len(migrated) == 1, diag=f"got {migrated}")
+            check("_consider_migration migrates tOK (the un-blocked candidate)",
+                  migrated == ["tOK"], diag=f"got {migrated}")
+            check("tOK preferred_node now 'free'",
+                  tOK["preferred_node"] == "free")
+            check("tBlocked preferred_node UNCHANGED (still 'loaded')",
+                  tBlocked["preferred_node"] == "loaded")
+            check("tFailed preferred_node UNCHANGED (still 'loaded')",
+                  tFailed["preferred_node"] == "loaded")
+        finally:
+            sch._can_migrate_to = saved_can_migrate
+
+        # 4. If ALL candidates have target blocked, identify returns nothing.
+        def fake_blocked_all(task):
+            return {"free"} if task.get("status") == "queued" else set()
+        sch._blocked_nodes_for_task = fake_blocked_all
+        # Reset preferred_node so candidates are eligible again.
+        for t in (tBlocked, tFailed, tOK):
+            t["preferred_node"] = "loaded"
+        identified_all_blocked = sch._identify_migration_candidates(
+            state, nodes, max_candidates=10)
+        check("when all candidates are blocked from target → no staging snapshot",
+              identified_all_blocked == [],
+              diag=f"got {identified_all_blocked}")
+    finally:
+        sch._blocked_nodes_for_task = saved_blocked
+        sch._launch_failed_nodes_for_task = saved_launch_failed
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -5750,6 +5885,7 @@ if __name__ == "__main__":
     test_phase3_0_8_unknown_eta_skipped_in_migration()
     test_phase3_0_9_slurm_pending_elapsed_zero()
     test_phase3_0_10_migration_event_visibility()
+    test_phase3_0_11_migration_target_respects_blocked_and_launch_failed()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

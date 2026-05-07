@@ -3027,6 +3027,182 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_3_migration_trigger():
+    """Phase 3.0.3: _consider_migration re-pins soft-pinned tasks from overloaded
+    nodes to near-empty ones. Respects: hard pins (require_node), portability check,
+    max-per-dispatch cap, ETA-based candidate ranking.
+    """
+    print("\n[61] Phase 3.0.3 load-balance migration trigger")
+
+    # Tunable constants exist + sane defaults
+    check("MIGRATION_LOAD_RATIO defined", hasattr(sch, "MIGRATION_LOAD_RATIO"))
+    check("MIGRATION_FREE_THRESHOLD_S defined", hasattr(sch, "MIGRATION_FREE_THRESHOLD_S"))
+    check("MIGRATION_MAX_PER_DISPATCH = 1 (user spec)",
+          sch.MIGRATION_MAX_PER_DISPATCH == 1)
+    check("MIGRATION_MIN_TASK_ETA_S defined", hasattr(sch, "MIGRATION_MIN_TASK_ETA_S"))
+
+    # Mock _can_migrate_to to default-True (Phase 3.0.4 will replace with real staging)
+    saved_can_migrate = sch._can_migrate_to
+    sch._can_migrate_to = lambda task, target_node, timeout_s=5: True
+
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "A": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+        "B": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+              "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+              "max_concurrent_running": None},
+    }
+    nodes_alive = [{"name": "A", "alive": True}, {"name": "B", "alive": True}]
+
+    try:
+        # ---------- imbalanced + portable: migration fires ----------
+        # A has running 7200s, B is empty (under threshold). Queued task tQ has
+        # preferred=A → should migrate to B.
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tQ", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("imbalanced + portable → tQ migrated",
+              migrated == ["tQ"], diag=str(migrated))
+        check("after migration: tQ.preferred_node = B",
+              state["tasks"][1].get("preferred_node") == "B")
+        check("after migration: migrated_from = A",
+              state["tasks"][1].get("migrated_from") == "A")
+        check("after migration: last_block_reason mentions migration",
+              "migrated:" in (state["tasks"][1].get("last_block_reason") or ""))
+
+        # ---------- balanced loads: no migration ----------
+        state = {"tasks": [
+            {"id": "tR1", "status": "running", "node": "A", "eta_seconds": 1000},
+            {"id": "tR2", "status": "running", "node": "B", "eta_seconds": 800},
+            {"id": "tQ", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("balanced (B has 800s, > FREE_THRESHOLD) → no migration",
+              migrated == [], diag=str(migrated))
+
+        # ---------- target loaded → no migration ----------
+        # A=10000, B=700 (just over FREE_THRESHOLD=600 by default). No migration.
+        state = {"tasks": [
+            {"id": "tR1", "status": "running", "node": "A", "eta_seconds": 10000},
+            {"id": "tR2", "status": "running", "node": "B", "eta_seconds": 700},
+            {"id": "tQ", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("target above FREE_THRESHOLD (700>600) → no migration",
+              migrated == [], diag=str(migrated))
+
+        # ---------- ratio not high enough: no migration ----------
+        # A=400+300=700 (running+queued-pinned), B=400. Ratio 1.75 < 2.0.
+        # Both target_load (400) < FREE_THRESHOLD (600), so target qualifies as free.
+        # But ratio check rejects: source(700) < 2.0 * target(400) = 800.
+        state = {"tasks": [
+            {"id": "tR1", "status": "running", "node": "A", "eta_seconds": 400},
+            {"id": "tR2", "status": "running", "node": "B", "eta_seconds": 400},
+            {"id": "tQ", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 300, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("ratio 1.75 < 2.0 → no migration",
+              migrated == [], diag=str(migrated))
+
+        # ---------- hard-pinned task: NOT touched even if imbalanced ----------
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tHard", "status": "queued", "require_node": "A",
+             "preferred_node": "A", "eta_seconds": 3600, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("require_node set → no migration (hard pin respected)",
+              migrated == [], diag=str(migrated))
+        check("tHard.preferred_node still A (untouched)",
+              state["tasks"][1].get("preferred_node") == "A")
+
+        # ---------- auto_adopted: NOT touched ----------
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tA", "status": "queued", "preferred_node": "A",
+             "auto_adopted": True, "eta_seconds": 3600, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("auto_adopted → no migration",
+              migrated == [], diag=str(migrated))
+
+        # ---------- task ETA below MIN: skip ----------
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tShort", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 60, "cwd": "/tmp"},  # 60s < MIN_TASK_ETA_S(300)
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("task eta < MIN_TASK_ETA_S → skip (won't recoup staging cost)",
+              migrated == [], diag=str(migrated))
+
+        # ---------- max-per-dispatch cap: only 1 migrates even if multiple eligible ----------
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tQ1", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1000, "cwd": "/tmp"},
+            {"id": "tQ2", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 2000, "cwd": "/tmp"},
+            {"id": "tQ3", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 3000, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("max-per-dispatch=1: only 1 migrated despite 3 candidates",
+              len(migrated) == 1, diag=str(migrated))
+        check("smallest ETA migrated first (cheapest staging)",
+              migrated == ["tQ1"], diag=str(migrated))
+
+        # ---------- target node dead: no migration ----------
+        nodes_target_down = [{"name": "A", "alive": True}, {"name": "B", "alive": False}]
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tQ", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1800, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_target_down)
+        check("target node down → no migration",
+              migrated == [], diag=str(migrated))
+
+        # ---------- portability fail: try next candidate ----------
+        # Force _can_migrate_to to fail for tQ1 but succeed for tQ2
+        sch._can_migrate_to = lambda task, target_node, timeout_s=5: task["id"] != "tQ1"
+        state = {"tasks": [
+            {"id": "tR", "status": "running", "node": "A", "eta_seconds": 7200},
+            {"id": "tQ1", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 1000, "cwd": "/cant-migrate"},
+            {"id": "tQ2", "status": "queued", "preferred_node": "A",
+             "eta_seconds": 2000, "cwd": "/tmp"},
+        ]}
+        migrated = sch._consider_migration(state, nodes_alive)
+        check("first candidate fails portability → next candidate tried",
+              migrated == ["tQ2"], diag=str(migrated))
+    finally:
+        sch._can_migrate_to = saved_can_migrate
+        sch.NODES = saved_NODES
+
+    # Source guard: _do_dispatch calls _consider_migration BEFORE placement loop
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    do_idx = src.find("def _do_dispatch")
+    next_def = src.find("\ndef ", do_idx + 5)
+    body = src[do_idx:next_def]
+    cm_idx = body.find("_consider_migration(state, nodes)")
+    pp_idx = body.find("_preempt_for_high_priority(state, nodes)")
+    check("_do_dispatch calls _consider_migration",
+          cm_idx > 0)
+    check("migration runs BEFORE preemption (so placement loop sees new pin)",
+          cm_idx > 0 and pp_idx > 0 and cm_idx < pp_idx)
+    check("emits 'migrated' event for each migrated task_id",
+          '"type": "migrated"' in body)
+
+
 def test_phase3_0_2_node_load_metric():
     """Phase 3.0.2: compute_node_load_seconds(state) → {node: total_eta_seconds}.
 
@@ -4641,6 +4817,7 @@ if __name__ == "__main__":
     test_phase2_17_install_slurm_orchestration()
     test_phase3_0_1_eta_parser_and_integration()
     test_phase3_0_2_node_load_metric()
+    test_phase3_0_3_migration_trigger()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

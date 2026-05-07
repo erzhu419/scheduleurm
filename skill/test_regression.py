@@ -511,14 +511,16 @@ def test_running_descendant_resources_counted():
     }]}
     orig_run_on = sch.run_on
     def fake_run_on(node, cmd, timeout=30, check=False):
+        # Phase 3.0.25: PSALL now requires a 5th column (stat). Use 'S' (sleeping)
+        # for live procs; the parser drops Z/X.
         out = (
             "A100\n"
             "===VRAM===\n"
             "101, 700\n"
             "===PSALL===\n"
-            "100 1 1000 0.0\n"
-            "101 100 2048000 125.0\n"
-            "102 101 1024000 80.0\n"
+            "100 1 1000 0.0 S\n"
+            "101 100 2048000 125.0 S\n"
+            "102 101 1024000 80.0 R\n"
         )
         return 0, out, ""
     sch.run_on = fake_run_on
@@ -5212,6 +5214,137 @@ def test_phase3_0_24_rebalance_pending_clears_placement_fields():
         time.sleep = saved_sleep
 
 
+def test_phase3_0_25_zombie_descendants_not_alive():
+    """Phase 3.0.25 P1 fix: zombie (Z) / dead (X) descendants must not count as
+    alive in LocalBackend.batch_probe.
+
+    Pre-fix flow: per-root liveness used `kill -0 + /proc/<pid>/status` to
+    filter Z/X (correct). But descendant RAM/CPU expansion built `rss_per_pid`
+    from `ps -eo pid,ppid,rss,pcpu` — which lists zombies. Then
+    `this_alive = expanded_pids & (alive_roots | set(rss_per_pid))` UNIONED
+    zombies back in. A task whose root + every descendant got reaped to
+    zombies could stay status=running indefinitely.
+
+    Now: ps requests `stat=` too; the parser drops Z/X before populating
+    rss_per_pid / ppid_of so descendant expansion + the alive intersection
+    never see them.
+    """
+    print("\n[81] Phase 3.0.25 P1 fix: zombie descendants are NOT counted as alive")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    lb_idx = src.find("class LocalBackend")
+    lb_end = src.find("\nclass ", lb_idx + 5)
+    body = src[lb_idx:lb_end]
+    check("ps -eo includes stat= column",
+          "ps -eo pid=,ppid=,rss=,pcpu=,stat=" in body)
+    check("PSALL parser requires 5 columns + drops Z/X",
+          "len(bits) < 5" in body and 'stat[0] in ("Z", "X")' in body)
+
+    # 2. Behavioral via update_running_tasks → LocalBackend.batch_probe.
+    saved_run_on = sch.run_on
+
+    def make_state(pid):
+        return {"next_id": 999, "tasks": [{
+            "id": "tZ", "status": "running", "node": "local",
+            "remote_pids": [pid], "auto_adopted": False,
+            "process_group": pid, "started_at": time.time() - 600,
+            "log_path": "/tmp/x.log", "ram_mb": 100, "cpu_cores": 1,
+            "peak_ram_mb": 0, "peak_vram_mb": 0,
+        }]}
+
+    try:
+        # ---- Case A: root alive, descendant zombie → only the root counts ----
+        # `kill -0` succeeds for both, so the prefix probe emits "A100" and "A101".
+        # PSALL reports 100 alive (S) and 101 zombie (Z). The zombie must not
+        # contribute to RAM/CPU and must not be in alive_pids.
+        state = make_state(100)
+        def fake_root_alive_desc_zombie(node, cmd, timeout=30, check=False):
+            return 0, (
+                "A100\n"          # root alive
+                "===VRAM===\n"
+                "===PSALL===\n"
+                "100 1 1000 5.0 S\n"        # root alive
+                "101 100 999999 200.0 Z\n"  # descendant zombie — must NOT count
+            ), ""
+        sch.run_on = fake_root_alive_desc_zombie
+        sch.update_running_tasks(state)
+        t = state["tasks"][0]
+        check("root alive + descendant zombie → still alive (root counts)",
+              t["status"] == "running",
+              diag=f"status={t.get('status')}")
+        check("zombie descendant excluded from alive_pids",
+              101 not in (t.get("alive_pids") or []),
+              diag=f"alive_pids={t.get('alive_pids')}")
+        check("zombie descendant excluded from peak_ram_mb",
+              t.get("peak_ram_mb", 0) < 1000,
+              diag=f"peak_ram_mb={t.get('peak_ram_mb')} (zombie's 999999 KB must not show)")
+
+        # ---- Case B: root reaped to zombie → state should NOT keep running ----
+        state = make_state(200)
+        def fake_root_zombie(node, cmd, timeout=30, check=False):
+            # alive_roots filter (in scheduler) requires /proc state ∉ {Z,X};
+            # the prefix probe emits nothing for a zombie root.
+            return 0, (
+                ""               # no "A200" → not alive_root
+                "===VRAM===\n"
+                "===PSALL===\n"
+                "200 1 5000 0.0 Z\n"  # root zombie — must NOT count
+            ), ""
+        sch.run_on = fake_root_zombie
+        sch.update_running_tasks(state)
+        t = state["tasks"][0]
+        check("root zombie + no alive descendant → task NOT kept running forever",
+              t["status"] != "running",
+              diag=f"status={t.get('status')} (zombie root must not stay alive)")
+
+        # ---- Case C: descendant alive but the root has a zombie sibling ---
+        # _descendants_of walks ppid_of; zombies are dropped from ppid_of so
+        # the zombie can't be a "stepping stone" parent. But a descendant of an
+        # alive root that itself has a zombie child should still be discovered.
+        # 300 (root, alive) → 301 (descendant, alive) → 302 (zombie, dropped)
+        state = make_state(300)
+        def fake_alive_chain(node, cmd, timeout=30, check=False):
+            return 0, (
+                "A300\n"
+                "===VRAM===\n"
+                "===PSALL===\n"
+                "300 1 1000 5.0 S\n"
+                "301 300 2000 10.0 R\n"
+                "302 301 50 0.0 Z\n"
+            ), ""
+        sch.run_on = fake_alive_chain
+        sch.update_running_tasks(state)
+        t = state["tasks"][0]
+        check("alive chain found via ppid_of (zombie leaf dropped)",
+              t["status"] == "running" and 301 in (t.get("alive_pids") or []),
+              diag=f"alive_pids={t.get('alive_pids')}")
+        check("zombie great-grandchild excluded from alive_pids",
+              302 not in (t.get("alive_pids") or []))
+
+        # ---- Case D: STAT prefix may be augmented (e.g. "Sl+", "Z+"). Parser
+        # must look at first char only.
+        state = make_state(400)
+        def fake_augmented(node, cmd, timeout=30, check=False):
+            return 0, (
+                "A400\n"
+                "===VRAM===\n"
+                "===PSALL===\n"
+                "400 1 1000 5.0 Sl+\n"        # alive (sleep, leader, fg)
+                "401 400 2000 10.0 Z+\n"      # zombie (foreground)
+            ), ""
+        sch.run_on = fake_augmented
+        sch.update_running_tasks(state)
+        t = state["tasks"][0]
+        check("multi-char STAT works: Sl+ alive, Z+ filtered",
+              t["status"] == "running"
+              and 400 in (t.get("alive_pids") or [])
+              and 401 not in (t.get("alive_pids") or []),
+              diag=f"alive_pids={t.get('alive_pids')}")
+    finally:
+        sch.run_on = saved_run_on
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -7712,6 +7845,7 @@ if __name__ == "__main__":
     test_phase3_0_22_explicit_conda_fail_fast_no_local_path()
     test_phase3_0_23_env_key_validation_and_reserved_guard()
     test_phase3_0_24_rebalance_pending_clears_placement_fields()
+    test_phase3_0_25_zombie_descendants_not_alive()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

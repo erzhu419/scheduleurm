@@ -2155,7 +2155,14 @@ class LocalBackend(Backend):
             cmd = (f"({pid_checks}; true); echo '===VRAM==='; "
                    f"nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null; "
                    f"echo '===PSALL==='; "
-                   f"ps -eo pid=,ppid=,rss=,pcpu= 2>/dev/null; true")
+                   # Phase 3.0.25 P1 fix: include `stat=` so the parser can
+                   # filter Z (zombie) / X (dead) processes out of rss_per_pid.
+                   # Without this, zombies still appeared in the `ps` output
+                   # after the per-PID `/proc/<pid>/status` Z/X check, and the
+                   # `set(rss_per_pid)` union below silently re-marked them as
+                   # alive — a task with all descendants reaped to zombies
+                   # could stay status=running forever.
+                   f"ps -eo pid=,ppid=,rss=,pcpu=,stat= 2>/dev/null; true")
             try:
                 rc, out, _ = run_on(node, cmd, timeout=30, check=False)
                 return out if rc == 0 else None
@@ -2188,11 +2195,19 @@ class LocalBackend(Backend):
             rss_per_pid, pcpu_per_pid, ppid_of = {}, {}, {}
             for rl in lines[ps_sep+1:]:
                 bits = rl.split()
-                if len(bits) < 4: continue
+                # Phase 3.0.25 P1 fix: require the `stat=` column we now request
+                # and skip Z (zombie) / X (dead). Pre-fix this loop took 4
+                # columns and unconditionally added every PID to rss_per_pid;
+                # zombies then re-entered `this_alive` via the `set(rss_per_pid)`
+                # union, defeating the per-root /proc/status Z/X filter above.
+                if len(bits) < 5: continue
                 try:
                     p_, parent_, rss_kb = int(bits[0]), int(bits[1]), int(bits[2])
                     pc = float(bits[3])
                 except ValueError: continue
+                stat = bits[4]
+                if stat and stat[0] in ("Z", "X"):
+                    continue  # zombie / dead — do NOT count as alive
                 ppid_of[p_] = parent_
                 rss_per_pid[p_] = rss_kb // 1024
                 pcpu_per_pid[p_] = pc

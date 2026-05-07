@@ -6823,7 +6823,249 @@ def cmd_tui(args):
     from tui import main as tui_main
     tui_main()
 
+def cmd_priority(args):
+    """Phase 3.1: change priority on a queued task without cancel+resubmit.
+
+    Only queued tasks make sense — running tasks have already been placed,
+    and `priority` is a queue-ordering knob. Eviction protection on running
+    tasks is currently keyed on `priority == "normal"` so changing a running
+    task's priority WOULD affect future eviction decisions, but that's
+    rarely the user's intent and easy to do wrong; refuse there to keep
+    semantics simple.
+    """
+    new = args.level
+    with state_lock():
+        state = load_state()
+        for t in state["tasks"]:
+            if t["id"] != args.id:
+                continue
+            if t.get("status") != "queued":
+                sys.exit(f"task {args.id} is {t.get('status')!r}, not queued; "
+                         f"priority only affects queue ordering")
+            old = t.get("priority", "normal")
+            if old == new:
+                print(f"{args.id} priority already {new!r}")
+                return
+            t["priority"] = new
+            save_state(state)
+            print(f"{args.id}: priority {old!r} → {new!r}  "
+                  f"({(t.get('description') or '')[:60]})")
+            return
+        sys.exit(f"task {args.id} not found")
+
+
+def cmd_edit(args):
+    """Phase 3.1: override resource estimates on a queued task. Use this to
+    fix bad history-based estimates (e.g. an outlier sample stuck in
+    history that's making a task uplaceable). Running tasks can't be edited
+    — their resources are already in flight and peak tracking uses real
+    measurements anyway.
+    """
+    if all(getattr(args, k, None) is None for k in
+           ("vram_mb", "ram_mb", "cpu", "description", "preferred_node",
+            "require_node")):
+        sys.exit("specify at least one of --vram-mb / --ram-mb / --cpu / "
+                 "--description / --preferred-node / --require-node")
+    with state_lock():
+        state = load_state()
+        for t in state["tasks"]:
+            if t["id"] != args.id:
+                continue
+            if t.get("status") != "queued":
+                sys.exit(f"task {args.id} is {t.get('status')!r}, not queued; "
+                         f"cannot edit resources of in-flight tasks. Cancel + "
+                         f"resubmit if you really need to change them.")
+            changes = []
+            if args.vram_mb is not None:
+                changes.append(("est_vram_mb", t.get("est_vram_mb"), int(args.vram_mb)))
+                t["est_vram_mb"] = int(args.vram_mb)
+            if args.ram_mb is not None:
+                changes.append(("ram_mb", t.get("ram_mb"), int(args.ram_mb)))
+                t["ram_mb"] = int(args.ram_mb)
+            if args.cpu is not None:
+                changes.append(("cpu_cores", t.get("cpu_cores"), int(args.cpu)))
+                t["cpu_cores"] = int(args.cpu)
+            if args.description is not None:
+                changes.append(("description", t.get("description"), args.description))
+                t["description"] = args.description
+            if args.preferred_node is not None:
+                if args.preferred_node not in NODES:
+                    sys.exit(f"--preferred-node {args.preferred_node!r} not in NODES "
+                             f"({list(NODES.keys())})")
+                changes.append(("preferred_node", t.get("preferred_node"),
+                                args.preferred_node))
+                t["preferred_node"] = args.preferred_node
+            if args.require_node is not None:
+                if args.require_node and args.require_node not in NODES:
+                    sys.exit(f"--require-node {args.require_node!r} not in NODES "
+                             f"({list(NODES.keys())})")
+                changes.append(("require_node", t.get("require_node"),
+                                args.require_node or None))
+                t["require_node"] = args.require_node or None
+            save_state(state)
+            for field, old, new in changes:
+                print(f"  {field}: {old!r} → {new!r}")
+            print(f"updated {args.id}")
+            return
+        sys.exit(f"task {args.id} not found")
+
+
+def _explain_node_fit(task: dict, node_state: dict) -> str:
+    """Phase 3.1: return a one-line explanation of whether a queued task
+    would fit on `node_state` (a probe_all entry), and if not, why.
+    Used by `cmd_why` so users can diagnose stuck tasks without grepping
+    the source. Mirrors the predicates in pick_placement / _node_resources_ok
+    / _gpu_fits."""
+    name = node_state["name"]
+    if not node_state.get("alive"):
+        return f"DOWN ({node_state.get('error', '?')})"
+    if name in _blocked_nodes_for_task(task):
+        return "BLOCKED: pending env_missing/python_import escalation against this signature/cwd/project"
+    soft_blocked = name in _launch_failed_nodes_for_task(task)
+    soft_note = "  (soft-blocked: prior launch_failed; may retry as last resort)" if soft_blocked else ""
+    if not _BACKEND.requires_local_capacity_check(name):
+        # slurm-routed node: gres handles GPU pinning; only throttle matters here
+        pending = node_state.get("slurm_pending_count", 0)
+        cap = _slurm_max_pending_for_node(name)
+        if pending >= cap:
+            return f"slurm: throttled ({pending}/{cap} of our tasks pending){soft_note}"
+        return f"slurm: would route here (gres handles GPU pinning){soft_note}"
+    node_info = NODES[name]
+    ok, why = _node_resources_ok(task, node_state, node_info)
+    if not ok:
+        return f"node-reject: {why}{soft_note}"
+    cpu_only = (task.get("est_vram_mb") or 0) <= 0
+    if cpu_only:
+        return (f"FITS (CPU-only): free_cpu={node_state.get('free_cpu')} "
+                f"free_ram={node_state.get('free_ram_mb')}MB{soft_note}")
+    fit_gpus = []
+    reject_gpus = []
+    est = int(task.get("est_vram_mb") or 0)
+    cap_per_task = node_info.get("max_vram_per_task")
+    for g in node_state.get("gpus") or []:
+        if _gpu_fits(task, g, node_info):
+            fit_gpus.append(f"GPU{g['idx']}(free={g['free_mb']}MB)")
+            continue
+        # explain rejection
+        reasons = []
+        if cap_per_task is not None and est > cap_per_task:
+            reasons.append(f"est={est}>per-task cap={cap_per_task}")
+        third = g["total_mb"] // 3
+        if g["used_mb"] >= third and g["used_mb"] > 100:
+            reasons.append(f"used {g['used_mb']}/{g['total_mb']}MB ≥ 1/3 (packing rule)")
+        if g["used_mb"] > 100 and g.get("util_pct", 0) >= GPU_UTIL_SATURATION_PCT:
+            reasons.append(f"util={g.get('util_pct')}% ≥ {GPU_UTIL_SATURATION_PCT}% (compute saturation)")
+        if g["free_mb"] < est + VRAM_MARGIN_MB:
+            reasons.append(f"free={g['free_mb']}MB < est+margin ({est}+{VRAM_MARGIN_MB})")
+        reject_gpus.append(f"GPU{g['idx']}({'; '.join(reasons) or 'unknown'})")
+    if fit_gpus:
+        return f"FITS: {', '.join(fit_gpus)}{soft_note}"
+    if not reject_gpus:
+        return f"no GPUs probed (CPU-only node?){soft_note}"
+    return f"no-GPU-fit: {' | '.join(reject_gpus)}{soft_note}"
+
+
+def cmd_why(args):
+    """Phase 3.1: synthesize 'why is this task stuck in queue'. Prints the
+    task's own block reason, sibling history (so users can see if their
+    est_vram_mb is an outlier), and a per-node fit analysis explaining
+    every reject (1/3 rule, util saturation, RAM headroom, etc)."""
+    with state_lock():
+        state = load_state()
+    task = next((t for t in state["tasks"] if t["id"] == args.id), None)
+    if not task:
+        sys.exit(f"task {args.id} not found")
+    print(f"=== why {args.id} ===")
+    print(f"  status:       {task.get('status')}")
+    print(f"  description:  {(task.get('description') or '')[:100]}")
+    print(f"  signature:    {task.get('signature')}")
+    print(f"  priority:     {task.get('priority')}")
+    print(f"  preferred:    {task.get('preferred_node')!r}  require:    {task.get('require_node')!r}")
+    print(f"  est:          vram={task.get('est_vram_mb')}MB ram={task.get('ram_mb')}MB cpu={task.get('cpu_cores')}")
+    if task.get("status") != "queued":
+        print()
+        print(f"  (task is {task.get('status')!r} — `why` is for diagnosing "
+              f"queued tasks that aren't getting placed)")
+        return
+    print()
+    print("  last_block_reason:")
+    lbr = task.get("last_block_reason") or "(none yet — task hasn't been considered for placement)"
+    print(f"    {lbr}")
+    sig = task.get("signature") or ""
+    if sig:
+        h = load_history()
+        own = h.get(sig)
+        if own is not None:
+            if isinstance(own, int):
+                own = {"vram_mb": own}
+            print()
+            print(f"  history[{sig!r}]:")
+            print(f"    vram_mb={own.get('vram_mb', 0)}  ram_mb={own.get('ram_mb', 0)}  "
+                  f"cpu_cores={own.get('cpu_cores', 0)}  runs={own.get('dur_s_runs', 0)}")
+            samples = own.get("vram_samples") or []
+            if samples:
+                print(f"    vram_samples={samples}  (single-sample outliers may "
+                      f"poison estimate — `history --drop {sig}` to clear)")
+        prefix = "/".join(sig.split("/")[:2])
+        siblings = []
+        for s, v in h.items():
+            if s == sig: continue
+            if not s.startswith(prefix + "/"): continue
+            vm = v.get("vram_mb", 0) if isinstance(v, dict) else v
+            siblings.append((s, vm))
+        if siblings:
+            print()
+            print(f"  sibling signatures under {prefix!r}/ (compare against own est={task.get('est_vram_mb')}MB):")
+            for s, vm in sorted(siblings, key=lambda kv: -kv[1])[:8]:
+                marker = "  ← much smaller, est may be over" if (
+                    task.get("est_vram_mb") and vm > 0
+                    and task["est_vram_mb"] > 2 * vm) else ""
+                print(f"    {s:<55s} vram={vm}MB{marker}")
+    print()
+    print("  per-node fit analysis (probe_all snapshot):")
+    nodes = probe_all()
+    for n in nodes:
+        print(f"    {n['name']:11s}: {_explain_node_fit(task, n)}")
+
+
 def cmd_history(args):
+    """Phase 3.1: extended with --drop and --set for cleaning poisoned
+    peak-history entries (single-outlier samples that make a signature's
+    tasks unplaceable forever)."""
+    if getattr(args, "drop", None):
+        h = load_history()
+        if args.drop not in h:
+            sys.exit(f"signature {args.drop!r} not in history")
+        old = h.pop(args.drop)
+        save_history(h)
+        print(f"dropped {args.drop!r}:")
+        print(f"  was: {old}")
+        print(f"  next runs of this signature will accumulate fresh peaks.")
+        return
+    if getattr(args, "set", None):
+        if all(getattr(args, k, None) is None for k in ("vram_mb", "ram_mb", "cpu")):
+            sys.exit("--set requires at least one of --vram-mb / --ram-mb / --cpu")
+        h = load_history()
+        rec = h.get(args.set, {})
+        if isinstance(rec, int):
+            rec = {"vram_mb": rec}
+        elif not isinstance(rec, dict):
+            rec = {}
+        if args.vram_mb is not None:
+            rec["vram_mb"] = int(args.vram_mb)
+            rec["vram_samples"] = [int(args.vram_mb)]  # reset noisy sample list
+        if args.ram_mb is not None:
+            rec["ram_mb"] = int(args.ram_mb)
+            rec["ram_samples"] = [int(args.ram_mb)]
+        if args.cpu is not None:
+            rec["cpu_cores"] = int(args.cpu)
+        rec["last_seen"] = int(time.time())
+        h[args.set] = rec
+        save_history(h)
+        print(f"set {args.set!r}:")
+        print(f"  {rec}")
+        return
+    # Default: list (existing behavior)
     h = load_history()
     if not h:
         print("(no resource history yet — runs will record automatically as they finish)")
@@ -6965,7 +7207,42 @@ def main():
     s.add_argument("signature"); s.add_argument("peak_vram_mb", type=int)
     s.set_defaults(func=cmd_record_vram)
 
-    sub.add_parser("history", help="Show VRAM history per signature").set_defaults(func=cmd_history)
+    s = sub.add_parser("history", help="Show / edit VRAM history per signature")
+    s.add_argument("--drop", metavar="SIG",
+                   help="Remove the history entry for SIG (next runs will start fresh)")
+    s.add_argument("--set", metavar="SIG",
+                   help="Set / overwrite the history entry for SIG (use with --vram-mb / --ram-mb / --cpu)")
+    s.add_argument("--vram-mb", dest="vram_mb", type=int,
+                   help="With --set: peak VRAM in MB to record")
+    s.add_argument("--ram-mb", dest="ram_mb", type=int,
+                   help="With --set: peak RAM in MB to record")
+    s.add_argument("--cpu", type=int,
+                   help="With --set: cpu_cores to record")
+    s.set_defaults(func=cmd_history)
+
+    s = sub.add_parser("priority", help="Change priority of a queued task (queue ordering)")
+    s.add_argument("id", help="Task id (e.g. t0042)")
+    s.add_argument("level", choices=["low", "normal", "high"])
+    s.set_defaults(func=cmd_priority)
+
+    s = sub.add_parser("edit", help="Override resource estimates / pin on a queued task")
+    s.add_argument("id", help="Task id (e.g. t0042)")
+    s.add_argument("--vram-mb", dest="vram_mb", type=int,
+                   help="Override estimated peak VRAM in MB")
+    s.add_argument("--ram-mb", dest="ram_mb", type=int,
+                   help="Override estimated peak RAM in MB")
+    s.add_argument("--cpu", type=int, help="Override CPU cores")
+    s.add_argument("--description", help="Override description")
+    s.add_argument("--preferred-node", dest="preferred_node",
+                   help="Set / change soft preferred node (must be a known node)")
+    s.add_argument("--require-node", dest="require_node",
+                   help="Set / change hard pin (use empty string to clear)")
+    s.set_defaults(func=cmd_edit)
+
+    s = sub.add_parser("why", help="Diagnose why a queued task isn't being dispatched")
+    s.add_argument("id", help="Task id (e.g. t0042)")
+    s.set_defaults(func=cmd_why)
+
     sub.add_parser("tui", help="Interactive TUI: sortable + filterable + auto-refresh task table").set_defaults(func=cmd_tui)
 
     args = p.parse_args()

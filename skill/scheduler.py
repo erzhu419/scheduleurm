@@ -4740,6 +4740,47 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
     task["peak_vram_mb"] = 0
     task["peak_ram_mb"] = 0
     task.pop("launching_started_at", None)
+    # Phase 3.0.32 P1 fix: also restore the deterministic log_path used by
+    # LocalBackend.launch. Pre-fix, recovery left log_path=None, so a
+    # later _diagnose_terminal saw "no log_path" and short-circuited to
+    # is_crash=False — effectively swallowing real crashes silently for
+    # any task that went through orphan recovery.
+    if NODES.get(node, {}).get("host") is None:
+        task["log_path"] = f"{STATE_DIR}/logs/{tid}.log"
+    else:
+        task["log_path"] = f"/tmp/sched_{tid}.log"
+    # Phase 3.0.32 P1 fix: docker artifact recovery. _maybe_wrap_docker
+    # set container_name = "sched-{id}" before LocalBackend.launch was
+    # called, but pre-fix recovery never restored it — so kill paths
+    # would skip the `docker kill <name>` cleanup AND peak-resource
+    # tracking would lock onto the host-side bash launcher PID instead
+    # of the container's actual main proc (PID isolation via containerd-
+    # shim). Same convention as launch: derive container_name from id,
+    # then docker inspect for the main pid; on success, replace
+    # remote_pids[0] with the container PID so the rest of the tracking
+    # machinery (peak_vram, peak_ram, alive_pids) lights up correctly.
+    spec = (task.get("env_spec") or "").lower()
+    looks_docker = (spec.startswith("docker")
+                    or (spec == "auto" and task.get("image")))
+    if looks_docker:
+        cname = f"sched-{tid}"
+        try:
+            rc_d, out_d, _ = run_on(
+                node,
+                f"docker inspect --format '{{{{.State.Pid}}}}' "
+                f"{shlex.quote(cname)} 2>/dev/null",
+                timeout=5, check=False,
+            )
+            if rc_d == 0:
+                s = (out_d or "").strip()
+                if s.isdigit() and int(s) > 0:
+                    cpid = int(s)
+                    task["container_name"] = cname
+                    task["container_main_pid"] = cpid
+                    task["remote_pids"] = [cpid]
+                    task["alive_pids"] = [cpid]
+        except Exception:
+            pass  # docker may not be reachable; recovery proceeds with bash PID
     task["last_block_reason"] = (
         f"WAL recovery: adopted orphan local PID {pid} (pgid={pgid}) on {node} "
         f"matching SCHEDULEURM_TASK_ID={tid}; avoids double-launch"

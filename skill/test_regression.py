@@ -6113,6 +6113,169 @@ def test_phase3_0_31_launch_side_docker_push_no_longer_holds_lock():
         sch.NODES = saved_NODES
 
 
+def test_phase3_0_32_orphan_recovery_restores_log_and_docker_artifacts():
+    """Phase 3.0.32 P1 fix: _try_recover_orphan_local_task must restore the
+    deterministic log_path AND docker artifacts (container_name, container_
+    main_pid) that LocalBackend.launch would have set, not just the PID.
+
+    Pre-fix consequences:
+      - log_path=None after recovery → _diagnose_terminal short-circuits to
+        `is_crash=False, reason="auto-adopted (no scheduler log; cannot
+        diagnose)"` for ANY task that went through orphan recovery. Real
+        crashes get silently swallowed; auto-requeue path never fires.
+      - container_name=None / container_main_pid=None → kill paths skip
+        `docker kill <name>` cleanup (only host-side bash kill), and peak-
+        resource tracking locks onto the docker-run client bash PID instead
+        of the actual container main proc through containerd-shim PID
+        isolation. peak_vram / peak_ram come back as zeros.
+
+    Now: log_path is recomputed deterministically from task id + node host
+    (same formula as launch). For docker tasks, container_name is derived
+    from id (`sched-{id}`) and `docker inspect` resolves the container main
+    PID, replacing remote_pids[0] so resource tracking lights up.
+    """
+    print("\n[88] Phase 3.0.32 P1 fix: orphan recovery restores log_path + docker artifacts")
+
+    # 1. Source guards.
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    fn_idx = src.find("def _try_recover_orphan_local_task")
+    fn_end = src.find("\ndef ", fn_idx + 5)
+    body = src[fn_idx:fn_end]
+    check("recovery sets log_path with the local-host formula",
+          'STATE_DIR}/logs/{tid}.log' in body)
+    check("recovery sets log_path with the remote-host formula",
+          '/tmp/sched_{tid}.log' in body)
+    check("recovery probes docker for container artifacts",
+          'docker inspect' in body and 'sched-{tid}' in body)
+    check("docker artifact recovery sets container_name + container_main_pid",
+          'task["container_name"] = cname' in body
+          and 'task["container_main_pid"] = cpid' in body)
+
+    # 2. Behavioral.
+    saved_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    saved_state_dir = sch.STATE_DIR
+    sch.NODES = {
+        "lhost": {"host": None},   # local
+        "rhost": {"host": "rbox"}, # remote
+    }
+    sch.STATE_DIR = "/tmp/sched_test_state"
+
+    try:
+        # ---- Case A: local node, non-docker task → log_path = STATE_DIR/logs/<id>.log
+        def probe_local_alive(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=" in cmd:
+                return (0, "1234|1234|1234|S\n", "")
+            return (0, "", "")
+        sch.run_on = probe_local_alive
+        task = {"id": "tA", "status": "launching", "node": "lhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "none"}
+        adopted = sch._try_recover_orphan_local_task(task, "lhost")
+        check("local non-docker → adopted",
+              adopted is True)
+        check("local non-docker → log_path uses STATE_DIR/logs/<id>.log",
+              task.get("log_path") == "/tmp/sched_test_state/logs/tA.log",
+              diag=f"got {task.get('log_path')!r}")
+        check("local non-docker → no container_name set",
+              task.get("container_name") is None)
+
+        # ---- Case B: remote node, non-docker task → log_path = /tmp/sched_<id>.log
+        sch.run_on = probe_local_alive
+        task = {"id": "tB", "status": "launching", "node": "rhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "none"}
+        adopted = sch._try_recover_orphan_local_task(task, "rhost")
+        check("remote non-docker → log_path uses /tmp/sched_<id>.log",
+              task.get("log_path") == "/tmp/sched_tB.log",
+              diag=f"got {task.get('log_path')!r}")
+
+        # ---- Case C: docker task, container alive → recover container_name + main_pid ----
+        def probe_docker_alive(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=tC" in cmd:
+                # Bash launcher matches the marker.
+                return (0, "5000|5000|5000|S\n", "")
+            if "docker inspect" in cmd and "sched-tC" in cmd:
+                # Container is alive with main PID 9999.
+                return (0, "9999\n", "")
+            return (0, "", "")
+        sch.run_on = probe_docker_alive
+        task = {"id": "tC", "status": "launching", "node": "rhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "docker:myproj:latest"}
+        adopted = sch._try_recover_orphan_local_task(task, "rhost")
+        check("docker task → adopted",
+              adopted is True)
+        check("docker task → container_name = sched-<id>",
+              task.get("container_name") == "sched-tC",
+              diag=f"got {task.get('container_name')!r}")
+        check("docker task → container_main_pid set from docker inspect",
+              task.get("container_main_pid") == 9999)
+        check("docker task → remote_pids replaced with container main PID",
+              task.get("remote_pids") == [9999],
+              diag=f"got {task.get('remote_pids')}")
+        check("docker task → log_path still set",
+              task.get("log_path") == "/tmp/sched_tC.log")
+
+        # ---- Case D: docker task, but `docker inspect` fails (rc!=0) → keep
+        # bash PID, no container_name set. Don't crash, don't pretend.
+        def probe_docker_inspect_fails(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=tD" in cmd:
+                return (0, "5001|5001|5001|S\n", "")
+            if "docker inspect" in cmd:
+                return (1, "", "Error: No such object")
+            return (0, "", "")
+        sch.run_on = probe_docker_inspect_fails
+        task = {"id": "tD", "status": "launching", "node": "rhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "docker:myproj:latest"}
+        adopted = sch._try_recover_orphan_local_task(task, "rhost")
+        check("docker inspect fails → still adopt (with bash PID)",
+              adopted is True and task.get("remote_pids") == [5001])
+        check("docker inspect fails → container_name NOT set (graceful)",
+              task.get("container_name") is None)
+        check("docker inspect fails → log_path still restored",
+              task.get("log_path") == "/tmp/sched_tD.log")
+
+        # ---- Case E: auto + image → also treated as docker for recovery ----
+        def probe_auto_alive(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=tE" in cmd:
+                return (0, "6000|6000|6000|S\n", "")
+            if "docker inspect" in cmd and "sched-tE" in cmd:
+                return (0, "8888\n", "")
+            return (0, "", "")
+        sch.run_on = probe_auto_alive
+        task = {"id": "tE", "status": "launching", "node": "rhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "auto", "image": "myproj:latest"}
+        adopted = sch._try_recover_orphan_local_task(task, "rhost")
+        check("auto+image → docker recovery attempted",
+              adopted is True and task.get("container_main_pid") == 8888)
+
+        # ---- Case F: env_spec=none → docker recovery NOT attempted ----
+        # docker inspect should not even be called.
+        inspect_calls = []
+        def probe_no_docker(node, cmd, timeout=20, check=False):
+            if "SCHEDULEURM_TASK_ID=tF" in cmd:
+                return (0, "7000|7000|7000|S\n", "")
+            if "docker inspect" in cmd:
+                inspect_calls.append(cmd)
+                return (0, "", "")
+            return (0, "", "")
+        sch.run_on = probe_no_docker
+        task = {"id": "tF", "status": "launching", "node": "rhost",
+                "launching_started_at": time.time() - 120, "remote_pids": [],
+                "env_spec": "none"}
+        adopted = sch._try_recover_orphan_local_task(task, "rhost")
+        check("non-docker env_spec → docker inspect NOT issued",
+              len(inspect_calls) == 0,
+              diag=f"inspect calls: {inspect_calls}")
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+        sch.STATE_DIR = saved_state_dir
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -8626,6 +8789,7 @@ if __name__ == "__main__":
     test_phase3_0_29_actual_started_at_cleared_on_requeue_and_launch()
     test_phase3_0_30_slurm_completed_log_scan_for_crash()
     test_phase3_0_31_launch_side_docker_push_no_longer_holds_lock()
+    test_phase3_0_32_orphan_recovery_restores_log_and_docker_artifacts()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

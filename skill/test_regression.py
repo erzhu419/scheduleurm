@@ -3027,6 +3027,147 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="throttle missing from pick_placement")
 
 
+def test_phase3_0_9_slurm_pending_elapsed_zero():
+    """Phase 3.0.9 P2 fix: slurm-PENDING tasks must NOT decay their ETA (or shrink
+    their node load) while waiting in slurm's queue.
+
+    Pre-fix: SlurmBackend.launch sets started_at = sbatch return time. While the
+    job sits PENDING for hours, _refresh_eta_from_logs computes
+        elapsed = now - started_at
+    and EWMA-fallback returns max(0, ewma - elapsed). So a task with EWMA=3600
+    pending for 1h shows eta_seconds=0, before any compute happened. eta_load
+    drops too → migration may falsely see the source node as "free".
+
+    Fix: _effective_elapsed_s returns 0 for slurm tasks until SlurmBackend.batch_probe
+    sees slurm_state=RUNNING for the first time and records actual_started_at.
+    """
+    print("\n[66] Phase 3.0.9 P2 fix: slurm-PENDING elapsed=0, ETA stays at full EWMA")
+
+    now = time.time()
+
+    # ---------- _effective_elapsed_s semantics ----------
+    # LocalBackend task: started_at == compute start
+    local_task = {"id": "tL", "started_at": now - 600}
+    el = sch._effective_elapsed_s(local_task)
+    check("LocalBackend: elapsed = now - started_at",
+          580 <= el <= 620, diag=f"got {el}")
+
+    # SlurmBackend PENDING (no actual_started_at yet, slurm_state=PENDING)
+    slurm_pending = {"id": "tP", "started_at": now - 3600,
+                     "slurm_job_id": 42, "slurm_state": "PENDING"}
+    el = sch._effective_elapsed_s(slurm_pending)
+    check("Slurm PENDING (1h ago sbatch'd) → elapsed=0",
+          el == 0, diag=f"got {el}")
+
+    # SlurmBackend just-sbatched (no slurm_state yet) → still elapsed=0
+    slurm_fresh = {"id": "tF", "started_at": now - 60,
+                   "slurm_job_id": 42}
+    el = sch._effective_elapsed_s(slurm_fresh)
+    check("Slurm freshly sbatched (no slurm_state probed) → elapsed=0",
+          el == 0, diag=f"got {el}")
+
+    # SlurmBackend RUNNING with actual_started_at recorded
+    slurm_running = {"id": "tR", "started_at": now - 3600,        # sbatch 1h ago
+                     "actual_started_at": now - 600,              # but compute started 10 min ago
+                     "slurm_job_id": 42, "slurm_state": "RUNNING"}
+    el = sch._effective_elapsed_s(slurm_running)
+    check("Slurm RUNNING with actual_started_at → elapsed = now - actual_started_at",
+          580 <= el <= 620, diag=f"got {el}")
+
+    # No started_at at all → 0
+    el = sch._effective_elapsed_s({"id": "tX"})
+    check("no started_at → 0", el == 0)
+
+    # ---------- ETA computation through _refresh_eta_from_logs ----------
+    saved_run_on = sch.run_on
+    saved_history_get = sch.history_get
+    sch.history_get = lambda sig: {"dur_s_ewma": 3600} if sig else None
+    sch.run_on = lambda node, cmd, timeout=30, check=True: (0, "", "")  # empty log
+
+    state = {"tasks": [
+        # PENDING for 1h, EWMA=3600 → eta should be 3600 (full), NOT 0
+        {"id": "tPend", "status": "running", "node": "X",
+         "log_path": "/tmp/p.log", "signature": "TEST/eta-slurm",
+         "started_at": now - 3600,
+         "slurm_job_id": 42, "slurm_state": "PENDING"},
+        # RUNNING for 600s of EWMA 3600 → eta should be ~3000s
+        {"id": "tRun", "status": "running", "node": "X",
+         "log_path": "/tmp/r.log", "signature": "TEST/eta-slurm",
+         "started_at": now - 4200,           # sbatch'd 70 min ago
+         "actual_started_at": now - 600,     # but compute started 10 min ago
+         "slurm_job_id": 43, "slurm_state": "RUNNING"},
+    ]}
+    try:
+        sch._refresh_eta_from_logs(state)
+        pend = next(t for t in state["tasks"] if t["id"] == "tPend")
+        run = next(t for t in state["tasks"] if t["id"] == "tRun")
+        check("PENDING task: eta_seconds = full EWMA (3600), NOT decayed by sbatch wait",
+              3550 <= (pend.get("eta_seconds") or 0) <= 3650,
+              diag=f"got {pend.get('eta_seconds')}")
+        check("RUNNING task: eta_seconds reflects actual_started_at not sbatch time",
+              2950 <= (run.get("eta_seconds") or 0) <= 3050,
+              diag=f"got {run.get('eta_seconds')}")
+    finally:
+        sch.run_on = saved_run_on
+        sch.history_get = saved_history_get
+
+    # ---------- batch_probe records actual_started_at on first RUNNING ----------
+    sb = sch.SlurmBackend()
+    saved_NODES = sch.NODES
+    sch.NODES = {"X": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                        "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                        "max_concurrent_running": None}}
+
+    canned_squeue = "100 RUNNING\n101 PENDING\n"
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (
+        (0, canned_squeue, "") if "squeue" in cmd else (0, "", "")
+    )
+    state = {"tasks": [
+        {"id": "tA", "status": "running", "node": "X", "slurm_job_id": 100,
+         "started_at": now - 3600},
+        {"id": "tB", "status": "running", "node": "X", "slurm_job_id": 101,
+         "started_at": now - 3600},
+    ]}
+    try:
+        sb.batch_probe(state)
+        ta = next(t for t in state["tasks"] if t["id"] == "tA")
+        tb = next(t for t in state["tasks"] if t["id"] == "tB")
+        check("RUNNING task: actual_started_at set on first RUNNING observation",
+              ta.get("actual_started_at") and abs(ta["actual_started_at"] - now) < 5,
+              diag=f"got {ta.get('actual_started_at')}")
+        check("PENDING task: actual_started_at NOT set",
+              tb.get("actual_started_at") is None,
+              diag=f"got {tb.get('actual_started_at')}")
+        check("RUNNING task: slurm_state recorded",
+              ta.get("slurm_state") == "RUNNING")
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+    # actual_started_at should NOT be re-set on subsequent RUNNING observations
+    state2 = {"tasks": [
+        {"id": "tA2", "status": "running", "node": "X", "slurm_job_id": 200,
+         "started_at": now - 3600,
+         "actual_started_at": now - 1800,  # already set 30 min ago
+         "slurm_state": "RUNNING"},
+    ]}
+    sch.run_on = lambda node, cmd, timeout=15, check=True: (
+        (0, "200 RUNNING\n", "") if "squeue" in cmd else (0, "", "")
+    )
+    sch.NODES = {"X": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                        "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                        "max_concurrent_running": None}}
+    try:
+        sb.batch_probe(state2)
+        ta = state2["tasks"][0]
+        check("repeat RUNNING observation does NOT overwrite actual_started_at",
+              abs(ta["actual_started_at"] - (now - 1800)) < 5,
+              diag=f"got {ta.get('actual_started_at')} (should still be ~now-1800)")
+    finally:
+        sch.run_on = saved_run_on
+        sch.NODES = saved_NODES
+
+
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
     """Phase 3.0.8 P2 fix: queued tasks with eta_seconds=0 (unknown / no signal yet)
     must NOT be migrated.
@@ -5471,6 +5612,7 @@ if __name__ == "__main__":
     test_phase3_0_5_staging_outside_lock()
     test_phase3_0_7_rebalance_pending_no_duplicate_sbatch()
     test_phase3_0_8_unknown_eta_skipped_in_migration()
+    test_phase3_0_9_slurm_pending_elapsed_zero()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

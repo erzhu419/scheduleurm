@@ -11,8 +11,8 @@ Built for the real shape of ML research: dozens of multi-hour training runs, mix
 | Problem you have today | What scheduleurm gives you |
 |---|---|
 | Eyeballing `nvidia-smi` to decide if there's room for one more run | `status` prints free CPU/RAM/VRAM per node; `dispatch` greedily fills capacity |
-| Two seeds clobbering each other's `--out_dir` because you forgot one was running | Same-signature dedup at dispatch (race-guarded across launching window too) |
-| 14h of training lost to OOM because the host has no swap left | RAM headroom enforced before placement (25% on WSL local; 10% on remote) |
+| Duplicate runs clobbering `--out_dir` / `--ckpt-dir` because you forgot one was running | Same run-identity dedup at dispatch (race-guarded across launching window too); active `--ckpt-dir` is globally exclusive by default |
+| 14h of training lost to OOM because the host has no swap left | RAM headroom enforced before placement (fixed 2GB on WSL local; 10% on remote) |
 | GPU utilization at 100% on one card while another sits idle | Best-fit warm-first placement; 1/3 VRAM packing rule for RL plateaus; util ≥90% saturation guard |
 | Pre-empted task silently restarts from step 0 instead of resuming | `--ckpt-dir` + `--resume-flag` injects `<flag> <ckpt_path>` on re-dispatch |
 | Child started outside the scheduler doesn't show up anywhere | Watcher auto-adopts external GPU + CPU procs every 60s |
@@ -22,11 +22,11 @@ Built for the real shape of ML research: dozens of multi-hour training runs, mix
 
 ## Cluster model
 
-A node is described by 5 numbers:
+A node is described by a few resource knobs:
 
 ```python
 NODES = {
-    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_frac": 0.25, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
     "remote-A":  {"host": "remote-A", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
     "remote-B":  {"host": "remote-B", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
 }
@@ -34,7 +34,7 @@ NODES = {
 
 - `host=None` means local; otherwise an SSH alias from `~/.ssh/config` (passwordless required).
 - `cpu_cores` / `ram_mb` are the **schedulable** budget, already net of OS reservation. (E.g. 16 physical cores → 12 schedulable on local; rest reserved for OS/IO.)
-- `ram_headroom_frac` — fraction of RAM kept unallocated as buffer. Higher on WSL2 (OOM freezes the host).
+- `ram_headroom_mb` / `ram_headroom_frac` — RAM kept unallocated as buffer. Fixed MB wins when set; remotes usually use the fraction.
 - `max_vram_per_task` — `None` auto-derives from probed GPU `total_mb`; set a number to cap (e.g. WSL local 4060 8GB caps individual tasks at 4GB so two can share).
 - `max_concurrent_running` — defense-in-depth above CPU/RAM bookkeeping (catches under-declared RAM tasks).
 
@@ -76,15 +76,23 @@ Uninstall: `./uninstall.sh` (preserves state) · `./uninstall.sh --purge-state` 
 
 After install, the skill is auto-discovered. Just say what you want:
 
-> 跑这个脚本 (run this script)
+> Run this script
 >
-> GPU 还空吗 (any GPU room left?)
+> Any GPU room left?
 >
-> 跑这 6 个 ablation seeds (run these 6 ablation seeds)
+> Launch these 6 ablation seeds
 >
-> 取消 t0042 (cancel t0042)
+> Cancel t0042
 >
-> 跑完通知我 (wake me when done)
+> Wake me when it's done
+
+Trigger surface (the skill description routes any of these to the scheduler):
+
+- **Submit / launch a job** — "run a job", "submit a job", "launch a job", "train", "eval", "inference", "run this script", "run this python", "run a sweep", "data prep", "kick off X", "fire off X", "queue up X", "schedule X", "dispatch X", "deploy X", "send to GPU", "put on jtl110gpu"
+- **Status / inspect** — "GPU free?", "any free RAM?", "what's running?", "which node has room?", "node status", "show queue", "show jobs", "show tasks", "how many tasks running"
+- **Job control** — "cancel job", "kill job", "stop job", "clear queue", "forget X", "rebalance", "redispatch", "reassign"
+
+(See [`README_CN.md`](README_CN.md) for the Chinese trigger phrases — the skill matches both.)
 
 The skill translates intent → `submit` / `dispatch` / `status` / `wait-for` calls. See [`skill/SKILL.md`](skill/SKILL.md) for the full decision rules.
 
@@ -187,6 +195,13 @@ ETA is the load-imbalance signal, not task count (one 30-hour job ≠ thirty 1-h
 
 For best ETA accuracy, **wrap the training loop with tqdm**. The skill auto-checks scripts at submit time and proposes adding `from tqdm import tqdm; for x in tqdm(loop): ...` if missing — your loop's existing per-iter logging stays intact, tqdm just adds the bar.
 
+The same progress signal is also folded into `~/.claude/scheduler/runtime_history.json`.
+For later Slurm submissions with the same cmd/cwd/env parameters, scheduleurm uses
+`p80(projected total runtime) × 1.2` as `--time` (10-minute floor, 7-day cap) before
+falling back to the legacy signature EWMA × 3 / 24h default. The exact runtime key
+intentionally ignores signature/project/description labels so a harmless signature
+rename does not lose local timing history.
+
 Tunables (all env-var overridable; no code edit; takes effect after watcher restart):
 
 | Var | Default | Meaning |
@@ -215,35 +230,48 @@ Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log
 
 ## Slurm coexistence (Phase 2)
 
-If a target node has `sbatch` and `squeue` installed, scheduleurm **automatically routes
-through slurm** — generating an `sbatch` script (with `--gres=gpu:1`, `--mem`, `--cpus-per-task`,
-`--time` from history EWMA × 3, and your task's `--cmd` as body), submitting it via
-`sbatch -` (script piped through stdin so nothing lands on the node's filesystem), tracking
-liveness via `squeue`, and killing via `scancel`. Detection is per-node and cached for the
-process lifetime.
+scheduleurm defaults to its own LocalBackend placement even if a target node has
+`sbatch` and `squeue` installed. Slurm is opt-in: set
+`NODES["node"]["slurm_backend"] = "slurm"` for a real shared cluster, set
+`slurm_gpu_backend` / `slurm_cpu_backend` per resource bucket, or submit a task with
+explicit `--slurm-partition/account/qos` fields. In Slurm mode scheduleurm generates an
+`sbatch` script (with `--gres=gpu:1`, `--mem`, `--cpus-per-task`, `--time` from exact
+runtime history first, then history EWMA × 3, and your task's `--cmd` as body), submits it
+via stdin, tracks liveness via `squeue`, and kills via `scancel`.
 
 | Target node | What you get |
 |---|---|
-| Has slurm | scheduleurm generates sbatch, slurm handles cross-user contention + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
-| No slurm | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` (Phase 3.2 / 3.4) |
-| Mixed cluster | Per-node — node A can be slurm, node B can be ssh+nohup, scheduleurm routes correctly |
+| Default, including nodes that merely have slurm installed | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` |
+| Slurm opt-in node or explicit Slurm task | scheduleurm generates sbatch, slurm handles cross-user queueing + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
+| Mixed deployment | Per-node/per-task — node A can be Slurm opt-in, node B can be scheduleurm local, and existing `slurm_job_id` tasks keep being tracked by SlurmBackend |
 
 What scheduleurm keeps owning even on slurm nodes (because slurm doesn't): per-signature p80
 history estimation, automatic resume-from-checkpoint flag injection, cross-task `--ckpt-dir`
 conflict detection, env-deploy (docker/conda) wrapping, MCP/skill UI, auto-adoption of
 externally-launched processes.
 
-**Slurm nodes bypass scheduleurm's local capacity gate.** scheduleurm's normal `dispatch`
+**Slurm-routed tasks bypass scheduleurm's local capacity gate.** scheduleurm's normal `dispatch`
 runs `probe_node` and refuses placement when CPU/RAM/VRAM doesn't fit instantly — that's the
 right thing for `LocalBackend` (we ARE the placement decider). For slurm nodes it would be
 catastrophically wrong: the login node usually has no GPU, and busy clusters are exactly
-when slurm's queue earns its keep. So slurm-detected nodes short-circuit `pick_placement` —
-scheduleurm hands the task off via `sbatch` and slurm queues it. (Local nodes still get the
-instant-fit gate; if both local and slurm can take a task, local wins because it starts now.)
+when slurm's queue earns its keep. So opt-in Slurm routes short-circuit `pick_placement` —
+scheduleurm hands the task off via `sbatch` and slurm queues it. Default-local nodes still
+get the instant-fit gate; if both local and Slurm can take a task, local wins because it
+starts now.
 
 What slurm owns when present: queue ordering across users, cgroup-based memory/CPU caps,
 walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `sstat`/`sacct`
 isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.
+
+For small personal nodes where Slurm is installed but GPU sharing is desired, do nothing:
+the default is LocalBackend placement/VRAM packing. To force a real cluster through Slurm,
+set `NODES["node"]["slurm_backend"] = "slurm"` or only
+`NODES["node"]["slurm_gpu_backend"] = "slurm"` / `slurm_cpu_backend = "slurm"`.
+Tasks with explicit Slurm fields route only to Slurm-capable nodes; scheduleurm will not
+silently ignore those fields by launching them locally.
+If that node should pack despite `nvidia-smi` showing 100% util, also set
+`NODES["node"]["gpu_util_saturation_pct"] = None` so placement relies on
+VRAM/1⁄3/RAM/CPU checks rather than util.
 
 The class hierarchy:
 
@@ -284,12 +312,30 @@ resources, so a competing scheduler's `pick_placement` sees the
 launch-race window as occupied even before the host process shows up
 in `ps`/`nvidia-smi`.
 
-Not a slurm replacement — there's still no central daemon, no fairness
-across schedulers, no preemption across users. The claims layer just
-makes "two schedulers can share a non-slurm node without over-committing"
-work correctly. If you need the rest of slurm's feature set, install
-slurm; the layers compose (a node can have slurm AND `enable_claims`
-for a third scheduler that bypasses slurm's queue).
+The same shared file also carries an `intents` queue for launch admission:
+each claim attempt first registers a FIFO ticket, then may claim only if it
+does not delay an older intent that could run now. Smaller/disjoint work can
+still backfill behind an older task that is currently blocked by resources.
+Intent tickets have their own short TTL (`claim_intent_ttl_s`, default 180s)
+so a dead scheduler does not pin the queue. If an older intent waits past
+`claim_fifo_strict_after_s` (default 1800s), younger work that would consume
+that older task's future slot is blocked even when the older task cannot run
+right now; disjoint work can still backfill.
+
+The remote claim script also does a best-effort live resource recheck while
+holding the claims lock (`claim_live_check=True` by default): manual/non-
+scheduleurm CPU load, RAM pressure, and `nvidia-smi` GPU memory are treated as
+synthetic external claims. This closes the probe→claim race with outside users;
+if `/proc`/`nvidia-smi` is unavailable, it falls back to claims-only behavior.
+Use `scheduler claims [--node NODE]` to inspect both active claims and FIFO
+intents; `status`, `why`, and `tui` surface intent counts/head tickets too.
+
+Not a slurm replacement — there is no fairshare accounting, quota system, or
+preemption across users. The claims layer provides atomic over-commit
+prevention plus FIFO-with-backfill launch admission. If you need the rest of
+slurm's feature set, install slurm and opt that node into
+`slurm_backend="slurm"`; the layers compose (a node can have slurm installed
+AND `enable_claims` for scheduleurm-local launches that bypass slurm's queue).
 
 ## Architecture (one screen)
 
@@ -320,7 +366,7 @@ for a third scheduler that bypasses slurm's queue).
 **State separation:** the `skill/` dir contains code only. All runtime state lives in `~/.claude/scheduler/`. `install.sh` never touches state — re-running upgrades code only.
 
 **Key invariants** (all enforced + regression-tested):
-1. Same `--signature` cannot be in two `running`/`launching` slots simultaneously (race-guard at dispatch).
+1. Same run identity cannot be in two `running`/`launching` slots simultaneously; broad signatures can run in parallel when `cmd`/`cwd`/env/result identity differs; the same `--ckpt-dir` cannot be shared by active tasks unless explicitly overridden.
 2. Tasks killed externally with a usable checkpoint requeue with `--resume-flag` injected (never restart from step 0).
 3. Atomic state writes: tmp file → fsync → `os.replace` (no half-written queue.json after SIGKILL).
 4. `kill` always uses process group + signal escalation (SIGTERM → wait 10s → SIGKILL); docker tasks `docker stop` first.
@@ -343,16 +389,16 @@ Legacy single-value records (from before p80) auto-migrate: the existing value i
 
 | Phrase | Action |
 |---|---|
-| "跑这个" / "run this" | `submit` + `dispatch`; report node:GPU + log path + resume_from |
-| "跑这 N 个" / "run these N seeds" | submit all N with same `--signature` prefix; ONE `dispatch` |
-| "GPU 还空吗" / "status" | `status`; highlight GPUs under 1/3 used |
-| "重新分配" / "rebalance" | `dispatch` (watcher does this automatically every 60s) |
-| "取消 t0042" | queued: `cancel`. running: confirm + `cancel --force` |
-| "清空队列" / "clear queue" | `clear-queue` (dry-run) → `clear-queue --confirm` (running tasks NEVER touched) |
-| "看看 t0042" | `show t0042` |
-| "跑完通知我" | wrap `wait-for --signature 'X/*'` in `Bash run_in_background` |
-| "外面那个跑的也加进来" | watcher auto-adopts every 60s; manual `adopt` for edge cases |
-| "看看资源画像" | `history` |
+| "run this" / "submit this" / "launch this" | `submit` + `dispatch`; report node:GPU + log path + resume_from |
+| "run these N seeds" / "launch this sweep" / "kick off N seeds" | submit all N with same `--signature` prefix; ONE `dispatch` |
+| "GPU free?" / "status" / "what's running?" / "node status" / "show queue" | `status`; highlight GPUs under 1/3 used |
+| "rebalance" / "redispatch" / "reassign" | `dispatch` (watcher does this automatically every 60s) |
+| "cancel t0042" / "kill t0042" / "stop t0042" | queued: `cancel`. running: confirm + `cancel --force` |
+| "clear queue" / "wipe the queue" | `clear-queue` (dry-run) → `clear-queue --confirm` (running tasks NEVER touched) |
+| "show t0042" / "details on t0042" | `show t0042` |
+| "wake me when done" / "notify me when finished" | wrap `wait-for --signature 'X/*'` in `Bash run_in_background` |
+| "adopt the one running outside" / "take over an external job" | watcher auto-adopts every 60s; manual `adopt` for edge cases |
+| "show resource history" / "show usage profile" | `history` |
 
 ## Hard constraints (the design refuses to do these)
 

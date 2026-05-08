@@ -2992,10 +2992,14 @@ def test_backend_slurm_phase2_16_pending_throttle():
         {"id": "tH", "status": "queued", "node": "n1", "slurm_job_id": 7, "slurm_state": "PENDING"},
     ]}
     counts = sch._count_slurm_pending_per_node(state)
-    check("count: n1 = 3 (tA PENDING + tB CONFIGURING + tC just-submitted)",
-          counts.get("n1") == 3, diag=str(counts))
-    check("count: n2 = 1 (tD only — tF COMPLETING doesn't count)",
-          counts.get("n2") == 1, diag=str(counts))
+    # Phase 3.4.13: counter now returns split {cpu, gpu} per node. None of
+    # the test tasks above set est_vram_mb so they all bucket as "cpu".
+    n1 = counts.get("n1") or {}
+    n2 = counts.get("n2") or {}
+    check("count: n1 cpu=3 gpu=0 (tA PENDING + tB CONFIGURING + tC just-submitted)",
+          n1.get("cpu") == 3 and n1.get("gpu") == 0, diag=str(counts))
+    check("count: n2 cpu=1 gpu=0 (tD only — tF COMPLETING doesn't count)",
+          n2.get("cpu") == 1 and n2.get("gpu") == 0, diag=str(counts))
 
     # ---------- _slurm_max_pending_for_node: per-node override ----------
     saved_NODES = sch.NODES
@@ -3034,58 +3038,115 @@ def test_backend_slurm_phase2_16_pending_throttle():
                      "max_concurrent_running": None},
     }
     try:
-        # Both nodes alive, no GPUs probed (slurm decides)
+        # Both nodes alive, no GPUs probed (slurm decides). Phase 3.4.13:
+        # throttle now reads `slurm_pending_split` keyed by bucket (cpu/gpu);
+        # the bucket is determined by task.est_vram_mb. Test task has
+        # est_vram_mb=1000 → "gpu" bucket, so we set gpu pending.
         nodes = [
             {"name": "slurm-A", "alive": True, "gpus": [], "free_cpu": 0,
-             "free_ram_mb": 0, "loadavg": 0.0,
-             "running_count": 0, "slurm_pending_count": 1},  # at cap
+             "free_ram_mb": 0, "loadavg": 0.0, "running_count": 0,
+             "slurm_pending_split": {"cpu": 0, "gpu": 1}},  # gpu bucket at cap
             {"name": "slurm-B", "alive": True, "gpus": [], "free_cpu": 0,
-             "free_ram_mb": 0, "loadavg": 0.0,
-             "running_count": 0, "slurm_pending_count": 0},  # has slot
+             "free_ram_mb": 0, "loadavg": 0.0, "running_count": 0,
+             "slurm_pending_split": {"cpu": 0, "gpu": 0}},  # has slot
         ]
         task = {"id": "tnew", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
                 "signature": "TEST/throttle"}
         placement = sch.pick_placement(task, nodes)
-        check("slurm-A throttled (pending=1, cap=1) → slurm-B picked",
+        check("slurm-A gpu bucket throttled (gpu=1, cap=1) → slurm-B picked",
               placement is not None and placement[0] == "slurm-B",
               diag=f"placement={placement}")
 
-        # Both at cap → no placement
-        nodes[1]["slurm_pending_count"] = 1
+        # Both gpu buckets at cap → no placement
+        nodes[1]["slurm_pending_split"]["gpu"] = 1
         placement = sch.pick_placement(task, nodes)
-        check("both nodes at cap → no placement (task stays queued)",
+        check("both nodes' gpu bucket at cap → no placement",
               placement is None, diag=f"placement={placement}")
 
         # Both have 0 pending → first available picked
-        nodes[0]["slurm_pending_count"] = 0
-        nodes[1]["slurm_pending_count"] = 0
+        nodes[0]["slurm_pending_split"]["gpu"] = 0
+        nodes[1]["slurm_pending_split"]["gpu"] = 0
         placement = sch.pick_placement(task, nodes)
-        check("both nodes have 0 pending → some node picked",
+        check("both nodes have 0 gpu pending → some node picked",
               placement is not None, diag=f"placement={placement}")
 
-        # require_node forces a throttled node → still no placement (require trumps fallback,
-        # but throttle trumps require — slurm queue is full, scheduleurm holds the task)
-        nodes[0]["slurm_pending_count"] = 1
-        nodes[1]["slurm_pending_count"] = 0
+        # 3.4.13 P1 NEW: cpu task NOT throttled by gpu pending, and reverse.
+        nodes[0]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
+        nodes[1]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
+        task_cpu = {"id": "tcpu", "est_vram_mb": 0, "cpu_cores": 2, "ram_mb": 1000,
+                    "signature": "TEST/throttle"}
+        placement = sch.pick_placement(task_cpu, nodes)
+        check("3.4.13 P1: cpu-only task NOT blocked by gpu bucket being full",
+              placement is not None,
+              diag=f"placement={placement} (cpu task should fit; gpu pool full doesn't matter)")
+
+        nodes[0]["slurm_pending_split"] = {"cpu": 1, "gpu": 0}
+        nodes[1]["slurm_pending_split"] = {"cpu": 1, "gpu": 0}
+        placement = sch.pick_placement(task, nodes)  # est_vram_mb=1000 → gpu
+        check("3.4.13 P1: gpu task NOT blocked by cpu bucket being full",
+              placement is not None,
+              diag=f"placement={placement} (gpu task should fit; cpu pool full doesn't matter)")
+
+        # require_node forces a throttled node → still no placement.
+        nodes[0]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
+        nodes[1]["slurm_pending_split"] = {"cpu": 0, "gpu": 0}
         task_req = dict(task, require_node="slurm-A")
         placement = sch.pick_placement(task_req, nodes)
-        check("require_node + that node throttled → no placement (don't pile)",
+        check("require_node + that node's gpu bucket throttled → no placement",
               placement is None, diag=f"placement={placement}")
     finally:
         sch._BACKEND = saved_backend
         sch.NODES = saved_NODES
 
-    # ---------- Source guard: dispatch loop populates slurm_pending_count ----------
+    # ---------- Source guard: dispatch loop populates split ----------
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
-    check("_do_dispatch populates n['slurm_pending_count'] before placement loop",
-          'n["slurm_pending_count"] = slurm_pending_per_node' in src,
-          diag="dispatch must seed per-node pending count")
-    check("_do_dispatch bumps slurm_pending_count on each launch",
-          'n["slurm_pending_count"] = n.get("slurm_pending_count"' in src,
-          diag="post-launch bump missing — sequential dispatches in same cycle would over-pack")
-    check("_candidates_for_node consults the throttle",
-          "n.get(\"slurm_pending_count\", 0)" in src and "_slurm_max_pending_for_node" in src,
-          diag="throttle missing from pick_placement")
+    check("3.4.13: _do_dispatch populates n['slurm_pending_split'] before placement loop",
+          'n["slurm_pending_split"] = split' in src,
+          diag="dispatch must seed per-node split (cpu/gpu)")
+    check("3.4.13: _do_dispatch bumps the right bucket on each launch",
+          'split[bucket] = int(split.get(bucket) or 0) + 1' in src,
+          diag="post-launch bump missing — sequential dispatches would over-pack")
+    check("3.4.13: _candidates_for_node consults the bucket-keyed throttle",
+          'split.get(bucket)' in src and "_slurm_max_pending_for_node" in src,
+          diag="throttle must be bucket-aware")
+    check("3.4.13: _slurm_pending_bucket_for_task helper exists",
+          "def _slurm_pending_bucket_for_task" in src,
+          diag="bucket inference shared between counter and dispatch")
+
+    # 3.4.13 — bucket inference + mixed-state count + reason message
+    print("\n[Phase 3.4.13 extras] bucket helper + mixed-state count + reason text")
+    check("3.4.13 behavior: cpu task → 'cpu' bucket",
+          sch._slurm_pending_bucket_for_task({"est_vram_mb": 0}) == "cpu")
+    check("3.4.13 behavior: gpu task → 'gpu' bucket",
+          sch._slurm_pending_bucket_for_task({"est_vram_mb": 100}) == "gpu")
+    check("3.4.13 behavior: missing est_vram_mb → 'cpu' (default)",
+          sch._slurm_pending_bucket_for_task({}) == "cpu")
+
+    state_mixed = {"tasks": [
+        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1,
+         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu
+        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2,
+         "slurm_state": "PENDING", "est_vram_mb": 1500},   # gpu
+        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3,
+         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu
+        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4,
+         "slurm_state": "PENDING", "est_vram_mb": 4000},   # gpu only
+    ]}
+    counts_mixed = sch._count_slurm_pending_per_node(state_mixed)
+    check("3.4.13 behavior: n1 has cpu=2 gpu=1 (mixed bucket)",
+          counts_mixed.get("n1") == {"cpu": 2, "gpu": 1},
+          diag=str(counts_mixed))
+    check("3.4.13 behavior: n2 has cpu=0 gpu=1",
+          counts_mixed.get("n2") == {"cpu": 0, "gpu": 1},
+          diag=str(counts_mixed))
+
+    check("3.4.13: throttle reason surfaces both cpu and gpu pending counts",
+          "cpu {int(split.get('cpu') or 0)}/{cap}" in src
+          and "gpu {int(split.get('gpu') or 0)}/{cap}" in src,
+          diag="user must see why-throttled per-bucket so they understand routing")
+    check("3.4.13: cmd_why surfaces bucket-keyed throttle state",
+          "{bucket} bucket throttled" in src,
+          diag="diagnose which pool blocked the task")
 
 
 def test_phase3_0_9_slurm_pending_elapsed_zero():
@@ -4082,15 +4143,17 @@ def test_phase3_0_15_migrated_task_pins_to_staged_node():
     # exhaust its cap so _candidates_for_node(B) returns [] in the "B full" cases.
     sch._slurm_max_pending_for_node = lambda n: 1 if n == "B" else 999
 
+    # Phase 3.4.13: throttle reads slurm_pending_split keyed by bucket.
+    # Test tasks below have est_vram_mb=0 → "cpu" bucket.
     nodes_open = [
-        {"name": "A", "alive": True, "slurm_pending_count": 0},
-        {"name": "B", "alive": True, "slurm_pending_count": 0},
-        {"name": "C", "alive": True, "slurm_pending_count": 0},
+        {"name": "A", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
+        {"name": "B", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
+        {"name": "C", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
     ]
     nodes_b_full = [
-        {"name": "A", "alive": True, "slurm_pending_count": 0},
-        {"name": "B", "alive": True, "slurm_pending_count": 1},  # at cap → throttled
-        {"name": "C", "alive": True, "slurm_pending_count": 0},
+        {"name": "A", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
+        {"name": "B", "alive": True, "slurm_pending_split": {"cpu": 1, "gpu": 0}},  # cpu bucket at cap
+        {"name": "C", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
     ]
     try:
         # ---- Case A: staged_node=B, B available → picks B ----

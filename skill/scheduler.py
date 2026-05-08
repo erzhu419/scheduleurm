@@ -2422,10 +2422,19 @@ def pick_placement(task, nodes):
         # of OUR tasks pending — keeping the rest in scheduleurm's queue lets them spread
         # to whichever slurm node frees up next, instead of piling on one host.
         if not _BACKEND.requires_local_capacity_check(n["name"]):
-            pending = n.get("slurm_pending_count", 0)
+            # Phase 3.4.13 P1 fix: throttle by resource bucket, not total.
+            # CPU-only and GPU-using tasks request different slurm gres
+            # (no --gpus vs --gpus 1) so they have ZERO real conflict in
+            # slurm's scheduler. Pre-fix's single combined count meant a
+            # pending GPU training job would block a CPU-only eval task
+            # from joining the queue, even though slurm could trivially
+            # run them in parallel.
+            split = n.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
+            bucket = _slurm_pending_bucket_for_task(task)
+            pending = int(split.get(bucket) or 0)
             cap = _slurm_max_pending_for_node(n["name"])
             if pending >= cap:
-                return []  # throttled — let pending drain or another node pick up
+                return []  # throttled — let this bucket drain
             return [((9999,), n["name"], None)]
         node_info = NODES[n["name"]]
         ok, _why = _node_resources_ok(task, n, node_info)
@@ -4171,13 +4180,21 @@ _SLURM_PENDING_LIKE = frozenset({None, "", "PENDING", "CONFIGURING", "REQUEUED",
 
 
 def _count_slurm_pending_per_node(state: dict) -> dict:
-    """Phase 2.16: count OUR slurm-managed tasks that are PENDING (or just-submitted with
-    no slurm_state probed yet) per node. Used by pick_placement to throttle dispatch to
-    a slurm node that already has pending tasks waiting — better to hold them in
-    scheduleurm's own queue and dispatch to a node that can actually run NOW.
+    """Phase 2.16 + Phase 3.4.13: count OUR slurm-managed tasks that are
+    PENDING (or just-submitted with no slurm_state probed yet) per node,
+    SPLIT by resource type. Used by pick_placement to throttle dispatch
+    independently for CPU-only and GPU-using tasks: a CPU-only eval task
+    shouldn't be blocked by a pending GPU training job, since slurm itself
+    has no resource conflict between them (different gres requests).
 
-    The 'just-submitted' case (slurm_state=None right after sbatch) is treated as pending;
-    one watcher cycle (60s default) refreshes the state to PENDING/RUNNING/etc."""
+    Returns a dict mapping node_name → {"cpu": int, "gpu": int}. Both
+    keys always present; missing nodes default to {"cpu": 0, "gpu": 0}.
+    Resource type is inferred from `est_vram_mb`: > 0 → GPU, 0 → CPU.
+
+    The 'just-submitted' case (slurm_state=None right after sbatch) is
+    treated as pending; one watcher cycle (60s default) refreshes the
+    state to PENDING/RUNNING/etc.
+    """
     counts: dict = {}
     for t in state.get("tasks", []):
         if t.get("status") != "running":
@@ -4187,9 +4204,19 @@ def _count_slurm_pending_per_node(state: dict) -> dict:
         node = t.get("node")
         if not node:
             continue
-        if t.get("slurm_state") in _SLURM_PENDING_LIKE:
-            counts[node] = counts.get(node, 0) + 1
+        if t.get("slurm_state") not in _SLURM_PENDING_LIKE:
+            continue
+        bucket = "gpu" if int(t.get("est_vram_mb") or 0) > 0 else "cpu"
+        per_node = counts.setdefault(node, {"cpu": 0, "gpu": 0})
+        per_node[bucket] += 1
     return counts
+
+
+def _slurm_pending_bucket_for_task(task: dict) -> str:
+    """Return 'cpu' or 'gpu' to indicate which throttle pool this task
+    belongs to. Mirrors the bucket logic in _count_slurm_pending_per_node
+    so dispatch and accounting agree on the classification."""
+    return "gpu" if int(task.get("est_vram_mb") or 0) > 0 else "cpu"
 
 
 # Phase 3.0.3: load-balance migration tunables.
@@ -5775,7 +5802,13 @@ def _do_dispatch(state, nodes):
     slurm_pending_per_node = _count_slurm_pending_per_node(state)
     for n in nodes:
         n["running_count"] = running_per_node.get(n["name"], 0)
-        n["slurm_pending_count"] = slurm_pending_per_node.get(n["name"], 0)
+        # Phase 3.4.13 P1 fix: store split (cpu, gpu) on the node dict for
+        # pick_placement to consult. Keep the legacy `slurm_pending_count`
+        # field as the SUM (cpu + gpu) for backwards compat — surfaces in
+        # status output / show / `why` strings still expecting one number.
+        split = slurm_pending_per_node.get(n["name"]) or {"cpu": 0, "gpu": 0}
+        n["slurm_pending_split"] = split
+        n["slurm_pending_count"] = int(split.get("cpu", 0)) + int(split.get("gpu", 0))
     # Apply freed resources from preemption to the local probe view so the high-prio task
     # actually fits on this dispatch round (otherwise probe lags by 60s and high keeps waiting).
     for ev in preempted:
@@ -5883,10 +5916,20 @@ def _do_dispatch(state, nodes):
                 # If a slurm node is alive + not blocklisted but pick_placement still returned
                 # None, the only legitimate reason is require_node mismatch — surface that.
                 if not _BACKEND.requires_local_capacity_check(n["name"]):
-                    pending = n.get("slurm_pending_count", 0)
+                    # Phase 3.4.13 P1 fix: report the bucket the task would
+                    # have used, so the user sees `slurm(cpu 0/1, gpu 1/1
+                    # pending; throttled gpu)` instead of an opaque combined
+                    # number that obscures which pool is full.
+                    split = n.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
                     cap = _slurm_max_pending_for_node(n["name"])
+                    bucket = _slurm_pending_bucket_for_task(t)
+                    pending = int(split.get(bucket) or 0)
                     if pending >= cap:
-                        reasons.append(f"{n['name']}=slurm({pending}/{cap} pending; throttled)")
+                        reasons.append(
+                            f"{n['name']}=slurm("
+                            f"cpu {int(split.get('cpu') or 0)}/{cap}, "
+                            f"gpu {int(split.get('gpu') or 0)}/{cap} "
+                            f"pending; throttled {bucket})")
                     elif require and require != n["name"]:
                         reasons.append(f"{n['name']}=slurm(require!={require})")
                     else:
@@ -6133,10 +6176,17 @@ def _do_dispatch(state, nodes):
             n["free_cpu"] = max(0, n.get("free_cpu", 0) - t.get("cpu_cores", DEFAULT_CPU_CORES))
             n["free_ram_mb"] = max(0, n.get("free_ram_mb", 0) - t.get("ram_mb", DEFAULT_RAM_MB))
             n["running_count"] = n.get("running_count", 0) + 1  # for max_concurrent_running cap
-            # Phase 2.16: bump slurm pending count too so pick_placement in subsequent loop
-            # iterations sees this just-sbatched task and respects the per-node cap.
+            # Phase 2.16 + 3.4.13: bump slurm pending count too so pick_placement
+            # in subsequent loop iterations sees this just-sbatched task and
+            # respects the per-node cap. Increments the correct bucket
+            # (cpu/gpu) so a CPU-only sbatch doesn't fake-out the GPU pool's
+            # accounting and vice-versa.
             if _is_slurm_managed(t):
-                n["slurm_pending_count"] = n.get("slurm_pending_count", 0) + 1
+                bucket = _slurm_pending_bucket_for_task(t)
+                split = n.setdefault("slurm_pending_split", {"cpu": 0, "gpu": 0})
+                split[bucket] = int(split.get(bucket) or 0) + 1
+                n["slurm_pending_count"] = (
+                    int(split.get("cpu") or 0) + int(split.get("gpu") or 0))
             if t.get("gpu_idx") is None: continue  # CPU-only task
             for g in n["gpus"]:
                 if g["idx"] != t["gpu_idx"]: continue
@@ -8628,11 +8678,18 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
     soft_blocked = name in _launch_failed_nodes_for_task(task)
     soft_note = "  (soft-blocked: prior launch_failed; may retry as last resort)" if soft_blocked else ""
     if not _BACKEND.requires_local_capacity_check(name):
-        # slurm-routed node: gres handles GPU pinning; only throttle matters here
-        pending = node_state.get("slurm_pending_count", 0)
+        # slurm-routed node: gres handles GPU pinning; only throttle matters here.
+        # Phase 3.4.13 P1: report split throttle per bucket so the user can see
+        # cpu-only tasks aren't blocked by gpu pending and vice-versa.
+        split = node_state.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
         cap = _slurm_max_pending_for_node(name)
+        bucket = _slurm_pending_bucket_for_task(task)
+        pending = int(split.get(bucket) or 0)
         if pending >= cap:
-            return f"slurm: throttled ({pending}/{cap} of our tasks pending){soft_note}"
+            return (f"slurm: {bucket} bucket throttled "
+                    f"({pending}/{cap} pending; "
+                    f"cpu={int(split.get('cpu') or 0)}, gpu={int(split.get('gpu') or 0)})"
+                    f"{soft_note}")
         return f"slurm: would route here (gres handles GPU pinning){soft_note}"
     node_info = NODES[name]
     ok, why = _node_resources_ok(task, node_state, node_info)

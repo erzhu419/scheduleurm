@@ -3148,6 +3148,78 @@ def test_backend_slurm_phase2_16_pending_throttle():
           "{bucket} bucket throttled" in src,
           diag="diagnose which pool blocked the task")
 
+    # ============================================================
+    # Phase 3.4.14 P1 fix — force_backend NODES override
+    # ============================================================
+    print("\n[Phase 3.4.14] force_backend NODES override (bypass slurm for multi-pack)")
+
+    # ---- Source guards ----
+    fn_kind = src.split("def _kind_for")[1].split("\ndef ")[0]
+    check("3.4.14: _kind_for honors NODES['<node>']['force_backend'] before probe",
+          'forced = (NODES.get(node, {}) or {}).get("force_backend")' in fn_kind,
+          diag="explicit override must beat ssh probe")
+    check("3.4.14: forced override is cached so subsequent calls skip probe",
+          'self._cache[node] = forced' in fn_kind,
+          diag="probe is ~5s ssh; cache the explicit choice immediately")
+    check("3.4.14: forced value validated against {'local', 'slurm'}",
+          'forced in ("local", "slurm")' in fn_kind,
+          diag="reject typos / invalid values without falling through silently")
+
+    # ---- Production NODES knob: jtl110gpu2 forced to local ----
+    check("3.4.14: jtl110gpu2 has force_backend='local' in NODES config",
+          '"force_backend": "local"' in src
+          and '"jtl110gpu2"' in src,
+          diag="multi-pack on jtl110gpu2 needs LocalBackend (slurm partition is OverSubscribe=NO)")
+
+    # ---- Behavioral: forced override beats probe even when slurm is available ----
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    try:
+        sch.NODES = {
+            "force-local": {"host": "h-fl", "cpu_cores": 12, "ram_mb": 32000,
+                             "force_backend": "local"},
+            "force-slurm": {"host": "h-fs", "cpu_cores": 12, "ram_mb": 32000,
+                             "force_backend": "slurm"},
+            "no-pin":      {"host": "h-np", "cpu_cores": 12, "ram_mb": 32000},
+        }
+        # Sentinel run_on: any call would mean a probe leaked. Forced
+        # nodes must not trigger it.
+        probe_calls = []
+        def fake_run(node, cmd, **kw):
+            probe_calls.append((node, cmd))
+            return (0, "NO_SLURM\n", "")
+        sch.run_on = fake_run
+
+        hb = sch.HybridBackend()
+        check("3.4.14 behavior: force_backend='local' returns 'local' without probe",
+              hb._kind_for("force-local") == "local",
+              diag="force_backend should short-circuit before ssh")
+        check("3.4.14 behavior: force_backend='slurm' returns 'slurm' without probe",
+              hb._kind_for("force-slurm") == "slurm")
+        check("3.4.14 behavior: forced nodes did not trigger any ssh probe",
+              not any(c[0] in ("force-local", "force-slurm") for c in probe_calls),
+              diag=f"probe_calls={probe_calls}")
+        check("3.4.14 behavior: forced choice is cached after first call",
+              hb._cache.get("force-local") == "local"
+              and hb._cache.get("force-slurm") == "slurm")
+
+        kind_np = hb._kind_for("no-pin")
+        check("3.4.14 behavior: nodes without force_backend still probe normally",
+              kind_np == "local"
+              and any(c[0] == "no-pin" for c in probe_calls),
+              diag=f"kind={kind_np} probe_calls={probe_calls}")
+
+        # Invalid value (typo) should fall through to probe rather than
+        # silently routing to a wrong backend.
+        sch.NODES["typo-node"] = {"host": "h-typo", "force_backend": "loca1"}
+        hb2 = sch.HybridBackend()
+        check("3.4.14 behavior: invalid force_backend value falls through to probe",
+              hb2._kind_for("typo-node") == "local",
+              diag="typo'd value must not silently force a backend")
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+
 
 def test_phase3_0_9_slurm_pending_elapsed_zero():
     """Phase 3.0.9 P2 fix: slurm-PENDING tasks must NOT decay their ETA (or shrink

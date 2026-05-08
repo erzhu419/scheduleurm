@@ -69,7 +69,15 @@ NODES = {
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
     "local":      {"host": None,         "cpu_cores": 12, "ram_mb": 56 * 1024,  "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
     "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
-    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
+    # Phase 3.4.14: force_backend="local" so HybridBackend skips slurm even
+    # though sbatch is installed. Slurm partition has OverSubscribe=NO and no
+    # GPU shards, so `--gres=gpu:1` allocates one whole GPU per job → at most
+    # 2 concurrent jobs on a 2-GPU node. LocalBackend with scheduleurm's 1/3
+    # packing rule lets us run 2-3 jobs per GPU on the same hardware (matches
+    # jtl110gpu, which has no slurm). In-flight slurm jobs continue under
+    # SlurmBackend (routing keys off task.slurm_job_id, not the per-node
+    # cache), so the switch is safe to apply mid-flight.
+    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "force_backend": "local"},
 }
 
 STATE_DIR = Path.home() / ".claude" / "scheduler"
@@ -3661,7 +3669,20 @@ class HybridBackend(Backend):
         Failure mode for THIS call: returns 'local' (the safe-loud default — at least
         the launch path will surface an error if slurm IS expected). One cycle of
         fallback is the worst case; next dispatch cycle re-probes and self-heals.
+
+        Phase 3.4.14 P1: NODES["<node>"]["force_backend"] = "local" | "slurm"
+        beats auto-detect. Use case: a node has slurm installed but its slurm
+        partition runs `--gres=gpu:1` exclusive (no oversubscribe / no shards),
+        so slurm allocates one whole GPU per job and scheduleurm's 1/3 packing
+        rule never applies. Forcing LocalBackend lets scheduleurm manage GPU
+        placement directly via ssh + manual CUDA_VISIBLE_DEVICES, matching
+        the multi-pack behavior of slurm-less peer nodes (e.g. jtl110gpu).
         """
+        # Phase 3.4.14: explicit per-node override beats probe.
+        forced = (NODES.get(node, {}) or {}).get("force_backend")
+        if forced in ("local", "slurm"):
+            self._cache[node] = forced
+            return forced
         if node in self._cache:
             return self._cache[node]
         # Probe must ALWAYS emit a marker so we can distinguish:

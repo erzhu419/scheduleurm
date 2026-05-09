@@ -1088,6 +1088,123 @@ def test_diagnose_mid_training_kill():
           diag=f"reason={diag.get('reason')!r}")
     _os.unlink(logp)
 
+    # ============================================================
+    # Phase 3.4.16 P1 fix — claim op upsert + dedup self-heal
+    # ============================================================
+    # Real-world bug: jtl110gpu2:GPU1 showed 2140MB used while nvidia-smi
+    # reported 10MB. Root cause: claim() was a blind fresh.append() — when
+    # a task got re-launched / migrated / heal-resubmitted, a NEW claim
+    # record was added without removing the prior (scheduler_id, task_id)
+    # entry that was now stale. After multiple cycles, claims.json had
+    # 9 entries for ~5 unique tasks, with 2 stale GPU1 records (1104+1036MB)
+    # for tasks that had since moved to GPU0. Fix:
+    #   (a) claim op is now upsert — removes prior records for same
+    #       (sid, tid) before appending, making the operation idempotent
+    #   (b) dedup_claims() runs on every load to self-heal pre-fix files
+    print("  [3.4.16] claim op upsert + dedup_claims self-heal")
+
+    src = open(sch.__file__).read()
+    check("3.4.16: dedup_claims helper defined in remote script",
+          "def dedup_claims(claims):" in src,
+          diag="must run on every load to self-heal legacy duplicates")
+    check("3.4.16: main() calls dedup_claims after gc_claims",
+          "fresh = dedup_claims(fresh)" in src,
+          diag="dedup must precede capacity_conflicts so phantom claims don't gate placement")
+    check("3.4.16: claim op upserts (removes prior key entry before append)",
+          "fresh = [c for c in fresh if record_key(c) != key]" in src,
+          diag="without this, re-launch piles up duplicate records on different gpu_idx")
+
+    # Behavioral: dedup_claims keeps latest by claimed_at
+    # Use the dedup function from the embedded remote script via exec.
+    ns = {}
+    # Extract the script and exec into a namespace
+    exec(compile(sch._CLAIMS_REMOTE_SCRIPT, "<remote_script>", "exec"), ns)
+    dedup = ns["dedup_claims"]
+
+    # Three records for same (sid, tid), different gpu_idx + claimed_at
+    claims = [
+        {"scheduler_id": "S", "task_id": "tA", "gpu_idx": 1, "vram_mb": 1000, "claimed_at": 100.0},
+        {"scheduler_id": "S", "task_id": "tA", "gpu_idx": 0, "vram_mb": 800, "claimed_at": 200.0},  # latest
+        {"scheduler_id": "S", "task_id": "tA", "gpu_idx": 1, "vram_mb": 1100, "claimed_at": 150.0},
+        {"scheduler_id": "S", "task_id": "tB", "gpu_idx": 0, "vram_mb": 500, "claimed_at": 50.0},
+    ]
+    out = dedup(claims)
+    check("3.4.16 behavior: dedup keeps 1 record per (sid, tid)",
+          len(out) == 2, diag=f"out len={len(out)}: {out}")
+    tA = next((c for c in out if c["task_id"] == "tA"), None)
+    check("3.4.16 behavior: dedup picks latest by claimed_at",
+          tA is not None and tA["claimed_at"] == 200.0 and tA["gpu_idx"] == 0,
+          diag=f"got tA={tA}")
+
+    # Different scheduler_id with same task_id are NOT duplicates (cross-scheduler)
+    cross = dedup([
+        {"scheduler_id": "S1", "task_id": "tX", "gpu_idx": 0, "vram_mb": 100, "claimed_at": 1.0},
+        {"scheduler_id": "S2", "task_id": "tX", "gpu_idx": 0, "vram_mb": 200, "claimed_at": 2.0},
+    ])
+    check("3.4.16 behavior: different scheduler_id, same task_id → both kept",
+          len(cross) == 2, diag=str(cross))
+
+    # Behavioral: claim op upsert — same (sid, tid) on different gpu replaces prior
+    # Run the embedded script via subprocess against a temp file.
+    import tempfile as _tf, subprocess as _sp, json as _json, os
+    with _tf.TemporaryDirectory() as td:
+        # Patch the remote script to use a tmp claims path so we don't touch
+        # the real cluster file.
+        script = sch._CLAIMS_REMOTE_SCRIPT.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        path = os.path.join(td, "_claims.py")
+        with open(path, "w") as f:
+            f.write(script)
+        cf = os.path.join(td, "claims.json")
+        with open(cf, "w") as fh:
+            fh.write('{"version":1,"claims":[]}')
+
+        def call(op, payload, capacity=None):
+            r = _sp.run(["python3", path, op,
+                         _json.dumps(payload), _json.dumps(capacity or {})],
+                        capture_output=True, text=True, timeout=10)
+            return _json.loads(r.stdout.strip().splitlines()[-1])
+
+        cap = {"cpu_cores": 12, "ram_mb": 100000,
+               "gpu_vram_mb": {"0": 12000, "1": 12000},
+               "max_vram_per_task": None, "vram_margin_mb": 0,
+               "third_pack_rule": False, "default_vram_mb": 512}
+        now = time.time()
+
+        # First claim on GPU 1
+        r1 = call("claim", {
+            "owner": "u", "scheduler_id": "S", "task_id": "tUp",
+            "gpu_idx": 1, "vram_mb": 1000, "cpu_cores": 1, "ram_mb": 1000,
+            "claimed_at": now, "expires_at": now + 3600, "pid": 999,
+        }, cap)
+        check("3.4.16 behavior: first claim ok",
+              r1.get("ok") is True, diag=str(r1))
+
+        # Re-claim same task on GPU 0 (simulating relaunch / migration)
+        r2 = call("claim", {
+            "owner": "u", "scheduler_id": "S", "task_id": "tUp",
+            "gpu_idx": 0, "vram_mb": 800, "cpu_cores": 1, "ram_mb": 1000,
+            "claimed_at": now + 10, "expires_at": now + 3600, "pid": 1001,
+        }, cap)
+        check("3.4.16 behavior: re-claim same task different GPU → ok (upsert, not blocked)",
+              r2.get("ok") is True, diag=str(r2))
+
+        # File should now have ONE claim for tUp on GPU 0 (the new one)
+        r3 = call("list", {})
+        tUp_claims = [c for c in (r3.get("claims") or []) if c.get("task_id") == "tUp"]
+        check("3.4.16 behavior: post-upsert file has exactly 1 record for tUp",
+              len(tUp_claims) == 1, diag=str(tUp_claims))
+        check("3.4.16 behavior: surviving claim is the LATEST (gpu_idx=0, vram=800MB)",
+              len(tUp_claims) == 1
+              and tUp_claims[0].get("gpu_idx") == 0
+              and tUp_claims[0].get("vram_mb") == 800,
+              diag=str(tUp_claims))
+
 
 def test_find_resume_extension_filter():
     """Bug t1422: find_resume's default glob `*` matched train_log.csv, which scheduler then

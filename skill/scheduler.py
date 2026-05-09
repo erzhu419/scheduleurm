@@ -397,6 +397,37 @@ def is_stale(c, now):
 def gc_claims(claims, now):
     return [c for c in claims if not is_stale(c, now)]
 
+def dedup_claims(claims):
+    """Phase 3.4.16 P1 fix: prior `claim` op blindly appended a new record
+    without removing existing (scheduler_id, task_id) entries. So re-launch /
+    migration / heal-resubmit produced multiple claim records for the same
+    task — inflating apparent VRAM usage on whichever GPUs the previous
+    attempts targeted (real-world incident: jtl110gpu2:GPU1 showed 2140MB
+    used while nvidia-smi reported 10MB; 2 stale claims for tasks that had
+    since moved to GPU0 had never been cleared).
+
+    `claim` op is now upsert (see remote-script main()). This helper does
+    the equivalent on every load so that pre-fix duplicate records still
+    sitting in claims.json self-heal on the next op. Keep the LATEST
+    record per (scheduler_id, task_id) by claimed_at; older duplicates
+    are dropped.
+    """
+    by_key = {}
+    for c in claims:
+        key = (c.get("scheduler_id"), c.get("task_id"))
+        prev = by_key.get(key)
+        if prev is None:
+            by_key[key] = c
+            continue
+        try:
+            cur_ts = float(c.get("claimed_at") or 0)
+            prev_ts = float(prev.get("claimed_at") or 0)
+        except (TypeError, ValueError):
+            cur_ts = prev_ts = 0
+        if cur_ts > prev_ts:
+            by_key[key] = c
+    return list(by_key.values())
+
 def record_key(c):
     return (c.get("scheduler_id"), c.get("task_id"))
 
@@ -616,6 +647,10 @@ def main():
     intents = data.get("intents", [])
     now = time.time()
     fresh = gc_claims(claims, now)
+    # Phase 3.4.16 P1 fix: self-heal pre-fix duplicate (scheduler_id, task_id)
+    # records left over from earlier claim() that didn't upsert. See
+    # dedup_claims docstring for the bug + repro.
+    fresh = dedup_claims(fresh)
     fresh_intents = gc_intents(intents, now)
     if op == "claim":
         fresh_intents = upsert_intent(fresh_intents, payload, now)
@@ -675,6 +710,14 @@ def main():
                               "claims_seen": len(fresh),
                               "external_claims_seen": len(external)}))
             return
+        # Phase 3.4.16 P1 fix: claim is now UPSERT by (scheduler_id, task_id).
+        # Pre-fix this was a blind append, which produced duplicate records
+        # across re-launch / migration / heal-resubmit (each adding a new
+        # entry, none clearing the prior one). Result: phantom VRAM usage
+        # on stale GPU indices that the task had since moved away from.
+        # Removing all prior records for the same (sid, tid) before the
+        # append makes claim() idempotent and migration-safe.
+        fresh = [c for c in fresh if record_key(c) != key]
         fresh.append(payload)
         data["claims"] = fresh
         data["intents"] = [i for i in fresh_intents if record_key(i) != key]

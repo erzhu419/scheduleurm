@@ -1020,6 +1020,75 @@ def test_diagnose_mid_training_kill():
           diag.get("is_crash") is False, diag=str(diag.get("reason"))[:100])
     _os.unlink(logp)
 
+    # ============================================================
+    # Phase 3.4.15 P0 fix — full-log scan for success markers
+    # ============================================================
+    # Real-world bug: H2Oplus WSRL prints "[INFO] Training complete!" then
+    # wandb dumps ~5KB of metrics + "Synced 5 W&B file(s)" before exit.
+    # Tail (last 4096 bytes) captured only the wandb dump, so the
+    # success marker was missed → 18 successful runs misclassified as
+    # `failed` → cascade of pointless heal retries (9× s42/s123/s789).
+    # Fix: complement tail scan with whole-log substring scan via the
+    # new _scan_full_log_for_success() helper.
+    print("  [3.4.15] full-log success scan when verbose tail buries the marker")
+
+    src = open(sch.__file__).read()
+    check("3.4.15: _scan_full_log_for_success helper defined",
+          "def _scan_full_log_for_success" in src,
+          diag="must scan whole log, not just tail")
+    check("3.4.15: _diagnose_terminal calls full-log scan when tail miss + log_trusted",
+          "full_log_success = _scan_full_log_for_success(task)" in src,
+          diag="union with tail-based success_matched so verbose post-train flush doesn't bury the marker")
+    check("3.4.15: helper uses substring match (not regex) so SUCCESS_PATTERNS like '[Done]' work",
+          'p in text' in src.split("def _scan_full_log_for_success")[1].split("\ndef ")[0]
+          or '-F ' in src.split("def _scan_full_log_for_success")[1].split("\ndef ")[0],
+          diag="grep -F or 'in' check; both bypass regex special chars in patterns")
+
+    # Behavioral: log with success marker followed by 8KB of post-train
+    # noise — tail captures only the noise but full-log scan finds the
+    # marker. Without 3.4.15 this was a false-positive crash.
+    epoch_lines = [f"[Epoch {i:3d}/200] loss=0.5 t={i*30}s" for i in range(0, 200, 10)]
+    body = epoch_lines + [
+        "[Epoch 200/200] avg_return=-9486 trunc=0",
+        "[INFO] Training complete!  CSV log: /path/to/csv  (105000 steps)",
+        # Now ~8KB of wandb verbose dump that pushes the marker out of tail
+        "wandb: \\u2728 Run summary:",
+    ] + [f"wandb:                  metric_{i} {i*0.1234567:.5f}" for i in range(150)] + [
+        "wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s)",
+        "wandb: Find logs at: ./experiment_output/run_xxx/wandb/run-20260509_abc/logs",
+    ]
+    task, logp = make_task(body, lifetime=6000, peak_vram=850)
+    # Confirm the tail of the log indeed misses the success marker
+    log_size = _os.path.getsize(logp)
+    with open(logp, "rb") as fh:
+        fh.seek(max(0, log_size - 4096))
+        tail_only = fh.read().decode("utf-8", errors="replace")
+    check("3.4.15 setup: tail (4KB) does NOT contain 'Training complete' (verbose flush buries it)",
+          "Training complete" not in tail_only,
+          diag=f"log_size={log_size}; tail_only ends with: ...{tail_only[-200:]!r}")
+    diag = sch._diagnose_terminal(task)
+    check("3.4.15: success marker outside tail window → still classified is_crash=False",
+          diag.get("is_crash") is False,
+          diag=f"reason={diag.get('reason')!r}  marker={diag.get('success_marker')!r}")
+    check("3.4.15: success_marker field populated by full-log scan",
+          diag.get("success_marker") is not None
+          and "complete" in (diag.get("success_marker") or "").lower(),
+          diag=str(diag.get("success_marker")))
+    _os.unlink(logp)
+
+    # Edge: no success marker ANYWHERE in the log → still crash (existing rule unchanged).
+    body_nofin = [f"[Epoch {i:3d}/200] loss=0.5 t={i*30}s" for i in range(0, 80, 10)]
+    body_nofin += ["wandb: Run terminated"] + [
+        f"wandb:  metric_{i} {i:.3f}" for i in range(150)]
+    task, logp = make_task(body_nofin, lifetime=6000, peak_vram=850)
+    diag = sch._diagnose_terminal(task)
+    check("3.4.15: no success marker anywhere → still is_crash=True (existing rule)",
+          diag.get("is_crash") is True
+          and diag.get("success_marker") is None,
+          diag=f"reason={diag.get('reason')!r}")
+    _os.unlink(logp)
+
+
 def test_find_resume_extension_filter():
     """Bug t1422: find_resume's default glob `*` matched train_log.csv, which scheduler then
     injected as --resume_from → torch.load(csv) raised EOFError. Now find_resume filters

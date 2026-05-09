@@ -1880,6 +1880,80 @@ def _fetch_log_tail(task) -> tuple[str, int]:
     return ("", 0)
 
 
+def _scan_full_log_for_success(task) -> list:
+    """Phase 3.4.15 P0 fix: scan the ENTIRE log file for SUCCESS_PATTERNS,
+    not just the 4KB tail.
+
+    Why this exists: `_diagnose_terminal`'s tail-only scan misses the
+    success marker when verbose post-train output (wandb sync, mlflow
+    flush, lightning trainer summary, etc.) writes more than `tail-c
+    4096` bytes AFTER the training script's "Training complete" line.
+    Real-world incident: H2Oplus WSRL training prints "Training complete!"
+    then wandb dumps ~5KB of metrics + "Synced 5 W&B file(s)" before
+    process exit. Tail captured only wandb's verbose section → success
+    marker missed → 18 successful runs misclassified as `failed` →
+    cascade of pointless heal retries.
+
+    Returns the list of matched SUCCESS_PATTERNS. Empty list = no
+    success marker anywhere in the log (or we couldn't read the log).
+
+    Cheap: one grep pass per terminal task. For multi-MB logs the cost
+    is one ssh + linear file scan, ~tens of ms; happens at most once
+    per task lifetime.
+    """
+    log_path = task.get("log_path")
+    if not log_path or task.get("auto_adopted"):
+        return []
+    node = task.get("node")
+    try:
+        if node and NODES.get(node, {}).get("host") is None:
+            # Local: stream-scan the whole file in 256KB chunks. Avoids
+            # holding a multi-MB log in RAM if the run had a huge wandb /
+            # tensorboard verbose tail. First-match wins per pattern; we
+            # return ALL patterns observed (most logs hit only one).
+            lp = Path(log_path)
+            if not lp.exists():
+                return []
+            seen = set()
+            with open(lp, "rb") as f:
+                buf = b""
+                while True:
+                    chunk = f.read(262144)  # 256KB
+                    if not chunk:
+                        break
+                    buf = buf[-256:] + chunk  # carry-over for cross-boundary matches
+                    text = buf.decode("utf-8", errors="replace")
+                    for p in SUCCESS_PATTERNS:
+                        if p not in seen and p in text:
+                            seen.add(p)
+                    if len(seen) == len(SUCCESS_PATTERNS):
+                        break  # all patterns found; stop early
+            return list(seen)
+        elif node:
+            # Remote: one grep -F over ssh. -F = literal strings (no regex
+            # surprises in patterns like "Saved: " or "[Done]"). -m 1 stops
+            # at first match per pattern alternative — but grep with multiple
+            # -e treats them as OR, so -m 1 stops at first overall match
+            # (sufficient: we just need to know if ANY success pattern
+            # exists in the file). Output is the matched line; we re-scan
+            # it locally to identify which pattern(s) hit.
+            grep_es = " ".join(f"-e {shlex.quote(p)}" for p in SUCCESS_PATTERNS)
+            rc, out, _ = run_on(
+                node,
+                f"grep -F -m 1 {grep_es} {shlex.quote(log_path)} 2>/dev/null || true",
+                timeout=15, check=False,
+            )
+            if rc != 0 or not out:
+                return []
+            matched_text = out.strip()
+            if not matched_text:
+                return []
+            return [p for p in SUCCESS_PATTERNS if p in matched_text]
+    except Exception:
+        return []
+    return []
+
+
 def _scan_completed_log_for_crash(task) -> tuple[bool, str]:
     """Phase 3.0.30 P2: lightweight crash-pattern scan for slurm COMPLETED.
 
@@ -1986,6 +2060,19 @@ def _diagnose_terminal(task):
         log_trusted = (log_size > 0)
     err_matched = [p for p in CRASH_PATTERNS if p in tail_text]
     success_matched = [p for p in SUCCESS_PATTERNS if p in tail_text]
+    # Phase 3.4.15 P0 fix: complement tail scan with whole-log scan.
+    # Verbose post-train flush (wandb / mlflow / lightning summary etc.)
+    # commonly writes 4-10KB after the script's success marker, pushing
+    # the marker out of the 4KB tail window. Without this, e.g. H2Oplus
+    # WSRL prints "Training complete!" then wandb dumps ~5KB and exits
+    # — tail caught only the wandb section, scheduler false-classified
+    # 18 successful runs as `failed`. Whole-log grep is one ssh round-
+    # trip per terminal task; cheap relative to the cost of mis-routing
+    # a successful run through requeue + heal + redundant retry.
+    if log_trusted and not success_matched:
+        full_log_success = _scan_full_log_for_success(task)
+        if full_log_success:
+            success_matched = full_log_success
     reasons = []
     is_crash = False
     # Decision tree (ordered):

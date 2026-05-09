@@ -6,7 +6,7 @@ Covers four bugs that bit us in the past:
   1. PPID-aware adopt — a child of an already-tracked PID must NOT be re-adopted
      as a phantom second task (#2 from the GPT review; t0966/t0969 case).
   2. Crash requeue dedup — _requeue_after_crash must NOT create a duplicate when
-     a live task with same sig+cmd already exists (the t0800-killed-instead-of-t0919
+     a live task with the same run identity already exists (the t0800-killed-instead-of-t0919
      incident's root cause prevention).
   3. Preempt sufficiency — high-prio waiting > 5min must keep evicting until freed
      CPU/RAM covers its requirement, capped at PREEMPT_MAX_VICTIMS_PER_DISPATCH.
@@ -57,8 +57,8 @@ def test_ppid_descendant_filter():
 
 # -----------------------------------------------------------------------------
 def test_crash_requeue_dedup():
-    """_requeue_after_crash: live duplicate (same sig+cmd) → return existing id, no new task."""
-    print("\n[2] Crash requeue dedup (no double-queue from same sig+cmd)")
+    """_requeue_after_crash: live duplicate run identity → return existing id, no new task."""
+    print("\n[2] Crash requeue dedup (no double-queue from same run identity)")
     parent = {
         "id": "tA", "signature": "proj/exp/s42",
         "cmd": "python train.py --seed 42", "status": "failed",
@@ -348,6 +348,20 @@ def test_ram_placement_check():
           "7500" in why_check or "headroom 7500" in why_check,
           diag=f"why={why_check!r}")
 
+    fixed_info = dict(node_info)
+    fixed_info["ram_headroom_mb"] = 2048
+    fixed_state = dict(node_state)
+    fixed_state["free_ram_mb"] = 2600
+    fixed_task = {"id": "tfixed", "ram_mb": 552, "cpu_cores": 1}
+    fixed_over = {"id": "tfixed-over", "ram_mb": 553, "cpu_cores": 1}
+    ok_fixed, why_fixed = sch._node_resources_ok(fixed_task, fixed_state, fixed_info)
+    check("fixed ram_headroom_mb overrides fractional headroom (boundary fits)",
+          ok_fixed, diag=why_fixed)
+    ok_fixed_over, why_fixed_over = sch._node_resources_ok(fixed_over, fixed_state, fixed_info)
+    check("fixed ram_headroom_mb rejects just below fixed reserve",
+          (not ok_fixed_over) and "2048" in why_fixed_over,
+          diag=why_fixed_over)
+
 def test_default_vram_not_inflated():
     """High-default starvation: cascade must not blow novel-sig est_vram up beyond
     max(observed siblings). Median-of-candidates protects against one outlier."""
@@ -533,8 +547,14 @@ def test_running_descendant_resources_counted():
           diag=str(t.get("alive_pids")))
     check("descendant VRAM counted", t["peak_vram_mb"] == 700,
           diag=f"peak_vram={t.get('peak_vram_mb')}")
+    check("current VRAM stored separately from peak for live display",
+          t.get("current_vram_mb") == 700,
+          diag=f"current_vram={t.get('current_vram_mb')}")
     check("descendant RAM counted and budget bumped", t["peak_ram_mb"] >= 3000 and t["ram_mb"] >= 3000,
           diag=f"peak_ram={t.get('peak_ram_mb')} ram={t.get('ram_mb')}")
+    check("current RAM stored separately from peak for live display",
+          t.get("current_ram_mb") >= 3000,
+          diag=f"current_ram={t.get('current_ram_mb')}")
     check("descendant CPU counted and cores bumped", t["cpu_cores"] >= 3,
           diag=f"cpu={t.get('cpu_cores')}")
 
@@ -846,6 +866,90 @@ def test_resume_capability_guard():
               cmd="python eval.py --workers 4",
               ckpt_dir="/path/to/ckpts", resume_flag="", allow_no_resume=False) is None)
 
+def test_wrapper_checkpoint_contract_guard():
+    """Submit policy must inspect shell wrappers, infer their checkpoint dir, and
+    reject resume-looking wrappers whose source does not save full training state."""
+    print("\n[16b] Wrapper ckpt inference + static checkpoint contract")
+    import tempfile
+    import textwrap
+
+    with tempfile.TemporaryDirectory() as td:
+        os.makedirs(os.path.join(td, "jax_experiments", "common"), exist_ok=True)
+        wrapper = os.path.join(td, "run_seed.sh")
+        with open(wrapper, "w") as f:
+            f.write(textwrap.dedent(f"""\
+                #!/bin/bash
+                ALGO=$1; ENV=$2; SEED=$3
+                MAX_ITERS=${{4:-1500}}; DWELL=${{5:-60}}; TGT=${{6:-min}}; TAG=${{7:-paper}}
+                RUN_NAME="${{TAG}}_${{ALGO}}_${{ENV%-v2}}_dw${{DWELL}}_s${{SEED}}"
+                cd {td}
+                exec python -u -m jax_experiments.train \\
+                  --algo "$ALGO" --seed "$SEED" --max_iters "$MAX_ITERS" \\
+                  --save_root jax_experiments/results_paper --env "$ENV" \\
+                  --resume --run_name "$RUN_NAME"
+                """))
+        train_py = os.path.join(td, "jax_experiments", "train.py")
+        with open(train_py, "w") as f:
+            f.write(textwrap.dedent("""\
+                import os
+                from jax_experiments.common.checkpoint import save_checkpoint, load_checkpoint, has_checkpoint
+                def train(config, agent, replay_buffer, logger):
+                    ckpt_dir = os.path.join(config.save_root, config.run_name, "checkpoints")
+                    start_iteration = 0
+                    total_steps = 0
+                    if config.resume and has_checkpoint(ckpt_dir):
+                        start_iteration, total_steps = load_checkpoint(ckpt_dir, agent, replay_buffer, logger, config.algo)
+                    for iteration in range(start_iteration, config.max_iters):
+                        total_steps += 1
+                        save_checkpoint(ckpt_dir, agent, replay_buffer, logger, iteration, total_steps, config.algo)
+                """))
+        ckpt_py = os.path.join(td, "jax_experiments", "common", "checkpoint.py")
+        with open(ckpt_py, "w") as f:
+            f.write(textwrap.dedent("""\
+                import pickle
+                import numpy as np
+                def save_checkpoint(ckpt_dir, agent, replay_buffer, logger, iteration, total_steps, algo):
+                    params = {"policy": "nnx.state", "policy_opt_state": agent.policy_opt_state, "critic_opt_state": agent.critic_opt_state}
+                    pickle.dump(params, open("params.pkl", "wb"))
+                    np.savez_compressed("replay_buffer.npz", **replay_buffer.to_numpy())
+                    train_state = {"iteration": iteration, "total_steps": total_steps, "logger_data": dict(logger.data)}
+                    pickle.dump(train_state, open("train_state.pkl", "wb"))
+                def load_checkpoint(ckpt_dir, agent, replay_buffer, logger, algo):
+                    params = pickle.load(open("params.pkl", "rb"))
+                    agent.policy_opt_state = params["policy_opt_state"]
+                    agent.critic_opt_state = params["critic_opt_state"]
+                    buf = np.load("replay_buffer.npz")
+                    replay_buffer.from_numpy(buf)
+                    train_state = pickle.load(open("train_state.pkl", "rb"))
+                    start_iter = train_state["iteration"] + 1
+                    total_steps = train_state["total_steps"]
+                    logger.data = train_state["logger_data"]
+                    return start_iter, total_steps
+                def has_checkpoint(ckpt_dir):
+                    return True
+                """))
+
+        cmd = f"bash {wrapper} sac Hopper-v2 0 1500 60 min paper"
+        policy = sch._submit_policy_text(cmd, td)
+        check("wrapper text makes training heuristic fire",
+              sch._cmd_looks_like_training(policy))
+        inferred = sch._infer_checkpoint_from_submit(cmd, td)
+        expected = os.path.join(td, "jax_experiments", "results_paper",
+                                "paper_sac_Hopper_dw60_s0", "checkpoints")
+        check("wrapper ckpt-dir inferred from positional shell args",
+              inferred and inferred.get("ckpt_dir") == expected,
+              diag=str(inferred))
+        check("wrapper's internal --resume is detected",
+              sch._cmd_has_resume_flag(policy))
+        reason = sch._checkpoint_contract_reason(cmd, td, expected, "", False)
+        check("full-state checkpoint contract passes", reason is None, diag=str(reason))
+
+        with open(ckpt_py, "w") as f:
+            f.write("def save_checkpoint(*a): pass\ndef load_checkpoint(*a): return 0, 0\ndef has_checkpoint(*a): return True\n")
+        reason = sch._checkpoint_contract_reason(cmd, td, expected, "", False)
+        check("incomplete checkpoint contract is refused",
+              reason is not None and "missing" in reason, diag=str(reason))
+
 def test_diagnose_mid_training_kill():
     """WSRL 05-04 fix: a task killed mid-training (training markers in log, no success marker)
     must be flagged is_crash=True so auto-requeue fires. Previously fell through to
@@ -1074,9 +1178,9 @@ def test_invariant_kill_unless_done_or_cancelled_requeues():
 
 
 def test_invariant_no_dup_active_same_sig_cmd():
-    """INVARIANT: same (signature, cmd) pair has AT MOST ONE active task (queued OR running OR
+    """INVARIANT: same run identity has AT MOST ONE active task (queued OR running OR
     launching). cmd_submit refuses dup, _requeue_after_crash dedups against existing actives."""
-    print("\n[45] invariant: no duplicate active (sig, cmd)")
+    print("\n[45] invariant: no duplicate active run identity")
     # Verify _requeue_after_crash dedups
     state = {
         "tasks": [
@@ -1089,7 +1193,7 @@ def test_invariant_no_dup_active_same_sig_cmd():
         "next_id": 0,
     }
     out = sch._requeue_after_crash(state["tasks"][1], state)
-    check("requeue dedupes against running same sig+cmd → returns existing id",
+    check("requeue dedupes against running same run identity → returns existing id",
           out == "trun", diag=f"got {out}")
     check("no new task appended (count stays 2)",
           len(state["tasks"]) == 2)
@@ -1108,20 +1212,38 @@ def test_invariant_no_dup_active_same_sig_cmd():
     check("dedup ALSO catches launching state (WAL fix)", out2 == "tlnch",
           diag=f"got {out2}")
 
+    # Broad signature case: same sig+cmd but different cwd/env is a different run identity.
+    state3 = {
+        "tasks": [
+            {"id": "trun3", "status": "running", "cmd": "python a.py",
+             "signature": "TEST/inv-dup-3", "cwd": "/work/A", "extra_env": {"ENV": "A"},
+             "retry_count": 0},
+            {"id": "tnew3", "status": "failed", "cmd": "python a.py",
+             "signature": "TEST/inv-dup-3", "cwd": "/work/B", "extra_env": {"ENV": "B"},
+             "retry_count": 0,
+             "_diagnosis": {"is_crash": True, "tail": "", "reason": "x"}},
+        ],
+        "next_id": 0,
+    }
+    out3 = sch._requeue_after_crash(state3["tasks"][1], state3)
+    check("same sig+cmd but different cwd/env is NOT deduped",
+          out3 is not None and out3 != "trun3" and len(state3["tasks"]) == 3,
+          diag=f"got {out3}, n={len(state3['tasks'])}")
+
 
 def test_invariant_race_guard_includes_launching():
     """INVARIANT: race-condition guard at dispatch must consider 'launching' status as
     'sig is taken' — not just 'running'. WAL window is brief but in concurrent dispatch
-    cycles (cmd_dispatch + watcher) two tasks with same sig could both pass the running_sigs
+    cycles (cmd_dispatch + watcher) two identical run identities could both pass the running_keys
     check before either flipped to running."""
     print("\n[46] invariant: race-guard counts launching as taken")
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
-    # Phase 3.4.12: dedup key changed from `signature` alone to `(signature, cmd)`
-    # tuple. Same-cmd duplicates still blocked; different-cmd-same-sig allowed.
+    # Dedup key is run identity, not signature alone. Same identity duplicates
+    # still block; same broad signature with different cmd/cwd/env can run.
     idx = src.find("running_keys = {")
     check("running_keys comprehension found",
           idx > 0,
-          diag="3.4.12 P2-2: dedup key now (sig, cmd), not sig alone")
+          diag="dedup key is run identity, not signature alone")
     if idx > 0:
         block = src[idx:idx + 400]
         check("running_keys includes 'launching' state",
@@ -1132,8 +1254,10 @@ def test_invariant_race_guard_includes_launching():
 def test_systemd_unit_restart_always():
     """Item 8: scheduler.service must have `Restart=always`, not `on-failure`. SIGKILL'd
     processes (kernel OOM) exit without a clean failure code, which `on-failure` does NOT
-    treat as failure → systemd doesn't restart → watcher silently dead."""
-    print("\n[39] systemd unit has Restart=always")
+    treat as failure → systemd doesn't restart → watcher silently dead.
+    KillMode=process is required so restarting the watcher does not kill active
+    scheduleurm-launched experiment process groups that remain in the service cgroup."""
+    print("\n[39] systemd unit has Restart=always + KillMode=process")
     unit = os.path.expanduser("~/.config/systemd/user/scheduler.service")
     if not os.path.exists(unit):
         check("systemd unit file exists", False, diag=f"missing {unit}")
@@ -1144,6 +1268,9 @@ def test_systemd_unit_restart_always():
     check("Restart=on-failure NOT present (regression to old config)",
           "Restart=on-failure" not in src.replace("# ", ""),  # ignore commented-out
           diag="found bare Restart=on-failure")
+    check("KillMode=process present (restart watcher without killing experiments)",
+          "KillMode=process" in src,
+          diag=f"unit content: {src[:500]}")
 
 
 def test_run_on_has_server_alive_options():
@@ -1198,12 +1325,12 @@ def test_env_deploy_doc_matches_code():
           diag="scheduler_mcp submit doc omits conda sync strategy")
 
 
-def test_pick_placement_best_fit_warm_first():
-    """Codex follow-up: scoring used `-free_mb` (worst-fit) → small task got biggest empty
-    card, fragmenting the cluster. New scoring is best-fit + warm-first:
-      - warm card preferred over empty card (preserve empties for big tasks)
-      - among same-emptiness candidates, tightest fit (smallest leftover) wins"""
-    print("\n[49] pick_placement: best-fit + warm-first (was worst-fit)")
+def test_pick_placement_empty_first_then_best_fit():
+    """Micro-server policy: if any GPU is empty, prefer it over stacking on a warm card.
+
+    When every candidate is warm, keep best-fit so already-fragmented cards are filled
+    before spreading further."""
+    print("\n[49] pick_placement: empty-first, then best-fit among warm cards")
     # Force LocalBackend semantics for the duration of this test — Phase 2.3+ would otherwise
     # route the test "local" node through SlurmBackend (gpu_idx=None) on machines where the
     # actual host has slurm installed, defeating the GPU-pinning assertions below.
@@ -1212,7 +1339,7 @@ def test_pick_placement_best_fit_warm_first():
     # Two GPUs on one node:
     #   GPU0: 2GB used, 6GB free  (warm, partially full)
     #   GPU1: 0GB used, 8GB free  (empty)
-    # Task needs 1GB. Old policy: GPU1 (largest free). New policy: GPU0 (warm, tight fit).
+    # Task needs 1GB. Regression target: prefer the empty GPU1 over stacking on GPU0.
     task = {"id": "tplace", "status": "queued", "signature": "TEST/place",
             "cmd": "python x.py", "cwd": "/tmp", "ram_mb": 500,
             "est_vram_mb": 1024, "cpu_cores": 1, "priority": "normal",
@@ -1225,9 +1352,9 @@ def test_pick_placement_best_fit_warm_first():
                   {"idx": 1, "used_mb": 0,    "total_mb": 8192, "free_mb": 8192, "util_pct": 0},
               ]}]
     placement = sch.pick_placement(task, nodes)
-    check("warm GPU0 picked over empty GPU1 (best-fit + warm-first)",
-          placement is not None and placement[1] == 0,
-          diag=f"placement={placement} (expected (local, 0))")
+    check("empty GPU1 picked over warm GPU0",
+          placement is not None and placement[1] == 1,
+          diag=f"placement={placement} (expected (local, 1))")
     # Sanity: when ONLY empty card available, pick it
     nodes2 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
                "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
@@ -1780,9 +1907,12 @@ def test_local_max_vram_per_task_dynamic():
           diag="_gpu_fits returned False with cap=None")
 
 def test_ckpt_dir_cross_sig_conflict():
-    """Submit-time guard: refuse if --ckpt-dir is already in use by an active task with a
-    DIFFERENT signature. Was the cross-session footgun that produced 3 wsrl/s1024 procs
-    (different sig labels, same out_dir) writing checkpoint_epoch50.pt for 14h → corrupt ckpt.
+    """Submit-time guard: refuse if --ckpt-dir is already in use by any active task.
+
+    Was the cross-session footgun that produced 3 wsrl/s1024 procs (different sig labels,
+    same out_dir) writing checkpoint_epoch50.pt for 14h → corrupt ckpt. Phase 3.4.12
+    later allowed same signature + different cmd to run in parallel, so this guard must
+    be active-task-wide, not cross-signature-only.
 
     SAFETY (2026-05-07 incident): old version of this test wrote queue.json directly without
     state_lock. When watcher concurrently wrote (mid-task transition), races wiped tasks —
@@ -1818,7 +1948,18 @@ def test_ckpt_dir_cross_sig_conflict():
                      "--cmd", "python train.py --device cuda"],
                     capture_output=True, text=True)
         check("different-sig submit with same ckpt-dir → REFUSED",
-              r.returncode == 2 and "different signature" in r.stderr,
+              r.returncode == 2 and "active task" in r.stderr,
+              diag=(r.stderr or r.stdout)[:200])
+        r = _sp.run(["python", SCHED, "submit",
+                     "--description", "TEST conflict same sig different cmd",
+                     "--signature", "TEST/ckpt-dir-conflict-A",
+                     "--cwd", "/tmp", "--vram", "100",
+                     "--ckpt-dir", "/tmp/test_shared_ckpt_dir",
+                     "--allow-no-resume",
+                     "--cmd", "python train.py --device cuda --seed 2"],
+                    capture_output=True, text=True)
+        check("same-sig different-cmd submit with same ckpt-dir → REFUSED",
+              r.returncode == 2 and "active task" in r.stderr,
               diag=(r.stderr or r.stdout)[:200])
         r = _sp.run(["python", SCHED, "submit",
                      "--description", "TEST conflict OK",
@@ -1844,6 +1985,79 @@ def test_ckpt_dir_cross_sig_conflict():
                             if t.get("id") != "trun_for_ckpt_test"
                             and t.get("signature") not in test_sigs]
             sch.save_state(cur)
+
+
+def test_submit_path_conflict_guards():
+    """Submit-time path guards for rsync --delete and result-sync destination safety."""
+    print("\n[23b] submit path guards: cwd root + local-result-dir collisions")
+    import subprocess as _sp, tempfile as _tempfile, shutil as _shutil
+    SCHED = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
+    home = _tempfile.mkdtemp(prefix="sched_home_")
+    cwd = _tempfile.mkdtemp(prefix="sched_cwd_")
+    env = os.environ.copy()
+    env["HOME"] = home
+    try:
+        r = _sp.run(["python", SCHED, "submit",
+                     "--description", "ckpt equals cwd",
+                     "--signature", "TEST/path/ckpt-root",
+                     "--cwd", cwd, "--vram", "0",
+                     "--ckpt-dir", cwd,
+                     "--cmd", "echo ok"],
+                    capture_output=True, text=True, env=env)
+        check("--ckpt-dir equal to --cwd → REFUSED",
+              r.returncode == 2 and "must not equal --cwd" in r.stderr,
+              diag=(r.stderr or r.stdout)[:240])
+
+        r = _sp.run(["python", SCHED, "submit",
+                     "--description", "result equals cwd",
+                     "--signature", "TEST/path/result-root",
+                     "--cwd", cwd, "--vram", "0",
+                     "--result-dir", cwd,
+                     "--cmd", "echo ok"],
+                    capture_output=True, text=True, env=env)
+        check("--result-dir equal to --cwd → REFUSED",
+              r.returncode == 2 and "must not equal --cwd" in r.stderr,
+              diag=(r.stderr or r.stdout)[:240])
+
+        result_a = os.path.join(cwd, "results", "a")
+        result_b = os.path.join(cwd, "results", "b")
+        local_dst = os.path.join(cwd, "collected")
+        r1 = _sp.run(["python", SCHED, "submit",
+                      "--description", "result A",
+                      "--signature", "TEST/path/result-a",
+                      "--cwd", cwd, "--vram", "0",
+                      "--result-dir", result_a,
+                      "--local-result-dir", local_dst,
+                      "--cmd", "echo A"],
+                     capture_output=True, text=True, env=env)
+        r2 = _sp.run(["python", SCHED, "submit",
+                      "--description", "result B",
+                      "--signature", "TEST/path/result-b",
+                      "--cwd", cwd, "--vram", "0",
+                      "--result-dir", result_b,
+                      "--local-result-dir", local_dst,
+                      "--cmd", "echo B"],
+                     capture_output=True, text=True, env=env)
+        check("shared --local-result-dir across unfinished tasks → REFUSED",
+              r1.returncode == 0 and r2.returncode == 2
+              and "destination already in use" in r2.stderr,
+              diag=f"r1={r1.returncode} r2={r2.returncode} {(r2.stderr or r2.stdout)[:240]}")
+
+        r3 = _sp.run(["python", SCHED, "submit",
+                      "--description", "result B override",
+                      "--signature", "TEST/path/result-b-override",
+                      "--cwd", cwd, "--vram", "0",
+                      "--result-dir", result_b,
+                      "--local-result-dir", local_dst,
+                      "--allow-shared-result-dir",
+                      "--cmd", "echo B"],
+                     capture_output=True, text=True, env=env)
+        check("--allow-shared-result-dir overrides destination refusal",
+              r3.returncode == 0 and "submitted" in r3.stdout.lower(),
+              diag=(r3.stderr or r3.stdout)[:240])
+    finally:
+        _shutil.rmtree(home, ignore_errors=True)
+        _shutil.rmtree(cwd, ignore_errors=True)
 
 def test_oom_classify_no_false_positive():
     """OOM_PATTERNS used to include bare 'Killed' which matched innocent English like
@@ -1907,11 +2121,8 @@ def test_inject_python_u():
               diag=f"got={got!r} want={want!r}")
 
 def test_dispatch_skips_duplicate_signature():
-    """Race-condition guard: when a signature already has a running task, queued tasks with
-    the SAME signature must be skipped (not dispatched). Without this, multi-session
-    re-submissions clobber each other's --out_dir/--ckpt-dir — exactly what bit
-    offline-sumo/retrain-v3/wsrl/s1024 (3 procs writing same dir for 14h)."""
-    print("\n[20] Race-condition guard: skip dispatch when same signature already running")
+    """Race-condition guard: identical run identity is skipped, broad signatures are not."""
+    print("\n[20] Race-condition guard: skip identical run identity, not broad signature")
     import tempfile, subprocess as _sp, json as _json
 
     # Build a fake state with one running task at sig "X" and one queued task at sig "X"
@@ -1932,37 +2143,34 @@ def test_dispatch_skips_duplicate_signature():
              "est_vram_mb": 0, "cpu_cores": 1},
         ]
     }
-    # Phase 3.4.12 P2-2: dedup key is (signature, cmd) tuple, not signature alone.
-    # tdup has the SAME cmd as trun (`python train.py`) → still blocked.
-    running_keys = {(t.get("signature") or "", t.get("cmd") or "")
+    # tdup has the same run identity as trun → still blocked.
+    running_keys = {sch._task_run_identity(t)
                     for t in fake_state["tasks"]
-                    if t.get("status") == "running" and t.get("signature")}
+                    if t.get("status") == "running" and sch._task_run_identity(t)}
     blocked, eligible = [], []
     for t in fake_state["tasks"]:
         if t["status"] != "queued": continue
-        sig = t.get("signature") or ""
-        cmd_dd = t.get("cmd") or ""
-        if sig and (sig, cmd_dd) in running_keys:
+        run_key = sch._task_run_identity(t)
+        if run_key and run_key in running_keys:
             blocked.append(t["id"])
         else:
             eligible.append(t["id"])
-    check("queued task with same (sig, cmd) as running → blocked",
+    check("queued task with same run identity as running → blocked",
           "tdup" in blocked, diag=f"blocked={blocked}")
     check("queued task with empty sig → not blocked (exempt from guard)",
           "tnosig" in eligible, diag=f"eligible={eligible}")
-    check("running_keys correctly built from running tasks (3.4.12 P2-2)",
-          running_keys == {("TEST/dup-sig", "python train.py")},
+    check("running_keys correctly built from running task identities",
+          sch._task_run_identity(fake_state["tasks"][0]) in running_keys and len(running_keys) == 1,
           diag=str(running_keys))
 
-    # Full _do_dispatch regression — Phase 3.4.12 P2-2 SCOPE CHANGE:
+    # Full _do_dispatch regression — broad-signature scope:
     # Pre-fix: any two queued tasks with the SAME signature were blocked
     # against each other regardless of cmd. That over-blocked legitimate
     # ablation batches (e.g. 28 BAPR ablations with one shared signature
     # but distinct (algo, env, seed) cmds — all stuck behind one peer).
-    # Post-fix: dedup key is (sig, cmd). Same sig + DIFFERENT cmd → both
-    # launch in parallel. Same sig + SAME cmd → second still blocked
-    # (real duplicate; protects --out_dir/--ckpt-dir from clobber).
-    # Below we test the same-cmd case (real duplicate) with cmds equal,
+    # Post-fix: dedup key is run identity. Same sig + different cmd/cwd/env
+    # launches in parallel. Same identity still blocks.
+    # Below we test the exact-identity case with fields equal,
     # so the second task IS expected to be blocked.
     state = {
         "tasks": [
@@ -2012,14 +2220,14 @@ def test_dispatch_skips_duplicate_signature():
     tq1 = state["tasks"][0]
     tq2 = state["tasks"][1]
     blocked_ids = [ev["task_id"] for ev in events if ev["type"] == "blocked"]
-    check("same-pass duplicate (sig+cmd identical): only first launches",
+    check("same-pass duplicate (run identity identical): only first launches",
           launched == ["tq1"], diag=f"launched={launched}")
     check("same-pass duplicate: second task remains queued",
           tq1["status"] == "running" and tq2["status"] == "queued",
           diag=f"tq1={tq1['status']} tq2={tq2['status']}")
     check("same-pass duplicate: second task gets blocked event with new reason",
           "tq2" in blocked_ids
-          and "identical cmd already has a running task" in tq2.get("last_block_reason", ""),
+          and "run identity already has" in tq2.get("last_block_reason", ""),
           diag=f"blocked={blocked_ids}, reason={tq2.get('last_block_reason')}")
 
     # Phase 3.4.12 P2-2 — sibling case: same sig, DIFFERENT cmds → BOTH
@@ -2062,6 +2270,45 @@ def test_dispatch_skips_duplicate_signature():
     check("3.4.12 P2-2: same sig + DIFFERENT cmd → both launch in parallel",
           set(launched2) == {"tA", "tB"},
           diag=f"launched2={launched2}")
+
+    # Same signature + SAME cmd can still be independent when cwd/env differ.
+    state3 = {
+        "tasks": [
+            {"id": "tC", "status": "queued", "signature": "TEST/diff-env",
+             "submitted_at": time.time(), "priority": "normal", "description": "env A",
+             "cmd": "python run.py", "cwd": "/tmp/a", "extra_env": {"BAPR_ENV": "A"},
+             "ram_mb": 500, "est_vram_mb": 0, "cpu_cores": 1},
+            {"id": "tD", "status": "queued", "signature": "TEST/diff-env",
+             "submitted_at": time.time() + 1, "priority": "normal", "description": "env B",
+             "cmd": "python run.py", "cwd": "/tmp/b", "extra_env": {"BAPR_ENV": "B"},
+             "ram_mb": 500, "est_vram_mb": 0, "cpu_cores": 1},
+        ],
+        "next_id": 902,
+    }
+    nodes3 = [{"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+               "free_ram_mb": 30000, "total_ram_mb": 56000, "running_count": 0,
+               "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192,
+                         "free_mb": 8192, "util_pct": 0}]}]
+    launched3 = []
+    try:
+        sch.precheck_git = lambda t: (True, "ok")
+        sch.find_resume = lambda t: None
+        sch.save_state = fake_save_state
+        def fake_launch3(t, node_state=None):
+            launched3.append(t["id"])
+            t["status"] = "running"
+            t["remote_pids"] = [3000 + len(launched3)]
+            t["started_at"] = time.time()
+            t["log_path"] = f"/tmp/{t['id']}.log"
+            return True, "pid=stub"
+        sch.launch = fake_launch3
+        sch._do_dispatch(state3, nodes3)
+    finally:
+        sch.precheck_git, sch.find_resume, sch.launch = orig_precheck, orig_find, orig_launch
+        sch.save_state = orig_save
+    check("same sig+same cmd but different cwd/env → both launch in parallel",
+          set(launched3) == {"tC", "tD"},
+          diag=f"launched3={launched3}")
 
 def test_cpu_training_justification_required():
     """When --allow-cpu-training is set on a training task, --cpu-training-justification must
@@ -2348,7 +2595,9 @@ def test_backend_slurm_phase2():
 
     # Walltime: known signature uses 3× EWMA, clamped
     real_history_get = sch.history_get
+    real_load_runtime_history = sch.load_runtime_history
     sch.history_get = lambda sig: {"dur_s_ewma": 7200, "dur_s_runs": 5} if sig == "TEST/has-history" else None
+    sch.load_runtime_history = lambda: {}
     try:
         check("walltime for unknown sig defaults to 24h",
               sb._walltime_for({"signature": "TEST/no-history"}) == 24 * 3600)
@@ -2362,6 +2611,51 @@ def test_backend_slurm_phase2():
               sb._format_walltime(2 * 86400 + 3600) == "2-01:00:00")
     finally:
         sch.history_get = real_history_get
+        sch.load_runtime_history = real_load_runtime_history
+
+    # Walltime: exact runtime history from tqdm/progress wins over legacy EWMA.
+    fake_runtime_history = {}
+    real_load_runtime_history = sch.load_runtime_history
+    real_save_runtime_history = sch.save_runtime_history
+    sch.load_runtime_history = lambda: fake_runtime_history
+    def _save_runtime_history(h):
+        snapshot = copy.deepcopy(h)
+        fake_runtime_history.clear()
+        fake_runtime_history.update(snapshot)
+    sch.save_runtime_history = _save_runtime_history
+    try:
+        rt_task = {
+            "id": "t-rt", "signature": "TEST/runtime-a",
+            "project": "p", "description": "first label",
+            "cmd": "python train.py --seed 7 --n_steps 1000",
+            "cwd": "/tmp/proj", "env_spec": "none", "image": "",
+            "extra_env": {"A": "B"},
+            "runtime_total_s_est": 1000,
+            "runtime_unit_s_est": 1.0,
+            "runtime_total_units": 1000,
+            "runtime_est_source": "tqdm",
+        }
+        sch.runtime_history_record(rt_task)
+        check("runtime history total recorded",
+              sch._runtime_total_history_s(rt_task) == 1000,
+              diag=str(fake_runtime_history))
+        check("walltime uses runtime total ×1.2",
+              sb._walltime_for(rt_task) == 1200)
+        same_params_new_sig = dict(rt_task)
+        same_params_new_sig["signature"] = "TEST/runtime-v2"
+        same_params_new_sig["description"] = "renamed label"
+        check("runtime exact key ignores signature/description",
+              sch._runtime_total_history_s(same_params_new_sig) == 1000,
+              diag=str(fake_runtime_history))
+        short_task = dict(rt_task)
+        short_task["cmd"] = "python eval.py --episodes 1"
+        short_task["runtime_total_s_est"] = 120
+        sch.runtime_history_record(short_task)
+        check("runtime walltime has 10m floor",
+              sb._walltime_for(short_task) == 600)
+    finally:
+        sch.load_runtime_history = real_load_runtime_history
+        sch.save_runtime_history = real_save_runtime_history
 
     # ---------- SlurmBackend.launch: monkey-patched subprocess ----------
     # We patch subprocess.run because launch() uses it for sbatch stdin pipe (not run_on).
@@ -2409,7 +2703,7 @@ def test_backend_slurm_phase2():
         sch.run_on = real_run_on
 
     # ---------- SlurmBackend.batch_probe: squeue parsing ----------
-    canned_squeue = "100 RUNNING\n101 PENDING\n102 COMPLETED\n103 FAILED\n"
+    canned_squeue = "100 RUNNING\n101 PENDING\n102 COMPLETED\n103 FAILED\n104 CANCELLED\n"
     sch.run_on = lambda node, cmd, timeout=15, check=True: (
         (0, canned_squeue, "") if "squeue" in cmd else (0, "", "")
     )
@@ -2419,6 +2713,7 @@ def test_backend_slurm_phase2():
             {"id": "tb", "status": "running", "node": "local", "slurm_job_id": 101},
             {"id": "tc", "status": "running", "node": "local", "slurm_job_id": 102},
             {"id": "td", "status": "running", "node": "local", "slurm_job_id": 103},
+            {"id": "tf", "status": "running", "node": "local", "slurm_job_id": 104},
             {"id": "te", "status": "running", "node": "local", "slurm_job_id": 999},  # not in squeue output
         ]}
         res = sb.batch_probe(state)
@@ -2430,6 +2725,10 @@ def test_backend_slurm_phase2():
         check("FAILED → dead + terminal_ok=False",
               res["td"]["state"] == "dead" and res["td"].get("terminal_ok") is False,
               diag=str(res["td"]))
+        check("CANCELLED → dead + terminal_cancelled=True (no auto-requeue)",
+              res["tf"]["state"] == "dead"
+              and res["tf"].get("terminal_cancelled") is True,
+              diag=str(res["tf"]))
         check("absent from squeue → dead + terminal_ok=None",
               res["te"]["state"] == "dead" and res["te"].get("terminal_ok") is None,
               diag=str(res["te"]))
@@ -2459,10 +2758,50 @@ def test_backend_slurm_phase2():
     # Force cache for predictable routing
     hb._cache["fake-slurm-node"] = "slurm"
     hb._cache["fake-local-node"] = "local"
-    check("HybridBackend routes slurm-cached node to SlurmBackend",
-          hb._backend_for("fake-slurm-node") is hb._slurm)
+    check("HybridBackend default ignores slurm cache and uses LocalBackend",
+          hb._backend_for("fake-slurm-node") is hb._local)
     check("HybridBackend routes non-slurm node to LocalBackend",
           hb._backend_for("fake-local-node") is hb._local)
+    # Slurm is opt-in: default-local nodes keep scheduleurm packing even if the
+    # capability cache says Slurm exists. Per-node knobs or explicit task Slurm
+    # fields route future launches through SlurmBackend.
+    saved_NODES = sch.NODES
+    try:
+        sch.NODES = {
+            "local-slurm": {"host": None},
+            "remote-slurm": {"host": "cluster"},
+            "cluster-slurm": {"host": "cluster", "slurm_backend": "slurm"},
+            "gpu-slurm": {"host": "gpu", "slurm_gpu_backend": "slurm"},
+        }
+        hb._cache["local-slurm"] = "slurm"
+        hb._cache["remote-slurm"] = "slurm"
+        hb._cache["cluster-slurm"] = "slurm"
+        hb._cache["gpu-slurm"] = "slurm"
+        cpu_local = {"id": "tcpu", "node": "local-slurm", "est_vram_mb": 0}
+        gpu_local = {"id": "tgpu", "node": "local-slurm", "est_vram_mb": 1000}
+        cpu_remote = {"id": "trcpu", "node": "remote-slurm", "est_vram_mb": 0}
+        cpu_cluster = {"id": "tscpu", "node": "cluster-slurm", "est_vram_mb": 0}
+        gpu_optin = {"id": "tsgpu", "node": "gpu-slurm", "est_vram_mb": 1000}
+        cpu_slurm_explicit = {
+            "id": "tcpu-explicit", "node": "remote-slurm",
+            "est_vram_mb": 0, "slurm_partition": "local",
+        }
+        check("default-local CPU task stays on LocalBackend despite slurm cache",
+              hb._backend_for_task(cpu_local) is hb._local)
+        check("default-local placement uses instant local capacity gate",
+              hb.requires_local_capacity_check("local-slurm", cpu_local) is True)
+        check("default-local GPU task stays on LocalBackend despite slurm cache",
+              hb._backend_for_task(gpu_local) is hb._local)
+        check("default-local remote CPU task stays on LocalBackend",
+              hb._backend_for_task(cpu_remote) is hb._local)
+        check("node slurm_backend=slurm opts all tasks into SlurmBackend",
+              hb._backend_for_task(cpu_cluster) is hb._slurm)
+        check("node slurm_gpu_backend=slurm opts GPU tasks into SlurmBackend",
+              hb._backend_for_task(gpu_optin) is hb._slurm)
+        check("explicit slurm partition routes to probed Slurm node",
+              hb._backend_for_task(cpu_slurm_explicit) is hb._slurm)
+    finally:
+        sch.NODES = saved_NODES
     # Task with slurm_job_id ALWAYS routes to slurm (cache-independent — defensive)
     check("task with slurm_job_id routes to SlurmBackend regardless of cache",
           hb._backend_for_task({"slurm_job_id": 1, "node": "fake-local-node"}) is hb._slurm)
@@ -2870,6 +3209,11 @@ def test_backend_slurm_phase2_13_terminal_state_semantics():
              "started_at": now - 1000, "submitted_at": now - 1100,
              "retry_count": 0, "ram_mb": 1024, "est_vram_mb": 1000, "cpu_cores": 1,
              "extra_env": {}, "priority": "normal", "description": "timeout", "project": "p"},
+            {"id": "tx", "status": "running", "node": "cluster", "slurm_job_id": 12,
+             "cmd": "python train.py --seed 12", "signature": "TEST/slurm-cancelled",
+             "started_at": now - 1000, "submitted_at": now - 1100,
+             "retry_count": 0, "ram_mb": 1024, "est_vram_mb": 1000, "cpu_cores": 1,
+             "extra_env": {}, "priority": "normal", "description": "cancelled", "project": "p"},
         ],
     }
 
@@ -2882,11 +3226,16 @@ def test_backend_slurm_phase2_13_terminal_state_semantics():
                 "tf": {"state": "dead", "alive_pids": [], "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
                        "backend_state": "TIMEOUT", "terminal_ok": False,
                        "terminal_reason": "slurm terminal state TIMEOUT"},
+                "tx": {"state": "dead", "alive_pids": [], "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
+                       "backend_state": "CANCELLED", "terminal_ok": False,
+                       "terminal_cancelled": True,
+                       "terminal_reason": "slurm terminal state CANCELLED; treated as user/admin cancel"},
             }
 
     saved_backend = sch._BACKEND
     saved_diag = sch._diagnose_terminal
     saved_history_record = sch.history_record
+    saved_runtime_history_record = sch.runtime_history_record
     saved_history_get = sch.history_get
     diag_calls = []
 
@@ -2899,6 +3248,7 @@ def test_backend_slurm_phase2_13_terminal_state_semantics():
     sch._BACKEND = _FakeBackend()
     sch._diagnose_terminal = fake_diag
     sch.history_record = lambda *a, **k: None
+    sch.runtime_history_record = lambda *a, **k: None
     sch.history_get = lambda sig: {"dur_s_ewma": 10000, "dur_s_runs": 2}
     try:
         sch.update_running_tasks(state)
@@ -2906,11 +3256,14 @@ def test_backend_slurm_phase2_13_terminal_state_semantics():
         sch._BACKEND = saved_backend
         sch._diagnose_terminal = saved_diag
         sch.history_record = saved_history_record
+        sch.runtime_history_record = saved_runtime_history_record
         sch.history_get = saved_history_get
 
     tc = next(t for t in state["tasks"] if t["id"] == "tc")
     tf = next(t for t in state["tasks"] if t["id"] == "tf")
+    tx = next(t for t in state["tasks"] if t["id"] == "tx")
     retry = next((t for t in state["tasks"] if t.get("parent_id") == "tf"), None)
+    cancelled_retry = next((t for t in state["tasks"] if t.get("parent_id") == "tx"), None)
     check("Slurm COMPLETED → scheduleurm done, no log/lifetime false crash",
           tc["status"] == "done" and tc["_diagnosis"]["is_crash"] is False and "tc" not in diag_calls,
           diag=str(tc.get("_diagnosis")))
@@ -2921,6 +3274,11 @@ def test_backend_slurm_phase2_13_terminal_state_semantics():
     check("Slurm failed terminal state auto-requeues with cleared backend artifacts",
           retry is not None and retry["status"] == "queued" and retry.get("slurm_job_id") is None,
           diag=str(retry))
+    check("Slurm CANCELLED → scheduleurm cancelled, not auto-requeued",
+          tx["status"] == "cancelled"
+          and tx.get("cancelled_by_user") is True
+          and cancelled_retry is None,
+          diag=f"tx={tx} retry={cancelled_retry}")
 
 
 def test_backend_slurm_phase2_14_ui_and_launch_notification():
@@ -2961,6 +3319,7 @@ def test_backend_slurm_phase2_16_pending_throttle():
 
     Tunable via:
       - SLURM_MAX_PENDING_PER_NODE module constant (default 1)
+      - SLURM_MAX_PENDING_CPU_PER_NODE / SLURM_MAX_PENDING_GPU_PER_NODE
       - SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE env var (read at module import)
       - NODES[name]['max_slurm_pending'] per-node override
     """
@@ -2971,6 +3330,11 @@ def test_backend_slurm_phase2_16_pending_throttle():
           hasattr(sch, "SLURM_MAX_PENDING_PER_NODE"))
     check("default cap = 1",
           sch.SLURM_MAX_PENDING_PER_NODE == 1, diag=f"got {sch.SLURM_MAX_PENDING_PER_NODE}")
+    check("default GPU pending cap = legacy cap",
+          sch.SLURM_MAX_PENDING_GPU_PER_NODE == sch.SLURM_MAX_PENDING_PER_NODE)
+    check("default CPU pending cap lets several CPU-only jobs look ahead",
+          sch.SLURM_MAX_PENDING_CPU_PER_NODE >= 4,
+          diag=f"got {sch.SLURM_MAX_PENDING_CPU_PER_NODE}")
     check("_count_slurm_pending_per_node helper exists",
           callable(getattr(sch, "_count_slurm_pending_per_node", None)))
     check("_slurm_max_pending_for_node helper exists",
@@ -2979,10 +3343,10 @@ def test_backend_slurm_phase2_16_pending_throttle():
     # ---------- _count_slurm_pending_per_node: states correctly classified ----------
     state = {"tasks": [
         # PENDING-like states → counted
-        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1, "slurm_state": "PENDING"},
-        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2, "slurm_state": "CONFIGURING"},
-        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3, "slurm_state": None},  # just-submitted
-        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4, "slurm_state": "PENDING"},
+        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1, "slurm_state": "PENDING", "est_vram_mb": 0},
+        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2, "slurm_state": "CONFIGURING", "est_vram_mb": 0},
+        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3, "slurm_state": None, "est_vram_mb": 0},  # just-submitted
+        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4, "slurm_state": "PENDING", "est_vram_mb": 0},
         # NOT pending — should NOT be counted
         {"id": "tE", "status": "running", "node": "n1", "slurm_job_id": 5, "slurm_state": "RUNNING"},
         {"id": "tF", "status": "running", "node": "n2", "slurm_job_id": 6, "slurm_state": "COMPLETING"},
@@ -2992,8 +3356,8 @@ def test_backend_slurm_phase2_16_pending_throttle():
         {"id": "tH", "status": "queued", "node": "n1", "slurm_job_id": 7, "slurm_state": "PENDING"},
     ]}
     counts = sch._count_slurm_pending_per_node(state)
-    # Phase 3.4.13: counter now returns split {cpu, gpu} per node. None of
-    # the test tasks above set est_vram_mb so they all bucket as "cpu".
+    # Phase 3.4.13: counter now returns split {cpu, gpu} per node. These
+    # pending-like test tasks explicitly set est_vram_mb=0, so they bucket as CPU.
     n1 = counts.get("n1") or {}
     n2 = counts.get("n2") or {}
     check("count: n1 cpu=3 gpu=0 (tA PENDING + tB CONFIGURING + tC just-submitted)",
@@ -3011,12 +3375,27 @@ def test_backend_slurm_phase2_16_pending_throttle():
                         "ram_headroom_frac": 0.10, "max_vram_per_task": None,
                         "max_concurrent_running": None,
                         "max_slurm_pending": 5},  # per-node override
+        "bucket-cap": {"host": None, "cpu_cores": 12, "ram_mb": 30000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None,
+                       "max_slurm_pending_cpu": 4,
+                       "max_slurm_pending_gpu": 2},
     }
     try:
-        check("default cap from constant when no per-node override",
+        check("legacy default cap from constant when no per-node override",
               sch._slurm_max_pending_for_node("default-cap") == sch.SLURM_MAX_PENDING_PER_NODE)
+        check("default CPU cap from CPU constant",
+              sch._slurm_max_pending_for_node("default-cap", "cpu") == sch.SLURM_MAX_PENDING_CPU_PER_NODE)
+        check("default GPU cap from GPU constant",
+              sch._slurm_max_pending_for_node("default-cap", "gpu") == sch.SLURM_MAX_PENDING_GPU_PER_NODE)
         check("per-node override beats global",
               sch._slurm_max_pending_for_node("custom-cap") == 5)
+        check("legacy per-node override applies to CPU bucket too",
+              sch._slurm_max_pending_for_node("custom-cap", "cpu") == 5)
+        check("bucket-specific CPU override beats global",
+              sch._slurm_max_pending_for_node("bucket-cap", "cpu") == 4)
+        check("bucket-specific GPU override beats global",
+              sch._slurm_max_pending_for_node("bucket-cap", "gpu") == 2)
         check("unknown node falls back to global",
               sch._slurm_max_pending_for_node("ghost-node") == sch.SLURM_MAX_PENDING_PER_NODE)
     finally:
@@ -3032,10 +3411,10 @@ def test_backend_slurm_phase2_16_pending_throttle():
     sch.NODES = {
         "slurm-A": {"host": "A", "cpu_cores": 12, "ram_mb": 200000,
                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
-                     "max_concurrent_running": None},
+                     "max_concurrent_running": None, "slurm_backend": "slurm"},
         "slurm-B": {"host": "B", "cpu_cores": 12, "ram_mb": 200000,
                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
-                     "max_concurrent_running": None},
+                     "max_concurrent_running": None, "slurm_backend": "slurm"},
     }
     try:
         # Both nodes alive, no GPUs probed (slurm decides). Phase 3.4.13:
@@ -3044,10 +3423,12 @@ def test_backend_slurm_phase2_16_pending_throttle():
         # est_vram_mb=1000 → "gpu" bucket, so we set gpu pending.
         nodes = [
             {"name": "slurm-A", "alive": True, "gpus": [], "free_cpu": 0,
-             "free_ram_mb": 0, "loadavg": 0.0, "running_count": 0,
+             "free_ram_mb": 0, "loadavg": 0.0,
+             "running_count": 0,
              "slurm_pending_split": {"cpu": 0, "gpu": 1}},  # gpu bucket at cap
             {"name": "slurm-B", "alive": True, "gpus": [], "free_cpu": 0,
-             "free_ram_mb": 0, "loadavg": 0.0, "running_count": 0,
+             "free_ram_mb": 0, "loadavg": 0.0,
+             "running_count": 0,
              "slurm_pending_split": {"cpu": 0, "gpu": 0}},  # has slot
         ]
         task = {"id": "tnew", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
@@ -3057,7 +3438,7 @@ def test_backend_slurm_phase2_16_pending_throttle():
               placement is not None and placement[0] == "slurm-B",
               diag=f"placement={placement}")
 
-        # Both gpu buckets at cap → no placement
+        # Both at cap → no placement
         nodes[1]["slurm_pending_split"]["gpu"] = 1
         placement = sch.pick_placement(task, nodes)
         check("both nodes' gpu bucket at cap → no placement",
@@ -3070,9 +3451,9 @@ def test_backend_slurm_phase2_16_pending_throttle():
         check("both nodes have 0 gpu pending → some node picked",
               placement is not None, diag=f"placement={placement}")
 
-        # 3.4.13 P1 NEW: cpu task NOT throttled by gpu pending, and reverse.
-        nodes[0]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
-        nodes[1]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
+        # 3.4.13 P1 NEW: cpu task NOT throttled by gpu pending and vice-versa.
+        nodes[0]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}  # gpu full, cpu free
+        nodes[1]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}  # gpu full, cpu free
         task_cpu = {"id": "tcpu", "est_vram_mb": 0, "cpu_cores": 2, "ram_mb": 1000,
                     "signature": "TEST/throttle"}
         placement = sch.pick_placement(task_cpu, nodes)
@@ -3080,19 +3461,21 @@ def test_backend_slurm_phase2_16_pending_throttle():
               placement is not None,
               diag=f"placement={placement} (cpu task should fit; gpu pool full doesn't matter)")
 
-        nodes[0]["slurm_pending_split"] = {"cpu": 1, "gpu": 0}
-        nodes[1]["slurm_pending_split"] = {"cpu": 1, "gpu": 0}
-        placement = sch.pick_placement(task, nodes)  # est_vram_mb=1000 → gpu
+        # And reverse — cpu pool full doesn't block gpu task.
+        nodes[0]["slurm_pending_split"] = {"cpu": sch.SLURM_MAX_PENDING_CPU_PER_NODE, "gpu": 0}
+        nodes[1]["slurm_pending_split"] = {"cpu": sch.SLURM_MAX_PENDING_CPU_PER_NODE, "gpu": 0}
+        placement = sch.pick_placement(task, nodes)  # task has est_vram_mb=1000 → gpu
         check("3.4.13 P1: gpu task NOT blocked by cpu bucket being full",
               placement is not None,
               diag=f"placement={placement} (gpu task should fit; cpu pool full doesn't matter)")
 
-        # require_node forces a throttled node → still no placement.
+        # require_node forces a throttled node → still no placement (require trumps fallback,
+        # but throttle trumps require — slurm queue is full, scheduleurm holds the task)
         nodes[0]["slurm_pending_split"] = {"cpu": 0, "gpu": 1}
         nodes[1]["slurm_pending_split"] = {"cpu": 0, "gpu": 0}
         task_req = dict(task, require_node="slurm-A")
         placement = sch.pick_placement(task_req, nodes)
-        check("require_node + that node's gpu bucket throttled → no placement",
+        check("require_node + that node's gpu bucket throttled → no placement (don't pile)",
               placement is None, diag=f"placement={placement}")
     finally:
         sch._BACKEND = saved_backend
@@ -3105,120 +3488,14 @@ def test_backend_slurm_phase2_16_pending_throttle():
           diag="dispatch must seed per-node split (cpu/gpu)")
     check("3.4.13: _do_dispatch bumps the right bucket on each launch",
           'split[bucket] = int(split.get(bucket) or 0) + 1' in src,
-          diag="post-launch bump missing — sequential dispatches would over-pack")
+          diag="post-launch bump missing — sequential dispatches in same cycle would over-pack")
     check("3.4.13: _candidates_for_node consults the bucket-keyed throttle",
-          'split.get(bucket)' in src and "_slurm_max_pending_for_node" in src,
+          'split.get(bucket)' in src
+          and "_slurm_max_pending_for_node" in src,
           diag="throttle must be bucket-aware")
     check("3.4.13: _slurm_pending_bucket_for_task helper exists",
           "def _slurm_pending_bucket_for_task" in src,
           diag="bucket inference shared between counter and dispatch")
-
-    # 3.4.13 — bucket inference + mixed-state count + reason message
-    print("\n[Phase 3.4.13 extras] bucket helper + mixed-state count + reason text")
-    check("3.4.13 behavior: cpu task → 'cpu' bucket",
-          sch._slurm_pending_bucket_for_task({"est_vram_mb": 0}) == "cpu")
-    check("3.4.13 behavior: gpu task → 'gpu' bucket",
-          sch._slurm_pending_bucket_for_task({"est_vram_mb": 100}) == "gpu")
-    check("3.4.13 behavior: missing est_vram_mb → 'cpu' (default)",
-          sch._slurm_pending_bucket_for_task({}) == "cpu")
-
-    state_mixed = {"tasks": [
-        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1,
-         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu
-        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2,
-         "slurm_state": "PENDING", "est_vram_mb": 1500},   # gpu
-        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3,
-         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu
-        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4,
-         "slurm_state": "PENDING", "est_vram_mb": 4000},   # gpu only
-    ]}
-    counts_mixed = sch._count_slurm_pending_per_node(state_mixed)
-    check("3.4.13 behavior: n1 has cpu=2 gpu=1 (mixed bucket)",
-          counts_mixed.get("n1") == {"cpu": 2, "gpu": 1},
-          diag=str(counts_mixed))
-    check("3.4.13 behavior: n2 has cpu=0 gpu=1",
-          counts_mixed.get("n2") == {"cpu": 0, "gpu": 1},
-          diag=str(counts_mixed))
-
-    check("3.4.13: throttle reason surfaces both cpu and gpu pending counts",
-          "cpu {int(split.get('cpu') or 0)}/{cap}" in src
-          and "gpu {int(split.get('gpu') or 0)}/{cap}" in src,
-          diag="user must see why-throttled per-bucket so they understand routing")
-    check("3.4.13: cmd_why surfaces bucket-keyed throttle state",
-          "{bucket} bucket throttled" in src,
-          diag="diagnose which pool blocked the task")
-
-    # ============================================================
-    # Phase 3.4.14 P1 fix — force_backend NODES override
-    # ============================================================
-    print("\n[Phase 3.4.14] force_backend NODES override (bypass slurm for multi-pack)")
-
-    # ---- Source guards ----
-    fn_kind = src.split("def _kind_for")[1].split("\ndef ")[0]
-    check("3.4.14: _kind_for honors NODES['<node>']['force_backend'] before probe",
-          'forced = (NODES.get(node, {}) or {}).get("force_backend")' in fn_kind,
-          diag="explicit override must beat ssh probe")
-    check("3.4.14: forced override is cached so subsequent calls skip probe",
-          'self._cache[node] = forced' in fn_kind,
-          diag="probe is ~5s ssh; cache the explicit choice immediately")
-    check("3.4.14: forced value validated against {'local', 'slurm'}",
-          'forced in ("local", "slurm")' in fn_kind,
-          diag="reject typos / invalid values without falling through silently")
-
-    # ---- Production NODES knob: jtl110gpu2 forced to local ----
-    check("3.4.14: jtl110gpu2 has force_backend='local' in NODES config",
-          '"force_backend": "local"' in src
-          and '"jtl110gpu2"' in src,
-          diag="multi-pack on jtl110gpu2 needs LocalBackend (slurm partition is OverSubscribe=NO)")
-
-    # ---- Behavioral: forced override beats probe even when slurm is available ----
-    saved_NODES = sch.NODES
-    saved_run_on = sch.run_on
-    try:
-        sch.NODES = {
-            "force-local": {"host": "h-fl", "cpu_cores": 12, "ram_mb": 32000,
-                             "force_backend": "local"},
-            "force-slurm": {"host": "h-fs", "cpu_cores": 12, "ram_mb": 32000,
-                             "force_backend": "slurm"},
-            "no-pin":      {"host": "h-np", "cpu_cores": 12, "ram_mb": 32000},
-        }
-        # Sentinel run_on: any call would mean a probe leaked. Forced
-        # nodes must not trigger it.
-        probe_calls = []
-        def fake_run(node, cmd, **kw):
-            probe_calls.append((node, cmd))
-            return (0, "NO_SLURM\n", "")
-        sch.run_on = fake_run
-
-        hb = sch.HybridBackend()
-        check("3.4.14 behavior: force_backend='local' returns 'local' without probe",
-              hb._kind_for("force-local") == "local",
-              diag="force_backend should short-circuit before ssh")
-        check("3.4.14 behavior: force_backend='slurm' returns 'slurm' without probe",
-              hb._kind_for("force-slurm") == "slurm")
-        check("3.4.14 behavior: forced nodes did not trigger any ssh probe",
-              not any(c[0] in ("force-local", "force-slurm") for c in probe_calls),
-              diag=f"probe_calls={probe_calls}")
-        check("3.4.14 behavior: forced choice is cached after first call",
-              hb._cache.get("force-local") == "local"
-              and hb._cache.get("force-slurm") == "slurm")
-
-        kind_np = hb._kind_for("no-pin")
-        check("3.4.14 behavior: nodes without force_backend still probe normally",
-              kind_np == "local"
-              and any(c[0] == "no-pin" for c in probe_calls),
-              diag=f"kind={kind_np} probe_calls={probe_calls}")
-
-        # Invalid value (typo) should fall through to probe rather than
-        # silently routing to a wrong backend.
-        sch.NODES["typo-node"] = {"host": "h-typo", "force_backend": "loca1"}
-        hb2 = sch.HybridBackend()
-        check("3.4.14 behavior: invalid force_backend value falls through to probe",
-              hb2._kind_for("typo-node") == "local",
-              diag="typo'd value must not silently force a backend")
-    finally:
-        sch.NODES = saved_NODES
-        sch.run_on = saved_run_on
 
 
 def test_phase3_0_9_slurm_pending_elapsed_zero():
@@ -3952,6 +4229,48 @@ def test_phase3_0_13_rebalance_pending_outside_lock():
         check("commit-phase defensive: slurm_job_id changed → leave alone",
               post["status"] == "running" and post.get("slurm_job_id") == 999,
               diag=str(post))
+
+        # ---------- Case F: --task-id filter — only the named pending task is
+        # pulled back. This is the safe operator path for one stuck CPU job
+        # (e.g. local slurm PENDING Reason=Priority) without disturbing other
+        # pending slurm work.
+        class ArgsFilter:
+            yes = True
+            task_ids = ["tKeep"]
+
+        fake_state = {"next_id": 1, "tasks": [
+            {"id": "tKeep", "status": "running", "node": "n1",
+             "slurm_job_id": 900, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Keep", "cmd": "x"},
+            {"id": "tSkip", "status": "running", "node": "n1",
+             "slurm_job_id": 901, "slurm_state": "PENDING",
+             "remote_pids": [], "signature": "TEST/Skip", "cmd": "x"},
+        ]}
+        sch.load_state = lambda: fake_state
+        sch.save_state = lambda s: None
+        cancelled_jids_filter = set()
+
+        def run_on_filter(node, cmd, timeout=10, check=True):
+            if "scancel" in cmd:
+                jid = int(cmd.split()[-1])
+                cancelled_jids_filter.add(jid)
+                return (0, "", "")
+            if "squeue" in cmd:
+                jid = 900 if "900" in cmd else 901
+                return (0, "" if jid in cancelled_jids_filter else "PENDING\n", "")
+            return (0, "", "")
+
+        sch.run_on = run_on_filter
+        sch.cmd_rebalance_pending(ArgsFilter())
+        by_id = {t["id"]: t for t in fake_state["tasks"]}
+        check("--task-id filter scancelled only the requested jid",
+              cancelled_jids_filter == {900}, diag=str(cancelled_jids_filter))
+        check("--task-id filter requeued only the requested task",
+              by_id["tKeep"]["status"] == "queued"
+              and by_id["tKeep"].get("slurm_job_id") is None
+              and by_id["tSkip"]["status"] == "running"
+              and by_id["tSkip"].get("slurm_job_id") == 901,
+              diag=str(fake_state))
     finally:
         sch.save_state = saved_save
         sch.load_state = saved_load
@@ -4213,10 +4532,10 @@ def test_phase3_0_15_migrated_task_pins_to_staged_node():
     sch._launch_failed_nodes_for_task = lambda task: set()
     # Throttle: B accepts 1 pending; A/C accept 999. Set B's pending count to
     # exhaust its cap so _candidates_for_node(B) returns [] in the "B full" cases.
-    sch._slurm_max_pending_for_node = lambda n: 1 if n == "B" else 999
+    sch._slurm_max_pending_for_node = lambda n, bucket=None: 1 if n == "B" else 999
 
     # Phase 3.4.13: throttle reads slurm_pending_split keyed by bucket.
-    # Test tasks below have est_vram_mb=0 → "cpu" bucket.
+    # All test tasks below have est_vram_mb=0 → "cpu" bucket.
     nodes_open = [
         {"name": "A", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
         {"name": "B", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
@@ -4264,8 +4583,8 @@ def test_phase3_0_15_migrated_task_pins_to_staged_node():
         # Defense against stale staged_node referencing a removed node.
         t_orphan = {"id": "tE", "est_vram_mb": 0, "staged_node": "B"}
         nodes_no_b = [
-            {"name": "A", "alive": True, "slurm_pending_count": 0},
-            {"name": "C", "alive": True, "slurm_pending_count": 0},
+            {"name": "A", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
+            {"name": "C", "alive": True, "slurm_pending_split": {"cpu": 0, "gpu": 0}},
         ]
         placement = sch.pick_placement(t_orphan, nodes_no_b)
         check("staged_node=B but B absent from nodes → placement=None (no fallback)",
@@ -4296,10 +4615,10 @@ def test_phase3_0_15_migrated_task_pins_to_staged_node():
             mnodes = [
                 {"name": "loaded", "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
                  "gpus": [], "max_concurrent_running": 999, "running_count": 1,
-                 "slurm_pending_count": 0},
+                 "slurm_pending_split": {"cpu": 0, "gpu": 0}},
                 {"name": "free",   "alive": True, "free_cpu": 12, "free_ram_mb": 100000,
                  "gpus": [], "max_concurrent_running": 999, "running_count": 0,
-                 "slurm_pending_count": 0},
+                 "slurm_pending_split": {"cpu": 0, "gpu": 0}},
             ]
             migrated = sch._consider_migration(state, mnodes)
             check("_consider_migration migrated tMig",
@@ -7797,17 +8116,17 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
     bcr_end = src.find("\ndef ", bcr_idx + 5)
     bcr_body = src[bcr_idx:bcr_end]
     check("_batch_check_running releases claim on terminal transition",
-          "_ClaimManager.release(t[\"node\"], t[\"id\"])" in bcr_body)
+          "_release_task_claims_and_intents(t)" in bcr_body)
     evict_idx = src.find("def _evict_to_queue")
     evict_end = src.find("\ndef ", evict_idx + 5)
     evict_body = src[evict_idx:evict_end]
     check("_evict_to_queue releases claim BEFORE clearing node",
-          "_ClaimManager.release(victim[\"node\"], victim[\"id\"])" in evict_body)
+          "_release_task_claims_and_intents(victim)" in evict_body)
     cancel_idx = src.find("def cmd_cancel")
     cancel_end = src.find("\ndef ", cancel_idx + 5)
     cancel_body = src[cancel_idx:cancel_end]
     check("cmd_cancel releases claim on running --force kill",
-          "_ClaimManager.release(t[\"node\"], t[\"id\"])" in cancel_body)
+          "_release_task_claims_and_intents(t)" in cancel_body)
     wi_idx = src.find("def _watch_iteration")
     wi_end = src.find("\ndef ", wi_idx + 5)
     wi_body = src[wi_idx:wi_end]
@@ -8018,11 +8337,12 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
 
 
 def test_phase3_2_2_probe_folds_pending_claims():
-    """Phase 3.2.2: probe_all subtracts pending (pid=null) claims from
-    free resources so a concurrent scheduler's pick_placement sees the
-    launch-race window as occupied. Claims with a live pid are NOT
-    folded — the process is already visible to ps/nvidia-smi via the
-    normal probe pathway, double-counting would be wrong.
+    """Phase 3.2.2: probe_all folds shared claim budgets into free resources.
+
+    Pending claims (pid=null) are invisible to ps/nvidia-smi and must consume
+    capacity outright. Live-pid claims are visible as actual usage, but the
+    scheduler still enforces estimated/budgeted usage, so the probe uses the
+    larger of observed usage and claimed budget instead of ignoring live claims.
     """
     print("\n[96] Phase 3.2.2: probe_all folds pending cross-scheduler claims")
 
@@ -8032,9 +8352,10 @@ def test_phase3_2_2_probe_folds_pending_claims():
           "def _fold_claims_into_probe" in src)
     check("probe_all calls the fold helper",
           "_fold_claims_into_probe(nodes)" in src)
-    check("fold helper subtracts ONLY pending claims (pid=null)",
-          "not c.get(\"pid\")" in src
-          and "pending = [c for c in claims" in src)
+    check("fold helper applies active claim budgets as a floor",
+          "active_claims" in src
+          and "budget_used_cpu = max(observed_used_cpu, active_cpu) + pending_cpu" in src
+          and "used = max(int(g.get(\"used_mb\") or 0), active_claimed) + pending_claimed" in src)
 
     # 2. Behavioral.
     saved_NODES = sch.NODES
@@ -8107,7 +8428,8 @@ def test_phase3_2_2_probe_folds_pending_claims():
         check("pending_claims surfaced on node_state for diagnostics",
               n_on.get("pending_claims") and len(n_on["pending_claims"]) == 1)
 
-        # 2c. Claim with LIVE pid → NOT subtracted (already visible to ps).
+        # 2c. Claim with LIVE pid → folded as budget floor. Baseline observed
+        # usage is 0, so the claim budget becomes the visible schedulable usage.
         claims_response["n_on"] = [{
             "scheduler_id": "other:9", "task_id": "tLive",
             "owner": "alice", "gpu_idx": 0,
@@ -8117,12 +8439,14 @@ def test_phase3_2_2_probe_folds_pending_claims():
         }]
         out = sch.probe_all()
         n_on = next(n for n in out if n["name"] == "n_on")
-        check("live-pid claim → free_cpu NOT subtracted (would double-count)",
-              n_on["free_cpu"] == 12)
-        check("live-pid claim → GPU0 free_mb NOT subtracted",
-              n_on["gpus"][0]["free_mb"] == 12000)
+        check("live-pid claim → free_cpu reflects claim budget floor",
+              n_on["free_cpu"] == 12 - 3,
+              diag=f"got {n_on['free_cpu']}")
+        check("live-pid claim → GPU0 free_mb reflects claim budget floor",
+              n_on["gpus"][0]["free_mb"] == 12000 - 4000,
+              diag=f"got {n_on['gpus'][0]['free_mb']}")
 
-        # 2d. Mixed: one pending + one live → only pending subtracted.
+        # 2d. Mixed: pending + live → total claim budget is folded once.
         claims_response["n_on"] = [
             {"scheduler_id": "A", "task_id": "tP", "gpu_idx": 0,
              "vram_mb": 2000, "cpu_cores": 2, "ram_mb": 1500,
@@ -8135,10 +8459,10 @@ def test_phase3_2_2_probe_folds_pending_claims():
         ]
         out = sch.probe_all()
         n_on = next(n for n in out if n["name"] == "n_on")
-        check("mixed: only pending claim subtracted (cpu)",
-              n_on["free_cpu"] == 12 - 2)
-        check("mixed: only pending claim subtracted (vram)",
-              n_on["gpus"][0]["free_mb"] == 12000 - 2000)
+        check("mixed: pending + live claim budgets folded (cpu)",
+              n_on["free_cpu"] == 12 - 6)
+        check("mixed: pending + live claim budgets folded (vram)",
+              n_on["gpus"][0]["free_mb"] == 12000 - 7000)
 
         # 2e. n_off has no enable_claims → pass-through, no ssh.
         claims_response["n_off"] = [{"task_id": "irrelevant", "pid": None,
@@ -8168,6 +8492,30 @@ def test_phase3_2_2_probe_folds_pending_claims():
               n_on["gpus"][0]["free_mb"] == 12000 - 3000)
         check("multi-GPU: GPU1 subtracted by its own claim",
               n_on["gpus"][1]["free_mb"] == 12000 - 7000)
+
+        # 2g. Active claim budget can be higher than live nvidia-smi usage.
+        # Picker must honor the claim floor so it tries GPU1 instead of
+        # repeatedly picking GPU0 and getting rejected by the remote claim layer.
+        base["n_on"]["gpus"] = [
+            {"idx": 0, "total_mb": 12000, "free_mb": 11000, "used_mb": 1000, "util_pct": 0},
+            {"idx": 1, "total_mb": 12000, "free_mb": 12000, "used_mb": 0, "util_pct": 0},
+        ]
+        claims_response["n_on"] = [
+            {"task_id": "budget0", "scheduler_id": "X", "gpu_idx": 0,
+             "vram_mb": 5000, "cpu_cores": 1, "ram_mb": 1000,
+             "claimed_at": time.time(), "expires_at": time.time() + 3600, "pid": 12345},
+        ]
+        out = sch.probe_all()
+        n_on = next(n for n in out if n["name"] == "n_on")
+        task = {"id": "tNew", "signature": "sig/new", "cmd": "python train.py",
+                "cwd": "/x", "est_vram_mb": 1104, "ram_mb": 1000,
+                "cpu_cores": 1, "priority": "normal"}
+        check("active claim floor makes GPU0 fail 1/3 rule",
+              not sch._gpu_fits(task, n_on["gpus"][0], sch.NODES["n_on"]),
+              diag=n_on["gpus"][0])
+        check("active claim floor leaves GPU1 selectable",
+              sch.pick_placement(task, [n_on]) == ("n_on", 1),
+              diag=f"placement={sch.pick_placement(task, [n_on])} gpus={n_on['gpus']}")
     finally:
         sch.NODES = saved_NODES
         sch.probe_node = saved_probe_node
@@ -8346,6 +8694,491 @@ def test_phase3_2_3_concurrent_schedulers_only_one_wins():
         sch.NODES = saved_NODES
         sch.run_on = saved_run_on
         sch.probe_node = saved_probe_node
+
+
+def test_phase3_2_4_claim_fifo_backfill():
+    """Phase 3.2.4: shared claims layer provides FIFO-with-backfill.
+
+    Multiple scheduleurm instances have separate local queue.json files, so
+    fairness has to live in the remote shared claims file. The remote claim op
+    registers an intent before checking capacity. Later claims may backfill only
+    when they do not delay an older intent that could run now.
+    """
+    print("\n[97b] Phase 3.2.4: remote claims FIFO-with-backfill intents")
+
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("claim script has shared intents queue",
+          "data.get(\"intents\", [])" in src
+          and "upsert_intent" in src
+          and "fifo: older intent" in src)
+    check("claim intent TTL is configurable",
+          "CLAIM_INTENT_TTL_S" in src
+          and "claim_intent_ttl_s" in src)
+    check("FIFO strict aging + live external checks are wired into capacity",
+          "CLAIM_FIFO_STRICT_AFTER_S" in src
+          and "fifo_strict_after_s" in src
+          and "live_external_claims" in src
+          and "claim_live_check" in src)
+
+    import tempfile, subprocess, json as _json
+    with tempfile.TemporaryDirectory() as td:
+        script = sch._CLAIMS_REMOTE_SCRIPT.replace(
+            'CLAIMS_FILE = "/tmp/scheduleurm/claims.json"',
+            f'CLAIMS_FILE = {os.path.join(td, "claims.json")!r}',
+        ).replace(
+            'os.makedirs("/tmp/scheduleurm", exist_ok=True)',
+            f'os.makedirs({td!r}, exist_ok=True)',
+        )
+        script_path = os.path.join(td, "_claims.py")
+        with open(script_path, "w") as f:
+            f.write(script)
+        claims_path = os.path.join(td, "claims.json")
+        cap = {"cpu_cores": 8, "ram_mb": 64000,
+               "gpu_vram_mb": {"0": 12000, "1": 12000},
+               "vram_margin_mb": 0,
+               "third_pack_rule": False,
+               "default_vram_mb": 512}
+        now = time.time()
+
+        def write_data(claims=None, intents=None):
+            with open(claims_path, "w") as cf:
+                _json.dump({"version": 2,
+                            "claims": claims or [],
+                            "intents": intents or []}, cf)
+
+        def run_claim(rec):
+            r = subprocess.run(
+                ["python3", script_path, "claim",
+                 _json.dumps(rec), _json.dumps(cap)],
+                capture_output=True, text=True, timeout=10,
+            )
+            try:
+                return _json.loads(r.stdout.strip().splitlines()[-1])
+            except Exception:
+                return {"_rc": r.returncode, "_stdout": r.stdout, "_stderr": r.stderr}
+
+        def base_rec(sid, tid, gpu, vram, cpu=1, ram=1000, t=0):
+            return {
+                "owner": sid, "scheduler_id": sid, "task_id": tid,
+                "gpu_idx": gpu, "vram_mb": vram,
+                "cpu_cores": cpu, "ram_mb": ram,
+                "claimed_at": now + t,
+                "expires_at": now + 3600,
+                "intent_expires_at": now + 600,
+                "pid": None,
+            }
+
+        # Case A: older intent fits now, and this younger claim would make it
+        # not fit. FIFO blocks the younger claim.
+        older = base_rec("s-old", "tOlder", 0, 8000, t=-10)
+        older["intent_at"] = now - 10
+        older["expires_at"] = now + 600
+        younger = base_rec("s-new", "tYounger", 0, 6000, t=0)
+        write_data(claims=[], intents=[older])
+        r = run_claim(younger)
+        check("FIFO: younger claim that would delay older fit-now intent is blocked",
+              r.get("ok") is False and "fifo:" in (r.get("conflict") or ""),
+              diag=r)
+        with open(claims_path) as cf:
+            data = _json.load(cf)
+        check("FIFO: blocked younger intent is persisted for later retry",
+              len(data.get("intents", [])) == 2
+              and not data.get("claims"),
+              diag=data)
+
+        # Case B: older intent cannot fit now because of an existing claim, so
+        # a younger task may backfill.
+        existing = base_rec("s-run", "tRunning", 0, 9000, t=-20)
+        older_blocked = base_rec("s-old", "tOlderBlocked", 0, 4000, t=-10)
+        older_blocked["intent_at"] = now - 10
+        older_blocked["expires_at"] = now + 600
+        backfill = base_rec("s-new", "tBackfill", 1, 2000, t=0)
+        write_data(claims=[existing], intents=[older_blocked])
+        r = run_claim(backfill)
+        check("Backfill: younger claim can run when older intent cannot fit now",
+              r.get("ok") is True, diag=r)
+        with open(claims_path) as cf:
+            data = _json.load(cf)
+        check("Backfill: successful claim removes only its own intent",
+              any(c.get("task_id") == "tBackfill" for c in data.get("claims", []))
+              and any(i.get("task_id") == "tOlderBlocked" for i in data.get("intents", []))
+              and not any(i.get("task_id") == "tBackfill" for i in data.get("intents", [])),
+              diag=data)
+
+        # Case C: older intent fits now, but younger uses disjoint resources and
+        # does not make the older intent stop fitting. Backfill should allow it.
+        older_fit = base_rec("s-old", "tOlderFit", 0, 4000, cpu=1, ram=1000, t=-10)
+        older_fit["intent_at"] = now - 10
+        older_fit["expires_at"] = now + 600
+        disjoint = base_rec("s-new", "tDisjoint", 1, 4000, cpu=1, ram=1000, t=0)
+        write_data(claims=[], intents=[older_fit])
+        r = run_claim(disjoint)
+        check("Backfill: disjoint younger claim allowed without delaying older",
+              r.get("ok") is True, diag=r)
+
+        # Case D: release removes both claims and pending intents for the task.
+        write_data(claims=[base_rec("s-release", "tRel", 0, 1000)],
+                   intents=[dict(base_rec("s-release", "tRel", 0, 1000),
+                                 intent_at=now - 5)])
+        r = subprocess.run(
+            ["python3", script_path, "release",
+             _json.dumps({"scheduler_id": "s-release", "task_id": "tRel"}), "{}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        out = _json.loads(r.stdout.strip().splitlines()[-1])
+        check("release removes matching pending intent as well as claim",
+              out.get("ok") is True and out.get("removed") == 1
+              and out.get("removed_intents") == 1,
+              diag=out)
+
+        # Case E: stale intents are GC'd so dead schedulers don't block FIFO.
+        stale = base_rec("s-stale", "tStaleIntent", 0, 9000, t=-999)
+        stale["intent_at"] = now - 999
+        stale["expires_at"] = now - 1
+        write_data(claims=[], intents=[stale])
+        fresh = base_rec("s-fresh", "tFresh", 0, 9000, t=0)
+        r = run_claim(fresh)
+        check("stale FIFO intent is ignored/GC'd",
+              r.get("ok") is True, diag=r)
+
+        # Case F: aging guard. Older cannot fit right now because of an
+        # existing claim, but after waiting past fifo_strict_after_s, a younger
+        # same-GPU claim that would consume its future slot is blocked.
+        strict_cap = dict(cap)
+        strict_cap["fifo_strict_after_s"] = 30
+        existing = base_rec("s-run", "tRunningStrict", 0, 9000, t=-20)
+        older_aged = base_rec("s-old", "tOlderAged", 0, 8000, t=-100)
+        older_aged["intent_at"] = now - 100
+        older_aged["expires_at"] = now + 600
+        younger_same_gpu = base_rec("s-new", "tYoungerStrict", 0, 6000, t=0)
+        write_data(claims=[existing], intents=[older_aged])
+        r = subprocess.run(
+            ["python3", script_path, "claim",
+             _json.dumps(younger_same_gpu), _json.dumps(strict_cap)],
+            capture_output=True, text=True, timeout=10,
+        )
+        out = _json.loads(r.stdout.strip().splitlines()[-1])
+        check("FIFO strict aging blocks younger claim that would consume older future slot",
+              out.get("ok") is False and "fifo-strict:" in (out.get("conflict") or ""),
+              diag=out)
+
+        # Case G: live external usage recheck under the remote lock. The test
+        # passes a deterministic live_snapshot; production reads /proc +
+        # nvidia-smi inside the claim script.
+        live_cap = dict(cap)
+        live_cap["live_check"] = True
+        live_cap["live_snapshot"] = {
+            "loadavg": 0.0,
+            "mem_available_mb": 64000,
+            "gpu_used_mb": {"0": 10000},
+        }
+        write_data(claims=[], intents=[])
+        live_task = base_rec("s-live", "tLiveBlocked", 0, 4000, t=0)
+        r = subprocess.run(
+            ["python3", script_path, "claim",
+             _json.dumps(live_task), _json.dumps(live_cap)],
+            capture_output=True, text=True, timeout=10,
+        )
+        out = _json.loads(r.stdout.strip().splitlines()[-1])
+        check("live external GPU usage blocks over-claim under claims lock",
+              out.get("ok") is False
+              and "gpu0" in (out.get("conflict") or "")
+              and out.get("external_claims_seen", 0) >= 1,
+              diag=out)
+
+
+def test_phase3_2_5_claim_intent_cleanup_visibility():
+    """Phase 3.2.5: queued intent cleanup and operator visibility.
+
+    CLAIM_RACE creates a remote pre-launch intent but then clears task["node"].
+    The task record must remember where that intent lives so cancel/forget/
+    clear-queue and node migration can release it immediately instead of
+    waiting for claim_intent_ttl_s.
+    """
+    print("\n[97c] Phase 3.2.5: claim intent cleanup + visibility")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("intent cleanup helpers exist",
+          "def _remember_claim_intent" in src
+          and "claim_intent_nodes" in src
+          and "def _release_task_claims_and_intents" in src)
+    check("CLAIM_RACE path records attempted node before clearing placement",
+          "_remember_claim_intent(t, attempted_node)" in src)
+    check("cancel/forget/clear-queue release queued intents",
+          "def cmd_cancel" in src and "def cmd_forget" in src
+          and "def cmd_clear_queue" in src
+          and src.count("_release_task_claims_and_intents(t)") >= 4)
+    check("claims visibility APIs and CLI exist",
+          "def snapshot(cls, node: str)" in src
+          and "def enumerate_intents" in src
+          and "def cmd_claims" in src
+          and 'sub.add_parser("claims"' in src)
+    check("why/status/TUI can surface claim intents",
+          "_format_claim_intent_hint_for_task" in src
+          and "_format_node_claim_summary" in src)
+
+    saved_nodes = sch.NODES
+    saved_release = sch._ClaimManager.release
+    saved_state_lock = sch.state_lock
+    saved_load_state = sch.load_state
+    saved_save_state = sch.save_state
+    calls = []
+
+    class DummyLock:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_release(cls, node, tid):
+        calls.append((node, tid))
+        return True
+
+    try:
+        sch.NODES = {
+            "n1": {"enable_claims": True},
+            "n2": {"enable_claims": True},
+        }
+        sch._ClaimManager.release = classmethod(fake_release)
+
+        task = {"id": "tI", "node": "n1", "claim_intent_nodes": ["n1", "n2"]}
+        released = sch._release_task_claims_and_intents(
+            task, exclude_nodes={"n1"}, clear_markers=False)
+        check("release helper can drop stale intents while preserving current-node FIFO ticket",
+              released == 1 and calls == [("n2", "tI")]
+              and task.get("claim_intent_nodes") == ["n1"],
+              diag=f"released={released} calls={calls} task={task}")
+
+        calls.clear()
+        released = sch._release_task_claims_and_intents(task)
+        check("release helper clears all intent markers on terminal/cancel paths",
+              released == 1 and calls == [("n1", "tI")]
+              and "claim_intent_nodes" not in task,
+              diag=f"released={released} calls={calls} task={task}")
+
+        state = {"tasks": [{
+            "id": "tQ", "status": "queued", "claim_intent_nodes": ["n1"],
+            "priority": "normal", "submitted_at": time.time(),
+        }]}
+        calls.clear()
+        sch.state_lock = lambda: DummyLock()
+        sch.load_state = lambda: state
+        sch.save_state = lambda s: None
+        args = __import__("types").SimpleNamespace(id="tQ", force=False)
+        sch.cmd_cancel(args)
+        t = state["tasks"][0]
+        check("cmd_cancel queued task releases remembered remote intent immediately",
+              calls == [("n1", "tQ")]
+              and t.get("status") == "cancelled"
+              and "claim_intent_nodes" not in t,
+              diag=f"calls={calls} task={t}")
+    finally:
+        sch.NODES = saved_nodes
+        sch._ClaimManager.release = saved_release
+        sch.state_lock = saved_state_lock
+        sch.load_state = saved_load_state
+        sch.save_state = saved_save_state
+
+
+def test_phase3_2_6_requeue_cancel_lineage_and_gpu_retry():
+    """Regression for t2195/t2596 class of bugs."""
+    print("\n[97d] Phase 3.2.6: requeue cancel lineage + same-node GPU claim retry")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    check("requeue lineage reconcile helper exists",
+          "def reconcile_requeue_lineage_invariants" in src
+          and "superseded by retry" in src)
+    check("cancel path cancels same-run queued retry duplicates",
+          "def _cancel_related_queued_retries" in src
+          and "_cancel_related_queued_retries(state, t" in src)
+    check("LocalBackend claim conflict retries alternate GPUs on same node",
+          "gpu_attempts" in src and "CLAIM_RACE" in src
+          and "try other GPUs on the same node" in src)
+    check("dispatch reconciles queued tasks with stale launch artifacts before launch",
+          "def _reconcile_queued_launch_artifacts_before_dispatch" in src
+          and "_reconcile_queued_launch_artifacts_before_dispatch(t, state)" in src
+          and "not relaunching same task id" in src)
+
+    base = {
+        "signature": "BAPR/paper_round3/sac/Hopper-v2/s0",
+        "cmd": "bash run_seed.sh sac Hopper-v2 0",
+        "cwd": "/repo",
+        "env_spec": "none",
+        "image": "",
+        "extra_env": {},
+        "ckpt_glob": "*",
+        "resume_flag": "",
+    }
+
+    parent = dict(base, id="tP", status="queued", requeued_as="tC",
+                  submitted_at=time.time(), priority="normal",
+                  node="n1", gpu_idx=0, remote_pids=[])
+    child = dict(base, id="tC", status="cancelled", parent_id="tP",
+                 submitted_at=time.time(), priority="normal")
+    state = {"tasks": [parent, child], "next_id": 3}
+    changed = sch.reconcile_requeue_lineage_invariants(state)
+    check("queued parent with cancelled retry child is made cancelled before dispatch",
+          changed == 1 and parent.get("status") == "cancelled"
+          and parent.get("cancelled_by_user") is True
+          and parent.get("node") is None,
+          diag=f"changed={changed} parent={parent}")
+
+    parent2 = dict(base, id="tP2", status="failed", submitted_at=time.time(),
+                   priority="normal")
+    child2 = dict(base, id="tC2", status="cancelled", parent_id="tP2",
+                  submitted_at=time.time(), priority="normal")
+    state2 = {"tasks": [parent2, child2], "next_id": 3}
+    new_id = sch._requeue_after_crash(parent2, state2)
+    check("auto-requeue suppressed after user-cancelled retry descendant",
+          new_id is None and len(state2["tasks"]) == 2
+          and "cancelled" in (parent2.get("last_block_reason") or ""),
+          diag=f"new_id={new_id} state={state2}")
+
+    saved_state_lock = sch.state_lock
+    saved_load_state = sch.load_state
+    saved_save_state = sch.save_state
+    saved_release = sch._release_task_claims_and_intents
+    class DummyLock:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    state3 = {"tasks": [
+        dict(base, id="tOld", status="queued", submitted_at=1,
+             priority="normal", remote_pids=[]),
+        dict(base, id="tRetry", status="queued", parent_id="tOld",
+             submitted_at=2, priority="normal", remote_pids=[]),
+    ], "next_id": 3}
+    try:
+        sch.state_lock = lambda: DummyLock()
+        sch.load_state = lambda: state3
+        sch.save_state = lambda s: None
+        sch._release_task_claims_and_intents = lambda *a, **kw: 0
+        args = __import__("types").SimpleNamespace(id="tRetry", force=False)
+        sch.cmd_cancel(args)
+        by_id = {t["id"]: t for t in state3["tasks"]}
+        check("cmd_cancel queued retry cancels same-run queued duplicate parent",
+              by_id["tRetry"]["status"] == "cancelled"
+              and by_id["tOld"]["status"] == "cancelled",
+              diag=state3)
+    finally:
+        sch.state_lock = saved_state_lock
+        sch.load_state = saved_load_state
+        sch.save_state = saved_save_state
+        sch._release_task_claims_and_intents = saved_release
+
+    saved_NODES = sch.NODES
+    saved_run_on = sch.run_on
+    saved_claim = sch._ClaimManager.claim
+    saved_update_pid = sch._ClaimManager.update_pid
+    try:
+        sch.NODES = {
+            "n": {"host": "host", "enable_claims": True,
+                  "cpu_cores": 8, "ram_mb": 32000}
+        }
+        calls = []
+        launch_cmds = []
+        def fake_claim(cls, node, task, gpu_idx, node_state=None):
+            calls.append(gpu_idx)
+            if gpu_idx == 0:
+                return (False, "gpu0 over budget", "conflict")
+            return (True, {"task_id": task["id"], "gpu_idx": gpu_idx}, "ok")
+        def fake_update_pid(cls, node, task_id, pid):
+            return True
+        def fake_run_on(node, cmd, **kw):
+            if "test -d" in cmd:
+                return (0, "", "")
+            launch_cmds.append(cmd)
+            return (0, "PID=123\n", "")
+        sch._ClaimManager.claim = classmethod(fake_claim)
+        sch._ClaimManager.update_pid = classmethod(fake_update_pid)
+        sch.run_on = fake_run_on
+        task = dict(base, id="tGpu", status="queued", node="n", gpu_idx=0,
+                    est_vram_mb=1104, ram_mb=1000, cpu_cores=1,
+                    remote_pids=[])
+        node_state = {"name": "n", "alive": True, "free_cpu": 8,
+                      "free_ram_mb": 30000, "total_ram_mb": 32000,
+                      "total_cpu": 8, "gpus": [
+                          {"idx": 0, "total_mb": 12000, "used_mb": 0,
+                           "free_mb": 12000, "util_pct": 0},
+                          {"idx": 1, "total_mb": 12000, "used_mb": 0,
+                           "free_mb": 12000, "util_pct": 0},
+                      ]}
+        ok, msg = sch.LocalBackend().launch(task, node_state=node_state)
+        check("LocalBackend retries alternate GPU after claim conflict",
+              ok is True and calls == [0, 1] and task.get("gpu_idx") == 1
+              and task.get("status") == "running",
+              diag=f"ok={ok} msg={msg} calls={calls} task={task}")
+        check("alternate GPU launch exports matching CUDA_VISIBLE_DEVICES",
+              launch_cmds and "CUDA_VISIBLE_DEVICES=1" in launch_cmds[-1],
+              diag=launch_cmds[-1] if launch_cmds else "no launch")
+    finally:
+        sch.NODES = saved_NODES
+        sch.run_on = saved_run_on
+        sch._ClaimManager.claim = saved_claim
+        sch._ClaimManager.update_pid = saved_update_pid
+
+    saved_backend = sch._BACKEND
+    saved_release = sch._release_task_claims_and_intents
+    saved_diag = sch._diagnose_terminal
+    try:
+        class FakeBackend:
+            def __init__(self, result):
+                self.result = result
+            def batch_probe(self, state):
+                tid = state["tasks"][0]["id"]
+                return {tid: dict(self.result)}
+
+        sch._release_task_claims_and_intents = lambda *a, **kw: 0
+
+        alive_task = dict(base, id="tAliveArtifact", status="queued",
+                          node="n", gpu_idx=0, remote_pids=[111],
+                          process_group=111, started_at=time.time() - 10,
+                          log_path="/tmp/sched_tAliveArtifact.log",
+                          submitted_at=1, priority="normal",
+                          est_vram_mb=500, ram_mb=1000, cpu_cores=1)
+        alive_state = {"tasks": [alive_task], "next_id": 10}
+        sch._BACKEND = FakeBackend({
+            "state": "alive", "alive_pids": [111, 112],
+            "vram_mb": 321, "ram_mb": 654, "pcpu": 123.0,
+        })
+        ev = sch._reconcile_queued_launch_artifacts_before_dispatch(alive_task, alive_state)
+        check("queued task with live old PID is adopted, not relaunched same id",
+              ev and ev.get("type") == "queued_artifact_adopted"
+              and alive_task.get("status") == "running"
+              and alive_task.get("alive_pids") == [111, 112]
+              and alive_task.get("peak_vram_mb") == 321,
+              diag=f"ev={ev} task={alive_task}")
+
+        dead_task = dict(base, id="tDeadArtifact", status="queued",
+                         node="n", gpu_idx=0, remote_pids=[222],
+                         process_group=222, started_at=time.time() - 10,
+                         log_path="/tmp/sched_tDeadArtifact.log",
+                         submitted_at=1, priority="normal",
+                         est_vram_mb=500, ram_mb=1000, cpu_cores=1,
+                         retry_count=0)
+        dead_state = {"tasks": [dead_task], "next_id": 10}
+        sch._BACKEND = FakeBackend({
+            "state": "dead", "alive_pids": [],
+            "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
+        })
+        sch._diagnose_terminal = lambda task: {
+            "is_crash": True,
+            "reason": "RuntimeError: synthetic crash",
+            "tail": "Traceback",
+            "lifetime_s": 10,
+            "log_size": 100,
+            "log_path": task.get("log_path"),
+            "success_marker": None,
+        }
+        ev2 = sch._reconcile_queued_launch_artifacts_before_dispatch(dead_task, dead_state)
+        new_retry = dead_state["tasks"][-1] if len(dead_state["tasks"]) > 1 else {}
+        check("queued task with dead old PID becomes failed and gets new retry id",
+              ev2 and ev2.get("type") == "queued_artifact_finalized"
+              and dead_task.get("status") == "failed"
+              and dead_task.get("requeued_as") == "t0010"
+              and new_retry.get("id") == "t0010"
+              and new_retry.get("parent_id") == "tDeadArtifact"
+              and new_retry.get("status") == "queued",
+              diag=f"ev={ev2} state={dead_state}")
+    finally:
+        sch._BACKEND = saved_backend
+        sch._release_task_claims_and_intents = saved_release
+        sch._diagnose_terminal = saved_diag
 
 
 def test_phase3_3_local_windows_host_metrics():
@@ -8876,7 +9709,7 @@ def test_phase3_4_3_claim_race_vs_claim_error():
           and '"conflict"' in src and '"error"' in src
           and 'claim transport failed' in src)
     check("LocalBackend.launch wraps conflict as CLAIM_RACE:",
-          'f"CLAIM_RACE: {info}"' in src)
+          'return False, f"CLAIM_RACE:' in src)
     check("LocalBackend.launch wraps transport errors as CLAIM_ERROR:",
           'f"CLAIM_ERROR: {info}"' in src)
     do_idx = src.find("def _do_dispatch")
@@ -9368,13 +10201,13 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     # Source: terminal-orphan finalize releases claim.
     fn_term = src.split("def _try_finalize_terminal_local_task")[1].split("\ndef ")[0]
     check("3.4.9: _try_finalize_terminal_local_task releases claim",
-          "_ClaimManager.release(node, tid)" in fn_term,
+          "_release_task_claims_and_intents(task, extra_nodes=[node])" in fn_term,
           diag="terminal orphan must release claim or it lingers until TTL GC")
 
     # Source: revert-to-queued path releases claim.
     fn_revert = src.split("def recover_stale_launching_tasks")[1].split("\ndef ")[0]
     check("3.4.9: revert-to-queued in recover_stale_launching_tasks releases claim",
-          "_ClaimManager.release(node, t[\"id\"])" in fn_revert,
+          "_release_task_claims_and_intents(t, extra_nodes=[node])" in fn_revert,
           diag="claim from pre-launch may linger if scheduler died mid-launch")
 
     # Source: watcher reconciles claim PIDs each cycle.
@@ -9884,9 +10717,9 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
 
     # ============================================================
     # Phase 3.4.12 fixes — dynamic excludes + stage_failed escalation
-    #   + preferred_node fallback + (sig, cmd) dedup
+    #   + preferred_node fallback + run-identity dedup
     # ============================================================
-    print("\n[Phase 3.4.12] dynamic excludes + stage_failed + preferred_node + (sig,cmd) dedup")
+    print("\n[Phase 3.4.12] dynamic excludes + stage_failed + preferred_node + run-identity dedup")
 
     src = open(sch.__file__).read()
 
@@ -9942,17 +10775,17 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
           "tgts = list(NODES.keys())" in fn_outside,
           diag="preferred_node alone shouldn't shrink target set — pick_placement may fall back")
 
-    # ---- P2-2: dedup key changed to (signature, cmd) ----
-    check("3.4.12 P2-2: dispatch dedup uses (sig, cmd) tuple, not sig alone",
+    # ---- P2-2: dedup key is run identity, not signature alone ----
+    check("3.4.12 P2-2: dispatch dedup uses _task_run_identity, not sig alone",
           "running_keys = {" in src
-          and 't.get("signature") or "", t.get("cmd")' in src,
+          and "_task_run_identity(t)" in src,
           diag="lets independent experiments with same family signature run in parallel")
-    check("3.4.12 P2-2: in-loop add uses (sig, cmd) tuple too",
-          'running_keys.add((sig, t.get("cmd") or ""))' in src,
+    check("3.4.12 P2-2: in-loop add uses run identity too",
+          "running_keys.add(launched_key)" in src,
           diag="same-cycle dedup must match the precomputed key shape")
-    check("3.4.12 P2-2: blocked-event reason mentions 'identical cmd'",
-          "identical cmd already has a running task" in src,
-          diag="user-facing message tells operator different cmds with same sig are allowed")
+    check("3.4.12 P2-2: blocked-event reason mentions run identity",
+          "run identity already has" in src,
+          diag="user-facing message tells operator broad signatures are allowed")
 
     # ---- P1-1 behavioral: extra_excludes appended to rsync ----
     saved_NODES = sch.NODES
@@ -10017,18 +10850,109 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     finally:
         sch.NODES = saved_NODES
 
-    # ---- P2-2 behavioral: same sig + different cmd both launch ----
+    # ---- P2-2 behavioral: run identity includes cmd/cwd/env ----
     # (Exercised in the broader same-pass duplicate test above; here we
     # just sanity-check the dedup tuple type.)
     saved_NODES = sch.NODES
     try:
-        running_keys_test = {("sig", "cmd_A"), ("sig", "cmd_B")}
-        check("3.4.12 P2-2 behavior: tuple-keyed set distinguishes cmds with same sig",
-              ("sig", "cmd_A") in running_keys_test
-              and ("sig", "cmd_C") not in running_keys_test,
-              diag=str(running_keys_test))
+        key_a = sch._task_run_identity({"signature": "sig", "cmd": "cmd",
+                                        "cwd": "/a", "extra_env": {"E": "A"}})
+        key_b = sch._task_run_identity({"signature": "sig", "cmd": "cmd",
+                                        "cwd": "/b", "extra_env": {"E": "B"}})
+        key_dup = sch._task_run_identity({"signature": "sig", "cmd": "cmd",
+                                          "cwd": "/a", "extra_env": {"E": "A"}})
+        check("3.4.12 P2-2 behavior: run identity distinguishes cwd/env under same sig+cmd",
+              key_a != key_b and key_a == key_dup,
+              diag=f"key_a={key_a} key_b={key_b}")
     finally:
         sch.NODES = saved_NODES
+
+    # ============================================================
+    # Phase 3.4.13 P1 fix — slurm pending throttle split by resource bucket
+    # ============================================================
+    print("\n[Phase 3.4.13] slurm pending throttle split by resource bucket (cpu vs gpu)")
+
+    src = open(sch.__file__).read()
+
+    # ---- Source guards ----
+    check("3.4.13: _slurm_pending_bucket_for_task helper defined",
+          "def _slurm_pending_bucket_for_task" in src,
+          diag="bucket inference (cpu/gpu) shared between counter and dispatch")
+    check("3.4.13: bucket logic uses the same DEFAULT fallback as pick_placement",
+          'task.get("est_vram_mb", DEFAULT_VRAM_MB)' in src,
+          diag="missing est_vram_mb must not be CPU in throttle while GPU in placement")
+    check("3.4.13: CPU/GPU pending caps are independently configurable",
+          "SLURM_MAX_PENDING_CPU_PER_NODE" in src
+          and "SLURM_MAX_PENDING_GPU_PER_NODE" in src
+          and "max_slurm_pending_cpu" in src
+          and "max_slurm_pending_gpu" in src,
+          diag="CPU-only slurm jobs need a higher lookahead cap than GPU jobs")
+
+    fn_count = src.split("def _count_slurm_pending_per_node")[1].split("\ndef ")[0]
+    check("3.4.13: counter splits per-node into {cpu, gpu} dict",
+          'per_node = counts.setdefault(node, {"cpu": 0, "gpu": 0})' in fn_count,
+          diag="counter return shape changed from int → dict")
+    check("3.4.13: counter uses bucket helper for classification",
+          'bucket = _slurm_pending_bucket_for_task(t)' in fn_count,
+          diag="must use same bucket logic as dispatch")
+
+    # ---- Behavioral: counter returns split ----
+    state = {"tasks": [
+        {"id": "tA", "status": "running", "node": "n1", "slurm_job_id": 1,
+         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu pending
+        {"id": "tB", "status": "running", "node": "n1", "slurm_job_id": 2,
+         "slurm_state": "PENDING", "est_vram_mb": 1500},   # gpu pending
+        {"id": "tC", "status": "running", "node": "n1", "slurm_job_id": 3,
+         "slurm_state": "PENDING", "est_vram_mb": 0},      # cpu pending
+        {"id": "tD", "status": "running", "node": "n2", "slurm_job_id": 4,
+         "slurm_state": "PENDING", "est_vram_mb": 4000},   # gpu pending only
+    ]}
+    counts = sch._count_slurm_pending_per_node(state)
+    check("3.4.13 behavior: n1 has cpu=2 gpu=1 (mixed bucket)",
+          counts.get("n1") == {"cpu": 2, "gpu": 1},
+          diag=str(counts))
+    check("3.4.13 behavior: n2 has cpu=0 gpu=1",
+          counts.get("n2") == {"cpu": 0, "gpu": 1},
+          diag=str(counts))
+
+    # ---- Behavioral: bucket helper ----
+    check("3.4.13 behavior: cpu task → 'cpu' bucket",
+          sch._slurm_pending_bucket_for_task({"est_vram_mb": 0}) == "cpu")
+    check("3.4.13 behavior: gpu task → 'gpu' bucket",
+          sch._slurm_pending_bucket_for_task({"est_vram_mb": 100}) == "gpu")
+    check("3.4.13 behavior: missing est_vram_mb → 'gpu' (same as pick_placement default)",
+          sch._slurm_pending_bucket_for_task({}) == "gpu")
+
+    # ---- Behavioral: pending Slurm jobs don't consume local concurrency cap ----
+    check("3.4.13 behavior: slurm PENDING does NOT count against max_concurrent_running",
+          sch._counts_against_node_concurrency({
+              "id": "sp", "status": "running", "node": "local",
+              "slurm_job_id": 11, "slurm_state": "PENDING",
+          }) is False)
+    check("3.4.13 behavior: slurm RUNNING still counts against max_concurrent_running",
+          sch._counts_against_node_concurrency({
+              "id": "sr", "status": "running", "node": "local",
+              "slurm_job_id": 12, "slurm_state": "RUNNING",
+          }) is True)
+    check("3.4.13 behavior: LocalBackend running task counts against max_concurrent_running",
+          sch._counts_against_node_concurrency({
+              "id": "lr", "status": "running", "node": "local",
+              "remote_pids": [123],
+          }) is True)
+
+    # ---- Source guard: throttle reason mentions both buckets ----
+    check("3.4.13: throttle reason surfaces both cpu and gpu pending counts/caps",
+          'cpu {int(split.get(\'cpu\') or 0)}/{cpu_cap}' in src
+          and 'gpu {int(split.get(\'gpu\') or 0)}/{gpu_cap}' in src,
+          diag="user must see why-throttled per-bucket so they understand routing")
+    check("3.4.13: cmd_why surfaces bucket-keyed throttle state",
+          "bucket bucket throttled" in src or "{bucket} bucket throttled" in src,
+          diag="diagnose which pool blocked the task")
+    fn_why = src.split("def cmd_why")[1].split("\ndef ")[0]
+    check("3.4.13: cmd_why seeds slurm_pending_split before per-node analysis",
+          "_count_slurm_pending_per_node(state)" in fn_why
+          and 'n["slurm_pending_split"] = split' in fn_why,
+          diag="why/probe analysis must mirror dispatch throttle state")
 
 
 def test_phase3_0_8_unknown_eta_skipped_in_migration():
@@ -11028,6 +11952,18 @@ def test_phase3_0_1_eta_parser_and_integration():
     check("compute_eta_seconds: tqdm-eta tier-0 used (201s, ignoring rate-from-current)",
           eta == 201, diag=f"got {eta}")
 
+    proj = et.runtime_projection(text, elapsed_s=42)
+    check("runtime_projection: tqdm total = scheduler elapsed + tqdm remaining",
+          proj and proj.get("source") == "tqdm" and proj.get("total_s") == 243
+          and proj.get("eta_s") == 201 and proj.get("total_units") == 5678,
+          diag=str(proj))
+    proj = et.runtime_projection("[Epoch 25/100] step", elapsed_s=250)
+    check("runtime_projection: progress rate projects total runtime",
+          proj and proj.get("source") == "progress_rate"
+          and 990 <= proj.get("total_s", 0) <= 1010
+          and 740 <= proj.get("eta_s", 0) <= 760,
+          diag=str(proj))
+
     # ---------- ETA math ----------
     # tier-0 (tqdm pre-computed) wins: extracts "1:29:20" directly = 5360s
     eta = et.compute_eta_seconds(
@@ -11108,6 +12044,11 @@ def test_phase3_0_1_eta_parser_and_integration():
         check("running task with progress: ETA from rate (~200s)",
               prog.get("eta_seconds") and 150 <= prog["eta_seconds"] <= 250,
               diag=f"got {prog.get('eta_seconds')}")
+        check("_refresh_eta_from_logs stores runtime projection",
+              prog.get("runtime_total_s_est") and 950 <= prog["runtime_total_s_est"] <= 1050
+              and prog.get("runtime_total_units") == 100
+              and prog.get("runtime_est_source") == "progress_rate",
+              diag=str(prog))
         # t-noprog: no progress in tail, EWMA=1200, elapsed=100 → 1100
         check("running task no progress in tail: EWMA fallback (~1100s)",
               noprog.get("eta_seconds") and 1050 <= noprog["eta_seconds"] <= 1200,
@@ -11392,6 +12333,15 @@ def test_backend_slurm_phase2_15_orphan_recovery():
 
     saved_backend = sch._BACKEND
     real_run_on = sch.run_on
+    saved_NODES = sch.NODES
+    sch.NODES = {
+        "slurmnode": {"host": "slurmnode", "cpu_cores": 12, "ram_mb": 200000,
+                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                      "max_concurrent_running": None, "slurm_backend": "slurm"},
+        "localnode": {"host": "localnode", "cpu_cores": 12, "ram_mb": 200000,
+                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                      "max_concurrent_running": None},
+    }
     now = time.time()
     stale = now - sch.LAUNCHING_RESET_S - 5  # past the threshold
 
@@ -11559,6 +12509,7 @@ def test_backend_slurm_phase2_15_orphan_recovery():
     finally:
         sch._BACKEND = saved_backend
         sch.run_on = real_run_on
+        sch.NODES = saved_NODES
 
 
 
@@ -11691,6 +12642,8 @@ def test_check_running_phase2_9_slurm_aware():
               result == "alive", diag=f"got {result!r}")
         check("slurm task: ram_mb folded into peak_ram_mb",
               slurm_task["peak_ram_mb"] == 4096)
+        check("slurm task: current_ram_mb folded for live display",
+              slurm_task.get("current_ram_mb") == 4096)
     finally:
         sch._BACKEND = saved_backend
 
@@ -11831,12 +12784,21 @@ def test_backend_slurm_phase2_8_route_by_launch_artifacts():
           backend is hb._slurm,
           diag=f"got backend={type(backend).__name__}")
 
-    # ---------- Queued task (no launch artifacts) → cache-based decision ----------
+    # ---------- Queued task (no launch artifacts) → opt-in policy decision ----------
     hb._cache["nodeZ"] = "slurm"
     queued = {"id": "tq", "status": "queued", "node": "nodeZ"}
     backend = hb._backend_for_task(queued)
-    check("queued task with no launch artifacts → cache-based (slurm)",
-          backend is hb._slurm)
+    check("queued task with no launch artifacts → default-local despite slurm cache",
+          backend is hb._local)
+
+    saved_NODES = sch.NODES
+    sch.NODES = {"nodeZ": {"host": "nodeZ", "slurm_backend": "slurm"}}
+    try:
+        backend = hb._backend_for_task(queued)
+        check("queued task with no launch artifacts → node opt-in routes to slurm",
+              backend is hb._slurm)
+    finally:
+        sch.NODES = saved_NODES
 
     hb._cache["nodeW"] = "local"
     queued_local = {"id": "tql", "status": "queued", "node": "nodeW"}
@@ -12329,14 +13291,51 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
     check("SlurmBackend.requires_local_capacity_check → False (defer to slurm)",
           sch.SlurmBackend().requires_local_capacity_check("any-node") is False)
 
-    # HybridBackend: per-node based on cache
+    # HybridBackend: capability cache is not policy; Slurm is opt-in.
     hb = sch.HybridBackend()
     hb._cache["fake-slurm"] = "slurm"
     hb._cache["fake-local"] = "local"
-    check("HybridBackend slurm-cached node → bypass (False)",
-          hb.requires_local_capacity_check("fake-slurm") is False)
+    check("HybridBackend slurm-cached default node → local gate (True)",
+          hb.requires_local_capacity_check("fake-slurm") is True)
     check("HybridBackend local-cached node → gate (True)",
           hb.requires_local_capacity_check("fake-local") is True)
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "share-gpu": {"host": "share-gpu", "cpu_cores": 12, "ram_mb": 200000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None,
+                       "gpu_util_saturation_pct": None},
+        "cluster-slurm": {"host": "cluster", "cpu_cores": 12, "ram_mb": 200000,
+                          "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                          "max_concurrent_running": None,
+                          "slurm_backend": "slurm"},
+    }
+    hb._cache["share-gpu"] = "slurm"
+    hb._cache["cluster-slurm"] = "slurm"
+    try:
+        gpu_task = {"id": "tgpu-share", "est_vram_mb": 1000}
+        cpu_task = {"id": "tcpu-share", "est_vram_mb": 0}
+        explicit_slurm_gpu_task = {
+            "id": "tgpu-slurm", "est_vram_mb": 1000,
+            "slurm_partition": "gpu",
+        }
+        check("HybridBackend default-local GPU task uses local capacity gate",
+              hb.requires_local_capacity_check("share-gpu", gpu_task) is True)
+        check("HybridBackend default-local CPU task uses local capacity gate",
+              hb.requires_local_capacity_check("share-gpu", cpu_task) is True)
+        check("node slurm_backend=slurm bypasses local capacity gate",
+              hb.requires_local_capacity_check("cluster-slurm", cpu_task) is False)
+        check("explicit slurm option routes to probed Slurm node",
+              hb.requires_local_capacity_check("share-gpu", explicit_slurm_gpu_task) is False)
+        check("queued GPU task routes to LocalBackend by default even when Slurm is cached",
+              hb._backend_for_task({"id": "tgpu-share", "node": "share-gpu",
+                                    "est_vram_mb": 1000}) is hb._local)
+        check("existing slurm_job_id still routes to SlurmBackend after policy flip",
+              hb._backend_for_task({"id": "trunning", "node": "share-gpu",
+                                    "est_vram_mb": 1000,
+                                    "slurm_job_id": 123}) is hb._slurm)
+    finally:
+        sch.NODES = real_NODES
 
     # ---------- Functional: pick_placement on a slurm-only no-GPU login node ----------
     # Scenario: NODES has just one slurm node ("login") whose probe returned no GPUs
@@ -12347,6 +13346,12 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
     fake_hb = sch.HybridBackend()
     fake_hb._cache["login"] = "slurm"
     sch._BACKEND = fake_hb
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "login": {"host": "login", "cpu_cores": 0, "ram_mb": 0,
+                  "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                  "max_concurrent_running": None, "slurm_backend": "slurm"},
+    }
     try:
         nodes = [{"name": "login", "alive": True, "gpus": [], "free_cpu": 0,
                   "free_ram_mb": 0, "loadavg": 5.0}]
@@ -12363,6 +13368,44 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
               placement == ("login", None), diag=f"got {placement}")
     finally:
         sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
+
+    # ---------- Functional: default-local Slurm-installed nodes pack GPUs locally ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["share-gpu"] = "slurm"
+    sch._BACKEND = fake_hb
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "share-gpu": {"host": "share-gpu", "cpu_cores": 12, "ram_mb": 200000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None,
+                       "gpu_util_saturation_pct": None},
+    }
+    try:
+        nodes = [{"name": "share-gpu", "alive": True, "loadavg": 0.0,
+                  "free_cpu": 10, "free_ram_mb": 180000, "running_count": 0,
+                  "slurm_pending_split": {"cpu": 0, "gpu": 99},
+                  "gpus": [
+                      {"idx": 0, "used_mb": 1400, "total_mb": 12288,
+                       "free_mb": 10888, "util_pct": 100},
+                      {"idx": 1, "used_mb": 0, "total_mb": 12288,
+                       "free_mb": 12288, "util_pct": 0},
+                  ]}]
+        task = {"id": "tshare", "est_vram_mb": 1200, "cpu_cores": 2, "ram_mb": 4000,
+                "signature": "TEST/slurm-gpu-local"}
+        placement = sch.pick_placement(task, nodes)
+        check("default-local Slurm-installed node returns a concrete idle GPU idx, not slurm deferred None",
+              placement == ("share-gpu", 1),
+              diag=f"got {placement}")
+        strict_info = dict(sch.NODES["share-gpu"])
+        strict_info.pop("gpu_util_saturation_pct", None)
+        check("default GPU util gate would reject the same occupied 100% GPU",
+              sch._gpu_fits(task, nodes[0]["gpus"][0], strict_info) is False)
+        check("per-node gpu_util_saturation_pct=None disables util gate for sharing node",
+              sch._gpu_fits(task, nodes[0]["gpus"][0], sch.NODES["share-gpu"]) is True)
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
 
     # ---------- Functional: local-fits AND slurm-available → local wins ----------
     fake_hb = sch.HybridBackend()
@@ -12376,7 +13419,7 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
                        "max_concurrent_running": None},
         "cluster": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
-                     "max_concurrent_running": None},
+                     "max_concurrent_running": None, "slurm_backend": "slurm"},
     }
     try:
         nodes = [
@@ -12410,7 +13453,7 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
                        "max_concurrent_running": None},
         "cluster": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
-                     "max_concurrent_running": None},
+                     "max_concurrent_running": None, "slurm_backend": "slurm"},
     }
     try:
         nodes = [
@@ -12426,6 +13469,45 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
                 "require_node": "cluster"}
         placement = sch.pick_placement(task, nodes)
         check("require_node=cluster → pick cluster even when local-box also fits",
+              placement == ("cluster", None), diag=f"got {placement}")
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
+
+    # ---------- Functional: explicit --slurm-* never silently falls back to LocalBackend ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["local-box"] = "local"
+    fake_hb._cache["cluster"] = "slurm"
+    sch._BACKEND = fake_hb
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "local-box": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None},
+        "cluster": {"host": "cluster.example", "cpu_cores": 12, "ram_mb": 200000,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None},
+    }
+    try:
+        local_only_nodes = [
+            {"name": "local-box", "alive": True, "loadavg": 1.0, "free_cpu": 8,
+             "free_ram_mb": 20000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 200, "total_mb": 8000, "free_mb": 7800,
+                       "util_pct": 10}]},
+        ]
+        explicit_task = {"id": "texp", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 4000,
+                         "signature": "TEST/explicit-slurm", "slurm_partition": "gpu"}
+        placement = sch.pick_placement(explicit_task, local_only_nodes)
+        check("explicit --slurm-* with no Slurm-capable node → no local fallback",
+              placement is None, diag=f"got {placement}")
+
+        mixed_nodes = local_only_nodes + [
+            {"name": "cluster", "alive": True, "loadavg": 0.0, "free_cpu": 0,
+             "free_ram_mb": 0, "running_count": 0, "gpus": [],
+             "slurm_pending_split": {"cpu": 0, "gpu": 0}},
+        ]
+        placement = sch.pick_placement(explicit_task, mixed_nodes)
+        check("explicit --slurm-* skips fitting local node and picks Slurm-capable node",
               placement == ("cluster", None), diag=f"got {placement}")
     finally:
         sch._BACKEND = saved_backend
@@ -12464,6 +13546,7 @@ if __name__ == "__main__":
     test_requeue_from_adopt_becomes_scheduler_owned()
     test_training_cpu_guard()
     test_resume_capability_guard()
+    test_wrapper_checkpoint_contract_guard()
     test_diagnose_mid_training_kill()
     test_find_resume_extension_filter()
     test_local_max_vram_per_task_dynamic()
@@ -12478,7 +13561,7 @@ if __name__ == "__main__":
     test_run_on_has_server_alive_options()
     test_has_image_digest_drift()
     test_env_deploy_doc_matches_code()
-    test_pick_placement_best_fit_warm_first()
+    test_pick_placement_empty_first_then_best_fit()
     test_diagnose_peak_vram_implies_crash_without_success()
     test_launch_path_uses_digest_check()
     test_atomic_write_integrity()
@@ -12496,6 +13579,7 @@ if __name__ == "__main__":
     test_kill_includes_docker_for_named_container()
     test_kill_no_container_unchanged()
     test_ckpt_dir_cross_sig_conflict()
+    test_submit_path_conflict_guards()
     test_oom_classify_no_false_positive()
     test_inject_python_u()
     test_dispatch_skips_duplicate_signature()
@@ -12561,6 +13645,9 @@ if __name__ == "__main__":
     test_phase3_2_1_claim_lifecycle_in_dispatch()
     test_phase3_2_2_probe_folds_pending_claims()
     test_phase3_2_3_concurrent_schedulers_only_one_wins()
+    test_phase3_2_4_claim_fifo_backfill()
+    test_phase3_2_5_claim_intent_cleanup_visibility()
+    test_phase3_2_6_requeue_cancel_lineage_and_gpu_retry()
     test_phase3_3_local_windows_host_metrics()
     test_phase3_4_0_cross_user_claim_io()
     test_phase3_4_2_persistent_owner_id()

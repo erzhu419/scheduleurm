@@ -6,7 +6,7 @@ All scheduler-wide knobs live at the top of `skill/scheduler.py`. Re-run `instal
 
 ```python
 NODES = {
-    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_frac": 0.25, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
     "remote-A":  {"host": "remote-A", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
 }
 ```
@@ -15,10 +15,20 @@ NODES = {
 |---|---|---|
 | `host` | `None` for local; SSH alias from `~/.ssh/config` for remote | Must be passwordless: `ssh -o BatchMode=yes <host> true` exits 0 |
 | `cpu_cores` | Schedulable CPU budget (already net of OS reservation) | 16 physical cores → 12 schedulable (4 reserved). HT logical count is misleading — use physical |
-| `ram_mb` | Schedulable RAM in MB | Don't include OS headroom here — that's `ram_headroom_frac`'s job |
-| `ram_headroom_frac` | Fraction of RAM to keep unallocated | **WSL2: 0.25** (OOM freezes the host). Bare-metal Linux: 0.10 |
+| `ram_mb` | Schedulable RAM in MB | Don't include OS headroom here — that's `ram_headroom_mb` / `ram_headroom_frac`'s job |
+| `ram_headroom_mb` | Fixed RAM MB to keep unallocated | Wins over `ram_headroom_frac`. Current local WSL setting: `2048` |
+| `ram_headroom_frac` | Fraction of RAM to keep unallocated | Used when `ram_headroom_mb` is unset. Bare-metal Linux / remotes: `0.10` |
 | `max_vram_per_task` | Cap individual task VRAM | `None` auto-derives from probed `nvidia-smi total_mb`. Set a number to cap (WSL local 4060: 4096 lets two tasks share an 8GB card) |
 | `max_concurrent_running` | Hard cap on tracked running tasks | Defense-in-depth above CPU/RAM bookkeeping. WSL local: 8-10. Remote with 200GB RAM: `None` |
+| `slurm_backend` | `"local"` default, `"slurm"`, or `"auto"` | Default ignores Slurm even if installed. `"slurm"` forces all future launches on that node through SlurmBackend. `"auto"` preserves old detect-and-use behavior |
+| `slurm_gpu_backend` / `slurm_cpu_backend` | `"local"` default, `"slurm"`, or `"auto"` | Per-resource opt-in. Use `"slurm"` only for real shared clusters; leave default for small nodes that need scheduleurm VRAM/RAM packing |
+| `gpu_util_saturation_pct` | Integer percent or `None` | Per-node override for the GPU util placement gate. `None` ignores util for packing and relies on VRAM/1⁄3/RAM/CPU checks |
+| `enable_claims` | `False` by default | Recommended for default-local shared nodes; adds cross-scheduler local resource claims and FIFO-with-backfill launch admission |
+| `claim_ttl_s` | `3600` default | Lifetime of an active resource claim before GC may remove it if its PID is also dead |
+| `claim_intent_ttl_s` | `180` default | Lifetime of a queued FIFO intent ticket. Keep above watcher interval; lower means faster recovery from dead schedulers |
+| `claim_fifo_strict_after_s` | `1800` default | Aging guard for shared intents. After this wait, younger work that would consume the older task's future slot is blocked; disjoint backfill remains allowed |
+| `claim_live_check` | `True` default | While holding the remote claims lock, treat live non-scheduleurm CPU/RAM/GPU usage as synthetic external claims. Set `False` if `nvidia-smi`/`/proc` is slow or misleading |
+| `claim_live_check_timeout_s` | `3` default | Per-claim timeout for the remote live `nvidia-smi` check |
 
 ## Resource defaults (per task, when no history exists)
 
@@ -83,7 +93,7 @@ if _NODES_FILE.exists():
 Sample `nodes.json`:
 ```json
 {
-  "local":    {"host": null,       "cpu_cores": 12, "ram_mb": 57344, "ram_headroom_frac": 0.25, "max_vram_per_task": null, "max_concurrent_running": 10},
+  "local":    {"host": null,       "cpu_cores": 12, "ram_mb": 57344, "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": null, "max_concurrent_running": 10},
   "remote-A": {"host": "remote-A", "cpu_cores": 12, "ram_mb": 204800, "ram_headroom_frac": 0.10, "max_vram_per_task": null, "max_concurrent_running": null}
 }
 ```
@@ -96,6 +106,7 @@ This isn't wired in by default to keep the single-file deployment story clean �
 ~/.claude/scheduler/
 ├── queue.json              # all tasks (queued + launching + running + recent terminal)
 ├── vram_history.json       # per-signature p80 samples
+├── runtime_history.json    # exact cmd/cwd/env runtime samples for Slurm walltime/ETA
 ├── escalations.jsonl       # heal session inbox (append-only)
 ├── queue_archive.jsonl     # terminal tasks > 7 days old
 ├── .lock                   # fcntl exclusive lock; held during all state mutations

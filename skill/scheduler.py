@@ -22,6 +22,7 @@ State lives in ~/.claude/scheduler/{queue.json, vram_history.json, logs/}. Inter
 """
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -51,8 +52,9 @@ except Exception:
 
 # ---------- node inventory ----------
 # cpu_cores / ram_mb are the SCHEDULABLE budget (already net of OS/IO reservation), not physical totals.
-# Local is WSL2: 16 physical cores → 12 schedulable, 64GB RAM → 56GB schedulable, plus 25% headroom on top
-# of that to defend against WSL OOM (which freezes the host). Remote nodes are dedicated boxes — looser.
+# Local is WSL2: 16 physical cores → 12 schedulable. RAM headroom can be a fixed
+# MB value (`ram_headroom_mb`) or a fraction (`ram_headroom_frac`); fixed MB wins.
+# Remote nodes are dedicated boxes — looser fractional headroom is usually enough.
 # max_concurrent_running: hard cap on number of scheduler-tracked running tasks per node.
 # Defense layer above CPU/RAM budgets — for SUMO/RL workloads, declared cpu/ram routinely
 # under-counts (libsumo + multi-step env explodes during sim phase). On WSL local in particular
@@ -67,22 +69,18 @@ NODES = {
     # max_vram_per_task: None = auto-derive from probed GPU total_mb at runtime (set in probe_node).
     # Was hardcoded 4096 from AMD 610 era; after NVIDIA 4060 (8188MB) became the default GPU,
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
-    "local":      {"host": None,         "cpu_cores": 12, "ram_mb": 56 * 1024,  "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
-    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
-    # Phase 3.4.14: force_backend="local" so HybridBackend skips slurm even
-    # though sbatch is installed. Slurm partition has OverSubscribe=NO and no
-    # GPU shards, so `--gres=gpu:1` allocates one whole GPU per job → at most
-    # 2 concurrent jobs on a 2-GPU node. LocalBackend with scheduleurm's 1/3
-    # packing rule lets us run 2-3 jobs per GPU on the same hardware (matches
-    # jtl110gpu, which has no slurm). In-flight slurm jobs continue under
-    # SlurmBackend (routing keys off task.slurm_job_id, not the per-node
-    # cache), so the switch is safe to apply mid-flight.
-    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "force_backend": "local"},
+    "local":      {"host": None,         "cpu_cores": 12, "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True},
+    # Slurm may be installed on this small node, but the default policy is still
+    # scheduleurm-managed local placement so one GPU can hold multiple small jobs.
+    # Explicit task Slurm fields or per-node slurm_*_backend="slurm" still opt in.
+    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
 }
 
 STATE_DIR = Path.home() / ".claude" / "scheduler"
 QUEUE_FILE = STATE_DIR / "queue.json"
 VRAM_FILE = STATE_DIR / "vram_history.json"  # holds {sig: {vram, ram, cpu}} (back-compat: int = vram only)
+RUNTIME_FILE = STATE_DIR / "runtime_history.json"  # exact-parameter walltime/unit-time history
 LOCK_FILE = STATE_DIR / ".lock"
 LOG_DIR = STATE_DIR / "logs"
 
@@ -91,6 +89,7 @@ RAM_HEADROOM_FRAC = 0.10   # keep 10% of node RAM unallocated as buffer for OS/o
 ONE_THIRD_PACK_RULE = True # don't add to a GPU already past 1/3 used (RL plateau heuristic)
 GPU_UTIL_SATURATION_PCT = 85  # if an occupied GPU is past this compute util, don't pack more (would just contend)
 DEFAULT_VRAM_MB = 512      # est for unknown signatures (no history, no siblings).
+GPU_EMPTY_USED_MB = 200    # treat driver/runtime noise below this as an empty GPU
                            # Optimistic-low by design: if a task actually needs more, the
                            # post-dispatch eviction mechanism (_enforce_post_dispatch_thresholds)
                            # kills the youngest task and re-queues it with the observed peak
@@ -110,19 +109,29 @@ LAUNCHING_RESET_S = 60      # stale WAL launch marker age before reverting to qu
 ESCALATIONS_FILE = STATE_DIR / "escalations.jsonl"  # /scheduler-heal reads this; watcher appends
 
 # Phase 2.16: cap on OUR slurm-managed tasks in PENDING state per node before scheduleurm
-# holds the rest in its own queue. Default 1 — slurm gets at most one lookahead slot to
-# bridge GPU swaps; the rest stay queued in scheduleurm and dispatch to whichever node
-# frees up next. Avoids "all 10 tasks sbatch'd to node A's queue while node B sits idle"
-# in a multi-slurm-node cluster.
+# holds the rest in its own queue. GPU default stays 1 — slurm gets at most one lookahead
+# GPU slot to bridge GPU swaps; the rest stay queued in scheduleurm and dispatch to
+# whichever node frees up next. CPU-only tasks use a separate, higher default because
+# they don't request gres=gpu and should not sit idle behind a pending GPU job.
 #
 # Tuning options (all need watcher restart to pick up new value):
 #   1. Edit this constant in scheduler.py
-#   2. Set env SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE=N (recommended for no-code-edit override)
-#   3. Per-node: NODES["nodename"]["max_slurm_pending"] = N (overrides this default for that node)
+#   2. Set env SCHEDULEURM_SLURM_MAX_PENDING_GPU_PER_NODE=N / ...CPU...=N
+#      (legacy SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE still controls the GPU default)
+#   3. Per-node: NODES["nodename"]["max_slurm_pending_gpu"] = N or
+#      ["max_slurm_pending_cpu"] = N. Legacy ["max_slurm_pending"] applies to both.
 #
 # Picking 0 means "never let scheduleurm have a pending task on any slurm node" — strict
 # pull-on-demand. Risks GPU idle gaps during slurm's transitions but maximizes spread.
 SLURM_MAX_PENDING_PER_NODE = int(os.environ.get("SCHEDULEURM_SLURM_MAX_PENDING_PER_NODE", "1"))
+SLURM_MAX_PENDING_GPU_PER_NODE = int(os.environ.get(
+    "SCHEDULEURM_SLURM_MAX_PENDING_GPU_PER_NODE",
+    str(SLURM_MAX_PENDING_PER_NODE),
+))
+SLURM_MAX_PENDING_CPU_PER_NODE = int(os.environ.get(
+    "SCHEDULEURM_SLURM_MAX_PENDING_CPU_PER_NODE",
+    "6",
+))
 
 # Failure classification — drives whether to retry or escalate to /scheduler-heal.
 ENV_MISSING_PATTERNS = ("没有那个文件或目录", "no such file or directory", "command not found", "未找到命令")
@@ -133,6 +142,21 @@ DISK_FULL_PATTERNS = (
     "ENOSPC",
     "disk full",
     "Disk quota exceeded",
+)
+# Invalid-CLI-flag patterns: argparse / absl.flags / click / typer reject the cmd before any
+# real work. Retrying is pointless because the cmd will keep failing identically. Caught here
+# so the user gets a clear escalation instead of a wasted 3× retry → APP_BUG_CAP.
+INVALID_FLAG_PATTERNS = (
+    "FATAL Flags parsing error",                # absl.flags
+    "Unknown command line flag",                # absl.flags
+    "argparse.ArgumentError",                   # argparse error class
+    "error: unrecognized arguments",            # argparse default error
+    "error: argument",                          # argparse "expected one argument" / "invalid choice"
+    "error: the following arguments are required",  # argparse missing required
+    "Error: Got unexpected extra argument",     # click
+    "Error: No such option",                    # click
+    "Error: Missing option",                    # click
+    "No such command",                          # click multi-command
 )
 OOM_PATTERNS = (
     "CUDA out of memory",
@@ -197,6 +221,8 @@ def load_state(): return _load_json(QUEUE_FILE, {"tasks": [], "next_id": 1})
 def save_state(s): _atomic_write_json(QUEUE_FILE, s)
 def load_history(): return _load_json(VRAM_FILE, {})
 def save_history(h): _atomic_write_json(VRAM_FILE, h)
+def load_runtime_history(): return _load_json(RUNTIME_FILE, {})
+def save_runtime_history(h): _atomic_write_json(RUNTIME_FILE, h)
 
 # ---------- Phase 3.2.0: cross-scheduler / cross-user resource claims ----------
 # Goal: stop two scheduleurm instances (different users OR different state dirs)
@@ -210,9 +236,12 @@ def save_history(h): _atomic_write_json(VRAM_FILE, h)
 # ssh that:
 #   1. (re-)deploys the script idempotently
 #   2. flock -x -w N /tmp/scheduleurm/claims.lock python3 _claims.py <op> ...
-#   3. read JSON, GC stale, capacity-check vs. fresh claims, append-or-reject
-# All schedulers see the same file under the same lock; first-claim-wins on
-# conflicts. Stale entries (expired TTL with dead PID) get GC'd in every op.
+#   3. read JSON, GC stale claims/intents, register this launch intent,
+#      FIFO/backfill-check vs. older intents, capacity-check vs. fresh claims,
+#      append-or-reject
+# All schedulers see the same file under the same lock. Stale entries
+# (expired TTL with dead PID for claims; expired intent TTL for intents)
+# get GC'd in every op.
 #
 # Per-node opt-in (NODES["x"]["enable_claims"] = True) so single-user setups
 # don't pay the ssh-flock cost. TTL is configurable per node; watcher renews
@@ -229,10 +258,13 @@ CLAIMS_LOCK_REMOTE = CLAIMS_DIR_REMOTE + "/claims.lock"
 CLAIMS_SCRIPT_REMOTE_TMPL = CLAIMS_DIR_REMOTE + "/_claims_${USER}.py"
 CLAIM_LOCK_TIMEOUT_S = int(os.environ.get("SCHEDULEURM_CLAIM_LOCK_TIMEOUT_S", "30"))
 CLAIM_TTL_S = int(os.environ.get("SCHEDULEURM_CLAIM_TTL_S", "3600"))
+CLAIM_INTENT_TTL_S = int(os.environ.get("SCHEDULEURM_CLAIM_INTENT_TTL_S", "180"))
+CLAIM_FIFO_STRICT_AFTER_S = int(os.environ.get("SCHEDULEURM_CLAIM_FIFO_STRICT_AFTER_S", "1800"))
+CLAIM_LIVE_CHECK = os.environ.get("SCHEDULEURM_CLAIM_LIVE_CHECK", "1").lower() not in ("0", "false", "no", "off")
 
 # Pure-Python script deployed to /tmp/scheduleurm/_claims.py on each node that
 # enables claims. Reads/writes claims.json under the caller's flock. Operations:
-#   claim       <record_json> <capacity_json>   → {ok}|{ok:false, conflict}
+#   claim       <record_json> <capacity_json>   → registers intent, then {ok}|{ok:false, conflict}
 #   release     <{scheduler_id, task_id}_json>  → {ok, removed}
 #   update_pid  <{scheduler_id, task_id, pid}>  → {ok, updated}
 #   renew       <{scheduler_id, task_id, expires_at}> → {ok, renewed}
@@ -251,7 +283,7 @@ to work across OS users sharing the same node:
     let one user's GC drop another user's still-running claim and let the
     GPU get over-committed.
 """
-import errno, json, os, sys, time
+import errno, json, math, os, subprocess, sys, time
 
 CLAIMS_FILE = "/tmp/scheduleurm/claims.json"
 
@@ -365,6 +397,198 @@ def is_stale(c, now):
 def gc_claims(claims, now):
     return [c for c in claims if not is_stale(c, now)]
 
+def record_key(c):
+    return (c.get("scheduler_id"), c.get("task_id"))
+
+def gc_intents(intents, now):
+    """Drop abandoned queue intents. Intents are pre-launch tickets, so a
+    dead scheduler has no PID to probe; expiry alone is the recovery signal."""
+    return [i for i in intents if float(i.get("expires_at", 0) or 0) >= now]
+
+def upsert_intent(intents, payload, now):
+    """Insert/refresh this task's shared queue intent while preserving its
+    original intent_at timestamp. That timestamp is the cross-scheduler FIFO
+    order; refreshing retries must not jump the task to the back."""
+    key = record_key(payload)
+    out = []
+    found = None
+    for i in intents:
+        if record_key(i) == key:
+            found = i
+        else:
+            out.append(i)
+    intent = dict(payload)
+    intent["intent_at"] = float((found or {}).get("intent_at") or now)
+    intent["expires_at"] = float(payload.get("intent_expires_at") or payload.get("expires_at") or now + 180)
+    intent["pid"] = None
+    out.append(intent)
+    out.sort(key=lambda x: (float(x.get("intent_at", 0) or 0), str(x.get("scheduler_id")), str(x.get("task_id"))))
+    return out
+
+def capacity_conflicts(payload, active_claims, capacity):
+    """Return conflicts if payload cannot fit next to active_claims.
+
+    Shared by capacity rejection and FIFO/backfill checks so the remote
+    arbiter uses exactly one resource model.
+    """
+    used_cpu = sum(c.get("cpu_cores", 0) for c in active_claims)
+    used_ram = sum(c.get("ram_mb", 0) for c in active_claims)
+    per_gpu = {}
+    for c in active_claims:
+        g = c.get("gpu_idx")
+        if g is not None:
+            per_gpu[str(g)] = per_gpu.get(str(g), 0) + c.get("vram_mb", 0)
+    cpu_need = payload.get("cpu_cores", 0)
+    ram_need = payload.get("ram_mb", 0)
+    gpu_idx = payload.get("gpu_idx")
+    vram_need = payload.get("vram_mb", 0)
+    cpu_cap = capacity.get("cpu_cores", 0)
+    ram_cap = capacity.get("ram_mb", 0)
+    gpu_caps = capacity.get("gpu_vram_mb", {}) or {}
+    # Phase 3.4.4: cross-scheduler enforcement of local placement policy.
+    max_per_task = capacity.get("max_vram_per_task")
+    vram_margin = int(capacity.get("vram_margin_mb", 0) or 0)
+    third_rule = bool(capacity.get("third_pack_rule"))
+    default_vram = int(capacity.get("default_vram_mb", 0) or 0)
+    conflicts = []
+    if used_cpu + cpu_need > cpu_cap:
+        conflicts.append("cpu: need %d + claimed %d > cap %d" % (cpu_need, used_cpu, cpu_cap))
+    if used_ram + ram_need > ram_cap:
+        conflicts.append("ram: need %dMB + claimed %dMB > cap %dMB" % (ram_need, used_ram, ram_cap))
+    if gpu_idx is not None:
+        gkey = str(gpu_idx)
+        gcap = int(gpu_caps.get(gkey, 0))
+        gused = per_gpu.get(gkey, 0)
+        # Per-task VRAM cap (e.g. local enforces ≤ 4GB per task).
+        if max_per_task is not None and vram_need > int(max_per_task):
+            conflicts.append("gpu%s: need %dMB > per-task cap %dMB" % (
+                gkey, vram_need, int(max_per_task)))
+        # Total cap (raw VRAM math).
+        if gused + vram_need > gcap:
+            conflicts.append("gpu%s: need %dMB + claimed %dMB > cap %dMB" % (
+                gkey, vram_need, gused, gcap))
+        # VRAM margin: leave at least margin MB free after this claim.
+        if gcap > 0 and (gcap - gused - vram_need) < vram_margin:
+            conflicts.append("gpu%s: post-claim free %dMB < margin %dMB" % (
+                gkey, gcap - gused - vram_need, vram_margin))
+        # 1/3 packing rule. Phase 3.4.6 P1 fix: match local _gpu_fits
+        # semantics — block ONLY when the EXISTING claimed VRAM is past
+        # 1/3, not when (existing + this claim) would land past 1/3.
+        # The rule is "don't STACK new tasks onto a card already past 1/3",
+        # not "no single task may exceed 1/3 of the card".
+        if third_rule and gcap > 0:
+            third = gcap // 3
+            if gused >= third and gused > 100:
+                # Small-task exemption: allow stacking when this task is
+                # ≤ default size (matches _gpu_fits's small_task branch).
+                # Util-saturation half of that exemption is enforced by
+                # local pick_placement before claim is even invoked.
+                if vram_need > default_vram:
+                    conflicts.append(
+                        "gpu%s: existing claimed %dMB ≥ 1/3 of %dMB "
+                        "(packing rule)" % (gkey, gused, gcap))
+    return conflicts
+
+def _read_live_snapshot(capacity):
+    """Best-effort live resource view while the claims lock is held.
+
+    Tests may pass capacity["live_snapshot"]; production reads /proc and
+    nvidia-smi on the target node. Failure means "no extra external usage"
+    rather than a claim-script crash.
+    """
+    snap = capacity.get("live_snapshot")
+    if isinstance(snap, dict):
+        return snap
+    out = {"loadavg": None, "mem_available_mb": None, "gpu_used_mb": {}}
+    try:
+        with open("/proc/loadavg") as f:
+            out["loadavg"] = float((f.read().split() or ["0"])[0])
+    except Exception:
+        pass
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    bits = line.split()
+                    if len(bits) >= 2:
+                        out["mem_available_mb"] = int(int(bits[1]) / 1024)
+                    break
+    except Exception:
+        pass
+    try:
+        raw = subprocess.check_output(
+            "nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits 2>/dev/null",
+            shell=True, timeout=float(capacity.get("live_check_timeout_s", 3) or 3),
+        ).decode("utf-8", "ignore")
+        used = {}
+        for line in raw.splitlines():
+            bits = [b.strip() for b in line.split(",")]
+            if len(bits) < 2:
+                continue
+            try:
+                used[str(int(bits[0]))] = int(bits[1])
+            except Exception:
+                continue
+        out["gpu_used_mb"] = used
+    except Exception:
+        pass
+    return out
+
+def live_external_claims(active_claims, capacity):
+    """Represent non-scheduleurm/manual live usage as synthetic claims."""
+    if not capacity.get("live_check"):
+        return []
+    snap = _read_live_snapshot(capacity)
+    externals = []
+    running_claims = [c for c in active_claims if c.get("pid")]
+    claimed_cpu = sum(int(c.get("cpu_cores") or 0) for c in running_claims)
+    claimed_ram = sum(int(c.get("ram_mb") or 0) for c in running_claims)
+    claimed_gpu = {}
+    for c in running_claims:
+        g = c.get("gpu_idx")
+        if g is not None:
+            claimed_gpu[str(g)] = claimed_gpu.get(str(g), 0) + int(c.get("vram_mb") or 0)
+
+    ext_cpu = 0
+    try:
+        if snap.get("loadavg") is not None:
+            ext_cpu = max(0, int(math.ceil(float(snap.get("loadavg")))) - claimed_cpu)
+    except Exception:
+        pass
+    ext_ram = 0
+    try:
+        avail = snap.get("mem_available_mb")
+        cap_ram = int(capacity.get("ram_mb", 0) or 0)
+        if avail is not None and cap_ram > 0:
+            live_used = max(0, cap_ram - int(avail))
+            ext_ram = max(0, live_used - claimed_ram)
+    except Exception:
+        pass
+    if ext_cpu or ext_ram:
+        externals.append({
+            "scheduler_id": "__external__", "task_id": "__cpu_ram_live__",
+            "gpu_idx": None, "vram_mb": 0,
+            "cpu_cores": ext_cpu, "ram_mb": ext_ram,
+            "pid": -1,
+        })
+
+    gpu_used = snap.get("gpu_used_mb") or {}
+    if isinstance(gpu_used, dict):
+        for g, used in gpu_used.items():
+            try:
+                ext_vram = max(0, int(used) - int(claimed_gpu.get(str(g), 0)))
+            except Exception:
+                continue
+            if ext_vram <= 0:
+                continue
+            externals.append({
+                "scheduler_id": "__external__", "task_id": "__gpu%s_live__" % str(g),
+                "gpu_idx": int(g), "vram_mb": ext_vram,
+                "cpu_cores": 0, "ram_mb": 0,
+                "pid": -1,
+            })
+    return externals
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"ok": False, "error": "missing op"}))
@@ -389,82 +613,83 @@ def main():
                             "error": "claims_corrupt: " + str(e)}))
         return
     claims = data.get("claims", [])
+    intents = data.get("intents", [])
     now = time.time()
     fresh = gc_claims(claims, now)
+    fresh_intents = gc_intents(intents, now)
     if op == "claim":
-        used_cpu = sum(c.get("cpu_cores", 0) for c in fresh)
-        used_ram = sum(c.get("ram_mb", 0) for c in fresh)
-        per_gpu = {}
-        for c in fresh:
-            g = c.get("gpu_idx")
-            if g is not None:
-                per_gpu[str(g)] = per_gpu.get(str(g), 0) + c.get("vram_mb", 0)
-        cpu_need = payload.get("cpu_cores", 0)
-        ram_need = payload.get("ram_mb", 0)
-        gpu_idx = payload.get("gpu_idx")
-        vram_need = payload.get("vram_mb", 0)
-        cpu_cap = capacity.get("cpu_cores", 0)
-        ram_cap = capacity.get("ram_mb", 0)
-        gpu_caps = capacity.get("gpu_vram_mb", {}) or {}
-        # Phase 3.4.4: cross-scheduler enforcement of local placement policy.
-        max_per_task = capacity.get("max_vram_per_task")
-        vram_margin = int(capacity.get("vram_margin_mb", 0) or 0)
-        third_rule = bool(capacity.get("third_pack_rule"))
-        default_vram = int(capacity.get("default_vram_mb", 0) or 0)
-        conflicts = []
-        if used_cpu + cpu_need > cpu_cap:
-            conflicts.append("cpu: need %d + claimed %d > cap %d" % (cpu_need, used_cpu, cpu_cap))
-        if used_ram + ram_need > ram_cap:
-            conflicts.append("ram: need %dMB + claimed %dMB > cap %dMB" % (ram_need, used_ram, ram_cap))
-        if gpu_idx is not None:
-            gkey = str(gpu_idx)
-            gcap = int(gpu_caps.get(gkey, 0))
-            gused = per_gpu.get(gkey, 0)
-            # Per-task VRAM cap (e.g. local enforces ≤ 4GB per task).
-            if max_per_task is not None and vram_need > int(max_per_task):
-                conflicts.append("gpu%s: need %dMB > per-task cap %dMB" % (
-                    gkey, vram_need, int(max_per_task)))
-            # Total cap (raw VRAM math).
-            if gused + vram_need > gcap:
-                conflicts.append("gpu%s: need %dMB + claimed %dMB > cap %dMB" % (
-                    gkey, vram_need, gused, gcap))
-            # VRAM margin: leave at least margin MB free after this claim.
-            if gcap > 0 and (gcap - gused - vram_need) < vram_margin:
-                conflicts.append("gpu%s: post-claim free %dMB < margin %dMB" % (
-                    gkey, gcap - gused - vram_need, vram_margin))
-            # 1/3 packing rule. Phase 3.4.6 P1 fix: match local _gpu_fits
-            # semantics — block ONLY when the EXISTING claimed VRAM is past
-            # 1/3, not when (existing + this claim) would land past 1/3.
-            # Pre-fix used `gused_after` so the FIRST 5GB task on an empty
-            # 12GB GPU got rejected (5000 > 4000=12000/3) even though local
-            # _gpu_fits would have allowed it (gpu used=0). The rule is
-            # "don't STACK new tasks onto a card already past 1/3", not
-            # "no single task may exceed 1/3 of the card".
-            if third_rule and gcap > 0:
-                third = gcap // 3
-                if gused >= third and gused > 100:
-                    # Small-task exemption: allow stacking when this task is
-                    # ≤ default size (matches _gpu_fits's small_task branch).
-                    # Util-saturation half of that exemption is enforced by
-                    # local pick_placement before claim is even invoked.
-                    if vram_need > default_vram:
-                        conflicts.append(
-                            "gpu%s: existing claimed %dMB ≥ 1/3 of %dMB "
-                            "(packing rule)" % (gkey, gused, gcap))
+        fresh_intents = upsert_intent(fresh_intents, payload, now)
+        key = record_key(payload)
+        external = live_external_claims(fresh, capacity)
+        active = fresh + external
+        strict_after = float(capacity.get("fifo_strict_after_s", 0) or 0)
+        # FIFO-with-backfill: older intents get priority only when the
+        # current claim would delay them. If an older task cannot fit now,
+        # or if both older and current fit together, this task may backfill.
+        for older in fresh_intents:
+            if record_key(older) == key:
+                break
+            if strict_after > 0:
+                try:
+                    older_wait = now - float(older.get("intent_at", now) or now)
+                except Exception:
+                    older_wait = 0
+                older_can_ever_fit = not capacity_conflicts(older, [], capacity)
+                older_fits_empty_after_current = not capacity_conflicts(older, [payload], capacity)
+                if older_wait >= strict_after and older_can_ever_fit and not older_fits_empty_after_current:
+                    data["claims"] = fresh
+                    data["intents"] = fresh_intents
+                    save_to_fd(fd, data)
+                    print(json.dumps({
+                        "ok": False,
+                        "conflict": "fifo-strict: older intent %s/%s waited %.0fs" % (
+                            older.get("scheduler_id"), older.get("task_id"), older_wait),
+                        "claims_seen": len(fresh),
+                        "intents_seen": len(fresh_intents),
+                        "external_claims_seen": len(external),
+                    }))
+                    return
+            older_fits_now = not capacity_conflicts(older, active, capacity)
+            if not older_fits_now:
+                continue
+            older_fits_after_current = not capacity_conflicts(older, active + [payload], capacity)
+            if not older_fits_after_current:
+                data["claims"] = fresh
+                data["intents"] = fresh_intents
+                save_to_fd(fd, data)
+                print(json.dumps({
+                    "ok": False,
+                    "conflict": "fifo: older intent %s/%s has priority" % (
+                        older.get("scheduler_id"), older.get("task_id")),
+                    "claims_seen": len(fresh),
+                    "intents_seen": len(fresh_intents),
+                    "external_claims_seen": len(external),
+                }))
+                return
+        conflicts = capacity_conflicts(payload, active, capacity)
         if conflicts:
-            print(json.dumps({"ok": False, "conflict": "; ".join(conflicts), "claims_seen": len(fresh)}))
+            data["claims"] = fresh
+            data["intents"] = fresh_intents
+            save_to_fd(fd, data)
+            print(json.dumps({"ok": False, "conflict": "; ".join(conflicts),
+                              "claims_seen": len(fresh),
+                              "external_claims_seen": len(external)}))
             return
         fresh.append(payload)
         data["claims"] = fresh
+        data["intents"] = [i for i in fresh_intents if record_key(i) != key]
         save_to_fd(fd, data)
         print(json.dumps({"ok": True}))
     elif op == "release":
         sid = payload.get("scheduler_id")
         tid = payload.get("task_id")
         kept = [c for c in fresh if not (c.get("scheduler_id") == sid and c.get("task_id") == tid)]
+        kept_intents = [i for i in fresh_intents if not (i.get("scheduler_id") == sid and i.get("task_id") == tid)]
         data["claims"] = kept
+        data["intents"] = kept_intents
         save_to_fd(fd, data)
-        print(json.dumps({"ok": True, "removed": len(fresh) - len(kept)}))
+        print(json.dumps({"ok": True, "removed": len(fresh) - len(kept),
+                          "removed_intents": len(fresh_intents) - len(kept_intents)}))
     elif op == "update_pid":
         sid = payload.get("scheduler_id")
         tid = payload.get("task_id")
@@ -475,6 +700,7 @@ def main():
                 c["pid"] = int(pid) if pid else None
                 updated += 1
         data["claims"] = fresh
+        data["intents"] = fresh_intents
         save_to_fd(fd, data)
         print(json.dumps({"ok": True, "updated": updated}))
     elif op == "renew":
@@ -488,6 +714,7 @@ def main():
                     c["expires_at"] = float(new_exp)
                 renewed += 1
         data["claims"] = fresh
+        data["intents"] = fresh_intents
         save_to_fd(fd, data)
         print(json.dumps({"ok": True, "renewed": renewed}))
     elif op == "renew_many":
@@ -504,18 +731,25 @@ def main():
                     c["expires_at"] = float(new_exp)
                 renewed += 1
         data["claims"] = fresh
+        data["intents"] = fresh_intents
         save_to_fd(fd, data)
         print(json.dumps({"ok": True, "renewed": renewed,
-                          "removed_stale": len(claims) - len(fresh)}))
+                          "removed_stale": len(claims) - len(fresh),
+                          "removed_stale_intents": len(intents) - len(fresh_intents)}))
     elif op == "gc":
         data["claims"] = fresh
+        data["intents"] = fresh_intents
         save_to_fd(fd, data)
-        print(json.dumps({"ok": True, "removed": len(claims) - len(fresh)}))
+        print(json.dumps({"ok": True, "removed": len(claims) - len(fresh),
+                          "removed_intents": len(intents) - len(fresh_intents)}))
     elif op == "list":
-        if len(fresh) != len(claims):
+        if len(fresh) != len(claims) or len(fresh_intents) != len(intents):
             data["claims"] = fresh
+            data["intents"] = fresh_intents
             save_to_fd(fd, data)
-        print(json.dumps({"ok": True, "claims": fresh, "removed_stale": len(claims) - len(fresh)}))
+        print(json.dumps({"ok": True, "claims": fresh, "intents": fresh_intents,
+                          "removed_stale": len(claims) - len(fresh),
+                          "removed_stale_intents": len(intents) - len(fresh_intents)}))
     else:
         print(json.dumps({"ok": False, "error": "unknown op " + repr(op)}))
     try:
@@ -681,6 +915,18 @@ class _ClaimManager:
         return int(NODES.get(node, {}).get("claim_ttl_s", CLAIM_TTL_S))
 
     @classmethod
+    def _intent_ttl_for(cls, node: str) -> int:
+        return int(NODES.get(node, {}).get("claim_intent_ttl_s", CLAIM_INTENT_TTL_S))
+
+    @classmethod
+    def _fifo_strict_after_for(cls, node: str) -> int:
+        return int(NODES.get(node, {}).get("claim_fifo_strict_after_s", CLAIM_FIFO_STRICT_AFTER_S))
+
+    @classmethod
+    def _live_check_for(cls, node: str) -> bool:
+        return bool(NODES.get(node, {}).get("claim_live_check", CLAIM_LIVE_CHECK))
+
+    @classmethod
     def _build_capacity(cls, node: str, node_state: Optional[dict] = None) -> dict:
         """Build the capacity payload sent with every claim op.
 
@@ -704,6 +950,9 @@ class _ClaimManager:
             "vram_margin_mb": int(VRAM_MARGIN_MB),
             "third_pack_rule": bool(ONE_THIRD_PACK_RULE),
             "default_vram_mb": int(DEFAULT_VRAM_MB),
+            "fifo_strict_after_s": cls._fifo_strict_after_for(node),
+            "live_check": cls._live_check_for(node),
+            "live_check_timeout_s": int(info.get("claim_live_check_timeout_s", 3)),
         }
         if node_state and node_state.get("gpus"):
             for g in node_state["gpus"]:
@@ -731,6 +980,7 @@ class _ClaimManager:
             return (True, {"reason": "claims disabled for this node"}, "ok")
         now = time.time()
         ttl = cls._ttl_for(node)
+        intent_ttl = cls._intent_ttl_for(node)
         try:
             owner = os.environ.get("USER") or os.getlogin() or "?"
         except Exception:
@@ -745,6 +995,7 @@ class _ClaimManager:
             "ram_mb": int(task.get("ram_mb") or DEFAULT_RAM_MB),
             "claimed_at": now,
             "expires_at": now + ttl,
+            "intent_expires_at": now + intent_ttl,
             "pid": None,
         }
         capacity = cls._build_capacity(node, node_state)
@@ -825,12 +1076,101 @@ class _ClaimManager:
     @classmethod
     def enumerate(cls, node: str) -> list:
         """Returns list of claim dicts on `node`; [] when disabled or on error."""
+        return list(cls.snapshot(node).get("claims") or [])
+
+    @classmethod
+    def enumerate_intents(cls, node: str) -> list:
+        """Returns list of FIFO intent dicts on `node`; [] when disabled/error."""
+        return list(cls.snapshot(node).get("intents") or [])
+
+    @classmethod
+    def snapshot(cls, node: str) -> dict:
+        """Returns {ok, claims, intents, ...} for node; never raises."""
         if not cls.enabled_for(node):
-            return []
-        result = _claims_remote_op(node, "list", {})
+            return {"ok": True, "claims": [], "intents": [], "disabled": True}
+        try:
+            result = _claims_remote_op(node, "list", {})
+        except Exception as e:
+            return {"ok": False, "claims": [], "intents": [], "error": str(e)[:200]}
         if result.get("ok"):
-            return list(result.get("claims", []))
-        return []
+            result["claims"] = list(result.get("claims", []))
+            result["intents"] = list(result.get("intents", []))
+            return result
+        return {"ok": False, "claims": [], "intents": [],
+                "error": result.get("error") or result.get("conflict") or "claims list failed"}
+
+
+def _claim_intent_nodes(task: dict) -> list:
+    nodes = []
+    for key in ("claim_intent_node",):
+        n = task.get(key)
+        if n and n not in nodes:
+            nodes.append(n)
+    raw = task.get("claim_intent_nodes") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    if isinstance(raw, list):
+        for n in raw:
+            if n and n not in nodes:
+                nodes.append(n)
+    return nodes
+
+
+def _remember_claim_intent(task: dict, node: Optional[str]) -> None:
+    if not node or not _ClaimManager.enabled_for(node):
+        return
+    nodes = _claim_intent_nodes(task)
+    if node not in nodes:
+        nodes.append(node)
+    task["claim_intent_nodes"] = nodes
+    task["claim_intent_at"] = time.time()
+
+
+def _clear_claim_intent_markers(task: dict) -> None:
+    task.pop("claim_intent_node", None)
+    task.pop("claim_intent_nodes", None)
+    task.pop("claim_intent_at", None)
+
+
+def _release_task_claims_and_intents(task: dict, extra_nodes=None,
+                                     exclude_nodes=None, clear_markers: bool = True) -> int:
+    """Best-effort release of this scheduler's claim and pending FIFO intents.
+
+    release() removes both a real claim and a pre-launch intent on the remote
+    claims file. `claim_intent_nodes` exists because CLAIM_RACE clears
+    task["node"] before the task returns to queued.
+    """
+    exclude = set(exclude_nodes or [])
+    nodes = []
+    if task.get("node"):
+        nodes.append(task.get("node"))
+    nodes.extend(_claim_intent_nodes(task))
+    if extra_nodes:
+        nodes.extend(extra_nodes if isinstance(extra_nodes, (list, tuple, set)) else [extra_nodes])
+    seen = set()
+    released = 0
+    released_nodes = set()
+    for node in nodes:
+        if not node or node in seen or node in exclude:
+            continue
+        seen.add(node)
+        if not _ClaimManager.enabled_for(node):
+            continue
+        try:
+            if _ClaimManager.release(node, task["id"]):
+                released += 1
+                released_nodes.add(node)
+        except Exception:
+            pass
+    if clear_markers:
+        _clear_claim_intent_markers(task)
+    elif released_nodes:
+        kept = [n for n in _claim_intent_nodes(task) if n not in released_nodes]
+        if kept:
+            task["claim_intent_nodes"] = kept
+        else:
+            _clear_claim_intent_markers(task)
+    return released
 
 
 def archive_terminal_tasks(state, age_days=ARCHIVE_AGE_DAYS):
@@ -1016,6 +1356,11 @@ def _effective_est_ram(task, state, history):
 HISTORY_MAX_ENTRIES = 500  # cap per item 25 (vram_history.json bloat)
 HISTORY_SAMPLES_PER_SIG = 10
 HISTORY_PERCENTILE = 80   # p80 of last N samples → estimate
+RUNTIME_HISTORY_MAX_ENTRIES = 1000
+RUNTIME_HISTORY_SAMPLES_PER_KEY = 10
+RUNTIME_HISTORY_PERCENTILE = 80
+RUNTIME_WALLTIME_MULT = 1.20
+RUNTIME_MIN_WALLTIME_S = 10 * 60  # progress-derived walltime can be shorter than legacy 1h
 
 def _percentile(samples, p):
     """p-th percentile (0..100) of samples list. Returns 0 for empty list."""
@@ -1294,9 +1639,17 @@ def probe_all():
 
 
 def _fold_claims_into_probe(nodes: list) -> list:
-    """For each node where claims are enabled, fetch the live claims and
-    subtract the pending ones (pid=null) from the probe's free resources.
-    Failures are non-fatal: we keep the original probe, log via notify."""
+    """Fold shared claim budgets into the local probe view.
+
+    Pending claims (pid=null) are not visible to ps/nvidia-smi yet, so they
+    must consume capacity outright. Live claims have a pid and usually show up
+    in the normal probe, but the probe reports *actual* usage while claims
+    enforce scheduler *budget* usage. Use the larger of the observed usage and
+    the claimed budget so pick_placement and the remote claim arbiter make the
+    same decision. This prevents a loop where the picker keeps choosing GPU0
+    because actual VRAM is low, while the claim layer rejects GPU0 because its
+    estimated/budgeted claims are already past the packing rule.
+    """
     for n in nodes:
         if not n.get("alive"):
             continue
@@ -1304,7 +1657,10 @@ def _fold_claims_into_probe(nodes: list) -> list:
         if not name or not _ClaimManager.enabled_for(name):
             continue
         try:
-            claims = _ClaimManager.enumerate(name)
+            snap = _ClaimManager.snapshot(name)
+            claims = list(snap.get("claims") or [])
+            n["claim_intents"] = list(snap.get("intents") or [])
+            n["claim_snapshot_error"] = snap.get("error") if not snap.get("ok", True) else None
         except Exception as e:
             try:
                 notify("claims_probe_fold_error",
@@ -1313,29 +1669,51 @@ def _fold_claims_into_probe(nodes: list) -> list:
             except Exception:
                 pass
             continue
-        # Only subtract claims that haven't yet attached to a host process.
-        # Once pid is set, the process is in ps + nvidia-smi already.
         pending = [c for c in claims if not c.get("pid")]
-        if not pending:
-            continue
-        cpu_p = sum(int(c.get("cpu_cores") or 0) for c in pending)
-        ram_p = sum(int(c.get("ram_mb") or 0) for c in pending)
-        per_gpu = {}
+        active = [c for c in claims if c.get("pid")]
+        n["pending_claims"] = pending  # surfaced in status / why for debug
+        n["active_claims"] = active
+
+        active_cpu = sum(int(c.get("cpu_cores") or 0) for c in active)
+        active_ram = sum(int(c.get("ram_mb") or 0) for c in active)
+        pending_cpu = sum(int(c.get("cpu_cores") or 0) for c in pending)
+        pending_ram = sum(int(c.get("ram_mb") or 0) for c in pending)
+        per_gpu_active = {}
+        per_gpu_pending = {}
+        for c in active:
+            g = c.get("gpu_idx")
+            if g is None:
+                continue
+            per_gpu_active[int(g)] = per_gpu_active.get(int(g), 0) + int(c.get("vram_mb") or 0)
         for c in pending:
             g = c.get("gpu_idx")
             if g is None:
                 continue
-            per_gpu[int(g)] = per_gpu.get(int(g), 0) + int(c.get("vram_mb") or 0)
-        if cpu_p:
-            n["free_cpu"] = max(0, int(n.get("free_cpu") or 0) - cpu_p)
-        if ram_p:
-            n["free_ram_mb"] = max(0, int(n.get("free_ram_mb") or 0) - ram_p)
+            per_gpu_pending[int(g)] = per_gpu_pending.get(int(g), 0) + int(c.get("vram_mb") or 0)
+
+        if active_cpu or pending_cpu:
+            total_cpu = int(n.get("total_cpu") or n.get("cores") or 0)
+            if total_cpu > 0:
+                observed_used_cpu = max(0, total_cpu - int(n.get("free_cpu") or 0))
+                budget_used_cpu = max(observed_used_cpu, active_cpu) + pending_cpu
+                n["free_cpu"] = max(0, total_cpu - budget_used_cpu)
+
+        if active_ram or pending_ram:
+            total_ram = int(n.get("total_ram_mb") or 0)
+            if total_ram > 0:
+                observed_used_ram = max(0, total_ram - int(n.get("free_ram_mb") or 0))
+                budget_used_ram = max(observed_used_ram, active_ram) + pending_ram
+                n["free_ram_mb"] = max(0, total_ram - budget_used_ram)
+
         for g in n.get("gpus") or []:
-            extra = per_gpu.get(int(g["idx"]), 0)
-            if extra:
-                g["used_mb"] = int(g.get("used_mb") or 0) + extra
-                g["free_mb"] = max(0, int(g.get("free_mb") or 0) - extra)
-        n["pending_claims"] = pending  # surfaced in status / why for debug
+            active_claimed = per_gpu_active.get(int(g["idx"]), 0)
+            pending_claimed = per_gpu_pending.get(int(g["idx"]), 0)
+            if active_claimed or pending_claimed:
+                total = int(g.get("total_mb") or 0)
+                used = max(int(g.get("used_mb") or 0), active_claimed) + pending_claimed
+                g["used_mb"] = used
+                if total > 0:
+                    g["free_mb"] = min(int(g.get("free_mb") or 0), max(0, total - used))
     return nodes
 
 # ---------- running-task health + peak VRAM tracking ----------
@@ -1369,6 +1747,14 @@ def _task_process_groups(task):
                 continue
     return sorted(groups)
 
+
+def _set_current_usage(task, vram_mb=0, ram_mb=0, pcpu=0.0):
+    """Store current live usage separately from peak/history estimates."""
+    task["current_vram_mb"] = int(vram_mb or 0)
+    task["current_ram_mb"] = int(ram_mb or 0)
+    task["current_pcpu"] = float(pcpu or 0.0)
+
+
 def _kill_task_processes(task, timeout=15):
     """Thin wrapper: delegates to the active Backend. See Backend.kill."""
     return _BACKEND.kill(task, timeout=timeout)
@@ -1400,8 +1786,10 @@ def check_running(task):
     if res["state"] == "unknown":
         return "unknown"
     if res["state"] == "dead":
+        _set_current_usage(task, 0, 0, 0.0)
         return "dead"
     # alive: fold deltas into peak trackers (max-tracking — peak only goes up)
+    _set_current_usage(task, res.get("vram_mb", 0), res.get("ram_mb", 0), res.get("pcpu", 0.0))
     if res["vram_mb"] > 0:
         task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), res["vram_mb"])
     if res["ram_mb"] > 0:
@@ -1764,7 +2152,7 @@ def _detect_oom_kills_local(state):
     return flipped
 
 def _classify_failure(diag):
-    """Categorize a crash diag for routing: ENV_MISSING / PYTHON_IMPORT / OOM / APP_BUG / UNKNOWN.
+    """Categorize a crash diag for routing: ENV_MISSING / PYTHON_IMPORT / INVALID_FLAG / OOM / APP_BUG / UNKNOWN.
     Looked at by _requeue_after_crash to decide retry-vs-escalate, and by pick_placement to skip nodes
     where this signature already failed for environment reasons."""
     if not diag or not diag.get("is_crash"):
@@ -1778,6 +2166,12 @@ def _classify_failure(diag):
     for p in PYTHON_IMPORT_PATTERNS:
         if p.lower() in haystack:
             return "PYTHON_IMPORT"
+    # INVALID_FLAG before OOM: argparse / absl rejection happens at startup before any allocation,
+    # so the tail will not contain memory-pressure noise. Retry of an invalid-flag cmd is wasted CPU
+    # — the cmd will fail identically every time. Surface immediately as an escalation.
+    for p in INVALID_FLAG_PATTERNS:
+        if p.lower() in haystack:
+            return "INVALID_FLAG"
     # Disk-full check before OOM: OSError errno 28 is unambiguous, while OOM_PATTERNS could
     # accidentally match. Codex P1: distinguishing DISK_FULL from generic crash gives the user
     # actionable diagnosis ("clean /tmp" vs "tune memory").
@@ -1949,24 +2343,28 @@ def _requeue_after_crash(parent, state):
     cmd = parent.get("cmd") or ""
     if cmd.startswith("(auto-adopted"):
         return None  # No real cmd captured (legacy adopt or /proc/<pid>/cmdline was unreadable)
-    # Dedup guard: refuse to requeue if an active (queued/running) task with the same signature
-    # AND same cmd already exists. Without this guard, multiple failure paths converging on the
-    # same target (e.g. ENV_MISSING crash → requeue + manual force-requeue) produce duplicate
-    # active instances all running the same training, wasting GPU. Cancelled/done/failed don't
-    # block — only live duplicates do.
-    sig = parent.get("signature") or ""
-    if sig:
+    # Dedup guard: refuse to requeue if an active task with the same run identity
+    # already exists. This is intentionally broader than PID/task-id and narrower
+    # than signature-only: broad family signatures must not block independent
+    # ablations, but a true duplicate retry should not double-launch.
+    parent_key = _task_run_identity(parent)
+    if parent_key:
+        if _has_user_cancelled_retry_descendant(parent, state, parent_key):
+            parent["last_block_reason"] = (
+                "not auto-requeued: a retry descendant for this exact run "
+                "identity was cancelled by the user"
+            )
+            return None
         for existing in state.get("tasks", []):
             if existing.get("id") == parent.get("id"): continue
             if existing.get("status") not in ("queued", "running", "launching"): continue
-            if existing.get("signature") != sig: continue
-            if existing.get("cmd") != cmd: continue
+            if _task_run_identity(existing) != parent_key: continue
             # Found a live duplicate — link parent's requeued_as to it instead of creating a new one
             return existing["id"]
     diag = parent.get("_diagnosis") or {}
     category = _classify_failure(diag)
     parent["failure_category"] = category
-    if category in ("ENV_MISSING", "PYTHON_IMPORT", "OOM", "DISK_FULL"):
+    if category in ("ENV_MISSING", "PYTHON_IMPORT", "INVALID_FLAG", "OOM", "DISK_FULL"):
         _write_escalation(parent, category, diag)
         return None
     retry_n = parent.get("retry_count", 0) + 1
@@ -1987,6 +2385,9 @@ def _requeue_after_crash(parent, state):
         "finished_at": None,
         "peak_vram_mb": 0,
         "peak_ram_mb": 0,
+        "current_vram_mb": 0,
+        "current_ram_mb": 0,
+        "current_pcpu": 0.0,
         "alive_pids": [],
         "resume_from": None,
         # Backend launch artifacts must not survive into a retry clone. A crashed
@@ -2017,6 +2418,9 @@ def _requeue_after_crash(parent, state):
         "parent_id": parent["id"],
         "last_block_reason": f"auto-requeue (retry {retry_n}/{MAX_AUTO_RETRY}) after {parent['id']} crashed",
     })
+    for k in ("requeued_as", "cancelled_at", "cancelled_by_user", "cancel_reason",
+              "claim_intent_node", "claim_intent_nodes", "claim_intent_at"):
+        new_task.pop(k, None)
     state["tasks"].append(new_task)
     return new_id
 
@@ -2039,6 +2443,7 @@ def _batch_check_running(state):
             # ssh failed for this node OR task wasn't probed — leave state alone.
             continue
         if res["state"] == "dead":
+            _set_current_usage(t, 0, 0, 0.0)
             t["status"] = "done"
             t["finished_at"] = time.time()
             # Phase 3.2.1: free the cross-scheduler claim now that the task
@@ -2046,8 +2451,7 @@ def _batch_check_running(state):
             # claim to expire via TTL + GC. No-op when claims disabled for
             # this node.
             try:
-                if t.get("node"):
-                    _ClaimManager.release(t["node"], t["id"])
+                _release_task_claims_and_intents(t)
             except Exception:
                 pass
             # Slurm reports terminal states directly. Trust COMPLETED as a clean exit and
@@ -2060,7 +2464,24 @@ def _batch_check_running(state):
             terminal_reason = res.get("terminal_reason") or (
                 f"slurm terminal state {backend_state}" if backend_state else ""
             )
-            if terminal_ok is True:
+            if res.get("terminal_cancelled"):
+                # Slurm CANCELLED means somebody explicitly cancelled/scancelled
+                # the job. Treat it as an operator cancellation, not a crash,
+                # otherwise a manual move/cancel creates a fresh retry clone.
+                _mark_user_cancelled(
+                    t,
+                    terminal_reason or "slurm terminal state CANCELLED; treated as user/admin cancel",
+                )
+                diag = {
+                    "is_crash": False,
+                    "reason": terminal_reason or "slurm terminal state CANCELLED",
+                    "tail": "(slurm reported CANCELLED; not auto-requeued)",
+                    "lifetime_s": int(max(0, t["finished_at"] - (t.get("started_at") or t["finished_at"]))),
+                    "log_size": 0,
+                    "log_path": t.get("log_path"),
+                    "success_marker": "SLURM_CANCELLED",
+                }
+            elif terminal_ok is True:
                 # Phase 3.0.30 P2 fix: trust-but-verify. A slurm COMPLETED can
                 # mask a hidden Python crash if cmd is `python ... | tee log`
                 # without `set -o pipefail` — tee returns 0, slurm sees rc=0.
@@ -2146,10 +2567,13 @@ def _batch_check_running(state):
                 cpu_cores=t.get("cpu_cores", 0),
                 duration_s=duration_s,
             )
+            runtime_history_record(t, duration_s=duration_s)
             continue
         # alive: fold deltas, upward-track ram_mb / cpu_cores estimates
+        _remember_last_placement(t)
         t["alive_pids"] = res["alive_pids"]
         total_vram = res["vram_mb"]
+        _set_current_usage(t, total_vram, res.get("ram_mb", 0), res.get("pcpu", 0.0))
         if total_vram > 0:
             t["peak_vram_mb"] = max(t.get("peak_vram_mb", 0), total_vram)
         total_ram = res["ram_mb"]
@@ -2271,7 +2695,7 @@ def _refresh_eta_from_logs(state):
     for t in pure_ewma:
         sig = t.get("signature") or ""
         h = history_get(sig) or {}
-        ewma = int(h.get("dur_s_ewma", 0))
+        ewma = _runtime_total_history_s(t) or int(h.get("dur_s_ewma", 0))
         elapsed = _effective_elapsed_s(t)
         t["eta_seconds"] = eta_tracker.compute_eta_seconds(
             "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
@@ -2312,7 +2736,7 @@ def _refresh_eta_from_logs(state):
                 if t.get("eta_seconds") is None:
                     sig = t.get("signature") or ""
                     h = history_get(sig) or {}
-                    ewma = int(h.get("dur_s_ewma", 0))
+                    ewma = _runtime_total_history_s(t) or int(h.get("dur_s_ewma", 0))
                     elapsed = _effective_elapsed_s(t)
                     t["eta_seconds"] = eta_tracker.compute_eta_seconds(
                         "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
@@ -2330,11 +2754,14 @@ def _refresh_eta_from_logs(state):
             tail_text = log_by_tid.get(tid, "")
             sig = t.get("signature") or ""
             h = history_get(sig) or {}
-            ewma = int(h.get("dur_s_ewma", 0))
+            ewma = _runtime_total_history_s(t) or int(h.get("dur_s_ewma", 0))
             elapsed = _effective_elapsed_s(t)
             t["eta_seconds"] = eta_tracker.compute_eta_seconds(
                 tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
             )
+            projection = eta_tracker.runtime_projection(
+                tail_text, elapsed_s=elapsed, cmd=t.get("cmd"))
+            _apply_runtime_projection(t, projection)
 
 # ---------- placement ----------
 def _node_resources_ok(task, node_state, node_info):
@@ -2351,14 +2778,27 @@ def _node_resources_ok(task, node_state, node_info):
     if node_state.get("free_cpu", 0) < needed_cpu:
         return False, f"cpu: need {needed_cpu}, free {node_state.get('free_cpu', 0)}/{node_state.get('total_cpu', '?')}"
     needed_ram = task.get("ram_mb", DEFAULT_RAM_MB)
-    frac = node_info.get("ram_headroom_frac", RAM_HEADROOM_FRAC)
-    # Use the probed total when available so headroom tracks reality, not config; the config
-    # value is only used as an upper bound (already enforced in probe_node via min()).
-    total_for_headroom = node_state.get("total_ram_mb") or node_info.get("ram_mb", 0)
-    headroom = int(total_for_headroom * frac)
+    fixed_headroom = node_info.get("ram_headroom_mb")
+    if fixed_headroom is not None:
+        headroom = max(0, int(fixed_headroom))
+    else:
+        frac = node_info.get("ram_headroom_frac", RAM_HEADROOM_FRAC)
+        # Use the probed total when available so headroom tracks reality, not config; the config
+        # value is only used as an upper bound (already enforced in probe_node via min()).
+        total_for_headroom = node_state.get("total_ram_mb") or node_info.get("ram_mb", 0)
+        headroom = int(total_for_headroom * frac)
     if node_state.get("free_ram_mb", 0) - needed_ram < headroom:
         return False, f"ram: need {needed_ram}MB, free {node_state.get('free_ram_mb', 0)}MB (headroom {headroom}MB)"
     return True, "ok"
+
+def _node_gpu_util_limit(node_info):
+    util_limit = (node_info or {}).get("gpu_util_saturation_pct", GPU_UTIL_SATURATION_PCT)
+    if isinstance(util_limit, str) and util_limit.lower() in ("", "none", "off", "false", "ignore"):
+        return None
+    if util_limit is None:
+        return None
+    return int(util_limit)
+
 
 def _gpu_fits(task, gpu, node_info):
     """VRAM + compute-saturation check on a specific GPU (1/3 packing rule + util-cap + per-task cap + margin).
@@ -2377,15 +2817,17 @@ def _gpu_fits(task, gpu, node_info):
         third = gpu["total_mb"] // 3
         if gpu["used_mb"] >= third and gpu["used_mb"] > 100:
             small_task = task["est_vram_mb"] <= DEFAULT_VRAM_MB
+            util_limit = _node_gpu_util_limit(node_info)
             util = gpu.get("util_pct", 0)
-            chip_idle = util < GPU_UTIL_SATURATION_PCT - 20  # well below saturation, e.g. <65%
+            chip_idle = util_limit is None or util < util_limit - 20  # well below saturation, e.g. <65%
             if not (small_task and chip_idle):
                 return False
             # else: small task, idle chip — allow stacking past 1/3 mem
     # Compute saturation: if there's already a task on this GPU and it's pinning the chip,
     # don't pack more — the new task would just steal cycles and slow everyone down.
     # The "occupied" guard (>100MB) avoids blocking on a transient util spike on an empty GPU.
-    if gpu["used_mb"] > 100 and gpu.get("util_pct", 0) >= GPU_UTIL_SATURATION_PCT:
+    util_limit = _node_gpu_util_limit(node_info)
+    if util_limit is not None and gpu["used_mb"] > 100 and gpu.get("util_pct", 0) >= util_limit:
         return False
     if gpu["free_mb"] < task["est_vram_mb"] + VRAM_MARGIN_MB:
         return False
@@ -2426,10 +2868,11 @@ def pick_placement(task, nodes):
         # never reaching sbatch. Score uses 9999 in primary key so any local-fitting
         # candidate (whose primary keys are 0 or 1) ranks ahead — slurm only wins if no
         # local node fits OR the task explicitly requires/prefers a slurm node.
-        # Phase 2.16: but throttle when this slurm node already has SLURM_MAX_PENDING_PER_NODE
-        # of OUR tasks pending — keeping the rest in scheduleurm's queue lets them spread
-        # to whichever slurm node frees up next, instead of piling on one host.
-        if not _BACKEND.requires_local_capacity_check(n["name"]):
+        # Phase 2.16/3.4.13: throttle when this slurm node's matching bucket
+        # (CPU-only vs GPU-using) already has its pending cap filled. Keeping
+        # the rest in scheduleurm's queue lets tasks spread to whichever slurm
+        # node frees up next, instead of piling on one host.
+        if not _requires_local_capacity_check(n["name"], task):
             # Phase 3.4.13 P1 fix: throttle by resource bucket, not total.
             # CPU-only and GPU-using tasks request different slurm gres
             # (no --gpus vs --gpus 1) so they have ZERO real conflict in
@@ -2440,10 +2883,16 @@ def pick_placement(task, nodes):
             split = n.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
             bucket = _slurm_pending_bucket_for_task(task)
             pending = int(split.get(bucket) or 0)
-            cap = _slurm_max_pending_for_node(n["name"])
+            cap = _slurm_max_pending_for_node(n["name"], bucket)
             if pending >= cap:
                 return []  # throttled — let this bucket drain
             return [((9999,), n["name"], None)]
+        if _task_requests_slurm(task):
+            # The user supplied Slurm-only fields, so do not silently discard
+            # them by launching through LocalBackend on a non-Slurm/default-local
+            # node. If no Slurm-capable/opt-in node exists, the task stays queued
+            # with an explicit reason instead of running with the wrong policy.
+            return []
         node_info = NODES[n["name"]]
         ok, _why = _node_resources_ok(task, n, node_info)
         if not ok: return []
@@ -2454,17 +2903,14 @@ def pick_placement(task, nodes):
         else:
             for g in n["gpus"]:
                 if not _gpu_fits(task, g, node_info): continue
-                # Best-fit (Codex follow-up): prior worst-fit (`-g["free_mb"]`) preferred the
-                # GPU with MOST free VRAM → spread small tasks across empty cards, leaving no
-                # contiguous space for a future big task. New scoring picks the smallest
-                # fragment that still fits:
-                #   primary key:   warm_first  → 0 if card already has another task, else 1.
-                #                  (Empty cards get deprioritized so they're saved for big
-                #                   tasks that wouldn't fit on a warm card past the 1/3 rule.)
-                #   secondary key: leftover after placement, ascending — the tightest fit wins.
+                # Empty-first placement: if a node has a genuinely idle GPU, use it before
+                # stacking onto a warm card. This is a micro-server policy, not a datacenter
+                # bin-packing policy: keeping one card busy while another sits empty slows the
+                # user's batch down more than it preserves a hypothetical future fragment.
+                # If all fitting cards are warm, keep best-fit to avoid needless spreading.
                 fits_remaining = g["free_mb"] - (task.get("est_vram_mb") or 0)
-                warm_first = 0 if g["used_mb"] >= 200 else 1
-                score = (warm_first, fits_remaining)
+                occupied = 1 if g["used_mb"] >= GPU_EMPTY_USED_MB else 0
+                score = (occupied, fits_remaining)
                 out.append((score, n["name"], g["idx"]))
         return out
 
@@ -2841,7 +3287,7 @@ class Backend:
     """
     name = "abstract"
 
-    def requires_local_capacity_check(self, node: str) -> bool:
+    def requires_local_capacity_check(self, node: str, task: Optional[dict] = None) -> bool:
         """Should pick_placement gate this node on local CPU/RAM/VRAM availability?
 
         - LocalBackend → True: scheduleurm IS the placement decider, so we MUST verify
@@ -2946,9 +3392,30 @@ class LocalBackend(Backend):
         # increment) rather than a real launch failure.
         claim_record = None
         if _ClaimManager.enabled_for(task["node"]):
-            ok_claim, info, kind = _ClaimManager.claim(
-                task["node"], task, task.get("gpu_idx"), node_state)
-            if not ok_claim:
+            original_gpu = task.get("gpu_idx")
+            gpu_attempts = [original_gpu]
+            # If the picked GPU loses a race, try other GPUs on the same node
+            # before punting the task back to the next watcher tick. This keeps
+            # a busy GPU0 claim from starving an otherwise-free GPU1.
+            if original_gpu is not None and node_state:
+                try:
+                    node_info = NODES[task["node"]]
+                    for g in node_state.get("gpus") or []:
+                        gi = g.get("idx")
+                        if gi == original_gpu or gi in gpu_attempts:
+                            continue
+                        if _gpu_fits(task, g, node_info):
+                            gpu_attempts.append(gi)
+                except Exception:
+                    pass
+            conflicts = []
+            for gi in gpu_attempts:
+                task["gpu_idx"] = gi
+                ok_claim, info, kind = _ClaimManager.claim(
+                    task["node"], task, gi, node_state)
+                if ok_claim:
+                    claim_record = info
+                    break
                 # Phase 3.4.3 P1 fix: distinguish CAPACITY conflict from
                 # TRANSPORT error. Conflict → CLAIM_RACE: dispatch treats
                 # as contention (queued, no fail count increment, retry
@@ -2956,16 +3423,19 @@ class LocalBackend(Backend):
                 # treats as a real launch failure so MAX_LAUNCH_RETRY +
                 # escalation can fire (otherwise a node with permission /
                 # python3 / flock issues would loop tasks forever).
-                if kind == "conflict":
-                    return False, f"CLAIM_RACE: {info}"
-                return False, f"CLAIM_ERROR: {info}"
-            claim_record = info
+                if kind != "conflict":
+                    task["gpu_idx"] = original_gpu
+                    return False, f"CLAIM_ERROR: {info}"
+                conflicts.append(f"gpu{gi}: {info}" if gi is not None else str(info))
+            if not claim_record:
+                task["gpu_idx"] = original_gpu
+                return False, f"CLAIM_RACE: {'; '.join(conflicts) or 'claim conflict'}"
 
         def _release_and_fail(msg):
             """Release the claim if we hold one, then return failure."""
             if claim_record:
                 try:
-                    _ClaimManager.release(task["node"], task["id"])
+                    _release_task_claims_and_intents(task)
                 except Exception:
                     pass
             return False, msg
@@ -3015,8 +3485,10 @@ class LocalBackend(Backend):
             task["log_path"] = log_path
             task["status"] = "running"
             task["started_at"] = time.time()
+            _remember_last_placement(task)
             task["peak_vram_mb"] = 0
             task["peak_ram_mb"] = 0
+            _set_current_usage(task, 0, 0, 0.0)
             # Phase 3.2.1: persist PID into the claim so other schedulers
             # see liveness; gc_stale won't touch a claim with a live PID.
             if claim_record:
@@ -3242,7 +3714,7 @@ class SlurmBackend(Backend):
     """
     name = "slurm"
 
-    def requires_local_capacity_check(self, node: str) -> bool:
+    def requires_local_capacity_check(self, node: str, task: Optional[dict] = None) -> bool:
         """Slurm has its own queue — scheduler must not gate on local capacity here.
         See Backend.requires_local_capacity_check docstring."""
         return False
@@ -3258,7 +3730,16 @@ class SlurmBackend(Backend):
 
     @staticmethod
     def _walltime_for(task: dict) -> int:
-        """Pick --time= value in seconds based on history EWMA, clamped to [MIN, MAX]."""
+        """Pick --time= value in seconds.
+
+        Priority:
+          1. exact-parameter runtime history from tqdm/progress/duration × 1.2
+          2. legacy per-signature duration EWMA × 3
+          3. unknown fallback 24h
+        """
+        runtime_wall = _runtime_walltime_for_task(task)
+        if runtime_wall > 0:
+            return max(RUNTIME_MIN_WALLTIME_S, min(SlurmBackend.MAX_WALLTIME_S, runtime_wall))
         sig = task.get("signature") or ""
         h = history_get(sig) or {}
         ewma = int(h.get("dur_s_ewma", 0))
@@ -3290,7 +3771,7 @@ class SlurmBackend(Backend):
         ram = int(task.get("ram_mb") or DEFAULT_RAM_MB)
         if ram > 0:
             lines.append(f"#SBATCH --mem={ram}M")
-        vram = int(task.get("est_vram_mb") or 0)
+        vram = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0)
         if vram > 0:
             # Request 1 GPU; slurm's gres pinning sets CUDA_VISIBLE_DEVICES for us. We don't
             # request `gpu:N` for >1 GPU because scheduleurm tasks are single-GPU by design;
@@ -3364,7 +3845,7 @@ class SlurmBackend(Backend):
         #     potential hard fail if slurm's cgroup blocks GPU 0 access.
         # CPU-only slurm tasks (est_vram_mb=0): leave gpu_runtime_env=None so wrapper
         # emits no --gpus at all (existing behavior).
-        gpu_runtime_env = "CUDA_VISIBLE_DEVICES" if int(task.get("est_vram_mb") or 0) > 0 else None
+        gpu_runtime_env = "CUDA_VISIBLE_DEVICES" if int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0 else None
         inner, docker_err = _maybe_wrap_docker(task, inner, cwd, gpu_runtime_env=gpu_runtime_env)
         if docker_err:
             return False, docker_err
@@ -3421,6 +3902,7 @@ class SlurmBackend(Backend):
             task["log_path"] = log_path
             task["status"] = "running"
             task["started_at"] = time.time()
+            _remember_last_placement(task)
             # Phase 3.0.29 P2 fix: clear actual_started_at on (re)launch. The
             # 3.0.9 stamp is set ONLY when batch_probe first observes
             # slurm_state=RUNNING. Pre-fix it could survive into a relaunched
@@ -3430,6 +3912,7 @@ class SlurmBackend(Backend):
             task["actual_started_at"] = None
             task["peak_vram_mb"] = 0
             task["peak_ram_mb"] = 0
+            _set_current_usage(task, 0, 0, 0.0)
             # Empty for slurm tasks — there's no host-visible PID for scheduleurm to track.
             # Liveness goes via squeue. _task_pids returns [] which is fine — kill/probe paths
             # use slurm_job_id directly.
@@ -3545,7 +4028,7 @@ class SlurmBackend(Backend):
                         "REQUEUED", "SUSPENDED"}
         SUCCESS_STATES = {"COMPLETED"}
         FAILURE_STATES = {"FAILED", "TIMEOUT", "NODE_FAIL", "OUT_OF_MEMORY",
-                          "CANCELLED", "PREEMPTED", "BOOT_FAIL", "DEADLINE",
+                          "PREEMPTED", "BOOT_FAIL", "DEADLINE",
                           "REVOKED", "SPECIAL_EXIT"}
 
         def _probe(node):
@@ -3587,6 +4070,7 @@ class SlurmBackend(Backend):
             for t in by_node[node]:
                 jid = t["slurm_job_id"]
                 slurm_state = seen.get(jid)
+                terminal_cancelled = False
                 if slurm_state is None:
                     # squeue doesn't know this job. Either it ran + got purged from accounting
                     # (slurm.conf MinJobAge), OR our job_id is stale. Treat as dead — the
@@ -3609,7 +4093,14 @@ class SlurmBackend(Backend):
                 elif slurm_state in SUCCESS_STATES:
                     state_norm = "dead"
                     terminal_ok = True
+                    terminal_cancelled = False
                     terminal_reason = f"slurm terminal state {slurm_state}"
+                    t["slurm_state"] = slurm_state
+                elif slurm_state == "CANCELLED":
+                    state_norm = "dead"
+                    terminal_ok = False
+                    terminal_cancelled = True
+                    terminal_reason = "slurm terminal state CANCELLED; treated as user/admin cancel"
                     t["slurm_state"] = slurm_state
                 else:
                     # Unknown terminal-ish states are safer as failures than "maybe done":
@@ -3617,6 +4108,7 @@ class SlurmBackend(Backend):
                     # retry/escalate rather than silently drop work.
                     state_norm = "dead"
                     terminal_ok = False
+                    terminal_cancelled = False
                     known = slurm_state in FAILURE_STATES
                     label = slurm_state if known else f"UNRECOGNIZED:{slurm_state}"
                     terminal_reason = f"slurm terminal state {label}"
@@ -3630,20 +4122,37 @@ class SlurmBackend(Backend):
                                     "vram_mb": 0, "ram_mb": ram_mb, "pcpu": 0.0,
                                     "backend_state": slurm_state,
                                     "terminal_ok": terminal_ok,
+                                    "terminal_cancelled": terminal_cancelled,
                                     "terminal_reason": terminal_reason}
         return results
 
 
+def _task_requests_slurm(task: Optional[dict]) -> bool:
+    """True when the user supplied Slurm-only task options.
+
+    These options should never be silently ignored by LocalBackend. They only
+    become launchable on nodes that are configured or probed as Slurm-capable.
+    """
+    if not task:
+        return False
+    return bool(task.get("slurm_partition") or task.get("slurm_account") or task.get("slurm_qos"))
+
+
+def _slurm_mode_enabled(value) -> bool:
+    return str(value or "").strip().lower() in ("slurm", "true", "1", "yes", "on")
+
+
+def _slurm_mode_auto(value) -> bool:
+    return str(value or "").strip().lower() == "auto"
+
+
 class HybridBackend(Backend):
-    """Per-node routing: slurm-detected nodes → SlurmBackend, else LocalBackend.
+    """Per-node routing: default LocalBackend; SlurmBackend is opt-in.
 
-    Detection runs once per node per process lifetime (cached). Probes via
-    `command -v sbatch` over ssh; ssh failure or missing tools default to local.
-    Restarting the watcher re-runs detection.
-
-    Why not pick at startup? NODES is static config but slurm presence is a runtime
-    fact (a node can have slurm installed without scheduleurm config knowing). The
-    cache keeps the perf cost to one ssh round-trip per node per process.
+    Slurm detection is still available, but it is a capability probe, not the
+    default policy. That matters for small personal nodes with Slurm installed:
+    scheduleurm should keep doing its own VRAM/RAM/CPU packing unless the node
+    or the task explicitly asks for Slurm.
     """
     name = "hybrid"
 
@@ -3652,11 +4161,37 @@ class HybridBackend(Backend):
         self._slurm = SlurmBackend()
         self._cache: dict = {}  # node_name -> 'slurm' | 'local'
 
-    def requires_local_capacity_check(self, node: str) -> bool:
-        """Per-node delegation: slurm-detected node → False (slurm queues); else True
-        (LocalBackend's instant-capacity gate). Used by pick_placement to skip the
-        CPU/RAM/VRAM-fits check on slurm nodes (Phase 2.3 P1 fix)."""
-        return self._backend_for(node).requires_local_capacity_check(node)
+    def _node_wants_slurm(self, node: str, task: Optional[dict] = None) -> bool:
+        """Policy decision: should this future launch use SlurmBackend?
+
+        Defaults are deliberately local. Operators can opt in globally per node
+        (`slurm_backend="slurm"`), per resource bucket
+        (`slurm_gpu_backend="slurm"` / `slurm_cpu_backend="slurm"`), or by using
+        explicit task Slurm fields. `auto` preserves the old "probe and use Slurm
+        if installed" behavior for nodes that really are shared clusters.
+        """
+        info = NODES.get(node, {}) or {}
+        if _slurm_mode_enabled(info.get("slurm_backend")):
+            return True
+        if _slurm_mode_auto(info.get("slurm_backend")):
+            return self._kind_for(node) == "slurm"
+
+        is_gpu_task = int((task or {}).get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0
+        bucket_key = "slurm_gpu_backend" if is_gpu_task else "slurm_cpu_backend"
+        if _slurm_mode_enabled(info.get(bucket_key)):
+            return True
+        if _slurm_mode_auto(info.get(bucket_key)):
+            return self._kind_for(node) == "slurm"
+
+        # Explicit task Slurm knobs mean "send me to a Slurm-capable node", but
+        # keep non-Slurm local nodes out of the candidate set in pick_placement.
+        if _task_requests_slurm(task):
+            return self._kind_for(node) == "slurm"
+        return False
+
+    def requires_local_capacity_check(self, node: str, task: Optional[dict] = None) -> bool:
+        """True for scheduleurm-managed placement; False for Slurm opt-in nodes."""
+        return not self._node_wants_slurm(node, task)
 
     def _kind_for(self, node: str) -> str:
         """Return 'slurm' or 'local' for this node, cached after the FIRST DEFINITIVE
@@ -3669,20 +4204,7 @@ class HybridBackend(Backend):
         Failure mode for THIS call: returns 'local' (the safe-loud default — at least
         the launch path will surface an error if slurm IS expected). One cycle of
         fallback is the worst case; next dispatch cycle re-probes and self-heals.
-
-        Phase 3.4.14 P1: NODES["<node>"]["force_backend"] = "local" | "slurm"
-        beats auto-detect. Use case: a node has slurm installed but its slurm
-        partition runs `--gres=gpu:1` exclusive (no oversubscribe / no shards),
-        so slurm allocates one whole GPU per job and scheduleurm's 1/3 packing
-        rule never applies. Forcing LocalBackend lets scheduleurm manage GPU
-        placement directly via ssh + manual CUDA_VISIBLE_DEVICES, matching
-        the multi-pack behavior of slurm-less peer nodes (e.g. jtl110gpu).
         """
-        # Phase 3.4.14: explicit per-node override beats probe.
-        forced = (NODES.get(node, {}) or {}).get("force_backend")
-        if forced in ("local", "slurm"):
-            self._cache[node] = forced
-            return forced
         if node in self._cache:
             return self._cache[node]
         # Probe must ALWAYS emit a marker so we can distinguish:
@@ -3690,9 +4212,9 @@ class HybridBackend(Backend):
         # - HAS_SLURM: tools exist AND the controller answers a cheap squeue probe.
         # - SLURM_UNUSABLE: tools exist but controller/account/path is broken right now.
         #
-        # The last case deliberately routes to SlurmBackend for this attempt but is not
-        # cached. Falling back to LocalBackend on a Slurm node can launch jobs on a login
-        # node and bypass cluster policy; a loud sbatch/squeue failure is safer.
+        # The last case deliberately reports "slurm" for this capability check but is
+        # not cached. Policy still has to opt in via _node_wants_slurm before any launch
+        # uses SlurmBackend.
         cmd = ("if command -v sbatch >/dev/null 2>&1 && "
                "command -v squeue >/dev/null 2>&1; then "
                "if squeue -h >/dev/null 2>&1; then echo HAS_SLURM; "
@@ -3715,8 +4237,8 @@ class HybridBackend(Backend):
         # Ambiguous output (output mangled by remote bashrc, MOTD, etc.) — don't cache.
         return "local"
 
-    def _backend_for(self, node: str) -> Backend:
-        return self._slurm if self._kind_for(node) == "slurm" else self._local
+    def _backend_for(self, node: str, task: Optional[dict] = None) -> Backend:
+        return self._slurm if self._node_wants_slurm(node, task) else self._local
 
     def _backend_for_task(self, task: dict) -> Backend:
         """Route by what the task ACTUALLY has, not by the (mutable) per-node cache.
@@ -3732,7 +4254,7 @@ class HybridBackend(Backend):
         New rule: launch artifacts on the task itself are the source of truth.
         - slurm_job_id present → SlurmBackend (it launched the task)
         - remote_pids present → LocalBackend (it launched the task)
-        - neither → queued, use per-node cache for the upcoming launch
+        - neither → queued, use opt-in Slurm policy for the upcoming launch
         """
         if task.get("slurm_job_id"):
             return self._slurm
@@ -3741,7 +4263,7 @@ class HybridBackend(Backend):
         node = task.get("node")
         if not node:
             return self._local  # no node yet (queued task): launch path will re-route
-        return self._backend_for(node)
+        return self._backend_for(node, task)
 
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         return self._backend_for_task(task).launch(task, node_state=node_state)
@@ -3770,10 +4292,18 @@ class HybridBackend(Backend):
         return merged
 
 
-# Singleton: Phase 2 routes per-node via HybridBackend (slurm-detected → SlurmBackend,
-# else LocalBackend). Phase 3 will swap in MultiUserLocalBackend at this assignment.
+# Singleton: HybridBackend defaults to scheduleurm LocalBackend placement; SlurmBackend
+# is used only for explicit task Slurm fields or per-node opt-in config.
 # Tests reference _BACKEND directly to verify backend identity and to swap in fakes.
 _BACKEND: Backend = HybridBackend()
+
+
+def _requires_local_capacity_check(node: str, task: Optional[dict] = None) -> bool:
+    """Compatibility wrapper for tests/plugins with older backend stubs."""
+    try:
+        return _BACKEND.requires_local_capacity_check(node, task=task)
+    except TypeError:
+        return _BACKEND.requires_local_capacity_check(node)
 
 
 def launch(task, node_state=None):
@@ -3788,11 +4318,287 @@ def _cmd_looks_like_training(cmd: str) -> bool:
     and a few common framework patterns. False positives are acceptable — the user can override
     with --allow-cpu-training."""
     lower = (cmd or "").lower()
+    if re.search(r"\bpython(?:\d(?:\.\d+)?)?\b[^\n;]*\s-m\s+[\w.]*train\b", lower):
+        return True
+    if re.search(r"\bpython(?:\d(?:\.\d+)?)?\b[^\n;]*\b[\w./-]*train[\w./-]*\.py\b", lower):
+        return True
     return any(p in lower for p in (
         "train_", "/train.py", " train.py", "trainer.py",
         "/main_train", "run_train", "do_train",
         "h2o+_bus_main.py",
     ))
+
+def _safe_read_text(path: str, max_bytes: int = 512 * 1024) -> str:
+    try:
+        with open(path, "rb") as f:
+            return f.read(max_bytes).decode("utf-8", errors="replace")
+    except Exception:
+        return ""
+
+def _script_invocation_from_cmd(cmd: str, cwd: str = ""):
+    """Return (script_path, script_args) for simple `bash script.sh ...` commands.
+
+    This is intentionally conservative: it only opens a local wrapper file when
+    the command shape is clear. The scheduler still launches the original cmd;
+    this helper is only for submit-time safety policy.
+    """
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        return (None, [])
+    if not toks:
+        return (None, [])
+    first = os.path.basename(toks[0])
+    script_i = None
+    if first in ("bash", "sh", "zsh", "dash"):
+        i = 1
+        while i < len(toks):
+            tok = toks[i]
+            if tok in ("-c", "-lc"):
+                return (None, [])
+            if tok.startswith("-"):
+                i += 1
+                continue
+            script_i = i
+            break
+    elif first == "env" and len(toks) >= 3 and os.path.basename(toks[1]) in ("bash", "sh", "zsh", "dash"):
+        script_i = 2
+    elif toks[0].endswith(".sh"):
+        script_i = 0
+    if script_i is None or script_i >= len(toks):
+        return (None, [])
+    script = toks[script_i]
+    if not os.path.isabs(script):
+        script = os.path.abspath(os.path.join(cwd or os.getcwd(), script))
+    if not os.path.exists(script) or not os.path.isfile(script):
+        return (None, [])
+    return (script, toks[script_i + 1:])
+
+def _submit_policy_text(cmd: str, cwd: str = "") -> str:
+    """Text used by submit-time policy checks.
+
+    The launched command remains unchanged, but policy must inspect wrappers such
+    as `bash run_seed.sh ...`; otherwise a training job can hide its actual
+    `python -m ...train --resume` behind a one-line shell entrypoint.
+    """
+    parts = [cmd or ""]
+    script, _ = _script_invocation_from_cmd(cmd, cwd)
+    if script:
+        text = _safe_read_text(script)
+        if text:
+            parts.append(f"\n# scheduleurm-inspected-wrapper: {script}\n{text}")
+    return "\n".join(parts)
+
+def _shell_split_statements(text: str):
+    for line in (text or "").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        for part in line.split(";"):
+            part = part.strip()
+            if part:
+                yield part
+
+def _shell_expand_simple(value: str, env: dict) -> str:
+    value = (value or "").strip()
+    if ((value.startswith('"') and value.endswith('"'))
+            or (value.startswith("'") and value.endswith("'"))):
+        value = value[1:-1]
+    m = re.fullmatch(r"\$(\d+)", value)
+    if m:
+        return env.get(m.group(1), "")
+    m = re.fullmatch(r"\$\{(\d+):-([^}]*)\}", value)
+    if m:
+        return env.get(m.group(1), "") or m.group(2)
+
+    def repl(mo):
+        name = mo.group(1)
+        suffix = mo.group(2)
+        val = env.get(name, "")
+        if suffix and val.endswith(suffix):
+            return val[:-len(suffix)]
+        return val
+
+    value = re.sub(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?:%([^}]+))?\}", repl, value)
+    value = re.sub(r"\$([A-Za-z_][A-Za-z0-9_]*)", lambda mo: env.get(mo.group(1), ""), value)
+    return value
+
+def _simple_shell_env_from_script(script_text: str, script_args: list) -> dict:
+    env = {str(i + 1): str(v) for i, v in enumerate(script_args or [])}
+    for stmt in _shell_split_statements(script_text):
+        if stmt.startswith(("export ", "local ")):
+            stmt = stmt.split(None, 1)[1].strip()
+        m = re.match(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", stmt)
+        if not m:
+            continue
+        name, val = m.group(1), m.group(2).strip()
+        # Command substitution makes the value host/runtime dependent; leave it
+        # unresolved so we do not invent a false checkpoint path.
+        if "$(" in val or "`" in val:
+            continue
+        env[name] = _shell_expand_simple(val, env)
+    return env
+
+def _extract_script_cd_dir(script_text: str, script_path: str = "", cwd: str = "") -> str:
+    for stmt in _shell_split_statements(script_text):
+        m = re.match(r"^cd\s+(.+)$", stmt)
+        if not m:
+            continue
+        target = _shell_expand_simple(m.group(1).strip(), {
+            "HOME": str(Path.home()),
+            "0": script_path or "",
+        })
+        if target in ('"$(dirname "$0")"', "'$(dirname \"$0\")'") and script_path:
+            return os.path.dirname(script_path)
+        if target.startswith("$(dirname"):
+            return os.path.dirname(script_path) if script_path else (cwd or os.getcwd())
+        if not os.path.isabs(target):
+            base = os.path.dirname(script_path) if script_path else (cwd or os.getcwd())
+            target = os.path.abspath(os.path.join(base, target))
+        return target
+    return cwd or (os.path.dirname(script_path) if script_path else os.getcwd())
+
+def _arg_value(tokens: list, name: str):
+    prefix = name + "="
+    for i, tok in enumerate(tokens or []):
+        if tok == name and i + 1 < len(tokens):
+            return tokens[i + 1]
+        if tok.startswith(prefix):
+            return tok[len(prefix):]
+    return None
+
+def _abs_under(base: str, path: str) -> str:
+    if not path:
+        return ""
+    path = os.path.expanduser(str(path))
+    if os.path.isabs(path):
+        return os.path.normpath(path)
+    return os.path.normpath(os.path.join(base or os.getcwd(), path))
+
+def _infer_direct_jax_train_ckpt(cmd: str, cwd: str = ""):
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        return None
+    save_root = _arg_value(toks, "--save_root") or _arg_value(toks, "--save-root")
+    run_name = _arg_value(toks, "--run_name") or _arg_value(toks, "--run-name")
+    has_resume = _cmd_has_resume_flag(cmd)
+    if save_root and run_name:
+        base = cwd or os.getcwd()
+        return {
+            "ckpt_dir": os.path.join(_abs_under(base, save_root), run_name, "checkpoints"),
+            "resume_managed_by_cmd": bool(has_resume),
+            "source": "python-args",
+        }
+    return None
+
+def _infer_wrapper_ckpt(cmd: str, cwd: str = ""):
+    script, script_args = _script_invocation_from_cmd(cmd, cwd)
+    if not script:
+        return None
+    text = _safe_read_text(script)
+    if not text:
+        return None
+    env = _simple_shell_env_from_script(text, script_args)
+    script_cwd = _extract_script_cd_dir(text, script, cwd)
+
+    save_root = None
+    m = re.search(r"--save[_-]root\s+([^\s\\]+)", text)
+    if m:
+        save_root = _shell_expand_simple(m.group(1), env)
+    run_name = env.get("RUN_NAME")
+    if not run_name:
+        m = re.search(r"--run[_-]name\s+([^\s\\]+)", text)
+        if m:
+            run_name = _shell_expand_simple(m.group(1), env)
+    if not (save_root and run_name):
+        return None
+    if "$" in save_root or "$" in run_name or not run_name.strip():
+        return None
+    return {
+        "ckpt_dir": os.path.join(_abs_under(script_cwd, save_root), run_name, "checkpoints"),
+        "resume_managed_by_cmd": _cmd_has_resume_flag(text),
+        "source": f"wrapper:{os.path.basename(script)}",
+    }
+
+def _infer_checkpoint_from_submit(cmd: str, cwd: str = ""):
+    return _infer_direct_jax_train_ckpt(cmd, cwd) or _infer_wrapper_ckpt(cmd, cwd)
+
+def _candidate_training_source_paths(cmd: str, cwd: str = ""):
+    paths = []
+    script, _ = _script_invocation_from_cmd(cmd, cwd)
+    script_text = _safe_read_text(script) if script else ""
+    policy = _submit_policy_text(cmd, cwd)
+    bases = []
+    for base in (cwd, _extract_script_cd_dir(script_text, script, cwd) if script_text else "", os.path.dirname(script) if script else ""):
+        if base and base not in bases:
+            bases.append(base)
+    if not bases:
+        bases = [os.getcwd()]
+
+    for mod in re.findall(r"-m\s+([A-Za-z_][\w.]*train[A-Za-z0-9_.]*)", policy):
+        rel = mod.replace(".", os.sep) + ".py"
+        for base in bases:
+            p = os.path.join(base, rel)
+            if os.path.exists(p):
+                paths.append(os.path.normpath(p))
+    for py in re.findall(r"(?<![A-Za-z0-9_./-])([A-Za-z0-9_./-]*train[A-Za-z0-9_./-]*\.py)", policy):
+        for base in bases:
+            p = py if os.path.isabs(py) else os.path.join(base, py)
+            if os.path.exists(p):
+                paths.append(os.path.normpath(p))
+
+    # If train.py imports a sibling checkpoint module, include it in the contract
+    # source so save/load details are checked too.
+    expanded = []
+    for p in paths:
+        if p not in expanded:
+            expanded.append(p)
+        src = _safe_read_text(p)
+        if "jax_experiments.common.checkpoint" in src:
+            for base in bases:
+                cp = os.path.join(base, "jax_experiments", "common", "checkpoint.py")
+                if os.path.exists(cp) and os.path.normpath(cp) not in expanded:
+                    expanded.append(os.path.normpath(cp))
+    return expanded
+
+def _checkpoint_contract_reason(cmd: str, cwd: str, ckpt_dir, resume_flag, allow_no_resume: bool):
+    """Static submit-time check that resume is not just syntactically wired.
+
+    This cannot prove bitwise determinism for every framework, but it catches the
+    dangerous class where a command has a `--resume`-looking flag yet the code does
+    not save enough state to continue from the saved iteration.
+    """
+    policy_cmd = _submit_policy_text(cmd, cwd)
+    if allow_no_resume or not _cmd_looks_like_training(policy_cmd) or not ckpt_dir:
+        return None
+    if not (_cmd_has_resume_flag(policy_cmd) or resume_flag):
+        return None  # _resume_capability_reason reports the clearer wiring error.
+    paths = _candidate_training_source_paths(cmd, cwd)
+    if not paths:
+        return ("could not inspect local training source for checkpoint contract. "
+                "Submit with a local cwd/wrapper the scheduler can read, or pass "
+                "--allow-no-resume to explicitly accept non-resumable relaunches.")
+    src = "\n".join(_safe_read_text(p) for p in paths)
+    lower = src.lower()
+    checks = [
+        ("save_checkpoint call", "save_checkpoint(" in src or "torch.save(" in src or ".save_checkpoint(" in src),
+        ("load_checkpoint call", "load_checkpoint(" in src or "torch.load(" in src or ".load_checkpoint(" in src),
+        ("checkpoint existence gate", "has_checkpoint(" in src or "os.path.exists" in src or "path.exists" in lower),
+        ("iteration/start_iter state", bool(re.search(r"start_(?:iteration|iter)|['\"]iteration['\"]|global_step|epoch", src))),
+        ("resume advances past saved iter", bool(re.search(r"iteration['\"]\]\s*\+\s*1|start_(?:iteration|iter).*range\(", src, re.S))),
+        ("model parameters", "params.pkl" in src or "state_dict" in lower or "nnx.state" in src or "flax" in lower),
+        ("optimizer state", "opt_state" in lower or "optimizer" in lower),
+        ("replay/buffer state", "replay_buffer" in lower and ("to_numpy" in src or "from_numpy" in src or ".npz" in src or "pickle" in lower)),
+        ("total step/count state", "total_steps" in lower or "global_step" in lower),
+    ]
+    missing = [name for name, ok in checks if not ok]
+    if missing:
+        return ("checkpoint contract is incomplete or unverifiable in inspected source "
+                f"({', '.join(os.path.basename(p) for p in paths)}); missing: "
+                f"{', '.join(missing)}. Add full-state save/load or pass "
+                "--allow-no-resume to explicitly accept restart-from-zero risk.")
+    return None
 
 def _cmd_explicitly_cpu(cmd: str) -> bool:
     """Recognize app-level CPU flags. This is advisory only: scheduler-level CPU training
@@ -3890,26 +4696,513 @@ def _resume_capability_reason(cmd: str, ckpt_dir, resume_flag, allow_no_resume: 
             "(b) pass --resume-flag '--resume_from' at submit (scheduler appends '<flag> <ckpt>' on relaunch), "
             "or (c) pass --allow-no-resume to override (e.g. script genuinely cannot resume — must accept replay loss).")
 
+
+def _conflict_path_key(path):
+    """Normalize declared local/remote paths for equality checks without probing FS."""
+    if not path:
+        return ""
+    return os.path.normpath(os.path.expanduser(str(path).rstrip("/")))
+
+
+def _same_declared_path(a, b):
+    ka = _conflict_path_key(a)
+    kb = _conflict_path_key(b)
+    return bool(ka and kb and ka == kb)
+
+
+def _active_or_unsynced_result_status(task):
+    """True while a task can still write/sync into declared result directories."""
+    st = task.get("status")
+    if st in ("queued", "launching", "running"):
+        return True
+    if st == "done" and task.get("result_dir") and not task.get("result_synced_at"):
+        return True
+    return False
+
+
+def _task_run_identity(task):
+    """Identity used only for duplicate-run suppression.
+
+    Broad signatures are allowed: many independent BAPR/ablation jobs may share
+    one family-level signature. The key therefore includes the fields that make
+    a launch materially different, while intentionally excluding scheduling
+    knobs (priority/resources/preferred node) so resubmitting the same run with a
+    different estimate does not double-launch it.
+    """
+    sig = task.get("signature") or ""
+    if not sig:
+        return None  # empty signatures are auto-adopted / one-offs; legacy exempt
+    extra_env = task.get("extra_env") or {}
+    if not isinstance(extra_env, dict):
+        extra_env = {}
+    env_key = json.dumps(extra_env, sort_keys=True, separators=(",", ":"))
+    return (
+        sig,
+        task.get("cmd") or "",
+        _conflict_path_key(task.get("cwd")),
+        task.get("env_spec") or "none",
+        task.get("image") or "",
+        env_key,
+        _conflict_path_key(task.get("ckpt_dir")),
+        task.get("ckpt_glob") or "*",
+        task.get("resume_flag") or "",
+        _conflict_path_key(task.get("result_dir")),
+        _conflict_path_key(task.get("local_result_dir")),
+        task.get("slurm_partition") or "",
+        task.get("slurm_account") or "",
+        task.get("slurm_qos") or "",
+    )
+
+
+def _task_is_descendant_of(task: dict, ancestor_id: str, by_id: dict) -> bool:
+    """Return True if task's parent_id chain reaches ancestor_id."""
+    if not ancestor_id:
+        return False
+    seen = set()
+    cur = task
+    while cur:
+        pid = cur.get("parent_id")
+        if not pid:
+            return False
+        if pid == ancestor_id:
+            return True
+        if pid in seen:
+            return False
+        seen.add(pid)
+        cur = by_id.get(pid)
+    return False
+
+
+def _mark_user_cancelled(task: dict, reason: str = "user cancel") -> None:
+    now = time.time()
+    task["status"] = "cancelled"
+    task["finished_at"] = now
+    task["cancelled_at"] = now
+    task["cancelled_by_user"] = True
+    task["cancel_reason"] = reason
+    task.pop("launching_started_at", None)
+    task["last_block_reason"] = reason
+
+
+def _remember_last_placement(task: dict) -> None:
+    """Keep enough placement history to audit/recover stale launch artifacts.
+
+    Several recovery paths temporarily clear task["node"] before re-placement.
+    If a queued record still carries remote_pids/log_path from an older launch,
+    last_node lets us probe or diagnose that older process instead of blindly
+    launching the same task id again.
+    """
+    if task.get("node"):
+        task["last_node"] = task.get("node")
+    if task.get("gpu_idx") is not None:
+        task["last_gpu_idx"] = task.get("gpu_idx")
+
+
+def _queued_launch_artifacts(task: dict) -> list[str]:
+    artifacts = []
+    if _task_pids(task):
+        artifacts.append("remote_pids")
+    if task.get("process_group"):
+        artifacts.append("process_group")
+    if task.get("started_at") and not task.get("finished_at"):
+        artifacts.append("started_at")
+    if task.get("log_path") and task.get("started_at"):
+        artifacts.append("log_path")
+    if task.get("slurm_job_id"):
+        artifacts.append("slurm_job_id")
+    return artifacts
+
+
+def _reconcile_queued_launch_artifacts_before_dispatch(task: dict, state: dict) -> Optional[dict]:
+    """Prevent same-id relaunch when a queued record still has old launch state.
+
+    A well-formed queued task has no live launch artifacts. Preemption/migration
+    explicitly kill and clear remote_pids/process_group/started_at/log_path before
+    returning a task to the queue. If those fields are still present, dispatching
+    the same record would overwrite PID/log metadata and can run the same task id
+    twice. Instead:
+      * alive old artifact -> adopt back to running;
+      * dead old artifact -> classify terminal and, if crashed, create a retry
+        clone with a new task id via _requeue_after_crash;
+      * unknown/no-node -> block instead of launching.
+    """
+    if task.get("status") != "queued":
+        return None
+    artifacts = _queued_launch_artifacts(task)
+    if not artifacts:
+        return None
+
+    node = task.get("node") or task.get("last_node")
+    if node and not task.get("node"):
+        task["node"] = node
+    if node:
+        task["last_node"] = node
+    if task.get("gpu_idx") is not None:
+        task["last_gpu_idx"] = task.get("gpu_idx")
+
+    if node and (_task_pids(task) or task.get("slurm_job_id")):
+        probe_task = dict(task)
+        probe_task["status"] = "running"
+        probe_task["node"] = node
+        try:
+            res = _BACKEND.batch_probe({"tasks": [probe_task]}).get(task.get("id"))
+        except Exception:
+            res = {"state": "unknown"}
+        if not res or res.get("state") == "unknown":
+            reason = (
+                "queued task still has launch artifacts "
+                f"({','.join(artifacts)}) but liveness probe is unknown; "
+                "not relaunching same task id"
+            )
+            task["last_block_reason"] = reason
+            return {"type": "blocked", "task_id": task.get("id"), "task": task,
+                    "reason": reason}
+        if res.get("state") == "alive":
+            task["status"] = "running"
+            task["node"] = node
+            task["alive_pids"] = res.get("alive_pids") or []
+            _set_current_usage(task, res.get("vram_mb", 0), res.get("ram_mb", 0), res.get("pcpu", 0.0))
+            if res.get("vram_mb", 0) > 0:
+                task["peak_vram_mb"] = max(task.get("peak_vram_mb", 0), res.get("vram_mb", 0))
+            if res.get("ram_mb", 0) > 0:
+                task["peak_ram_mb"] = max(task.get("peak_ram_mb", 0), res.get("ram_mb", 0))
+            task["last_block_reason"] = (
+                "recovered queued task with live launch artifacts; adopted as running "
+                "to avoid same-id relaunch"
+            )
+            return {"type": "queued_artifact_adopted", "task_id": task.get("id"),
+                    "task": task, "reason": task["last_block_reason"]}
+
+    if not node:
+        reason = (
+            "queued task still has launch artifacts "
+            f"({','.join(artifacts)}) but no node/last_node to probe; "
+            "not relaunching same task id"
+        )
+        task["last_block_reason"] = reason
+        return {"type": "blocked", "task_id": task.get("id"), "task": task,
+                "reason": reason}
+
+    # The old artifact is terminal/dead. Finalize this task id; if it was a
+    # crash, _requeue_after_crash will create a fresh queued retry id.
+    task["node"] = node
+    task["finished_at"] = task.get("finished_at") or time.time()
+    task["started_at"] = task.get("started_at") or task["finished_at"]
+    task["remote_pids"] = []
+    task["alive_pids"] = []
+    _set_current_usage(task, 0, 0, 0.0)
+    try:
+        _release_task_claims_and_intents(task)
+    except Exception:
+        pass
+    diag = _diagnose_terminal(task)
+    task["_diagnosis"] = diag
+    if diag.get("is_crash") and not task.get("auto_adopted"):
+        task["status"] = "failed"
+        task["last_block_reason"] = (
+            "queued task carried dead launch artifacts; finalized as failed "
+            f"instead of relaunching same id: {diag.get('reason', '')}"
+        )
+        new_id = _requeue_after_crash(task, state)
+        if new_id:
+            task["requeued_as"] = new_id
+        return {"type": "queued_artifact_finalized", "task_id": task.get("id"),
+                "task": task, "requeued_as": task.get("requeued_as"),
+                "reason": task["last_block_reason"]}
+    task["status"] = "done"
+    task["last_block_reason"] = (
+        "queued task carried dead launch artifacts; finalized as done "
+        "instead of relaunching same id"
+    )
+    return {"type": "queued_artifact_finalized", "task_id": task.get("id"),
+            "task": task, "reason": task["last_block_reason"]}
+
+
+def _cancel_related_queued_retries(state: dict, task: dict, reason: str) -> int:
+    """Cancel queued/launching retry duplicates for the same exact run.
+
+    A retry clone represents the same work as its parent. If the operator
+    cancels one queued retry, any other queued/launching record with the same
+    run identity must not remain dispatchable, otherwise the parent can be
+    launched again after the user explicitly stopped the retry.
+    """
+    key = _task_run_identity(task)
+    if not key:
+        return 0
+    cancelled = 0
+    target_id = task.get("id")
+    for other in state.get("tasks", []):
+        if other is task or other.get("id") == target_id:
+            continue
+        if other.get("status") not in ("queued", "launching"):
+            continue
+        if _task_run_identity(other) != key:
+            continue
+        try:
+            _release_task_claims_and_intents(other)
+        except Exception:
+            pass
+        _mark_user_cancelled(
+            other,
+            f"{reason}; cancelling duplicate retry for same run identity as {target_id}",
+        )
+        other["node"] = None
+        other["gpu_idx"] = None
+        other["remote_pids"] = []
+        cancelled += 1
+    return cancelled
+
+
+def _has_user_cancelled_retry_descendant(parent: dict, state: dict, parent_key=None) -> bool:
+    """True if a retry descendant of parent was cancelled by the operator."""
+    parent_id = parent.get("id")
+    if not parent_id:
+        return False
+    key = parent_key if parent_key is not None else _task_run_identity(parent)
+    if not key:
+        return False
+    by_id = {t.get("id"): t for t in state.get("tasks", []) if t.get("id")}
+    for t in state.get("tasks", []):
+        if t.get("status") != "cancelled":
+            continue
+        if _task_run_identity(t) != key:
+            continue
+        if t.get("parent_id") == parent_id or _task_is_descendant_of(t, parent_id, by_id):
+            return True
+    return False
+
+
+def reconcile_requeue_lineage_invariants(state: dict) -> int:
+    """Repair impossible queued parents that have already spawned a retry.
+
+    Invariant: once a crashed task has `requeued_as=<child>`, the parent is a
+    terminal audit record. It must never become dispatchable again. This guard
+    catches stale/manual transitions and old queue state before dispatch can
+    launch the parent as a duplicate of its retry child.
+    """
+    by_id = {t.get("id"): t for t in state.get("tasks", []) if t.get("id")}
+    changed = 0
+    for t in state.get("tasks", []):
+        if t.get("status") not in ("queued", "launching"):
+            continue
+        child_id = t.get("requeued_as")
+        if not child_id:
+            continue
+        child = by_id.get(child_id)
+        if not child:
+            continue
+        try:
+            _release_task_claims_and_intents(t)
+        except Exception:
+            pass
+        t["node"] = None
+        t["gpu_idx"] = None
+        t["remote_pids"] = []
+        t.pop("launching_started_at", None)
+        if child.get("status") == "cancelled":
+            _mark_user_cancelled(
+                t,
+                f"superseded by retry {child_id}, which was cancelled; parent will not dispatch",
+            )
+        else:
+            t["status"] = "failed"
+            t["finished_at"] = t.get("finished_at") or time.time()
+            t["last_block_reason"] = (
+                f"superseded by retry {child_id}; parent kept terminal to avoid duplicate dispatch"
+            )
+        changed += 1
+    return changed
+
+
+def _task_runtime_payload(task: dict) -> dict:
+    """Fields that make runtime/walltime materially different.
+
+    This is stricter than signature-only so broad family signatures do not
+    smear a 5-minute eval onto a multi-hour training run. It intentionally
+    excludes resource estimates and placement knobs; those do not change the
+    code path being timed.
+    """
+    extra_env = task.get("extra_env") or {}
+    if not isinstance(extra_env, dict):
+        extra_env = {}
+    return {
+        "signature": task.get("signature") or "",
+        "project": task.get("project") or "",
+        "description": task.get("description") or "",
+        "cmd": task.get("cmd") or "",
+        "cwd": _conflict_path_key(task.get("cwd")),
+        "env_spec": task.get("env_spec") or "none",
+        "image": task.get("image") or "",
+        "extra_env": extra_env,
+    }
+
+
+def _task_runtime_keys(task: dict) -> list:
+    payload = _task_runtime_payload(task)
+    # Exact runtime identity is parameter-based, not signature-based. Signatures
+    # are often broad family labels or user-added v2 suffixes; letting them into
+    # the exact hash would lose otherwise-valid local timing history.
+    exact_payload = {
+        "cmd": payload.get("cmd") or "",
+        "cwd": payload.get("cwd") or "",
+        "env_spec": payload.get("env_spec") or "none",
+        "image": payload.get("image") or "",
+        "extra_env": payload.get("extra_env") or {},
+    }
+    keys = []
+    if exact_payload["cmd"]:
+        raw = json.dumps(exact_payload, sort_keys=True, separators=(",", ":"))
+        exact = "exact:" + hashlib.sha1(raw.encode("utf-8")).hexdigest()
+        keys.append((exact, "exact", payload))
+    sig = payload.get("signature")
+    if sig:
+        keys.append(("sig:" + sig, "signature", payload))
+    return keys
+
+
+def _runtime_history_best(task: dict):
+    h = load_runtime_history()
+    for key, kind, _payload in _task_runtime_keys(task):
+        rec = h.get(key)
+        if isinstance(rec, dict) and int(rec.get("total_s") or 0) > 0:
+            return rec, key, kind
+    return None, None, None
+
+
+def _runtime_total_history_s(task: dict) -> int:
+    rec, _key, _kind = _runtime_history_best(task)
+    return int(rec.get("total_s") or 0) if rec else 0
+
+
+def _runtime_walltime_for_task(task: dict) -> int:
+    """Return progress/duration-derived Slurm walltime, or 0 if no runtime history.
+
+    Runtime history is deliberately tighter than legacy duration EWMA: it is
+    keyed by exact cmd/cwd/env parameters first, then by signature fallback. The
+    exact key ignores signature/project/description so label-only changes do not
+    lose otherwise-valid local timing history. The estimate is p80(total
+    runtime) × 1.2, with a small 10-minute floor so short evals do not become
+    24h jobs and block Slurm backfill.
+    """
+    total_s = _runtime_total_history_s(task)
+    if total_s <= 0:
+        return 0
+    return int(max(RUNTIME_MIN_WALLTIME_S, total_s * RUNTIME_WALLTIME_MULT))
+
+
+def _apply_runtime_projection(task: dict, projection: Optional[dict]):
+    if not projection:
+        return
+    total_s = int(projection.get("total_s") or 0)
+    if total_s <= 0:
+        return
+    task["runtime_total_s_est"] = total_s
+    task["runtime_est_source"] = projection.get("source") or "progress"
+    task["runtime_progress_at"] = int(time.time())
+    if projection.get("eta_s") is not None:
+        task["runtime_eta_s_est"] = int(projection.get("eta_s") or 0)
+    if projection.get("current") is not None:
+        task["runtime_current_unit"] = int(projection.get("current") or 0)
+    if projection.get("total_units") is not None:
+        task["runtime_total_units"] = int(projection.get("total_units") or 0)
+    if projection.get("unit_s") is not None:
+        task["runtime_unit_s_est"] = float(projection.get("unit_s") or 0.0)
+
+
+def runtime_history_record(task: dict, duration_s: int = 0):
+    """Fold exact-parameter runtime samples into runtime_history.json.
+
+    The sample source is, in priority order:
+      1. tqdm/progress projection captured while the task was running
+      2. terminal duration_s after clean completion
+
+    We record both an exact parameter key (cmd+cwd+env/image, independent of
+    signature/project/description labels) and a signature fallback. Exact wins
+    at lookup; signature only helps when the user intentionally uses stable
+    signatures for the same parameterized command family.
+    """
+    if not task:
+        return
+    total_s = int(task.get("runtime_total_s_est") or 0)
+    source = task.get("runtime_est_source") or ""
+    if total_s <= 0 and duration_s > 0:
+        total_s = int(duration_s)
+        source = "duration"
+    if total_s <= 0:
+        return
+    unit_s = float(task.get("runtime_unit_s_est") or 0.0)
+    total_units = int(task.get("runtime_total_units") or 0)
+
+    h = load_runtime_history()
+    now = int(time.time())
+    for key, kind, payload in _task_runtime_keys(task):
+        cur = h.get(key)
+        if not isinstance(cur, dict):
+            cur = {}
+        samples = cur.get("total_s_samples") or []
+        samples.append(int(total_s))
+        samples = samples[-RUNTIME_HISTORY_SAMPLES_PER_KEY:]
+        cur["total_s_samples"] = samples
+        cur["total_s"] = _percentile(samples, RUNTIME_HISTORY_PERCENTILE)
+        cur["walltime_s"] = int(max(RUNTIME_MIN_WALLTIME_S, cur["total_s"] * RUNTIME_WALLTIME_MULT))
+        if unit_s > 0:
+            us = cur.get("unit_s_samples") or []
+            us.append(float(unit_s))
+            us = us[-RUNTIME_HISTORY_SAMPLES_PER_KEY:]
+            cur["unit_s_samples"] = us
+            cur["unit_s"] = float(_percentile([int(x * 1000) for x in us], RUNTIME_HISTORY_PERCENTILE)) / 1000.0
+        if total_units > 0:
+            cur["total_units"] = total_units
+        cur["source"] = source or cur.get("source") or "duration"
+        cur["kind"] = kind
+        cur["signature"] = payload.get("signature") or ""
+        cur["project"] = payload.get("project") or ""
+        cur["description"] = payload.get("description") or ""
+        cur["cmd"] = (payload.get("cmd") or "")[:500]
+        cur["runs"] = int(cur.get("runs") or 0) + 1
+        cur["last_seen"] = now
+        h[key] = cur
+    if len(h) > RUNTIME_HISTORY_MAX_ENTRIES:
+        kept = sorted(h.items(), key=lambda kv: -(kv[1].get("last_seen", 0) if isinstance(kv[1], dict) else 0))
+        h = dict(kept[:RUNTIME_HISTORY_MAX_ENTRIES])
+    save_runtime_history(h)
+
+
 def _queued_cpu_training_block_reason(task):
     if task.get("status") != "queued":
         return None
     if task.get("auto_adopted") or task.get("adopted"):
         return None
     return _cpu_training_policy_reason(
-        task.get("cmd", ""),
+        _submit_policy_text(task.get("cmd", ""), task.get("cwd", "")),
         task.get("description", ""),
         bool(task.get("allow_cpu_training", False)),
         int(task.get("est_vram_mb") or 0),
     )
 
 def cmd_submit(args):
+    raw_submit_cmd = args.cmd
+    policy_cmd = _submit_policy_text(args.cmd, args.cwd)
+    inferred_checkpoint = _infer_checkpoint_from_submit(args.cmd, args.cwd)
+    inferred_ckpt_dir = ""
+    inferred_resume_managed = False
+    inferred_ckpt_source = ""
+    if inferred_checkpoint:
+        inferred_ckpt_dir = inferred_checkpoint.get("ckpt_dir") or ""
+        inferred_resume_managed = bool(inferred_checkpoint.get("resume_managed_by_cmd"))
+        inferred_ckpt_source = inferred_checkpoint.get("source") or ""
+    ckpt_dir_was_inferred = False
+    if not args.ckpt_dir and inferred_ckpt_dir:
+        args.ckpt_dir = inferred_ckpt_dir
+        ckpt_dir_was_inferred = True
+
     # Pre-flight: refuse training-shaped cmd with vram=0 unless the scheduler-level override
     # is present. `--device cpu` in the inner command is not enough: that flag is precisely how
     # a GPU-intended training batch can accidentally land on CPU.
     cpu_training_reason = None
     submit_vram_for_policy = args.vram if args.vram is not None else DEFAULT_VRAM_MB
     cpu_training_reason = _cpu_training_policy_reason(
-        args.cmd, args.description, bool(getattr(args, "allow_cpu_training", False)),
+        policy_cmd, args.description, bool(getattr(args, "allow_cpu_training", False)),
         submit_vram_for_policy,
     )
     if cpu_training_reason:
@@ -3927,7 +5220,7 @@ def cmd_submit(args):
     # baselines onto CPU when they belonged on GPU.
     MIN_JUSTIFICATION_LEN = 30
     if (bool(getattr(args, "allow_cpu_training", False))
-            and _task_looks_like_training(args.cmd, args.description)):
+            and _task_looks_like_training(policy_cmd, args.description)):
         just = (getattr(args, "cpu_training_justification", "") or "").strip()
         if len(just) < MIN_JUSTIFICATION_LEN:
             print(f"REFUSED: --allow-cpu-training requires --cpu-training-justification "
@@ -3945,7 +5238,7 @@ def cmd_submit(args):
     # scheduler can't auto-add ckpt for the user (path is project-specific) so we fail-fast at
     # submit and force an explicit decision. The eviction loop that bit t1029/t1030 (12+ relaunches
     # losing ~1h of progress because cmd had no ckpt) is exactly what this guards against.
-    if (_cmd_looks_like_training(args.cmd)
+    if (_cmd_looks_like_training(policy_cmd)
             and not args.ckpt_dir
             and not getattr(args, "allow_no_ckpt", False)):
         print(f"REFUSED: cmd looks like training but --ckpt-dir is not set.", file=sys.stderr)
@@ -3962,7 +5255,7 @@ def cmd_submit(args):
     # always starts at step 0. This is the WSRL 05-04 footgun: 50h training to epoch 100, ckpts
     # on disk, but cmd had no resume → reboot would have re-run from 0.
     resume_reason = _resume_capability_reason(
-        args.cmd, args.ckpt_dir, args.resume_flag,
+        policy_cmd, args.ckpt_dir, args.resume_flag,
         bool(getattr(args, "allow_no_resume", False))
     )
     if resume_reason:
@@ -3970,33 +5263,75 @@ def cmd_submit(args):
         print(f"  cmd: {args.cmd[:120]}", file=sys.stderr)
         print(f"  reason: {resume_reason}", file=sys.stderr)
         sys.exit(2)
+    contract_reason = _checkpoint_contract_reason(
+        raw_submit_cmd, args.cwd, args.ckpt_dir, args.resume_flag,
+        bool(getattr(args, "allow_no_resume", False))
+    )
+    if contract_reason:
+        print("REFUSED: training checkpoint/resume contract is not verifiable.", file=sys.stderr)
+        print(f"  cmd: {raw_submit_cmd[:120]}", file=sys.stderr)
+        print(f"  reason: {contract_reason}", file=sys.stderr)
+        print("  If this is a short/debug run, pass --allow-no-resume. Otherwise fix the "
+              "training code so checkpoint save/load includes iteration, model params, "
+              "optimizer state, replay/buffer state, and total step counters.", file=sys.stderr)
+        sys.exit(2)
+    if args.ckpt_dir and _same_declared_path(args.ckpt_dir, args.cwd):
+        print("REFUSED: --ckpt-dir must not equal --cwd.", file=sys.stderr)
+        print(f"  cwd:      {args.cwd}", file=sys.stderr)
+        print(f"  ckpt-dir: {args.ckpt_dir}", file=sys.stderr)
+        print("  reason: launch staging uses rsync --delete for cwd; if ckpts live at cwd root, "
+              "remote checkpoint/output files can be deleted during code sync.", file=sys.stderr)
+        print("  Put checkpoints in a dedicated subdirectory, e.g. --ckpt-dir <cwd>/checkpoints/<run>.",
+              file=sys.stderr)
+        sys.exit(2)
+    if getattr(args, "result_dir", None) and _same_declared_path(args.result_dir, args.cwd):
+        print("REFUSED: --result-dir must not equal --cwd.", file=sys.stderr)
+        print(f"  cwd:        {args.cwd}", file=sys.stderr)
+        print(f"  result-dir: {args.result_dir}", file=sys.stderr)
+        print("  reason: launch staging uses rsync --delete for cwd; result files written at cwd root "
+              "are indistinguishable from stale code files.", file=sys.stderr)
+        print("  Put results in a dedicated subdirectory, e.g. --result-dir <cwd>/results/<run>.",
+              file=sys.stderr)
+        sys.exit(2)
+    extra_env = _parse_env(args.env)
     with state_lock():
         state = load_state()
         sig = args.signature
         if not getattr(args, "allow_duplicate", False):
+            submit_identity = _task_run_identity({
+                "signature": sig,
+                "cmd": args.cmd,
+                "cwd": args.cwd,
+                "extra_env": extra_env,
+                "env_spec": getattr(args, "env_spec", None) or "none",
+                "image": getattr(args, "image", None) or "",
+                "ckpt_dir": args.ckpt_dir,
+                "ckpt_glob": args.ckpt_glob,
+                "resume_flag": args.resume_flag or "",
+                "result_dir": getattr(args, "result_dir", None) or None,
+                "local_result_dir": getattr(args, "local_result_dir", None) or None,
+                "slurm_partition": getattr(args, "slurm_partition", None) or "",
+                "slurm_account": getattr(args, "slurm_account", None) or "",
+                "slurm_qos": getattr(args, "slurm_qos", None) or "",
+            })
             for existing in state["tasks"]:
-                if (existing.get("signature") == sig
-                        and existing.get("cmd") == args.cmd
-                        and existing.get("status") in ("queued", "running", "launching")):
-                    print(f"DUPLICATE: {existing['id']} ({existing['status']}) has identical signature+cmd")
+                if (existing.get("status") in ("queued", "running", "launching")
+                        and _task_run_identity(existing) == submit_identity):
+                    print(f"DUPLICATE: {existing['id']} ({existing['status']}) has identical run identity")
                     print(f"  signature: {sig}")
                     print(f"  cmd: {args.cmd[:120]}")
+                    print(f"  cwd: {args.cwd}")
                     print(f"  pass --allow-duplicate to override")
                     sys.exit(2)
-        # ckpt_dir cross-signature conflict: refuse if a queued/running task with a DIFFERENT
-        # signature is already targeting the same --ckpt-dir. This is the cross-session footgun
-        # that produced the 3 wsrl/s1024 procs (different sig labels, same out_dir) writing the
-        # same checkpoint_epoch50.pt concurrently → corrupt ckpt → 14h lost. Same-sig duplicates
-        # are caught by the block above; --allow-shared-ckpt-dir overrides for deliberate
-        # multi-instance scenarios (e.g. distributed training reading same warm-start ckpt).
+        # ckpt_dir conflict: refuse if any active task already targets the same
+        # --ckpt-dir. This must be stronger than run-identity dedup: even two
+        # otherwise-distinct tasks corrupt each other if they write one ckpt dir.
         if (args.ckpt_dir
-                and not getattr(args, "allow_shared_ckpt_dir", False)
-                and not getattr(args, "allow_duplicate", False)):
+                and not getattr(args, "allow_shared_ckpt_dir", False)):
             for existing in state["tasks"]:
                 if existing.get("status") not in ("queued", "running", "launching"): continue
-                if existing.get("ckpt_dir") != args.ckpt_dir: continue
-                if existing.get("signature") == sig: continue  # same-sig: handled above or legit retry
-                print(f"REFUSED: --ckpt-dir already in use by an active task with a different signature.",
+                if not _same_declared_path(existing.get("ckpt_dir"), args.ckpt_dir): continue
+                print(f"REFUSED: --ckpt-dir already in use by an active task.",
                       file=sys.stderr)
                 print(f"  conflicting task: {existing['id']} ({existing['status']}) sig={existing.get('signature','')!r}",
                       file=sys.stderr)
@@ -4009,6 +5344,24 @@ def cmd_submit(args):
                 print(f"    (b) point this submit to a different --ckpt-dir, OR", file=sys.stderr)
                 print(f"    (c) pass --allow-shared-ckpt-dir if you know what you're doing",
                       file=sys.stderr)
+                sys.exit(2)
+        submit_local_result_dir = ((getattr(args, "local_result_dir", None) or None)
+                                   or (getattr(args, "result_dir", None) or None))
+        if (submit_local_result_dir
+                and not getattr(args, "allow_shared_result_dir", False)):
+            for existing in state["tasks"]:
+                if not _active_or_unsynced_result_status(existing): continue
+                existing_dst = existing.get("local_result_dir") or existing.get("result_dir")
+                if not _same_declared_path(existing_dst, submit_local_result_dir): continue
+                print("REFUSED: --local-result-dir destination already in use by an unfinished/unsynced task.",
+                      file=sys.stderr)
+                print(f"  conflicting task: {existing['id']} ({existing.get('status')}) sig={existing.get('signature','')!r}",
+                      file=sys.stderr)
+                print(f"  destination:      {submit_local_result_dir}", file=sys.stderr)
+                print("  reason: result sync rsyncs remote result_dir contents into this directory; "
+                      "two tasks sharing it can merge or overwrite files.", file=sys.stderr)
+                print("  Use a per-task subdirectory, or pass --allow-shared-result-dir if the "
+                      "layout is intentionally collision-free.", file=sys.stderr)
                 sys.exit(2)
         hist = history_get(sig) or {}
         if args.vram is not None:
@@ -4059,8 +5412,11 @@ def cmd_submit(args):
             "require_node": args.require_node,
             "git_repo": args.git_repo,
             "ckpt_dir": args.ckpt_dir,
+            "ckpt_dir_inferred": bool(ckpt_dir_was_inferred),
+            "ckpt_inferred_source": inferred_ckpt_source if ckpt_dir_was_inferred else "",
             "ckpt_glob": args.ckpt_glob,
             "resume_flag": args.resume_flag or "",
+            "resume_managed_by_cmd": bool(inferred_resume_managed and not args.resume_flag),
             # Phase 3.5: auto-pull experiment results back to local on
             # task completion. Opt-in (no field set → no sync). Mirror
             # the remote path locally unless --local-result-dir overrides.
@@ -4079,7 +5435,7 @@ def cmd_submit(args):
             # before rsync; cleared on commit phase. Stale claims older
             # than RESULT_SYNC_TIMEOUT_S + grace are reclaimable.
             "result_syncing_at": None,
-            "extra_env": _parse_env(args.env),
+            "extra_env": extra_env,
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
             # Env deployment strategy (see env_deploy.py). 'none' = legacy assume-env-on-target;
@@ -4098,6 +5454,10 @@ def cmd_submit(args):
             "started_at": None,
             "finished_at": None,
             "peak_vram_mb": 0,
+            "peak_ram_mb": 0,
+            "current_vram_mb": 0,
+            "current_ram_mb": 0,
+            "current_pcpu": 0.0,
             "resume_from": None,
         }
         state["tasks"].append(task)
@@ -4187,10 +5547,26 @@ STARTUP_FLOOR_MB = 500   # minimum reservation per running task with peak=0 (sti
 EVICT_TASK_MIN_AGE_S = 180  # don't evict a task within this many seconds of launch (give JAX/torch model loading + warmup a chance — JAX in particular spikes util to 100% during first iter compile)
 
 
-def _slurm_max_pending_for_node(node_name: str) -> int:
-    """Per-node override > global default. NODES[name]["max_slurm_pending"] takes precedence
-    over SLURM_MAX_PENDING_PER_NODE when set. See the constant's docstring for tuning options."""
-    return NODES.get(node_name, {}).get("max_slurm_pending", SLURM_MAX_PENDING_PER_NODE)
+def _slurm_max_pending_for_node(node_name: str, bucket: str = None) -> int:
+    """Per-node override > bucket global default.
+
+    `bucket` is "cpu" or "gpu". Legacy callers/config still work:
+    NODES[name]["max_slurm_pending"] applies to both buckets, and the
+    one-argument call returns the GPU/legacy cap.
+    """
+    info = NODES.get(node_name, {}) or {}
+    if bucket in ("cpu", "gpu"):
+        specific = info.get(f"max_slurm_pending_{bucket}")
+        if specific is not None:
+            return int(specific)
+    legacy = info.get("max_slurm_pending")
+    if legacy is not None:
+        return int(legacy)
+    if bucket == "cpu":
+        return SLURM_MAX_PENDING_CPU_PER_NODE
+    if bucket == "gpu":
+        return SLURM_MAX_PENDING_GPU_PER_NODE
+    return SLURM_MAX_PENDING_PER_NODE
 
 
 # Slurm states that count as "still pending in slurm's queue" for throttle accounting.
@@ -4227,7 +5603,7 @@ def _count_slurm_pending_per_node(state: dict) -> dict:
             continue
         if t.get("slurm_state") not in _SLURM_PENDING_LIKE:
             continue
-        bucket = "gpu" if int(t.get("est_vram_mb") or 0) > 0 else "cpu"
+        bucket = _slurm_pending_bucket_for_task(t)
         per_node = counts.setdefault(node, {"cpu": 0, "gpu": 0})
         per_node[bucket] += 1
     return counts
@@ -4237,7 +5613,8 @@ def _slurm_pending_bucket_for_task(task: dict) -> str:
     """Return 'cpu' or 'gpu' to indicate which throttle pool this task
     belongs to. Mirrors the bucket logic in _count_slurm_pending_per_node
     so dispatch and accounting agree on the classification."""
-    return "gpu" if int(task.get("est_vram_mb") or 0) > 0 else "cpu"
+    est = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0)
+    return "gpu" if est > 0 else "cpu"
 
 
 # Phase 3.0.3: load-balance migration tunables.
@@ -5541,6 +6918,24 @@ def _is_slurm_managed(task: dict) -> bool:
     """
     return bool(task.get("slurm_job_id"))
 
+
+def _counts_against_node_concurrency(task: dict) -> bool:
+    """Whether a task should consume a node's max_concurrent_running slot.
+
+    Slurm PENDING/CONFIGURING jobs are already accounted by the slurm pending
+    throttle, but they do not consume local CPU/RAM yet. Counting them here
+    artificially blocks LocalBackend CPU-only work on small local-slurm setups.
+    Slurm RUNNING/COMPLETING jobs still count because they have an allocation.
+    """
+    if task.get("status") != "running":
+        return False
+    if not task.get("node"):
+        return False
+    if _is_slurm_managed(task) and task.get("slurm_state") in _SLURM_PENDING_LIKE:
+        return False
+    return True
+
+
 def _reserve_inflight_vram(state, nodes):
     """Reserve a small floor for running tasks whose model hasn't yet loaded onto GPU
     (peak_vram_mb still tiny). This prevents over-packing during the multi-minute SUMO sim
@@ -5688,6 +7083,7 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             youngest["alive_pids"] = []
             youngest["peak_vram_mb"] = 0
             youngest["peak_ram_mb"] = 0
+            _set_current_usage(youngest, 0, 0, 0.0)
             youngest["notified_done"] = False
             youngest["last_block_reason"] = (
                 f"evicted from {n['name']}:GPU{g['idx']} after threshold breach "
@@ -5708,8 +7104,7 @@ def _evict_to_queue(victim, state, reason):
     # Phase 3.2.1: release the cross-scheduler claim BEFORE clearing the
     # node — release() needs task["node"] still set to know where to ssh.
     try:
-        if victim.get("node"):
-            _ClaimManager.release(victim["node"], victim["id"])
+        _release_task_claims_and_intents(victim)
     except Exception:
         pass
     _kill_task_processes(victim, timeout=15)
@@ -5720,6 +7115,7 @@ def _evict_to_queue(victim, state, reason):
     victim["alive_pids"] = []
     victim["peak_vram_mb"] = 0
     victim["peak_ram_mb"] = 0
+    _set_current_usage(victim, 0, 0, 0.0)
     victim["notified_done"] = False
     victim["last_block_reason"] = reason
 
@@ -5788,6 +7184,13 @@ def _do_dispatch(state, nodes):
     Caller is responsible for state_lock and save_state."""
     events = []
     prio = {"high": 0, "normal": 1, "low": 2}
+    repaired = reconcile_requeue_lineage_invariants(state)
+    if repaired:
+        events.append({
+            "type": "lineage_repaired",
+            "count": repaired,
+            "reason": "queued requeue parents were made terminal before dispatch",
+        })
     # Phase 3.0.3: load-balance pass — re-pin a queued soft-pinned task from an
     # overloaded node to a near-empty one, BEFORE the placement loop. Hard pins
     # (require_node) are never touched. Capped at MIGRATION_MAX_PER_DISPATCH
@@ -5815,11 +7218,10 @@ def _do_dispatch(state, nodes):
     # Initialize per-node running task count (for max_concurrent_running cap in _node_resources_ok).
     from collections import Counter as _Counter
     running_per_node = _Counter(t.get("node") for t in state["tasks"]
-                                 if t.get("status") == "running" and t.get("node"))
-    # Phase 2.16: count OUR slurm-pending tasks per node. pick_placement throttles further
-    # dispatch to a node that already has SLURM_MAX_PENDING_PER_NODE pending — keeps tasks
-    # in scheduleurm's queue so they can spread to whichever slurm node frees up next,
-    # rather than piling on one host's slurm queue.
+                                 if _counts_against_node_concurrency(t))
+    # Phase 2.16/3.4.13: count OUR slurm-pending tasks per node and split by
+    # CPU/GPU bucket. pick_placement throttles further dispatch only when the
+    # matching bucket is full, so CPU-only work can proceed behind pending GPU jobs.
     slurm_pending_per_node = _count_slurm_pending_per_node(state)
     for n in nodes:
         n["running_count"] = running_per_node.get(n["name"], 0)
@@ -5875,42 +7277,36 @@ def _do_dispatch(state, nodes):
             cur_ram = t.get("ram_mb") or 0
             if new_ram and 0 < new_ram < cur_ram:
                 t["ram_mb"] = new_ram
-    # Race-condition guard: precompute set of signatures that already have a running task.
-    # Without this, multi-session re-submissions of the same signature dispatch concurrently
-    # and clobber each other's --out_dir / --ckpt-dir (3 procs writing same checkpoint_epoch50.pt
-    # → 14h × 3 of compute fights for one shared file). Empty signature = exempt (those are
-    # auto-adopted / one-off tasks where multi-instance is OK).
-    # Include 'launching' (WAL window between status=queued and ssh-success → status=running)
-    # so a second queued task with the same signature can't slip through during the brief
-    # launching window. Without this, two dispatch cycles overlapping the WAL window could
-    # both succeed → 2 instances of same sig running. Invariant: same signature can be in
-    # AT MOST ONE active state (queued is the only allowed plural — but dedup at dispatch).
-    # Phase 3.4.12 P2-2 fix: dedup key is (signature, cmd) not signature alone.
-    # Pre-fix: any same-signature task was blocked even when the cmd / args /
-    # implicit out_dir differed. Real-world impact: 28 BAPR ablation tasks
-    # submitted with one shared signature were ALL blocked behind a single
-    # running peer because they happened to share the family-level signature
-    # — even though every cmd had a different (algo, env, seed) combination
-    # writing to a different per-run dir. Now we dedup on (signature, cmd):
-    # truly identical re-submissions still get one-instance protection;
-    # variants with different args run in parallel. ckpt_dir collisions are
-    # still caught by the separate ckpt-dir conflict guard at submit time.
-    running_keys = {(t.get("signature") or "", t.get("cmd") or "")
+    # Race-condition guard: precompute run identities that already have an
+    # active launch. This is deliberately NOT signature-only. A broad signature
+    # may cover many BAPR ablations across local + micro-servers; only identical
+    # run identities are blocked. Include 'launching' for the WAL window between
+    # queued and running.
+    running_keys = {key
                     for t in state["tasks"]
                     if t.get("status") in ("running", "launching")
-                    and t.get("signature")}
+                    for key in [_task_run_identity(t)]
+                    if key}
     queued = sorted(
         [t for t in state["tasks"] if t["status"] == "queued"],
         key=lambda t: (prio.get(t["priority"], 1), t["submitted_at"])
     )
     for t in queued:
+        artifact_event = _reconcile_queued_launch_artifacts_before_dispatch(t, state)
+        if artifact_event:
+            events.append(artifact_event)
+            if t.get("status") in ("running", "launching"):
+                key = _task_run_identity(t)
+                if key:
+                    running_keys.add(key)
+            continue
         sig = t.get("signature") or ""
-        cmd_for_dedup = t.get("cmd") or ""
-        if sig and (sig, cmd_for_dedup) in running_keys:
-            reason = (f"signature {sig!r} + identical cmd already has a running task; "
-                      f"refusing to dispatch a duplicate (would clobber the same "
-                      f"--out_dir/--ckpt-dir). Different cmds with the same signature "
-                      f"are allowed and run in parallel.")
+        run_key = _task_run_identity(t)
+        if run_key and run_key in running_keys:
+            reason = (f"run identity already has a running/launching task; "
+                      f"refusing to dispatch a duplicate. Broad signatures are allowed: "
+                      f"different cmd/cwd/env/result identities with signature {sig!r} "
+                      f"can still run in parallel.")
             t["last_block_reason"] = reason
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
             continue
@@ -5936,25 +7332,30 @@ def _do_dispatch(state, nodes):
                 # "GPU0=1/3 mem locked" is misleading (we never probed slurm-side capacity).
                 # If a slurm node is alive + not blocklisted but pick_placement still returned
                 # None, the only legitimate reason is require_node mismatch — surface that.
-                if not _BACKEND.requires_local_capacity_check(n["name"]):
+                if not _requires_local_capacity_check(n["name"], t):
                     # Phase 3.4.13 P1 fix: report the bucket the task would
-                    # have used, so the user sees `slurm(cpu 0/1, gpu 1/1
-                    # pending; throttled gpu)` instead of an opaque combined
-                    # number that obscures which pool is full.
+                    # have used, so the user sees `slurm(cpu 0/1 pending,
+                    # gpu 1/1 pending; throttled gpu)` instead of an opaque
+                    # combined number that obscures which pool is full.
                     split = n.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
-                    cap = _slurm_max_pending_for_node(n["name"])
                     bucket = _slurm_pending_bucket_for_task(t)
+                    cap = _slurm_max_pending_for_node(n["name"], bucket)
+                    cpu_cap = _slurm_max_pending_for_node(n["name"], "cpu")
+                    gpu_cap = _slurm_max_pending_for_node(n["name"], "gpu")
                     pending = int(split.get(bucket) or 0)
                     if pending >= cap:
                         reasons.append(
                             f"{n['name']}=slurm("
-                            f"cpu {int(split.get('cpu') or 0)}/{cap}, "
-                            f"gpu {int(split.get('gpu') or 0)}/{cap} "
+                            f"cpu {int(split.get('cpu') or 0)}/{cpu_cap}, "
+                            f"gpu {int(split.get('gpu') or 0)}/{gpu_cap} "
                             f"pending; throttled {bucket})")
                     elif require and require != n["name"]:
                         reasons.append(f"{n['name']}=slurm(require!={require})")
                     else:
                         reasons.append(f"{n['name']}=slurm(deferred but require/prefer mismatch)")
+                    continue
+                if _task_requests_slurm(t):
+                    reasons.append(f"{n['name']}=not-slurm-route")
                     continue
                 ok_node, why_node = _node_resources_ok(t, n, NODES[n["name"]])
                 if not ok_node:
@@ -5967,7 +7368,8 @@ def _do_dispatch(state, nodes):
                             sub = []
                             if g["used_mb"] >= third and g["used_mb"] > 100:
                                 sub.append(f"1/3 mem ({g['used_mb']}>={third}MB)")
-                            if g["used_mb"] > 100 and g.get("util_pct", 0) >= GPU_UTIL_SATURATION_PCT:
+                            util_limit = _node_gpu_util_limit(NODES[n["name"]])
+                            if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
                                 sub.append(f"util {g['util_pct']}%")
                             if g["free_mb"] < (t.get("est_vram_mb") or 0) + VRAM_MARGIN_MB:
                                 sub.append(f"free<est+margin")
@@ -5984,9 +7386,14 @@ def _do_dispatch(state, nodes):
             events.append({"type": "no_fit", "task_id": t["id"], "task": t})
             continue
         t["node"], t["gpu_idx"] = placement
+        # Clear stale FIFO intents from prior CLAIM_RACE attempts on other
+        # nodes. Keep the current node's intent, if any, so the remote upsert
+        # preserves the original FIFO timestamp for this retry.
+        _release_task_claims_and_intents(t, exclude_nodes={t["node"]}, clear_markers=False)
         ok, why = precheck_git(t)
         if not ok:
             t["last_block_reason"] = why
+            _release_task_claims_and_intents(t)
             t["node"] = None; t["gpu_idx"] = None
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": why})
             continue
@@ -6032,6 +7439,7 @@ def _do_dispatch(state, nodes):
                     f"launch staging: cwd > {LAUNCH_MAX_CWD_SIZE_MB}MB cap "
                     f"for {target}; pinned require_node=local"
                 )
+                _release_task_claims_and_intents(t, extra_nodes=[target])
                 t["node"] = None
                 t["gpu_idx"] = None
                 t.pop("launching_started_at", None)
@@ -6067,6 +7475,7 @@ def _do_dispatch(state, nodes):
                     f"launch stage attempt {t['launch_fail_count']}/{MAX_LAUNCH_RETRY}: "
                     f"rsync to {target} failed: {fail_msg[:200]}"
                 )
+                _release_task_claims_and_intents(t, extra_nodes=[target])
                 t["node"] = None
                 t["gpu_idx"] = None
                 t.pop("launching_started_at", None)
@@ -6094,6 +7503,7 @@ def _do_dispatch(state, nodes):
                     f"launch staging: cwd not yet rsynced to {target}; "
                     f"will retry next dispatch cycle"
                 )
+                _release_task_claims_and_intents(t, extra_nodes=[target])
                 t["node"] = None
                 t["gpu_idx"] = None
                 t.pop("launching_started_at", None)
@@ -6132,6 +7542,8 @@ def _do_dispatch(state, nodes):
             # APP_BUG_CAP escalation. Retry naturally on the next dispatch
             # cycle when capacity opens up or another scheduler releases.
             if isinstance(msg, str) and msg.startswith("CLAIM_RACE:"):
+                attempted_node = t.get("node")
+                _remember_claim_intent(t, attempted_node)
                 t["status"] = "queued"
                 t["last_block_reason"] = msg
                 t["node"] = None
@@ -6146,6 +7558,8 @@ def _do_dispatch(state, nodes):
             # MAX_LAUNCH_RETRY consecutive failures, give up and escalate via heal so the user
             # gets a real diagnosis instead of an indefinite retry loop.
             attempted_node = t.get("node")
+            if attempted_node:
+                _release_task_claims_and_intents(t, extra_nodes=[attempted_node], clear_markers=False)
             t["launch_fail_count"] = (t.get("launch_fail_count") or 0) + 1
             if attempted_node:
                 failed_nodes = t.setdefault("launch_failed_nodes", {})
@@ -6171,6 +7585,7 @@ def _do_dispatch(state, nodes):
             continue
         t.pop("launch_fail_count", None)
         t.pop("launch_failed_nodes", None)
+        _clear_claim_intent_markers(t)
         events.append({"type": "launched", "task_id": t["id"], "task": t, "msg": msg})
         # Codex P0: durable persistence after each successful launch, NOT just at end of
         # dispatch. Window between ssh-launch returning and end-of-loop save_state was a
@@ -6183,13 +7598,10 @@ def _do_dispatch(state, nodes):
         except Exception as _e:
             notify("save_state_after_launch_failed",
                    {"id": t["id"], "error": str(_e)[:200]}, feishu_enabled=False)
-        if sig:
+        launched_key = _task_run_identity(t)
+        if launched_key:
             # Treat a just-launched task as running for the rest of this dispatch pass.
-            # Phase 3.4.12 P2-2: track (sig, cmd) tuple to match the dedup key.
-            # Two queued tasks with same sig + same cmd in one cycle would both
-            # try to launch otherwise; same sig + different cmd is intentionally
-            # allowed (different experiments).
-            running_keys.add((sig, t.get("cmd") or ""))
+            running_keys.add(launched_key)
         # Reflect placement in our local probe so subsequent iterations of this same dispatch
         # see the resources as already consumed (CPU + RAM at node level, VRAM at GPU level).
         for n in nodes:
@@ -6228,19 +7640,79 @@ def _print_node_summary(nodes):
         load = n.get("loadavg", 0)
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
         ram_str = f"ram_free={n['free_ram_mb']}MB"
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}")
+        claim_str = _format_node_claim_summary(n)
+        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
 
 def _format_task_location(task):
     if not task.get("node"):
         return "-"
     if task.get("slurm_job_id"):
-        kind = "SLURM-GPU" if int(task.get("est_vram_mb") or 0) > 0 else "SLURM-CPU"
+        kind = "SLURM-GPU" if _slurm_pending_bucket_for_task(task) == "gpu" else "SLURM-CPU"
         state = task.get("slurm_state")
         state_part = f":{state}" if state else ""
         return f"{task['node']}:{kind}#{task['slurm_job_id']}{state_part}"
     if task.get("gpu_idx") is None:
         return f"{task['node']}:CPU"
     return f"{task['node']}:GPU{task['gpu_idx']}"
+
+
+def _claim_wait_s(c: dict) -> int:
+    try:
+        ts = float(c.get("intent_at") or c.get("claimed_at") or 0)
+    except Exception:
+        ts = 0
+    return max(0, int(time.time() - ts)) if ts else 0
+
+
+def _format_claim_record(c: dict) -> str:
+    gpu = c.get("gpu_idx")
+    loc = "CPU" if gpu is None else f"GPU{gpu}"
+    return (f"{c.get('scheduler_id','?')}/{c.get('task_id','?')}:{loc} "
+            f"vram={int(c.get('vram_mb') or 0)}MB "
+            f"cpu={int(c.get('cpu_cores') or 0)} "
+            f"ram={int(c.get('ram_mb') or 0)}MB "
+            f"age={_claim_wait_s(c)}s")
+
+
+def _format_node_claim_summary(n: dict) -> str:
+    pending = n.get("pending_claims") or []
+    active = n.get("active_claims") or []
+    intents = n.get("claim_intents") or []
+    err = n.get("claim_snapshot_error")
+    parts = []
+    if active:
+        parts.append(f"active_claims={len(active)}")
+    if pending:
+        parts.append(f"pending_claims={len(pending)}")
+    if intents:
+        head = sorted(intents, key=lambda c: (float(c.get("intent_at", 0) or 0),
+                                             str(c.get("scheduler_id")),
+                                             str(c.get("task_id"))))[0]
+        parts.append(f"intents={len(intents)} head={head.get('task_id','?')}@{_claim_wait_s(head)}s")
+    if err:
+        parts.append(f"claims_error={err[:60]}")
+    return ("  claims(" + ", ".join(parts) + ")") if parts else ""
+
+
+def _format_claim_intent_hint_for_task(task: dict, node: str, snap: dict) -> str:
+    intents = list(snap.get("intents") or [])
+    if not intents:
+        return ""
+    intents.sort(key=lambda c: (float(c.get("intent_at", 0) or 0),
+                                str(c.get("scheduler_id")),
+                                str(c.get("task_id"))))
+    sid = _ClaimManager.scheduler_id()
+    key = (sid, task.get("id"))
+    pos = None
+    for i, c in enumerate(intents):
+        if (c.get("scheduler_id"), c.get("task_id")) == key:
+            pos = i + 1
+            break
+    head = intents[0]
+    if pos is not None:
+        return (f"claim-intent: position {pos}/{len(intents)}; "
+                f"head={_format_claim_record(head)}")
+    return f"claim-intents: {len(intents)} queued; head={_format_claim_record(head)}"
 
 _SLURM_ALIVE_STATES = {"PENDING", "CONFIGURING", "RUNNING", "COMPLETING",
                         "RESIZING", "REQUEUED", "SUSPENDED"}
@@ -6297,6 +7769,7 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
             task["remote_pids"] = []
             task["peak_vram_mb"] = 0
             task["peak_ram_mb"] = 0
+            _set_current_usage(task, 0, 0, 0.0)
             cwd = task.get("cwd") or ""
             if NODES.get(node, {}).get("host") is None:
                 task["log_path"] = f"{STATE_DIR}/logs/{task['id']}.log"
@@ -6338,6 +7811,21 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
                         f"WAL recovery: orphan slurm job {jid} on {node} "
                         f"already COMPLETED; avoids re-submit"
                     )
+            elif slurm_state == "CANCELLED":
+                _mark_user_cancelled(
+                    task,
+                    f"WAL recovery: orphan slurm job {jid} on {node} "
+                    f"was CANCELLED; treated as user/admin cancel to avoid re-submit",
+                )
+                task["_diagnosis"] = {
+                    "is_crash": False,
+                    "reason": "slurm terminal state CANCELLED",
+                    "tail": "(slurm reported CANCELLED; not auto-requeued)",
+                    "lifetime_s": lifetime_s,
+                    "log_size": 0,
+                    "log_path": task.get("log_path"),
+                    "success_marker": "SLURM_CANCELLED",
+                }
             else:
                 task["status"] = "failed"
                 task["last_block_reason"] = (
@@ -6370,8 +7858,10 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
         task["status"] = "running"
         task["remote_pids"] = []  # slurm-managed: no host PIDs to track
         task["started_at"] = task.get("launching_started_at") or time.time()
+        _remember_last_placement(task)
         task["peak_vram_mb"] = 0
         task["peak_ram_mb"] = 0
+        _set_current_usage(task, 0, 0, 0.0)
         task.pop("launching_started_at", None)
         task["last_block_reason"] = (
             f"WAL recovery: adopted orphan slurm job {jid} on {node} "
@@ -6441,8 +7931,10 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
     task["alive_pids"] = [pid]
     task["process_group"] = pgid
     task["started_at"] = task.get("launching_started_at") or time.time()
+    _remember_last_placement(task)
     task["peak_vram_mb"] = 0
     task["peak_ram_mb"] = 0
+    _set_current_usage(task, 0, 0, 0.0)
     task.pop("launching_started_at", None)
     # Phase 3.4.9 P1: orphan adopt-as-running must wire the live PID into
     # the cross-scheduler claim. The pre-launch claim recorded pid=None
@@ -6596,6 +8088,7 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
     task["alive_pids"] = []
     task["peak_vram_mb"] = 0
     task["peak_ram_mb"] = 0
+    _set_current_usage(task, 0, 0, 0.0)
     diag = _diagnose_terminal(task)
     task["_diagnosis"] = diag
     if diag.get("is_crash"):
@@ -6619,7 +8112,7 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
     # capacity that other schedulers refuse to dispatch into.
     if _ClaimManager.enabled_for(node):
         try:
-            _ClaimManager.release(node, tid)
+            _release_task_claims_and_intents(task, extra_nodes=[node])
         except Exception:
             pass
     return True
@@ -6659,7 +8152,7 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
         # the revert+requeue path that would otherwise re-launch the same
         # workload.
         node = t.get("node")
-        if node and not _BACKEND.requires_local_capacity_check(node):
+        if node and not _requires_local_capacity_check(node, t):
             if _try_recover_orphan_slurm_job(t, node, state):
                 continue  # adopted; do not revert
         elif node:
@@ -6676,7 +8169,7 @@ def recover_stale_launching_tasks(state, now: Optional[float] = None, reset_s: i
         # cycle (claim still occupies the resource we need to reclaim).
         if node and _ClaimManager.enabled_for(node):
             try:
-                _ClaimManager.release(node, t["id"])
+                _release_task_claims_and_intents(t, extra_nodes=[node])
             except Exception:
                 pass
         t["status"] = "queued"
@@ -6917,11 +8410,14 @@ def cmd_dispatch(args):
     if recovered_launching:
         notify("launching_state_recovered", {"reverted_count": recovered_launching},
                feishu_enabled=False)
-    if qcount == 0:
+    if qcount == 0 and not events:
         print("=== dispatch === (nothing queued)")
         return
     print(f"=== dispatch === ({qcount} queued)")
     for ev in events:
+        if ev["type"] == "lineage_repaired":
+            print(f"  [lineage] repaired {ev.get('count', 0)} queued parent retry record(s)")
+            continue
         tid = ev["task_id"]
         if ev["type"] == "no_fit":
             t = ev["task"]
@@ -7463,6 +8959,9 @@ def _reconcile_external_tasks(state):
             "finished_at": None,
             "peak_vram_mb": sum_vram,
             "peak_ram_mb": sum_rss,
+            "current_vram_mb": sum_vram,
+            "current_ram_mb": sum_rss,
+            "current_pcpu": sum_pcpu,
             "resume_from": None,
             "adopted": True,
             "auto_adopted": True,
@@ -7908,11 +9407,32 @@ def _watch_iteration(args):
         try: WATCHER_STATE.write_text(json.dumps(me))
         except Exception: pass
 
+def _format_task_vram_usage(task):
+    if task.get("status") == "running":
+        cur = int(task.get("current_vram_mb") or 0)
+        if cur > 0:
+            return f"cur={cur}MB"
+    if task.get("peak_vram_mb"):
+        return f"peak={task['peak_vram_mb']}MB"
+    return f"~{task.get('est_vram_mb', 0)}MB"
+
+
+def _format_task_ram_usage(task):
+    if task.get("status") == "running":
+        cur = int(task.get("current_ram_mb") or 0)
+        if cur > 0:
+            return f"Rcur={cur}MB"
+    if task.get("peak_ram_mb"):
+        return f"Rpeak={task['peak_ram_mb']}MB"
+    return f"~{task.get('ram_mb', 0)}MB"
+
+
 def cmd_status(args):
     with state_lock():
         state = load_state()
         recover_stale_launching_tasks(state)
         update_running_tasks(state)
+        reconcile_requeue_lineage_invariants(state)
         save_state(state)
     if args.json:
         print(json.dumps({"tasks": state["tasks"]}, indent=2))
@@ -7940,7 +9460,8 @@ def cmd_status(args):
             etaload_str = f"  eta_load={etaload/3600:.1f}h"
         else:
             etaload_str = f"  eta_load={etaload/86400:.1f}d"
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={n['free_ram_mb']}MB{etaload_str}")
+        claim_str = _format_node_claim_summary(n)
+        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={n['free_ram_mb']}MB{etaload_str}{claim_str}")
     print("\n=== tasks ===")
     show_done = args.all
     rows = [t for t in state["tasks"] if show_done or t["status"] in ("queued", "launching", "running")]
@@ -7948,15 +9469,52 @@ def cmd_status(args):
         print("  (no active tasks; pass --all to see history)")
     for t in rows:
         loc = _format_task_location(t)
-        peak = f"peak={t['peak_vram_mb']}MB" if t.get("peak_vram_mb") else f"~{t['est_vram_mb']}MB"
-        # Mirror peak_vram column with a peak_ram one — same fallback to declared.
-        pram = f"R={t['peak_ram_mb']}MB" if t.get("peak_ram_mb") else f"~{t.get('ram_mb', 0)}MB"
+        peak = _format_task_vram_usage(t)
+        pram = _format_task_ram_usage(t)
         runtime = ""
         if t.get("started_at"):
             end = t.get("finished_at") or time.time()
             runtime = f" {(end - t['started_at'])/60:.1f}m"
         proj = (t.get("project") or "?")[:14]
         print(f"  [{t['id']}] {t['status']:9s} {loc:20s} {proj:14s} {peak:14s} {pram:13s}{runtime}  {t['description'][:55]}")
+
+
+def cmd_claims(args):
+    nodes = [args.node] if args.node else [n for n in NODES if _ClaimManager.enabled_for(n)]
+    snapshots = {}
+    for node in nodes:
+        snapshots[node] = _ClaimManager.snapshot(node)
+    if args.json:
+        print(json.dumps(snapshots, indent=2))
+        return
+    if not snapshots:
+        print("(no claims-enabled nodes)")
+        return
+    for node, snap in snapshots.items():
+        if not snap.get("ok"):
+            print(f"=== {node} claims ERROR ===")
+            print(f"  {snap.get('error') or 'unknown error'}")
+            continue
+        claims = list(snap.get("claims") or [])
+        intents = list(snap.get("intents") or [])
+        print(f"=== {node} claims ===")
+        if claims:
+            for c in sorted(claims, key=lambda x: (str(x.get("gpu_idx")), str(x.get("task_id")))):
+                pid = c.get("pid")
+                pid_s = f" pid={pid}" if pid else " pending"
+                print(f"  {_format_claim_record(c)}{pid_s}")
+        else:
+            print("  (none)")
+        print(f"=== {node} intents ===")
+        if intents:
+            intents.sort(key=lambda c: (float(c.get("intent_at", 0) or 0),
+                                        str(c.get("scheduler_id")),
+                                        str(c.get("task_id"))))
+            for i, c in enumerate(intents, 1):
+                print(f"  {i:02d}. {_format_claim_record(c)}")
+        else:
+            print("  (none)")
+
 
 def cmd_show(args):
     state = load_state()
@@ -7976,11 +9534,13 @@ def cmd_cancel(args):
             if t["id"] != args.id: continue
             if t["status"] in ("queued", "launching"):
                 prev = t["status"]
-                t["status"] = "cancelled"
-                t["finished_at"] = time.time()
+                _release_task_claims_and_intents(t)
+                _mark_user_cancelled(t, "user cancel")
+                related = _cancel_related_queued_retries(state, t, "user cancel")
                 t.pop("launching_started_at", None)
                 save_state(state)
-                print(f"cancelled {prev} task {args.id}")
+                suffix = f" (+{related} duplicate queued retry)" if related else ""
+                print(f"cancelled {prev} task {args.id}{suffix}")
                 return
             if t["status"] == "running":
                 if not args.force:
@@ -7990,15 +9550,15 @@ def cmd_cancel(args):
                 # Phase 3.2.1: release the cross-scheduler claim too. Best-
                 # effort; failure leaves the claim to expire via TTL + GC.
                 try:
-                    if t.get("node"):
-                        _ClaimManager.release(t["node"], t["id"])
+                    _release_task_claims_and_intents(t)
                 except Exception:
                     pass
-                t["status"] = "cancelled"
-                t["finished_at"] = time.time()
+                _mark_user_cancelled(t, "user force-cancel")
+                related = _cancel_related_queued_retries(state, t, "user force-cancel")
                 save_state(state)
                 suffix = kill_msg if ok else f"kill warning: {kill_msg}"
-                print(f"killed pids={pids} on {t['node']} and cancelled {args.id} ({suffix})")
+                dup_suffix = f"; also cancelled {related} duplicate queued retry" if related else ""
+                print(f"killed pids={pids} on {t['node']} and cancelled {args.id} ({suffix}{dup_suffix})")
                 return
             sys.exit(f"task {args.id} is in state {t['status']!r} — nothing to do")
         sys.exit(f"task {args.id} not found")
@@ -8011,6 +9571,7 @@ def cmd_forget(args):
         for t in state["tasks"]:
             if t["id"] != args.id: continue
             prev = t["status"]
+            _release_task_claims_and_intents(t)
             t["status"] = "forgotten"
             t["finished_at"] = time.time()
             save_state(state)
@@ -8028,14 +9589,15 @@ def cmd_clear_queue(args):
             return
         for t in state["tasks"]:
             if t["status"] == "queued":
-                t["status"] = "cancelled"
+                _release_task_claims_and_intents(t)
+                _mark_user_cancelled(t, "user clear-queue")
         save_state(state)
         print(f"cancelled {len(ids)} queued tasks (running tasks untouched)")
 
 def cmd_rebalance_pending(args):
     """Pull all currently-pending slurm tasks back into scheduleurm's queue so they
-    re-distribute under the current policy (e.g. after changing
-    SLURM_MAX_PENDING_PER_NODE).
+    re-distribute under the current policy (e.g. after changing per-bucket
+    slurm pending caps).
 
     Acts only on tasks with status='running' AND slurm_job_id set AND slurm_state in
     {None, '', PENDING, CONFIGURING, REQUEUED, SUSPENDED}. RUNNING / COMPLETING tasks
@@ -8047,7 +9609,8 @@ def cmd_rebalance_pending(args):
     fields and revert status='queued'. Next dispatch cycle re-places under the
     current throttle, spreading pending across slurm nodes that have free cap.
 
-    Use case: after editing SLURM_MAX_PENDING_PER_NODE / NODES[name].max_slurm_pending
+    Use case: after editing SLURM_MAX_PENDING_*_PER_NODE /
+    NODES[name].max_slurm_pending_* / NODES[name].max_slurm_pending
     or during a policy migration, to re-distribute already-sbatched-but-not-yet-running
     tasks. Safe to run anytime — RUNNING tasks won't be killed.
 
@@ -8060,10 +9623,13 @@ def cmd_rebalance_pending(args):
                               unchanged), commit clears + requeues.
     """
     # Phase 1: identify (short lock).
+    filter_ids = set(getattr(args, "task_ids", None) or [])
     with state_lock():
         state = load_state()
         candidates_snapshot = []
         for t in state["tasks"]:
+            if filter_ids and t.get("id") not in filter_ids:
+                continue
             if t.get("status") != "running":
                 continue
             if not _is_slurm_managed(t):
@@ -8079,7 +9645,8 @@ def cmd_rebalance_pending(args):
             })
 
     if not candidates_snapshot:
-        print("no slurm-pending tasks to rebalance")
+        suffix = f" matching {sorted(filter_ids)}" if filter_ids else ""
+        print(f"no slurm-pending tasks{suffix} to rebalance")
         return
 
     if not args.yes:
@@ -8572,6 +10139,10 @@ def cmd_adopt(args):
             "started_at": time.time(),
             "finished_at": None,
             "peak_vram_mb": sum_vram,
+            "peak_ram_mb": sum_rss,
+            "current_vram_mb": sum_vram,
+            "current_ram_mb": sum_rss,
+            "current_pcpu": sum_pcpu,
             "resume_from": None,
             "adopted": True,
             # Set auto_adopted=True so preemption / requeue guards (which all check this flag,
@@ -8651,6 +10222,7 @@ def cmd_edit(args):
                          f"cannot edit resources of in-flight tasks. Cancel + "
                          f"resubmit if you really need to change them.")
             changes = []
+            placement_changed = False
             if args.vram_mb is not None:
                 changes.append(("est_vram_mb", t.get("est_vram_mb"), int(args.vram_mb)))
                 t["est_vram_mb"] = int(args.vram_mb)
@@ -8670,6 +10242,7 @@ def cmd_edit(args):
                 changes.append(("preferred_node", t.get("preferred_node"),
                                 args.preferred_node))
                 t["preferred_node"] = args.preferred_node
+                placement_changed = True
             if args.require_node is not None:
                 if args.require_node and args.require_node not in NODES:
                     sys.exit(f"--require-node {args.require_node!r} not in NODES "
@@ -8677,6 +10250,14 @@ def cmd_edit(args):
                 changes.append(("require_node", t.get("require_node"),
                                 args.require_node or None))
                 t["require_node"] = args.require_node or None
+                placement_changed = True
+            if placement_changed:
+                keep = t.get("require_node") or t.get("preferred_node")
+                if keep:
+                    _release_task_claims_and_intents(
+                        t, exclude_nodes={keep}, clear_markers=False)
+                else:
+                    _release_task_claims_and_intents(t)
             save_state(state)
             for field, old, new in changes:
                 print(f"  {field}: {old!r} → {new!r}")
@@ -8698,20 +10279,25 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
         return "BLOCKED: pending env_missing/python_import escalation against this signature/cwd/project"
     soft_blocked = name in _launch_failed_nodes_for_task(task)
     soft_note = "  (soft-blocked: prior launch_failed; may retry as last resort)" if soft_blocked else ""
-    if not _BACKEND.requires_local_capacity_check(name):
+    if not _requires_local_capacity_check(name, task):
         # slurm-routed node: gres handles GPU pinning; only throttle matters here.
         # Phase 3.4.13 P1: report split throttle per bucket so the user can see
         # cpu-only tasks aren't blocked by gpu pending and vice-versa.
         split = node_state.get("slurm_pending_split") or {"cpu": 0, "gpu": 0}
-        cap = _slurm_max_pending_for_node(name)
         bucket = _slurm_pending_bucket_for_task(task)
+        cap = _slurm_max_pending_for_node(name, bucket)
+        cpu_cap = _slurm_max_pending_for_node(name, "cpu")
+        gpu_cap = _slurm_max_pending_for_node(name, "gpu")
         pending = int(split.get(bucket) or 0)
         if pending >= cap:
             return (f"slurm: {bucket} bucket throttled "
                     f"({pending}/{cap} pending; "
-                    f"cpu={int(split.get('cpu') or 0)}, gpu={int(split.get('gpu') or 0)})"
+                    f"cpu={int(split.get('cpu') or 0)}/{cpu_cap}, "
+                    f"gpu={int(split.get('gpu') or 0)}/{gpu_cap})"
                     f"{soft_note}")
         return f"slurm: would route here (gres handles GPU pinning){soft_note}"
+    if _task_requests_slurm(task):
+        return f"not-slurm-route: task has --slurm-* options but this node is default-local/non-slurm{soft_note}"
     node_info = NODES[name]
     ok, why = _node_resources_ok(task, node_state, node_info)
     if not ok:
@@ -8735,8 +10321,9 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
         third = g["total_mb"] // 3
         if g["used_mb"] >= third and g["used_mb"] > 100:
             reasons.append(f"used {g['used_mb']}/{g['total_mb']}MB ≥ 1/3 (packing rule)")
-        if g["used_mb"] > 100 and g.get("util_pct", 0) >= GPU_UTIL_SATURATION_PCT:
-            reasons.append(f"util={g.get('util_pct')}% ≥ {GPU_UTIL_SATURATION_PCT}% (compute saturation)")
+        util_limit = _node_gpu_util_limit(node_info)
+        if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
+            reasons.append(f"util={g.get('util_pct')}% ≥ {util_limit}% (compute saturation)")
         if g["free_mb"] < est + VRAM_MARGIN_MB:
             reasons.append(f"free={g['free_mb']}MB < est+margin ({est}+{VRAM_MARGIN_MB})")
         reject_gpus.append(f"GPU{g['idx']}({'; '.join(reasons) or 'unknown'})")
@@ -8806,8 +10393,25 @@ def cmd_why(args):
     print()
     print("  per-node fit analysis (probe_all snapshot):")
     nodes = probe_all()
+    slurm_pending_per_node = _count_slurm_pending_per_node(state)
+    for n in nodes:
+        split = slurm_pending_per_node.get(n["name"]) or {"cpu": 0, "gpu": 0}
+        n["slurm_pending_split"] = split
+        n["slurm_pending_count"] = int(split.get("cpu", 0)) + int(split.get("gpu", 0))
     for n in nodes:
         print(f"    {n['name']:11s}: {_explain_node_fit(task, n)}")
+        if _ClaimManager.enabled_for(n["name"]):
+            snap = {
+                "claims": n.get("pending_claims") or [],
+                "intents": n.get("claim_intents") or [],
+                "error": n.get("claim_snapshot_error"),
+                "ok": not n.get("claim_snapshot_error"),
+            }
+            hint = _format_claim_intent_hint_for_task(task, n["name"], snap)
+            if hint:
+                print(f"      {hint}")
+            elif snap.get("error"):
+                print(f"      claim-snapshot-error: {snap['error']}")
 
 
 def cmd_history(args):
@@ -8879,20 +10483,20 @@ def main():
     s.add_argument("--preferred-node", choices=list(NODES.keys()), help="SOFT preference: try this node first, fall back if full")
     s.add_argument("--require-node", dest="require_node", choices=list(NODES.keys()), help="HARD pin: only place on this node, never fall back. Use when the cmd has node-specific paths/env that won't work elsewhere.")
     s.add_argument("--git-repo", help="Local + remote path of git repo to sync-check before launch")
-    s.add_argument("--ckpt-dir", help="Checkpoint directory on TARGET node, for resume detection")
+    s.add_argument("--ckpt-dir", help="Checkpoint directory on TARGET node, for resume detection. Must be a dedicated directory, not equal to --cwd.")
     s.add_argument("--result-dir", dest="result_dir",
                    help="Phase 3.5: directory on TARGET node containing the "
                         "experiment results (logs / final models / metrics). "
                         "On task completion, scheduleurm rsyncs this dir back "
                         "to local (delta sync; no ckpts unless they live here). "
-                        "Set this to opt in; intermediate ckpts should stay in "
+                        "Set this to opt in. Must be a dedicated directory, not equal to --cwd; intermediate ckpts should stay in "
                         "--ckpt-dir which is NOT synced automatically.")
     s.add_argument("--local-result-dir", dest="local_result_dir",
                    help="Phase 3.5: where on local to land the rsync'd results. "
                         "Defaults to mirroring the remote path (same absolute "
-                        "path on local as on the target). Use when local home "
-                        "differs from remote home, or you want to land "
-                        "everything under one collection dir.")
+                        "path on local as on the target). Use a per-task "
+                        "subdirectory; exact sharing is refused unless "
+                        "--allow-shared-result-dir is passed.")
     s.add_argument("--ckpt-glob", default="*", help="Glob within ckpt-dir (default '*')")
     s.add_argument("--resume-flag", dest="resume_flag", default="",
                    help="If set (e.g. '--resume_from'), launcher appends '<flag> <ckpt_path>' to cmd "
@@ -8926,12 +10530,16 @@ def main():
                         "to enable docker fallback. Image must exist locally (`docker images`) so scheduler "
                         "can save+ssh+load it to remotes.")
     s.add_argument("--allow-shared-ckpt-dir", dest="allow_shared_ckpt_dir", action="store_true",
-                   help="Override the cross-signature ckpt-dir conflict refusal. Use only when "
+                   help="Override the active-task ckpt-dir conflict refusal. Use only when "
                         "multiple tasks deliberately share a ckpt directory (e.g. distributed "
                         "training reading a shared warm-start ckpt) — concurrent writers will "
                         "still corrupt each other unless coordinated.")
+    s.add_argument("--allow-shared-result-dir", dest="allow_shared_result_dir", action="store_true",
+                   help="Override the local result destination conflict refusal. Use only when "
+                        "multiple result syncs intentionally land in the same directory and their "
+                        "file layouts cannot overwrite each other.")
     s.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true",
-                   help="Allow submission even when (signature, cmd) matches an existing queued/launching/running task")
+                   help="Allow submission even when run identity matches an existing queued/launching/running task")
     s.add_argument("--slurm-partition", dest="slurm_partition", default="",
                    help="Optional Slurm partition to pass as #SBATCH --partition when routed to SlurmBackend")
     s.add_argument("--slurm-account", dest="slurm_account", default="",
@@ -8960,6 +10568,11 @@ def main():
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_status)
 
+    s = sub.add_parser("claims", help="Show remote shared claims/intents for claims-enabled nodes")
+    s.add_argument("--node", choices=list(NODES.keys()), help="Limit to one node")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_claims)
+
     s = sub.add_parser("show", help="Show one task's full record + how to tail logs")
     s.add_argument("id"); s.set_defaults(func=cmd_show)
 
@@ -8975,6 +10588,8 @@ def main():
     s.set_defaults(func=cmd_clear_queue)
 
     s = sub.add_parser("rebalance-pending", help="Pull slurm-PENDING tasks back into scheduleurm queue for re-dispatch (RUNNING tasks untouched)")
+    s.add_argument("--task-id", dest="task_ids", nargs="*", default=[],
+                   help="Optional task IDs to rebalance; default is all slurm-PENDING tasks")
     s.add_argument("--yes", action="store_true", help="Apply (without --yes prints dry-run plan)")
     s.set_defaults(func=cmd_rebalance_pending)
 

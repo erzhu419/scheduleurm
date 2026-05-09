@@ -33,12 +33,12 @@ for arg in "$@"; do
     esac
 done
 
-# If the watcher is running, stop it for a clean swap. We restart at the end.
+# If the watcher is running, keep active experiments alive and restart only the
+# watcher after files/unit are updated. The unit uses KillMode=process for this.
 WATCHER_WAS_RUNNING=0
 if command -v systemctl >/dev/null 2>&1 && systemctl --user is-active scheduler.service >/dev/null 2>&1; then
     WATCHER_WAS_RUNNING=1
-    echo "==> stopping watcher for clean install"
-    systemctl --user stop scheduler.service
+    echo "==> watcher is running; will restart it after files/unit are updated"
 fi
 
 # Ensure parent dir exists
@@ -104,7 +104,11 @@ elif command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
     fi
     systemctl --user daemon-reload
     systemctl --user enable scheduler.service >/dev/null
-    systemctl --user start scheduler.service
+    if [[ "$WATCHER_WAS_RUNNING" -eq 1 ]]; then
+        systemctl --user restart scheduler.service
+    else
+        systemctl --user start scheduler.service
+    fi
     sleep 1
     if systemctl --user is-active scheduler.service >/dev/null; then
         echo "    watcher: active (running)"
@@ -116,9 +120,6 @@ else
     echo
     echo "==> systemd not detected — skipping watcher unit"
     echo "    Run the watcher manually:  python3 $SKILL_DST/scheduler.py watch"
-    if [[ "$WATCHER_WAS_RUNNING" -eq 1 ]]; then
-        echo "    NOTE: a watcher was running before; you stopped it. Restart manually if needed."
-    fi
 fi
 
 echo

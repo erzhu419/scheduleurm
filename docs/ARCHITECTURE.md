@@ -34,7 +34,8 @@ submit  →  queued  →  launching  →  running  →  done
 
 | Invariant | Why | How enforced |
 |---|---|---|
-| Same signature never in two `running` slots | Two procs writing same `--out_dir` corrupts ckpts | `running_sigs` set built before each dispatch pass; `launching` included so cross-cycle WAL window is covered |
+| Same run identity never in two `running` slots | True duplicate runs clobber the same output/ckpt paths | `running_keys` from `_task_run_identity()` built before each dispatch pass; `launching` included so cross-cycle WAL window is covered |
+| Same active `--ckpt-dir` is refused by default | Concurrent checkpoint writers corrupt each other even when signatures differ | submit-time active-task scan; `--allow-shared-ckpt-dir` is the explicit override |
 | State writes are atomic | SIGKILL during write must not corrupt `queue.json` | tmp file + fsync + `os.replace` in `save_state` |
 | Killed tasks always requeue if checkpoint exists | Otherwise N hours of training lost on each kill | `_requeue_after_crash` checks `find_resume()`; only escalates if no resume path |
 | Watcher restart recovers all state | Power loss / manual restart shouldn't lose tasks | Recovery scan at startup: stale `launching` → queued; running PIDs probed for liveness |
@@ -47,10 +48,10 @@ submit  →  queued  →  launching  →  running  →  done
 1. Acquire state lock (fcntl LOCK_EX on .lock)
 2. Load state, history
 3. Refresh resource estimates for queued tasks (cascade lookup)
-4. Build running_sigs (signatures of all running + launching tasks)
+4. Build running_keys (run identity for all running + launching tasks)
 5. For each queued task in priority order:
-     a. Skip if signature in running_sigs (race-guard)
-     b. Skip if cross-sig --ckpt-dir conflict with running task
+     a. Skip if run identity in running_keys (race-guard; broad signatures with different cmd/cwd/env still run)
+     b. Submit has already refused active --ckpt-dir conflicts by default
      c. Skip if all node candidates fail probe (CPU/RAM/VRAM/cap/util/1/3-rule)
      d. pick_placement(): best-fit (smallest leftover) + warm-first scoring
      e. Set status="launching", save_state immediately (WAL)
@@ -122,9 +123,10 @@ This lets you `nohup` a script the old way and still see it in `status`. Over ti
 
 ## Cross-scheduler exclusion (Phase 3.2)
 
-For non-slurm nodes that multiple `scheduleurm` instances use concurrently
+For scheduleurm-local nodes that multiple `scheduleurm` instances use concurrently
 (different state dirs, different OS users, or both), per-node opt-in
-**claims** prevent over-commit:
+**claims** prevent over-commit. This includes nodes that have Slurm installed but
+are left at the default LocalBackend policy:
 
 - Set `NODES["x"]["enable_claims"] = True` in your scheduler.py NODES config.
 - Each `LocalBackend.launch` ssh-flocks `/tmp/scheduleurm/claims.json` on the
@@ -133,23 +135,46 @@ For non-slurm nodes that multiple `scheduleurm` instances use concurrently
 - A losing claim returns the `CLAIM_RACE:` sentinel; dispatch puts the task
   back to queued without penalizing it as a launch failure, retries next
   cycle.
+- Claim attempts first register an `intent` ticket in the same shared file.
+  FIFO-with-backfill then blocks a younger claim only when it would delay an
+  older intent that could run now. Older intents that cannot currently fit do
+  not head-of-line block smaller/disjoint work. After
+  `claim_fifo_strict_after_s` (default 1800s), an older intent gets an aging
+  reservation: younger work that would consume its future slot is blocked, while
+  disjoint backfill remains allowed.
+- Under the same remote lock, the claim script best-effort rechecks live
+  non-scheduleurm usage (`/proc/loadavg`, `MemAvailable`, `nvidia-smi`
+  `memory.used`) and converts it into synthetic external claims. This reduces
+  over-commit when manual users start work between scheduleurm's probe and
+  claim phases.
 - `probe_all` subtracts pending (pre-PID) claims from free resources, so
   competing schedulers' `pick_placement` sees the launch-race window as
   occupied.
-- Watcher renews live claims every cycle and GCs stale ones (TTL expired
-  AND no live PID) so a crashed scheduler doesn't pin resources forever.
+- Watcher renews live claims every cycle and GCs stale claims (TTL expired
+  AND no live PID). Intent tickets use a shorter TTL, so a crashed scheduler
+  does not pin the shared FIFO queue forever.
+- `scheduler claims [--node NODE]`, `status`, `why`, and `tui` expose active
+  claims and FIFO intent heads so queue stalls are visible without grepping
+  watcher logs.
 
 This is not a full replacement for slurm — there's no central daemon, no
-fairness, no preemption across schedulers. It's just "don't let two
-schedulers launch onto the same GPU at the same time".
+fairshare accounting, no quotas, no preemption across schedulers. It provides
+atomic capacity exclusion plus FIFO-with-backfill launch admission.
+
+If a small node has Slurm installed but should still pack multiple GPU jobs per
+card, leave it at the default policy and set `enable_claims=True` if it is shared.
+Use `NODES["x"]["slurm_backend"] = "slurm"` or per-bucket
+`slurm_gpu_backend="slurm"` / `slurm_cpu_backend="slurm"` only for nodes where
+Slurm should own queueing. Existing Slurm jobs keep being tracked by
+`slurm_job_id`; only future launches are affected.
 
 ## What it deliberately doesn't do
 
-- **Multi-user fairness across schedulers** — claim ordering is "first to
-  flock wins". No quotas, no priority across schedulers, no per-user limits.
-  Phase 3.2's claims layer just stops over-commit; it doesn't arbitrate.
+- **Full multi-user fairshare** — launch admission is FIFO-with-backfill, but
+  there are no quotas, no weighted priority across schedulers, no per-user
+  limits, and no preemption. Use Slurm for those.
 - **Cluster-wide DAG** — task A → task B chaining isn't here. Use bash with `wait-for`, or chain in your launcher script.
 - **Hot-reload of NODES** — edit `scheduler.py`, re-run `install.sh`, watcher restart picks it up. No live config reload (would complicate the lock semantics).
 - **Cross-node tensor sharing** — every task is a single-node operation. Multi-node training is the user's responsibility (NCCL/MPI/torchrun).
 - **Auto-scale / spawn nodes** — `NODES` is fixed. If you need elasticity, add nodes statically and let `dispatch` ignore offline ones (probe failure = skip).
-- **Replace SLURM** — if you have a real HPC cluster, use SLURM. This is for the messy mostly-single-user case (with the optional Phase 3.2 claims layer when you do have to share a non-slurm node) where SLURM is overkill.
+- **Replace SLURM** — if you have a real multi-user HPC cluster, opt that node into SLURM. This is for the messy mostly-single-user case where SLURM is overkill and scheduleurm's packing/claims are the better default.

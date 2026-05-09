@@ -118,7 +118,9 @@ def _node_summary_line(nodes):
         else:
             ram_s = ""
         cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
-        tail = "  ".join(s for s in (cpu_s, load_s, ram_s) if s)
+        claim_s = sch._format_node_claim_summary(n)
+        claim_s = claim_s.strip() if claim_s else ""
+        tail = "  ".join(s for s in (cpu_s, load_s, ram_s, claim_s) if s)
         lines.append(f"{n['name']:<11s} {gpus}  {tail}")
     return "\n".join(lines)
 
@@ -140,7 +142,14 @@ SORT_KEYS = ["id", "status", "node", "project", "priority", "runtime", "vram", "
 
 def _probe_snapshot():
     """Background worker — gathers everything the UI needs in one go."""
-    state = sch.load_state()
+    try:
+        with sch.state_lock():
+            state = sch.load_state()
+            sch.recover_stale_launching_tasks(state)
+            sch.update_running_tasks(state)
+            sch.save_state(state)
+    except Exception:
+        state = sch.load_state()
     hist = sch.load_history()
     try:
         nodes = sch.probe_all()
@@ -407,8 +416,10 @@ class SchedulerTUI(App):
                 "project": lambda t: t.get("project", ""),
                 "priority": lambda t: (prio_rank.get(t.get("priority", "normal"), 1), t.get("submitted_at", 0)),
                 "runtime": lambda t: -runtime_of(t),
-                "vram": lambda t: -int(t.get("peak_vram_mb") or 0),
-                "ram": lambda t: -int(t.get("peak_ram_mb") or 0),
+                "vram": lambda t: -int((t.get("current_vram_mb") if t.get("status") == "running" else 0)
+                                       or t.get("peak_vram_mb") or t.get("est_vram_mb") or 0),
+                "ram": lambda t: -int((t.get("current_ram_mb") if t.get("status") == "running" else 0)
+                                      or t.get("peak_ram_mb") or t.get("ram_mb") or 0),
                 "eta": lambda t: eta_secs(t),
             }
             keyfn = sortmap.get(self.sort_key, sortmap["id"])
@@ -425,11 +436,17 @@ class SchedulerTUI(App):
             def _row_for(t):
                 node_str = sch._format_task_location(t)
                 rt = _fmt_min(runtime_of(t)) if t.get("status") == "running" else "-"
-                vram = f"{t.get('peak_vram_mb', 0)}MB" if t.get("peak_vram_mb") else (
-                    f"~{t.get('est_vram_mb', 0)}MB" if t.get("est_vram_mb") else "-")
-                # Mirror VRAM column logic for RAM: prefer measured peak, fall back to declared.
-                ram = f"{t.get('peak_ram_mb', 0)}MB" if t.get("peak_ram_mb") else (
-                    f"~{t.get('ram_mb', 0)}MB" if t.get("ram_mb") else "-")
+                if t.get("status") == "running" and t.get("current_vram_mb"):
+                    vram = f"{t.get('current_vram_mb', 0)}MB"
+                else:
+                    vram = f"{t.get('peak_vram_mb', 0)}MB" if t.get("peak_vram_mb") else (
+                        f"~{t.get('est_vram_mb', 0)}MB" if t.get("est_vram_mb") else "-")
+                # Mirror VRAM column logic for RAM: running=current, terminal=peak, queued=declared.
+                if t.get("status") == "running" and t.get("current_ram_mb"):
+                    ram = f"{t.get('current_ram_mb', 0)}MB"
+                else:
+                    ram = f"{t.get('peak_ram_mb', 0)}MB" if t.get("peak_ram_mb") else (
+                        f"~{t.get('ram_mb', 0)}MB" if t.get("ram_mb") else "-")
                 return {
                     "id": t.get("id", "?"),
                     "status": t.get("status", "-"),

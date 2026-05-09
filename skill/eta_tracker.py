@@ -272,6 +272,58 @@ def compute_eta_seconds(tail_text: str,
     return 0
 
 
+def runtime_projection(tail_text: str,
+                       elapsed_s: float,
+                       cmd: Optional[str] = None) -> Optional[dict]:
+    """Project total runtime from the latest progress signal.
+
+    Returns a small dict:
+      {
+        "source": "tqdm" | "progress_rate",
+        "eta_s": remaining seconds,
+        "total_s": projected total seconds for the whole task,
+        "current": current unit (when known),
+        "total_units": total unit count (when known),
+        "unit_s": projected seconds per unit (when total_units known),
+      }
+
+    `elapsed_s` is scheduler-observed task elapsed time, not tqdm's internal
+    loop elapsed. That intentionally includes startup/import/checkpoint overhead
+    in the projected walltime. For tqdm workloads, the remaining time comes from
+    tqdm's smoothed estimate, then `total_s = elapsed_s + remaining_s`.
+    """
+    elapsed = max(0.0, float(elapsed_s or 0))
+    progress = parse_progress(tail_text, cmd=cmd)
+
+    tqdm_eta = parse_tqdm_eta(tail_text)
+    if tqdm_eta is not None:
+        total_s = int(max(0, elapsed + tqdm_eta))
+        out = {"source": "tqdm", "eta_s": int(tqdm_eta), "total_s": total_s}
+        if progress is not None:
+            current, total = progress
+            out["current"] = int(current)
+            out["total_units"] = int(total)
+            if total > 0:
+                out["unit_s"] = float(total_s) / float(total)
+        return out
+
+    if progress is not None:
+        current, total = progress
+        if current > 0 and total > 0 and elapsed > 0:
+            unit_s = float(elapsed) / float(current)
+            total_s = int(max(0, unit_s * float(total)))
+            eta_s = int(max(0, total_s - elapsed))
+            return {
+                "source": "progress_rate",
+                "eta_s": eta_s,
+                "total_s": total_s,
+                "current": int(current),
+                "total_units": int(total),
+                "unit_s": unit_s,
+            }
+    return None
+
+
 def format_eta(seconds: int) -> str:
     """Pretty-print ETA for status / TUI. Mirrors _fmt_min/_fmt_eta pattern in tui.py
     but lives here so the watcher can use the same format."""

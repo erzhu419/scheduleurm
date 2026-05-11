@@ -43,7 +43,7 @@ def _run(args: list[str], timeout: int = 60) -> dict:
     """Invoke scheduler.py with args, return {ok, stdout, stderr, exit_code}."""
     try:
         r = subprocess.run(
-            ["python", SCHED, *args],
+            [sys.executable, SCHED, *args],
             capture_output=True, text=True, timeout=timeout,
         )
         return {
@@ -71,6 +71,13 @@ def submit_task(
     preferred_node: Optional[str] = None,
     ckpt_dir: Optional[str] = None,
     resume_flag: Optional[str] = None,
+    result_dir: Optional[str] = None,
+    local_result_dir: Optional[str] = None,
+    wait_for_files: Optional[list[str]] = None,
+    test_log: Optional[str] = None,
+    test_peak_vram_mb: Optional[int] = None,
+    test_peak_ram_mb: Optional[int] = None,
+    test_cpu: Optional[int] = None,
     extra_env: Optional[dict[str, str]] = None,
     priority: str = "normal",
     allow_cpu_training: bool = False,
@@ -78,6 +85,7 @@ def submit_task(
     allow_no_resume: bool = False,
     allow_no_ckpt: bool = False,
     allow_shared_ckpt_dir: bool = False,
+    allow_remote_large_data: bool = False,
     env_spec: str = "none",
     image: Optional[str] = None,
 ) -> dict:
@@ -94,6 +102,15 @@ def submit_task(
 
     Resume flow: pass `ckpt_dir` (absolute path on target node) + `resume_flag` (e.g.
     '--resume_from') and the scheduler will inject the latest ckpt on every relaunch.
+
+    Dependency flow: pass `wait_for_files` for eval jobs that require a local checkpoint
+    file to exist before dispatch. This is how train-before-eval is enforced without
+    burning CPU on missing-model eval loops.
+
+    Local preflight profiling: pass `test_log` if the command has already been run locally
+    with tqdm/progress output. The scheduler records its runtime projection before launch
+    so ETA/walltime do not start from a blind guess. Pass test_peak_* values when the local
+    preflight measured RAM/VRAM/CPU peaks.
 
     Submit-time guards (refuse with explanatory error):
       - training cmd + vram_mb=0 → REFUSED unless allow_cpu_training=True AND
@@ -138,6 +155,15 @@ def submit_task(
     if preferred_node: args += ["--preferred-node", preferred_node]
     if ckpt_dir:       args += ["--ckpt-dir", ckpt_dir]
     if resume_flag:    args += [f"--resume-flag={resume_flag}"]
+    if result_dir:     args += ["--result-dir", result_dir]
+    if local_result_dir: args += ["--local-result-dir", local_result_dir]
+    if wait_for_files:
+        for path in wait_for_files:
+            args += ["--wait-for-file", str(path)]
+    if test_log:      args += ["--test-log", test_log]
+    if test_peak_vram_mb is not None: args += ["--test-peak-vram-mb", str(test_peak_vram_mb)]
+    if test_peak_ram_mb is not None:  args += ["--test-peak-ram-mb", str(test_peak_ram_mb)]
+    if test_cpu is not None:          args += ["--test-cpu", str(test_cpu)]
     if extra_env:
         args += ["--env"] + [f"{k}={v}" for k, v in extra_env.items()]
     if allow_cpu_training:
@@ -147,6 +173,7 @@ def submit_task(
     if allow_no_resume:        args += ["--allow-no-resume"]
     if allow_no_ckpt:          args += ["--allow-no-ckpt"]
     if allow_shared_ckpt_dir:  args += ["--allow-shared-ckpt-dir"]
+    if allow_remote_large_data: args += ["--allow-remote-large-data"]
     if env_spec and env_spec != "none":
         args += ["--env-spec", env_spec]
     if image:
@@ -172,6 +199,25 @@ def status() -> dict:
     Returns text-formatted overview; parse stdout for structured info.
     """
     return _run(["status"])
+
+
+@mcp.tool()
+def doctor(fix: bool = False, project: Optional[str] = None) -> dict:
+    """Audit active queue invariants and optionally apply safe queued-task repairs.
+
+    Use before or after scheduler writes when user asks why tasks launched out of order,
+    eval ran before train, SimpleSAC data was sent remote, or completed results seem
+    invisible. With fix=False this is read-only. With fix=True it only edits queued
+    records: add wait_for_files to evals, force known large SimpleSAC data local, and
+    promote producer trains to high priority when queued evals depend on their ckpt.
+    Running tasks are never modified; they are reported for manual decision.
+    """
+    args = ["doctor", "--json"]
+    if fix:
+        args.append("--fix")
+    if project:
+        args += ["--project", project]
+    return _run(args)
 
 
 @mcp.tool()

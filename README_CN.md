@@ -98,7 +98,7 @@ Skill 把意图翻译成 `submit` / `dispatch` / `status` / `wait-for` 调用。
 
 ### 在任何 MCP 客户端里（ChatGPT Desktop / Cursor / Cline / …）
 
-[`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) 是 MCP server，通过 stdio JSON-RPC 暴露 8 个工具（`submit_task`, `dispatch`, `status`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`）。每客户端配置见 [`skill/integrations/README.md`](skill/integrations/README.md)。
+[`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) 是 MCP server，通过 stdio JSON-RPC 暴露 9 个工具（`submit_task`, `dispatch`, `status`, `doctor`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`）。每客户端配置见 [`skill/integrations/README.md`](skill/integrations/README.md)。
 
 ### 直接命令行
 
@@ -294,7 +294,7 @@ scheduleurm/
 │   ├── test_regression.py # 290+ 回归测试（每个对应一个已知 footgun）
 │   ├── test_hook.sh       # Claude Code 的 PostToolUse 钩子脚本
 │   └── integrations/
-│       ├── scheduler_mcp.py    # MCP server 包装（8 个工具）
+│       ├── scheduler_mcp.py    # MCP server 包装（9 个工具）
 │       └── README.md
 ├── systemd/
 │   └── scheduler.service  # user 单元；install.sh 改写路径并启用

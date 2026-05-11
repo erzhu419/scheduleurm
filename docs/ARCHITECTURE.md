@@ -173,7 +173,8 @@ Slurm should own queueing. Existing Slurm jobs keep being tracked by
 - **Full multi-user fairshare** — launch admission is FIFO-with-backfill, but
   there are no quotas, no weighted priority across schedulers, no per-user
   limits, and no preemption. Use Slurm for those.
-- **Cluster-wide DAG** — task A → task B chaining isn't here. Use bash with `wait-for`, or chain in your launcher script.
+- **Cluster-wide DAG** — task A → task B chaining isn't here. Use bash with `wait-for`, chain in your launcher script, or use `submit --wait-for-file PATH` for simple artifact-gated follow-up jobs.
+- **Large external data sync** — first-launch staging rsyncs the task `cwd`, not arbitrary parent/sibling data directories. Known SimpleSAC snapshot/per-file bus-data runs are pinned local unless `--allow-remote-large-data` is passed after manually staging the data.
 - **Hot-reload of NODES** — edit `scheduler.py`, re-run `install.sh`, watcher restart picks it up. No live config reload (would complicate the lock semantics).
 - **Cross-node tensor sharing** — every task is a single-node operation. Multi-node training is the user's responsibility (NCCL/MPI/torchrun).
 - **Auto-scale / spawn nodes** — `NODES` is fixed. If you need elasticity, add nodes statically and let `dispatch` ignore offline ones (probe failure = skip).

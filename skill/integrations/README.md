@@ -11,6 +11,7 @@ The Python tool is **untouched**: this is a thin sub-process wrapper that transl
 | `submit_task` | `scheduler.py submit ...` | "跑这个 python script", "launch 5 seeds of WSRL" |
 | `dispatch` | `scheduler.py dispatch` | "rebalance", wake the scheduler after a manual submit |
 | `status` | `scheduler.py status` | "GPU 还空吗", "现在跑啥呢" |
+| `doctor` | `scheduler.py doctor [--fix]` | audit/fix queued eval-before-train and SimpleSAC data-placement invariants |
 | `show_task` | `scheduler.py show tXXXX` | "看看 t0007", debug a specific task |
 | `cancel_task` | `scheduler.py cancel tXXXX [--force]` | "取消 tXXXX" — running needs confirm + force |
 | `history` | `scheduler.py history [--signature]` | "看看 RE-SAC 的资源画像" |
@@ -61,9 +62,43 @@ Restart ChatGPT Desktop. The tools appear in the tool picker.
 }
 ```
 
+### Claude Code
+
+Claude Code can already use the scheduler skill directly, but MCP gives it the same
+structured tools as other clients:
+
+```bash
+claude mcp add-json -s user scheduler '{
+  "type": "stdio",
+  "command": "/home/erzhu419/.claude/scheduler/mcp-venv/bin/python",
+  "args": ["/home/erzhu419/.claude/skills/scheduler/integrations/scheduler_mcp.py"],
+  "env": {"SCHEDULER_PY": "/home/erzhu419/.claude/skills/scheduler/scheduler.py"}
+}'
+```
+
 ### Cursor / Cline / Continue
 
 Each has an MCP config UI; point it at the same `command` + `args`.
+
+### Codex CLI
+
+`~/.codex/config.toml`:
+
+```toml
+[mcp_servers.scheduler]
+command = "/home/erzhu419/.claude/scheduler/mcp-venv/bin/python"
+args = ["/home/erzhu419/.claude/skills/scheduler/integrations/scheduler_mcp.py"]
+env = { SCHEDULER_PY = "/home/erzhu419/.claude/skills/scheduler/scheduler.py" }
+startup_timeout_ms = 30000
+tool_timeout_ms = 120000
+```
+
+Use a dedicated venv if base Python does not have `mcp`:
+
+```bash
+python -m venv ~/.claude/scheduler/mcp-venv
+~/.claude/scheduler/mcp-venv/bin/python -m pip install mcp
+```
 
 ### Custom agent (Python OpenAI SDK / anthropic SDK / etc.)
 

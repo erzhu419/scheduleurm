@@ -53,7 +53,7 @@ _ETA_PATTERNS = [
 #   "[02:00<00:00, 1.50s/it]"           → remaining=00:00 (effectively done)
 #   "[02:00<?, ?it/s]"                  → remaining='?' (tqdm doesn't know)
 _TQDM_ETA_RE = re.compile(
-    r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:it/s|s/it)\s*\]'
+    r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:it/s|s/it)(?:\s*,[^\]]*)?\s*\]'
 )
 
 
@@ -96,6 +96,25 @@ def parse_tqdm_eta(tail_text: str) -> Optional[int]:
             remaining = _parse_tqdm_time(m.group(2))
             if remaining is not None and remaining >= 0:
                 last = remaining
+    return last
+
+
+def parse_tqdm_elapsed_remaining(tail_text: str) -> Optional[Tuple[int, int]]:
+    """Extract tqdm's own elapsed + remaining seconds from the latest bar line.
+
+    This is for submit-time/local preflight logs. Unlike a scheduler-running
+    task, a static preflight log should trust tqdm's internal loop clock:
+    `total ~= tqdm_elapsed + tqdm_remaining`.
+    """
+    if not tail_text:
+        return None
+    last = None
+    for line in tail_text.splitlines():
+        for m in _TQDM_ETA_RE.finditer(line):
+            elapsed = _parse_tqdm_time(m.group(1))
+            remaining = _parse_tqdm_time(m.group(2))
+            if elapsed is not None and remaining is not None and elapsed >= 0 and remaining >= 0:
+                last = (elapsed, remaining)
     return last
 
 
@@ -316,6 +335,51 @@ def runtime_projection(tail_text: str,
             return {
                 "source": "progress_rate",
                 "eta_s": eta_s,
+                "total_s": total_s,
+                "current": int(current),
+                "total_units": int(total),
+                "unit_s": unit_s,
+            }
+    return None
+
+
+def runtime_projection_from_log(log_text: str,
+                                cmd: Optional[str] = None,
+                                observed_duration_s: float = 0) -> Optional[dict]:
+    """Project total runtime from a local preflight/test log.
+
+    Priority:
+      1. tqdm elapsed+remaining from the log itself. This is the intended path
+         for "run locally first, then submit to scheduleurm".
+      2. progress N/M plus observed wall duration, if the caller monitored the
+         preflight process.
+    """
+    tqdm_times = parse_tqdm_elapsed_remaining(log_text)
+    progress = parse_progress(log_text, cmd=cmd)
+    if tqdm_times is not None:
+        elapsed, remaining = tqdm_times
+        total_s = int(elapsed + remaining)
+        out = {
+            "source": "local_test_tqdm",
+            "eta_s": int(remaining),
+            "total_s": total_s,
+        }
+        if progress is not None:
+            current, total = progress
+            out["current"] = int(current)
+            out["total_units"] = int(total)
+            if total > 0:
+                out["unit_s"] = float(total_s) / float(total)
+        return out
+
+    if observed_duration_s > 0 and progress is not None:
+        current, total = progress
+        if current > 0 and total > 0:
+            unit_s = float(observed_duration_s) / float(current)
+            total_s = int(max(0, unit_s * float(total)))
+            return {
+                "source": "local_test_progress",
+                "eta_s": int(max(0, total_s - observed_duration_s)),
                 "total_s": total_s,
                 "current": int(current),
                 "total_units": int(total),

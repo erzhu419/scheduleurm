@@ -74,6 +74,7 @@ else
     cp "$SKILL_SRC/SKILL.md"            "$SKILL_DST/SKILL.md"
     cp "$SKILL_SRC/scheduler.py"        "$SKILL_DST/scheduler.py"
     cp "$SKILL_SRC/env_deploy.py"       "$SKILL_DST/env_deploy.py"
+    cp "$SKILL_SRC/eta_tracker.py"      "$SKILL_DST/eta_tracker.py"
     cp "$SKILL_SRC/tui.py"              "$SKILL_DST/tui.py"
     cp "$SKILL_SRC/test_regression.py"  "$SKILL_DST/test_regression.py"
     cp "$SKILL_SRC/test_hook.sh"        "$SKILL_DST/test_hook.sh"

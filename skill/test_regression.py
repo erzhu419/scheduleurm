@@ -806,6 +806,136 @@ def test_training_cpu_guard():
     check("CPU override + vram>0 remains blocked (would reserve GPU for CPU job)",
           sch._queued_cpu_training_block_reason(legacy_gpu_reserved) is not None)
 
+def test_wait_for_file_dispatch_guard():
+    """Queued eval tasks can declare a prerequisite artifact and stay queued until it exists."""
+    print("\n[15b] wait-for-file dispatch guard")
+    path = f"/tmp/scheduleurm_wait_file_test_{os.getpid()}"
+    try:
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+        task = {"id": "twait", "status": "queued", "wait_for_files": [path]}
+        missing = sch._queued_wait_for_file_block_reason(task)
+        check("missing prerequisite file blocks dispatch",
+              missing is not None and "waiting for prerequisite" in missing,
+              diag=str(missing))
+        open(path, "w").close()
+        empty = sch._queued_wait_for_file_block_reason(task)
+        check("empty prerequisite file still blocks dispatch",
+              empty is not None and path in empty,
+              diag=str(empty))
+        with open(path, "w") as f:
+            f.write("ready\n")
+        check("non-empty prerequisite file allows dispatch",
+              sch._queued_wait_for_file_block_reason(task) is None)
+        task["status"] = "running"
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+        check("non-queued tasks are ignored by wait-for-file guard",
+              sch._queued_wait_for_file_block_reason(task) is None)
+    finally:
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
+
+def test_simple_sac_large_data_local_pin_reason():
+    """SimpleSAC snapshot/per-file bus data lives outside cwd and should be kept local."""
+    print("\n[15c] SimpleSAC large external-data guard")
+    cwd = "/home/erzhu419/mine_code/sumo-rl/H2Oplus/SimpleSAC"
+    snapshot_default = "/env/python h2o+_bus_main.py --seed 42 --device cuda"
+    reason = sch._simple_sac_large_data_reason(snapshot_default, cwd)
+    check("SimpleSAC snapshot-default train is classified as large external data",
+          reason is not None and "snapshot" in reason.lower(), diag=str(reason))
+
+    nosnap = "/env/python h2o+_bus_main.py --seed 42 --device cuda --nouse_snapshot_reset"
+    check("SimpleSAC nosnap merged-file train is not auto-pinned by large-data guard",
+          sch._simple_sac_large_data_reason(nosnap, cwd) is None)
+
+    dataset_dir = ("/env/python h2o+_bus_main.py --dataset_dir "
+                   "/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2 "
+                   "--nouse_snapshot_reset")
+    reason2 = sch._simple_sac_large_data_reason(dataset_dir, cwd)
+    check("SimpleSAC dataset_dir train is classified as large external data",
+          reason2 is not None and "dataset_dir" in reason2, diag=str(reason2))
+
+def test_doctor_autofixes_simple_sac_eval_train_invariants():
+    """doctor fixes the exact footguns that caused manual SimpleSAC triage:
+    eval must wait for its train checkpoint, the producer train should be high
+    priority, and snapshot/per-policy data should not silently route remote."""
+    print("\n[15d] doctor auto-fixes SimpleSAC eval/train queue invariants")
+    root = f"/tmp/scheduleurm_doctor_{os.getpid()}"
+    simple = os.path.join(root, "H2Oplus", "SimpleSAC")
+    script = os.path.join(simple, "run_multiseed_eval.sh")
+    try:
+        os.makedirs(simple, exist_ok=True)
+        with open(script, "w") as f:
+            f.write("""#!/usr/bin/env bash
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+H2O_ROOT="$(cd "$HERE/.." && pwd)"
+case "$1" in
+  rlpd_nosnap_s42)
+    CKPT="$H2O_ROOT/experiment_output/h2oplus_bus_seed42_r3_rlpd_nosnap_s42/checkpoint_best.pt"
+    ;;
+  zero_hold)
+    CKPT=""
+    ;;
+esac
+""")
+        expected = os.path.join(
+            root, "H2Oplus", "experiment_output",
+            "h2oplus_bus_seed42_r3_rlpd_nosnap_s42", "checkpoint_best.pt",
+        )
+        inferred = sch._simple_sac_eval_prereq_files(
+            f"bash {script} rlpd_nosnap_s42 1001 0.6", simple)
+        check("doctor infers run_multiseed_eval checkpoint prerequisite",
+              inferred == [expected], diag=str(inferred))
+
+        state = {"tasks": [
+            {
+                "id": "teval", "status": "queued", "project": "SimpleSAC",
+                "cmd": f"bash {script} rlpd_nosnap_s42 1001 0.6",
+                "cwd": simple, "priority": "low", "signature": "eval",
+            },
+            {
+                "id": "ttrain", "status": "queued", "project": "SimpleSAC",
+                "cmd": ("/env/python h2o+_bus_main.py --seed 42 --device cuda "
+                        "--nouse_snapshot_reset --current_time r3_rlpd_nosnap_s42"),
+                "cwd": simple, "priority": "normal", "signature": "train",
+            },
+            {
+                "id": "tlarge", "status": "queued", "project": "SimpleSAC",
+                "cmd": "/env/python h2o+_bus_main.py --seed 123 --device cuda",
+                "cwd": simple, "priority": "normal", "preferred_node": "jtl110gpu",
+                "signature": "large",
+            },
+        ]}
+        issues, changed = sch._doctor_scan_state(state, fix=True, project="SimpleSAC")
+        codes = [i["code"] for i in issues]
+        check("doctor records fixes for eval wait, train priority, and large-data pin",
+              {"eval_missing_wait_for_file",
+               "train_priority_below_dependent_eval",
+               "simple_sac_large_data_not_local"}.issubset(set(codes)),
+              diag=str(issues))
+        check("doctor changed three queued records",
+              changed == 3, diag=f"changed={changed} issues={issues}")
+        check("doctor added wait_for_files to eval",
+              state["tasks"][0].get("wait_for_files") == [expected],
+              diag=str(state["tasks"][0]))
+        check("doctor promoted dependent train to high",
+              state["tasks"][1].get("priority") == "high",
+              diag=str(state["tasks"][1]))
+        check("doctor forced large-data SimpleSAC train local",
+              state["tasks"][2].get("require_node") == "local"
+              and state["tasks"][2].get("preferred_node") is None,
+              diag=str(state["tasks"][2]))
+    finally:
+        import shutil
+        shutil.rmtree(root, ignore_errors=True)
+
 def test_resume_capability_guard():
     """Training-shaped cmd with --ckpt-dir but no resume flag in cmd nor --resume-flag at submit
     must be refused. WSRL 05-04 footgun: ckpts saved every 50 epochs to disk but cmd had no
@@ -12125,6 +12255,9 @@ def test_phase3_0_1_eta_parser_and_integration():
     for name, text, expected in cases_tqdm:
         got = et.parse_tqdm_eta(text)
         check(f"tqdm-eta: {name}", got == expected, diag=f"text={text!r} got={got} expected={expected}")
+    got = et.parse_tqdm_eta("47%|#### | 123/456 [00:10<00:30, 11.1it/s, loss=0.42]")
+    check("tqdm-eta: accepts postfix after rate",
+          got == 30, diag=f"got {got}")
 
     # Multiple tqdm lines — last wins
     multi = "[00:42<03:21, 12.34it/s]\n[01:00<03:00, 12.34it/s]\n[01:30<02:30, 12.34it/s]\n"
@@ -12149,6 +12282,27 @@ def test_phase3_0_1_eta_parser_and_integration():
           and 990 <= proj.get("total_s", 0) <= 1010
           and 740 <= proj.get("eta_s", 0) <= 760,
           diag=str(proj))
+    got_pair = et.parse_tqdm_elapsed_remaining(multi)
+    check("tqdm elapsed+remaining: latest pair wins",
+          got_pair == (90, 150), diag=f"got {got_pair}")
+    local_proj = et.runtime_projection_from_log(
+        "  47%|#### | 1234/5678 [00:42<03:21, 12.34it/s, loss=0.342]",
+        cmd="python train.py --n_steps 5678",
+    )
+    check("runtime_projection_from_log: local tqdm total = elapsed + remaining",
+          local_proj and local_proj.get("source") == "local_test_tqdm"
+          and local_proj.get("total_s") == 243
+          and local_proj.get("eta_s") == 201
+          and local_proj.get("total_units") == 5678,
+          diag=str(local_proj))
+    local_proj2 = et.runtime_projection_from_log(
+        "[Epoch 25/100] loss=1.0", cmd="python train.py --n_epochs 100",
+        observed_duration_s=250,
+    )
+    check("runtime_projection_from_log: progress + observed duration projects total",
+          local_proj2 and local_proj2.get("source") == "local_test_progress"
+          and 990 <= local_proj2.get("total_s", 0) <= 1010,
+          diag=str(local_proj2))
 
     # ---------- ETA math ----------
     # tier-0 (tqdm pre-computed) wins: extracts "1:29:20" directly = 5360s
@@ -12278,6 +12432,98 @@ def test_phase3_0_1_eta_parser_and_integration():
           "_batch_check_running(state)" in body)
     check("update_running_tasks calls _refresh_eta_from_logs",
           "_refresh_eta_from_logs(state)" in body)
+
+
+def test_phase3_0_1_local_preflight_profile_and_closest_history():
+    """Local preflight logs should seed ETA history before real dispatch.
+
+    Also covers the closest-history fallback used when no local test log exists
+    but a very similar prior task has a measured unit time.
+    """
+    print("\n[59b] Phase 3.0.1 local preflight profile + closest runtime history")
+    import tempfile
+
+    fake_runtime_history = {}
+    saved_load_runtime_history = sch.load_runtime_history
+    saved_save_runtime_history = sch.save_runtime_history
+    def _save_runtime_history(h):
+        snapshot = copy.deepcopy(h)
+        fake_runtime_history.clear()
+        fake_runtime_history.update(snapshot)
+    sch.load_runtime_history = lambda: fake_runtime_history
+    sch.save_runtime_history = _save_runtime_history
+
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            log_path = os.path.join(td, "local_preflight.log")
+            with open(log_path, "w") as f:
+                f.write("  47%|#### | 1234/5678 [00:42<03:21, 12.34it/s, loss=0.342]\n")
+            task = {
+                "id": "t-local-profile",
+                "signature": "TEST/local-profile",
+                "project": "SimpleSAC",
+                "description": "local preflight train",
+                "cmd": "python train.py --seed 42 --n_steps 5678 --dataset bus",
+                "cwd": td,
+                "env_spec": "none",
+                "image": "",
+                "extra_env": {},
+            }
+            loaded = sch._apply_test_log_runtime_profile(task, log_path)
+            check("submit --test-log loads local tqdm profile",
+                  loaded and task.get("runtime_total_s_est") == 243
+                  and task.get("runtime_eta_s_est") == 201
+                  and task.get("runtime_total_units") == 5678
+                  and "local_test_tqdm" in task.get("runtime_est_source", ""),
+                  diag=str(task))
+            check("submit --test-log records runtime history immediately",
+                  sch._runtime_total_history_s(task) == 243,
+                  diag=str(fake_runtime_history))
+            check("runtime history stores cwd/env for audit",
+                  any(rec.get("cwd") == td and rec.get("env_spec") == "none"
+                      for rec in fake_runtime_history.values()
+                      if isinstance(rec, dict)),
+                  diag=str(fake_runtime_history))
+
+            near = dict(task)
+            near["signature"] = "TEST/local-profile-new-seed"
+            near["cmd"] = "python train.py --seed 99 --n_steps 5678 --dataset bus"
+            rec, key, kind = sch._runtime_history_best(near)
+            check("closest runtime history selected for similar no-log task",
+                  kind == "closest" and rec and 235 <= int(rec.get("total_s") or 0) <= 245
+                  and str(rec.get("source", "")).startswith("closest:"),
+                  diag=f"kind={kind} key={key} rec={rec}")
+
+            scaled = dict(near)
+            scaled["signature"] = "TEST/local-profile-more-steps"
+            scaled["cmd"] = "python train.py --seed 100 --n_steps 11356 --dataset bus"
+            rec2, _key2, kind2 = sch._runtime_history_best(scaled)
+            check("closest runtime history scales by known unit time",
+                  kind2 == "closest" and rec2 and 470 <= int(rec2.get("total_s") or 0) <= 490
+                  and rec2.get("total_units") == 11356,
+                  diag=f"kind={kind2} rec={rec2}")
+
+            pending_direct = dict(task)
+            pending_direct["status"] = "queued"
+            pending_direct.pop("eta_seconds", None)
+            changed = sch._seed_pending_eta_from_history({"tasks": [pending_direct]})
+            check("queued ETA seeded directly from submit-time local profile",
+                  changed == 1 and pending_direct.get("eta_seconds") == 243
+                  and "local_test_tqdm" in pending_direct.get("eta_source", ""),
+                  diag=str(pending_direct))
+
+            pending_near = {k: v for k, v in near.items() if not k.startswith("runtime_")}
+            pending_near["status"] = "queued"
+            pending_near.pop("eta_seconds", None)
+            pending_near.pop("eta_source", None)
+            changed = sch._seed_pending_eta_from_history({"tasks": [pending_near]})
+            check("queued ETA seeded from closest runtime history when no test log exists",
+                  changed == 1 and 235 <= int(pending_near.get("eta_seconds") or 0) <= 245
+                  and pending_near.get("eta_source") == "runtime_history",
+                  diag=str(pending_near))
+    finally:
+        sch.load_runtime_history = saved_load_runtime_history
+        sch.save_runtime_history = saved_save_runtime_history
 
 
 def test_phase2_17_install_slurm_orchestration():
@@ -13713,6 +13959,69 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
           diag=f"bypass_idx={bypass_idx}, nrok_idx={nrok_idx}")
 
 
+def test_phase3_5_results_archive_lookup_and_artifacts():
+    """Archived tasks must remain discoverable, and result paths should be inferred
+    from command flags plus scheduler/user logs."""
+    print("\n[Phase 3.5] Results discovery + archive-aware lookup")
+    import json
+    import tempfile
+    from pathlib import Path
+
+    old_queue, old_archive = sch.QUEUE_FILE, sch.ARCHIVE_FILE
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td)
+        sch.QUEUE_FILE = tmp / "queue.json"
+        sch.ARCHIVE_FILE = tmp / "queue_archive.jsonl"
+        try:
+            sch.save_state({"tasks": [], "next_id": 2})
+            archived = {
+                "id": "told", "status": "done", "project": "SimpleSAC",
+                "signature": "H2Oplus/eval", "cwd": "/work/H2Oplus",
+                "cmd": "python eval.py --output rel/out.json",
+                "node": "local", "finished_at": time.time(),
+            }
+            sch.ARCHIVE_FILE.write_text(json.dumps(archived) + "\n")
+            found, source = sch._find_task_record("told", include_archive=True)
+            check("show lookup finds archived task", found and found["id"] == "told",
+                  diag=f"found={found}")
+            check("archive lookup reports source", source == "archive",
+                  diag=f"source={source}")
+        finally:
+            sch.QUEUE_FILE, sch.ARCHIVE_FILE = old_queue, old_archive
+
+    task = {
+        "id": "tres", "status": "done", "project": "P",
+        "signature": "P/eval", "cwd": "/work/proj", "node": "local",
+        "cmd": ("python eval.py --output rel/out.json --out_csv metrics.csv "
+                "--save_root runs --run_name expA"),
+        "log_path": None,
+        "_diagnosis": {"tail": "\n".join([
+            "Results saved to: jax_experiments/results_paper/run42/logs",
+            "  out_json   : /abs/eval.json",
+            "  Saved: /abs/final.csv",
+        ])},
+    }
+    arts = sch._discover_result_artifacts(task, include_log=True)
+    paths = {a["path"] for a in arts}
+    check("cmd --output path inferred and cwd-resolved",
+          "/work/proj/rel/out.json" in paths, diag=str(paths))
+    check("cmd --out_csv path inferred and cwd-resolved",
+          "/work/proj/metrics.csv" in paths, diag=str(paths))
+    check("save_root + run_name directory inferred",
+          "/work/proj/runs/expA" in paths, diag=str(paths))
+    check("log relative result directory inferred",
+          "/work/proj/jax_experiments/results_paper/run42/logs" in paths,
+          diag=str(paths))
+    check("log absolute JSON artifact inferred",
+          "/abs/eval.json" in paths, diag=str(paths))
+    check("log Saved file artifact inferred",
+          "/abs/final.csv" in paths, diag=str(paths))
+    recorded = sch._record_result_artifacts(task)
+    check("record_result_artifacts persists artifacts",
+          task.get("result_artifacts") == recorded and len(recorded) >= 6,
+          diag=str(task.get("result_artifacts")))
+
+
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print(f"running regression tests against {SCHED_PATH}")
@@ -13731,6 +14040,9 @@ if __name__ == "__main__":
     test_launch_failed_node_fallback_and_notification_events()
     test_requeue_from_adopt_becomes_scheduler_owned()
     test_training_cpu_guard()
+    test_wait_for_file_dispatch_guard()
+    test_simple_sac_large_data_local_pin_reason()
+    test_doctor_autofixes_simple_sac_eval_train_invariants()
     test_resume_capability_guard()
     test_wrapper_checkpoint_contract_guard()
     test_diagnose_mid_training_kill()
@@ -13792,6 +14104,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_16_1_rebalance_pending()
     test_phase2_17_install_slurm_orchestration()
     test_phase3_0_1_eta_parser_and_integration()
+    test_phase3_0_1_local_preflight_profile_and_closest_history()
     test_phase3_0_2_node_load_metric()
     test_phase3_0_3_migration_trigger()
     test_phase3_0_4_staging()
@@ -13840,6 +14153,7 @@ if __name__ == "__main__":
     test_phase3_4_3_claim_race_vs_claim_error()
     test_phase3_4_4_claim_replicates_gpu_fits_policy()
     test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy()
+    test_phase3_5_results_archive_lookup_and_artifacts()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

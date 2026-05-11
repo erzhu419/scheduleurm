@@ -9,6 +9,9 @@ Subcommands:
   submit    Add a task to the queue (no launch yet).
   dispatch  Probe nodes, pick placements for queued tasks, launch what fits. Same call doubles as rebalance.
   status    Show node telemetry + task table. Updates running-task health and peak VRAM/RAM.
+  doctor    Audit queue invariants; --fix applies safe queued-task repairs.
+  profile-local Run a local preflight directly and record resource/runtime history.
+  results   Find inferred result artifacts in queue + archive.
   cancel    Cancel a queued/launching task; with --force, kill a running one.
   forget    Drop a task record (never touches processes — for fixing wrong adopts).
   clear-queue   Cancel ALL queued tasks (running tasks untouched). Requires --confirm.
@@ -1238,6 +1241,289 @@ def archive_terminal_tasks(state, age_days=ARCHIVE_AGE_DAYS):
             pass  # archive failure should never break the watcher; tasks just stay in queue.json
     return len(archived)
 
+
+def load_archive_tasks(limit: Optional[int] = None):
+    """Return archived task records from queue_archive.jsonl.
+
+    Archive is append-only JSONL. Treat bad lines as skipped records rather
+    than making `show`/`results` unusable because one archival write was torn.
+    """
+    if not ARCHIVE_FILE.exists():
+        return []
+    tasks = []
+    try:
+        with open(ARCHIVE_FILE, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                if isinstance(rec, dict):
+                    tasks.append(rec)
+    except Exception:
+        return tasks[-limit:] if limit and len(tasks) > limit else tasks
+    if limit and len(tasks) > limit:
+        return tasks[-limit:]
+    return tasks
+
+
+def _find_task_record(task_id: str, include_archive: bool = True):
+    """Find a task in hot state first, then archive. Returns (task, source)."""
+    state = load_state()
+    for t in state.get("tasks", []):
+        if t.get("id") == task_id:
+            return t, "queue"
+    if include_archive:
+        found = None
+        for t in load_archive_tasks():
+            if t.get("id") == task_id:
+                found = t
+        if found is not None:
+            return found, "archive"
+    return None, ""
+
+
+_RESULT_FILE_EXTS = frozenset({
+    ".csv", ".json", ".jsonl", ".pkl", ".pickle", ".pt", ".pth", ".ckpt",
+    ".npz", ".npy", ".parquet", ".feather", ".txt", ".log", ".yaml", ".yml",
+})
+_RESULT_FILE_FLAGS = frozenset({
+    "--output", "--out", "--outfile", "--out-file", "--out_file",
+    "--out-csv", "--out_csv", "--output-csv", "--output_csv", "--csv",
+    "--out-json", "--out_json", "--output-json", "--output_json", "--json",
+    "--metrics", "--metrics-file", "--metrics_file",
+    "--log-file", "--log_file",
+})
+_RESULT_DIR_FLAGS = frozenset({
+    "--result-dir", "--result_dir", "--results-dir", "--results_dir",
+    "--save-dir", "--save_dir", "--save-root", "--save_root",
+    "--log-dir", "--log_dir", "--logging-dir", "--logging_dir",
+    "--tb-dir", "--tb_dir", "--tensorboard-dir", "--tensorboard_dir",
+})
+
+
+def _clean_result_path(raw: str) -> str:
+    if raw is None:
+        return ""
+    p = str(raw).strip().strip("'\"`<>")
+    p = re.sub(r"\x1b\[[0-9;]*m", "", p)  # ANSI color
+    p = p.rstrip(".,;)]}")
+    if not p or p.startswith("-"):
+        return ""
+    suffix = Path(p).suffix.lower()
+    if (p.startswith(("/", "./", "../", "~/", "$HOME/"))
+            or "/" in p
+            or suffix in _RESULT_FILE_EXTS):
+        return p
+    return ""
+
+
+def _resolve_task_path(task: dict, raw_path: str) -> str:
+    p = _clean_result_path(raw_path)
+    if not p:
+        return ""
+    if p.startswith("$HOME/"):
+        p = "~/" + p[len("$HOME/"):]
+    # Keep remote home-relative paths home-relative; expanding locally would
+    # use the scheduler user's home even when the artifact is on a remote node.
+    if p.startswith("~/"):
+        return p
+    if os.path.isabs(p):
+        return os.path.normpath(p)
+    cwd = task.get("cwd") or ""
+    if cwd and cwd not in ("(unknown)", "."):
+        return os.path.normpath(os.path.join(cwd, p))
+    return os.path.normpath(p)
+
+
+def _result_kind_for_path(path: str, preferred: str = "") -> str:
+    if preferred in ("file", "dir"):
+        return preferred
+    return "file" if Path(path).suffix.lower() in _RESULT_FILE_EXTS else "dir"
+
+
+def _add_result_artifact(artifacts: list, task: dict, raw_path: str,
+                         kind: str = "", source: str = ""):
+    path = _resolve_task_path(task, raw_path)
+    if not path:
+        return
+    node = task.get("node") or task.get("last_node") or "unknown"
+    rec = {
+        "path": path,
+        "node": node,
+        "kind": _result_kind_for_path(path, kind),
+        "source": source or "inferred",
+    }
+    key = (rec["node"], rec["path"])
+    for old in artifacts:
+        if (old.get("node"), old.get("path")) == key:
+            if rec["source"] not in (old.get("source") or ""):
+                old["source"] = ",".join(
+                    x for x in [old.get("source"), rec["source"]] if x)
+            if old.get("kind") == "dir" and rec["kind"] == "file":
+                old["kind"] = "file"
+            return
+    artifacts.append(rec)
+
+
+def _cmd_flag_values(tokens: list, flags: set) -> dict:
+    vals = {}
+    i = 0
+    while i < len(tokens):
+        tok = tokens[i]
+        flag, eq, val = tok.partition("=")
+        if eq and flag in flags:
+            vals.setdefault(flag, []).append(val)
+            i += 1
+            continue
+        if tok in flags and i + 1 < len(tokens):
+            nxt = tokens[i + 1]
+            if not nxt.startswith("-"):
+                vals.setdefault(tok, []).append(nxt)
+                i += 2
+                continue
+        i += 1
+    return vals
+
+
+def _result_artifacts_from_cmd(task: dict) -> list:
+    cmd = task.get("cmd") or ""
+    artifacts = []
+    if not cmd or (cmd.startswith("(auto-adopted") and " --" not in cmd):
+        return artifacts
+    try:
+        tokens = shlex.split(cmd)
+    except Exception:
+        tokens = cmd.split()
+    file_vals = _cmd_flag_values(tokens, _RESULT_FILE_FLAGS)
+    dir_vals = _cmd_flag_values(tokens, _RESULT_DIR_FLAGS)
+    for flag, vals in file_vals.items():
+        for v in vals:
+            _add_result_artifact(artifacts, task, v, "file", f"cmd:{flag}")
+    for flag, vals in dir_vals.items():
+        for v in vals:
+            _add_result_artifact(artifacts, task, v, "dir", f"cmd:{flag}")
+
+    # Common ML convention: --save_root ROOT --run_name NAME writes under ROOT/NAME.
+    roots = []
+    for k in ("--save-root", "--save_root"):
+        roots.extend(dir_vals.get(k, []))
+    run_names = []
+    for k in ("--run-name", "--run_name", "--name"):
+        run_names.extend(_cmd_flag_values(tokens, {k}).get(k, []))
+    if roots and run_names:
+        for root in roots:
+            for rn in run_names:
+                if rn and not rn.startswith("-"):
+                    _add_result_artifact(
+                        artifacts, task, os.path.join(root, rn), "dir",
+                        "cmd:save_root+run_name",
+                    )
+    return artifacts
+
+
+_LOG_RESULT_RE = re.compile(
+    r"(?i)(?:"
+    r"results?\s+saved\s+to|logging\s+to|"
+    r"output(?:\s+written)?(?:\s+to)?|"
+    r"output\s+already\s+present|"
+    r"out_(?:json|csv|path)|"
+    r"saved(?:\s+\w+){0,4}\s+to|saved"
+    r")\s*:?\s+(?P<path>\S+)"
+)
+
+
+def _fetch_log_result_lines(task: dict, max_lines: int = 50) -> list:
+    """Return log lines that look like they mention result paths.
+
+    Tail-only scans miss scripts that print `Output: ...` at startup and then
+    run for hours. Use a streaming local scan or remote grep to extract only
+    candidate lines.
+    """
+    log_path = task.get("log_path")
+    if not log_path or task.get("auto_adopted"):
+        return []
+    node = task.get("node")
+    grep_re = (
+        r"Results saved to|Logging to|Output|output already present|"
+        r"out_json|out_csv|Saved"
+    )
+    try:
+        if node and NODES.get(node, {}).get("host") is None:
+            lp = Path(log_path)
+            if not lp.exists():
+                return []
+            r = subprocess.run(
+                ["grep", "-E", "-i", "-m", str(int(max_lines)), grep_re, str(lp)],
+                capture_output=True, text=True, timeout=10,
+            )
+            if r.returncode not in (0, 1):
+                return []
+            return [l for l in (r.stdout or "").splitlines() if _LOG_RESULT_RE.search(l)]
+        elif node:
+            rc, out, _ = run_on(
+                node,
+                f"grep -E -i -m {int(max_lines)} {shlex.quote(grep_re)} "
+                f"{shlex.quote(log_path)} 2>/dev/null || true",
+                timeout=15, check=False,
+            )
+            if rc != 0 or not out:
+                return []
+            return [l for l in out.splitlines() if _LOG_RESULT_RE.search(l)]
+    except Exception:
+        return []
+    return []
+
+
+def _result_artifacts_from_log(task: dict) -> list:
+    artifacts = []
+    tail_text, _ = _fetch_log_tail(task)
+    if not tail_text:
+        diag = task.get("_diagnosis") or {}
+        tail_text = diag.get("tail") or ""
+    lines = []
+    if tail_text and tail_text != "(no log)":
+        lines.extend(tail_text.splitlines())
+    lines.extend(_fetch_log_result_lines(task))
+    if not lines:
+        return artifacts
+    for line in lines:
+        m = _LOG_RESULT_RE.search(line)
+        if not m:
+            continue
+        raw = m.group("path")
+        kind = "file" if Path(_clean_result_path(raw)).suffix.lower() in _RESULT_FILE_EXTS else ""
+        _add_result_artifact(artifacts, task, raw, kind, "log")
+    return artifacts
+
+
+def _discover_result_artifacts(task: dict, include_log: bool = True) -> list:
+    artifacts = []
+    if task.get("result_dir"):
+        _add_result_artifact(artifacts, task, task.get("result_dir"), "dir", "declared:result_dir")
+    for rec in _result_artifacts_from_cmd(task):
+        _add_result_artifact(artifacts, task, rec["path"], rec.get("kind"), rec.get("source"))
+    if include_log:
+        for rec in _result_artifacts_from_log(task):
+            _add_result_artifact(artifacts, task, rec["path"], rec.get("kind"), rec.get("source"))
+    return artifacts
+
+
+def _record_result_artifacts(task: dict) -> list:
+    """Persist best-effort result artifacts on a terminal task record."""
+    discovered = _discover_result_artifacts(task, include_log=True)
+    if not discovered:
+        return []
+    combined = []
+    for rec in (task.get("result_artifacts") or []) + discovered:
+        _add_result_artifact(combined, task, rec.get("path"), rec.get("kind"), rec.get("source"))
+    task["result_artifacts"] = combined
+    task["result_artifacts_discovered_at"] = time.time()
+    return combined
+
 def maybe_rotate_log(path: Path, max_mb: int, generations: int):
     """If path is over max_mb, shift .log -> .log.1 -> .log.2 -> ... up to generations, dropping oldest."""
     try:
@@ -1404,6 +1690,7 @@ RUNTIME_HISTORY_SAMPLES_PER_KEY = 10
 RUNTIME_HISTORY_PERCENTILE = 80
 RUNTIME_WALLTIME_MULT = 1.20
 RUNTIME_MIN_WALLTIME_S = 10 * 60  # progress-derived walltime can be shorter than legacy 1h
+RUNTIME_CLOSEST_MIN_SCORE = 0.58
 
 def _percentile(samples, p):
     """p-th percentile (0..100) of samples list. Returns 0 for empty list."""
@@ -2542,6 +2829,8 @@ def _requeue_after_crash(parent, state):
         "auto_adopted": False,
         "process_group": None,
         "_diagnosis": None,
+        "result_artifacts": [],
+        "result_artifacts_discovered_at": None,
         "notified_launch": False,
         "notified_done": False,
         "retry_count": retry_n,
@@ -2687,6 +2976,13 @@ def _batch_check_running(state):
                         new_id = _requeue_after_crash(t, state)
                         if new_id:
                             t["requeued_as"] = new_id
+            # Best-effort result indexing for completed/terminal tasks. This is
+            # deliberately separate from --result-dir sync: local tasks and older
+            # submissions may still have useful output paths in cmd flags or logs.
+            try:
+                _record_result_artifacts(t)
+            except Exception:
+                pass
             duration_s = 0
             if t.get("started_at") and t.get("finished_at"):
                 duration_s = max(0, int(t["finished_at"] - t["started_at"]))
@@ -5190,18 +5486,187 @@ def _task_runtime_keys(task: dict) -> list:
     return keys
 
 
+def _load_eta_tracker_module():
+    try:
+        from . import eta_tracker  # type: ignore
+        return eta_tracker
+    except Exception:
+        try:
+            import importlib.util as _ilu  # type: ignore
+            spec = _ilu.spec_from_file_location(
+                "eta_tracker", str(Path(__file__).parent / "eta_tracker.py")
+            )
+            if spec and spec.loader:
+                mod = _ilu.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod
+        except Exception:
+            return None
+    return None
+
+
+def _runtime_total_units_from_cmd(cmd: str) -> int:
+    et = _load_eta_tracker_module()
+    if et and hasattr(et, "_extract_total_from_cmd"):
+        try:
+            return int(et._extract_total_from_cmd(cmd) or 0)
+        except Exception:
+            return 0
+    return 0
+
+
+def _runtime_cmd_tokens(cmd: str) -> set:
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = (cmd or "").split()
+    out = set()
+    skip_next_for = {
+        "--seed", "--current_time", "--current-time", "--run_name", "--run-name",
+        "--output", "--out", "--log_dir", "--log-dir",
+    }
+    skip_next = False
+    for tok in toks:
+        if skip_next:
+            skip_next = False
+            continue
+        if tok in skip_next_for:
+            out.add(tok)
+            skip_next = True
+            continue
+        if any(tok.startswith(f + "=") for f in skip_next_for):
+            out.add(tok.split("=", 1)[0])
+            continue
+        base = os.path.basename(tok)
+        if base in ("python", "python3", "python3.10", "python3.11", "python3.12", "bash", "sh"):
+            continue
+        norm = re.sub(r"\d+", "<N>", tok.lower())
+        if len(norm) >= 2:
+            out.add(norm)
+    return out
+
+
+def _runtime_script_name(cmd: str) -> str:
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = (cmd or "").split()
+    for tok in toks:
+        if tok.endswith((".py", ".sh")) or ".py:" in tok:
+            return os.path.basename(tok)
+    return ""
+
+
+def _runtime_history_closest(task: dict, history: dict):
+    """Return a conservative closest runtime-history record for novel signatures.
+
+    This is the deterministic fallback for the "AI should choose closest task"
+    rule: exact cmd/cwd and explicit signature still win. Closest only engages
+    when project/cwd/script/tokens are sufficiently similar, and records its
+    source so the estimate is auditable.
+    """
+    payload = _task_runtime_payload(task)
+    task_tokens = _runtime_cmd_tokens(payload.get("cmd") or "")
+    if not task_tokens:
+        return None, None
+    task_script = _runtime_script_name(payload.get("cmd") or "")
+    task_project = payload.get("project") or ""
+    task_cwd_base = os.path.basename(payload.get("cwd") or "")
+    task_units = _runtime_total_units_from_cmd(payload.get("cmd") or "")
+    best = None
+    for key, rec in (history or {}).items():
+        if not isinstance(rec, dict) or int(rec.get("total_s") or 0) <= 0:
+            continue
+        rec_cmd = rec.get("cmd") or ""
+        rec_tokens = _runtime_cmd_tokens(rec_cmd)
+        if not rec_tokens:
+            continue
+        inter = len(task_tokens & rec_tokens)
+        union = len(task_tokens | rec_tokens) or 1
+        score = inter / union
+        rec_script = _runtime_script_name(rec_cmd)
+        if task_script and rec_script and task_script == rec_script:
+            score += 0.25
+        if task_project and rec.get("project") == task_project:
+            score += 0.15
+        rec_cwd_base = os.path.basename(str(rec.get("cwd") or ""))
+        if task_cwd_base and rec_cwd_base and task_cwd_base == rec_cwd_base:
+            score += 0.10
+        if score < RUNTIME_CLOSEST_MIN_SCORE:
+            continue
+        if best is None or score > best[0]:
+            best = (score, key, rec)
+    if not best:
+        return None, None
+    score, key, rec = best
+    out = dict(rec)
+    out["source"] = f"closest:{key}:score={score:.2f}"
+    if task_units > 0 and float(rec.get("unit_s") or 0) > 0:
+        out["total_s"] = int(float(rec["unit_s"]) * float(task_units))
+        out["walltime_s"] = int(max(RUNTIME_MIN_WALLTIME_S, out["total_s"] * RUNTIME_WALLTIME_MULT))
+        out["total_units"] = task_units
+    return out, f"closest:{key}"
+
+
 def _runtime_history_best(task: dict):
     h = load_runtime_history()
     for key, kind, _payload in _task_runtime_keys(task):
         rec = h.get(key)
         if isinstance(rec, dict) and int(rec.get("total_s") or 0) > 0:
             return rec, key, kind
+    rec, key = _runtime_history_closest(task, h)
+    if rec:
+        return rec, key, "closest"
     return None, None, None
 
 
 def _runtime_total_history_s(task: dict) -> int:
     rec, _key, _kind = _runtime_history_best(task)
     return int(rec.get("total_s") or 0) if rec else 0
+
+
+def _history_eta_for_task(task: dict) -> tuple[int, str]:
+    """Return a full-run ETA estimate for a task that has not started yet.
+
+    Running tasks get live log-tail ETA from _refresh_eta_from_logs. Queued and
+    launching tasks have no elapsed progress, so their ETA is the best known
+    total runtime: local preflight profile on the task, exact/closest runtime
+    history, then legacy duration EWMA.
+    """
+    total_s = int(task.get("runtime_total_s_est") or 0)
+    if total_s > 0:
+        return total_s, task.get("runtime_est_source") or "runtime_profile"
+    total_s = _runtime_total_history_s(task)
+    if total_s > 0:
+        return total_s, "runtime_history"
+    sig = task.get("signature") or ""
+    h = history_get(sig) or {}
+    total_s = int(h.get("dur_s_ewma") or 0)
+    if total_s > 0:
+        return total_s, "duration_ewma"
+    return 0, ""
+
+
+def _seed_pending_eta_from_history(state: dict) -> int:
+    """Fill ETA for queued/launching tasks from local-test/runtime history.
+
+    This makes status/eta_load/migration see the same local preflight signal
+    that Slurm walltime already uses. It only fills unknown ETA; live running
+    ETA remains owned by log-tail progress parsing.
+    """
+    changed = 0
+    for t in state.get("tasks", []):
+        if t.get("status") not in ("queued", "launching"):
+            continue
+        if int(t.get("eta_seconds") or 0) > 0:
+            continue
+        eta, source = _history_eta_for_task(t)
+        if eta <= 0:
+            continue
+        t["eta_seconds"] = int(eta)
+        t["eta_source"] = source
+        changed += 1
+    return changed
 
 
 def _runtime_walltime_for_task(task: dict) -> int:
@@ -5288,6 +5753,8 @@ def runtime_history_record(task: dict, duration_s: int = 0):
         cur["signature"] = payload.get("signature") or ""
         cur["project"] = payload.get("project") or ""
         cur["description"] = payload.get("description") or ""
+        cur["cwd"] = payload.get("cwd") or ""
+        cur["env_spec"] = payload.get("env_spec") or "none"
         cur["cmd"] = (payload.get("cmd") or "")[:500]
         cur["runs"] = int(cur.get("runs") or 0) + 1
         cur["last_seen"] = now
@@ -5296,6 +5763,46 @@ def runtime_history_record(task: dict, duration_s: int = 0):
         kept = sorted(h.items(), key=lambda kv: -(kv[1].get("last_seen", 0) if isinstance(kv[1], dict) else 0))
         h = dict(kept[:RUNTIME_HISTORY_MAX_ENTRIES])
     save_runtime_history(h)
+
+
+def _read_text_tail(path: str, max_bytes: int = 2 * 1024 * 1024) -> str:
+    try:
+        with open(os.path.expanduser(path), "rb") as f:
+            try:
+                f.seek(0, os.SEEK_END)
+                size = f.tell()
+                f.seek(max(0, size - max_bytes), os.SEEK_SET)
+            except OSError:
+                pass
+            return f.read(max_bytes).decode("utf-8", errors="replace")
+    except Exception:
+        return ""
+
+
+def _runtime_profile_from_log(log_path: str, cmd: str = "", observed_duration_s: float = 0):
+    et = _load_eta_tracker_module()
+    if not et or not hasattr(et, "runtime_projection_from_log"):
+        return None
+    text = _read_text_tail(log_path)
+    if not text:
+        return None
+    try:
+        return et.runtime_projection_from_log(
+            text, cmd=cmd, observed_duration_s=observed_duration_s)
+    except Exception:
+        return None
+
+
+def _apply_test_log_runtime_profile(task: dict, test_log: str) -> bool:
+    profile = _runtime_profile_from_log(test_log, task.get("cmd") or "")
+    if not profile:
+        return False
+    profile = dict(profile)
+    profile["source"] = (profile.get("source") or "local_test_log") + ":" + os.path.expanduser(test_log)
+    _apply_runtime_projection(task, profile)
+    task["test_log_path"] = os.path.expanduser(test_log)
+    runtime_history_record(task)
+    return True
 
 
 def _queued_cpu_training_block_reason(task):
@@ -5309,6 +5816,531 @@ def _queued_cpu_training_block_reason(task):
         bool(task.get("allow_cpu_training", False)),
         int(task.get("est_vram_mb") or 0),
     )
+
+def _queued_wait_for_file_block_reason(task):
+    if task.get("status") != "queued":
+        return None
+    waits = task.get("wait_for_files") or []
+    if isinstance(waits, str):
+        waits = [waits]
+    if not waits:
+        return None
+    missing = []
+    for raw in waits:
+        path_s = os.path.expandvars(os.path.expanduser(str(raw)))
+        try:
+            st = os.stat(path_s)
+        except OSError:
+            missing.append(path_s)
+            continue
+        if not os.path.isfile(path_s) or st.st_size <= 0:
+            missing.append(path_s)
+    if not missing:
+        return None
+    shown = ", ".join(missing[:3])
+    more = "" if len(missing) <= 3 else f" (+{len(missing) - 3} more)"
+    return f"waiting for prerequisite file(s): {shown}{more}"
+
+def _flag_values_any(tokens: list, flags: set) -> list:
+    vals = []
+    parsed = _cmd_flag_values(tokens, flags)
+    for flag in flags:
+        vals.extend(parsed.get(flag, []))
+    return vals
+
+def _flag_present_or_true(tokens: list, flag: str) -> bool:
+    for tok in tokens:
+        if tok == flag:
+            return True
+        if tok.startswith(flag + "="):
+            val = tok.split("=", 1)[1].strip().lower()
+            return val not in ("0", "false", "no", "off")
+    return False
+
+def _simple_sac_large_data_reason(cmd: str, cwd: str) -> Optional[str]:
+    """Return a reason when SimpleSAC should stay local due to external data.
+
+    scheduleurm's launch staging rsyncs the task cwd only. SimpleSAC bus training
+    reads H2Oplus/bus_h2o outside the cwd; snapshot/per-file modes can involve
+    ~122GB of HDF5 archives, so they must not be silently routed to a server.
+    """
+    text = cmd or ""
+    if "h2o+_bus_main.py" not in text:
+        return None
+    try:
+        tokens = shlex.split(text)
+    except Exception:
+        tokens = text.split()
+
+    dataset_dir_vals = _flag_values_any(tokens, {"--dataset_dir", "--dataset-dir"})
+    if any(str(v).strip() for v in dataset_dir_vals):
+        return ("SimpleSAC bus training uses --dataset_dir/per-policy HDF5 data "
+                "outside cwd; local bus_h2o/datasets_v2 is about 122GB and is not "
+                "part of scheduler cwd staging")
+
+    snapshot_disabled = any(tok == "--nouse_snapshot_reset" for tok in tokens)
+    for flag in ("--use_snapshot_reset", "--use-snapshot-reset"):
+        for tok in tokens:
+            if tok.startswith(flag + "="):
+                val = tok.split("=", 1)[1].strip().lower()
+                if val in ("0", "false", "no", "off"):
+                    snapshot_disabled = True
+
+    if not snapshot_disabled:
+        return ("SimpleSAC snapshot reset is enabled by default; snapshot-capable "
+                "runs may require the external bus_h2o/datasets_v2 archive "
+                "(about 122GB), which scheduler does not rsync with cwd")
+
+    return None
+
+def _doctor_path_key(path: str) -> str:
+    return os.path.normpath(os.path.expandvars(os.path.expanduser(str(path or ""))))
+
+def _resolve_cmd_path(raw: str, cwd: str = "") -> str:
+    raw = os.path.expandvars(os.path.expanduser(str(raw or "")))
+    if not raw:
+        return ""
+    if os.path.isabs(raw):
+        return os.path.normpath(raw)
+    return os.path.normpath(os.path.join(cwd or os.getcwd(), raw))
+
+def _task_wait_files(task: dict) -> list:
+    waits = task.get("wait_for_files") or []
+    if isinstance(waits, str):
+        waits = [waits]
+    return [str(w) for w in waits if str(w or "").strip()]
+
+def _task_has_wait_file(task: dict, path: str) -> bool:
+    want = _doctor_path_key(path)
+    return any(_doctor_path_key(w) == want for w in _task_wait_files(task))
+
+def _ready_local_file(path: str) -> bool:
+    try:
+        st = os.stat(_doctor_path_key(path))
+        return os.path.isfile(_doctor_path_key(path)) and st.st_size > 0
+    except OSError:
+        return False
+
+def _simple_sac_ckpt_for_method(script_path: str, method: str) -> Optional[str]:
+    """Infer run_multiseed_eval.sh's checkpoint path for a method tag.
+
+    This intentionally parses only the local, simple case-table format used by
+    SimpleSAC's eval wrapper. If the wrapper changes enough that we cannot infer
+    the path, doctor reports nothing instead of inventing a prerequisite.
+    """
+    script_path = _resolve_cmd_path(script_path)
+    if not method or not os.path.isfile(script_path):
+        return None
+    src = _safe_read_text(script_path)
+    if not src:
+        return None
+    pat = r"(?ms)^\s*" + re.escape(method) + r"\)\s*(.*?)^\s*;;"
+    m = re.search(pat, src)
+    if not m:
+        return None
+    block = m.group(1)
+    cm = re.search(r"CKPT=(?:\"([^\"]*)\"|'([^']*)'|([^\s#;]+))", block)
+    if not cm:
+        return None
+    raw = next((g for g in cm.groups() if g is not None), "")
+    raw = raw.strip()
+    if not raw:
+        return None
+    here = os.path.dirname(script_path)
+    h2o_root = os.path.dirname(here)
+    repl = {
+        "$H2O_ROOT": h2o_root,
+        "${H2O_ROOT}": h2o_root,
+        "$HERE": here,
+        "${HERE}": here,
+        "$HOME": str(Path.home()),
+        "${HOME}": str(Path.home()),
+    }
+    for key, val in repl.items():
+        raw = raw.replace(key, val)
+    return _resolve_cmd_path(raw, here)
+
+def _simple_sac_eval_prereq_files(cmd: str, cwd: str) -> list:
+    """Return checkpoint files an eval command needs before dispatch.
+
+    Covers the two patterns that caused wasted work:
+      * SimpleSAC run_multiseed_eval.sh METHOD ...
+      * direct eval scripts with --checkpoint PATH
+    """
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = (cmd or "").split()
+    if not toks:
+        return []
+
+    prereqs = []
+    for i, tok in enumerate(toks):
+        if os.path.basename(tok) != "run_multiseed_eval.sh":
+            continue
+        if i + 1 >= len(toks):
+            continue
+        script = _resolve_cmd_path(tok, cwd)
+        ckpt = _simple_sac_ckpt_for_method(script, toks[i + 1])
+        if ckpt:
+            prereqs.append(ckpt)
+
+    lower = " ".join(toks).lower()
+    if "eval" in lower:
+        ckpt_vals = _flag_values_any(
+            toks,
+            {"--checkpoint", "--ckpt", "--ckpt_path", "--ckpt-path"},
+        )
+        for v in ckpt_vals:
+            p = _resolve_cmd_path(v, cwd)
+            if p:
+                prereqs.append(p)
+
+    out = []
+    seen = set()
+    for p in prereqs:
+        k = _doctor_path_key(p)
+        if k and k not in seen:
+            seen.add(k)
+            out.append(k)
+    return out
+
+def _simple_sac_train_best_ckpt_from_cmd(cmd: str, cwd: str) -> Optional[str]:
+    """Infer h2o+_bus_main.py's final best checkpoint path from seed/current_time."""
+    if "h2o+_bus_main.py" not in (cmd or ""):
+        return None
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = (cmd or "").split()
+    seed = _arg_value(toks, "--seed")
+    current_time = _arg_value(toks, "--current_time") or _arg_value(toks, "--current-time")
+    if not seed or not current_time:
+        return None
+    h2o_root = os.path.dirname(os.path.normpath(cwd or os.getcwd()))
+    return os.path.join(
+        h2o_root,
+        "experiment_output",
+        f"h2oplus_bus_seed{seed}_{current_time}",
+        "checkpoint_best.pt",
+    )
+
+def _doctor_issue(task: Optional[dict], code: str, severity: str,
+                  message: str, fix: str = "", fixed: bool = False,
+                  path: str = "") -> dict:
+    rec = {
+        "code": code,
+        "severity": severity,
+        "message": message,
+        "fix": fix,
+        "fixed": bool(fixed),
+    }
+    if task:
+        rec["task_id"] = task.get("id")
+        rec["status"] = task.get("status")
+        rec["project"] = task.get("project")
+        rec["signature"] = task.get("signature")
+    if path:
+        rec["path"] = path
+    return rec
+
+def _doctor_scan_state(state: dict, fix: bool = False, project: str = ""):
+    """Audit active queue invariants and optionally repair safe queued-task fields.
+
+    Safe fixes are intentionally narrow:
+      * add wait_for_files to queued eval tasks whose checkpoint dependency is known
+      * force queued SimpleSAC large-data training local
+      * promote queued SimpleSAC training to high when queued evals depend on its ckpt
+
+    Running/launching tasks are never mutated here.
+    """
+    import fnmatch as _fnmatch
+
+    def selected(t):
+        if not project:
+            return True
+        return _fnmatch.fnmatch(t.get("project") or "", project)
+
+    tasks = [t for t in state.get("tasks", []) if selected(t)]
+    active = [t for t in tasks if t.get("status") in ("queued", "launching", "running")]
+    issues = []
+    changed = 0
+
+    needed_paths = {}
+    producer_by_path = {}
+    for t in active:
+        train_ckpt = _simple_sac_train_best_ckpt_from_cmd(t.get("cmd") or "", t.get("cwd") or "")
+        if train_ckpt:
+            producer_by_path[_doctor_path_key(train_ckpt)] = t
+
+    for t in active:
+        prereqs = _simple_sac_eval_prereq_files(t.get("cmd") or "", t.get("cwd") or "")
+        for pth in prereqs:
+            needed_paths.setdefault(_doctor_path_key(pth), []).append(t)
+        missing_waits = [p for p in prereqs if not _task_has_wait_file(t, p)]
+        if not missing_waits:
+            continue
+        if t.get("status") == "queued":
+            if fix:
+                waits = _task_wait_files(t)
+                waits.extend(p for p in missing_waits if not _task_has_wait_file({"wait_for_files": waits}, p))
+                t["wait_for_files"] = waits
+                t["last_block_reason"] = _queued_wait_for_file_block_reason(t) or t.get("last_block_reason")
+                changed += 1
+                issues.append(_doctor_issue(
+                    t, "eval_missing_wait_for_file", "fixed",
+                    "queued eval was missing checkpoint prerequisite gating",
+                    fixed=True, path=", ".join(missing_waits),
+                ))
+            else:
+                issues.append(_doctor_issue(
+                    t, "eval_missing_wait_for_file", "fixable",
+                    "queued eval can dispatch before its checkpoint exists",
+                    "doctor --fix will add wait_for_files", path=", ".join(missing_waits),
+                ))
+        else:
+            issues.append(_doctor_issue(
+                t, "eval_already_running_without_wait_for_file", "warn",
+                "eval is already launching/running without scheduler-level checkpoint gating",
+                "inspect log; cancel/requeue manually if it is burning time on a missing ckpt",
+                path=", ".join(missing_waits),
+            ))
+
+    for t in active:
+        reason = _simple_sac_large_data_reason(t.get("cmd") or "", t.get("cwd") or "")
+        if not reason or t.get("allow_remote_large_data"):
+            continue
+        if t.get("status") == "queued":
+            if t.get("require_node") == "local":
+                continue
+            if fix:
+                old_node = t.get("node")
+                t["require_node"] = "local"
+                if t.get("preferred_node") != "local":
+                    t["preferred_node"] = None
+                t["node"] = None
+                t["gpu_idx"] = None
+                t["remote_pids"] = []
+                t["last_block_reason"] = f"doctor: forced local for SimpleSAC large data: {reason}"
+                try:
+                    _release_task_claims_and_intents(t, extra_nodes=[old_node] if old_node else None)
+                except Exception:
+                    pass
+                changed += 1
+                issues.append(_doctor_issue(
+                    t, "simple_sac_large_data_not_local", "fixed",
+                    reason, fixed=True,
+                ))
+            else:
+                issues.append(_doctor_issue(
+                    t, "simple_sac_large_data_not_local", "fixable",
+                    reason,
+                    "doctor --fix will set require_node=local",
+                ))
+        elif t.get("node") != "local":
+            issues.append(_doctor_issue(
+                t, "simple_sac_large_data_running_remote", "error",
+                reason,
+                "running task cannot be safely rewritten; cancel manually if this is wrong",
+            ))
+
+    for pth, eval_tasks in sorted(needed_paths.items()):
+        producer = producer_by_path.get(pth)
+        if producer and producer.get("status") == "queued" and producer.get("priority") != "high":
+            if fix:
+                producer["priority"] = "high"
+                producer["last_block_reason"] = (
+                    f"doctor: promoted training because eval task(s) wait for {pth}"
+                )
+                changed += 1
+                issues.append(_doctor_issue(
+                    producer, "train_priority_below_dependent_eval", "fixed",
+                    "training produces a checkpoint needed by queued evals but was not high priority",
+                    fixed=True, path=pth,
+                ))
+            else:
+                issues.append(_doctor_issue(
+                    producer, "train_priority_below_dependent_eval", "fixable",
+                    "training produces a checkpoint needed by queued evals but is not high priority",
+                    "doctor --fix will set priority=high", path=pth,
+                ))
+        if not _ready_local_file(pth) and not producer:
+            ids = ", ".join(t.get("id", "?") for t in eval_tasks[:4])
+            more = "" if len(eval_tasks) <= 4 else f" (+{len(eval_tasks) - 4} more)"
+            issues.append(_doctor_issue(
+                None, "eval_checkpoint_missing_no_active_producer", "warn",
+                f"checkpoint is missing and no active SimpleSAC producer was inferred; eval tasks: {ids}{more}",
+                "submit/restore the matching train task, or remove the evals if obsolete",
+                path=pth,
+            ))
+
+    return issues, changed
+
+def cmd_doctor(args):
+    with state_lock():
+        state = load_state()
+        issues, changed = _doctor_scan_state(
+            state,
+            fix=bool(getattr(args, "fix", False)),
+            project=getattr(args, "project", "") or "",
+        )
+        if changed:
+            save_state(state)
+    result = {"ok": True, "fixed": changed, "issues": issues}
+    if args.json:
+        print(json.dumps(result, indent=2))
+        return
+    if not issues:
+        print("doctor: no active queue invariant issues found")
+        return
+    print(f"doctor: {len(issues)} issue(s), {changed} fixed")
+    for issue in issues:
+        tid = issue.get("task_id") or "-"
+        path = f" path={issue['path']}" if issue.get("path") else ""
+        print(f"  [{issue['severity']}] {issue['code']} {tid}: {issue['message']}{path}")
+        if issue.get("fix") and not issue.get("fixed"):
+            print(f"      fix: {issue['fix']}")
+
+
+def cmd_profile_local(args):
+    """Run a local preflight command outside the scheduler queue and record profile history."""
+    cwd = os.path.abspath(os.path.expanduser(args.cwd))
+    if not os.path.isdir(cwd):
+        sys.exit(f"cwd does not exist: {cwd}")
+    project = args.project or _project_from_path(cwd) or (
+        args.signature.split("/", 1)[0] if "/" in args.signature else args.signature)
+    log_path = os.path.expanduser(args.log_path or "")
+    if not log_path:
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", args.signature).strip("_") or "profile"
+        log_path = str(LOG_DIR / f"profile_{safe}_{int(time.time())}.log")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    extra_env = _parse_env(args.env)
+    env = os.environ.copy()
+    env.update(extra_env)
+    inner = _inject_python_u(args.cmd)
+    shell_cmd = f"cd {shlex.quote(cwd)} && {inner}"
+
+    peak_vram = 0
+    peak_ram = 0
+    peak_cpu = 1
+    start = time.time()
+    with open(log_path, "ab", buffering=0) as log_f:
+        header = (
+            f"\n=== scheduleurm profile-local start {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n"
+            f"signature: {args.signature}\n"
+            f"cwd: {cwd}\n"
+            f"cmd: {args.cmd}\n"
+        )
+        log_f.write(header.encode("utf-8", errors="replace"))
+        proc = subprocess.Popen(
+            ["bash", "-lc", shell_cmd],
+            cwd=cwd,
+            stdout=log_f,
+            stderr=subprocess.STDOUT,
+            env=env,
+            preexec_fn=os.setsid,
+        )
+        task = {
+            "id": "profile-local",
+            "status": "running",
+            "node": "local",
+            "remote_pids": [proc.pid],
+            "process_group": proc.pid,
+            "cmd": args.cmd,
+            "cwd": cwd,
+            "signature": args.signature,
+            "project": project,
+            "description": args.description or "local preflight profile",
+            "extra_env": extra_env,
+            "env_spec": "none",
+            "image": "",
+            "started_at": start,
+        }
+        backend = LocalBackend()
+        interval = max(1.0, float(args.sample_interval))
+        try:
+            while True:
+                res = backend.batch_probe({"tasks": [task]}).get("profile-local")
+                if res and res.get("state") == "alive":
+                    peak_vram = max(peak_vram, int(res.get("vram_mb") or 0))
+                    peak_ram = max(peak_ram, int(res.get("ram_mb") or 0))
+                    pcpu = float(res.get("pcpu") or 0.0)
+                    peak_cpu = max(peak_cpu, max(1, int((pcpu + 99.0) // 100.0)))
+                rc = proc.poll()
+                if rc is not None:
+                    break
+                if args.timeout and time.time() - start > args.timeout:
+                    try:
+                        os.killpg(proc.pid, signal.SIGTERM)
+                        time.sleep(2)
+                        if proc.poll() is None:
+                            os.killpg(proc.pid, signal.SIGKILL)
+                    except Exception:
+                        pass
+                    rc = proc.wait()
+                    break
+                time.sleep(interval)
+        finally:
+            rc = proc.poll()
+            if rc is None:
+                rc = proc.wait()
+        footer = (
+            f"\n=== scheduleurm profile-local end rc={rc} "
+            f"duration_s={int(time.time() - start)} peak_vram_mb={peak_vram} "
+            f"peak_ram_mb={peak_ram} peak_cpu={peak_cpu} ===\n"
+        )
+        log_f.write(footer.encode("utf-8", errors="replace"))
+
+    duration_s = int(max(0, time.time() - start))
+    profile_task = {
+        "id": "profile-local",
+        "signature": args.signature,
+        "project": project,
+        "description": args.description or "local preflight profile",
+        "cmd": args.cmd,
+        "cwd": cwd,
+        "env_spec": "none",
+        "image": "",
+        "extra_env": extra_env,
+    }
+    profile = _runtime_profile_from_log(log_path, args.cmd, observed_duration_s=duration_s)
+    if profile:
+        profile = dict(profile)
+        profile["source"] = (profile.get("source") or "profile-local") + ":" + log_path
+        _apply_runtime_projection(profile_task, profile)
+    history_record(
+        args.signature,
+        peak_vram_mb=peak_vram,
+        peak_ram_mb=peak_ram,
+        cpu_cores=peak_cpu,
+        duration_s=duration_s,
+    )
+    runtime_history_record(profile_task, duration_s=duration_s)
+
+    out = {
+        "ok": rc == 0,
+        "exit_code": rc,
+        "log_path": log_path,
+        "duration_s": duration_s,
+        "peak_vram_mb": peak_vram,
+        "peak_ram_mb": peak_ram,
+        "peak_cpu_cores": peak_cpu,
+        "runtime_profile": {
+            "source": profile_task.get("runtime_est_source") or ("duration" if duration_s else ""),
+            "total_s": profile_task.get("runtime_total_s_est") or duration_s,
+            "eta_s": profile_task.get("runtime_eta_s_est"),
+            "unit_s": profile_task.get("runtime_unit_s_est"),
+            "total_units": profile_task.get("runtime_total_units"),
+        },
+    }
+    if args.json:
+        print(json.dumps(out, indent=2))
+        return
+    print(f"profile-local: rc={rc} log={log_path}")
+    print(f"  duration={duration_s}s peak_vram={peak_vram}MB peak_ram={peak_ram}MB peak_cpu={peak_cpu}")
+    rp = out["runtime_profile"]
+    if rp.get("total_s"):
+        print(f"  runtime_total={rp.get('total_s')}s source={rp.get('source')}")
 
 def cmd_submit(args):
     raw_submit_cmd = args.cmd
@@ -5325,6 +6357,29 @@ def cmd_submit(args):
     if not args.ckpt_dir and inferred_ckpt_dir:
         args.ckpt_dir = inferred_ckpt_dir
         ckpt_dir_was_inferred = True
+
+    large_data_reason = _simple_sac_large_data_reason(raw_submit_cmd, args.cwd)
+    if large_data_reason and not getattr(args, "allow_remote_large_data", False):
+        if args.require_node and args.require_node != "local":
+            print("REFUSED: task appears to require large local-only SimpleSAC data.",
+                  file=sys.stderr)
+            print(f"  reason: {large_data_reason}", file=sys.stderr)
+            print("  Either keep --require-node local, disable snapshot/per-file data, "
+                  "or pass --allow-remote-large-data after manually staging the data.",
+                  file=sys.stderr)
+            sys.exit(2)
+        if args.preferred_node and args.preferred_node != "local":
+            print("REFUSED: task prefers a remote node but appears to require large "
+                  "local-only SimpleSAC data.", file=sys.stderr)
+            print(f"  reason: {large_data_reason}", file=sys.stderr)
+            print("  Either keep it local, disable snapshot/per-file data, or pass "
+                  "--allow-remote-large-data after manually staging the data.",
+                  file=sys.stderr)
+            sys.exit(2)
+        if args.require_node != "local":
+            args.require_node = "local"
+            print(f"NOTE: forcing --require-node local: {large_data_reason}",
+                  file=sys.stderr)
 
     # Pre-flight: refuse training-shaped cmd with vram=0 unless the scheduler-level override
     # is present. `--device cpu` in the inner command is not enough: that flag is precisely how
@@ -5424,6 +6479,16 @@ def cmd_submit(args):
               file=sys.stderr)
         sys.exit(2)
     extra_env = _parse_env(args.env)
+    test_peak_vram = int(getattr(args, "test_peak_vram_mb", 0) or 0)
+    test_peak_ram = int(getattr(args, "test_peak_ram_mb", 0) or 0)
+    test_cpu = int(getattr(args, "test_cpu", 0) or 0)
+    if test_peak_vram > 0 or test_peak_ram > 0 or test_cpu > 0:
+        history_record(
+            args.signature,
+            peak_vram_mb=test_peak_vram,
+            peak_ram_mb=test_peak_ram,
+            cpu_cores=test_cpu,
+        )
     with state_lock():
         state = load_state()
         sig = args.signature
@@ -5557,6 +6622,7 @@ def cmd_submit(args):
             # user wants on their own box.
             "result_dir": getattr(args, "result_dir", None) or None,
             "local_result_dir": getattr(args, "local_result_dir", None) or None,
+            "wait_for_files": list(getattr(args, "wait_for_files", None) or []),
             "result_synced_at": None,
             "result_sync_error": None,
             "result_sync_attempts": 0,
@@ -5568,6 +6634,9 @@ def cmd_submit(args):
             "extra_env": extra_env,
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
+            "allow_remote_large_data": bool(getattr(args, "allow_remote_large_data", False)),
+            "test_log_path": os.path.expanduser(getattr(args, "test_log", "") or "") or None,
+            "test_log_profile_loaded": False,
             # Env deployment strategy (see env_deploy.py). 'none' = legacy assume-env-on-target;
             # 'docker:IMAGE' = wrap cmd in docker run; 'auto' = probe target, prefer docker if
             # available. `image` is the docker image to use when env_spec resolves to docker.
@@ -5590,6 +6659,14 @@ def cmd_submit(args):
             "current_pcpu": 0.0,
             "resume_from": None,
         }
+        if getattr(args, "test_log", None):
+            task["test_log_profile_loaded"] = _apply_test_log_runtime_profile(
+                task, args.test_log)
+            if not task["test_log_profile_loaded"]:
+                task["last_block_reason"] = (
+                    f"test log was provided but no tqdm/progress runtime profile could be parsed: {args.test_log}"
+                )
+        _seed_pending_eta_from_history({"tasks": [task]})
         state["tasks"].append(task)
         state["next_id"] += 1
         save_state(state)
@@ -7440,6 +8517,11 @@ def _do_dispatch(state, nodes):
             t["last_block_reason"] = reason
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
             continue
+        wait_file_block = _queued_wait_for_file_block_reason(t)
+        if wait_file_block:
+            t["last_block_reason"] = wait_file_block
+            events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": wait_file_block})
+            continue
         cpu_training_block = _queued_cpu_training_block_reason(t)
         if cpu_training_block:
             t["last_block_reason"] = cpu_training_block
@@ -7983,6 +9065,10 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
                     new_id = _requeue_after_crash(task, state)
                     if new_id:
                         task["requeued_as"] = new_id
+            try:
+                _record_result_artifacts(task)
+            except Exception:
+                pass
             return True
         task["slurm_job_id"] = jid
         task["status"] = "running"
@@ -8236,6 +9322,10 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
             f"WAL recovery: terminal orphan local task on {node}; diagnosed "
             f"clean exit ({(diag.get('reason') or 'no signal')[:120]})"
         )
+    try:
+        _record_result_artifacts(task)
+    except Exception:
+        pass
     # Phase 3.4.9 P1: release the claim now that the task is terminal.
     # Mirrors the regular running→done/failed transition (line 2037).
     # Without this, the claim sits with pid=None until TTL GC, occupying
@@ -8532,6 +9622,7 @@ def cmd_dispatch(args):
         state = load_state()
         recovered_launching += recover_stale_launching_tasks(state)
         update_running_tasks(state)
+        _seed_pending_eta_from_history(state)
         nodes = probe_all()
         _reserve_inflight_vram(state, nodes)
         _print_node_summary(nodes)
@@ -9332,6 +10423,7 @@ def _watch_iteration(args):
         #    transitioned so we only notify the freshly-done ones.
         pre_status = {t["id"]: t["status"] for t in state["tasks"]}
         update_running_tasks(state)
+        _seed_pending_eta_from_history(state)
         # Ex-post OOM detection: scan local syslog for kernel OOM kills overlapping local
         # task termination windows. Flips affected `done` → `failed` so the requeue loop
         # below picks them up. Catches the silent-loss scenario where OOM kills a sibling
@@ -9557,11 +10649,31 @@ def _format_task_ram_usage(task):
     return f"~{task.get('ram_mb', 0)}MB"
 
 
+def _task_result_artifacts_for_display(task: dict, include_log: bool = True) -> list:
+    stored = task.get("result_artifacts") or []
+    if stored:
+        return stored
+    return _discover_result_artifacts(task, include_log=include_log)
+
+
+def _print_result_artifacts(task: dict, include_log: bool = True):
+    artifacts = _task_result_artifacts_for_display(task, include_log=include_log)
+    if not artifacts:
+        return
+    print("\n# result artifacts:")
+    for rec in artifacts:
+        node = rec.get("node") or task.get("node") or "unknown"
+        kind = rec.get("kind") or "path"
+        src = rec.get("source") or "inferred"
+        print(f"#   - [{kind}] {node}:{rec.get('path')}  ({src})")
+
+
 def cmd_status(args):
     with state_lock():
         state = load_state()
         recover_stale_launching_tasks(state)
         update_running_tasks(state)
+        _seed_pending_eta_from_history(state)
         reconcile_requeue_lineage_invariants(state)
         save_state(state)
     if args.json:
@@ -9647,14 +10759,93 @@ def cmd_claims(args):
 
 
 def cmd_show(args):
-    state = load_state()
-    for t in state["tasks"]:
-        if t["id"] == args.id:
-            print(json.dumps(t, indent=2))
-            if t.get("log_path"):
-                print(f"\n# tail log: ssh {NODES[t['node']]['host'] or 'local'} tail -f {t['log_path']}")
-            return
-    sys.exit(f"task {args.id} not found")
+    with state_lock():
+        t, source = _find_task_record(args.id, include_archive=True)
+    if not t:
+        sys.exit(f"task {args.id} not found in queue or archive")
+    print(json.dumps(t, indent=2))
+    if source == "archive":
+        print("\n# source: archive (terminal task moved out of hot queue.json)")
+    if t.get("log_path") and t.get("node"):
+        host = NODES.get(t["node"], {}).get("host") or "local"
+        print(f"\n# tail log: ssh {host} tail -f {t['log_path']}")
+    _print_result_artifacts(t, include_log=True)
+
+
+def cmd_results(args):
+    """Find result artifacts for tasks in queue + archive."""
+    import fnmatch as _fnmatch
+
+    task_ids = set(args.task_ids or [])
+    include_archive = not args.no_archive
+    scan_logs = (bool(task_ids) or bool(args.scan_logs)) and not args.no_log_scan
+    with state_lock():
+        state = load_state()
+        records = [("queue", t) for t in state.get("tasks", [])]
+        if include_archive:
+            records.extend(("archive", t) for t in load_archive_tasks())
+
+    statuses = set(args.status or [])
+    candidates = []
+    for source, t in records:
+        if task_ids and t.get("id") not in task_ids:
+            continue
+        if args.project and not _fnmatch.fnmatch(t.get("project") or "", args.project):
+            continue
+        if args.signature and not _fnmatch.fnmatch(t.get("signature") or "", args.signature):
+            continue
+        if statuses and t.get("status") not in statuses:
+            continue
+        candidates.append((source, t))
+
+    candidates.sort(key=lambda it: float(
+        it[1].get("finished_at") or it[1].get("started_at") or it[1].get("submitted_at") or 0
+    ), reverse=True)
+
+    rows = []
+    scanned = 0
+    for source, t in candidates:
+        if args.limit and len(rows) >= args.limit:
+            break
+        scanned += 1
+        arts = _task_result_artifacts_for_display(t, include_log=scan_logs)
+        if not arts and not args.include_empty and not task_ids:
+            continue
+        rows.append({
+            "source": source,
+            "id": t.get("id"),
+            "status": t.get("status"),
+            "project": t.get("project"),
+            "signature": t.get("signature"),
+            "node": t.get("node"),
+            "description": t.get("description"),
+            "log_path": t.get("log_path"),
+            "artifacts": arts,
+        })
+
+    if args.json:
+        print(json.dumps({"results": rows, "matched": len(candidates), "scanned": scanned}, indent=2))
+        return
+    if not rows:
+        where = "queue+archive" if include_archive else "queue"
+        print(f"(no result artifacts found in {where}; matched {len(candidates)} task records)")
+        if not scan_logs:
+            print("  note: logs were not scanned for this batch query; add --scan-logs or pass task IDs")
+        return
+    for r in rows:
+        desc = (r.get("description") or "")[:80]
+        print(f"[{r['id']}] {r['status']} {r.get('project') or '?'} "
+              f"{r.get('node') or '-'} ({r['source']})  {desc}")
+        if r.get("signature"):
+            print(f"  sig: {r['signature']}")
+        if r.get("log_path"):
+            print(f"  log: {r['log_path']}")
+        arts = r.get("artifacts") or []
+        if not arts:
+            print("  results: (none inferred)")
+        for rec in arts:
+            print(f"  - [{rec.get('kind') or 'path'}] {rec.get('node') or r.get('node') or 'unknown'}:"
+                  f"{rec.get('path')}  ({rec.get('source') or 'inferred'})")
 
 def cmd_cancel(args):
     with state_lock():
@@ -10481,6 +11672,8 @@ def cmd_why(args):
     print(f"  priority:     {task.get('priority')}")
     print(f"  preferred:    {task.get('preferred_node')!r}  require:    {task.get('require_node')!r}")
     print(f"  est:          vram={task.get('est_vram_mb')}MB ram={task.get('ram_mb')}MB cpu={task.get('cpu_cores')}")
+    if task.get("wait_for_files"):
+        print(f"  wait_files:   {task.get('wait_for_files')}")
     if task.get("status") != "queued":
         print()
         print(f"  (task is {task.get('status')!r} — `why` is for diagnosing "
@@ -10627,6 +11820,19 @@ def main():
                         "path on local as on the target). Use a per-task "
                         "subdirectory; exact sharing is refused unless "
                         "--allow-shared-result-dir is passed.")
+    s.add_argument("--wait-for-file", dest="wait_for_files", action="append",
+                   help="Defer dispatch until this local prerequisite file exists and is non-empty. "
+                        "Repeat for multiple prerequisites; useful for eval tasks waiting on train ckpts.")
+    s.add_argument("--test-log", dest="test_log",
+                   help="Local preflight/test log containing tqdm/progress output. "
+                        "Parsed at submit time and recorded into runtime history so ETA/walltime "
+                        "use the local test profile before the real experiment launches.")
+    s.add_argument("--test-peak-vram-mb", dest="test_peak_vram_mb", type=int,
+                   help="Peak VRAM observed during local preflight. Recorded into signature history before sizing this submit.")
+    s.add_argument("--test-peak-ram-mb", dest="test_peak_ram_mb", type=int,
+                   help="Peak RAM observed during local preflight. Recorded into signature history before sizing this submit.")
+    s.add_argument("--test-cpu", dest="test_cpu", type=int,
+                   help="CPU cores observed during local preflight. Recorded into signature history before sizing this submit.")
     s.add_argument("--ckpt-glob", default="*", help="Glob within ckpt-dir (default '*')")
     s.add_argument("--resume-flag", dest="resume_flag", default="",
                    help="If set (e.g. '--resume_from'), launcher appends '<flag> <ckpt_path>' to cmd "
@@ -10668,6 +11874,9 @@ def main():
                    help="Override the local result destination conflict refusal. Use only when "
                         "multiple result syncs intentionally land in the same directory and their "
                         "file layouts cannot overwrite each other.")
+    s.add_argument("--allow-remote-large-data", dest="allow_remote_large_data", action="store_true",
+                   help="Override SimpleSAC large external-data local pin. Use only after manually "
+                        "staging snapshot/per-policy data on the target node.")
     s.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true",
                    help="Allow submission even when run identity matches an existing queued/launching/running task")
     s.add_argument("--slurm-partition", dest="slurm_partition", default="",
@@ -10698,6 +11907,28 @@ def main():
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_status)
 
+    s = sub.add_parser("doctor", help="Audit active queue invariants; --fix applies safe queued-task repairs")
+    s.add_argument("--fix", action="store_true",
+                   help="Apply safe repairs to queued tasks: add wait-for-file gates, force SimpleSAC large-data local, promote dependent train priority")
+    s.add_argument("--project", help="fnmatch glob over project (e.g. SimpleSAC)")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_doctor)
+
+    s = sub.add_parser("profile-local", help="Run a local preflight directly, monitor peak RAM/VRAM/CPU, and record tqdm/runtime history")
+    s.add_argument("--description", default="local preflight profile")
+    s.add_argument("--cmd", required=True, help="Shell command to run locally (not through scheduleurm queue)")
+    s.add_argument("--cwd", required=True, help="Working directory for the local preflight")
+    s.add_argument("--signature", required=True, help="Signature whose resource/runtime history should be updated")
+    s.add_argument("--project", help="Project name (else derived from cwd/signature)")
+    s.add_argument("--env", nargs="*", help="Extra env vars KEY=VALUE")
+    s.add_argument("--log-path", dest="log_path", help="Where to write the local preflight log")
+    s.add_argument("--sample-interval", dest="sample_interval", type=float, default=5.0,
+                   help="Seconds between local resource samples (default 5)")
+    s.add_argument("--timeout", type=int, default=0,
+                   help="Kill the local preflight after N seconds (0 = no timeout)")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_profile_local)
+
     s = sub.add_parser("claims", help="Show remote shared claims/intents for claims-enabled nodes")
     s.add_argument("--node", choices=list(NODES.keys()), help="Limit to one node")
     s.add_argument("--json", action="store_true")
@@ -10705,6 +11936,24 @@ def main():
 
     s = sub.add_parser("show", help="Show one task's full record + how to tail logs")
     s.add_argument("id"); s.set_defaults(func=cmd_show)
+
+    s = sub.add_parser("results", help="Find inferred result artifacts in queue + archive")
+    s.add_argument("task_ids", nargs="*", help="Optional task IDs to inspect")
+    s.add_argument("--project", help="fnmatch glob over project, e.g. 'SimpleSAC' or 'bapr*'")
+    s.add_argument("--signature", help="fnmatch glob over signature, e.g. 'H2Oplus/r3_eval_*'")
+    s.add_argument("--status", nargs="*", default=["done"],
+                   help="Statuses to include (default: done). Pass e.g. --status done failed")
+    s.add_argument("--limit", type=int, default=50, help="Max rows to print (default 50; 0 = no limit)")
+    s.add_argument("--no-archive", action="store_true", help="Only search hot queue.json")
+    s.add_argument("--scan-logs", action="store_true",
+                   help="For batch queries, scan task logs for saved output paths. "
+                        "Task-id queries scan logs by default.")
+    s.add_argument("--no-log-scan", action="store_true",
+                   help="Do not read task logs; use stored fields and command flags only")
+    s.add_argument("--include-empty", action="store_true",
+                   help="Print matching tasks even when no result artifact can be inferred")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_results)
 
     s = sub.add_parser("cancel", help="Cancel a task (queued/launching: instant; running: needs --force)")
     s.add_argument("id"); s.add_argument("--force", action="store_true")

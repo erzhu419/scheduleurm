@@ -98,7 +98,7 @@ The skill translates intent → `submit` / `dispatch` / `status` / `wait-for` ca
 
 ### From any MCP-capable client (ChatGPT Desktop / Cursor / Cline / …)
 
-The MCP wrapper at [`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) exposes 8 tools (`submit_task`, `dispatch`, `status`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`) over stdio JSON-RPC. Per-client config in [`skill/integrations/README.md`](skill/integrations/README.md).
+The MCP wrapper at [`skill/integrations/scheduler_mcp.py`](skill/integrations/scheduler_mcp.py) exposes 9 tools (`submit_task`, `dispatch`, `status`, `doctor`, `show_task`, `cancel_task`, `history`, `queue_dump`, `task_log`) over stdio JSON-RPC. Per-client config in [`skill/integrations/README.md`](skill/integrations/README.md).
 
 ### Directly from the CLI
 
@@ -424,7 +424,7 @@ scheduleurm/
 │   ├── test_regression.py # 290+ regression checks (one per known footgun)
 │   ├── test_hook.sh       # PostToolUse hook script for Claude Code
 │   └── integrations/
-│       ├── scheduler_mcp.py    # MCP server wrapper (8 tools)
+│       ├── scheduler_mcp.py    # MCP server wrapper (9 tools)
 │       └── README.md
 ├── systemd/
 │   └── scheduler.service  # user unit; install.sh rewrites paths and enables

@@ -1,7 +1,7 @@
 ---
 name: scheduler
 description: Multi-resource (CPU + RAM + VRAM) scheduler across local 4060 + jtl110gpu (2x 3080Ti) + jtl110gpu2 (2x 3080Ti). Use whenever the user wants to launch ANY computation that consumes meaningful resources — GPU training, CPU-only training, data preprocessing, batch evaluation. Trigger phrases (English / 中文 — both fire equally, examples not exhaustive) — RUN A JOB / SUBMIT A JOB / LAUNCH A JOB / TRAIN / EVAL / INFERENCE / RUN THIS SCRIPT / RUN THIS PYTHON / RUN THIS EVAL / RUN A SWEEP / DATA PREP / N_WORKERS / --device cpu / multi-worker / multi-seed / "kick off X" / "fire off X" / "queue up X" / "schedule X" / "dispatch X" / "deploy X" / "send to GPU" / "put on jtl110gpu" / 跑训练 / 跑评估 / 跑推理 / 跑这个脚本 / 跑这个 python / 跑这个评估 / 跑 X / 提交任务 / 派活 / 派任务 / 部署 / 在 GPU 上跑 / 在 jtl110gpu 跑. STATUS QUERIES — "GPU free?" / "any free RAM?" / "what's running?" / "which node has room?" / "node status" / "show queue" / "show jobs" / "show tasks" / "how many tasks running" / GPU 还空吗 / 显存还够吗 / 哪个节点空 / 现在跑啥呢 / 节点状态 / 看看队列 / 看看任务. JOB CONTROL — "cancel job" / "kill job" / "stop job" / "clear queue" / "forget X" / "rebalance" / "redispatch" / "reassign" / 取消任务 / 杀掉任务 / 停止任务 / 清空队列 / 重新分配 / 重新派发 — also fire whenever a node frees up and queued work should be re-routed. CPU-only tasks must use --vram 0. Handles 1/3-VRAM packing rule, CPU/RAM constraints, WSL OOM defense on local, git-sync precheck, checkpoint resume, and auto-discovery of externally-launched tasks (GPU and CPU).
-argument-hint: "[submit | dispatch | status | cancel | forget | clear-queue | show | history | adopt]"
+argument-hint: "[submit | dispatch | status | doctor | profile-local | results | cancel | forget | clear-queue | show | history | adopt]"
 allowed-tools: Bash(*), Read
 ---
 
@@ -42,6 +42,28 @@ test -s ~/.claude/scheduler/escalations.jsonl && \
 If `PENDING_ESCALATIONS` > 0 → invoke `/scheduler-heal` FIRST (via the Skill tool), then continue with the user's request afterward. The user explicitly does NOT want to be reminded each time — heal runs autonomously whenever there's a pending escalation and the user touches the scheduler in any way. One exception: if the user is asking ONLY a read-only question like `status`, you can answer first AND mention the pending escalations + auto-trigger `/scheduler-heal` after answering. For any write-side operation (submit/dispatch/cancel), heal first.
 
 If 0 pending and HEAL_NEEDS_USER.md empty/absent → proceed normally.
+
+### Check 3: queue invariant doctor (automatic cleanup)
+
+Run this read-only check before any scheduler request where placement/order/results matter:
+
+```bash
+python ~/.claude/skills/scheduler/scheduler.py doctor --json
+```
+
+If it reports only safe queued-task fixes and the user is asking for a write-side operation
+(`submit`, `dispatch`, `rebalance`, adding evals, moving tasks), apply them before continuing:
+
+```bash
+python ~/.claude/skills/scheduler/scheduler.py doctor --fix --json
+```
+
+The doctor currently auto-repairs only narrow invariants that have already cost time:
+- SimpleSAC eval tasks get `wait_for_files` gates when their checkpoint can be inferred, so eval cannot dispatch before train produces the model.
+- SimpleSAC train tasks that produce checkpoints awaited by queued evals are promoted to `high`.
+- SimpleSAC snapshot/per-policy data tasks are forced to `require_node=local` unless explicitly submitted with `--allow-remote-large-data`.
+
+It never rewrites running tasks. If it reports a running-task warning, surface the warning and ask only if killing/requeuing is actually needed.
 
 ## Cluster (schedulable budgets, already net of OS reservation)
 
@@ -144,6 +166,8 @@ When the user says "跑这 9 个 ablation":
 | `--resume-flag` | flag the script accepts (e.g. `--resume_from`); scheduler appends `<flag> <ckpt_path>` to cmd on re-dispatch when `find_resume()` locates a ckpt. Empty default = no injection. Pair with `--ckpt-dir`. Required for auto-resume to actually take effect. |
 | `--result-dir` | **Phase 3.5: opt-in auto result pull-back.** Abs path on TARGET node containing the experiment results (logs / final models / metrics). On task completion (status=done), watcher rsyncs this dir to local once. Intermediate ckpts should stay in `--ckpt-dir` (NOT auto-synced; migration / eval pulls them on demand). Set this when you want results back without manual `scp`. |
 | `--local-result-dir` | Optional override for where on local to land the rsync. Defaults to mirroring the target path. Use when local home differs, or you want to collect runs under one dir. |
+| `--test-log` | Local preflight/test log containing tqdm/progress output. Use whenever the code was already run locally before submit; scheduler records runtime history immediately so ETA/walltime start from the local profile. |
+| `--test-peak-vram-mb` / `--test-peak-ram-mb` / `--test-cpu` | Peak resource measurements from local preflight. Pass these when available so first dispatch is sized from measured data instead of broad project defaults. |
 | `--priority` | `low/normal/high` — only if user signals urgency |
 | `--preferred-node` | **soft pin** — try this node first; if it's full / throttled / down, scheduler picks any other fitting node automatically. Use this for "I'd prefer X" intent. |
 | `--require-node` | **hard pin** — task ONLY runs on this node, never falls back. Use ONLY when the task has node-specific dependencies that genuinely can't be moved (libsumo only on local; non-portable C extension; node-local data files; in-place state at a specific path). When in doubt, use `--preferred-node` instead — it preserves the user's preference but lets the scheduler load-balance when one node is overloaded relative to another. |
@@ -171,26 +195,37 @@ externally).
 
 When user says "跑这个 ..." / "submit this", **before** issuing the `submit` call:
 
-1. **Identify the training entry script** from the cmd (the `.py` file, after stripping
+1. **Checkpoint contract first for training.** Training code must save enough state to resume at the exact epoch/iteration: model params, optimizer state, replay/buffer state when present, total step/epoch/iteration counters, RNG state when stochasticity matters, and a load path that starts the next loop at `saved_iter + 1` or equivalent. If the scheduler refuses with a checkpoint-contract error, do not bypass with `--allow-no-resume` for real experiments. Use Codex/Claude to edit the training code, add full-state save/load, then submit again. `--allow-no-resume` is only for short debug runs where restart-from-zero is explicitly acceptable.
+2. **Identify the training entry script** from the cmd (the `.py` file, after stripping
    `python -u -m foo.bar` / `python script.py` / `conda run ... python ...` etc).
-2. **Read the script** and look at its top-level training/eval loops:
+3. **Read the script** and look at its top-level training/eval loops:
    - `for ... in range(n_iters):` / `for epoch in range(n_epochs):` / `for step in range(...):`
    - `while ... :` outer loop (if it's the main one)
-3. **Check if `tqdm` wraps the iterable**. Look for `from tqdm import tqdm` / `from tqdm.auto import tqdm` AND a wrap site like `for x in tqdm(loop, total=N):` or `pbar = tqdm(total=N)`.
-4. **If missing**, propose adding it via the Edit tool BEFORE running submit:
+4. **Check if `tqdm` wraps the iterable**. Look for `from tqdm import tqdm` / `from tqdm.auto import tqdm` AND a wrap site like `for x in tqdm(loop, total=N):` or `pbar = tqdm(total=N)`.
+5. **If missing**, propose adding it via the Edit tool BEFORE running submit:
    - Add `from tqdm import tqdm` (or `from tqdm.auto import tqdm` if mixed env) to imports
    - Wrap the outermost training loop: `for i in tqdm(range(n_iters), desc="<task>"):` or
      equivalent. Preserve any existing per-iteration logging (so RE-SAC's `Iter N | Reward
      ...` print still happens, tqdm just adds the progress bar on top).
    - One sentence diff explanation; user reviews + approves.
-5. **Skip auto-add** when:
+6. **Skip auto-add** when:
    - Script already prints something parseable as `Iter N` AND has a `--max_iters N` flag
      in cmd (parser's tier-2 fallback handles this)
    - User explicitly says "no tqdm" / "I have my own progress" / etc.
    - Multi-process / distributed training — auto-adding tqdm to ranks > 0 spams stdout.
      Detect via `torch.distributed`, `mpi4py`, `accelerate.launch`, etc. Skip those.
-6. **After tqdm is in place**, proceed to `submit`. The watcher will pick up tqdm's
-   `[elapsed<remaining, rate]` output and use the `remaining` directly.
+7. **Run/ingest the local preflight profile before submit.** The intended path is:
+   - The code is first run locally outside scheduleurm and writes tqdm/progress to a log.
+   - Pass that log to submit via `--test-log /path/to/local_test.log`.
+   - If you need scheduleurm to collect the profile directly, run `python ~/.claude/skills/scheduler/scheduler.py profile-local --cmd ... --cwd ... --signature ... --log-path ...`; this does not enqueue the job, it just records local peak RAM/VRAM/CPU and runtime history.
+   - If the local test also measured peaks, pass `--test-peak-vram-mb`, `--test-peak-ram-mb`, and `--test-cpu`.
+8. **After tqdm + local profile are in place**, proceed to `submit`. The watcher will pick up tqdm's
+   `[elapsed<remaining, rate]` output and use the `remaining` directly. Submit-time `--test-log`
+   gives the scheduler an ETA before the real experiment even launches.
+
+If no local test log exists, inspect runtime history and choose the closest prior run by code path,
+major flags, dataset/env, and loop length. If there is no defensible close match, treat ETA as
+unknown rather than inventing one.
 
 This is one-time per script — once tqdm is in, future submits are unchanged.
 
@@ -228,6 +263,13 @@ python ~/.claude/skills/scheduler/scheduler.py dispatch
 python ~/.claude/skills/scheduler/scheduler.py status
 ```
 Show node telemetry (loadavg, free CPU, free RAM, per-GPU used/total) + tasks. Highlight GPUs under 1/3 used as "still acceptable".
+
+### "队列是不是又乱了 / eval 有没有早跑 / 自动整改"
+```bash
+python ~/.claude/skills/scheduler/scheduler.py doctor
+python ~/.claude/skills/scheduler/scheduler.py doctor --fix
+```
+Use dry-run first for read-only questions. Use `--fix` directly before dispatch/submit flows when the fixes are queued-task-only.
 
 ### "重新分配 / rebalance"
 ```bash

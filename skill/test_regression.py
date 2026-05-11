@@ -34,6 +34,38 @@ def check(name, cond, diag=""):
     extra = f"  [{diag}]" if (diag and not cond) else ""
     print(f"  {mark}  {name}{extra}")
 
+def run_external_test_modules():
+    """Run modular regression suites under skill/tests/test_*.py.
+
+    The legacy regression file is intentionally left in place for now; new
+    coverage should live in separate modules so this file can be migrated
+    incrementally instead of growing without bound.
+    """
+    import glob
+    import importlib.util as _ilu
+    tests_dir = os.path.join(os.path.dirname(SCHED_PATH), "tests")
+    if not os.path.isdir(tests_dir):
+        return
+    if tests_dir not in sys.path:
+        sys.path.insert(0, tests_dir)
+    for path in sorted(glob.glob(os.path.join(tests_dir, "test_*.py"))):
+        name = "scheduleurm_ext_" + os.path.splitext(os.path.basename(path))[0]
+        spec = _ilu.spec_from_file_location(name, path)
+        if not spec or not spec.loader:
+            check(f"external suite loadable: {os.path.basename(path)}", False)
+            continue
+        mod = _ilu.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+            if callable(getattr(mod, "run", None)):
+                mod.run(check, sch)
+            else:
+                for attr in sorted(dir(mod)):
+                    if attr.startswith("test_") and callable(getattr(mod, attr)):
+                        getattr(mod, attr)(check, sch)
+        except Exception as e:
+            check(f"external suite crashed: {os.path.basename(path)}", False, diag=repr(e))
+
 # -----------------------------------------------------------------------------
 def test_ppid_descendant_filter():
     """_descendants_of: marks a tracked PID's whole subtree, leaves siblings alone."""
@@ -14154,6 +14186,7 @@ if __name__ == "__main__":
     test_phase3_4_4_claim_replicates_gpu_fits_policy()
     test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy()
     test_phase3_5_results_archive_lookup_and_artifacts()
+    run_external_test_modules()
 
     passed = sum(1 for _, c, _ in results if c)
     total = len(results)

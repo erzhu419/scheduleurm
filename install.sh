@@ -77,6 +77,10 @@ else
     cp "$SKILL_SRC/eta_tracker.py"      "$SKILL_DST/eta_tracker.py"
     cp "$SKILL_SRC/tui.py"              "$SKILL_DST/tui.py"
     cp "$SKILL_SRC/test_regression.py"  "$SKILL_DST/test_regression.py"
+    if [[ -d "$SKILL_SRC/tests" ]]; then
+        rm -rf "$SKILL_DST/tests"
+        cp -R "$SKILL_SRC/tests"        "$SKILL_DST/tests"
+    fi
     cp "$SKILL_SRC/test_hook.sh"        "$SKILL_DST/test_hook.sh"
     cp "$SKILL_SRC/integrations/scheduler_mcp.py" "$SKILL_DST/integrations/scheduler_mcp.py"
     cp "$SKILL_SRC/integrations/README.md"        "$SKILL_DST/integrations/README.md"

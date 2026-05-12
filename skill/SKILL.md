@@ -62,6 +62,7 @@ The doctor currently auto-repairs only narrow invariants that have already cost 
 - SimpleSAC eval tasks get `wait_for_files` gates when their checkpoint can be inferred, so eval cannot dispatch before train produces the model.
 - SimpleSAC train tasks that produce checkpoints awaited by queued evals are promoted to `high`.
 - SimpleSAC snapshot/per-policy data tasks are forced to `require_node=local` unless explicitly submitted with `--allow-remote-large-data`.
+- Queued retries/preempted tasks with stale live `eta_seconds` / progress markers are scrubbed and reseeded from local-test/runtime history, so ETA load does not inherit a killed process's remaining-time estimate.
 
 It never rewrites running tasks. If it reports a running-task warning, surface the warning and ask only if killing/requeuing is actually needed.
 

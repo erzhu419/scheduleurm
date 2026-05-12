@@ -18,6 +18,7 @@ You can also CLICK a column header to sort by it (click again = reverse).
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -33,6 +34,19 @@ except ImportError:
 
 sys.path.insert(0, str(Path(__file__).parent))
 import scheduler as sch  # noqa: E402
+
+_SCHED_SOURCE = Path(getattr(sch, "__file__", Path(__file__).with_name("scheduler.py"))).resolve()
+try:
+    _SCHED_SOURCE_MTIME_NS = _SCHED_SOURCE.stat().st_mtime_ns
+except OSError:
+    _SCHED_SOURCE_MTIME_NS = 0
+
+
+def _scheduler_source_changed() -> bool:
+    try:
+        return _SCHED_SOURCE.stat().st_mtime_ns != _SCHED_SOURCE_MTIME_NS
+    except OSError:
+        return False
 
 
 def _fmt_min(secs):
@@ -50,6 +64,10 @@ def _int_or_default(value, default=-1):
 
 
 def _fmt_eta(t, hist):
+    eta = _int_or_default(t.get("eta_seconds"), 0)
+    if eta > 0:
+        tag = sch._eta_source_tag(t.get("eta_source")) if hasattr(sch, "_eta_source_tag") else (t.get("eta_source") or "?")
+        return f"~{_fmt_min(eta)} {tag}"
     sig = t.get("signature") or ""
     h = hist.get(sig, {})
     if isinstance(h, int): h = {"vram_mb": h}
@@ -222,6 +240,12 @@ class SchedulerTUI(App):
     # Background probe ---------------------------------------------------
     def _kick_probe(self):
         if self._probing: return
+        if _scheduler_source_changed():
+            try:
+                self.query_one("#node_summary", Static).update("scheduler.py changed; restarting TUI...")
+            except Exception:
+                pass
+            os.execv(sys.executable, [sys.executable, *sys.argv])
         self._probing = True
         self.run_worker(self._do_probe(), exclusive=False, thread=True, name="probe")
 
@@ -287,7 +311,7 @@ class SchedulerTUI(App):
         except Exception:
             return
         if not tid: return
-        import fcntl, os
+        import fcntl
         sp = sch.QUEUE_FILE; lp = sch.LOCK_FILE
         with open(lp, "r+") as lf:
             fcntl.flock(lf, fcntl.LOCK_EX)
@@ -388,9 +412,13 @@ class SchedulerTUI(App):
                     return now - t["started_at"]
                 return 0.0
             def eta_secs(t):
-                # Sort key for the eta column. Tasks with a clean predicted remaining
-                # come first (smallest remaining = soonest). Overrun (elapsed > expected)
-                # and auto-adopted (no reliable prediction) sort to the bottom via 1e12.
+                # Sort key for the eta column. Prefer scheduleurm's live
+                # eta_seconds, which comes from tqdm/progress log parsing.
+                direct = _int_or_default(t.get("eta_seconds"), 0)
+                if direct > 0:
+                    return direct
+                # Fallback to old history EWMA only when the watcher has no ETA.
+                # Tasks with no prediction sort to the bottom via 1e12.
                 h = hist.get(t.get("signature") or "", {})
                 if isinstance(h, int): h = {}
                 e = h.get("dur_s_ewma", 0)

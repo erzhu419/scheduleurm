@@ -12714,6 +12714,7 @@ def test_phase3_0_1_eta_parser_and_integration():
         ("iter form", "Iter 1234 / 5000  lr=1e-4", (1234, 5000)),
         ("step form", "step 100 of 200: avg_reward=42", (100, 200)),
         ("done form", "(50/100) done", (50, 100)),
+        ("offline-sumo bracket", "[16/103] OK CQL alpha=5.0 s123 best return=-877539", (16, 103)),
         ("multi-line, last wins", "[Epoch 1/100]\n[Epoch 2/100]\n[Epoch 3/100]\n", (3, 100)),
         ("no progress", "starting\nloading\nready", None),
         ("absurd current > total", "100/50 step", None),
@@ -12780,6 +12781,17 @@ def test_phase3_0_1_eta_parser_and_integration():
           and 990 <= proj.get("total_s", 0) <= 1010
           and 740 <= proj.get("eta_s", 0) <= 760,
           diag=str(proj))
+    inline = "[16/103] OK CQL alpha=5.0 s123 best return=-877539 (874.7m, ETA 4756.0m)"
+    inline_eta = et.parse_inline_eta(inline)
+    check("inline ETA: offline-sumo ETA minutes parsed",
+          inline_eta == 285360, diag=f"got {inline_eta}")
+    proj = et.runtime_projection(inline, elapsed_s=1000)
+    check("runtime_projection: explicit inline ETA beats rate math",
+          proj and proj.get("source") == "inline_eta"
+          and proj.get("eta_s") == 285360
+          and proj.get("current") == 16
+          and proj.get("total_units") == 103,
+          diag=str(proj))
     got_pair = et.parse_tqdm_elapsed_remaining(multi)
     check("tqdm elapsed+remaining: latest pair wins",
           got_pair == (90, 150), diag=f"got {got_pair}")
@@ -12810,6 +12822,9 @@ def test_phase3_0_1_eta_parser_and_integration():
     )
     check("ETA: tqdm-eta tier-0 reads remaining 1:29:20 = 5360s (ignores elapsed_s)",
           eta == 5360, diag=f"got {eta}")
+    eta = et.compute_eta_seconds(inline, elapsed_s=600, fallback_ewma_s=99999)
+    check("ETA: explicit inline ETA tier used for offline-sumo",
+          eta == 285360, diag=f"got {eta}")
     # Without tqdm bracket: rate from current/elapsed → 4617s
     eta = et.compute_eta_seconds(
         "[Epoch 23/200] step",
@@ -12853,6 +12868,7 @@ def test_phase3_0_1_eta_parser_and_integration():
         if "===ETA_LOG_t-prog===" in cmd:
             return (0,
                     "===ETA_LOG_t-prog===\n[Epoch 80/100] step\n"
+                    "===ETA_LOG_t-inline===\n[16/103] OK CQL alpha=5.0 s123 best return=-877539 (874.7m, ETA 4756.0m)\n"
                     "===ETA_LOG_t-noprog===\nstarting up\n",
                     "")
         return (0, "", "")
@@ -12862,6 +12878,9 @@ def test_phase3_0_1_eta_parser_and_integration():
         {"id": "t-prog", "status": "running", "node": "A",
          "log_path": "/tmp/p.log", "signature": "TEST/eta-runs",
          "started_at": time.time() - 800},
+        {"id": "t-inline", "status": "running", "node": "A",
+         "log_path": "/tmp/i.log", "signature": "TEST/eta-inline",
+         "started_at": time.time() - 1000},
         {"id": "t-noprog", "status": "running", "node": "A",
          "log_path": "/tmp/np.log", "signature": "TEST/eta-fallback",
          "started_at": time.time() - 100},
@@ -12874,6 +12893,7 @@ def test_phase3_0_1_eta_parser_and_integration():
     try:
         sch._refresh_eta_from_logs(state)
         prog = next(t for t in state["tasks"] if t["id"] == "t-prog")
+        inline_task = next(t for t in state["tasks"] if t["id"] == "t-inline")
         noprog = next(t for t in state["tasks"] if t["id"] == "t-noprog")
         nolog = next(t for t in state["tasks"] if t["id"] == "t-nolog")
         done = next(t for t in state["tasks"] if t["id"] == "t-done")
@@ -12887,6 +12907,18 @@ def test_phase3_0_1_eta_parser_and_integration():
               and prog.get("runtime_total_units") == 100
               and prog.get("runtime_est_source") == "progress_rate",
               diag=str(prog))
+        check("scheduler formats inline ETA source tag",
+              sch._eta_source_tag("inline_eta") == "logeta",
+              diag=sch._eta_source_tag("inline_eta"))
+        check("scheduler last progress line catches bracket progress",
+              sch._last_progress_line("noise\n[16/103] OK foo (874.7m, ETA 4756.0m)\n")
+              .startswith("[16/103]"),
+              diag=sch._last_progress_line("noise\n[16/103] OK foo (874.7m, ETA 4756.0m)\n"))
+        check("_refresh_eta_from_logs uses inline ETA source",
+              inline_task.get("eta_source") == "inline_eta"
+              and inline_task.get("eta_seconds") == 285360
+              and inline_task.get("runtime_total_units") == 103,
+              diag=str(inline_task))
         # t-noprog: no progress in tail, EWMA=1200, elapsed=100 → 1100
         check("running task no progress in tail: EWMA fallback (~1100s)",
               noprog.get("eta_seconds") and 1050 <= noprog["eta_seconds"] <= 1200,

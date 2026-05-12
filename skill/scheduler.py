@@ -2249,11 +2249,12 @@ def _annotate_diag_after_unknown(diag: dict, sync_rec: Optional[dict]) -> dict:
 
 _LIVE_REMAINING_ETA_SOURCES = {
     "tqdm",
+    "inline_eta",
     "progress_rate",
     "runtime_history_fallback",
     "duration_ewma_fallback",
 }
-_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "progress_rate"}
+_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "inline_eta", "progress_rate"}
 _ETA_AUDIT_FIELDS = (
     "eta_seconds", "eta_source", "eta_confidence", "eta_updated_at",
     "eta_detail", "eta_log_bytes", "eta_probe_error", "last_progress_line",
@@ -2300,7 +2301,7 @@ def _queued_has_stale_live_eta(task: dict) -> bool:
 
 def _eta_confidence_for_source(source: str) -> str:
     base = _eta_source_base(source)
-    if base in ("tqdm", "local_test_tqdm"):
+    if base in ("tqdm", "inline_eta", "local_test_tqdm"):
         return "high"
     if base in ("progress_rate", "local_test_progress", "runtime_history"):
         return "medium"
@@ -2322,6 +2323,8 @@ def _eta_source_tag(source: object) -> str:
     base = _eta_source_base(source)
     if base == "tqdm":
         return "tqdm"
+    if base == "inline_eta":
+        return "logeta"
     if base == "progress_rate":
         return "prog"
     if base in ("runtime_history", "runtime_history_fallback"):
@@ -3622,7 +3625,8 @@ def _last_progress_line(text: str) -> str:
     if not text:
         return ""
     progress_re = re.compile(
-        r"(\d+\s*/\s*\d+\s*\[|(?:^|[^\w])(?:Iter|Iteration|Epoch|Step|step)\s+\d+|"
+        r"(\d+\s*/\s*\d+\s*\[|\[\s*\d+\s*/\s*\d+\s*\]|"
+        r"(?:^|[^\w])(?:Iter|Iteration|Epoch|Step|step)\s+\d+|"
         r"Starting training|JAX devices|Training complete|DONE)"
     )
     last = ""

@@ -43,6 +43,8 @@ _ETA_PATTERNS = [
     re.compile(r'(?:^|\s)(?:Iter|Step|step|iter)[:\s]+(\d+)\s*(?:/|of)\s*(\d+)\b'),
     # "100/1000 done" / "(100/1000)" trailing or in parens
     re.compile(r'(?:^|[\s(])(\d+)\s*/\s*(\d+)\s*(?:done|complete|completed|\))'),
+    # batch/eval counters: "[16/103] OK ..." (offline-sumo style)
+    re.compile(r'^\s*\[\s*(\d+)\s*/\s*(\d+)\s*\]'),
 ]
 
 
@@ -54,6 +56,13 @@ _ETA_PATTERNS = [
 #   "[02:00<?, ?it/s]"                  → remaining='?' (tqdm doesn't know)
 _TQDM_ETA_RE = re.compile(
     r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:it/s|s/it)(?:\s*,[^\]]*)?\s*\]'
+)
+
+# Explicit ETA in free-form progress lines, e.g.
+#   "[16/103] ... (874.7m, ETA 4756.0m)"
+_INLINE_ETA_RE = re.compile(
+    r'(?:^|[\s,(])ETA\s*[:=]?\s*(\d+(?:\.\d+)?)\s*([smhd])\b',
+    re.IGNORECASE,
 )
 
 
@@ -115,6 +124,24 @@ def parse_tqdm_elapsed_remaining(tail_text: str) -> Optional[Tuple[int, int]]:
             remaining = _parse_tqdm_time(m.group(2))
             if elapsed is not None and remaining is not None and elapsed >= 0 and remaining >= 0:
                 last = (elapsed, remaining)
+    return last
+
+
+def parse_inline_eta(tail_text: str) -> Optional[int]:
+    """Extract explicit free-form ETA like "ETA 4756.0m" from the latest line."""
+    if not tail_text:
+        return None
+    mult = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+    last = None
+    for line in tail_text.splitlines():
+        for m in _INLINE_ETA_RE.finditer(line):
+            try:
+                value = float(m.group(1))
+            except ValueError:
+                continue
+            unit = (m.group(2) or "s").lower()
+            if value >= 0 and unit in mult:
+                last = int(value * mult[unit])
     return last
 
 
@@ -274,6 +301,9 @@ def compute_eta_seconds(tail_text: str,
     tqdm_eta = parse_tqdm_eta(tail_text)
     if tqdm_eta is not None:
         return int(tqdm_eta)
+    inline_eta = parse_inline_eta(tail_text)
+    if inline_eta is not None:
+        return int(inline_eta)
 
     progress = parse_progress(tail_text, cmd=cmd)
     if progress is not None:
@@ -318,6 +348,18 @@ def runtime_projection(tail_text: str,
     if tqdm_eta is not None:
         total_s = int(max(0, elapsed + tqdm_eta))
         out = {"source": "tqdm", "eta_s": int(tqdm_eta), "total_s": total_s}
+        if progress is not None:
+            current, total = progress
+            out["current"] = int(current)
+            out["total_units"] = int(total)
+            if total > 0:
+                out["unit_s"] = float(total_s) / float(total)
+        return out
+
+    inline_eta = parse_inline_eta(tail_text)
+    if inline_eta is not None:
+        total_s = int(max(0, elapsed + inline_eta))
+        out = {"source": "inline_eta", "eta_s": int(inline_eta), "total_s": total_s}
         if progress is not None:
             current, total = progress
             out["current"] = int(current)

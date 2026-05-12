@@ -842,6 +842,87 @@ def test_post_dispatch_eviction_and_rule():
         sch.run_on = orig_run_on
 
 # -----------------------------------------------------------------------------
+def test_post_dispatch_ram_grace_and_ckpt_aware_victim():
+    """RAM pressure rollback has its own grace and should not kill low-RAM/no-ETA
+    work before RAM-heavy siblings. Meaningful checkpoint work without resume
+    evidence is protected when there is another victim."""
+    print("\n[10b] RAM-pressure eviction grace and checkpoint-aware victim choice")
+    now = time.time()
+
+    def make_node(free_ram_mb):
+        return [{
+            "name": "ramnode", "alive": True, "gpus": [],
+            "total_ram_mb": 20480, "free_ram_mb": free_ram_mb,
+        }]
+
+    def base_task(tid, ram, age_s=120, **extra):
+        t = {
+            "id": tid, "status": "running", "node": "ramnode", "gpu_idx": None,
+            "started_at": now - age_s, "remote_pids": [9100 + len(tid)],
+            "auto_adopted": False, "ram_mb": ram,
+            "current_ram_mb": ram, "peak_ram_mb": ram,
+        }
+        t.update(extra)
+        return t
+
+    orig_run_on = sch.run_on
+    kill_calls = []
+
+    def fake_run_on(*a, **k):
+        kill_calls.append((a, k))
+        return (0, "", "")
+
+    sch.run_on = fake_run_on
+    try:
+        state = {"tasks": [
+            base_task("tlow", 1400),
+            base_task("thigh", 4200),
+        ]}
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_node(free_ram_mb=1800))
+        check("RAM below headroom but inside grace does not evict", evicted == [],
+              diag=f"evicted={evicted}")
+        check("RAM grace path does not kill processes", len(kill_calls) == 0,
+              diag=f"kill_calls={len(kill_calls)}")
+
+        state = {"tasks": [
+            base_task("tresac", 1500, project="RE-SAC", eta_seconds=0),
+            base_task("th2o", 5200, project="H2Oplus", eta_seconds=900, runtime_current_unit=1, runtime_total_units=100),
+        ]}
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_node(free_ram_mb=900))
+        check("hard RAM breach evicts RAM-heavy sibling, not low-RAM unknown-ETA task",
+              evicted == ["th2o"], diag=f"evicted={evicted}")
+        h2o = [t for t in state["tasks"] if t["id"] == "th2o"][0]
+        check("RAM eviction records grace-aware forensics",
+              h2o.get("last_resource_eviction", {}).get("node_ram", {}).get("headroom_grace_mb") == sch.RAM_HEADROOM_EVICTION_GRACE_MB,
+              diag=str(h2o.get("last_resource_eviction")))
+        check("RAM victim selection label is RAM-pressure-first",
+              h2o.get("last_resource_eviction", {}).get("selection") == "highest_ram_pressure_then_least_progress_then_newest_ckpt_aware",
+              diag=str(h2o.get("last_resource_eviction", {}).get("selection")))
+
+        state = {"tasks": [
+            base_task("tckpt", 6200, age_s=900, project="RE-SAC",
+                      ckpt_dir="/tmp/re-sac/checkpoints", resume_locations=[],
+                      runtime_current_unit=2, runtime_total_units=100),
+            base_task("tnockpt", 3600, age_s=120, project="H2Oplus"),
+        ]}
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_node(free_ram_mb=800))
+        check("checkpoint task with progress and no resume evidence is protected when another victim exists",
+              evicted == ["tnockpt"], diag=f"evicted={evicted}")
+        nockpt = [t for t in state["tasks"] if t["id"] == "tnockpt"][0]
+        payload = nockpt.get("last_resource_eviction", {})
+        check("RAM eviction payload lists protected checkpoint tasks",
+              payload.get("protected_ckpt_task_ids") == ["tckpt"],
+              diag=str(payload.get("protected_ckpt_task_ids")))
+        ckpt_summary = [s for s in payload.get("same_node_tasks", []) if s.get("id") == "tckpt"][0]
+        check("RAM eviction task summary includes checkpoint/resume evidence",
+              ckpt_summary.get("ckpt_evict_protected") is True
+              and ckpt_summary.get("resume_locations_count") == 0
+              and ckpt_summary.get("ram_pressure_mb") == 6200,
+              diag=str(ckpt_summary))
+    finally:
+        sch.run_on = orig_run_on
+
+# -----------------------------------------------------------------------------
 def test_training_cpu_guard():
     """Training + vram=0 must be refused/blocked unless --allow-cpu-training is set.
     App-level `--device cpu` is not sufficient because that exact footgun can put a GPU
@@ -14561,6 +14642,7 @@ if __name__ == "__main__":
     test_dispatch_skips_duplicate_signature()
     test_cpu_training_justification_required()
     test_post_dispatch_eviction_and_rule()
+    test_post_dispatch_ram_grace_and_ckpt_aware_victim()
     test_history_record_p80_outlier_resistance()
     test_backend_abstraction_phase1()
     test_backend_slurm_phase2()

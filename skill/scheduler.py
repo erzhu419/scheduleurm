@@ -95,6 +95,9 @@ VRAM_MARGIN_MB = 500       # headroom on a GPU after placing a task
 RAM_HEADROOM_FRAC = 0.10   # keep 10% of node RAM unallocated as buffer for OS/other procs
 ONE_THIRD_PACK_RULE = True # don't add to a GPU already past the 1/3+grace freeze line
 ONE_THIRD_PACK_GRACE_MB = int(os.environ.get("SCHEDULEURM_ONE_THIRD_PACK_GRACE_MB", "512"))
+RAM_HEADROOM_EVICTION_GRACE_MB = int(os.environ.get("SCHEDULEURM_RAM_HEADROOM_EVICTION_GRACE_MB", "512"))
+RAM_EVICT_CKPT_PROTECT_MIN_AGE_S = int(os.environ.get("SCHEDULEURM_RAM_EVICT_CKPT_PROTECT_MIN_AGE_S", "300"))
+RAM_EVICT_CKPT_PROTECT_PROGRESS = float(os.environ.get("SCHEDULEURM_RAM_EVICT_CKPT_PROTECT_PROGRESS", "0.01"))
 GPU_UTIL_SATURATION_PCT = 85  # if an occupied GPU is past this compute util, don't pack more (would just contend)
 DEFAULT_VRAM_MB = 512      # est for unknown signatures (no history, no siblings).
 GPU_EMPTY_USED_MB = 200    # treat driver/runtime noise below this as an empty GPU
@@ -3486,12 +3489,20 @@ def _node_ram_snapshot(node_state: Optional[dict]) -> Optional[dict]:
     total = int(node_state.get("total_ram_mb") or node_info.get("ram_mb") or 0)
     free = int(node_state.get("free_ram_mb") or 0)
     headroom = _node_ram_headroom_mb(node_state, node_info)
+    grace = max(0, int(RAM_HEADROOM_EVICTION_GRACE_MB))
+    eviction_headroom = max(0, headroom - grace)
     return {
         "free_mb": free,
         "total_mb": total,
         "headroom_mb": headroom,
+        "eviction_headroom_mb": eviction_headroom,
+        "headroom_grace_mb": grace,
         "below_headroom": bool(free < headroom),
+        "below_eviction_headroom": bool(free < eviction_headroom),
         "available_after_headroom_mb": free - headroom,
+        "available_after_eviction_headroom_mb": free - eviction_headroom,
+        "headroom_gap_mb": max(0, headroom - free),
+        "eviction_gap_mb": max(0, eviction_headroom - free),
     }
 
 
@@ -3503,10 +3514,36 @@ def _task_progress_ratio(task: dict) -> Optional[float]:
     return max(0.0, min(1.0, float(current) / float(total)))
 
 
+def _task_ram_pressure_mb(task: dict) -> int:
+    return max(
+        int(task.get("current_ram_mb") or 0),
+        int(task.get("peak_ram_mb") or 0),
+        int(task.get("ram_mb") or 0),
+    )
+
+
+def _task_has_resume_evidence(task: dict) -> bool:
+    return bool(task.get("resume_locations") or task.get("resume_from") or task.get("resume_checkpoint_node"))
+
+
+def _ckpt_task_evict_protected(task: dict) -> bool:
+    """Avoid killing meaningful checkpoint work unless resume evidence exists."""
+    if not task.get("ckpt_dir"):
+        return False
+    if _task_has_resume_evidence(task):
+        return False
+    elapsed = _effective_elapsed_s(task)
+    progress = _task_progress_ratio(task)
+    has_progress = progress is not None and progress >= float(RAM_EVICT_CKPT_PROTECT_PROGRESS)
+    old_enough = elapsed >= float(RAM_EVICT_CKPT_PROTECT_MIN_AGE_S)
+    return bool(old_enough or has_progress)
+
+
 def _summarize_task_for_resource_log(task: dict) -> dict:
     started = task.get("started_at")
     elapsed = max(0, int(time.time() - started)) if started else 0
     ratio = _task_progress_ratio(task)
+    resume_locations = task.get("resume_locations") or []
     out = {
         "id": task.get("id"),
         "status": task.get("status"),
@@ -3525,6 +3562,12 @@ def _summarize_task_for_resource_log(task: dict) -> dict:
         "peak_vram_mb": int(task.get("peak_vram_mb") or 0),
         "current_ram_mb": int(task.get("current_ram_mb") or 0),
         "peak_ram_mb": int(task.get("peak_ram_mb") or 0),
+        "ram_pressure_mb": _task_ram_pressure_mb(task),
+        "ckpt_dir": task.get("ckpt_dir"),
+        "resume_scan_at": task.get("resume_scan_at"),
+        "resume_locations_count": len(resume_locations),
+        "resume_checkpoint_node": task.get("resume_checkpoint_node"),
+        "ckpt_evict_protected": _ckpt_task_evict_protected(task),
         "last_progress_line": (task.get("last_progress_line") or "")[-240:],
     }
     return out
@@ -9135,7 +9178,9 @@ def _enforce_post_dispatch_thresholds(state, nodes):
     stacked work. The victim choice protects older or nearly-finished work.
 
     Also applies the same idea at node RAM level: if probed free RAM is below
-    configured headroom, requeue one scheduler-owned task on that node.
+    configured headroom minus grace, requeue one scheduler-owned task on that
+    node. RAM victim selection is RAM-pressure-first and checkpoint-aware; a
+    small no-ETA task should not be easier to kill than a RAM-heavy sibling.
     """
     evicted = []
     evicted_set = set()
@@ -9147,6 +9192,13 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         progress = _task_progress_ratio(t)
         progress_rank = -(progress if progress is not None else 0.0)
         return (eta_rank, progress_rank, float(t.get("started_at") or 0))
+
+    def _ram_victim_key(t):
+        progress = _task_progress_ratio(t)
+        progress_rank = -(progress if progress is not None else 0.0)
+        eta = int(t.get("eta_seconds") or 0)
+        eta_rank = eta if eta > 0 else 0
+        return (_task_ram_pressure_mb(t), progress_rank, float(t.get("started_at") or 0), eta_rank)
 
     def _eligible_running(where):
         return [
@@ -9197,24 +9249,29 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             _evict(victim, reason, gpu_payload)
 
         ram = _node_ram_snapshot(n)
-        if not ram or not ram.get("below_headroom"):
+        if not ram or not ram.get("below_eviction_headroom"):
             continue
         tasks_here = _eligible_running(lambda t, node=n["name"]: t.get("node") == node)
         if len(tasks_here) < 2:
             continue
-        victim = max(tasks_here, key=_victim_key)
+        protected = [t for t in tasks_here if _ckpt_task_evict_protected(t)]
+        protected_ids = {id(t) for t in protected}
+        candidates = [t for t in tasks_here if id(t) not in protected_ids] or tasks_here
+        victim = max(candidates, key=_ram_victim_key)
         ram_payload = {
             "kind": "node_ram_headroom",
             "task_id": victim["id"],
             "node": n["name"],
             "node_ram": ram,
             "same_node_tasks": [_summarize_task_for_resource_log(t) for t in tasks_here],
-            "selection": "longest_eta_then_least_progress_then_newest",
+            "protected_ckpt_task_ids": [t.get("id") for t in protected],
+            "selection": "highest_ram_pressure_then_least_progress_then_newest_ckpt_aware",
         }
         reason = (
             f"evicted from {n['name']} after RAM headroom breach "
-            f"(free={ram['free_mb']}MB < headroom={ram['headroom_mb']}MB); "
-            f"victim selected by longest ETA / least progress / newest"
+            f"(free={ram['free_mb']}MB < eviction_headroom={ram['eviction_headroom_mb']}MB, "
+            f"headroom={ram['headroom_mb']}MB, grace={ram['headroom_grace_mb']}MB); "
+            f"victim selected by RAM pressure / least progress / newest with ckpt protection"
         )
         _evict(victim, reason, ram_payload)
     return evicted

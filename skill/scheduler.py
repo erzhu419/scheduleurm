@@ -1694,6 +1694,52 @@ def _effective_est_ram(task, state, history):
     if stored: return int(stored)
     return DEFAULT_RAM_MB
 
+def _live_sibling_ram_floor(task, state):
+    """Return a RAM floor from currently-running sibling tasks, or 0.
+
+    This is intentionally narrower than _effective_est_ram's full project fallback. It is used
+    to raise stale queued RAM estimates when live siblings prove the old estimate is too low.
+    For broad project-level matches, require at least two live samples so one large outlier
+    cannot poison a mixed project.
+    """
+    project = task.get("project")
+    if not project:
+        return 0
+    sig = task.get("signature") or ""
+    prefix = "/".join(sig.split("/")[:2]) if sig else ""
+    desc_key = (task.get("description") or "").split(":")[0].strip().lower()
+    self_id = task.get("id")
+    desc_candidates = []
+    prefix_candidates = []
+    project_candidates = []
+    for t in state.get("tasks", []):
+        if t.get("id") == self_id:
+            continue
+        if t.get("project") != project:
+            continue
+        if t.get("status") not in ("running", "launching"):
+            continue
+        ram = max(int(t.get("current_ram_mb") or 0), int(t.get("peak_ram_mb") or 0))
+        if ram <= 100:
+            continue
+        project_candidates.append(ram)
+        td = (t.get("description") or "").split(":")[0].strip().lower()
+        if desc_key and td == desc_key:
+            desc_candidates.append(ram)
+        tsig = t.get("signature") or ""
+        if prefix and "/".join(tsig.split("/")[:2]) == prefix:
+            prefix_candidates.append(ram)
+
+    for candidates, min_samples in (
+        (desc_candidates, 1),
+        (prefix_candidates, 1),
+        (project_candidates, 2),
+    ):
+        if len(candidates) >= min_samples:
+            candidates.sort()
+            return int(candidates[len(candidates) // 2])
+    return 0
+
 HISTORY_MAX_ENTRIES = 500  # cap per item 25 (vram_history.json bloat)
 HISTORY_SAMPLES_PER_SIG = 10
 HISTORY_PERCENTILE = 80   # p80 of last N samples → estimate
@@ -9355,6 +9401,21 @@ def _do_dispatch(state, nodes):
             if new_ram != t.get("ram_mb"):
                 t["ram_mb"] = new_ram
         else:
+            # Live RAM is asymmetric: under-estimating it can trigger node-level rollback
+            # and immediately make the next dispatch worse. If currently-running siblings
+            # prove this queued task's stale estimate is too low, raise the floor before
+            # placement. Historical/project guesses still only lower below.
+            live_ram = _live_sibling_ram_floor(t, state)
+            cur_ram = int(t.get("ram_mb") or 0)
+            if live_ram and live_ram > cur_ram * 1.1:
+                t["ram_mb"] = live_ram
+                t["last_resource_estimate_update"] = {
+                    "ts": time.time(),
+                    "kind": "ram_live_sibling_floor",
+                    "old_ram_mb": cur_ram,
+                    "new_ram_mb": live_ram,
+                }
+                continue
             new_ram = _effective_est_ram(t, state, history_cache)
             cur_ram = t.get("ram_mb") or 0
             if new_ram and 0 < new_ram < cur_ram:

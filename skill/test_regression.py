@@ -553,6 +553,67 @@ def test_high_defaults_lower_before_placement():
           not queued.get("last_block_reason"),
           diag=f"last_block_reason={queued.get('last_block_reason')!r}")
 
+def test_low_ram_estimate_raises_from_live_siblings():
+    """Stale low RAM estimates must be raised from live siblings before placement."""
+    print("\n[9b] Low RAM estimate raises from live siblings before placement")
+    queued = {
+        "id": "new", "status": "queued", "signature": "H2Oplus/proxy_p3_jtt_s42",
+        "est_vram_mb": 384, "ram_mb": 608, "cpu_cores": 2, "priority": "normal",
+        "cmd": "python train.py", "cwd": "/work/H2Oplus",
+        "submitted_at": time.time(),
+        "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
+        "preferred_node": None, "require_node": "local", "project": "H2Oplus",
+        "description": "P3 proxy: NCE ratio + adaptive sim ratio + JTT, seed 42",
+    }
+    state = {"tasks": [
+        {"id": "h1", "status": "running", "project": "H2Oplus",
+         "signature": "H2Oplus/proxy_base_s42", "node": "local", "gpu_idx": 0,
+         "description": "H2O+ proxy control baseline", "current_ram_mb": 4677,
+         "peak_ram_mb": 5172, "current_vram_mb": 0, "peak_vram_mb": 0},
+        {"id": "h2", "status": "running", "project": "H2Oplus",
+         "signature": "H2Oplus/proxy_p0_guard_s42", "node": "local", "gpu_idx": 0,
+         "description": "P0 proxy guard", "current_ram_mb": 4664,
+         "peak_ram_mb": 4760, "current_vram_mb": 0, "peak_vram_mb": 0},
+        {"id": "h3", "status": "running", "project": "H2Oplus",
+         "signature": "H2Oplus/proxy_p1_ratio_s42", "node": "local", "gpu_idx": 0,
+         "description": "P1 proxy: contrastive NCE real/sim ratio, seed 42",
+         "current_ram_mb": 4685, "peak_ram_mb": 4915, "current_vram_mb": 0,
+         "peak_vram_mb": 0},
+        queued,
+    ], "next_id": 100}
+    nodes = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 16,
+              "free_ram_mb": 6000, "total_ram_mb": 44138, "loadavg": 1.0,
+              "running_count": 3,
+              "gpus": [{"idx": 0, "used_mb": 2200, "total_mb": 8192,
+                        "free_mb": 5992, "util_pct": 100}]}]
+    saved = {
+        "load_history": sch.load_history,
+        "precheck_git": sch.precheck_git,
+        "find_resume": sch.find_resume,
+        "save_state": sch.save_state,
+    }
+    sch.load_history = lambda: {}
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    sch.save_state = lambda s: None
+    try:
+        events, _launched = sch._do_dispatch(state, copy.deepcopy(nodes))
+    finally:
+        for k, v in saved.items():
+            setattr(sch, k, v)
+    check("queued RAM raised from live sibling median",
+          queued["ram_mb"] >= 4700,
+          diag=f"ram={queued.get('ram_mb')}")
+    check("RAM raise records forensic estimate update",
+          queued.get("last_resource_estimate_update", {}).get("kind") == "ram_live_sibling_floor",
+          diag=str(queued.get("last_resource_estimate_update")))
+    check("task remains queued because raised RAM no longer fits headroom",
+          queued["status"] == "queued" and not any(ev.get("type") == "task_launched" for ev in events),
+          diag=f"status={queued.get('status')}, events={events}")
+    check("block reason names RAM headroom",
+          "ram:" in (queued.get("last_block_reason") or ""),
+          diag=f"last_block_reason={queued.get('last_block_reason')!r}")
+
 def test_probe_ram_budget_cap():
     """Remote physical MemAvailable may exceed configured schedulable budget; placement must use
     the configured budget, not physical 500GB."""
@@ -14449,6 +14510,7 @@ if __name__ == "__main__":
     test_default_vram_not_inflated()
     test_status_view_no_truncation()
     test_high_defaults_lower_before_placement()
+    test_low_ram_estimate_raises_from_live_siblings()
     test_probe_ram_budget_cap()
     test_running_descendant_resources_counted()
     test_kill_uses_process_group_sigkill()

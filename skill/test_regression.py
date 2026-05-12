@@ -1979,12 +1979,12 @@ def test_env_deploy_doc_matches_code():
           diag="scheduler_mcp submit doc omits conda sync strategy")
 
 
-def test_pick_placement_empty_first_then_best_fit():
+def test_pick_placement_empty_first_then_coolest_warm():
     """Micro-server policy: if any GPU is empty, prefer it over stacking on a warm card.
 
-    When every candidate is warm, keep best-fit so already-fragmented cards are filled
-    before spreading further."""
-    print("\n[49] pick_placement: empty-first, then best-fit among warm cards")
+    When every candidate is warm, prefer the lowest post-placement memory pressure so
+    one card is not pushed to the 1/3 freeze line while a sibling is clearly emptier."""
+    print("\n[49] pick_placement: empty-first, then coolest warm card")
     # Force LocalBackend semantics for the duration of this test — Phase 2.3+ would otherwise
     # route the test "local" node through SlurmBackend (gpu_idx=None) on machines where the
     # actual host has slurm installed, defeating the GPU-pinning assertions below.
@@ -2020,22 +2020,36 @@ def test_pick_placement_empty_first_then_best_fit():
     check("only empty available → still picked",
           placement2 is not None and placement2[1] == 5,
           diag=f"placement={placement2}")
-    # Best-fit among two warm cards: tighter fit wins, but only among candidates
-    # whose post-placement memory remains below the 1/3 freeze line
+    # Among two warm cards: cooler post-placement pressure wins, but only among
+    # candidates whose post-placement memory remains below the 1/3 freeze line
     # (8192/3 ≈ 2730MB). Task needs 1GB.
     nodes3 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
                "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
                "running_count": 0,
                "gpus": [
-                   # GPU2: 1.0GB used → bigger leftover after 1GB placement
+                   # GPU2: 1.0GB used → lower post-placement pressure
                    {"idx": 2, "used_mb": 1000, "total_mb": 8192, "free_mb": 7192, "util_pct": 30},
                    # GPU3: 1.6GB used → tighter leftover, still below 1/3 after placement
                    {"idx": 3, "used_mb": 1600, "total_mb": 8192, "free_mb": 6592, "util_pct": 30},
                ]}]
     placement3 = sch.pick_placement(task, nodes3)
-    check("among warm+fitting cards, best-fit picks tighter (GPU3, smaller free_mb)",
-          placement3 is not None and placement3[1] == 3,
-          diag=f"placement={placement3} (expected (local, 3))")
+    check("among warm+fitting cards, cooler post-placement pressure wins (GPU2)",
+          placement3 is not None and placement3[1] == 2,
+          diag=f"placement={placement3} (expected (local, 2))")
+    # Repro shape for t2790: both cards fit under the 1/3+grace line, but GPU0 is
+    # clearly emptier. The old warm-card best-fit score chose GPU1 and pushed it
+    # to the edge; the corrected policy chooses GPU0.
+    nodes4 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+               "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
+               "running_count": 0,
+               "gpus": [
+                   {"idx": 0, "used_mb": 1656, "total_mb": 12288, "free_mb": 10632, "util_pct": 100},
+                   {"idx": 1, "used_mb": 3557, "total_mb": 12288, "free_mb": 8731, "util_pct": 100},
+               ]}]
+    placement4 = sch.pick_placement(task, nodes4)
+    check("t2790 repro: warm-card choice picks the clearly emptier GPU0",
+          placement4 is not None and placement4[1] == 0,
+          diag=f"placement={placement4} (expected (local, 0))")
     # restore backend so subsequent tests use the production HybridBackend
     sch._BACKEND = _saved_backend
 
@@ -14618,7 +14632,7 @@ if __name__ == "__main__":
     test_run_on_has_server_alive_options()
     test_has_image_digest_drift()
     test_env_deploy_doc_matches_code()
-    test_pick_placement_empty_first_then_best_fit()
+    test_pick_placement_empty_first_then_coolest_warm()
     test_diagnose_peak_vram_implies_crash_without_success()
     test_launch_path_uses_digest_check()
     test_atomic_write_integrity()

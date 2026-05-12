@@ -3905,13 +3905,19 @@ def pick_placement(task, nodes):
             for g in n["gpus"]:
                 if not _gpu_fits(task, g, node_info): continue
                 # Empty-first placement: if a node has a genuinely idle GPU, use it before
-                # stacking onto a warm card. This is a micro-server policy, not a datacenter
-                # bin-packing policy: keeping one card busy while another sits empty slows the
-                # user's batch down more than it preserves a hypothetical future fragment.
-                # If all fitting cards are warm, keep best-fit to avoid needless spreading.
+                # stacking onto a warm card. Among warm fitting cards, prefer the lowest
+                # post-placement memory pressure. With the 1/3+grace freeze rule, packing
+                # the fullest warm card first just pushes it to the freeze line while a
+                # cooler sibling stays underused.
                 fits_remaining = g["free_mb"] - (task.get("est_vram_mb") or 0)
-                occupied = 1 if g["used_mb"] >= GPU_EMPTY_USED_MB else 0
-                score = (occupied, fits_remaining)
+                used = int(g.get("used_mb") or 0)
+                total = max(1, int(g.get("total_mb") or 1))
+                need = int(task.get("est_vram_mb") or 0)
+                occupied = 1 if used >= GPU_EMPTY_USED_MB else 0
+                if occupied:
+                    score = (occupied, float(used + need) / float(total), used + need)
+                else:
+                    score = (occupied, fits_remaining)
                 out.append((score, n["name"], g["idx"]))
         return out
 

@@ -247,6 +247,67 @@ def test_preempt_sufficiency():
     for vid in ("tv4", "tv5", "tv6"):
         v = next(t for t in state["tasks"] if t["id"] == vid)
         check(f"{vid} still running (not evicted)", v["status"] == "running")
+    for vid in ("tv1", "tv2", "tv3"):
+        v = next(t for t in state["tasks"] if t["id"] == vid)
+        check(f"{vid} has relaunch cooldown after preempt",
+              float(v.get("evict_cooldown_until") or 0) > now,
+              diag=str({k: v.get(k) for k in ("last_eviction_kind", "evict_cooldown_until")}))
+
+    state = {
+        "tasks": [
+            {"id": "thi2", "status": "queued", "priority": "high", "require_node": "local",
+             "submitted_at": now - 600, "cpu_cores": 2, "ram_mb": 6000,
+             "signature": "x/hi2", "remote_pids": []},
+            {"id": "tsmall1", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1300, "cpu_cores": 1, "ram_mb": 600,
+             "signature": "x/small1", "remote_pids": [], "auto_adopted": False},
+            {"id": "tsmall2", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1200, "cpu_cores": 1, "ram_mb": 700,
+             "signature": "x/small2", "remote_pids": [], "auto_adopted": False},
+            {"id": "tbig", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1100, "cpu_cores": 1, "ram_mb": 6000,
+             "signature": "x/big", "remote_pids": [], "auto_adopted": False},
+        ],
+    }
+    sch.run_on = lambda *a, **k: (0, "", "")
+    try:
+        evicted = sch._preempt_for_high_priority(state, nodes=[{
+            "name": "local", "alive": True, "gpus": [],
+            "free_cpu": 0, "free_ram_mb": 30000, "total_ram_mb": 44138,
+        }])
+    finally:
+        sch.run_on = orig_run_on
+    evicted_ids = sorted(e["id"] for e in evicted)
+    check("preempt uses actual RAM headroom; CPU-only deficit does not kill huge-RAM task",
+          evicted_ids == ["tsmall1", "tsmall2"],
+          diag=f"got {evicted_ids}")
+
+    state = {
+        "tasks": [
+            {"id": "thi3", "status": "queued", "priority": "high", "require_node": "local",
+             "submitted_at": now - 600, "cpu_cores": 1, "ram_mb": 5500,
+             "signature": "x/hi3", "remote_pids": []},
+            {"id": "teval", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 3600, "cpu_cores": 1, "ram_mb": 1400,
+             "signature": "offline-sumo/eval", "remote_pids": [], "auto_adopted": False,
+             "cmd": "python eval.py --skip_existing --out_csv experiment_output/eval_results_v2.csv",
+             "cwd": "/tmp/offline-sumo"},
+            {"id": "th2o", "status": "running", "priority": "normal", "node": "local",
+             "started_at": now - 1200, "cpu_cores": 2, "ram_mb": 5400,
+             "signature": "h2o/big", "remote_pids": [], "auto_adopted": False},
+        ],
+    }
+    sch.run_on = lambda *a, **k: (0, "", "")
+    try:
+        evicted = sch._preempt_for_high_priority(state, nodes=[{
+            "name": "local", "alive": True, "gpus": [],
+            "free_cpu": 4, "free_ram_mb": 5000, "total_ram_mb": 44138,
+        }])
+    finally:
+        sch.run_on = orig_run_on
+    check("preempt RAM deficit evicts RAM-heavy sibling, not skip-existing result-resumable eval",
+          [e["id"] for e in evicted] == ["th2o"],
+          diag=f"got {evicted}")
 
 # -----------------------------------------------------------------------------
 def test_launch_fail_fallback():
@@ -896,7 +957,7 @@ def test_post_dispatch_ram_grace_and_ckpt_aware_victim():
               h2o.get("last_resource_eviction", {}).get("node_ram", {}).get("headroom_grace_mb") == sch.RAM_HEADROOM_EVICTION_GRACE_MB,
               diag=str(h2o.get("last_resource_eviction")))
         check("RAM victim selection label is RAM-pressure-first",
-              h2o.get("last_resource_eviction", {}).get("selection") == "highest_ram_pressure_then_least_progress_then_newest_ckpt_aware",
+              h2o.get("last_resource_eviction", {}).get("selection") == "highest_ram_pressure_then_least_progress_then_newest_loss_aware",
               diag=str(h2o.get("last_resource_eviction", {}).get("selection")))
 
         state = {"tasks": [
@@ -913,6 +974,9 @@ def test_post_dispatch_ram_grace_and_ckpt_aware_victim():
         check("RAM eviction payload lists protected checkpoint tasks",
               payload.get("protected_ckpt_task_ids") == ["tckpt"],
               diag=str(payload.get("protected_ckpt_task_ids")))
+        check("RAM eviction payload lists all protected loss-sensitive tasks",
+              payload.get("protected_evict_loss_task_ids") == ["tckpt"],
+              diag=str(payload.get("protected_evict_loss_task_ids")))
         ckpt_summary = [s for s in payload.get("same_node_tasks", []) if s.get("id") == "tckpt"][0]
         check("RAM eviction task summary includes checkpoint/resume evidence",
               ckpt_summary.get("ckpt_evict_protected") is True

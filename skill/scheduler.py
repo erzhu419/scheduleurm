@@ -3542,6 +3542,24 @@ def _ckpt_task_evict_protected(task: dict) -> bool:
     return bool(old_enough or has_progress)
 
 
+def _task_has_incremental_result_resume(task: dict) -> bool:
+    """Detect eval-style resumability via incremental result artifacts.
+
+    offline-sumo eval jobs do not have a training ckpt_dir, but commands like
+    ``--skip_existing --out_csv results.csv`` resume from the result CSV. Treat
+    these as meaningful in-progress work for eviction/preemption decisions.
+    """
+    cmd = task.get("cmd") or ""
+    if "--skip_existing" not in cmd and "--skip-existing" not in cmd:
+        return False
+    artifacts = _discover_result_artifacts(task, include_log=False)
+    return any((rec.get("kind") == "file" and rec.get("path")) for rec in artifacts)
+
+
+def _task_evict_loss_protected(task: dict) -> bool:
+    return bool(_ckpt_task_evict_protected(task) or _task_has_incremental_result_resume(task))
+
+
 def _summarize_task_for_resource_log(task: dict) -> dict:
     started = task.get("started_at")
     elapsed = max(0, int(time.time() - started)) if started else 0
@@ -3571,6 +3589,8 @@ def _summarize_task_for_resource_log(task: dict) -> dict:
         "resume_locations_count": len(resume_locations),
         "resume_checkpoint_node": task.get("resume_checkpoint_node"),
         "ckpt_evict_protected": _ckpt_task_evict_protected(task),
+        "incremental_result_resume": _task_has_incremental_result_resume(task),
+        "evict_loss_protected": _task_evict_loss_protected(task),
         "last_progress_line": (task.get("last_progress_line") or "")[-240:],
     }
     return out
@@ -9222,7 +9242,7 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         ]
 
     def _evict(victim, reason, payload):
-        _evict_to_queue(victim, state, reason)
+        _evict_to_queue(victim, state, reason, payload.get("kind") or "resource_pressure")
         victim["last_resource_eviction"] = payload
         evicted.append(victim["id"])
         evicted_set.add(victim["id"])
@@ -9264,7 +9284,7 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         tasks_here = _eligible_running(lambda t, node=n["name"]: t.get("node") == node)
         if len(tasks_here) < 2:
             continue
-        protected = [t for t in tasks_here if _ckpt_task_evict_protected(t)]
+        protected = [t for t in tasks_here if _task_evict_loss_protected(t)]
         protected_ids = {id(t) for t in protected}
         candidates = [t for t in tasks_here if id(t) not in protected_ids] or tasks_here
         victim = max(candidates, key=_ram_victim_key)
@@ -9274,24 +9294,26 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             "node": n["name"],
             "node_ram": ram,
             "same_node_tasks": [_summarize_task_for_resource_log(t) for t in tasks_here],
-            "protected_ckpt_task_ids": [t.get("id") for t in protected],
-            "selection": "highest_ram_pressure_then_least_progress_then_newest_ckpt_aware",
+            "protected_evict_loss_task_ids": [t.get("id") for t in protected],
+            "protected_ckpt_task_ids": [t.get("id") for t in protected if _ckpt_task_evict_protected(t)],
+            "selection": "highest_ram_pressure_then_least_progress_then_newest_loss_aware",
         }
         reason = (
             f"evicted from {n['name']} after RAM headroom breach "
             f"(free={ram['free_mb']}MB < eviction_headroom={ram['eviction_headroom_mb']}MB, "
             f"headroom={ram['headroom_mb']}MB, grace={ram['headroom_grace_mb']}MB); "
-            f"victim selected by RAM pressure / least progress / newest with ckpt protection"
+            f"victim selected by RAM pressure / least progress / newest with loss protection"
         )
         _evict(victim, reason, ram_payload)
     return evicted
 
+EVICT_RELAUNCH_COOLDOWN_S = int(os.environ.get("SCHED_EVICT_RELAUNCH_COOLDOWN_S", str(30 * 60)))
 PREEMPT_QUEUE_WAIT_MIN = 5      # high-prio waits > N min before we consider preempting
 PREEMPT_VICTIM_MIN_AGE_MIN = 10 # don't evict a task younger than this (let it settle)
 PREEMPT_VICTIM_MAX_AGE_MIN = 240 # don't evict a task that's been stable too long (probably load-bearing)
 PREEMPT_MAX_VICTIMS_PER_DISPATCH = 3  # cap chain-evictions; 1 round shouldn't kill an entire node
 
-def _evict_to_queue(victim, state, reason):
+def _evict_to_queue(victim, state, reason, eviction_kind: str = "preempt"):
     """Send a running task back to queue WITHOUT incrementing retry_count or marking crash.
     Used by preemption — task didn't fail, we just made room for higher priority. Kills its
     PIDs, resets running fields, sets last_block_reason for visibility."""
@@ -9313,6 +9335,25 @@ def _evict_to_queue(victim, state, reason):
     _clear_live_eta_fields(victim, clear_runtime_projection=True)
     victim["notified_done"] = False
     victim["last_block_reason"] = reason
+    now = time.time()
+    victim["last_evicted_at"] = now
+    victim["last_eviction_kind"] = eviction_kind
+    victim["evict_cooldown_until"] = now + max(0, int(EVICT_RELAUNCH_COOLDOWN_S))
+
+
+def _eviction_cooldown_block_reason(task: dict, now: Optional[float] = None) -> str:
+    until = float(task.get("evict_cooldown_until") or 0)
+    if until <= 0:
+        return ""
+    now = time.time() if now is None else now
+    if until <= now:
+        task.pop("evict_cooldown_until", None)
+        return ""
+    remain = int(max(0, until - now))
+    return (
+        f"recently {task.get('last_eviction_kind') or 'evicted'}; "
+        f"cooling down {remain}s before relaunch to avoid kill/relaunch thrash"
+    )
 
 def _preempt_for_high_priority(state, nodes):
     """Resolve starvation: a high-prio task waiting > PREEMPT_QUEUE_WAIT_MIN may evict younger
@@ -9345,10 +9386,22 @@ def _preempt_for_high_priority(state, nodes):
             continue
         cpu_need = hi.get("cpu_cores") or DEFAULT_CPU_CORES
         ram_need = hi.get("ram_mb") or DEFAULT_RAM_MB
+        node_state = next((n for n in nodes if n.get("name") == node_pin), None)
+        node_info = NODES.get(node_pin, {})
+        free_cpu = int((node_state or {}).get("free_cpu") or 0)
+        free_ram = int((node_state or {}).get("free_ram_mb") or 0)
+        headroom = _node_ram_headroom_mb(node_state or {}, node_info) if node_info else 0
+        schedulable_ram = max(0, free_ram - headroom)
+        cpu_deficit = max(0, int(cpu_need) - free_cpu)
+        ram_deficit = max(0, int(ram_need) - schedulable_ram)
+        if cpu_deficit <= 0 and ram_deficit <= 0:
+            continue
         cpu_acc = ram_acc = 0
         wait_min = int((now - hi["submitted_at"]) / 60)
         for _ in range(PREEMPT_MAX_VICTIMS_PER_DISPATCH - len(evicted)):
-            if cpu_acc >= cpu_need and ram_acc >= ram_need:
+            remaining_cpu = max(0, cpu_deficit - cpu_acc)
+            remaining_ram = max(0, ram_deficit - ram_acc)
+            if remaining_cpu <= 0 and remaining_ram <= 0:
                 break  # already enough freed for hi to fit
             victims = [t for t in state["tasks"]
                        if t.get("status") == "running"
@@ -9361,14 +9414,43 @@ def _preempt_for_high_priority(state, nodes):
                        and (now - t["started_at"]) < PREEMPT_VICTIM_MAX_AGE_MIN * 60]
             if not victims:
                 break  # no more eligible
-            victims.sort(key=lambda t: (t.get("started_at", 0)), reverse=True)  # newest first
-            victim = victims[0]
+            protected_ids = {id(t) for t in victims if _task_evict_loss_protected(t)}
+            pool = [t for t in victims if id(t) not in protected_ids] or victims
+
+            def _preempt_victim_key(t):
+                cpu = int(t.get("cpu_cores") or DEFAULT_CPU_CORES)
+                ram = _task_ram_pressure_mb(t)
+                progress = _task_progress_ratio(t)
+                progress_rank = -(progress if progress is not None else 0.0)
+                started = float(t.get("started_at") or 0)
+                if remaining_ram > 0:
+                    return (
+                        min(ram, remaining_ram),
+                        min(cpu, remaining_cpu) if remaining_cpu > 0 else 0,
+                        ram,
+                        progress_rank,
+                        started,
+                    )
+                return (
+                    min(cpu, remaining_cpu),
+                    progress_rank,
+                    -ram,
+                    started,
+                )
+
+            victim = max(pool, key=_preempt_victim_key)
             cpu_freed = victim.get("cpu_cores") or DEFAULT_CPU_CORES
-            ram_freed = victim.get("ram_mb") or DEFAULT_RAM_MB
+            ram_freed = _task_ram_pressure_mb(victim) or DEFAULT_RAM_MB
             _evict_to_queue(victim, state,
-                            f"preempted by {hi['id']} (high-prio waited {wait_min}min)")
+                            f"preempted by {hi['id']} (high-prio waited {wait_min}min; "
+                            f"deficit cpu={cpu_deficit}, ram={ram_deficit}MB)",
+                            "preempt_high_priority")
             evicted.append({"id": victim["id"], "node": node_pin,
-                            "cpu_freed": cpu_freed, "ram_freed": ram_freed})
+                            "cpu_freed": cpu_freed, "ram_freed": ram_freed,
+                            "target_id": hi.get("id"),
+                            "cpu_deficit": cpu_deficit,
+                            "ram_deficit": ram_deficit,
+                            "protected_skipped": [t.get("id") for t in victims if id(t) in protected_ids]})
             cpu_acc += cpu_freed
             ram_acc += ram_freed
         nodes_done.add(node_pin)
@@ -9437,7 +9519,11 @@ def _do_dispatch(state, nodes):
                 n["running_count"] = max(0, n.get("running_count", 0) - 1)
                 break
         events.append({"type": "preempted", "task_id": ev["id"], "freed_node": ev["node"],
-                        "cpu_freed": ev["cpu_freed"], "ram_freed": ev["ram_freed"]})
+                        "cpu_freed": ev["cpu_freed"], "ram_freed": ev["ram_freed"],
+                        "target_id": ev.get("target_id"),
+                        "cpu_deficit": ev.get("cpu_deficit"),
+                        "ram_deficit": ev.get("ram_deficit"),
+                        "protected_skipped": ev.get("protected_skipped") or []})
     # Refresh est_vram_mb for queued tasks based on sibling observations. Tasks submitted with
     # the 3500MB default get re-estimated against currently-running siblings, so placement
     # decisions reflect actual workload rather than a one-size-fits-all guess.
@@ -9520,6 +9606,11 @@ def _do_dispatch(state, nodes):
                       f"can still run in parallel.")
             t["last_block_reason"] = reason
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
+            continue
+        cooldown_block = _eviction_cooldown_block_reason(t)
+        if cooldown_block:
+            t["last_block_reason"] = cooldown_block
+            events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": cooldown_block})
             continue
         resume_locations, resume_errors = _refresh_resume_locations_for_task(
             t, nodes, resume_scan_cache)
@@ -9847,6 +9938,7 @@ def _do_dispatch(state, nodes):
             continue
         t.pop("launch_fail_count", None)
         t.pop("launch_failed_nodes", None)
+        t.pop("evict_cooldown_until", None)
         if not str(t.get("last_block_reason") or "").startswith("warn:"):
             t.pop("last_block_reason", None)
         _clear_claim_intent_markers(t)

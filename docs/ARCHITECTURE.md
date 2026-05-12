@@ -28,7 +28,7 @@ submit  →  queued  →  launching  →  running  →  done
 - **done**: all PIDs dead, success marker found in log tail, peak metrics folded into history.
 - **failed**: PIDs dead, failure pattern detected in log tail. Routed to `_classify_failure` → `OOM` / `ENV_MISSING` / `DISK_FULL` etc.; some classes auto-retry, some escalate.
 - **cancelled**: user-initiated kill; never auto-retried.
-- **evicted**: post-dispatch eviction killed it because GPU mem ≥ 1/3 AND util ≥ 90% (real contention). Peak gets recorded; task re-queues with a more accurate estimate.
+- **evicted**: post-dispatch eviction killed it because GPU mem crossed the 1/3+grace freeze line. Peak gets recorded; task re-queues with a more accurate estimate.
 
 ## State machine guarantees
 
@@ -74,7 +74,7 @@ The "release lock for image push" step matters: image push can take minutes, and
      if escalation-class: append to escalations.jsonl + fire heal session
      elif retry-class: _requeue_after_crash() (caps at MAX_AUTO_RETRY)
      fold peak into history
-4. enforce_post_dispatch_thresholds()      # eviction check (mem ≥1/3 AND util ≥90%)
+4. enforce_post_dispatch_thresholds()      # eviction check (mem ≥ 1/3+grace)
 5. auto_adopt_external()                   # nvidia-smi compute-apps + cgroup CPU procs not in queue
 6. archive terminal tasks > 7 days old
 7. rotate watcher.log if > 5MB
@@ -102,12 +102,11 @@ DISK_FULL is checked **before** OOM because some `OSError: [Errno 28]` messages 
 ## Eviction (the post-dispatch safety valve)
 
 After dispatch, for each GPU we check:
-- `mem_used / mem_total >= 1/3` — VRAM pressure exists
-- `util >= 90%` — compute is saturated
+- `mem_used >= 1/3 + grace` — VRAM pressure exists
 
-**Both** must be true to evict. (Either alone is fine: 100% util on 20% mem = healthy single big task; 50% mem at 30% util = packed but not contended.)
+Util-only pressure never evicts. 100% util on low VRAM is normal for small RL jobs; memory pressure past the freeze line is the signal that packing went too far.
 
-The youngest task on the GPU is evicted (re-queued with current peak folded into history). Tasks within their warmup window (180s since launch) are protected — gives them a chance to allocate their full footprint before being measured against the 1/3 rule.
+The least-progress / longest-ETA task on the GPU is evicted (re-queued with current peak folded into history). The 1/3 line has a small grace window because it is a heuristic, not a hardware limit.
 
 Single-task-on-GPU is a design exception: never evict a task that's the only user of its GPU, even at 100%/100%. That's not contention, that's correct utilization.
 

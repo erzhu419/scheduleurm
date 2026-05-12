@@ -54,8 +54,10 @@ except Exception:
     env_deploy = None
 
 # ---------- node inventory ----------
-# cpu_cores / ram_mb are the SCHEDULABLE budget (already net of OS/IO reservation), not physical totals.
-# Local is WSL2: 16 physical cores → 12 schedulable. RAM headroom can be a fixed
+# cpu_cores / ram_mb are the SCHEDULABLE budget, not detected totals.
+# Local is WSL2: 16 physical cores / 32 logical threads. Use physical cores as
+# the default schedulable budget; only count hyperthreads if intentionally oversubscribing.
+# RAM headroom can be a fixed
 # MB value (`ram_headroom_mb`) or a fraction (`ram_headroom_frac`); fixed MB wins.
 # Remote nodes are dedicated boxes — looser fractional headroom is usually enough.
 # max_concurrent_running: hard cap on number of scheduler-tracked running tasks per node.
@@ -72,7 +74,7 @@ NODES = {
     # max_vram_per_task: None = auto-derive from probed GPU total_mb at runtime (set in probe_node).
     # Was hardcoded 4096 from AMD 610 era; after NVIDIA 4060 (8188MB) became the default GPU,
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
-    "local":      {"host": None,         "cpu_cores": 12, "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "local":      {"host": None,         "cpu_cores": 16, "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
     # Remote 3080Ti nodes run many small RL jobs. Compute util often pins at 100%
     # with only ~10-20% VRAM used, so let the 1/3 VRAM line + CPU/RAM/claims decide.
     "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
@@ -91,14 +93,15 @@ LOG_DIR = STATE_DIR / "logs"
 
 VRAM_MARGIN_MB = 500       # headroom on a GPU after placing a task
 RAM_HEADROOM_FRAC = 0.10   # keep 10% of node RAM unallocated as buffer for OS/other procs
-ONE_THIRD_PACK_RULE = True # don't add to a GPU already past 1/3 used (hard freeze)
+ONE_THIRD_PACK_RULE = True # don't add to a GPU already past the 1/3+grace freeze line
+ONE_THIRD_PACK_GRACE_MB = int(os.environ.get("SCHEDULEURM_ONE_THIRD_PACK_GRACE_MB", "512"))
 GPU_UTIL_SATURATION_PCT = 85  # if an occupied GPU is past this compute util, don't pack more (would just contend)
 DEFAULT_VRAM_MB = 512      # est for unknown signatures (no history, no siblings).
 GPU_EMPTY_USED_MB = 200    # treat driver/runtime noise below this as an empty GPU
                            # Optimistic-low by design: if a task actually needs more, the
                            # post-dispatch resource-pressure rollback re-queues the least-progress
-                           # / longest-ETA colocated task. Once a card crosses 1/3, new GPU work
-                           # is frozen until old work frees memory.
+                           # / longest-ETA colocated task. Once a card crosses the 1/3+grace
+                           # freeze line, new GPU work is frozen until old work frees memory.
                            # Was 4096 → 1024 → 512. User passes --vram N when known larger.
 DEFAULT_RAM_MB = 4096      # ditto for RAM
 DEFAULT_CPU_CORES = 1      # most ML jobs are single-process at the dispatch level (workers are forked)
@@ -517,15 +520,18 @@ def capacity_conflicts(payload, active_claims, capacity):
         # 1/3 packing rule. Match local _gpu_fits semantics:
         #   - empty/noise-only GPU: allow the first task even if it is large
         #   - occupied GPU: don't add work if it is already at the freeze line
-        #     OR this claim would cross it
+        #     OR this claim would cross it. The line includes a small grace
+        #     window because 1/3 is a heuristic, not a physical OOM boundary.
         # There is deliberately no small-task exemption.
         if third_rule and gcap > 0:
             third = gcap // 3
-            if gused > 100 and (gused >= third or gused + vram_need >= third):
+            grace = max(0, int(capacity.get("one_third_grace_mb", 0) or 0))
+            freeze = min(gcap, third + grace)
+            if gused > 100 and (gused >= freeze or gused + vram_need >= freeze):
                 conflicts.append(
-                    "gpu%s: occupied claim would cross 1/3 line "
+                    "gpu%s: occupied claim would cross 1/3+grace line "
                     "(claimed %dMB + need %dMB ≥ %dMB of %dMB, packing rule)" % (
-                        gkey, gused, vram_need, third, gcap))
+                        gkey, gused, vram_need, freeze, gcap))
     return conflicts
 
 def _read_live_snapshot(capacity):
@@ -1000,6 +1006,7 @@ class _ClaimManager:
             "max_vram_per_task": info.get("max_vram_per_task"),
             "vram_margin_mb": int(VRAM_MARGIN_MB),
             "third_pack_rule": bool(ONE_THIRD_PACK_RULE),
+            "one_third_grace_mb": int(ONE_THIRD_PACK_GRACE_MB),
             "fifo_strict_after_s": cls._fifo_strict_after_for(node),
             "live_check": cls._live_check_for(node),
             "live_check_timeout_s": int(info.get("claim_live_check_timeout_s", 3)),
@@ -3397,6 +3404,12 @@ def _node_ram_headroom_mb(node_state: dict, node_info: dict) -> int:
     return int(total_for_headroom * frac)
 
 
+def _gpu_freeze_line_mb(total_mb: int) -> int:
+    if total_mb <= 0:
+        return 0
+    return min(total_mb, total_mb // 3 + max(0, int(ONE_THIRD_PACK_GRACE_MB)))
+
+
 def _gpu_threshold_snapshot(gpu: Optional[dict]) -> Optional[dict]:
     if not gpu:
         return None
@@ -3404,6 +3417,7 @@ def _gpu_threshold_snapshot(gpu: Optional[dict]) -> Optional[dict]:
     used = int(gpu.get("used_mb") or 0)
     free = int(gpu.get("free_mb") or max(0, total - used))
     third = total // 3 if total > 0 else 0
+    freeze = _gpu_freeze_line_mb(total)
     return {
         "idx": int(gpu.get("idx") or 0),
         "used_mb": used,
@@ -3411,7 +3425,9 @@ def _gpu_threshold_snapshot(gpu: Optional[dict]) -> Optional[dict]:
         "total_mb": total,
         "util_pct": int(gpu.get("util_pct") or 0),
         "one_third_mb": third,
+        "freeze_line_mb": freeze,
         "over_one_third": bool(total > 0 and used >= third and used > 100),
+        "over_freeze_line": bool(total > 0 and used >= freeze and used > 100),
         "over_full": bool(total > 0 and used >= total),
         "used_pct": int(round(100 * used / max(total, 1))),
     }
@@ -3698,10 +3714,11 @@ def _node_gpu_util_limit(node_info):
 def _gpu_fits(task, gpu, node_info):
     """VRAM + compute-saturation check on a specific GPU.
 
-    Policy: on an empty/noise-only GPU, one large task may exceed the 1/3 line;
+    Policy: on an empty/noise-only GPU, one large task may exceed the freeze line;
     on an occupied GPU, do not place a task if the GPU is already at the 1/3
-    memory line or this placement would cross it. No small-task exemption. This
-    freezes warm cards until old work completes, because dispatching into a
+    memory line plus a small grace window, or this placement would cross it.
+    No small-task exemption. This freezes warm cards until old work completes,
+    because dispatching into a
     partially occupied JAX/PyTorch card is exactly the scenario that makes OOM
     forensics ambiguous and can kill useful in-flight progress.
     """
@@ -3709,10 +3726,10 @@ def _gpu_fits(task, gpu, node_info):
     if cap is not None and task["est_vram_mb"] > cap:
         return False
     if ONE_THIRD_PACK_RULE:
-        third = gpu["total_mb"] // 3
+        freeze = _gpu_freeze_line_mb(int(gpu.get("total_mb") or 0))
         used = int(gpu.get("used_mb") or 0)
         need = int(task.get("est_vram_mb") or 0)
-        if used > 100 and (used >= third or used + need >= third):
+        if freeze > 0 and used > 100 and (used >= freeze or used + need >= freeze):
             return False
     # Compute saturation: if there's already a task on this GPU and it's pinning the chip,
     # don't pack more — the new task would just steal cycles and slow everyone down.
@@ -8974,7 +8991,8 @@ def _reserve_inflight_vram(state, nodes):
     Current: reserve min(est_vram_mb, STARTUP_FLOOR_MB). Since est_vram_mb is sibling-aware
     (refreshed in _do_dispatch), small repeat workloads (WSRL retrain @ 334MB) reserve their
     actual size; unknown big tasks (Online SAC @ est=3500) cap at the floor so they don't
-    monopolize the card before peak is observed. Once peak_vram_mb >= 100, nvidia-smi takes over."""
+    monopolize the card before peak is observed. Once peak_vram_mb >= 100 or scheduler log
+    progress proves the task has passed startup, nvidia-smi's aggregate card usage takes over."""
     by_node = {n["name"]: n for n in nodes}
     for t in state.get("tasks", []):
         if t.get("status") != "running":
@@ -8989,6 +9007,12 @@ def _reserve_inflight_vram(state, nodes):
         peak = int(t.get("peak_vram_mb") or 0)
         if peak >= 100:
             # Real usage detected — already in nvidia-smi's used_mb, no extra reservation needed.
+            continue
+        if t.get("last_progress_line") or int(t.get("runtime_current_unit") or 0) > 0:
+            # The startup reserve is only a launch-window guard. On WSL/local NVIDIA,
+            # per-PID VRAM can stay invisible even while aggregate card memory is
+            # accurate; keeping the synthetic reserve after tqdm/iter progress double
+            # counts long-running jobs and blocks useful packing.
             continue
         est = int(t.get("est_vram_mb") or 0)
         reserve = min(est, STARTUP_FLOOR_MB) if est > 0 else STARTUP_FLOOR_MB
@@ -9099,9 +9123,9 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         if not n.get("alive"):
             continue
         for g in n["gpus"]:
-            third = g["total_mb"] // 3
+            freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
             occupied = g["used_mb"] > 100
-            mem_over = occupied and g["used_mb"] >= third
+            mem_over = occupied and freeze > 0 and g["used_mb"] >= freeze
             if not mem_over:
                 continue
             tasks_here = _eligible_running(
@@ -9121,7 +9145,7 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             }
             reason = (
                 f"evicted from {n['name']}:GPU{g['idx']} after GPU memory freeze-line breach "
-                f"(mem={g['used_mb']}/{g['total_mb']}MB, 1/3={third}MB, util={g.get('util_pct','?')}%); "
+                f"(mem={g['used_mb']}/{g['total_mb']}MB, freeze={freeze}MB, util={g.get('util_pct','?')}%); "
                 f"victim selected by longest ETA / least progress / newest"
             )
             _evict(victim, reason, gpu_payload)
@@ -9449,13 +9473,13 @@ def _do_dispatch(state, nodes):
                     gpu_reasons = []
                     for g in n["gpus"]:
                         if not _gpu_fits(t, g, NODES[n["name"]]):
-                            third = g["total_mb"] // 3
+                            freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
                             sub = []
                             if g["used_mb"] > 100 and (
-                                    g["used_mb"] >= third
-                                    or g["used_mb"] + (t.get("est_vram_mb") or 0) >= third):
+                                    g["used_mb"] >= freeze
+                                    or g["used_mb"] + (t.get("est_vram_mb") or 0) >= freeze):
                                 sub.append(
-                                    f"1/3 mem ({g['used_mb']}+{t.get('est_vram_mb') or 0}>={third}MB)")
+                                    f"1/3+grace mem ({g['used_mb']}+{t.get('est_vram_mb') or 0}>={freeze}MB)")
                             util_limit = _node_gpu_util_limit(NODES[n["name"]])
                             if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
                                 sub.append(f"util {g['util_pct']}%")
@@ -12656,9 +12680,9 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
         reasons = []
         if cap_per_task is not None and est > cap_per_task:
             reasons.append(f"est={est}>per-task cap={cap_per_task}")
-        third = g["total_mb"] // 3
-        if g["used_mb"] >= third and g["used_mb"] > 100:
-            reasons.append(f"used {g['used_mb']}/{g['total_mb']}MB ≥ 1/3 (packing rule)")
+        freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
+        if freeze > 0 and g["used_mb"] > 100 and (g["used_mb"] >= freeze or g["used_mb"] + est >= freeze):
+            reasons.append(f"used+est {g['used_mb']}+{est}/{g['total_mb']}MB ≥ 1/3+grace {freeze}MB (packing rule)")
         util_limit = _node_gpu_util_limit(node_info)
         if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
             reasons.append(f"util={g.get('util_pct')}% ≥ {util_limit}% (compute saturation)")

@@ -6,7 +6,7 @@ All scheduler-wide knobs live at the top of `skill/scheduler.py`. Re-run `instal
 
 ```python
 NODES = {
-    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "local":     {"host": None,       "cpu_cores": 16, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
     "remote-A":  {"host": "remote-A", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
 }
 ```
@@ -14,7 +14,7 @@ NODES = {
 | Field | Meaning | Tuning notes |
 |---|---|---|
 | `host` | `None` for local; SSH alias from `~/.ssh/config` for remote | Must be passwordless: `ssh -o BatchMode=yes <host> true` exits 0 |
-| `cpu_cores` | Schedulable CPU budget (already net of OS reservation) | 16 physical cores → 12 schedulable (4 reserved). HT logical count is misleading — use physical |
+| `cpu_cores` | Schedulable CPU budget | Use physical cores, not hyperthreads, unless intentionally oversubscribing |
 | `ram_mb` | Schedulable RAM in MB | Don't include OS headroom here — that's `ram_headroom_mb` / `ram_headroom_frac`'s job |
 | `ram_headroom_mb` | Fixed RAM MB to keep unallocated | Wins over `ram_headroom_frac`. Current local WSL setting: `2048` |
 | `ram_headroom_frac` | Fraction of RAM to keep unallocated | Used when `ram_headroom_mb` is unset. Bare-metal Linux / remotes: `0.10` |
@@ -44,11 +44,12 @@ The default VRAM is deliberately **low**. If a task actually needs more, the pos
 
 ```python
 VRAM_MARGIN_MB = 500              # headroom on a GPU after placing a task
-ONE_THIRD_PACK_RULE = True        # don't add to a GPU already past 1/3 used (RL plateau heuristic)
+ONE_THIRD_PACK_RULE = True        # don't add to a GPU already past 1/3+grace
+ONE_THIRD_PACK_GRACE_MB = 512     # 1/3 is heuristic; allow small overages
 GPU_UTIL_SATURATION_PCT = 85      # if an occupied GPU is past this util%, don't pack more
 ```
 
-The 1/3 rule is specific to RL workloads where peak VRAM is hit at random plateaus during training, not at startup. Pure supervised training — set `ONE_THIRD_PACK_RULE = False` and the placer fills based on margin only.
+The 1/3+grace rule is specific to RL workloads where peak VRAM is hit at random plateaus during training, not at startup. Pure supervised training — set `ONE_THIRD_PACK_RULE = False` and the placer fills based on margin only.
 
 ## History accumulation
 
@@ -98,7 +99,7 @@ if _NODES_FILE.exists():
 Sample `nodes.json`:
 ```json
 {
-  "local":    {"host": null,       "cpu_cores": 12, "ram_mb": 57344, "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": null, "max_concurrent_running": 10},
+  "local":    {"host": null,       "cpu_cores": 16, "ram_mb": 57344, "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": null, "max_concurrent_running": 10, "gpu_util_saturation_pct": null},
   "remote-A": {"host": "remote-A", "cpu_cores": 12, "ram_mb": 204800, "ram_headroom_frac": 0.10, "max_vram_per_task": null, "max_concurrent_running": null}
 }
 ```

@@ -74,14 +74,14 @@ It never rewrites running tasks. If it reports a running-task warning, surface t
 | `jtl110gpu` | 12 cores | 200 GB | 2× 3080Ti 12GB | unlimited | 10% |
 | `jtl110gpu2` | 12 cores | 200 GB | 2× 3080Ti 12GB | unlimited | 10% |
 
-Note: local 16 physical cores → 12 schedulable (4 reserved for OS/IO). The 32 logical (HT) is misleading. WSL OOM freezes the host — the 25% RAM headroom is non-negotiable.
+Note: local has 16 physical cores / 32 logical threads; scheduleurm budgets the 16 physical cores by default. WSL OOM freezes the host — the fixed local RAM headroom is non-negotiable.
 
 Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every 60s and **auto-adopts** any externally-launched user-owned process (BOTH GPU compute apps AND CPU-burning python procs ≥50% CPU under `/home/erzhu419/<project>/`). Notifications go to `~/.claude/scheduler/logs/watcher.log` (and Feishu if `~/.claude/feishu.json` is configured).
 
 ## What the scheduler enforces (you don't need to re-check these)
 
-- **VRAM 1/3 packing rule**: GPU already past 1/3 used will not accept more tasks (RL plateau heuristic). Single big task on an empty card is the exception.
-- **GPU compute-saturation guard (util ≥ 85%)**: if a GPU is already occupied (>100 MB used) AND its compute utilization is ≥85%, no more tasks pack onto it even if VRAM has room. The chip is pinned; piling on would just steal cycles. Empty GPUs are exempt (handles transient idle spikes).
+- **VRAM 1/3+grace packing rule**: GPU already past the 1/3+grace freeze line will not accept more tasks (RL plateau heuristic). Single big task on an empty card is the exception.
+- **Optional GPU compute-saturation guard (util ≥ 85%)**: strict nodes may block packing when an occupied GPU is compute-saturated. Local/jtl110gpu/jtl110gpu2 set `gpu_util_saturation_pct=None`, so RL packing is governed by VRAM/CPU/RAM rather than util.
 - **CPU constraint**: total declared `cpu_cores` of tasks running on a node must not exceed budget. CPU-saturated node is auto-skipped — won't pile on.
 - **RAM constraint**: free RAM minus task's request must remain above headroom (25% local, 10% remote). Headroom denominator uses `min(declared_ram_mb, probed_MemTotal)` — protects against over-declared configs (e.g. WSL where probed total is half the host total).
 - **Per-task VRAM cap**: auto-derived from probed GPU `total_mb` (was hardcoded 4GB AMD-era cap; now respects whatever NVIDIA card nvidia-smi reports as GPU0). 1/3 packing rule still applies on top.
@@ -144,7 +144,7 @@ The scheduler reports "max-fill is K". **You decide whether to launch K, fewer, 
 
 1. **Don't ask "want X-way?"** — you have all the info. Ask only if there's genuine ambiguity (unusual resource demand, conflicting preferences).
 2. **Concurrency = min(N, max-fit-K)** — for N=9 tasks with K=5, launch 5 now, queue 4. Don't pick 4 just because it divides evenly. The user's law: "5 路跑 2 批 比 4 路跑 3 批好" — **prefer fewer batches**.
-3. **WSL local restraint**: even if `dispatch` says local fits, prefer remote when both fit. Local is for small/short jobs or fallback. Watch loadavg in `status` — if local already > 8 (out of 12 schedulable), don't add to it.
+3. **WSL local restraint**: even if `dispatch` says local fits, prefer remote when both fit. Local is for small/short jobs or fallback. Watch loadavg in `status` — if local already > 12 (out of 16 schedulable physical cores), don't add to it.
 4. **CPU-saturated remote → route around it**: if jtl110gpu's CPU is already at limit and user wants to run a CPU-heavy thing there, **proactively suggest** pulling artifacts (ckpt, data) to local instead. Don't blindly try to dispatch and let it sit blocked. Don't wait for the user to figure it out.
 5. **Submit + dispatch as one motion** — for a batch of similar tasks, submit them all, then ONE `dispatch`. Watcher picks up stragglers as resources free. Don't ask before each.
 6. **Trust history**: if signature has been seen before, scheduler auto-fills cpu/ram/vram from peak history. Pass `--cpu N --ram-mb M --vram V` only when you have a specific reason.
@@ -263,7 +263,7 @@ python ~/.claude/skills/scheduler/scheduler.py dispatch
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py status
 ```
-Show node telemetry (loadavg, free CPU, free RAM, per-GPU used/total) + tasks. Highlight GPUs under 1/3 used as "still acceptable".
+Show node telemetry (loadavg, free CPU, free RAM, per-GPU used/total) + tasks. Highlight GPUs under the 1/3+grace freeze line as "still acceptable".
 
 ### "队列是不是又乱了 / eval 有没有早跑 / 自动整改"
 ```bash

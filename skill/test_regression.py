@@ -2407,7 +2407,7 @@ def test_local_max_vram_per_task_dynamic():
     `max_vram_per_task: 4096` cap silently blocked any single-task allocation >4GB even
     though physically OK. Cap is now None in NODES → no static refusal; the 1/3 packing
     rule + GPU's actual total_mb are the only constraints."""
-    print("\n[24] local max_vram_per_task is None + remote util gate policy")
+    print("\n[24] local max_vram_per_task is None + local/remote util gate policy")
     check("NODES['local']['max_vram_per_task'] is None (was 4096 hardcoded)",
           sch.NODES["local"].get("max_vram_per_task") is None,
           diag=str(sch.NODES["local"].get("max_vram_per_task")))
@@ -2427,6 +2427,9 @@ def test_local_max_vram_per_task_dynamic():
     check("jtl110gpu ignores util gate and relies on 1/3 VRAM + CPU/RAM",
           sch.NODES["jtl110gpu"].get("gpu_util_saturation_pct") is None
           and sch._gpu_fits(small_task, warm_gpu, sch.NODES["jtl110gpu"]) is True)
+    check("local also ignores util gate and relies on 1/3+grace VRAM + CPU/RAM",
+          sch.NODES["local"].get("gpu_util_saturation_pct") is None
+          and sch._gpu_fits(small_task, warm_gpu, sch.NODES["local"]) is True)
 
 def test_ckpt_dir_cross_sig_conflict():
     """Submit-time guard: refuse if --ckpt-dir is already in use by any active task.
@@ -3728,6 +3731,19 @@ def test_backend_slurm_phase2_12_eviction_skips_slurm_tasks():
     check("reserve_inflight_vram still reserves for LocalBackend task (regression)",
           nodes2[0]["gpus"][0]["free_mb"] < 11900,
           diag=f"free_mb={nodes2[0]['gpus'][0]['free_mb']}")
+
+    state3 = {"tasks": [
+        {"id": "tp", "status": "running", "node": "n", "gpu_idx": 0,
+         "remote_pids": [102], "peak_vram_mb": 0, "est_vram_mb": 4000,
+         "runtime_current_unit": 100, "last_progress_line": "Iter 100 | 1.0s/iter"},
+    ]}
+    nodes3 = [{"name": "n", "alive": True,
+               "gpus": [{"idx": 0, "used_mb": 100, "total_mb": 12000,
+                          "free_mb": 11900, "util_pct": 0}]}]
+    sch._reserve_inflight_vram(state3, nodes3)
+    check("reserve_inflight_vram skips progressed LocalBackend task (avoid double-count)",
+          nodes3[0]["gpus"][0]["free_mb"] == 11900,
+          diag=f"free_mb={nodes3[0]['gpus'][0]['free_mb']}")
 
     # ---------- Source guards: ensure helper is consulted at all 3 sites ----------
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
@@ -10501,6 +10517,9 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
     check("_build_capacity carries third_pack_rule without obsolete default_vram exemption",
           '"third_pack_rule"' in cap_body
           and '"default_vram_mb"' not in cap_body)
+    check("_build_capacity carries one_third_grace_mb",
+          '"one_third_grace_mb"' in cap_body
+          and "ONE_THIRD_PACK_GRACE_MB" in cap_body)
 
     # Source guard: remote script's claim op enforces these.
     sc = sch._CLAIMS_REMOTE_SCRIPT
@@ -10579,13 +10598,13 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
 
         # ---- 1/3 rule: the first big task on an empty GPU is allowed,
         # but an occupied GPU must not accept a new claim that would cross
-        # the freeze line.
+        # the 1/3+grace freeze line.
         reset()
         rec = dict(base_rec, gpu_idx=0, vram_mb=5000)
         cap = {"cpu_cores": 12, "ram_mb": 100000,
                "gpu_vram_mb": {"0": 12000},
                "max_vram_per_task": None, "vram_margin_mb": 0,
-               "third_pack_rule": True, "default_vram_mb": 512}
+               "third_pack_rule": True, "one_third_grace_mb": 512}
         r = claim(rec, cap)
         check("first claim of 5000 on EMPTY 12GB GPU → ok (matches local _gpu_fits)",
               r.get("ok") is True, diag=r)
@@ -10597,8 +10616,8 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
               r2.get("ok") is False and "1/3" in (r2.get("conflict") or ""),
               diag=r2)
 
-        # ---- 1/3 rule: even just-below-1/3 occupied GPUs are frozen if the
-        # next claim would cross the line.
+        # ---- 1/3 rule: a small overage is allowed inside the grace window,
+        # but crossing the 1/3+grace freeze line is still blocked.
         reset()
         rec_a = dict(base_rec, task_id="tAlmost", gpu_idx=0, vram_mb=3990)
         r_a = claim(rec_a, cap)
@@ -10606,9 +10625,14 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
               r_a.get("ok") is True, diag=r_a)
         rec_b = dict(base_rec, task_id="tCross", gpu_idx=0, vram_mb=200)
         r_b = claim(rec_b, cap)
-        check("occupied GPU crossing 1/3 from below → blocked",
-              r_b.get("ok") is False and "1/3" in (r_b.get("conflict") or ""),
+        check("occupied GPU slight 1/3 crossing within grace → ok",
+              r_b.get("ok") is True,
               diag=r_b)
+        rec_c = dict(base_rec, task_id="tCrossFreeze", gpu_idx=0, vram_mb=700)
+        r_c = claim(rec_c, cap)
+        check("occupied GPU crossing 1/3+grace from below → blocked",
+              r_c.get("ok") is False and "1/3+grace" in (r_c.get("conflict") or ""),
+              diag=r_c)
 
         # ---- 1/3 rule: even a 400MB task cannot stack past 1/3.
         # State from above: claims.json already has tA (5000MB) on GPU0.
@@ -10634,7 +10658,7 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
         cap = {"cpu_cores": 12, "ram_mb": 100000,
                "gpu_vram_mb": {"0": 12000},
                "max_vram_per_task": 4000, "vram_margin_mb": 500,
-               "third_pack_rule": True, "default_vram_mb": 512}
+               "third_pack_rule": True, "one_third_grace_mb": 512}
         r = claim(rec, cap)
         check("small claim within all gates → ok",
               r.get("ok") is True, diag=r)
@@ -10646,7 +10670,7 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
 
     3.4.6 P1: 1/3 rule semantics matched local _gpu_fits — empty GPU's
               first big task succeeds, but occupied GPUs cannot cross the
-              1/3 freeze line.
+              1/3+grace freeze line.
     3.4.7 P2: in-place truncate isn't crash-atomic. Distinguish
               "bootstrap empty" (fine) from "post-crash empty" (lossy)
               by writing a default `{"version":1,"claims":[]}` at setup
@@ -10665,7 +10689,7 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     # 3.4.6 source guards
     sc = sch._CLAIMS_REMOTE_SCRIPT
     check("script: 1/3 rule treats only occupied GPUs as freeze candidates",
-          "gused > 100" in sc and "gused + vram_need >= third" in sc,
+          "gused > 100" in sc and "gused + vram_need >= freeze" in sc,
           diag="must mirror local _gpu_fits semantics")
 
     # 3.4.7 source guards
@@ -10691,7 +10715,8 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
 
     # Behavioral: 3.4.6 — first 5GB claim on empty 12GB succeeds; second 1GB
     # gets blocked; small tasks are blocked too once the GPU is already past
-    # 1/3; occupied GPUs just below 1/3 also block claims that would cross it.
+    # 1/3+grace; occupied GPUs just below 1/3 may accept small claims inside
+    # the grace window, but block claims that would cross the freeze line.
     import tempfile, subprocess, json as _json
     with tempfile.TemporaryDirectory() as td:
         script = sc.replace(
@@ -10721,7 +10746,7 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
         cap = {"cpu_cores": 12, "ram_mb": 100000,
                "gpu_vram_mb": {"0": 12000},
                "max_vram_per_task": None, "vram_margin_mb": 0,
-               "third_pack_rule": True, "default_vram_mb": 512}
+               "third_pack_rule": True, "one_third_grace_mb": 512}
         now = time.time()
         rec_big = {"owner": "u", "scheduler_id": "S", "task_id": "tBig",
                    "gpu_idx": 0, "vram_mb": 5000, "cpu_cores": 1, "ram_mb": 1000,
@@ -10753,8 +10778,13 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
               r.get("ok") is True, diag=r)
         rec_cross = dict(rec_big, task_id="tCross", vram_mb=200)
         r = call("claim", rec_cross, cap)
-        check("3.4.6: occupied GPU crossing 1/3 from below → blocked",
-              r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
+        check("3.4.6: occupied GPU slight 1/3 crossing within grace → ok",
+              r.get("ok") is True,
+              diag=r)
+        rec_cross_freeze = dict(rec_big, task_id="tCrossFreeze", vram_mb=700)
+        r = call("claim", rec_cross_freeze, cap)
+        check("3.4.6: occupied GPU crossing 1/3+grace from below → blocked",
+              r.get("ok") is False and "1/3+grace" in (r.get("conflict") or ""),
               diag=r)
 
         # 3.4.7 — empty file (post-truncate crash simulation) → claims_corrupt error.

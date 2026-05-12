@@ -13,7 +13,7 @@ Built for the real shape of ML research: dozens of multi-hour training runs, mix
 | Eyeballing `nvidia-smi` to decide if there's room for one more run | `status` prints free CPU/RAM/VRAM per node; `dispatch` greedily fills capacity |
 | Duplicate runs clobbering `--out_dir` / `--ckpt-dir` because you forgot one was running | Same run-identity dedup at dispatch (race-guarded across launching window too); active `--ckpt-dir` is globally exclusive by default |
 | 14h of training lost to OOM because the host has no swap left | RAM headroom enforced before placement (fixed 2GB on WSL local; 10% on remote) |
-| GPU utilization at 100% but VRAM still low | Remote RL nodes can ignore util and pack by the 1/3 VRAM rule; local/strict nodes can keep a util saturation guard |
+| GPU utilization at 100% but VRAM still low | RL nodes can ignore util and pack by the 1/3+grace VRAM rule; strict nodes can keep a util saturation guard |
 | Pre-empted task silently restarts from step 0 instead of resuming | `--ckpt-dir` + `--resume-flag` injects `<flag> <ckpt_path>` on re-dispatch |
 | Child started outside the scheduler doesn't show up anywhere | Watcher auto-adopts external GPU + CPU procs every 60s |
 | Same task being recommended `5GB RAM` because one bad sibling did | History uses **p80 of last 10 samples** — single outliers don't pin estimates |
@@ -26,14 +26,14 @@ A node is described by a few resource knobs:
 
 ```python
 NODES = {
-    "local":     {"host": None,       "cpu_cores": 12, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10},
+    "local":     {"host": None,       "cpu_cores": 16, "ram_mb": 56*1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
     "remote-A":  {"host": "remote-A", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
     "remote-B":  {"host": "remote-B", "cpu_cores": 12, "ram_mb": 200*1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None},
 }
 ```
 
 - `host=None` means local; otherwise an SSH alias from `~/.ssh/config` (passwordless required).
-- `cpu_cores` / `ram_mb` are the **schedulable** budget, already net of OS reservation. (E.g. 16 physical cores → 12 schedulable on local; rest reserved for OS/IO.)
+- `cpu_cores` / `ram_mb` are the **schedulable** budget. Use physical cores, not hyperthreads, unless you deliberately want to oversubscribe CPU.
 - `ram_headroom_mb` / `ram_headroom_frac` — RAM kept unallocated as buffer. Fixed MB wins when set; remotes usually use the fraction.
 - `max_vram_per_task` — `None` auto-derives from probed GPU `total_mb`; set a number to cap (e.g. WSL local 4060 8GB caps individual tasks at 4GB so two can share).
 - `max_concurrent_running` — defense-in-depth above CPU/RAM bookkeeping (catches under-declared RAM tasks).
@@ -296,7 +296,7 @@ otherwise block cross-user overwrite); the shared `claims.json` and
 
 `LocalBackend.launch` does an atomic capacity check before `ssh+nohup`.
 The check enforces the same placement policy as local `_gpu_fits`:
-total CPU/RAM/VRAM caps, per-task VRAM cap, VRAM margin, and the 1/3
+total CPU/RAM/VRAM caps, per-task VRAM cap, VRAM margin, and the 1/3+grace
 packing rule. Util saturation isn't replicated cross-scheduler (no shared
 util reading). Nodes with `gpu_util_saturation_pct=None` skip that gate and
 rely on VRAM/CPU/RAM; strict nodes still gate on util in `pick_placement`
@@ -357,7 +357,7 @@ AND `enable_claims` for scheduleurm-local launches that bypass slurm's queue).
                      │              - dispatch                         │
                      │              - check_running (peak VRAM/RAM)    │
                      │              - diagnose_terminal (4 rules)      │
-                     │              - eviction (mem ≥ 1/3 AND util ≥90%) │
+                     │              - eviction (mem ≥ 1/3+grace)          │
                      │              - auto-adopt external procs        │
                      └────────────────────────────────────────────────┘
                                           ↕
@@ -396,7 +396,7 @@ Legacy single-value records (from before p80) auto-migrate: the existing value i
 |---|---|
 | "run this" / "submit this" / "launch this" | `submit` + `dispatch`; report node:GPU + log path + resume_from |
 | "run these N seeds" / "launch this sweep" / "kick off N seeds" | submit all N with same `--signature` prefix; ONE `dispatch` |
-| "GPU free?" / "status" / "what's running?" / "node status" / "show queue" | `status`; highlight GPUs under 1/3 used |
+| "GPU free?" / "status" / "what's running?" / "node status" / "show queue" | `status`; highlight GPUs under the 1/3+grace freeze line |
 | "rebalance" / "redispatch" / "reassign" | `dispatch` (watcher does this automatically every 60s) |
 | "cancel t0042" / "kill t0042" / "stop t0042" | queued: `cancel`. running: confirm + `cancel --force` |
 | "clear queue" / "wipe the queue" | `clear-queue` (dry-run) → `clear-queue --confirm` (running tasks NEVER touched) |

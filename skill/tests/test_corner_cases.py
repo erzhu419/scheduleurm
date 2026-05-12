@@ -201,9 +201,14 @@ def run(check, sch):
         gpu = {"total_mb": 12000, "used_mb": 0, "free_mb": 12000, "util_pct": 0}
         return sch._gpu_fits(task, gpu, {"max_vram_per_task": None})
 
-    def case_gpu_fits_rejects_crossing_one_third_from_below():
+    def case_gpu_fits_allows_slight_one_third_crossing():
         task = {"est_vram_mb": 200}
         gpu = {"total_mb": 12000, "used_mb": 3990, "free_mb": 8010, "util_pct": 1}
+        return sch._gpu_fits(task, gpu, {"max_vram_per_task": None, "gpu_util_saturation_pct": None})
+
+    def case_gpu_fits_rejects_crossing_freeze_line_from_below():
+        task = {"est_vram_mb": 200}
+        gpu = {"total_mb": 12000, "used_mb": 4550, "free_mb": 7450, "util_pct": 1}
         return not sch._gpu_fits(task, gpu, {"max_vram_per_task": None, "gpu_util_saturation_pct": None})
 
     def case_gpu_fits_rejects_vram_margin_shortfall():
@@ -254,7 +259,8 @@ def run(check, sch):
         ("gpu fits rejects small idle past one third", case_gpu_fits_rejects_small_idle_past_one_third),
         ("gpu fits rejects saturated past one third", case_gpu_fits_rejects_saturated_past_one_third),
         ("gpu fits allows first large task on empty gpu", case_gpu_fits_allows_first_large_task_on_empty_gpu),
-        ("gpu fits rejects crossing one third from below", case_gpu_fits_rejects_crossing_one_third_from_below),
+        ("gpu fits allows slight one-third crossing", case_gpu_fits_allows_slight_one_third_crossing),
+        ("gpu fits rejects crossing freeze line from below", case_gpu_fits_rejects_crossing_freeze_line_from_below),
         ("gpu fits rejects margin shortfall", case_gpu_fits_rejects_vram_margin_shortfall),
         ("slurm bucket missing estimate defaults gpu", case_slurm_bucket_missing_est_defaults_gpu),
         ("format task location slurm cpu and gpu", case_format_task_location_slurm_cpu_and_gpu),

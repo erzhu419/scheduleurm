@@ -208,8 +208,9 @@ def doctor(fix: bool = False, project: Optional[str] = None) -> dict:
     Use before or after scheduler writes when user asks why tasks launched out of order,
     eval ran before train, SimpleSAC data was sent remote, or completed results seem
     invisible. With fix=False this is read-only. With fix=True it only edits queued
-    records: add wait_for_files to evals, force known large SimpleSAC data local, and
-    promote producer trains to high priority when queued evals depend on their ckpt.
+    records: add wait_for_files to evals, force known large SimpleSAC data local,
+    promote producer trains to high priority when queued evals depend on their
+    ckpt, and clear stale live ETA/progress inherited by queued retries.
     Running tasks are never modified; they are reported for manual decision.
     """
     args = ["doctor", "--json"]

@@ -163,10 +163,13 @@ atomic capacity exclusion plus FIFO-with-backfill launch admission.
 
 If a small node has Slurm installed but should still pack multiple GPU jobs per
 card, leave it at the default policy and set `enable_claims=True` if it is shared.
-Use `NODES["x"]["slurm_backend"] = "slurm"` or per-bucket
-`slurm_gpu_backend="slurm"` / `slurm_cpu_backend="slurm"` only for nodes where
-Slurm should own queueing. Existing Slurm jobs keep being tracked by
-`slurm_job_id`; only future launches are affected.
+Default/`auto` Slurm routing is hardware-aware: nodes that look cluster-class
+(by default >=128 schedulable CPU cores or >=8 GPUs) only hand LLM, multi-GPU,
+large-VRAM, or large-CPU tasks to Slurm; small one-GPU tasks keep scheduleurm
+packing. Use `NODES["x"]["slurm_backend"] = "slurm"` or per-bucket
+`slurm_gpu_backend="slurm"` / `slurm_cpu_backend="slurm"` only when Slurm should
+own queueing for that node/bucket unconditionally. Existing Slurm jobs keep being
+tracked by `slurm_job_id`; only future launches are affected.
 
 ## What it deliberately doesn't do
 

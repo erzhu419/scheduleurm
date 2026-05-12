@@ -13,7 +13,7 @@ Built for the real shape of ML research: dozens of multi-hour training runs, mix
 | Eyeballing `nvidia-smi` to decide if there's room for one more run | `status` prints free CPU/RAM/VRAM per node; `dispatch` greedily fills capacity |
 | Duplicate runs clobbering `--out_dir` / `--ckpt-dir` because you forgot one was running | Same run-identity dedup at dispatch (race-guarded across launching window too); active `--ckpt-dir` is globally exclusive by default |
 | 14h of training lost to OOM because the host has no swap left | RAM headroom enforced before placement (fixed 2GB on WSL local; 10% on remote) |
-| GPU utilization at 100% on one card while another sits idle | Best-fit warm-first placement; 1/3 VRAM packing rule for RL plateaus; util ≥90% saturation guard |
+| GPU utilization at 100% but VRAM still low | Remote RL nodes can ignore util and pack by the 1/3 VRAM rule; local/strict nodes can keep a util saturation guard |
 | Pre-empted task silently restarts from step 0 instead of resuming | `--ckpt-dir` + `--resume-flag` injects `<flag> <ckpt_path>` on re-dispatch |
 | Child started outside the scheduler doesn't show up anywhere | Watcher auto-adopts external GPU + CPU procs every 60s |
 | Same task being recommended `5GB RAM` because one bad sibling did | History uses **p80 of last 10 samples** — single outliers don't pin estimates |
@@ -230,19 +230,22 @@ Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log
 
 ## Slurm coexistence (Phase 2)
 
-scheduleurm defaults to its own LocalBackend placement even if a target node has
-`sbatch` and `squeue` installed. Slurm is opt-in: set
-`NODES["node"]["slurm_backend"] = "slurm"` for a real shared cluster, set
-`slurm_gpu_backend` / `slurm_cpu_backend` per resource bucket, or submit a task with
-explicit `--slurm-partition/account/qos` fields. In Slurm mode scheduleurm generates an
+scheduleurm defaults to its own LocalBackend placement for small jobs even if a target
+node has `sbatch` and `squeue` installed. Slurm is opt-in or hardware-aware: set
+`NODES["node"]["slurm_backend"] = "slurm"` to force a real shared cluster through Slurm,
+set `slurm_gpu_backend` / `slurm_cpu_backend` per resource bucket, or submit a task with
+explicit `--slurm-partition/account/qos` fields. Without a force setting, cluster-class
+nodes (default: >=128 schedulable CPU cores or >=8 GPUs) route only LLM, multi-GPU,
+large-VRAM, or large-CPU jobs through Slurm; small one-GPU jobs keep scheduleurm packing.
+In Slurm mode scheduleurm generates an
 `sbatch` script (with `--gres=gpu:1`, `--mem`, `--cpus-per-task`, `--time` from exact
 runtime history first, then history EWMA × 3, and your task's `--cmd` as body), submits it
 via stdin, tracks liveness via `squeue`, and kills via `scancel`.
 
 | Target node | What you get |
 |---|---|
-| Default, including nodes that merely have slurm installed | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` |
-| Slurm opt-in node or explicit Slurm task | scheduleurm generates sbatch, slurm handles cross-user queueing + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
+| Default, including small nodes that merely have slurm installed | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` |
+| Forced Slurm node, explicit Slurm task, or hardware-aware large task on a large Slurm-capable node | scheduleurm generates sbatch, slurm handles cross-user queueing + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
 | Mixed deployment | Per-node/per-task — node A can be Slurm opt-in, node B can be scheduleurm local, and existing `slurm_job_id` tasks keep being tracked by SlurmBackend |
 
 What scheduleurm keeps owning even on slurm nodes (because slurm doesn't): per-signature p80
@@ -264,9 +267,10 @@ walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `ssta
 isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.
 
 For small personal nodes where Slurm is installed but GPU sharing is desired, do nothing:
-the default is LocalBackend placement/VRAM packing. To force a real cluster through Slurm,
-set `NODES["node"]["slurm_backend"] = "slurm"` or only
-`NODES["node"]["slurm_gpu_backend"] = "slurm"` / `slurm_cpu_backend = "slurm"`.
+the default is LocalBackend placement/VRAM packing. On large nodes, default/`auto` Slurm
+routing only catches heavyweight jobs; use `slurm_backend="local"` to force packing or
+`slurm_backend="slurm"` to force Slurm for every future launch on that node. Per-bucket
+overrides are `NODES["node"]["slurm_gpu_backend"] = "slurm"` / `slurm_cpu_backend = "slurm"`.
 Tasks with explicit Slurm fields route only to Slurm-capable nodes; scheduleurm will not
 silently ignore those fields by launching them locally.
 If that node should pack despite `nvidia-smi` showing 100% util, also set
@@ -293,9 +297,10 @@ otherwise block cross-user overwrite); the shared `claims.json` and
 `LocalBackend.launch` does an atomic capacity check before `ssh+nohup`.
 The check enforces the same placement policy as local `_gpu_fits`:
 total CPU/RAM/VRAM caps, per-task VRAM cap, VRAM margin, and the 1/3
-packing rule with small-task exemption. Util saturation isn't
-replicated cross-scheduler (no shared util reading); local
-`pick_placement` gates on it before `claim` is invoked.
+packing rule. Util saturation isn't replicated cross-scheduler (no shared
+util reading). Nodes with `gpu_util_saturation_pct=None` skip that gate and
+rely on VRAM/CPU/RAM; strict nodes still gate on util in `pick_placement`
+before `claim` is invoked.
 
 Failed claims split: capacity conflicts return `CLAIM_RACE:` (task back
 to queue, no fail-count increment, retry next cycle) while transport /

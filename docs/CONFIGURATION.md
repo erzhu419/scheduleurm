@@ -20,8 +20,8 @@ NODES = {
 | `ram_headroom_frac` | Fraction of RAM to keep unallocated | Used when `ram_headroom_mb` is unset. Bare-metal Linux / remotes: `0.10` |
 | `max_vram_per_task` | Cap individual task VRAM | `None` auto-derives from probed `nvidia-smi total_mb`. Set a number to cap (WSL local 4060: 4096 lets two tasks share an 8GB card) |
 | `max_concurrent_running` | Hard cap on tracked running tasks | Defense-in-depth above CPU/RAM bookkeeping. WSL local: 8-10. Remote with 200GB RAM: `None` |
-| `slurm_backend` | `"local"` default, `"slurm"`, or `"auto"` | Default ignores Slurm even if installed. `"slurm"` forces all future launches on that node through SlurmBackend. `"auto"` preserves old detect-and-use behavior |
-| `slurm_gpu_backend` / `slurm_cpu_backend` | `"local"` default, `"slurm"`, or `"auto"` | Per-resource opt-in. Use `"slurm"` only for real shared clusters; leave default for small nodes that need scheduleurm VRAM/RAM packing |
+| `slurm_backend` | `"local"` default, `"slurm"`, or `"auto"` | `"slurm"` forces future launches through SlurmBackend. Default/`"auto"` use hardware-aware routing: only large/shared nodes plus LLM, multi-GPU, large-VRAM, or large-CPU jobs go to Slurm; small one-GPU jobs stay with scheduleurm packing |
+| `slurm_gpu_backend` / `slurm_cpu_backend` | `"local"` default, `"slurm"`, or `"auto"` | Per-resource override. Use `"slurm"` when Slurm must own that bucket; use `"local"`/`false` to force scheduleurm packing even on large Slurm-capable nodes |
 | `gpu_util_saturation_pct` | Integer percent or `None` | Per-node override for the GPU util placement gate. `None` ignores util for packing and relies on VRAM/1⁄3/RAM/CPU checks |
 | `enable_claims` | `False` by default | Recommended for default-local shared nodes; adds cross-scheduler local resource claims and FIFO-with-backfill launch admission |
 | `claim_ttl_s` | `3600` default | Lifetime of an active resource claim before GC may remove it if its PID is also dead |
@@ -76,6 +76,11 @@ Failure categories that **never** auto-retry (escalate to heal session instead):
 |---|---|---|
 | `CLAUDE_BIN` | Path to `claude` CLI for the heal-session spawn path | `/home/erzhu419/.nvm/.../bin/claude` (you'll want to override) |
 | `SCHEDULEURM_SKILL_DIR` | Where `install.sh` puts the skill | `~/.claude/skills/scheduler` |
+| `SCHEDULEURM_SLURM_AUTO_MIN_CPU_CORES` | CPU threshold for considering a node large/shared enough for Slurm auto routing | `128` |
+| `SCHEDULEURM_SLURM_AUTO_MIN_GPUS` | GPU-count threshold for Slurm auto routing | `8` |
+| `SCHEDULEURM_SLURM_AUTO_LARGE_TASK_MIN_GPUS` | Requested-GPU threshold for treating a task as Slurm-sized | `2` |
+| `SCHEDULEURM_SLURM_AUTO_LARGE_TASK_VRAM_MB` | Estimated-VRAM threshold for treating a task as Slurm-sized | `20000` |
+| `SCHEDULEURM_SLURM_AUTO_LARGE_TASK_CPU_CORES` | Requested-CPU threshold for treating a task as Slurm-sized | `32` |
 
 The heal-session spawn requires Claude Code installed and `/scheduler-heal` skill registered. If you're not using Claude Code at all, the heal path is a no-op (failures escalate to log-only).
 

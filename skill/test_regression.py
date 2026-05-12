@@ -18,6 +18,7 @@ Tests are self-contained: no real processes launched, no disk state mutated, no 
 
 import copy
 import importlib.util
+import json
 import os
 import sys
 import time
@@ -26,6 +27,9 @@ SCHED_PATH = os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")
 spec = importlib.util.spec_from_file_location("scheduler", SCHED_PATH)
 sch = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sch)
+# Regression tests exercise dispatch/result-sync code paths with synthetic tasks.
+# Never let those paths append fake t1/tFail events to the real watcher.log.
+sch.notify = lambda *args, **kwargs: None
 
 results = []
 def check(name, cond, diag=""):
@@ -162,6 +166,29 @@ def test_crash_requeue_dedup():
     check("requeue clone clears stale docker/container artifacts",
           clone.get("container_name") is None and clone.get("container_main_pid") is None,
           diag=str(clone))
+
+    # Case E: live ETA/progress belongs to the crashed process, not the retry clone.
+    parent5 = dict(parent)
+    parent5.update({
+        "id": "tI", "signature": "proj/exp/live-eta",
+        "cmd": "python train.py --seed 888 --max_iters 2000", "retry_count": 0,
+        "eta_seconds": 999999, "eta_source": "progress_rate",
+        "eta_confidence": "medium", "last_progress_line": "Iter 1 | Time: 999s",
+        "runtime_total_s_est": 999999, "runtime_eta_s_est": 999998,
+        "runtime_est_source": "progress_rate", "runtime_current_unit": 1,
+        "runtime_total_units": 2000, "runtime_unit_s_est": 499.9,
+    })
+    state_e = {"tasks": [parent5], "next_id": 500}
+    new_id_e = sch._requeue_after_crash(parent5, state_e)
+    clone2 = state_e["tasks"][-1]
+    stale_keys = [
+        "eta_seconds", "eta_source", "eta_confidence", "last_progress_line",
+        "runtime_total_s_est", "runtime_est_source", "runtime_current_unit",
+        "runtime_total_units", "runtime_unit_s_est",
+    ]
+    check("requeue clone clears stale live ETA/progress fields",
+          new_id_e is not None and all(k not in clone2 for k in stale_keys),
+          diag=str({k: clone2.get(k) for k in stale_keys if k in clone2}))
 
 # -----------------------------------------------------------------------------
 def test_preempt_sufficiency():
@@ -458,6 +485,9 @@ def test_status_view_no_truncation():
     check("TUI has no max-row slice in render",
           "tasks[:" not in tui_render_src,
           diag="tasks[:N] suggests truncation")
+    check("TUI auto-restarts after scheduler.py source changes",
+          "_scheduler_source_changed" in tui_src and "os.execv" in tui_src,
+          diag="stale long-lived TUI must not keep deploying old scheduler/claims code")
     check("TUI row location uses scheduler formatter (shows Slurm job/state)",
           "sch._format_task_location(t)" in tui_render_src,
           diag="TUI must not hand-roll node:GPU display")
@@ -480,6 +510,7 @@ def test_high_defaults_lower_before_placement():
         "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
         "preferred_node": None, "require_node": None, "project": "P",
         "description": "train: config seed=99",
+        "last_block_reason": "no fit from a previous cycle",
     }
     state = {"tasks": [
         {"id": "sib", "status": "done", "project": "P", "signature": "P/config/s1",
@@ -518,6 +549,9 @@ def test_high_defaults_lower_before_placement():
           diag=f"ram={queued.get('ram_mb')}")
     check("task launches after estimates lower", queued["status"] == "running",
           diag=f"status={queued.get('status')}, events={events}")
+    check("successful launch clears stale last_block_reason",
+          not queued.get("last_block_reason"),
+          diag=f"last_block_reason={queued.get('last_block_reason')!r}")
 
 def test_probe_ram_budget_cap():
     """Remote physical MemAvailable may exceed configured schedulable budget; placement must use
@@ -656,10 +690,10 @@ def test_requeue_from_adopt_becomes_scheduler_owned():
 
 # -----------------------------------------------------------------------------
 def test_post_dispatch_eviction_and_rule():
-    """_enforce_post_dispatch_thresholds must evict ONLY when BOTH mem≥1/3 AND util≥saturation.
-    Util-only (the elder task pinning the chip while mem is fine) used to evict the youngest
-    repeatedly — that's the t1029/t1030 thrash bug. Also tests the warmup cooldown."""
-    print("\n[10] Post-dispatch eviction (AND-rule + warmup cooldown)")
+    """_enforce_post_dispatch_thresholds must ignore util-only pressure, but GPU
+    memory over 1/3 with colocated scheduler tasks requeues the least-progress /
+    longest-ETA task. There is intentionally no warmup exemption."""
+    print("\n[10] Resource-pressure eviction (1/3 memory freeze, no util-only eviction)")
     now = time.time()
     def make_state(elder_age_s, young_age_s):
         return {"tasks": [
@@ -703,28 +737,32 @@ def test_post_dispatch_eviction_and_rule():
         check("util=100 with mem just below 1/3 → no evict", evicted == [],
               diag=f"got evicted={evicted}")
 
-        # Case B: mem=50%, util=30% → NO evict (only mem high, no contention)
+        # Case B: mem=50%, util=30% → evict anyway. The 1/3 memory line is now
+        # a hard freeze line; util-only is ignored, but mem pressure is enough.
         state = make_state(600, 400)
         evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=30))
-        check("mem=50% alone (util 30%) → no evict", evicted == [],
+        check("mem=50% alone (util 30%) → evict colocated victim", evicted == ["tyoung"],
               diag=f"got evicted={evicted}")
 
-        # Case C: BOTH high (mem 50% + util 100%) → MUST evict youngest
+        # Case C: BOTH high (mem 50% + util 100%) → MUST evict selected victim
         state = make_state(600, 400)
         evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
-        check("mem 50% AND util 100% → evict youngest (real contention)", evicted == ["tyoung"],
+        check("mem 50% AND util 100% → evict selected victim", evicted == ["tyoung"],
               diag=f"got evicted={evicted}")
         young = [t for t in state["tasks"] if t["id"] == "tyoung"][0]
-        check("real threshold eviction queues youngest, not failed", young["status"] == "queued",
+        check("resource-pressure eviction queues victim, not failed", young["status"] == "queued",
               diag=f"status={young.get('status')}")
-        check("real threshold eviction clears placement", young.get("node") is None and young.get("gpu_idx") is None,
+        check("resource-pressure eviction clears placement", young.get("node") is None and young.get("gpu_idx") is None,
               diag=f"node={young.get('node')} gpu={young.get('gpu_idx')}")
+        check("resource-pressure eviction records forensics",
+              young.get("last_resource_eviction", {}).get("kind") == "gpu_one_third",
+              diag=str(young.get("last_resource_eviction")))
 
-        # Case D: BOTH high but youngest is in warmup (age < EVICT_TASK_MIN_AGE_S) → don't evict
+        # Case D: BOTH high even if youngest is in warmup → still evict the colocated victim.
         state = make_state(elder_age_s=600, young_age_s=30)  # young is 30s old
         evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
-        check("youngest in warmup (age<180s) → no evict even with both signals high",
-              evicted == [], diag=f"got evicted={evicted}")
+        check("youngest in warmup still evicted when GPU is over 1/3",
+              evicted == ["tyoung"], diag=f"got evicted={evicted}")
 
         # Case E: single task on GPU → never evict (design exception)
         state = {"tasks": [
@@ -1429,6 +1467,132 @@ def test_find_resume_extension_filter():
 
     _sp.run(["rm", "-rf", tmpdir, tmpdir2, tmpdir3], check=False)
 
+
+def test_resume_checkpoint_node_affinity():
+    """Resume tasks must scan all alive nodes and prefer the node that already
+    has the checkpoint."""
+    print("\n[19b] Resume checkpoint scan + node affinity")
+    saved_nodes = sch.NODES
+    saved_run_on = sch.run_on
+    saved_precheck = sch.precheck_git
+    saved_launch = sch.launch
+    saved_save_state = sch.save_state
+    saved_resume_scan_ttl = sch.RESUME_SCAN_TTL_S
+    try:
+        sch.RESUME_SCAN_TTL_S = 60
+        sch.NODES = {
+            "local": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                      "max_concurrent_running": None},
+            "n1": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                   "max_concurrent_running": None},
+            "n2": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                   "max_concurrent_running": None},
+            "n3": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                   "max_concurrent_running": None},
+        }
+
+        calls = []
+        def fake_run_on(node, cmd, timeout=15, check=True):
+            calls.append(node)
+            if node == "n1":
+                return 0, json.dumps({"path": "/ckpt/checkpoint_iter010.pt", "mtime": 10, "size": 1}) + "\n", ""
+            if node == "n2":
+                return 0, json.dumps({"path": "/ckpt/checkpoint_iter020.pt", "mtime": 20, "size": 1}) + "\n", ""
+            return 0, "", ""
+
+        sch.run_on = fake_run_on
+        task = {
+            "id": "tResume", "status": "queued", "signature": "TEST/resume",
+            "description": "resume affinity", "cmd": "python train.py --resume",
+            "cwd": "/work", "ckpt_dir": "/ckpt", "ckpt_glob": "*",
+            "est_vram_mb": 512, "ram_mb": 1000, "cpu_cores": 1,
+            "priority": "normal", "submitted_at": time.time(),
+            "preferred_node": "local", "require_node": None,
+        }
+        nodes = [
+            {"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+             "free_ram_mb": 30000, "total_ram_mb": 32000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
+            {"name": "n1", "alive": True, "free_cpu": 12, "total_cpu": 12,
+             "free_ram_mb": 30000, "total_ram_mb": 32000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
+            {"name": "n2", "alive": True, "free_cpu": 12, "total_cpu": 12,
+             "free_ram_mb": 30000, "total_ram_mb": 32000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
+        ]
+        locs, errs = sch.scan_resume_locations(task, nodes=nodes, cache={})
+        check("resume scan checks all configured nodes and sorts newest first",
+              [x.get("node") for x in locs] == ["n2", "n1"]
+              and errs == {}
+              and calls == ["local", "n1", "n2", "n3"],
+              diag=f"locs={locs} errs={errs} calls={calls}")
+        calls.clear()
+        sch._refresh_resume_locations_for_task(task, nodes, {})
+        check("resume scan records preferred checkpoint nodes on task",
+              task.get("resume_preferred_nodes") == ["n2", "n1"]
+              and task.get("resume_checkpoint_node") == "n2"
+              and task.get("resume_from") == "/ckpt/checkpoint_iter020.pt",
+              diag=str(task))
+        first_refresh_calls = list(calls)
+        sch._refresh_resume_locations_for_task(task, nodes, {})
+        check("recent resume scan is reused from task record (no ssh loop every cycle)",
+              calls == first_refresh_calls,
+              diag=f"calls={calls} first={first_refresh_calls}")
+        task["resume_scan_at"] -= sch.RESUME_SCAN_TTL_S + 1
+        sch._refresh_resume_locations_for_task(task, nodes, {})
+        check("expired resume scan TTL forces a fresh all-node scan",
+              len(calls) == len(first_refresh_calls) + 4,
+              diag=f"calls={calls} first={first_refresh_calls}")
+        placement = sch.pick_placement(task, nodes)
+        check("placement prefers checkpoint node over ordinary preferred_node",
+              placement == ("n2", 0), diag=f"placement={placement}")
+
+        launched = []
+        state = {"tasks": [dict(task, node=None, gpu_idx=None, resume_from=None)], "next_id": 2}
+        sch.precheck_git = lambda t: (True, "ok")
+        sch.save_state = lambda s: None
+        def fake_launch(t, node_state=None):
+            launched.append((t.get("id"), t.get("node"), t.get("resume_from")))
+            t["status"] = "running"
+            t["remote_pids"] = [4242]
+            t["started_at"] = time.time()
+            t["log_path"] = "/tmp/resume.log"
+            return True, "pid=4242"
+        sch.launch = fake_launch
+        events, _ = sch._do_dispatch(state, nodes)
+        post = state["tasks"][0]
+        check("dispatch launches resume task on checkpoint-local node",
+              launched == [("tResume", "n2", "/ckpt/checkpoint_iter020.pt")]
+              and post.get("node") == "n2",
+              diag=f"launched={launched} post={post}")
+        check("dispatch emits resume_found from selected checkpoint node",
+              any(ev.get("type") == "resume_found"
+                  and ev.get("resume_from") == "/ckpt/checkpoint_iter020.pt"
+                  for ev in events),
+              diag=f"events={events}")
+
+        blocked = dict(task, id="tRequireWrong", require_node="local",
+                       preferred_node=None, node=None, gpu_idx=None)
+        state2 = {"tasks": [blocked], "next_id": 3}
+        events2, _ = sch._do_dispatch(state2, nodes)
+        check("require_node without matching checkpoint is blocked fail-closed",
+              state2["tasks"][0].get("status") == "queued"
+              and any(ev.get("type") == "blocked" for ev in events2)
+              and "restart from step 0" in (state2["tasks"][0].get("last_block_reason") or ""),
+              diag=f"events={events2} task={state2['tasks'][0]}")
+    finally:
+        sch.NODES = saved_nodes
+        sch.run_on = saved_run_on
+        sch.precheck_git = saved_precheck
+        sch.launch = saved_launch
+        sch.save_state = saved_save_state
+        sch.RESUME_SCAN_TTL_S = saved_resume_scan_ttl
+
+
 def test_env_spec_conda_parsing():
     """Item: conda: env auto-sync. Verify parse_env_spec requires absolute conda paths."""
     print("\n[44a] env_spec parsing handles conda:/abs/path")
@@ -1714,16 +1878,17 @@ def test_pick_placement_empty_first_then_best_fit():
     check("only empty available → still picked",
           placement2 is not None and placement2[1] == 5,
           diag=f"placement={placement2}")
-    # Best-fit among two warm cards: tighter fit wins. Both warm but under 1/3 threshold
-    # (8192/3 ≈ 2730MB), so 1/3 rule doesn't block. Task needs 1GB.
+    # Best-fit among two warm cards: tighter fit wins, but only among candidates
+    # whose post-placement memory remains below the 1/3 freeze line
+    # (8192/3 ≈ 2730MB). Task needs 1GB.
     nodes3 = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
                "free_ram_mb": 30000, "total_ram_mb": 30000, "loadavg": 1.0,
                "running_count": 0,
                "gpus": [
-                   # GPU2: 1.5GB used, 6.7GB free → bigger leftover after 1GB placement
-                   {"idx": 2, "used_mb": 1500, "total_mb": 8192, "free_mb": 6692, "util_pct": 30},
-                   # GPU3: 2.5GB used, 5.7GB free → tighter leftover, BEST FIT wins
-                   {"idx": 3, "used_mb": 2500, "total_mb": 8192, "free_mb": 5692, "util_pct": 30},
+                   # GPU2: 1.0GB used → bigger leftover after 1GB placement
+                   {"idx": 2, "used_mb": 1000, "total_mb": 8192, "free_mb": 7192, "util_pct": 30},
+                   # GPU3: 1.6GB used → tighter leftover, still below 1/3 after placement
+                   {"idx": 3, "used_mb": 1600, "total_mb": 8192, "free_mb": 6592, "util_pct": 30},
                ]}]
     placement3 = sch.pick_placement(task, nodes3)
     check("among warm+fitting cards, best-fit picks tighter (GPU3, smaller free_mb)",
@@ -2242,7 +2407,7 @@ def test_local_max_vram_per_task_dynamic():
     `max_vram_per_task: 4096` cap silently blocked any single-task allocation >4GB even
     though physically OK. Cap is now None in NODES → no static refusal; the 1/3 packing
     rule + GPU's actual total_mb are the only constraints."""
-    print("\n[24] local max_vram_per_task is None (auto-derive from probed GPU)")
+    print("\n[24] local max_vram_per_task is None + remote util gate policy")
     check("NODES['local']['max_vram_per_task'] is None (was 4096 hardcoded)",
           sch.NODES["local"].get("max_vram_per_task") is None,
           diag=str(sch.NODES["local"].get("max_vram_per_task")))
@@ -2253,6 +2418,15 @@ def test_local_max_vram_per_task_dynamic():
     check("6GB task on empty 4060 → not blocked by static cap (was blocked when cap=4096)",
           sch._gpu_fits(fake_task, fake_gpu, fake_node) is True,
           diag="_gpu_fits returned False with cap=None")
+    warm_gpu = {"used_mb": 1500, "total_mb": 12288, "free_mb": 10788, "util_pct": 100}
+    small_task = {"est_vram_mb": 1000}
+    strict_remote = dict(sch.NODES["jtl110gpu"])
+    strict_remote.pop("gpu_util_saturation_pct", None)
+    check("default util gate would reject occupied 100% util remote GPU",
+          sch._gpu_fits(small_task, warm_gpu, strict_remote) is False)
+    check("jtl110gpu ignores util gate and relies on 1/3 VRAM + CPU/RAM",
+          sch.NODES["jtl110gpu"].get("gpu_util_saturation_pct") is None
+          and sch._gpu_fits(small_task, warm_gpu, sch.NODES["jtl110gpu"]) is True)
 
 def test_ckpt_dir_cross_sig_conflict():
     """Submit-time guard: refuse if --ckpt-dir is already in use by any active task.
@@ -3110,9 +3284,10 @@ def test_backend_slurm_phase2():
           hb._backend_for("fake-slurm-node") is hb._local)
     check("HybridBackend routes non-slurm node to LocalBackend",
           hb._backend_for("fake-local-node") is hb._local)
-    # Slurm is opt-in: default-local nodes keep scheduleurm packing even if the
-    # capability cache says Slurm exists. Per-node knobs or explicit task Slurm
-    # fields route future launches through SlurmBackend.
+    # Slurm is opt-in plus hardware-aware auto: default-local small jobs keep
+    # scheduleurm packing even if the capability cache says Slurm exists.
+    # Per-node knobs, explicit task Slurm fields, or large jobs on large nodes
+    # route future launches through SlurmBackend.
     saved_NODES = sch.NODES
     try:
         sch.NODES = {
@@ -3148,6 +3323,43 @@ def test_backend_slurm_phase2():
               hb._backend_for_task(gpu_optin) is hb._slurm)
         check("explicit slurm partition routes to probed Slurm node",
               hb._backend_for_task(cpu_slurm_explicit) is hb._slurm)
+
+        sch.NODES.update({
+            "big-auto": {"host": "big", "cpu_cores": 256, "ram_mb": 1024 * 1024},
+            "small-auto": {"host": "small", "cpu_cores": 12, "ram_mb": 200000},
+            "gpu-cluster": {"host": "gpu-cluster", "cpu_cores": 64, "ram_mb": 1024 * 1024},
+            "forced-local": {"host": "big", "cpu_cores": 256, "ram_mb": 1024 * 1024,
+                             "slurm_backend": "local"},
+        })
+        for name in ("big-auto", "small-auto", "gpu-cluster", "forced-local"):
+            hb._cache[name] = "slurm"
+        small_sac = {"id": "small-sac", "node": "big-auto", "est_vram_mb": 1200,
+                     "cmd": "python train_sac.py --env sumo"}
+        llm_ft = {"id": "llm-ft", "node": "big-auto", "est_vram_mb": 1200,
+                  "cmd": "torchrun --nproc_per_node=4 finetune_llm.py --model qwen"}
+        small_node_llm = dict(llm_ft, id="small-node-llm", node="small-auto")
+        forced_local_llm = dict(llm_ft, id="forced-local-llm", node="forced-local")
+        gpu_cluster_state = {"name": "gpu-cluster", "alive": True,
+                             "gpus": [{"idx": i, "total_mb": 80000} for i in range(12)]}
+        multi_gpu_task = {"id": "multi-gpu", "node": "gpu-cluster", "est_vram_mb": 1200,
+                          "cmd": "accelerate launch --num_processes 2 train.py"}
+        small_gpu_cluster_task = {"id": "small-gpu", "node": "gpu-cluster", "est_vram_mb": 1200,
+                                  "cmd": "python train_sac.py"}
+        check("hardware-aware auto: small one-GPU task stays LocalBackend on big Slurm node",
+              hb._backend_for_task(small_sac) is hb._local)
+        check("hardware-aware auto: LLM/multi-process task routes to SlurmBackend on big node",
+              hb._backend_for_task(llm_ft) is hb._slurm)
+        check("hardware-aware auto: small node still stays LocalBackend even for LLM-like command",
+              hb._backend_for_task(small_node_llm) is hb._local)
+        check("slurm_backend=local overrides hardware-aware auto",
+              hb._backend_for_task(forced_local_llm) is hb._local)
+        check("hardware-aware auto: probed many-GPU node routes multi-GPU task to SlurmBackend",
+              hb._backend_for_task(multi_gpu_task, node_state=gpu_cluster_state) is hb._slurm)
+        check("hardware-aware auto: probed many-GPU node still packs small task locally",
+              hb._backend_for_task(small_gpu_cluster_task, node_state=gpu_cluster_state) is hb._local)
+        check("hardware-aware auto parses torchrun/accelerate GPU counts",
+              sch._task_requested_gpu_count(llm_ft) == 4
+              and sch._task_requested_gpu_count(multi_gpu_task) == 2)
     finally:
         sch.NODES = saved_NODES
     # Task with slurm_job_id ALWAYS routes to slurm (cache-independent — defensive)
@@ -3654,6 +3866,44 @@ def test_backend_slurm_phase2_14_ui_and_launch_notification():
           diag=sch._format_task_location(cpu_task))
 
 
+def test_task_event_payload_compaction():
+    """Task events should stay readable even when full task records carry
+    resource snapshots / forensics."""
+    print("\n[54b] Task event payload compaction")
+    task = {
+        "id": "tcompact", "status": "done", "project": "p", "signature": "p/run",
+        "description": "compact payload", "cmd": "python train.py", "cwd": "/tmp/p",
+        "node": "local", "gpu_idx": 0, "remote_pids": [123], "log_path": "/tmp/t.log",
+        "started_at": time.time() - 60, "finished_at": time.time(), "peak_vram_mb": 2048,
+        "last_resource_snapshot": {"same_node_running_tasks": [{"id": f"t{i}"} for i in range(50)]},
+        "last_launch_pre_snapshot": {"huge": "x" * 10000},
+        "last_launch_post_snapshot": {"huge": "y" * 10000},
+        "last_crash_forensics": {"huge": "z" * 10000},
+        "_diagnosis": {
+            "is_crash": False, "reason": "normal exit", "lifetime_s": 60,
+            "log_size": 1234, "log_path": "/tmp/t.log", "success_marker": "DONE",
+            "tail": "tail should not be copied" * 200,
+        },
+    }
+    payload = sch._compact_task_event_payload(task)
+    check("compact task event keeps core identity",
+          payload.get("id") == "tcompact" and payload.get("cmd") == "python train.py",
+          diag=str(payload))
+    check("compact task event drops heavy resource snapshots",
+          "last_resource_snapshot" not in payload
+          and "last_launch_pre_snapshot" not in payload
+          and "last_launch_post_snapshot" not in payload
+          and "last_crash_forensics" not in payload,
+          diag=str(payload.keys()))
+    check("compact task event keeps diagnosis summary without tail",
+          payload.get("_diagnosis", {}).get("reason") == "normal exit"
+          and "tail" not in payload.get("_diagnosis", {}),
+          diag=str(payload.get("_diagnosis")))
+    check("compact payload still formats task_done Feishu text",
+          "tcompact" in sch._format_feishu("task_done", payload),
+          diag=sch._format_feishu("task_done", payload))
+
+
 def test_backend_slurm_phase2_16_pending_throttle():
     """Phase 2.16: scheduleurm dispatch throttles slurm nodes that already have ≥
     SLURM_MAX_PENDING_PER_NODE of OUR tasks pending. Tasks queued in scheduleurm
@@ -4029,6 +4279,8 @@ def test_phase3_0_10_migration_event_visibility():
           'ev["type"] == "migrated"' in cd_body and "MIGRATE" in cd_body)
     check("cmd_dispatch prints PREEMPT on 'preempted' event",
           'ev["type"] == "preempted"' in cd_body and "PREEMPT" in cd_body)
+    check("cmd_dispatch no_fit output uses precise last_block_reason",
+          't.get("last_block_reason")' in cd_body and "no GPU fits" not in cd_body)
 
     # 3. _watch_iteration's notify loop fires task_migrated and task_preempted.
     wi_idx = src.find("def _watch_iteration")
@@ -8482,6 +8734,11 @@ def test_phase3_2_1_claim_lifecycle_in_dispatch():
           "_ClaimManager.renew_many(" in wi_body
           and "_ClaimManager.gc_stale(" in wi_body
           and "_ClaimManager.enabled_for(" in wi_body)
+    check("_watch_iteration releases inactive own claims before TTL expiry",
+          "active_claim_ids_by_node" in wi_body
+          and "claims_released_inactive" in wi_body
+          and "_ClaimManager.release(node, tid)" in wi_body,
+          diag="queued/dead tasks with node cleared must not keep phantom claims until TTL")
 
     # 2. Behavioral: LocalBackend.launch on a claims-enabled node.
     saved_NODES = sch.NODES
@@ -9300,6 +9557,13 @@ def test_phase3_2_5_claim_intent_cleanup_visibility():
               released == 1 and calls == [("n1", "tI")]
               and "claim_intent_nodes" not in task,
               diag=f"released={released} calls={calls} task={task}")
+
+        calls.clear()
+        task_last = {"id": "tLast", "last_node": "n2"}
+        released = sch._release_task_claims_and_intents(task_last)
+        check("release helper uses last_node when node was already cleared",
+              released == 1 and calls == [("n2", "tLast")],
+              diag=f"released={released} calls={calls} task={task_last}")
 
         state = {"tasks": [{
             "id": "tQ", "status": "queued", "claim_intent_nodes": ["n1"],
@@ -10234,9 +10498,9 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
     check("_build_capacity carries vram_margin_mb",
           '"vram_margin_mb"' in cap_body
           and "VRAM_MARGIN_MB" in cap_body)
-    check("_build_capacity carries third_pack_rule + default_vram_mb",
+    check("_build_capacity carries third_pack_rule without obsolete default_vram exemption",
           '"third_pack_rule"' in cap_body
-          and '"default_vram_mb"' in cap_body)
+          and '"default_vram_mb"' not in cap_body)
 
     # Source guard: remote script's claim op enforces these.
     sc = sch._CLAIMS_REMOTE_SCRIPT
@@ -10244,8 +10508,8 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
           "max_per_task" in sc and "per-task cap" in sc)
     check("script enforces VRAM margin",
           "vram_margin" in sc and "post-claim free" in sc)
-    check("script enforces 1/3 packing rule with small-task exemption",
-          "third_rule" in sc and "packing rule" in sc and "default_vram" in sc)
+    check("script enforces 1/3 packing rule with no small-task exemption",
+          "third_rule" in sc and "packing rule" in sc and "default_vram" not in sc)
 
     # Behavioral: drive the script directly with controlled capacity to
     # exercise each new gate in isolation.
@@ -10313,12 +10577,9 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
               r.get("ok") is False and "margin" in (r.get("conflict") or ""),
               diag=r)
 
-        # ---- 1/3 rule (Phase 3.4.6 fix): the rule blocks STACKING new
-        # tasks onto a card where existing claimed VRAM is already past
-        # 1/3, NOT every claim that would itself exceed 1/3 of total.
-        # Local _gpu_fits checks `gpu.used_mb >= third`, not
-        # `gpu.used_mb + new >= third`. The first big task on an empty
-        # GPU MUST succeed.
+        # ---- 1/3 rule: the first big task on an empty GPU is allowed,
+        # but an occupied GPU must not accept a new claim that would cross
+        # the freeze line.
         reset()
         rec = dict(base_rec, gpu_idx=0, vram_mb=5000)
         cap = {"cpu_cores": 12, "ram_mb": 100000,
@@ -10328,21 +10589,33 @@ def test_phase3_4_4_claim_replicates_gpu_fits_policy():
         r = claim(rec, cap)
         check("first claim of 5000 on EMPTY 12GB GPU → ok (matches local _gpu_fits)",
               r.get("ok") is True, diag=r)
-        # Now the GPU has 5000MB claimed (≥ 1/3). Stacking another 1000MB
-        # task (> default_vram_mb=512) hits the 1/3 rule.
+        # Now the GPU has 5000MB claimed (≥ 1/3). Stacking anything else
+        # hits the 1/3 rule.
         rec2 = dict(base_rec, task_id="tStack", gpu_idx=0, vram_mb=1000)
         r2 = claim(rec2, cap)
         check("second claim of 1000 onto already-past-1/3 GPU → blocked by 1/3 rule",
               r2.get("ok") is False and "1/3" in (r2.get("conflict") or ""),
               diag=r2)
 
-        # ---- 1/3 rule small-task exemption: 400MB task can stack past 1/3
-        # of an already-loaded GPU (≤ default_vram_mb=512).
+        # ---- 1/3 rule: even just-below-1/3 occupied GPUs are frozen if the
+        # next claim would cross the line.
+        reset()
+        rec_a = dict(base_rec, task_id="tAlmost", gpu_idx=0, vram_mb=3990)
+        r_a = claim(rec_a, cap)
+        check("occupied claim just below 1/3 can start",
+              r_a.get("ok") is True, diag=r_a)
+        rec_b = dict(base_rec, task_id="tCross", gpu_idx=0, vram_mb=200)
+        r_b = claim(rec_b, cap)
+        check("occupied GPU crossing 1/3 from below → blocked",
+              r_b.get("ok") is False and "1/3" in (r_b.get("conflict") or ""),
+              diag=r_b)
+
+        # ---- 1/3 rule: even a 400MB task cannot stack past 1/3.
         # State from above: claims.json already has tA (5000MB) on GPU0.
         rec3 = dict(base_rec, task_id="tSmall", gpu_idx=0, vram_mb=400)
         r3 = claim(rec3, cap)
-        check("small task (≤ default_vram_mb) past 1/3 → allowed (exemption)",
-              r3.get("ok") is True, diag=r3)
+        check("small task past 1/3 → blocked (no exemption)",
+              r3.get("ok") is False and "1/3" in (r3.get("conflict") or ""), diag=r3)
 
         # ---- 1/3 rule disabled: large task on empty GPU succeeds.
         reset()
@@ -10371,9 +10644,9 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
     """Phase 3.4.6 + 3.4.7 + 3.4.8: three follow-up fixes after the cross-
     user claims layer landed.
 
-    3.4.6 P1: 1/3 rule semantics matched local _gpu_fits — block on
-              EXISTING used past 1/3, not on (used + new). Empty GPU's
-              first big task succeeds.
+    3.4.6 P1: 1/3 rule semantics matched local _gpu_fits — empty GPU's
+              first big task succeeds, but occupied GPUs cannot cross the
+              1/3 freeze line.
     3.4.7 P2: in-place truncate isn't crash-atomic. Distinguish
               "bootstrap empty" (fine) from "post-crash empty" (lossy)
               by writing a default `{"version":1,"claims":[]}` at setup
@@ -10391,14 +10664,9 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
 
     # 3.4.6 source guards
     sc = sch._CLAIMS_REMOTE_SCRIPT
-    check("script: 1/3 rule checks GUSED (existing), not gused_after",
-          "if gused >= third and gused > 100" in sc,
+    check("script: 1/3 rule treats only occupied GPUs as freeze candidates",
+          "gused > 100" in sc and "gused + vram_need >= third" in sc,
           diag="must mirror local _gpu_fits semantics")
-    # Comment in docstring may mention `gused_after` as historical context;
-    # what matters is the variable isn't ASSIGNED or USED in the rule.
-    check("script: 1/3 rule NO LONGER assigns/uses gused_after",
-          "gused_after =" not in sc and "gused_after >" not in sc,
-          diag="that variable was the bug — keep it out of code paths")
 
     # 3.4.7 source guards
     check("script load_from_fd raises on empty file (post-crash signal)",
@@ -10422,7 +10690,8 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
           ".tmp.$$" in setup)
 
     # Behavioral: 3.4.6 — first 5GB claim on empty 12GB succeeds; second 1GB
-    # gets blocked; small (≤512MB) exempted.
+    # gets blocked; small tasks are blocked too once the GPU is already past
+    # 1/3; occupied GPUs just below 1/3 also block claims that would cross it.
     import tempfile, subprocess, json as _json
     with tempfile.TemporaryDirectory() as td:
         script = sc.replace(
@@ -10471,11 +10740,22 @@ def test_phase3_4_6_7_8_claim_one_third_corrupt_recovery_atomic_deploy():
               r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
               diag=r)
 
-        # ... small (≤default) still allowed past 1/3.
+        # ... small tasks are also blocked past 1/3.
         rec_small = dict(rec_big, task_id="tSmall", vram_mb=400)
         r = call("claim", rec_small, cap)
-        check("3.4.6: small task (≤default) past 1/3 → ok (small-task exemption)",
+        check("3.4.6: small task past 1/3 → blocked (no exemption)",
+              r.get("ok") is False and "1/3" in (r.get("conflict") or ""), diag=r)
+
+        init()
+        rec_almost = dict(rec_big, task_id="tAlmost", vram_mb=3990)
+        r = call("claim", rec_almost, cap)
+        check("3.4.6: occupied claim just below 1/3 → ok",
               r.get("ok") is True, diag=r)
+        rec_cross = dict(rec_big, task_id="tCross", vram_mb=200)
+        r = call("claim", rec_cross, cap)
+        check("3.4.6: occupied GPU crossing 1/3 from below → blocked",
+              r.get("ok") is False and "1/3" in (r.get("conflict") or ""),
+              diag=r)
 
         # 3.4.7 — empty file (post-truncate crash simulation) → claims_corrupt error.
         # Init then truncate to simulate a crash mid-write.
@@ -12464,6 +12744,10 @@ def test_phase3_0_1_eta_parser_and_integration():
           "_batch_check_running(state)" in body)
     check("update_running_tasks calls _refresh_eta_from_logs",
           "_refresh_eta_from_logs(state)" in body)
+    tui_src = open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read()
+    check("TUI ETA column uses scheduler eta_seconds (not only legacy EWMA)",
+          "t.get(\"eta_seconds\")" in tui_src and "sch._eta_source_tag" in tui_src,
+          diag="tui.py must display watcher-parsed ETA source")
 
 
 def test_phase3_0_1_local_preflight_profile_and_closest_history():
@@ -12553,6 +12837,42 @@ def test_phase3_0_1_local_preflight_profile_and_closest_history():
                   changed == 1 and 235 <= int(pending_near.get("eta_seconds") or 0) <= 245
                   and pending_near.get("eta_source") == "runtime_history",
                   diag=str(pending_near))
+
+            stale = dict(task)
+            stale.update({
+                "status": "queued",
+                "eta_seconds": 999999,
+                "eta_source": "progress_rate",
+                "eta_confidence": "medium",
+                "last_progress_line": "Iter 1 | Time: 999s",
+                "runtime_total_s_est": 999999,
+                "runtime_eta_s_est": 999998,
+                "runtime_est_source": "progress_rate",
+                "runtime_current_unit": 1,
+                "runtime_total_units": 5678,
+                "runtime_unit_s_est": 176.0,
+            })
+            changed = sch._seed_pending_eta_from_history({"tasks": [stale]})
+            check("queued stale live ETA is scrubbed before history reseed",
+                  changed >= 1
+                  and 235 <= int(stale.get("eta_seconds") or 0) <= 245
+                  and stale.get("eta_source") == "runtime_history"
+                  and stale.get("runtime_est_source") != "progress_rate"
+                  and not stale.get("last_progress_line"),
+                  diag=str(stale))
+
+            queued_profile = dict(task)
+            queued_profile.update({
+                "status": "queued",
+                "eta_seconds": 243,
+                "eta_source": task.get("runtime_est_source"),
+            })
+            changed = sch._seed_pending_eta_from_history({"tasks": [queued_profile]})
+            check("queued local-test ETA is kept (not mistaken for stale live ETA)",
+                  changed == 0
+                  and queued_profile.get("eta_seconds") == 243
+                  and "local_test_tqdm" in str(queued_profile.get("eta_source")),
+                  diag=str(queued_profile))
     finally:
         sch.load_runtime_history = saved_load_runtime_history
         sch.save_runtime_history = saved_save_runtime_history
@@ -13755,7 +14075,7 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
     check("SlurmBackend.requires_local_capacity_check → False (defer to slurm)",
           sch.SlurmBackend().requires_local_capacity_check("any-node") is False)
 
-    # HybridBackend: capability cache is not policy; Slurm is opt-in.
+    # HybridBackend: capability cache is not policy; small jobs still pack locally.
     hb = sch.HybridBackend()
     hb._cache["fake-slurm"] = "slurm"
     hb._cache["fake-local"] = "local"
@@ -13867,6 +14187,39 @@ def test_backend_slurm_phase2_3_bypass_local_capacity():
               sch._gpu_fits(task, nodes[0]["gpus"][0], strict_info) is False)
         check("per-node gpu_util_saturation_pct=None disables util gate for sharing node",
               sch._gpu_fits(task, nodes[0]["gpus"][0], sch.NODES["share-gpu"]) is True)
+    finally:
+        sch._BACKEND = saved_backend
+        sch.NODES = real_NODES
+
+    # ---------- Functional: hardware-aware auto Slurm only for large tasks ----------
+    fake_hb = sch.HybridBackend()
+    fake_hb._cache["big-auto"] = "slurm"
+    sch._BACKEND = fake_hb
+    real_NODES = sch.NODES
+    sch.NODES = {
+        "big-auto": {"host": "big-auto", "cpu_cores": 256, "ram_mb": 1024 * 1024,
+                     "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                     "max_concurrent_running": None, "gpu_util_saturation_pct": None},
+    }
+    try:
+        nodes = [{"name": "big-auto", "alive": True, "loadavg": 0.0,
+                  "free_cpu": 200, "free_ram_mb": 900000, "running_count": 0,
+                  "slurm_pending_split": {"cpu": 0, "gpu": 0},
+                  "gpus": [
+                      {"idx": 0, "used_mb": 200, "total_mb": 80000,
+                       "free_mb": 79800, "util_pct": 0},
+                  ]}]
+        small_task = {"id": "small-sac", "est_vram_mb": 1200, "cpu_cores": 1,
+                      "ram_mb": 4000, "cmd": "python train_sac.py --env sumo"}
+        llm_task = {"id": "llm-ft", "est_vram_mb": 1200, "cpu_cores": 8,
+                    "ram_mb": 64000,
+                    "cmd": "torchrun --nproc_per_node=4 finetune_llm.py --model qwen"}
+        check("hardware-aware pick_placement packs small task locally on big Slurm node",
+              sch.pick_placement(small_task, nodes) == ("big-auto", 0),
+              diag=f"got {sch.pick_placement(small_task, nodes)}")
+        check("hardware-aware pick_placement defers LLM/multi-GPU task to Slurm",
+              sch.pick_placement(llm_task, nodes) == ("big-auto", None),
+              diag=f"got {sch.pick_placement(llm_task, nodes)}")
     finally:
         sch._BACKEND = saved_backend
         sch.NODES = real_NODES
@@ -14079,6 +14432,7 @@ if __name__ == "__main__":
     test_wrapper_checkpoint_contract_guard()
     test_diagnose_mid_training_kill()
     test_find_resume_extension_filter()
+    test_resume_checkpoint_node_affinity()
     test_local_max_vram_per_task_dynamic()
     test_env_deploy_wrap_docker()
     test_env_spec_conda_parsing()
@@ -14131,6 +14485,7 @@ if __name__ == "__main__":
     test_backend_slurm_phase2_12_eviction_skips_slurm_tasks()
     test_backend_slurm_phase2_13_terminal_state_semantics()
     test_backend_slurm_phase2_14_ui_and_launch_notification()
+    test_task_event_payload_compaction()
     test_backend_slurm_phase2_15_orphan_recovery()
     test_backend_slurm_phase2_16_pending_throttle()
     test_backend_slurm_phase2_16_1_rebalance_pending()

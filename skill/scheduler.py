@@ -2297,6 +2297,8 @@ Write-Output "$free|$total|$logical|$loadPct"
         "loadavg": float(used_cpu),
         "cpu_load_pct": int(load_pct),
         "cores": logical_cores,
+        "logical_cpu": logical_cores,
+        "physical_cpu": total_cpu,
         "os": "windows",
     }
 
@@ -2620,6 +2622,229 @@ def _format_task_owner(task: dict) -> str:
     else:
         tag = "this"
     return f"{user}:{tag}"
+
+
+def _ceil_div(a: int, b: int) -> int:
+    a = int(a)
+    b = max(1, int(b))
+    return (a + b - 1) // b
+
+
+def _cpu_labor_node_names() -> list:
+    return [name for name, info in NODES.items() if info.get("cpu_labor_node")]
+
+
+def _node_physical_cores(node: Optional[str], node_state: Optional[dict] = None) -> int:
+    """Best estimate of schedulable physical cores for CPU-worker planning.
+
+    Some probes report logical CPUs (2N with SMT), while scheduleurm's
+    `cpu_cores` budget is normally already physical-core-sized. Prefer explicit
+    physical_cores, then configured schedulable budget, then infer N from 2N.
+    """
+    info = NODES.get(node or "", {}) if node else {}
+    node_state = node_state or {}
+    for key in ("physical_cores", "physical_cpu", "physical_cpus"):
+        try:
+            v = int(info.get(key) or node_state.get(key) or 0)
+            if v > 0:
+                return v
+        except Exception:
+            pass
+    try:
+        sched = int(info.get("cpu_cores") or node_state.get("total_cpu") or 0)
+    except Exception:
+        sched = 0
+    try:
+        logical = int(node_state.get("logical_cpu") or node_state.get("logical_cores")
+                      or node_state.get("cores") or 0)
+    except Exception:
+        logical = 0
+    if sched > 0:
+        return sched
+    if logical > 1 and (info.get("windows_skip_ht_pair", True) or logical > 64):
+        return max(1, logical // 2)
+    return max(1, logical or DEFAULT_CPU_CORES)
+
+
+def _cpu_worker_plan_for_items(total_items: int, physical_cores: int) -> dict:
+    """Return the user's preferred worker plan for M independent CPU items.
+
+    Given M items and N physical cores:
+      e = ceil(M / N) waves
+      f = ceil(M / e) workers
+    This maximizes worker occupancy while avoiding more workers than physical
+    cores, and makes all waves almost equal.
+    """
+    m = max(0, int(total_items or 0))
+    n = max(1, int(physical_cores or 1))
+    if m <= 0:
+        return {"items": 0, "physical_cores": n, "waves": 0,
+                "workers": 0, "last_wave_items": 0}
+    waves = _ceil_div(m, n)
+    workers = min(n, _ceil_div(m, waves))
+    last = m - workers * max(0, waves - 1)
+    if last <= 0:
+        last = workers
+    return {"items": m, "physical_cores": n, "waves": waves,
+            "workers": workers, "last_wave_items": last}
+
+
+def _cpu_batch_plan(total_items: int, node_names: Optional[list] = None,
+                    node_states: Optional[dict] = None) -> list:
+    """Split M independent CPU items across CPU-labor nodes by physical cores."""
+    m = max(0, int(total_items or 0))
+    if m <= 0:
+        return []
+    names = list(node_names or _cpu_labor_node_names())
+    if not names:
+        names = ["local"] if "local" in NODES else list(NODES.keys())[:1]
+    node_states = node_states or {}
+    caps = []
+    for name in names:
+        cap = _node_physical_cores(name, node_states.get(name))
+        if cap > 0:
+            caps.append((name, cap))
+    if not caps:
+        return []
+    total_cap = sum(cap for _, cap in caps)
+    global_waves = _ceil_div(m, total_cap)
+    raw = []
+    assigned = 0
+    for idx, (name, cap) in enumerate(caps):
+        share = m * cap / float(total_cap)
+        base = int(share)
+        raw.append([name, cap, base, share - base, idx])
+        assigned += base
+    remaining = m - assigned
+    raw.sort(key=lambda r: (-r[3], r[4]))
+    for i in range(remaining):
+        raw[i % len(raw)][2] += 1
+    raw.sort(key=lambda r: r[4])
+
+    out = []
+    cursor = 0
+    active = [r for r in raw if r[2] > 0]
+    for shard_idx, (name, cap, items, _frac, _idx) in enumerate(active):
+        start = cursor
+        end = start + items
+        cursor = end
+        per_node = _cpu_worker_plan_for_items(items, cap)
+        # Use the cluster-wide wave count when splitting across nodes so peers
+        # finish in the same number of rounds when capacities are comparable.
+        workers = min(cap, _ceil_div(items, global_waves))
+        waves = _ceil_div(items, workers) if workers else 0
+        last = items - workers * max(0, waves - 1)
+        if last <= 0 and items > 0:
+            last = workers
+        out.append({
+            "node": name,
+            "physical_cores": cap,
+            "items": items,
+            "start": start,
+            "end": end,
+            "workers": workers,
+            "waves": waves,
+            "single_node_workers": per_node["workers"],
+            "single_node_waves": per_node["waves"],
+            "last_wave_items": last,
+            "global_waves": global_waves,
+            "shard_index": shard_idx,
+            "num_shards": len(active),
+        })
+    return out
+
+
+def _cpu_parallel_template_values(plan: dict, total_items: Optional[int] = None) -> dict:
+    vals = {
+        "node": plan.get("node", ""),
+        "start": plan.get("start", 0),
+        "end": plan.get("end", plan.get("items", 0)),
+        "items": plan.get("items", 0),
+        "shard_items": plan.get("items", 0),
+        "total_items": total_items if total_items is not None else plan.get("items", 0),
+        "workers": plan.get("workers", 0),
+        "n_workers": plan.get("workers", 0),
+        "num_workers": plan.get("workers", 0),
+        "waves": plan.get("waves", 0),
+        "rounds": plan.get("waves", 0),
+        "physical_cores": plan.get("physical_cores", 0),
+        "last_wave_items": plan.get("last_wave_items", 0),
+        "shard_index": plan.get("shard_index", 0),
+        "shard_id": plan.get("shard_index", 0),
+        "num_shards": plan.get("num_shards", 1),
+    }
+    return {k: str(v) for k, v in vals.items()}
+
+
+def _format_cpu_parallel_template(text: Optional[str], plan: dict,
+                                  total_items: Optional[int] = None) -> Optional[str]:
+    if text is None:
+        return None
+    out = str(text)
+    for key, val in _cpu_parallel_template_values(plan, total_items).items():
+        out = out.replace("{" + key + "}", val)
+    return out
+
+
+_CPU_WORKER_FLAG_RE = re.compile(
+    r"(?P<flag>--(?:workers|n-workers|n_workers|num-workers|num_workers|jobs|n-jobs|n_jobs|num-jobs|num_jobs))"
+    r"(?P<sep>=|\s+)"
+    r"(?P<value>auto|AUTO|\{workers\}|\{n_workers\}|\{num_workers\})"
+)
+
+
+def _rewrite_cpu_parallel_cmd(cmd: str, plan: dict, total_items: Optional[int] = None) -> str:
+    out = _format_cpu_parallel_template(cmd or "", plan, total_items) or ""
+    workers = str(plan.get("workers", 0))
+
+    def repl(m):
+        return f"{m.group('flag')}{m.group('sep')}{workers}"
+
+    return _CPU_WORKER_FLAG_RE.sub(repl, out)
+
+
+def _cpu_parallel_env(task: dict) -> dict:
+    keys = {
+        "SCHEDULEURM_CPU_TOTAL_ITEMS": task.get("cpu_parallel_total_items")
+                                      or task.get("cpu_parallel_items"),
+        "SCHEDULEURM_CPU_SHARD_START": task.get("cpu_parallel_start"),
+        "SCHEDULEURM_CPU_SHARD_END": task.get("cpu_parallel_end"),
+        "SCHEDULEURM_CPU_SHARD_ITEMS": task.get("cpu_parallel_items"),
+        "SCHEDULEURM_CPU_WORKERS": task.get("cpu_auto_workers"),
+        "SCHEDULEURM_CPU_WAVES": task.get("cpu_parallel_waves"),
+        "SCHEDULEURM_CPU_PHYSICAL_CORES": task.get("cpu_parallel_physical_cores"),
+        "SCHEDULEURM_CPU_SHARD_INDEX": task.get("cpu_parallel_shard_index"),
+        "SCHEDULEURM_CPU_NUM_SHARDS": task.get("cpu_parallel_num_shards"),
+    }
+    return {k: str(v) for k, v in keys.items() if v is not None and v != ""}
+
+
+def _apply_cpu_parallel_plan_to_task(task: dict, node_state: Optional[dict] = None) -> Optional[dict]:
+    items = int(task.get("cpu_parallel_items") or 0)
+    if items <= 0:
+        return None
+    node = task.get("node")
+    physical = _node_physical_cores(node, node_state)
+    plan = _cpu_worker_plan_for_items(items, physical)
+    plan.update({
+        "node": node or "",
+        "start": int(task.get("cpu_parallel_start") or 0),
+        "end": int(task.get("cpu_parallel_end") or items),
+        "shard_index": int(task.get("cpu_parallel_shard_index") or 0),
+        "num_shards": int(task.get("cpu_parallel_num_shards") or 1),
+    })
+    task["cpu_auto_workers"] = int(plan["workers"])
+    task["cpu_parallel_waves"] = int(plan["waves"])
+    task["cpu_parallel_physical_cores"] = int(plan["physical_cores"])
+    task["cpu_parallel_last_wave_items"] = int(plan["last_wave_items"])
+    if int(task.get("cpu_cores") or 0) < int(plan["workers"]):
+        task["cpu_cores"] = int(plan["workers"])
+    old_cmd = task.get("cmd") or ""
+    new_cmd = _rewrite_cpu_parallel_cmd(old_cmd, plan, task.get("cpu_parallel_total_items") or items)
+    if new_cmd != old_cmd:
+        task["cmd"] = new_cmd
+        task["cpu_auto_worker_cmd_rewritten"] = True
+    return plan
 
 
 def _kill_task_processes(task, timeout=15):
@@ -5394,6 +5619,7 @@ class WindowsBackend(Backend):
         if rc_cwd != 0 or "OK" not in out_cwd:
             return False, f"cwd missing on {node}: {cwd}"
 
+        cpu_plan = _apply_cpu_parallel_plan_to_task(task, node_state)
         env = {"CUDA_VISIBLE_DEVICES": "", "SCHEDULEURM_TASK_ID": task.get("id") or ""}
         # CPU worker-heavy defaults. User-supplied extra_env can still override
         # these below if a task has a specific threading model.
@@ -5404,6 +5630,8 @@ class WindowsBackend(Backend):
             "NUMEXPR_NUM_THREADS": "1",
             "SCHEDULEURM_WINDOWS_AUTO_PIN": "1",
         })
+        if cpu_plan:
+            env.update(_cpu_parallel_env(task))
         for k, v in _safe_extra_env_items(_launch_extra_env(task)):
             if k == "CUDA_VISIBLE_DEVICES":
                 continue
@@ -7175,6 +7403,10 @@ def _task_run_identity(task):
         task.get("slurm_partition") or "",
         task.get("slurm_account") or "",
         task.get("slurm_qos") or "",
+        int(task.get("cpu_parallel_total_items") or task.get("cpu_parallel_items") or 0),
+        int(task.get("cpu_parallel_start") or 0),
+        int(task.get("cpu_parallel_end") or 0),
+        int(task.get("cpu_auto_workers") or 0),
     )
 
 
@@ -8542,6 +8774,10 @@ def cmd_submit(args):
                 "slurm_partition": getattr(args, "slurm_partition", None) or "",
                 "slurm_account": getattr(args, "slurm_account", None) or "",
                 "slurm_qos": getattr(args, "slurm_qos", None) or "",
+                "cpu_parallel_items": int(getattr(args, "cpu_parallel_items", 0) or 0),
+                "cpu_parallel_total_items": int(getattr(args, "cpu_parallel_items", 0) or 0),
+                "cpu_parallel_start": 0,
+                "cpu_parallel_end": int(getattr(args, "cpu_parallel_items", 0) or 0),
             })
             for existing in state["tasks"]:
                 if (existing.get("status") in ("queued", "running", "launching")
@@ -8623,7 +8859,20 @@ def cmd_submit(args):
                 "description": args.description, "ram_mb": DEFAULT_RAM_MB,
             }
             ram_mb = _effective_est_ram(probe_task_for_ram, state, ram_full_hist)
-        cpu_cores = args.cpu if args.cpu is not None else hist.get("cpu_cores", DEFAULT_CPU_CORES)
+        cpu_parallel_items = int(getattr(args, "cpu_parallel_items", 0) or 0)
+        cpu_auto_plan = None
+        if args.cpu is not None:
+            cpu_cores = args.cpu
+        elif cpu_parallel_items > 0:
+            ref_node = args.require_node or args.preferred_node
+            if ref_node:
+                physical = _node_physical_cores(ref_node)
+            else:
+                physical = max([_node_physical_cores(n) for n in _cpu_labor_node_names()] or [DEFAULT_CPU_CORES])
+            cpu_auto_plan = _cpu_worker_plan_for_items(cpu_parallel_items, physical)
+            cpu_cores = cpu_auto_plan["workers"]
+        else:
+            cpu_cores = hist.get("cpu_cores", DEFAULT_CPU_CORES)
         project = args.project or _project_from_path(args.cwd) or (sig.split("/", 1)[0] if "/" in sig else sig)
         task = {
             "id": f"t{state['next_id']:04d}",
@@ -8670,6 +8919,16 @@ def cmd_submit(args):
             "submitted_by": _local_user(),
             "submitted_host": _local_host_short(),
             "scheduler_id": _ClaimManager.scheduler_id(),
+            "cpu_parallel_items": cpu_parallel_items or None,
+            "cpu_parallel_total_items": cpu_parallel_items or None,
+            "cpu_parallel_start": 0 if cpu_parallel_items else None,
+            "cpu_parallel_end": cpu_parallel_items if cpu_parallel_items else None,
+            "cpu_parallel_shard_index": 0 if cpu_parallel_items else None,
+            "cpu_parallel_num_shards": 1 if cpu_parallel_items else None,
+            "cpu_auto_workers": (cpu_auto_plan or {}).get("workers") if cpu_auto_plan else None,
+            "cpu_parallel_waves": (cpu_auto_plan or {}).get("waves") if cpu_auto_plan else None,
+            "cpu_parallel_physical_cores": (cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None,
+            "cpu_parallel_last_wave_items": (cpu_auto_plan or {}).get("last_wave_items") if cpu_auto_plan else None,
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
             "allow_remote_large_data": bool(getattr(args, "allow_remote_large_data", False)),
@@ -8713,11 +8972,145 @@ def cmd_submit(args):
     elif args.vram is not None: sources.append("vram=explicit")
     if hist.get("ram_mb") and args.ram_mb is None: sources.append("ram=hist")
     elif args.ram_mb is not None: sources.append("ram=explicit")
-    if hist.get("cpu_cores") and args.cpu is None: sources.append("cpu=hist")
+    if int(getattr(args, "cpu_parallel_items", 0) or 0) > 0 and args.cpu is None:
+        sources.append("cpu=auto-workers")
+    elif hist.get("cpu_cores") and args.cpu is None: sources.append("cpu=hist")
     elif args.cpu is not None: sources.append("cpu=explicit")
     src = ",".join(sources) or "all-defaults"
     print(f"submitted {task['id']}  cpu={cpu_cores} ram={ram_mb}MB vram={est_vram}MB  prio={args.priority}  ({src})  {args.description[:50]}")
+    if task.get("cpu_parallel_items"):
+        print(f"  cpu-workers: items={task.get('cpu_parallel_items')} "
+              f"physical={task.get('cpu_parallel_physical_cores')} "
+              f"waves={task.get('cpu_parallel_waves')} "
+              f"workers={task.get('cpu_auto_workers')} "
+              f"last_wave={task.get('cpu_parallel_last_wave_items')}")
     print(f"  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).")
+
+
+def _parse_cpu_node_list(text: Optional[str]) -> list:
+    if not text:
+        return _cpu_labor_node_names()
+    names = [x.strip() for x in str(text).split(",") if x.strip()]
+    bad = [n for n in names if n not in NODES]
+    if bad:
+        sys.exit(f"unknown node(s): {', '.join(bad)}")
+    return names
+
+
+def _print_cpu_plan(plan: list, total_items: int) -> None:
+    total_physical = sum(int(p.get("physical_cores") or 0) for p in plan)
+    global_waves = max([int(p.get("global_waves") or p.get("waves") or 0) for p in plan] or [0])
+    print(f"cpu-plan: total_items={total_items} total_physical={total_physical} global_waves={global_waves}")
+    for p in plan:
+        print(f"  {p['node']:11s} range=[{p['start']},{p['end']}) "
+              f"items={p['items']} physical={p['physical_cores']} "
+              f"workers={p['workers']} waves={p['waves']} "
+              f"last_wave={p['last_wave_items']}")
+
+
+def cmd_cpu_plan(args):
+    names = _parse_cpu_node_list(getattr(args, "nodes", None))
+    plan = _cpu_batch_plan(args.items, names)
+    if args.json:
+        print(json.dumps({"total_items": args.items, "plan": plan}, indent=2))
+        return
+    _print_cpu_plan(plan, args.items)
+
+
+def cmd_submit_cpu_batch(args):
+    names = _parse_cpu_node_list(getattr(args, "nodes", None))
+    plan = _cpu_batch_plan(args.items, names)
+    if not plan:
+        sys.exit("no CPU batch plan could be built")
+    split_tokens = ("{start}", "{end}", "{node}", "{shard_index}", "{shard_id}", "{num_shards}")
+    if len(plan) > 1 and not getattr(args, "allow_env_only_shard", False):
+        templated = " ".join(str(x or "") for x in (
+            args.cmd_template, getattr(args, "result_dir_template", None),
+            getattr(args, "local_result_dir_template", None),
+        ))
+        if not any(tok in templated for tok in split_tokens):
+            sys.exit("REFUSED: submit-cpu-batch spans multiple nodes but the command/result templates "
+                     "do not contain shard placeholders like {start}/{end}/{node}. "
+                     "Pass --allow-env-only-shard only if the script reads SCHEDULEURM_CPU_* env vars.")
+    if args.json or args.dry_run:
+        rows = []
+        for p in plan:
+            vals = _cpu_parallel_template_values(p, args.items)
+            rows.append({
+                **p,
+                "cmd": _rewrite_cpu_parallel_cmd(args.cmd_template, p, args.items),
+                "cwd": _format_cpu_parallel_template(args.cwd, p, args.items),
+                "signature": _format_cpu_parallel_template(args.signature, p, args.items),
+                "description": _format_cpu_parallel_template(args.description, p, args.items),
+                "env": vals,
+            })
+        if args.json:
+            print(json.dumps({"total_items": args.items, "plan": rows}, indent=2))
+        else:
+            _print_cpu_plan(plan, args.items)
+            for r in rows:
+                print(f"  cmd[{r['node']}]: {r['cmd']}")
+        if args.dry_run:
+            return
+
+    for p in plan:
+        vals = _cpu_parallel_template_values(p, args.items)
+        env = list(getattr(args, "env", None) or [])
+        env.extend([
+            f"SCHEDULEURM_CPU_TOTAL_ITEMS={args.items}",
+            f"SCHEDULEURM_CPU_SHARD_START={p['start']}",
+            f"SCHEDULEURM_CPU_SHARD_END={p['end']}",
+            f"SCHEDULEURM_CPU_SHARD_ITEMS={p['items']}",
+            f"SCHEDULEURM_CPU_WORKERS={p['workers']}",
+            f"SCHEDULEURM_CPU_WAVES={p['waves']}",
+            f"SCHEDULEURM_CPU_PHYSICAL_CORES={p['physical_cores']}",
+            f"SCHEDULEURM_CPU_SHARD_INDEX={p['shard_index']}",
+            f"SCHEDULEURM_CPU_NUM_SHARDS={p['num_shards']}",
+        ])
+        ns = argparse.Namespace(
+            description=_format_cpu_parallel_template(args.description, p, args.items),
+            cmd=_rewrite_cpu_parallel_cmd(args.cmd_template, p, args.items),
+            cwd=_format_cpu_parallel_template(args.cwd, p, args.items),
+            signature=_format_cpu_parallel_template(args.signature, p, args.items),
+            vram=0,
+            ram_mb=args.ram_mb,
+            cpu=int(p["workers"]),
+            priority=args.priority,
+            project=args.project,
+            preferred_node=None,
+            require_node=p["node"],
+            git_repo=None,
+            ckpt_dir=None,
+            result_dir=_format_cpu_parallel_template(getattr(args, "result_dir_template", None), p, args.items),
+            local_result_dir=_format_cpu_parallel_template(getattr(args, "local_result_dir_template", None), p, args.items),
+            wait_for_files=[
+                _format_cpu_parallel_template(w, p, args.items)
+                for w in (getattr(args, "wait_for_file_template", None) or [])
+            ],
+            test_log=None,
+            test_peak_vram_mb=0,
+            test_peak_ram_mb=0,
+            test_cpu=0,
+            ckpt_glob="*",
+            resume_flag="",
+            env=env,
+            allow_cpu_training=bool(getattr(args, "allow_cpu_training", False)),
+            cpu_training_justification=getattr(args, "cpu_training_justification", "") or "",
+            allow_no_ckpt=bool(getattr(args, "allow_no_ckpt", False)),
+            allow_no_resume=bool(getattr(args, "allow_no_resume", False)),
+            env_spec=getattr(args, "env_spec", None) or "none",
+            image=getattr(args, "image", None) or "",
+            allow_shared_ckpt_dir=False,
+            allow_shared_result_dir=bool(getattr(args, "allow_shared_result_dir", False)),
+            allow_remote_large_data=bool(getattr(args, "allow_remote_large_data", False)),
+            allow_duplicate=bool(getattr(args, "allow_duplicate", False)),
+            slurm_partition="",
+            slurm_account="",
+            slurm_qos="",
+            cpu_parallel_items=int(p["items"]),
+        )
+        cmd_submit(ns)
+
 
 def _project_from_path(path):
     """Heuristic: project name = last path component. Strips trailing /; returns '' if path is None/empty."""
@@ -12418,6 +12811,10 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "id", "status", "description", "project", "signature", "cmd", "cwd",
     "origin", "submitted_by", "submitted_host", "scheduler_id",
     "process_owner", "shared_account_suspect",
+    "cpu_parallel_items", "cpu_parallel_total_items", "cpu_parallel_start",
+    "cpu_parallel_end", "cpu_auto_workers", "cpu_parallel_waves",
+    "cpu_parallel_physical_cores", "cpu_parallel_shard_index",
+    "cpu_parallel_num_shards",
     "est_vram_mb", "ram_mb", "cpu_cores", "priority", "preferred_node",
     "require_node", "node", "gpu_idx", "remote_pids", "slurm_job_id",
     "slurm_state", "log_path", "submitted_at", "started_at", "finished_at",
@@ -14596,6 +14993,10 @@ def main():
     s.add_argument("--vram", type=int, help="Override est VRAM in MB (else from history; else %d). Use 0 for CPU-only tasks." % DEFAULT_VRAM_MB)
     s.add_argument("--ram-mb", type=int, dest="ram_mb", help="Override est RAM in MB (else from history; else %d)" % DEFAULT_RAM_MB)
     s.add_argument("--cpu", type=int, help="CPU cores needed (else from history; else %d)" % DEFAULT_CPU_CORES)
+    s.add_argument("--cpu-parallel-items", dest="cpu_parallel_items", type=int, default=0,
+                   help="For CPU-only multi-worker jobs with M independent items, auto-size workers as "
+                        "e=ceil(M/physical_cores), workers=ceil(M/e). Commands may use "
+                        "{workers}/{n_workers}/{num_workers} placeholders or pass --workers auto.")
     s.add_argument("--priority", choices=["low", "normal", "high"], default="normal")
     s.add_argument("--project", help="Project name (else derived from cwd basename)")
     s.add_argument("--preferred-node", choices=list(NODES.keys()), help="SOFT preference: try this node first, fall back if full")
@@ -14681,6 +15082,55 @@ def main():
     s.add_argument("--slurm-qos", dest="slurm_qos", default="",
                    help="Optional Slurm QoS to pass as #SBATCH --qos when routed to SlurmBackend")
     s.set_defaults(func=cmd_submit)
+
+    s = sub.add_parser("cpu-plan", help="Plan M independent CPU items across physical-core CPU nodes")
+    s.add_argument("--items", type=int, required=True, help="Total independent CPU items/checkpoints to process")
+    s.add_argument("--nodes", default="", help="Comma-separated CPU nodes (default: all cpu_labor_node nodes)")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_cpu_plan)
+
+    s = sub.add_parser("submit-cpu-batch",
+                       help="Split a CPU-heavy batch across CPU nodes and submit one shard per node")
+    s.add_argument("--items", type=int, required=True,
+                   help="Total independent CPU items/checkpoints to process")
+    s.add_argument("--cmd-template", required=True,
+                   help="Command template. Known placeholders: {start} {end} {items} "
+                        "{workers} {node} {shard_index} {num_shards}. "
+                        "Use {workers} or '--workers auto' to get the computed worker count.")
+    s.add_argument("--cwd", required=True,
+                   help="Working directory template/path on target node")
+    s.add_argument("--signature", required=True,
+                   help="Signature template, e.g. Project/eval/{node}")
+    s.add_argument("--description", required=True,
+                   help="Description template")
+    s.add_argument("--nodes", default="",
+                   help="Comma-separated CPU nodes (default: all cpu_labor_node nodes)")
+    s.add_argument("--ram-mb", dest="ram_mb", type=int,
+                   help="RAM estimate per shard")
+    s.add_argument("--priority", choices=["low", "normal", "high"], default="normal")
+    s.add_argument("--project", help="Project name")
+    s.add_argument("--env", nargs="*", help="Extra env vars KEY=VALUE")
+    s.add_argument("--result-dir-template", dest="result_dir_template",
+                   help="Remote result dir template for each shard")
+    s.add_argument("--local-result-dir-template", dest="local_result_dir_template",
+                   help="Local result dir template for each shard")
+    s.add_argument("--wait-for-file-template", dest="wait_for_file_template", action="append",
+                   help="Prerequisite file template; repeatable")
+    s.add_argument("--allow-env-only-shard", action="store_true",
+                   help="Allow multi-node split when templates lack {start}/{end}/{node}; "
+                        "use only if the script reads SCHEDULEURM_CPU_* env vars.")
+    s.add_argument("--allow-cpu-training", dest="allow_cpu_training", action="store_true")
+    s.add_argument("--cpu-training-justification", dest="cpu_training_justification", default="")
+    s.add_argument("--allow-no-ckpt", dest="allow_no_ckpt", action="store_true")
+    s.add_argument("--allow-no-resume", dest="allow_no_resume", action="store_true")
+    s.add_argument("--allow-shared-result-dir", dest="allow_shared_result_dir", action="store_true")
+    s.add_argument("--allow-remote-large-data", dest="allow_remote_large_data", action="store_true")
+    s.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true")
+    s.add_argument("--env-spec", dest="env_spec", default="none")
+    s.add_argument("--image", dest="image", default="")
+    s.add_argument("--dry-run", action="store_true")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_submit_cpu_batch)
 
     sub.add_parser("dispatch", help="Probe nodes & launch what fits (also rebalances queue)").set_defaults(func=cmd_dispatch)
 

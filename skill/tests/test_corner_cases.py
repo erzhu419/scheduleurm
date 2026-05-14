@@ -402,6 +402,85 @@ def run(check, sch):
             )
         return with_temp_nodes(_inner)
 
+    def case_cpu_wave_summary_records_each_small_wave():
+        got = sch._cpu_wave_summary(901, 113)
+        return (
+            got["waves"] == 8
+            and got["wave_items"] == [113, 113, 113, 113, 113, 113, 113, 110]
+            and got["last_wave_items"] == 110
+        )
+
+    def case_cpu_batch_log_payload_has_detailed_node_rows():
+        def _inner():
+            states = {
+                "jtl110cpu": {"name": "jtl110cpu", "alive": True, "free_cpu": 64,
+                              "total_cpu": 128, "logical_cpu": 256,
+                              "free_ram_mb": 400000, "total_ram_mb": 524288},
+                "jtl110cpu2": {"name": "jtl110cpu2", "alive": True, "free_cpu": 128,
+                               "total_cpu": 128, "logical_cpu": 256,
+                               "free_ram_mb": 500000, "total_ram_mb": 524288},
+            }
+            plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
+            payload = sch._cpu_batch_log_payload(901, plan, states, templates={"cmd": "python eval.py"})
+            nodes = {n["node"]: n for n in payload["nodes"]}
+            return (
+                payload["total_items"] == 901
+                and payload["node_count"] == 2
+                and nodes["jtl110cpu"]["assigned_items"] == 300
+                and nodes["jtl110cpu"]["free_physical_cores_used_for_plan"] == 64
+                and nodes["jtl110cpu"]["live_node"]["logical_cpu"] == 256
+                and nodes["jtl110cpu2"]["wave_plan"]["waves"] == nodes["jtl110cpu2"]["waves"]
+            )
+        return with_temp_nodes(_inner)
+
+    def case_cpu_ownership_snapshot_separates_ours_external_and_other():
+        saved = sch._ClaimManager.__dict__["scheduler_id"]
+        try:
+            sch._ClaimManager.scheduler_id = staticmethod(lambda: "this-scheduler")
+            state = {"tasks": [
+                {"id": "tOurs", "status": "running", "node": "nodeA",
+                 "origin": "scheduleurm", "scheduler_id": "this-scheduler", "cpu_cores": 4},
+                {"id": "tOther", "status": "running", "node": "nodeA",
+                 "origin": "scheduleurm", "scheduler_id": "other-scheduler", "cpu_cores": 3},
+                {"id": "tQueued", "status": "queued", "node": "nodeA",
+                 "origin": "scheduleurm", "scheduler_id": "this-scheduler", "cpu_cores": 8},
+            ]}
+            nodes = [{"name": "nodeA", "alive": True, "total_cpu": 16,
+                      "free_cpu": 6, "free_ram_mb": 1000, "total_ram_mb": 2000}]
+            row = sch._cpu_ownership_snapshot(state, nodes)[0]
+            return (
+                row["used_cpu_est"] == 10
+                and row["scheduleurm_cpu_reserved"] == 4
+                and row["external_tracked_cpu_reserved"] == 3
+                and row["untracked_or_other_user_cpu_est"] == 3
+                and row["scheduleurm_task_ids"] == ["tOurs"]
+                and row["external_tracked_task_ids"] == ["tOther"]
+            )
+        finally:
+            sch._ClaimManager.scheduler_id = saved
+
+    def case_dispatch_cycle_payload_includes_cpu_accounting():
+        saved = sch._ClaimManager.__dict__["scheduler_id"]
+        try:
+            sch._ClaimManager.scheduler_id = staticmethod(lambda: "sid")
+            state = {"tasks": [
+                {"id": "t1", "status": "running", "node": "nodeA",
+                 "origin": "scheduleurm", "scheduler_id": "sid", "cpu_cores": 2},
+                {"id": "t2", "status": "queued", "cpu_cores": 1, "ram_mb": 500,
+                 "est_vram_mb": 0, "last_block_reason": "waiting"},
+            ]}
+            nodes = [{"name": "nodeA", "alive": True, "total_cpu": 8, "free_cpu": 5}]
+            events = [{"type": "no_fit", "task_id": "t2", "task": state["tasks"][1]}]
+            payload = sch._dispatch_cycle_log_payload(state, nodes, events, 1)
+            return (
+                payload["event_counts"]["no_fit"] == 1
+                and payload["nodes"][0]["scheduleurm_cpu_reserved"] == 2
+                and payload["queued_seen_by_dispatch"] == 1
+                and payload["no_fit"][0]["reason"] == "waiting"
+            )
+        finally:
+            sch._ClaimManager.scheduler_id = saved
+
     def case_cpu_parallel_template_and_auto_worker_flag():
         plan = {
             "node": "jtl110cpu", "start": 0, "end": 451,
@@ -518,6 +597,98 @@ def run(check, sch):
         ok2, msg2 = backend.launch({"id": "tY", "node": "jtl110cpu2", "est_vram_mb": 1})
         return (not ok1) and (not ok2) and "CPU-only" in msg1 and "CPU-only" in msg2
 
+    def case_windows_cwd_requires_stage_cache_before_launch():
+        def _inner():
+            sch._STAGING_CACHE.clear()
+            sch._STAGING_CAP_EXCEEDED.clear()
+            sch._STAGING_FAILS.clear()
+            cwd = "/home/erzhu419/mine_code/proj"
+            key = ("local", "jtl110cpu", cwd)
+            cold = sch._stage_cwd_check("jtl110cpu", cwd)
+            sch._STAGING_CACHE[key] = time.time()
+            hot = sch._stage_cwd_check("jtl110cpu", cwd)
+            sch._STAGING_CACHE.pop(key, None)
+            return cold == "needs_stage" and hot == "ready"
+        return with_temp_nodes(_inner)
+
+    def case_windows_stage_helper_uses_tar_over_ssh():
+        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        return (
+            "def _stage_local_dir_to_windows" in src
+            and '"tar", "-C"' in src
+            and "_ssh_base_args(target_node)" in src
+            and "tar -xf - -C $dest" in src
+        )
+
+    def case_windows_explicit_env_spec_rejected_without_network():
+        backend = sch.WindowsBackend()
+        ok, msg = backend.launch({
+            "id": "tEnv", "node": "jtl110cpu", "est_vram_mb": 0,
+            "env_spec": "docker:some/image:tag",
+        })
+        return (not ok) and "does not support explicit env_spec" in msg
+
+    def case_record_staged_resume_location_maps_windows_path():
+        def _inner():
+            task = {"resume_locations": []}
+            sch._record_staged_resume_location(task, "jtl110cpu", {
+                "node": "local",
+                "path": "/home/erzhu419/mine_code/proj/ckpts/a.pt",
+                "mtime": 1,
+                "size": 2,
+            })
+            loc = task.get("resume_locations", [{}])[0]
+            return (
+                loc.get("node") == "jtl110cpu"
+                and loc.get("path") == r"F:\proj\ckpts\a.pt"
+                and task.get("resume_from") == r"F:\proj\ckpts\a.pt"
+            )
+        return with_temp_nodes(_inner)
+
+    def case_ckpt_staging_runs_when_cwd_already_cached():
+        saved_nodes = dict(sch.NODES)
+        saved_load = sch.load_state
+        saved_stage = sch._stage_resume_ckpt_for_launch
+        try:
+            sch.NODES.clear()
+            sch.NODES.update({
+                "local": {"host": None},
+                "remote": {"host": "rbox"},
+            })
+            cwd = "/home/erzhu419/mine_code/proj"
+            ckpt = cwd + "/ckpts"
+            task = {
+                "id": "tCkptOnly",
+                "status": "queued",
+                "cwd": cwd,
+                "ckpt_dir": ckpt,
+                "ckpt_glob": "*",
+                "require_node": "remote",
+                "resume_managed_by_cmd": True,
+                "resume_locations": [{
+                    "node": "local",
+                    "path": ckpt + "/checkpoint.pt",
+                    "mtime": time.time(),
+                    "size": 10,
+                }],
+            }
+            sch.load_state = lambda: {"tasks": [task]}
+            sch._STAGING_CACHE.clear()
+            sch._STAGING_CACHE[("local", "remote", cwd)] = time.time()
+            calls = []
+            def fake_stage(t, node, src):
+                calls.append((t.get("id"), node, src.get("node")))
+                return True, "ok"
+            sch._stage_resume_ckpt_for_launch = fake_stage
+            sch._stage_launch_candidates_outside_lock()
+            return calls == [("tCkptOnly", "remote", "local")]
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
+            sch.load_state = saved_load
+            sch._stage_resume_ckpt_for_launch = saved_stage
+            sch._STAGING_CACHE.clear()
+
     def case_windows_auto_adopt_linux_scans_are_skipped():
         def _inner():
             return (
@@ -578,6 +749,24 @@ def run(check, sch):
             )
         return with_temp_nodes(_inner)
 
+    def case_windows_wrapper_logs_cpu_plan_and_resource_progress():
+        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        return (
+            "scheduleurm cpu-plan" in src
+            and "scheduleurm resource-progress" in src
+            and "resource_log_interval_s" in src
+            and "WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S" in src
+        )
+
+    def case_watcher_has_periodic_node_cpu_accounting_log():
+        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        return (
+            "--resource-log-interval" in src
+            and "node_cpu_accounting" in src
+            and "_cpu_ownership_snapshot" in src
+            and "dispatch_cycle" in src
+        )
+
     cases = [
         ("env value preserves equals", case_env_value_with_equals),
         ("env invalid key rejected", case_env_invalid_key_rejected),
@@ -622,6 +811,10 @@ def run(check, sch):
         ("CPU batch plan splits 901 items across two 128-core nodes", case_cpu_batch_plan_splits_two_128_nodes),
         ("CPU batch plan uses free physical cores", case_cpu_batch_plan_uses_free_physical_cores),
         ("CPU batch plan skips full CPU node", case_cpu_batch_plan_skips_full_cpu_node),
+        ("CPU wave summary records each small wave", case_cpu_wave_summary_records_each_small_wave),
+        ("CPU batch log payload has detailed node rows", case_cpu_batch_log_payload_has_detailed_node_rows),
+        ("CPU ownership snapshot separates ours/external/other", case_cpu_ownership_snapshot_separates_ours_external_and_other),
+        ("dispatch cycle payload includes CPU accounting", case_dispatch_cycle_payload_includes_cpu_accounting),
         ("CPU parallel template rewrites worker auto flag", case_cpu_parallel_template_and_auto_worker_flag),
         ("Node physical cores infers half of logical cores", case_node_physical_cores_infers_half_logical_when_unconfigured),
         ("submit-cpu-batch CLI exists", case_submit_cpu_batch_cli_exists),
@@ -632,11 +825,18 @@ def run(check, sch):
         ("Windows path mapping uses F drive project layout", case_windows_path_mapping_to_f_drive_project_layout),
         ("Windows command prep rewrites python and paths", case_windows_prepare_command_rewrites_python_and_paths),
         ("Windows backend refuses GPU tasks before network", case_windows_backend_refuses_gpu_task_without_network),
+        ("Windows cwd requires staging cache before launch", case_windows_cwd_requires_stage_cache_before_launch),
+        ("Windows staging helper uses tar over SSH", case_windows_stage_helper_uses_tar_over_ssh),
+        ("Windows explicit env_spec rejected before network", case_windows_explicit_env_spec_rejected_without_network),
+        ("Windows staged resume path maps to F drive", case_record_staged_resume_location_maps_windows_path),
+        ("ckpt staging runs even when cwd is already cached", case_ckpt_staging_runs_when_cwd_already_cached),
         ("Windows node skips Linux auto-adopt scans", case_windows_auto_adopt_linux_scans_are_skipped),
         ("Windows log tail uses read-write file share", case_windows_tail_uses_readwrite_share),
         ("Windows probe ignores PowerShell CLIXML noise", case_windows_probe_ignores_powershell_clixml_noise),
         ("Windows probe has process CPU delta fallback", case_windows_probe_has_process_cpu_delta_fallback),
         ("Windows probe SSH auth failure gets key hint", case_windows_probe_error_hints_ssh_key_auth),
+        ("Windows wrapper logs CPU plan and resource progress", case_windows_wrapper_logs_cpu_plan_and_resource_progress),
+        ("watcher has periodic node CPU accounting log", case_watcher_has_periodic_node_cpu_accounting_log),
     ]
 
     for idx, (name, fn) in enumerate(cases, 1):

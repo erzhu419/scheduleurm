@@ -137,8 +137,10 @@ DEFAULT_CPU_CORES = 1      # most ML jobs are single-process at the dispatch lev
 
 ARCHIVE_FILE = STATE_DIR / "queue_archive.jsonl"
 ARCHIVE_AGE_DAYS = 7        # terminal tasks older than this move from queue.json into archive
-WATCHER_LOG_MAX_MB = 5      # rotate watcher.log when it exceeds this size
+WATCHER_LOG_MAX_MB = 50     # detailed resource telemetry needs a longer JSONL tail
 WATCHER_LOG_GENERATIONS = 3 # keep .log + .log.1 + .log.2 + .log.3 (oldest dropped on next rotation)
+RESOURCE_LOG_INTERVAL_S = max(30, int(os.environ.get("SCHEDULEURM_RESOURCE_LOG_INTERVAL_S", "300")))
+WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S = max(10, int(os.environ.get("SCHEDULEURM_WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S", "60")))
 MAX_AUTO_RETRY = 3          # auto-requeue cap after crash (parent.retry_count + 1 > this → give up)
 MAX_LAUNCH_RETRY = 3        # launch-failure cap (cwd missing, ssh timeout, etc.) before terminal failed + heal
 LAUNCHING_RESET_S = 60      # stale WAL launch marker age before reverting to queued
@@ -2771,6 +2773,87 @@ def _cpu_batch_plan(total_items: int, node_names: Optional[list] = None,
     return out
 
 
+def _cpu_wave_summary(items: int, workers: int) -> dict:
+    """Compact per-wave item counts for CPU batch audit logs."""
+    items = max(0, int(items or 0))
+    workers = max(0, int(workers or 0))
+    if items <= 0 or workers <= 0:
+        return {"waves": 0, "workers": workers, "last_wave_items": 0, "wave_items": []}
+    waves = _ceil_div(items, workers)
+    last = items - workers * max(0, waves - 1)
+    if last <= 0:
+        last = workers
+    if waves <= 32:
+        wave_items = [min(workers, max(0, items - i * workers)) for i in range(waves)]
+        return {
+            "waves": waves,
+            "workers": workers,
+            "last_wave_items": last,
+            "wave_items": wave_items,
+        }
+    head = [min(workers, max(0, items - i * workers)) for i in range(8)]
+    tail_start = max(8, waves - 4)
+    tail = [min(workers, max(0, items - i * workers)) for i in range(tail_start, waves)]
+    return {
+        "waves": waves,
+        "workers": workers,
+        "last_wave_items": last,
+        "wave_items_head": head,
+        "wave_items_tail": tail,
+        "wave_items_omitted": max(0, waves - len(head) - len(tail)),
+    }
+
+
+def _cpu_batch_log_payload(total_items: int, plan: list, node_states: Optional[dict] = None,
+                           use_total_cores: bool = False, templates: Optional[dict] = None) -> dict:
+    """Detailed JSONL payload for CPU batch planning and submission."""
+    node_states = node_states or {}
+    nodes = []
+    for p in plan or []:
+        node = p.get("node")
+        st = node_states.get(node) or {}
+        entry = {
+            "node": node,
+            "range": [int(p.get("start") or 0), int(p.get("end") or 0)],
+            "assigned_items": int(p.get("items") or 0),
+            "free_physical_cores_used_for_plan": int(p.get("physical_cores") or 0),
+            "available_physical_cores": int(p.get("available_cores") or p.get("physical_cores") or 0),
+            "total_physical_cores": int(p.get("total_physical_cores") or p.get("physical_cores") or 0),
+            "workers": int(p.get("workers") or 0),
+            "waves": int(p.get("waves") or 0),
+            "global_waves": int(p.get("global_waves") or 0),
+            "last_wave_items": int(p.get("last_wave_items") or 0),
+            "shard_index": int(p.get("shard_index") or 0),
+            "num_shards": int(p.get("num_shards") or 1),
+            "wave_plan": _cpu_wave_summary(p.get("items") or 0, p.get("workers") or 0),
+            "live_node": {
+                "alive": st.get("alive"),
+                "free_cpu": st.get("free_cpu"),
+                "total_cpu": st.get("total_cpu"),
+                "logical_cpu": st.get("logical_cpu") or st.get("logical_cores"),
+                "free_ram_mb": st.get("free_ram_mb"),
+                "total_ram_mb": st.get("total_ram_mb"),
+                "running_count": st.get("running_count"),
+                "os": st.get("os"),
+            },
+        }
+        nodes.append(entry)
+    total_free = sum(int(p.get("physical_cores") or 0) for p in plan or [])
+    total_capacity = sum(int(p.get("total_physical_cores") or p.get("physical_cores") or 0)
+                         for p in plan or [])
+    return {
+        "total_items": int(total_items or 0),
+        "node_count": len(plan or []),
+        "free_physical_cores_used_for_plan": total_free,
+        "total_physical_cores": total_capacity,
+        "global_waves": max([int(p.get("global_waves") or p.get("waves") or 0)
+                             for p in plan or []] or [0]),
+        "use_total_cores": bool(use_total_cores),
+        "nodes": nodes,
+        "templates": templates or {},
+    }
+
+
 def _cpu_parallel_template_values(plan: dict, total_items: Optional[int] = None) -> dict:
     vals = {
         "node": plan.get("node", ""),
@@ -2833,6 +2916,7 @@ def _cpu_parallel_env(task: dict) -> dict:
         "SCHEDULEURM_CPU_WAVES": task.get("cpu_parallel_waves"),
         "SCHEDULEURM_CPU_PHYSICAL_CORES": task.get("cpu_parallel_physical_cores"),
         "SCHEDULEURM_CPU_TOTAL_PHYSICAL_CORES": task.get("cpu_parallel_total_physical_cores"),
+        "SCHEDULEURM_CPU_LAST_WAVE_ITEMS": task.get("cpu_parallel_last_wave_items"),
         "SCHEDULEURM_CPU_SHARD_INDEX": task.get("cpu_parallel_shard_index"),
         "SCHEDULEURM_CPU_NUM_SHARDS": task.get("cpu_parallel_num_shards"),
     }
@@ -2844,8 +2928,26 @@ def _apply_cpu_parallel_plan_to_task(task: dict, node_state: Optional[dict] = No
     if items <= 0:
         return None
     node = task.get("node")
-    physical = _node_physical_cores(node, node_state)
-    plan = _cpu_worker_plan_for_items(items, physical)
+    batch_plan = task.get("cpu_batch_plan") if isinstance(task.get("cpu_batch_plan"), dict) else {}
+    if batch_plan:
+        physical = int(batch_plan.get("physical_cores") or batch_plan.get("available_cores")
+                       or _node_physical_cores(node, node_state))
+        plan = _cpu_worker_plan_for_items(items, physical)
+        workers = int(batch_plan.get("workers") or task.get("cpu_auto_workers") or plan["workers"])
+        waves = int(batch_plan.get("waves") or _ceil_div(items, max(1, workers)))
+        last = int(batch_plan.get("last_wave_items") or (items - workers * max(0, waves - 1)))
+        if last <= 0:
+            last = workers
+        plan.update({
+            "workers": workers,
+            "waves": waves,
+            "last_wave_items": last,
+            "physical_cores": physical,
+            "total_physical_cores": int(batch_plan.get("total_physical_cores") or physical),
+        })
+    else:
+        physical = _node_physical_cores(node, node_state)
+        plan = _cpu_worker_plan_for_items(items, physical)
     plan.update({
         "node": node or "",
         "start": int(task.get("cpu_parallel_start") or 0),
@@ -5409,6 +5511,20 @@ def _windows_prepare_command(task: dict) -> dict:
     return {"cmdline": mapped}
 
 
+def _windows_env_spec_error(task: dict) -> Optional[str]:
+    spec = (task.get("env_spec") or "none").strip()
+    low = spec.lower()
+    if low in ("", "none", "auto"):
+        return None
+    if low.startswith("docker") or low.startswith("conda"):
+        return (
+            f"WindowsBackend does not support explicit env_spec={spec!r}; "
+            "preinstall/use the node's configured windows_python, or run this "
+            "task on a Linux node where docker/conda env sync is available."
+        )
+    return f"unsupported env_spec={spec!r} for WindowsBackend"
+
+
 _WINDOWS_LAUNCHER = r'''
 import base64, ctypes, json, os, subprocess, sys, time
 from ctypes import wintypes
@@ -5553,6 +5669,9 @@ def main():
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     with open(log_path, "ab", buffering=0) as log:
         log.write(("scheduleurm windows wrapper start task=%s cwd=%s\n" % (payload.get("task_id"), cwd)).encode())
+        cpu_plan = payload.get("cpu_plan") or {}
+        if cpu_plan:
+            log.write(("scheduleurm cpu-plan %s\n" % json.dumps(cpu_plan, sort_keys=True)).encode())
         if payload.get("argv"):
             proc = subprocess.Popen(payload["argv"], cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, creationflags=CREATE_NEW_PROCESS_GROUP)
         else:
@@ -5560,9 +5679,15 @@ def main():
         log.write(("scheduleurm child pid=%s auto_pin=%s\n" % (proc.pid, payload.get("auto_pin"))).encode())
         assigned = {}
         next_slot = 0
+        started_at = time.time()
+        last_resource_log = 0.0
+        loop_count = 0
+        resource_interval = float(payload.get("resource_log_interval_s") or 60.0)
         while proc.poll() is None:
+            loop_count += 1
+            active = sorted(descendants(proc.pid))
+            pin_ok_count = 0
             if payload.get("auto_pin"):
-                active = sorted(descendants(proc.pid))
                 assigned = {pid: slot for pid, slot in assigned.items() if pid in active}
                 used_slots = set(assigned.values())
                 for pid in active:
@@ -5573,11 +5698,31 @@ def main():
                         used_slots.add(next_slot)
                         next_slot += 1
                     ok, group, cpu = pin_pid(pid, assigned[pid], bool(payload.get("skip_ht_pair", True)))
+                    if ok:
+                        pin_ok_count += 1
                     if ok and not os.environ.get("SCHEDULEURM_PIN_QUIET"):
                         log.write(("[pin] pid=%s slot=%s group=%s cpu=%s\n" % (pid, assigned[pid], group, cpu)).encode())
+            now = time.time()
+            if now - last_resource_log >= resource_interval:
+                progress = {
+                    "task_id": payload.get("task_id"),
+                    "elapsed_s": int(now - started_at),
+                    "wrapper_loop": loop_count,
+                    "root_pid": proc.pid,
+                    "child_process_count": len(active),
+                    "pinned_process_count": len(assigned),
+                    "pin_ok_this_loop": pin_ok_count,
+                    "next_pin_slot": next_slot,
+                    "auto_pin": bool(payload.get("auto_pin")),
+                    "cpu_plan": cpu_plan,
+                }
+                log.write(("scheduleurm resource-progress %s\n" % json.dumps(progress, sort_keys=True)).encode())
+                last_resource_log = now
             time.sleep(float(payload.get("pin_interval_s", 1.0)))
         rc = proc.wait()
-        log.write(("scheduleurm child exit rc=%s\n" % rc).encode())
+        log.write(("scheduleurm child exit rc=%s duration_s=%s assigned_processes=%s\n" % (
+            rc, int(time.time() - started_at), len(assigned)
+        )).encode())
     sys.exit(rc)
 
 if __name__ == "__main__":
@@ -5626,6 +5771,9 @@ class WindowsBackend(Backend):
         node = task["node"]
         if int(task.get("est_vram_mb") or 0) > 0:
             return False, "WindowsBackend is CPU-only; refusing GPU task"
+        env_err = _windows_env_spec_error(task)
+        if env_err:
+            return False, env_err
         ok, launcher = self._ensure_launcher(node)
         if not ok:
             return False, f"windows launcher deploy failed: {launcher}"
@@ -5651,8 +5799,9 @@ class WindowsBackend(Backend):
             "NUMEXPR_NUM_THREADS": "1",
             "SCHEDULEURM_WINDOWS_AUTO_PIN": "1",
         })
-        if cpu_plan:
-            env.update(_cpu_parallel_env(task))
+        cpu_env = _cpu_parallel_env(task) if cpu_plan else {}
+        if cpu_env:
+            env.update(cpu_env)
         for k, v in _safe_extra_env_items(_launch_extra_env(task)):
             if k == "CUDA_VISIBLE_DEVICES":
                 continue
@@ -5666,6 +5815,8 @@ class WindowsBackend(Backend):
             "auto_pin": bool((NODES.get(node, {}) or {}).get("windows_auto_pin", True)),
             "skip_ht_pair": bool((NODES.get(node, {}) or {}).get("windows_skip_ht_pair", True)),
             "pin_interval_s": 1.0,
+            "resource_log_interval_s": WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S,
+            "cpu_plan": cpu_env,
         }
         payload.update(cmd_payload)
         payload_b64 = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
@@ -8769,6 +8920,13 @@ def cmd_submit(args):
     test_peak_vram = int(getattr(args, "test_peak_vram_mb", 0) or 0)
     test_peak_ram = int(getattr(args, "test_peak_ram_mb", 0) or 0)
     test_cpu = int(getattr(args, "test_cpu", 0) or 0)
+    cpu_parallel_items = int(getattr(args, "cpu_parallel_items", 0) or 0)
+    cpu_parallel_total_items = int(getattr(args, "cpu_parallel_total_items", 0) or 0) or cpu_parallel_items
+    cpu_parallel_start = int(getattr(args, "cpu_parallel_start", 0) or 0)
+    cpu_parallel_end = int(getattr(args, "cpu_parallel_end", 0) or 0) or cpu_parallel_items
+    cpu_parallel_shard_index = int(getattr(args, "cpu_parallel_shard_index", 0) or 0)
+    cpu_parallel_num_shards = int(getattr(args, "cpu_parallel_num_shards", 1) or 1)
+    cpu_batch_plan = getattr(args, "cpu_batch_plan", None)
     if test_peak_vram > 0 or test_peak_ram > 0 or test_cpu > 0:
         history_record(
             args.signature,
@@ -8795,10 +8953,10 @@ def cmd_submit(args):
                 "slurm_partition": getattr(args, "slurm_partition", None) or "",
                 "slurm_account": getattr(args, "slurm_account", None) or "",
                 "slurm_qos": getattr(args, "slurm_qos", None) or "",
-                "cpu_parallel_items": int(getattr(args, "cpu_parallel_items", 0) or 0),
-                "cpu_parallel_total_items": int(getattr(args, "cpu_parallel_items", 0) or 0),
-                "cpu_parallel_start": 0,
-                "cpu_parallel_end": int(getattr(args, "cpu_parallel_items", 0) or 0),
+                "cpu_parallel_items": cpu_parallel_items,
+                "cpu_parallel_total_items": cpu_parallel_total_items,
+                "cpu_parallel_start": cpu_parallel_start,
+                "cpu_parallel_end": cpu_parallel_end,
             })
             for existing in state["tasks"]:
                 if (existing.get("status") in ("queued", "running", "launching")
@@ -8880,10 +9038,21 @@ def cmd_submit(args):
                 "description": args.description, "ram_mb": DEFAULT_RAM_MB,
             }
             ram_mb = _effective_est_ram(probe_task_for_ram, state, ram_full_hist)
-        cpu_parallel_items = int(getattr(args, "cpu_parallel_items", 0) or 0)
         cpu_auto_plan = None
         if args.cpu is not None:
             cpu_cores = args.cpu
+            if cpu_parallel_items > 0:
+                if isinstance(cpu_batch_plan, dict):
+                    cpu_auto_plan = {
+                        "workers": int(cpu_batch_plan.get("workers") or cpu_cores),
+                        "waves": int(cpu_batch_plan.get("waves") or _ceil_div(cpu_parallel_items, max(1, cpu_cores))),
+                        "physical_cores": int(cpu_batch_plan.get("physical_cores") or cpu_cores),
+                        "total_physical_cores": int(cpu_batch_plan.get("total_physical_cores")
+                                                    or cpu_batch_plan.get("physical_cores") or cpu_cores),
+                        "last_wave_items": int(cpu_batch_plan.get("last_wave_items") or cpu_parallel_items),
+                    }
+                else:
+                    cpu_auto_plan = _cpu_worker_plan_for_items(cpu_parallel_items, max(1, cpu_cores))
         elif cpu_parallel_items > 0:
             ref_node = args.require_node or args.preferred_node
             if ref_node:
@@ -8941,16 +9110,18 @@ def cmd_submit(args):
             "submitted_host": _local_host_short(),
             "scheduler_id": _ClaimManager.scheduler_id(),
             "cpu_parallel_items": cpu_parallel_items or None,
-            "cpu_parallel_total_items": cpu_parallel_items or None,
-            "cpu_parallel_start": 0 if cpu_parallel_items else None,
-            "cpu_parallel_end": cpu_parallel_items if cpu_parallel_items else None,
-            "cpu_parallel_shard_index": 0 if cpu_parallel_items else None,
-            "cpu_parallel_num_shards": 1 if cpu_parallel_items else None,
+            "cpu_parallel_total_items": cpu_parallel_total_items if cpu_parallel_items else None,
+            "cpu_parallel_start": cpu_parallel_start if cpu_parallel_items else None,
+            "cpu_parallel_end": cpu_parallel_end if cpu_parallel_items else None,
+            "cpu_parallel_shard_index": cpu_parallel_shard_index if cpu_parallel_items else None,
+            "cpu_parallel_num_shards": cpu_parallel_num_shards if cpu_parallel_items else None,
             "cpu_auto_workers": (cpu_auto_plan or {}).get("workers") if cpu_auto_plan else None,
             "cpu_parallel_waves": (cpu_auto_plan or {}).get("waves") if cpu_auto_plan else None,
             "cpu_parallel_physical_cores": (cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None,
-            "cpu_parallel_total_physical_cores": (cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None,
+            "cpu_parallel_total_physical_cores": (cpu_auto_plan or {}).get("total_physical_cores")
+                                                 or ((cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None),
             "cpu_parallel_last_wave_items": (cpu_auto_plan or {}).get("last_wave_items") if cpu_auto_plan else None,
+            "cpu_batch_plan": dict(cpu_batch_plan) if isinstance(cpu_batch_plan, dict) else None,
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
             "allow_remote_large_data": bool(getattr(args, "allow_remote_large_data", False)),
@@ -9089,6 +9260,20 @@ def cmd_submit_cpu_batch(args):
         if args.dry_run:
             return
 
+    plan_payload = _cpu_batch_log_payload(
+        args.items, plan, node_states=node_states,
+        use_total_cores=bool(getattr(args, "use_total_cores", False)),
+        templates={
+            "cmd": args.cmd_template,
+            "cwd": args.cwd,
+            "signature": args.signature,
+            "description": args.description,
+            "result_dir": getattr(args, "result_dir_template", None),
+            "local_result_dir": getattr(args, "local_result_dir_template", None),
+        },
+    )
+    notify("cpu_batch_plan", plan_payload, feishu_enabled=False)
+
     for p in plan:
         vals = _cpu_parallel_template_values(p, args.items)
         env = list(getattr(args, "env", None) or [])
@@ -9100,6 +9285,8 @@ def cmd_submit_cpu_batch(args):
             f"SCHEDULEURM_CPU_WORKERS={p['workers']}",
             f"SCHEDULEURM_CPU_WAVES={p['waves']}",
             f"SCHEDULEURM_CPU_PHYSICAL_CORES={p['physical_cores']}",
+            f"SCHEDULEURM_CPU_TOTAL_PHYSICAL_CORES={p.get('total_physical_cores', p['physical_cores'])}",
+            f"SCHEDULEURM_CPU_LAST_WAVE_ITEMS={p['last_wave_items']}",
             f"SCHEDULEURM_CPU_SHARD_INDEX={p['shard_index']}",
             f"SCHEDULEURM_CPU_NUM_SHARDS={p['num_shards']}",
         ])
@@ -9144,7 +9331,25 @@ def cmd_submit_cpu_batch(args):
             slurm_account="",
             slurm_qos="",
             cpu_parallel_items=int(p["items"]),
+            cpu_parallel_total_items=int(args.items),
+            cpu_parallel_start=int(p["start"]),
+            cpu_parallel_end=int(p["end"]),
+            cpu_parallel_shard_index=int(p["shard_index"]),
+            cpu_parallel_num_shards=int(p["num_shards"]),
+            cpu_batch_plan=dict(p),
         )
+        notify("cpu_batch_shard_submit", {
+            "node": p["node"],
+            "range": [int(p["start"]), int(p["end"])],
+            "items": int(p["items"]),
+            "workers": int(p["workers"]),
+            "waves": int(p["waves"]),
+            "last_wave_items": int(p["last_wave_items"]),
+            "signature": ns.signature,
+            "description": ns.description,
+            "cmd": ns.cmd,
+            "env": vals,
+        }, feishu_enabled=False)
         cmd_submit(ns)
 
 
@@ -9549,8 +9754,6 @@ def _stage_cwd_check(target_node: str, cwd: str):
                        avoids it next cycle
       "needs_stage"  → emit launch_stage_deferred event, leave queued
     """
-    if _node_is_windows(target_node):
-        return "ready"  # WindowsBackend maps cwd and checks it at launch.
     if NODES.get(target_node, {}).get("host") is None:
         return "ready"  # local target, nothing to sync
     cwd_key = ("local", target_node, cwd)
@@ -9583,8 +9786,118 @@ def _stage_failure_reason(target_node: str, cwd: str) -> str:
     return fail[1] if isinstance(fail, tuple) and len(fail) > 1 else "unknown"
 
 
+def _tar_exclude_args(extra_excludes: Optional[list] = None) -> list:
+    patterns = [
+        ".git", "__pycache__", "*.pyc",
+        "results", "results_*",
+        "logs", "logs_*",
+        "experiment_output",
+        "archive*", "*.tar.gz",
+    ]
+    for ex in extra_excludes or []:
+        clean = str(ex or "").strip().strip("/")
+        if not clean:
+            continue
+        patterns.append(clean)
+        patterns.append(f"./{clean}")
+    return [f"--exclude={p}" for p in patterns]
+
+
+def _stage_local_dir_to_windows(local_dir: str, target_node: str, target_dir: str,
+                                extra_excludes: Optional[list] = None,
+                                timeout_s: int = 600) -> tuple:
+    """Stream a local directory to a Windows node using tar over SSH.
+
+    Linux remotes use rsync. Windows OpenSSH hosts usually do not have rsync,
+    so we stream a tar archive into PowerShell and extract with Windows' tar.exe.
+    This is additive (no --delete equivalent) to avoid deleting remote result or
+    checkpoint dirs; launch staging still excludes those paths from the archive.
+    """
+    if not _node_is_windows(target_node):
+        return False, f"target {target_node} is not a Windows node"
+    src = Path(local_dir)
+    if not src.is_dir():
+        return False, f"local directory missing for Windows staging: {local_dir}"
+    win_dest = _windows_path_for_node(target_node, target_dir)
+    ps = (
+        f"$dest={_ps_quote(win_dest)}; "
+        "[IO.Directory]::CreateDirectory($dest) | Out-Null; "
+        "tar -xf - -C $dest; "
+        "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; "
+        "Write-Output 'READY'"
+    )
+    encoded = base64.b64encode(ps.encode("utf-16le")).decode("ascii")
+    tar_args = ["tar", "-C", str(src)] + _tar_exclude_args(extra_excludes) + ["-cf", "-", "."]
+    ssh_args = _ssh_base_args(target_node) + [
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy", "Bypass",
+        "-EncodedCommand", encoded,
+    ]
+    tar_proc = None
+    try:
+        tar_proc = subprocess.Popen(
+            tar_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        ssh_proc = subprocess.run(
+            ssh_args,
+            stdin=tar_proc.stdout,
+            capture_output=True,
+            timeout=timeout_s,
+        )
+        if tar_proc.stdout:
+            tar_proc.stdout.close()
+        _, tar_err = tar_proc.communicate(timeout=30)
+    except subprocess.TimeoutExpired:
+        if tar_proc:
+            try:
+                tar_proc.kill()
+            except Exception:
+                pass
+        return False, f"Windows tar staging timeout (>{timeout_s}s)"
+    except Exception as e:
+        if tar_proc:
+            try:
+                tar_proc.kill()
+            except Exception:
+                pass
+        return False, f"Windows tar staging exception: {str(e)[:200]}"
+
+    tar_rc = tar_proc.returncode if tar_proc else 1
+    tar_err_s = (tar_err or b"").decode("utf-8", "replace").strip()
+    if tar_rc != 0:
+        return False, f"local tar failed rc={tar_rc}: {tar_err_s[:200]}"
+    out_s = (ssh_proc.stdout or b"").decode("utf-8", "replace")
+    err_s = (ssh_proc.stderr or b"").decode("utf-8", "replace")
+    if ssh_proc.returncode != 0 or "READY" not in out_s:
+        return False, (
+            f"Windows extract failed rc={ssh_proc.returncode}: "
+            f"{(err_s or out_s).strip()[:200]}"
+        )
+    rc, out, err = _run_windows_ps(
+        target_node,
+        f"if (Test-Path -LiteralPath {_ps_quote(win_dest)}) {{ 'OK' }} else {{ 'MISSING' }}",
+        timeout=10,
+        check=False,
+    )
+    if rc != 0 or "OK" not in out:
+        return False, f"Windows staged directory not verified: {win_dest}; {(err or out).strip()[:160]}"
+    return True, f"synced to Windows {win_dest}"
+
+
 def _resume_ckpt_stage_key(source_node: str, target_node: str, ckpt_dir: str) -> tuple:
     return ("resume_ckpt", source_node, target_node, ckpt_dir)
+
+
+def _resume_location_for_target(source_loc: dict, target_node: str) -> dict:
+    staged = dict(source_loc or {})
+    staged["node"] = target_node
+    if _node_is_windows(target_node) and staged.get("path"):
+        staged["path"] = _windows_path_for_node(target_node, staged["path"])
+    return staged
 
 
 def _resume_stage_source_for_target(task: dict, target_node: str,
@@ -9647,8 +9960,7 @@ def _resume_checkpoint_stage_check(task: dict, target_node: str,
         return "ready", src, "no ckpt_dir"
     key = _resume_ckpt_stage_key(src.get("node"), target_node, ckpt_dir)
     if _staging_cache_hit(key):
-        staged = dict(src)
-        staged["node"] = target_node
+        staged = _resume_location_for_target(src, target_node)
         return "ready", staged, "checkpoint staged to target"
     ts = _STAGING_CAP_EXCEEDED.get(key)
     if ts is not None:
@@ -9671,8 +9983,7 @@ def _record_staged_resume_location(task: dict, target_node: str, source_loc: Opt
     """Record that source_loc's checkpoint path is now available on target_node."""
     if not source_loc or not target_node:
         return
-    staged_loc = dict(source_loc)
-    staged_loc["node"] = target_node
+    staged_loc = _resume_location_for_target(source_loc, target_node)
     locs = [loc for loc in (task.get("resume_locations") or [])
             if loc.get("node") != target_node]
     locs.append(staged_loc)
@@ -9722,6 +10033,12 @@ def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
     if source_node == target_node:
         return True, "source==target; checkpoint already local"
     src_host = NODES.get(source_node, {}).get("host")
+    if _node_is_windows(source_node):
+        return False, (
+            f"ckpt_dir {ckpt_dir} staging from Windows source {source_node} "
+            "is not supported yet; keep resume task on that Windows node or "
+            "copy the checkpoint to local first"
+        )
     if src_host and target_host:
         return False, (
             f"ckpt_dir {ckpt_dir} needs rsync but remote→remote is unsupported "
@@ -9759,6 +10076,47 @@ def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
             f"CAP_EXCEEDED: ckpt_dir {ckpt_dir} is {size_mb}MB > "
             f"{max_ckpt_mb}MB cap; keep task on checkpoint-local node"
         )
+
+    if _node_is_windows(target_node):
+        if source_node != "local" or src_host:
+            return False, (
+                f"ckpt_dir {ckpt_dir} needs Windows staging, but only "
+                f"local→Windows is supported (source={source_node})"
+            )
+        ok, msg = _stage_local_dir_to_windows(
+            ckpt_dir,
+            target_node,
+            ckpt_dir,
+            timeout_s=600,
+        )
+        if not ok:
+            return False, msg
+        resume_path = source_loc.get("path")
+        try:
+            if resume_path:
+                win_resume = _windows_path_for_node(target_node, resume_path)
+                rc2, out2, _ = _run_windows_ps(
+                    target_node,
+                    f"if (Test-Path -LiteralPath {_ps_quote(win_resume)}) {{ 'OK' }} else {{ 'MISSING' }}",
+                    timeout=10,
+                    check=False,
+                )
+            else:
+                win_dir = _windows_path_for_node(target_node, ckpt_dir)
+                rc2, out2, _ = _run_windows_ps(
+                    target_node,
+                    f"$x=Get-ChildItem -LiteralPath {_ps_quote(win_dir)} -File -ErrorAction SilentlyContinue | Select-Object -First 1; if ($x) {{ 'OK' }} else {{ 'MISSING' }}",
+                    timeout=10,
+                    check=False,
+                )
+            if rc2 != 0 or "OK" not in out2:
+                return False, f"ckpt_dir {ckpt_dir} not verified on {target_node} after Windows staging"
+        except Exception as e:
+            return False, f"post-Windows ckpt check failed: {str(e)[:120]}"
+        _STAGING_CACHE[key] = time.time()
+        _STAGING_CAP_EXCEEDED.pop(key, None)
+        _STAGING_FAILS.pop(key, None)
+        return True, f"synced ckpt_dir to Windows ({size_mb}MB): {msg}"
 
     try:
         run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}", timeout=10, check=False)
@@ -9896,6 +10254,21 @@ def _stage_cwd_for_launch(task: dict, target_node: str,
     if not tgt_host:
         return (False, f"target node {target_node} has no host")
 
+    if _node_is_windows(target_node):
+        ok, msg = _stage_local_dir_to_windows(
+            cwd,
+            target_node,
+            cwd,
+            extra_excludes=extra_excludes,
+            timeout_s=600,
+        )
+        if not ok:
+            return (False, msg)
+        _STAGING_CACHE[cwd_key] = time.time()
+        _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+        _STAGING_FAILS.pop(cwd_key, None)
+        return (True, f"{msg} ({cwd_size_mb}MB)")
+
     # Ensure target dir exists (mkdir -p is idempotent; cheap).
     try:
         run_on(target_node, f"mkdir -p {shlex.quote(cwd)}", timeout=10, check=False)
@@ -10029,8 +10402,6 @@ def _stage_launch_candidates_outside_lock():
                 # pick_placement might pick. Filtered to non-local below.
                 tgts = list(NODES.keys())
             for tn in tgts:
-                if _node_is_windows(tn):
-                    continue
                 if NODES.get(tn, {}).get("host") is None:
                     continue
                 cwd_key = ("local", tn, cwd)
@@ -10044,8 +10415,6 @@ def _stage_launch_candidates_outside_lock():
                 locs = list(t.get("resume_locations") or [])
                 if locs:
                     for tn in tgts:
-                        if _node_is_windows(tn):
-                            continue
                         if NODES.get(tn, {}).get("host") is None:
                             continue
                         state_ckpt, src_loc, _ = _resume_checkpoint_stage_check(t, tn, locs)
@@ -10060,7 +10429,7 @@ def _stage_launch_candidates_outside_lock():
             pass
         return
 
-    if not candidates:
+    if not candidates and not ckpt_candidates:
         return
 
     for tn, cwd in candidates:
@@ -11457,7 +11826,7 @@ def _do_dispatch(state, nodes):
                     reason = (
                         f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
                         f"but require_node={require_node} has no matching checkpoint yet; "
-                        "awaiting small-checkpoint rsync staging before remote launch"
+                        "awaiting small-checkpoint staging before remote launch"
                     )
                 elif stage_state == "cap_exceeded":
                     reason = (
@@ -11576,7 +11945,7 @@ def _do_dispatch(state, nodes):
                     reason = (
                         f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
                         f"but selected node {selected_node} has no matching checkpoint yet; "
-                        "awaiting small-checkpoint rsync staging before remote launch"
+                        "awaiting small-checkpoint staging before remote launch"
                     )
                 elif stage_state == "cap_exceeded":
                     reason = (
@@ -11716,7 +12085,7 @@ def _do_dispatch(state, nodes):
                 # hasn't been attempted yet (it's an outside-lock concern).
                 t["status"] = "queued"
                 t["last_block_reason"] = (
-                    f"launch staging: cwd not yet rsynced to {target}; "
+                    f"launch staging: cwd not yet staged to {target}; "
                     f"will retry next dispatch cycle"
                 )
                 _release_task_claims_and_intents(t, extra_nodes=[target])
@@ -11727,7 +12096,7 @@ def _do_dispatch(state, nodes):
                     "type": "launch_stage_deferred",
                     "task_id": t["id"],
                     "task": t,
-                    "reason": f"awaiting outside-lock rsync to {target}",
+                    "reason": f"awaiting outside-lock staging to {target}",
                 })
                 continue
             # stage_state == "ready" — fall through to launch
@@ -12567,6 +12936,8 @@ def _preload_docker_images_outside_lock():
             chosen = spec_payload or (t.get("image") or "")
             if not chosen: continue
             for n in candidates:
+                if _node_is_windows(n):
+                    continue
                 needed_docker.add((n, chosen))
         elif kind == "conda":
             if not spec_payload: continue
@@ -12575,6 +12946,8 @@ def _preload_docker_images_outside_lock():
             if not Path(spec_payload).is_absolute(): continue
             if not Path(spec_payload).is_dir(): continue
             for n in candidates:
+                if _node_is_windows(n):
+                    continue
                 if NODES.get(n, {}).get("host") is None: continue  # local: nothing to push
                 needed_conda.add((n, spec_payload))
     # ---- docker preload ----
@@ -12691,6 +13064,8 @@ def cmd_dispatch(args):
     for ev in events:
         if ev.get("type") in ("pre_launch_snapshot", "post_launch_snapshot"):
             notify(ev["type"], ev.get("snapshot") or {}, feishu_enabled=False)
+    notify("dispatch_cycle", _dispatch_cycle_log_payload(state, nodes, events, qcount),
+           feishu_enabled=False)
     if qcount == 0 and not events:
         print("=== dispatch === (nothing queued)")
         return
@@ -12851,6 +13226,7 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "cpu_parallel_end", "cpu_auto_workers", "cpu_parallel_waves",
     "cpu_parallel_physical_cores", "cpu_parallel_shard_index",
     "cpu_parallel_num_shards", "cpu_parallel_total_physical_cores",
+    "cpu_parallel_last_wave_items", "cpu_batch_plan",
     "est_vram_mb", "ram_mb", "cpu_cores", "priority", "preferred_node",
     "require_node", "node", "gpu_idx", "remote_pids", "slurm_job_id",
     "slurm_state", "log_path", "submitted_at", "started_at", "finished_at",
@@ -13315,6 +13691,142 @@ def _reconcile_external_tasks(state):
         adopted.append(task)
     return adopted
 
+def _cpu_ownership_snapshot(state, nodes) -> list:
+    """Estimate per-node CPU attribution for JSONL logs.
+
+    free_cpu/total_cpu come from live probes. scheduleurm/external tracked
+    reservations come from queue state. The residual is "other/untracked" CPU:
+    same account jobs from another shell, another user on a shared account, OS
+    load, or probe noise. This is intentionally an estimate, but it is enough to
+    explain "why did/didn't dispatch" after the fact.
+    """
+    own_sid = _ClaimManager.scheduler_id()
+    tracked = {}
+    for t in state.get("tasks", []):
+        if t.get("status") not in ("running", "launching"):
+            continue
+        node = t.get("node") or t.get("assigned_node")
+        if not node:
+            continue
+        cpu = max(0, int(t.get("cpu_cores") or DEFAULT_CPU_CORES))
+        sid = t.get("scheduler_id")
+        ours = (
+            t.get("origin") == "scheduleurm"
+            and not t.get("auto_adopted")
+            and (not sid or sid == own_sid)
+        )
+        bucket = tracked.setdefault(node, {
+            "ours_cpu": 0,
+            "ours_tasks": [],
+            "external_cpu": 0,
+            "external_tasks": [],
+        })
+        rec = {
+            "id": t.get("id"),
+            "cpu_cores": cpu,
+            "status": t.get("status"),
+            "owner": t.get("process_owner") or t.get("submitted_by"),
+            "scheduler_id": sid,
+            "description": (t.get("description") or "")[:80],
+        }
+        if ours:
+            bucket["ours_cpu"] += cpu
+            bucket["ours_tasks"].append(rec)
+        else:
+            bucket["external_cpu"] += cpu
+            bucket["external_tasks"].append(rec)
+
+    out = []
+    for n in nodes or []:
+        name = n.get("name")
+        bucket = tracked.get(name, {})
+        try:
+            total = int(n.get("total_cpu") or _node_physical_cores(name, n) or 0)
+        except Exception:
+            total = 0
+        try:
+            free = max(0, int(n.get("free_cpu") or 0))
+        except Exception:
+            free = 0
+        if n.get("alive") is False:
+            free = 0
+        used_est = max(0, total - free)
+        ours_cpu = int(bucket.get("ours_cpu") or 0)
+        external_cpu = int(bucket.get("external_cpu") or 0)
+        untracked_other = max(0, used_est - ours_cpu - external_cpu)
+        over_reserved = max(0, ours_cpu + external_cpu - used_est)
+        out.append({
+            "node": name,
+            "alive": n.get("alive"),
+            "total_cpu": total,
+            "logical_cpu": n.get("logical_cpu") or n.get("logical_cores"),
+            "free_cpu": free,
+            "used_cpu_est": used_est,
+            "scheduleurm_cpu_reserved": ours_cpu,
+            "scheduleurm_task_count": len(bucket.get("ours_tasks") or []),
+            "scheduleurm_task_ids": [x.get("id") for x in (bucket.get("ours_tasks") or [])[:50]],
+            "external_tracked_cpu_reserved": external_cpu,
+            "external_tracked_task_count": len(bucket.get("external_tasks") or []),
+            "external_tracked_task_ids": [x.get("id") for x in (bucket.get("external_tasks") or [])[:50]],
+            "untracked_or_other_user_cpu_est": untracked_other,
+            "over_reserved_cpu_est": over_reserved,
+            "free_ram_mb": n.get("free_ram_mb"),
+            "total_ram_mb": n.get("total_ram_mb"),
+            "running_count": n.get("running_count"),
+        })
+    return out
+
+
+def _resource_accounting_payload(state, nodes) -> dict:
+    return {
+        "running": sum(1 for t in state.get("tasks", []) if t.get("status") == "running"),
+        "launching": sum(1 for t in state.get("tasks", []) if t.get("status") == "launching"),
+        "queued": sum(1 for t in state.get("tasks", []) if t.get("status") == "queued"),
+        "nodes": _cpu_ownership_snapshot(state, nodes),
+    }
+
+
+def _dispatch_cycle_log_payload(state, nodes, events, queued_count: int) -> dict:
+    event_counts = {}
+    launched = []
+    blocked = []
+    no_fit = []
+    for ev in events or []:
+        typ = ev.get("type")
+        event_counts[typ] = event_counts.get(typ, 0) + 1
+        if typ == "launched":
+            t = ev.get("task") or {}
+            launched.append({
+                "task_id": ev.get("task_id") or t.get("id"),
+                "node": t.get("node"),
+                "gpu_idx": t.get("gpu_idx"),
+                "cpu_cores": t.get("cpu_cores"),
+                "ram_mb": t.get("ram_mb"),
+                "est_vram_mb": t.get("est_vram_mb"),
+                "description": (t.get("description") or "")[:100],
+            })
+        elif typ == "blocked":
+            blocked.append({"task_id": ev.get("task_id"), "reason": ev.get("reason")})
+        elif typ == "no_fit":
+            t = ev.get("task") or {}
+            no_fit.append({
+                "task_id": ev.get("task_id") or t.get("id"),
+                "reason": t.get("last_block_reason") or "no fit",
+                "cpu_cores": t.get("cpu_cores"),
+                "ram_mb": t.get("ram_mb"),
+                "est_vram_mb": t.get("est_vram_mb"),
+            })
+    payload = _resource_accounting_payload(state, nodes)
+    payload.update({
+        "queued_seen_by_dispatch": int(queued_count or 0),
+        "event_counts": event_counts,
+        "launched": launched[:100],
+        "blocked": blocked[:100],
+        "no_fit": no_fit[:100],
+    })
+    return payload
+
+
 def _build_heartbeat_payload(state, nodes):
     running = sum(1 for t in state["tasks"] if t["status"] == "running")
     launching = sum(1 for t in state["tasks"] if t["status"] == "launching")
@@ -13325,7 +13837,13 @@ def _build_heartbeat_payload(state, nodes):
             node_strs.append(f"{n['name']}:DOWN"); continue
         gpu_brief = "/".join(_format_mem_gb(g.get("used_mb", 0)) for g in n["gpus"])
         node_strs.append(f"{n['name']}:{gpu_brief}")
-    return {"running": running, "launching": launching, "queued": queued, "nodes": node_strs}
+    return {
+        "running": running,
+        "launching": launching,
+        "queued": queued,
+        "nodes": node_strs,
+        "cpu_accounting": _cpu_ownership_snapshot(state, nodes),
+    }
 
 def _smoke_test_envs():
     """One-shot probe at watcher startup: verify the python interpreters referenced by current
@@ -13451,7 +13969,9 @@ def cmd_watch(args):
     signal.signal(signal.SIGINT, _signal)
 
     me = {"pid": os.getpid(), "started_at": time.time(), "last_heartbeat_ts": 0,
-          "interval": args.interval, "heartbeat": args.heartbeat}
+          "last_resource_log_ts": 0, "interval": args.interval,
+          "heartbeat": args.heartbeat,
+          "resource_log_interval": getattr(args, "resource_log_interval", RESOURCE_LOG_INTERVAL_S)}
     WATCHER_STATE.parent.mkdir(parents=True, exist_ok=True)
     WATCHER_STATE.write_text(json.dumps(me))
     notify("watcher_started", me)
@@ -13684,6 +14204,8 @@ def _watch_iteration(args):
                    {"task_id": ev["task_id"], "reason": ev["reason"][:300]},
                    feishu_enabled=False)
         # no_fit / resume_found are not surfaced — too noisy for Feishu, but they're in the JSONL log.
+    notify("dispatch_cycle", _dispatch_cycle_log_payload(state, nodes, events, qcount),
+           feishu_enabled=False)
     for t in auto_adopted:
         notify("task_auto_adopted", _compact_task_event_payload(t))
     for batch in batch_completions:
@@ -13805,12 +14327,23 @@ def _watch_iteration(args):
     # 5. Heartbeat — independent timer. Snapshot only, no event recap (those got their own notifications).
     me = json.loads(WATCHER_STATE.read_text()) if WATCHER_STATE.exists() else {}
     now = time.time()
+    resource_interval = max(0, int(getattr(args, "resource_log_interval", RESOURCE_LOG_INTERVAL_S) or 0))
+    me_dirty = False
+    if resource_interval and now - me.get("last_resource_log_ts", 0) >= resource_interval:
+        with state_lock():
+            state = load_state()
+        notify("node_cpu_accounting", _resource_accounting_payload(state, nodes),
+               feishu_enabled=False)
+        me["last_resource_log_ts"] = now
+        me_dirty = True
     if now - me.get("last_heartbeat_ts", 0) >= args.heartbeat:
         with state_lock():
             state = load_state()
         payload = _build_heartbeat_payload(state, nodes)
         notify("heartbeat", payload)
         me["last_heartbeat_ts"] = now
+        me_dirty = True
+    if me_dirty:
         try: WATCHER_STATE.write_text(json.dumps(me))
         except Exception: pass
 
@@ -15185,6 +15718,9 @@ def main():
     s = sub.add_parser("watch", help="Background daemon: probe + dispatch every --interval s; notify on done/launch/heartbeat")
     s.add_argument("--interval", type=int, default=60, help="Probe + dispatch every N seconds (default 60)")
     s.add_argument("--heartbeat", type=int, default=3600, help="Push a state-snapshot heartbeat every N seconds (default 3600 = 1h)")
+    s.add_argument("--resource-log-interval", dest="resource_log_interval", type=int,
+                   default=RESOURCE_LOG_INTERVAL_S,
+                   help=f"Write detailed node CPU/RAM attribution to watcher.log every N seconds (default {RESOURCE_LOG_INTERVAL_S})")
     s.set_defaults(func=cmd_watch)
 
     s = sub.add_parser("status", help="Show node + task state")

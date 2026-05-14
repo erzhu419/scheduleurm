@@ -611,6 +611,48 @@ def run(check, sch):
             return cold == "needs_stage" and hot == "ready"
         return with_temp_nodes(_inner)
 
+    def case_windows_native_cwd_probe_marks_stage_ready():
+        def _inner():
+            saved = sch._run_windows_ps
+            sch._STAGING_CACHE.clear()
+            try:
+                calls = []
+                def fake_ps(node, ps, **kwargs):
+                    calls.append((node, ps))
+                    return 0, "OK\n", ""
+                sch._run_windows_ps = fake_ps
+                cwd = r"F:\erzhu419_smoke\offline-sumo"
+                ok, msg = sch._stage_cwd_for_launch({"cwd": cwd}, "jtl110cpu")
+                state = sch._stage_cwd_check("jtl110cpu", cwd)
+                return (
+                    ok
+                    and "target-native Windows cwd exists" in msg
+                    and state == "ready"
+                    and calls
+                    and "Test-Path" in calls[0][1]
+                )
+            finally:
+                sch._run_windows_ps = saved
+                sch._STAGING_CACHE.clear()
+        return with_temp_nodes(_inner)
+
+    def case_windows_native_cwd_missing_is_target_error_not_local_seed():
+        def _inner():
+            saved = sch._run_windows_ps
+            try:
+                sch._run_windows_ps = lambda *a, **k: (0, "MISSING\n", "")
+                ok, msg = sch._stage_cwd_for_launch(
+                    {"cwd": r"F:\missing\offline-sumo"}, "jtl110cpu")
+                return (
+                    not ok
+                    and "Windows target cwd missing" in msg
+                    and "does not exist on local" not in msg
+                )
+            finally:
+                sch._run_windows_ps = saved
+                sch._STAGING_CACHE.clear()
+        return with_temp_nodes(_inner)
+
     def case_windows_stage_helper_uses_tar_over_ssh():
         src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
         return (
@@ -826,6 +868,8 @@ def run(check, sch):
         ("Windows command prep rewrites python and paths", case_windows_prepare_command_rewrites_python_and_paths),
         ("Windows backend refuses GPU tasks before network", case_windows_backend_refuses_gpu_task_without_network),
         ("Windows cwd requires staging cache before launch", case_windows_cwd_requires_stage_cache_before_launch),
+        ("Windows native cwd probe marks stage ready", case_windows_native_cwd_probe_marks_stage_ready),
+        ("Windows native cwd missing is target error", case_windows_native_cwd_missing_is_target_error_not_local_seed),
         ("Windows staging helper uses tar over SSH", case_windows_stage_helper_uses_tar_over_ssh),
         ("Windows explicit env_spec rejected before network", case_windows_explicit_env_spec_rejected_without_network),
         ("Windows staged resume path maps to F drive", case_record_staged_resume_location_maps_windows_path),

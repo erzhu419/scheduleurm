@@ -362,6 +362,46 @@ def run(check, sch):
             )
         return with_temp_nodes(_inner)
 
+    def case_cpu_batch_plan_uses_free_physical_cores():
+        def _inner():
+            states = {
+                "windows_a": {"name": "windows_a", "alive": True, "free_cpu": 64,
+                              "total_cpu": 128, "logical_cpu": 256},
+                "windows_b": {"name": "windows_b", "alive": True, "free_cpu": 128,
+                               "total_cpu": 128, "logical_cpu": 256},
+            }
+            plan = sch._cpu_batch_plan(901, ["windows_a", "windows_b"], states)
+            by_node = {p["node"]: p for p in plan}
+            return (
+                len(plan) == 2
+                and by_node["windows_a"]["items"] == 300
+                and by_node["windows_b"]["items"] == 601
+                and by_node["windows_a"]["workers"] == 60
+                and by_node["windows_b"]["workers"] == 121
+                and by_node["windows_a"]["physical_cores"] == 64
+                and by_node["windows_a"]["total_physical_cores"] == 128
+                and max(p["waves"] for p in plan) == 5
+            )
+        return with_temp_nodes(_inner)
+
+    def case_cpu_batch_plan_skips_full_cpu_node():
+        def _inner():
+            states = {
+                "windows_a": {"name": "windows_a", "alive": True, "free_cpu": 0,
+                              "total_cpu": 128, "logical_cpu": 256},
+                "windows_b": {"name": "windows_b", "alive": True, "free_cpu": 128,
+                               "total_cpu": 128, "logical_cpu": 256},
+            }
+            plan = sch._cpu_batch_plan(901, ["windows_a", "windows_b"], states)
+            return (
+                len(plan) == 1
+                and plan[0]["node"] == "windows_b"
+                and plan[0]["items"] == 901
+                and plan[0]["workers"] == 113
+                and plan[0]["waves"] == 8
+            )
+        return with_temp_nodes(_inner)
+
     def case_cpu_parallel_template_and_auto_worker_flag():
         plan = {
             "node": "windows_a", "start": 0, "end": 451,
@@ -580,6 +620,8 @@ def run(check, sch):
         ("GPU placement excludes windows_a", case_gpu_task_never_placed_on_windows_a),
         ("CPU worker plan 901 items on 128 physical cores", case_cpu_worker_plan_901_on_128_physical),
         ("CPU batch plan splits 901 items across two 128-core nodes", case_cpu_batch_plan_splits_two_128_nodes),
+        ("CPU batch plan uses free physical cores", case_cpu_batch_plan_uses_free_physical_cores),
+        ("CPU batch plan skips full CPU node", case_cpu_batch_plan_skips_full_cpu_node),
         ("CPU parallel template rewrites worker auto flag", case_cpu_parallel_template_and_auto_worker_flag),
         ("Node physical cores infers half of logical cores", case_node_physical_cores_infers_half_logical_when_unconfigured),
         ("submit-cpu-batch CLI exists", case_submit_cpu_batch_cli_exists),

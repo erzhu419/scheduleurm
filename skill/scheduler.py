@@ -2666,6 +2666,21 @@ def _node_physical_cores(node: Optional[str], node_state: Optional[dict] = None)
     return max(1, logical or DEFAULT_CPU_CORES)
 
 
+def _cpu_planning_cores_for_node(node: str, node_state: Optional[dict] = None) -> tuple:
+    """Return (available_physical_cores, total_physical_cores) for CPU batch planning."""
+    total = _node_physical_cores(node, node_state)
+    if isinstance(node_state, dict):
+        if node_state.get("alive") is False:
+            return 0, total
+        if "free_cpu" in node_state:
+            try:
+                free = max(0, int(node_state.get("free_cpu") or 0))
+                return min(total, free), total
+            except Exception:
+                return 0, total
+    return total, total
+
+
 def _cpu_worker_plan_for_items(total_items: int, physical_cores: int) -> dict:
     """Return the user's preferred worker plan for M independent CPU items.
 
@@ -2691,7 +2706,7 @@ def _cpu_worker_plan_for_items(total_items: int, physical_cores: int) -> dict:
 
 def _cpu_batch_plan(total_items: int, node_names: Optional[list] = None,
                     node_states: Optional[dict] = None) -> list:
-    """Split M independent CPU items across CPU-labor nodes by physical cores."""
+    """Split M independent CPU items across CPU-labor nodes by free physical cores."""
     m = max(0, int(total_items or 0))
     if m <= 0:
         return []
@@ -2701,30 +2716,30 @@ def _cpu_batch_plan(total_items: int, node_names: Optional[list] = None,
     node_states = node_states or {}
     caps = []
     for name in names:
-        cap = _node_physical_cores(name, node_states.get(name))
-        if cap > 0:
-            caps.append((name, cap))
+        avail, total = _cpu_planning_cores_for_node(name, node_states.get(name))
+        if avail > 0:
+            caps.append((name, avail, total))
     if not caps:
         return []
-    total_cap = sum(cap for _, cap in caps)
+    total_cap = sum(cap for _, cap, _total in caps)
     global_waves = _ceil_div(m, total_cap)
     raw = []
     assigned = 0
-    for idx, (name, cap) in enumerate(caps):
+    for idx, (name, cap, total) in enumerate(caps):
         share = m * cap / float(total_cap)
         base = int(share)
-        raw.append([name, cap, base, share - base, idx])
+        raw.append([name, cap, total, base, share - base, idx])
         assigned += base
     remaining = m - assigned
-    raw.sort(key=lambda r: (-r[3], r[4]))
+    raw.sort(key=lambda r: (-r[4], r[5]))
     for i in range(remaining):
-        raw[i % len(raw)][2] += 1
-    raw.sort(key=lambda r: r[4])
+        raw[i % len(raw)][3] += 1
+    raw.sort(key=lambda r: r[5])
 
     out = []
     cursor = 0
-    active = [r for r in raw if r[2] > 0]
-    for shard_idx, (name, cap, items, _frac, _idx) in enumerate(active):
+    active = [r for r in raw if r[3] > 0]
+    for shard_idx, (name, cap, total, items, _frac, _idx) in enumerate(active):
         start = cursor
         end = start + items
         cursor = end
@@ -2739,6 +2754,8 @@ def _cpu_batch_plan(total_items: int, node_names: Optional[list] = None,
         out.append({
             "node": name,
             "physical_cores": cap,
+            "available_cores": cap,
+            "total_physical_cores": total,
             "items": items,
             "start": start,
             "end": end,
@@ -2768,6 +2785,8 @@ def _cpu_parallel_template_values(plan: dict, total_items: Optional[int] = None)
         "waves": plan.get("waves", 0),
         "rounds": plan.get("waves", 0),
         "physical_cores": plan.get("physical_cores", 0),
+        "available_cores": plan.get("available_cores", plan.get("physical_cores", 0)),
+        "total_physical_cores": plan.get("total_physical_cores", plan.get("physical_cores", 0)),
         "last_wave_items": plan.get("last_wave_items", 0),
         "shard_index": plan.get("shard_index", 0),
         "shard_id": plan.get("shard_index", 0),
@@ -2813,6 +2832,7 @@ def _cpu_parallel_env(task: dict) -> dict:
         "SCHEDULEURM_CPU_WORKERS": task.get("cpu_auto_workers"),
         "SCHEDULEURM_CPU_WAVES": task.get("cpu_parallel_waves"),
         "SCHEDULEURM_CPU_PHYSICAL_CORES": task.get("cpu_parallel_physical_cores"),
+        "SCHEDULEURM_CPU_TOTAL_PHYSICAL_CORES": task.get("cpu_parallel_total_physical_cores"),
         "SCHEDULEURM_CPU_SHARD_INDEX": task.get("cpu_parallel_shard_index"),
         "SCHEDULEURM_CPU_NUM_SHARDS": task.get("cpu_parallel_num_shards"),
     }
@@ -2836,6 +2856,7 @@ def _apply_cpu_parallel_plan_to_task(task: dict, node_state: Optional[dict] = No
     task["cpu_auto_workers"] = int(plan["workers"])
     task["cpu_parallel_waves"] = int(plan["waves"])
     task["cpu_parallel_physical_cores"] = int(plan["physical_cores"])
+    task["cpu_parallel_total_physical_cores"] = int(plan.get("total_physical_cores") or plan["physical_cores"])
     task["cpu_parallel_last_wave_items"] = int(plan["last_wave_items"])
     if int(task.get("cpu_cores") or 0) < int(plan["workers"]):
         task["cpu_cores"] = int(plan["workers"])
@@ -8928,6 +8949,7 @@ def cmd_submit(args):
             "cpu_auto_workers": (cpu_auto_plan or {}).get("workers") if cpu_auto_plan else None,
             "cpu_parallel_waves": (cpu_auto_plan or {}).get("waves") if cpu_auto_plan else None,
             "cpu_parallel_physical_cores": (cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None,
+            "cpu_parallel_total_physical_cores": (cpu_auto_plan or {}).get("physical_cores") if cpu_auto_plan else None,
             "cpu_parallel_last_wave_items": (cpu_auto_plan or {}).get("last_wave_items") if cpu_auto_plan else None,
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
@@ -8997,20 +9019,33 @@ def _parse_cpu_node_list(text: Optional[str]) -> list:
     return names
 
 
+def _cpu_plan_live_node_states(node_names: list) -> dict:
+    """Probe current node state for CPU planning; returns {} on probe failure."""
+    want = set(node_names or [])
+    try:
+        nodes = probe_all()
+    except Exception:
+        return {}
+    return {n.get("name"): n for n in nodes
+            if n.get("name") in want}
+
+
 def _print_cpu_plan(plan: list, total_items: int) -> None:
-    total_physical = sum(int(p.get("physical_cores") or 0) for p in plan)
+    total_free = sum(int(p.get("physical_cores") or 0) for p in plan)
+    total_capacity = sum(int(p.get("total_physical_cores") or p.get("physical_cores") or 0) for p in plan)
     global_waves = max([int(p.get("global_waves") or p.get("waves") or 0) for p in plan] or [0])
-    print(f"cpu-plan: total_items={total_items} total_physical={total_physical} global_waves={global_waves}")
+    print(f"cpu-plan: total_items={total_items} free_physical={total_free}/{total_capacity} global_waves={global_waves}")
     for p in plan:
         print(f"  {p['node']:11s} range=[{p['start']},{p['end']}) "
-              f"items={p['items']} physical={p['physical_cores']} "
+              f"items={p['items']} free_physical={p['physical_cores']}/{p.get('total_physical_cores', p['physical_cores'])} "
               f"workers={p['workers']} waves={p['waves']} "
               f"last_wave={p['last_wave_items']}")
 
 
 def cmd_cpu_plan(args):
     names = _parse_cpu_node_list(getattr(args, "nodes", None))
-    plan = _cpu_batch_plan(args.items, names)
+    node_states = None if getattr(args, "use_total_cores", False) else _cpu_plan_live_node_states(names)
+    plan = _cpu_batch_plan(args.items, names, node_states=node_states)
     if args.json:
         print(json.dumps({"total_items": args.items, "plan": plan}, indent=2))
         return
@@ -9019,7 +9054,8 @@ def cmd_cpu_plan(args):
 
 def cmd_submit_cpu_batch(args):
     names = _parse_cpu_node_list(getattr(args, "nodes", None))
-    plan = _cpu_batch_plan(args.items, names)
+    node_states = None if getattr(args, "use_total_cores", False) else _cpu_plan_live_node_states(names)
+    plan = _cpu_batch_plan(args.items, names, node_states=node_states)
     if not plan:
         sys.exit("no CPU batch plan could be built")
     split_tokens = ("{start}", "{end}", "{node}", "{shard_index}", "{shard_id}", "{num_shards}")
@@ -12814,7 +12850,7 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "cpu_parallel_items", "cpu_parallel_total_items", "cpu_parallel_start",
     "cpu_parallel_end", "cpu_auto_workers", "cpu_parallel_waves",
     "cpu_parallel_physical_cores", "cpu_parallel_shard_index",
-    "cpu_parallel_num_shards",
+    "cpu_parallel_num_shards", "cpu_parallel_total_physical_cores",
     "est_vram_mb", "ram_mb", "cpu_cores", "priority", "preferred_node",
     "require_node", "node", "gpu_idx", "remote_pids", "slurm_job_id",
     "slurm_state", "log_path", "submitted_at", "started_at", "finished_at",
@@ -15086,6 +15122,8 @@ def main():
     s = sub.add_parser("cpu-plan", help="Plan M independent CPU items across physical-core CPU nodes")
     s.add_argument("--items", type=int, required=True, help="Total independent CPU items/checkpoints to process")
     s.add_argument("--nodes", default="", help="Comma-separated CPU nodes (default: all cpu_labor_node nodes)")
+    s.add_argument("--use-total-cores", action="store_true",
+                   help="Ignore live free_cpu and plan from full physical-core capacity")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_cpu_plan)
 
@@ -15105,6 +15143,8 @@ def main():
                    help="Description template")
     s.add_argument("--nodes", default="",
                    help="Comma-separated CPU nodes (default: all cpu_labor_node nodes)")
+    s.add_argument("--use-total-cores", action="store_true",
+                   help="Ignore live free_cpu and plan from full physical-core capacity")
     s.add_argument("--ram-mb", dest="ram_mb", type=int,
                    help="RAM estimate per shard")
     s.add_argument("--priority", choices=["low", "normal", "high"], default="normal")

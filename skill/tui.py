@@ -6,8 +6,8 @@ Sort/filter operate on the cached snapshot — instant response.
 
 Keys:
   r / q / a    → filter to running / queued / all active
-  f            → focus filter input (substring match against id/project/location/slurm/sig/desc)
-  1..8         → sort by column (id / status / node / project / runtime / vram / ram / eta)
+  f            → focus filter input (substring match against id/project/location/owner/slurm/sig/desc)
+  1..9         → sort by column (id / status / node / project / owner / runtime / vram / ram / eta)
   R            → reverse sort direction
   p / P        → bump task priority up / down (only for queued tasks)
   c            → copy current row's task id to clipboard (paste e.g. into `cancel`/`show`)
@@ -121,7 +121,11 @@ def _node_summary_line(nodes):
             cu = g.get("util_pct_compute")
             if cu is not None:
                 util = f"{g['util_pct']}/{cu}%util(nvml/compute)"
-            return f"GPU{g['idx']}={g['used_mb']}/{g['total_mb']}MB({mem_pct}%mem,{util})"
+            return (
+                f"GPU{g['idx']}={sch._format_mem_gb(g.get('used_mb', 0))}/"
+                f"{sch._format_mem_gb(g.get('total_mb', 0))}"
+                f"(free={sch._format_mem_gb(g.get('free_mb', 0))},{mem_pct}%mem,{util})"
+            )
         gpus = "  ".join(_gpu_segment(g) for g in n["gpus"])
         load = n.get("loadavg")
         load_s = f"load {load:.1f}" if isinstance(load, (int, float)) else ""
@@ -130,9 +134,9 @@ def _node_summary_line(nodes):
         if ram_free is not None and host_free is not None:
             # Display both: WSL-VM view + Windows-host view, since they're
             # different memory pools and the user's reference is Task Manager.
-            ram_s = f"ram_free={ram_free}MB(WSL)/{host_free}MB(host)"
+            ram_s = f"ram_free={sch._format_mem_gb(ram_free)}(WSL)/{sch._format_mem_gb(host_free)}(host)"
         elif ram_free is not None:
-            ram_s = f"ram_free={ram_free}MB"
+            ram_s = f"ram_free={sch._format_mem_gb(ram_free)}"
         else:
             ram_s = ""
         cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
@@ -148,6 +152,7 @@ COLUMNS = [
     ("status", "status", 9),
     ("node", "location", 24),
     ("project", "project", 14),
+    ("owner", "owner", 18),
     ("priority", "prio", 6),
     ("runtime", "runtime", 9),
     ("vram", "peak_vram", 10),
@@ -155,7 +160,7 @@ COLUMNS = [
     ("eta", "eta", 14),
     ("desc", "description", 60),
 ]
-SORT_KEYS = ["id", "status", "node", "project", "priority", "runtime", "vram", "ram", "eta"]
+SORT_KEYS = ["id", "status", "node", "project", "owner", "priority", "runtime", "vram", "ram", "eta"]
 
 
 def _probe_snapshot():
@@ -193,10 +198,11 @@ class SchedulerTUI(App):
         Binding("2", "sort_by('status')", ""),
         Binding("3", "sort_by('node')", ""),
         Binding("4", "sort_by('project')", ""),
-        Binding("5", "sort_by('runtime')", ""),
-        Binding("6", "sort_by('vram')", ""),
-        Binding("7", "sort_by('ram')", ""),
-        Binding("8", "sort_by('eta')", ""),
+        Binding("5", "sort_by('owner')", ""),
+        Binding("6", "sort_by('runtime')", ""),
+        Binding("7", "sort_by('vram')", ""),
+        Binding("8", "sort_by('ram')", ""),
+        Binding("9", "sort_by('eta')", ""),
         Binding("R", "reverse_sort", "Reverse"),
         Binding("p", "bump_priority(1)", "↑prio"),
         Binding("P", "bump_priority(-1)", "↓prio"),
@@ -221,7 +227,7 @@ class SchedulerTUI(App):
         # strings can include `[` `]` (e.g. ssh argv `['ssh', '-o', 'BatchMode=yes']`) which Rich
         # would otherwise parse as malformed markup and raise "Expected markup value".
         yield Static("(loading...)", id="node_summary", markup=False)
-        yield Input(placeholder="filter (id/project/location/slurm/sig/desc) — Enter to apply, Esc to close", id="filter_input")
+        yield Input(placeholder="filter (id/project/location/owner/slurm/sig/desc) — Enter to apply, Esc to close", id="filter_input")
         yield DataTable(id="task_table", zebra_stripes=True, cursor_type="row")
         yield Footer()
 
@@ -400,8 +406,10 @@ class SchedulerTUI(App):
                     fields.extend(
                         "" if t.get(k) is None else str(t.get(k))
                         for k in ("id", "project", "node", "signature", "description",
+                                  "origin", "submitted_by", "process_owner",
                                   "slurm_job_id", "slurm_state")
                     )
+                    fields.append(sch._format_task_owner(t))
                     return any(tf in f.lower() for f in fields)
                 tasks = [t for t in tasks if match(t)]
 
@@ -442,6 +450,7 @@ class SchedulerTUI(App):
                     t.get("gpu_idx") if t.get("gpu_idx") is not None else -1,
                 ),
                 "project": lambda t: t.get("project", ""),
+                "owner": lambda t: sch._format_task_owner(t),
                 "priority": lambda t: (prio_rank.get(t.get("priority", "normal"), 1), t.get("submitted_at", 0)),
                 "runtime": lambda t: -runtime_of(t),
                 "vram": lambda t: -int((t.get("current_vram_mb") if t.get("status") == "running" else 0)
@@ -465,21 +474,22 @@ class SchedulerTUI(App):
                 node_str = sch._format_task_location(t)
                 rt = _fmt_min(runtime_of(t)) if t.get("status") == "running" else "-"
                 if t.get("status") == "running" and t.get("current_vram_mb"):
-                    vram = f"{t.get('current_vram_mb', 0)}MB"
+                    vram = sch._format_mem_gb(t.get("current_vram_mb", 0))
                 else:
-                    vram = f"{t.get('peak_vram_mb', 0)}MB" if t.get("peak_vram_mb") else (
-                        f"~{t.get('est_vram_mb', 0)}MB" if t.get("est_vram_mb") else "-")
+                    vram = sch._format_mem_gb(t.get("peak_vram_mb", 0)) if t.get("peak_vram_mb") else (
+                        sch._format_mem_gb(t.get("est_vram_mb", 0), approx=True) if t.get("est_vram_mb") else "-")
                 # Mirror VRAM column logic for RAM: running=current, terminal=peak, queued=declared.
                 if t.get("status") == "running" and t.get("current_ram_mb"):
-                    ram = f"{t.get('current_ram_mb', 0)}MB"
+                    ram = sch._format_mem_gb(t.get("current_ram_mb", 0))
                 else:
-                    ram = f"{t.get('peak_ram_mb', 0)}MB" if t.get("peak_ram_mb") else (
-                        f"~{t.get('ram_mb', 0)}MB" if t.get("ram_mb") else "-")
+                    ram = sch._format_mem_gb(t.get("peak_ram_mb", 0)) if t.get("peak_ram_mb") else (
+                        sch._format_mem_gb(t.get("ram_mb", 0), approx=True) if t.get("ram_mb") else "-")
                 return {
                     "id": t.get("id", "?"),
                     "status": t.get("status", "-"),
                     "node": node_str,
                     "project": t.get("project") or "-",
+                    "owner": sch._format_task_owner(t),
                     "priority": t.get("priority") or "-",
                     "runtime": rt,
                     "vram": vram,
@@ -493,7 +503,7 @@ class SchedulerTUI(App):
                 # Avoids clear() + add_row() which interrupts scroll/cursor.
                 for t in tasks:
                     cells = _row_for(t)
-                    for col_key in ("status", "node", "runtime", "vram", "ram", "eta", "priority"):
+                    for col_key in ("status", "node", "owner", "runtime", "vram", "ram", "eta", "priority"):
                         try:
                             table.update_cell(t["id"], col_key, cells[col_key], update_width=False)
                         except Exception:
@@ -518,7 +528,7 @@ class SchedulerTUI(App):
                 for t in tasks:
                     cells = _row_for(t)
                     table.add_row(cells["id"], cells["status"], cells["node"], cells["project"],
-                                  cells["priority"], cells["runtime"], cells["vram"], cells["ram"],
+                                  cells["owner"], cells["priority"], cells["runtime"], cells["vram"], cells["ram"],
                                   cells["eta"], cells["desc"], key=t["id"])
 
                 if saved_task_id and saved_task_id in new_id_order:

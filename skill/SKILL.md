@@ -108,18 +108,22 @@ to unique physical cores across processor groups, so future high-parallel CPU ev
 not need project-level edits for pinning. `scripts/jtl110cpu_pin_block.py` remains a manual
 helper for processes launched outside scheduler.py.
 
-CPU batch worker sizing is built into scheduler.py. For M independent CPU items on N
-physical cores, use `e = ceil(M / N)` waves and `workers = ceil(M / e)`. Example: 901
-items on one 128-physical-core node → 8 waves, 113 workers, final wave 110 items. Do not
+CPU batch worker sizing is built into scheduler.py. For M independent CPU items, it probes
+all CPU-labor nodes and uses **currently free physical cores**, not full node capacity. If
+`jtl110cpu` has `n1/128` free and `jtl110cpu2` has `n2/128` free, the planner uses
+`N=n1+n2`, splits M proportionally into `m1,m2`, then computes each shard independently:
+`e_i = ceil(m_i / n_i)` waves and `workers_i = ceil(m_i / e_i)`. Example: 901 items on
+one fully-free 128-physical-core node → 8 waves, 113 workers, final wave 110 items. Do not
 hand-compute this in future turns; use:
 
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py cpu-plan --items 901
 ```
 
-By default this plans across all CPU-labor nodes (`jtl110cpu,jtl110cpu2`), splitting by
-physical-core capacity. To submit a generic sharded CPU batch, use `submit-cpu-batch`
-with a command template:
+By default this plans across all CPU-labor nodes (`jtl110cpu,jtl110cpu2`) from live
+`free_cpu` values, skipping full/down nodes. Add `--use-total-cores` only for offline
+what-if planning. To submit a generic sharded CPU batch, use `submit-cpu-batch` with a
+command template:
 
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py submit-cpu-batch \
@@ -135,6 +139,9 @@ Template placeholders include `{start}`, `{end}`, `{items}`, `{workers}`, `{node
 `SCHEDULEURM_CPU_*` env vars for scripts that prefer reading shard/worker metadata from
 the environment. Multi-node templates must include shard placeholders unless you pass
 `--allow-env-only-shard`, which is only safe when the script reads those env vars.
+When the user says "用 scheduler 派" for a large CPU-parallel/eval/checkpoint batch,
+inspect the script or file list to infer M, then use `submit-cpu-batch` so all available
+CPU-labor nodes are used automatically.
 
 Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every 60s and **auto-adopts** any externally-launched user-owned process (BOTH GPU compute apps AND CPU-burning python procs ≥50% CPU under `/home/erzhu419/<project>/`). Notifications go to `~/.claude/scheduler/logs/watcher.log` (and Feishu if `~/.claude/feishu.json` is configured).
 

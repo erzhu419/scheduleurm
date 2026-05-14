@@ -362,6 +362,46 @@ def run(check, sch):
             )
         return with_temp_nodes(_inner)
 
+    def case_cpu_batch_plan_uses_free_physical_cores():
+        def _inner():
+            states = {
+                "jtl110cpu": {"name": "jtl110cpu", "alive": True, "free_cpu": 64,
+                              "total_cpu": 128, "logical_cpu": 256},
+                "jtl110cpu2": {"name": "jtl110cpu2", "alive": True, "free_cpu": 128,
+                               "total_cpu": 128, "logical_cpu": 256},
+            }
+            plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
+            by_node = {p["node"]: p for p in plan}
+            return (
+                len(plan) == 2
+                and by_node["jtl110cpu"]["items"] == 300
+                and by_node["jtl110cpu2"]["items"] == 601
+                and by_node["jtl110cpu"]["workers"] == 60
+                and by_node["jtl110cpu2"]["workers"] == 121
+                and by_node["jtl110cpu"]["physical_cores"] == 64
+                and by_node["jtl110cpu"]["total_physical_cores"] == 128
+                and max(p["waves"] for p in plan) == 5
+            )
+        return with_temp_nodes(_inner)
+
+    def case_cpu_batch_plan_skips_full_cpu_node():
+        def _inner():
+            states = {
+                "jtl110cpu": {"name": "jtl110cpu", "alive": True, "free_cpu": 0,
+                              "total_cpu": 128, "logical_cpu": 256},
+                "jtl110cpu2": {"name": "jtl110cpu2", "alive": True, "free_cpu": 128,
+                               "total_cpu": 128, "logical_cpu": 256},
+            }
+            plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
+            return (
+                len(plan) == 1
+                and plan[0]["node"] == "jtl110cpu2"
+                and plan[0]["items"] == 901
+                and plan[0]["workers"] == 113
+                and plan[0]["waves"] == 8
+            )
+        return with_temp_nodes(_inner)
+
     def case_cpu_parallel_template_and_auto_worker_flag():
         plan = {
             "node": "jtl110cpu", "start": 0, "end": 451,
@@ -580,6 +620,8 @@ def run(check, sch):
         ("GPU placement excludes jtl110cpu", case_gpu_task_never_placed_on_jtl110cpu),
         ("CPU worker plan 901 items on 128 physical cores", case_cpu_worker_plan_901_on_128_physical),
         ("CPU batch plan splits 901 items across two 128-core nodes", case_cpu_batch_plan_splits_two_128_nodes),
+        ("CPU batch plan uses free physical cores", case_cpu_batch_plan_uses_free_physical_cores),
+        ("CPU batch plan skips full CPU node", case_cpu_batch_plan_skips_full_cpu_node),
         ("CPU parallel template rewrites worker auto flag", case_cpu_parallel_template_and_auto_worker_flag),
         ("Node physical cores infers half of logical cores", case_node_physical_cores_infers_half_logical_when_unconfigured),
         ("submit-cpu-batch CLI exists", case_submit_cpu_batch_cli_exists),

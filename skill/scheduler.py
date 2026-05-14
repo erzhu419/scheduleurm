@@ -2048,6 +2048,11 @@ def _windows_path_for_task(task: dict, path: str) -> str:
     return text.replace("/", "\\")
 
 
+def _is_windows_native_path(path: str) -> bool:
+    text = str(path or "").strip().strip('"').strip("'")
+    return bool(re.match(r"^[A-Za-z]:[\\/]", text) or text.startswith("\\\\"))
+
+
 def _fetch_windows_text_tail(task: dict, path: str, max_bytes: int = 4096) -> tuple[str, int]:
     node = task.get("node")
     if not node:
@@ -10197,15 +10202,31 @@ def _stage_cwd_for_launch(task: dict, target_node: str,
     # Skip if target is local (source==target).
     if NODES.get(target_node, {}).get("host") is None:
         return (True, "target is local; nothing to sync")
+    cwd_key = ("local", target_node, cwd)
+    if _staging_cache_hit(cwd_key):
+        return (True, "cache hit (already synced within TTL)")
+    if _node_is_windows(target_node) and _is_windows_native_path(cwd):
+        win_cwd = _windows_path_for_node(target_node, cwd)
+        try:
+            rc, out, err = _run_windows_ps(
+                target_node,
+                f"if (Test-Path -LiteralPath {_ps_quote(win_cwd)} -PathType Container) {{ 'OK' }} else {{ 'MISSING' }}",
+                timeout=10,
+                check=False,
+            )
+        except Exception as e:
+            return (False, f"Windows target cwd probe failed on {target_node}: {str(e)[:160]}")
+        if rc == 0 and "OK" in (out or ""):
+            _STAGING_CACHE[cwd_key] = time.time()
+            _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+            _STAGING_FAILS.pop(cwd_key, None)
+            return (True, f"target-native Windows cwd exists on {target_node}: {win_cwd}")
+        return (False, f"Windows target cwd missing on {target_node}: {win_cwd}; {(err or out or '').strip()[:120]}")
     # Source must be local; if cwd doesn't exist locally we can't be the
     # source-of-truth, so don't try to rsync from nothing.
     if not Path(cwd).exists():
         return (False,
                 f"cwd {cwd} does not exist on local; can't seed target {target_node}")
-
-    cwd_key = ("local", target_node, cwd)
-    if _staging_cache_hit(cwd_key):
-        return (True, "cache hit (already synced within TTL)")
 
     # Probe local cwd size with the same excludes the rsync below uses,
     # otherwise the cap check would over-count (e.g. .git can be 500MB+

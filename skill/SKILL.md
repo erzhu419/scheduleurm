@@ -1,6 +1,6 @@
 ---
 name: scheduler
-description: Multi-resource (CPU + RAM + VRAM) scheduler across local 4060 + jtl110gpu (2x 3080Ti) + jtl110gpu2 (2x 3080Ti). Use whenever the user wants to launch ANY computation that consumes meaningful resources — GPU training, CPU-only training, data preprocessing, batch evaluation. Trigger phrases (English / 中文 — both fire equally, examples not exhaustive) — RUN A JOB / SUBMIT A JOB / LAUNCH A JOB / TRAIN / EVAL / INFERENCE / RUN THIS SCRIPT / RUN THIS PYTHON / RUN THIS EVAL / RUN A SWEEP / DATA PREP / N_WORKERS / --device cpu / multi-worker / multi-seed / "kick off X" / "fire off X" / "queue up X" / "schedule X" / "dispatch X" / "deploy X" / "send to GPU" / "put on jtl110gpu" / 跑训练 / 跑评估 / 跑推理 / 跑这个脚本 / 跑这个 python / 跑这个评估 / 跑 X / 提交任务 / 派活 / 派任务 / 部署 / 在 GPU 上跑 / 在 jtl110gpu 跑. STATUS QUERIES — "GPU free?" / "any free RAM?" / "what's running?" / "which node has room?" / "node status" / "show queue" / "show jobs" / "show tasks" / "how many tasks running" / GPU 还空吗 / 显存还够吗 / 哪个节点空 / 现在跑啥呢 / 节点状态 / 看看队列 / 看看任务. JOB CONTROL — "cancel job" / "kill job" / "stop job" / "clear queue" / "forget X" / "rebalance" / "redispatch" / "reassign" / 取消任务 / 杀掉任务 / 停止任务 / 清空队列 / 重新分配 / 重新派发 — also fire whenever a node frees up and queued work should be re-routed. CPU-only tasks must use --vram 0. Handles 1/3-VRAM packing rule, CPU/RAM constraints, WSL OOM defense on local, git-sync precheck, checkpoint resume, and auto-discovery of externally-launched tasks (GPU and CPU).
+description: Multi-resource (CPU + RAM + VRAM) scheduler across local 4060 + jtl110gpu (2x 3080Ti) + jtl110gpu2 (2x 3080Ti) + jtl110cpu/jtl110cpu2 (Windows CPU-only 128 physical cores each). Use whenever the user wants to launch ANY computation that consumes meaningful resources — GPU training, CPU-only training, data preprocessing, batch evaluation. Trigger phrases (English / 中文 — both fire equally, examples not exhaustive) — RUN A JOB / SUBMIT A JOB / LAUNCH A JOB / TRAIN / EVAL / INFERENCE / RUN THIS SCRIPT / RUN THIS PYTHON / RUN THIS EVAL / RUN A SWEEP / DATA PREP / N_WORKERS / --device cpu / multi-worker / multi-seed / "kick off X" / "fire off X" / "queue up X" / "schedule X" / "dispatch X" / "deploy X" / "send to GPU" / "put on jtl110gpu" / 跑训练 / 跑评估 / 跑推理 / 跑这个脚本 / 跑这个 python / 跑这个评估 / 跑 X / 提交任务 / 派活 / 派任务 / 部署 / 在 GPU 上跑 / 在 jtl110gpu 跑. STATUS QUERIES — "GPU free?" / "any free RAM?" / "what's running?" / "which node has room?" / "node status" / "show queue" / "show jobs" / "show tasks" / "how many tasks running" / GPU 还空吗 / 显存还够吗 / 哪个节点空 / 现在跑啥呢 / 节点状态 / 看看队列 / 看看任务. JOB CONTROL — "cancel job" / "kill job" / "stop job" / "clear queue" / "forget X" / "rebalance" / "redispatch" / "reassign" / 取消任务 / 杀掉任务 / 停止任务 / 清空队列 / 重新分配 / 重新派发 — also fire whenever a node frees up and queued work should be re-routed. CPU-only tasks must use --vram 0. Handles 1/3-VRAM packing rule, CPU/RAM constraints, WSL OOM defense on local, git-sync precheck, checkpoint resume, Windows CPU-node auto pinning, and auto-discovery of externally-launched tasks (GPU and Linux CPU).
 argument-hint: "[submit | dispatch | status | doctor | profile-local | results | cancel | forget | clear-queue | show | history | adopt]"
 allowed-tools: Bash(*), Read
 ---
@@ -70,11 +70,43 @@ It never rewrites running tasks. If it reports a running-task warning, surface t
 
 | node | cpu | ram | gpus | task vram cap | RAM headroom |
 |---|---|---|---|---|---|
-| `local` (WSL2) | 12 cores | 56 GB | 1× 4060 8GB | auto (= GPU total_mb) | **25%** (WSL OOM defense) |
-| `jtl110gpu` | 12 cores | 200 GB | 2× 3080Ti 12GB | unlimited | 10% |
-| `jtl110gpu2` | 12 cores | 200 GB | 2× 3080Ti 12GB | unlimited | 10% |
+| `local` (WSL2) | 16 cores | 56 GB | 1× 4060 8GB | auto (= GPU total_mb) | **25%** (WSL OOM defense) |
+| `jtl110gpu` | 12 cores | auto-probed | 2× 3080Ti 12GB | unlimited | 10% |
+| `jtl110gpu2` | 12 cores | auto-probed | 2× 3080Ti 12GB | unlimited | 10% |
+| `jtl110cpu` (Windows) | 128 phys (256 logical) | 512 GB | none — CPU-only | n/a (vram=0 required) | 10% |
+| `jtl110cpu2` (Windows) | 128 phys (256 logical) | 512 GB | none — CPU-only | n/a (vram=0 required) | 10% |
 
 Note: local has 16 physical cores / 32 logical threads; scheduleurm budgets the 16 physical cores by default. WSL OOM freezes the host — the fixed local RAM headroom is non-negotiable.
+
+`jtl110cpu` and `jtl110cpu2` are schedulable by `scheduler.py` for CPU-only work
+(`--vram 0`). They are Windows/OpenSSH nodes at
+`tf290q6n.zjz-service.cn:22945` and `tf290q6n.zjz-service.cn:23565`,
+workspace paths map from
+`/home/erzhu419/mine_code/<project>/...` to `F:\<project>\...`, and Python runs via
+`F:\python\python.exe`. The scheduler refuses GPU tasks there, probes RAM via
+PowerShell/.NET and CPU load from Python process CPU-time deltas (with Windows counters only
+as fallback), launches through a Windows wrapper, and records logs under
+`F:\.scheduleurm\logs\`.
+
+Windows CPU-node self-check when TUI/status looks wrong:
+- First run `python ~/.claude/skills/scheduler/scheduler.py status`; both `jtl110cpu`
+  and `jtl110cpu2` should appear as `cpu=X/128` with realistic load.
+- If a node says `Permission denied`, it is an SSH key-auth problem. Install the current
+  `~/.ssh/id_ed25519.pub` on that Windows host; **never** put the password in
+  `scheduler.py`, queue records, or this skill.
+- If a node shows `128/128` while Python work is known to be running, treat it as a
+  Windows probe bug. The scheduler should use Python process CPU-time deltas, not only
+  `Get-Counter`, because Windows performance counters can fail under non-admin SSH.
+
+**Windows Processor Group pinning — applies to ANY Windows host with >64 logical CPUs**, not
+just jtl110cpu. Windows uses 64-bit affinity masks → splits CPUs into Processor Groups of
+≤64 logical each; a process is locked to one group at startup; mp.Pool inherits master's
+group. Without explicit cross-group pinning, every worker fights over one group's 64 logical
+CPUs (regardless of how many physical cores the machine has), running at ~50% per-worker.
+For scheduler-launched Windows tasks, the wrapper periodically pins child worker processes
+to unique physical cores across processor groups, so future high-parallel CPU eval jobs do
+not need project-level edits for pinning. `scripts/jtl110cpu_pin_block.py` remains a manual
+helper for processes launched outside scheduler.py.
 
 Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every 60s and **auto-adopts** any externally-launched user-owned process (BOTH GPU compute apps AND CPU-burning python procs ≥50% CPU under `/home/erzhu419/<project>/`). Notifications go to `~/.claude/scheduler/logs/watcher.log` (and Feishu if `~/.claude/feishu.json` is configured).
 
@@ -83,7 +115,7 @@ Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every
 - **VRAM 1/3+grace packing rule**: GPU already past the 1/3+grace freeze line will not accept more tasks (RL plateau heuristic). Single big task on an empty card is the exception.
 - **Optional GPU compute-saturation guard (util ≥ 85%)**: strict nodes may block packing when an occupied GPU is compute-saturated. Local/jtl110gpu/jtl110gpu2 set `gpu_util_saturation_pct=None`, so RL packing is governed by VRAM/CPU/RAM rather than util.
 - **CPU constraint**: total declared `cpu_cores` of tasks running on a node must not exceed budget. CPU-saturated node is auto-skipped — won't pile on.
-- **RAM constraint**: free RAM minus task's request must remain above headroom (25% local, 10% remote). Headroom denominator uses `min(declared_ram_mb, probed_MemTotal)` — protects against over-declared configs (e.g. WSL where probed total is half the host total).
+- **RAM constraint**: free RAM minus task's request must remain above headroom (25% local, 10% remote). A positive `ram_mb` in `NODES` is an explicit cap; `ram_mb=0`/unset means use the probed `MemTotal`, which is the default for the GPU servers.
 - **Per-task VRAM cap**: auto-derived from probed GPU `total_mb` (was hardcoded 4GB AMD-era cap; now respects whatever NVIDIA card nvidia-smi reports as GPU0). 1/3 packing rule still applies on top.
 - **Auto-learn**: every task records peak VRAM + peak RAM under its `--signature`. Re-runs reuse history — no manual estimation after first run.
 

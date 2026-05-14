@@ -46,6 +46,41 @@ def _base_task(**overrides):
 
 def run(check, sch):
     print("\n[external] scheduler corner cases")
+    def _jtl110cpu_cfg(port):
+        return {
+            "host": "tf290q6n.zjz-service.cn",
+            "ssh_user": "erzhu419",
+            "ssh_port": port,
+            "os": "windows",
+            "cpu_cores": 128,
+            "ram_mb": 512 * 1024,
+            "ram_headroom_frac": 0.10,
+            "max_vram_per_task": 0,
+            "windows_python": r"F:\python\python.exe",
+            "windows_workspace_root": r"F:\\",
+            "windows_scheduleurm_dir": r"F:\.scheduleurm",
+            "windows_auto_pin": True,
+            "windows_skip_ht_pair": True,
+            "cpu_labor_node": True,
+        }
+    local_cfg = {
+        "host": None,
+        "cpu_cores": 16,
+        "ram_mb": 56000,
+        "max_vram_per_task": None,
+        "ram_headroom_frac": 0.25,
+    }
+
+    def with_temp_nodes(fn):
+        saved = dict(sch.NODES)
+        try:
+            sch.NODES["local"] = dict(local_cfg)
+            sch.NODES["jtl110cpu"] = _jtl110cpu_cfg(22945)
+            sch.NODES["jtl110cpu2"] = _jtl110cpu_cfg(23565)
+            return fn()
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved)
 
     def case_env_value_with_equals():
         return sch._parse_env(["A=x=y=z"]) == {"A": "x=y=z"}
@@ -230,6 +265,205 @@ def run(check, sch):
         })
         return cpu == "n1:SLURM-CPU#12:PENDING" and gpu == "n1:SLURM-GPU#13:RUNNING"
 
+    def case_jtl110cpu_is_windows_cpu_node():
+        def _inner():
+            info = sch.NODES.get("jtl110cpu") or {}
+            return (
+                sch._node_is_windows("jtl110cpu")
+                and info.get("cpu_labor_node") is True
+                and int(info.get("cpu_cores") or 0) == 128
+                and int(info.get("max_vram_per_task") or 0) == 0
+            )
+        return with_temp_nodes(_inner)
+
+    def case_jtl110cpu2_is_windows_cpu_node():
+        def _inner():
+            info = sch.NODES.get("jtl110cpu2") or {}
+            return (
+                sch._node_is_windows("jtl110cpu2")
+                and info.get("cpu_labor_node") is True
+                and int(info.get("ssh_port") or 0) == 23565
+                and int(info.get("cpu_cores") or 0) == 128
+                and int(info.get("max_vram_per_task") or 0) == 0
+            )
+        return with_temp_nodes(_inner)
+
+    def case_real_scheduler_source_defines_windows_cpu_nodes():
+        path = getattr(sch, "__file__", "") or ""
+        src = open(path, encoding="utf-8").read()
+        return (
+            '"jtl110cpu"' in src
+            and '"jtl110cpu2"' in src
+            and '"ssh_port": 23565' in src
+            and '"os": "windows"' in src
+            and '"cpu_labor_node": True' in src
+        )
+
+    def case_cpu_only_prefers_jtl110cpu():
+        def _inner():
+            task = _base_task(est_vram_mb=0, cpu_cores=8, ram_mb=2000)
+            nodes = [
+                {"name": "local", "alive": True, "gpus": [],
+                 "free_cpu": 16, "total_cpu": 16, "free_ram_mb": 56000,
+                 "total_ram_mb": 56000, "running_count": 0},
+                {"name": "jtl110cpu", "alive": True, "gpus": [],
+                 "free_cpu": 128, "total_cpu": 128, "free_ram_mb": 500000,
+                 "total_ram_mb": 524288, "running_count": 0},
+            ]
+            return sch.pick_placement(task, nodes) == ("jtl110cpu", None)
+        return with_temp_nodes(_inner)
+
+    def case_cpu_only_prefers_less_loaded_windows_cpu_node():
+        def _inner():
+            task = _base_task(est_vram_mb=0, cpu_cores=8, ram_mb=2000)
+            nodes = [
+                {"name": "jtl110cpu", "alive": True, "gpus": [],
+                 "free_cpu": 16, "total_cpu": 128, "free_ram_mb": 400000,
+                 "total_ram_mb": 524288, "running_count": 0},
+                {"name": "jtl110cpu2", "alive": True, "gpus": [],
+                 "free_cpu": 120, "total_cpu": 128, "free_ram_mb": 500000,
+                 "total_ram_mb": 524288, "running_count": 0},
+            ]
+            return sch.pick_placement(task, nodes) == ("jtl110cpu2", None)
+        return with_temp_nodes(_inner)
+
+    def case_gpu_task_never_placed_on_jtl110cpu():
+        def _inner():
+            task = _base_task(est_vram_mb=500, cpu_cores=1, ram_mb=1000)
+            nodes = [
+                {"name": "jtl110cpu", "alive": True, "gpus": [],
+                 "free_cpu": 128, "total_cpu": 128, "free_ram_mb": 500000,
+                 "total_ram_mb": 524288, "running_count": 0},
+                {"name": "jtl110cpu2", "alive": True, "gpus": [],
+                 "free_cpu": 128, "total_cpu": 128, "free_ram_mb": 500000,
+                 "total_ram_mb": 524288, "running_count": 0},
+            ]
+            return sch.pick_placement(task, nodes) is None
+        return with_temp_nodes(_inner)
+
+    def case_gpu_servers_use_auto_ram_detection():
+        try:
+            src = open(sch.__file__, encoding="utf-8").read()
+        except Exception:
+            return False
+        line1 = next((ln for ln in src.splitlines() if '"jtl110gpu":' in ln), "")
+        line2 = next((ln for ln in src.splitlines() if '"jtl110gpu2":' in ln), "")
+        return '"ram_mb": 0' in line1 and '"ram_mb": 0' in line2
+
+    def case_claim_capacity_uses_probed_ram_when_auto():
+        saved = dict(sch.NODES)
+        try:
+            sch.NODES["auto-ram"] = {"host": "rbox", "cpu_cores": 12, "ram_mb": 0}
+            cap = sch._ClaimManager._build_capacity(
+                "auto-ram", {"name": "auto-ram", "total_ram_mb": 515000, "gpus": []}
+            )
+            return cap.get("ram_mb") == 515000
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved)
+
+    def case_hybrid_routes_jtl110cpu_to_windows_backend():
+        def _inner():
+            b = sch.HybridBackend()
+            backend1 = b._backend_for("jtl110cpu", {"est_vram_mb": 0})
+            backend2 = b._backend_for("jtl110cpu2", {"est_vram_mb": 0})
+            return isinstance(backend1, sch.WindowsBackend) and isinstance(backend2, sch.WindowsBackend)
+        return with_temp_nodes(_inner)
+
+    def case_windows_path_mapping_to_f_drive_project_layout():
+        def _inner():
+            got = sch._windows_path_for_node(
+                "jtl110cpu",
+                "/home/erzhu419/mine_code/offline-sumo/sub/ckpt.pt",
+            )
+            return got == r"F:\offline-sumo\sub\ckpt.pt"
+        return with_temp_nodes(_inner)
+
+    def case_windows_prepare_command_rewrites_python_and_paths():
+        def _inner():
+            task = _base_task(
+                node="jtl110cpu",
+                cmd=("/home/erzhu419/anaconda3/bin/python "
+                     "/home/erzhu419/mine_code/proj/eval.py "
+                     "--ckpt /home/erzhu419/mine_code/proj/ckpts/a.pt"),
+            )
+            payload = sch._windows_prepare_command(task)
+            argv = payload.get("argv") or []
+            return (
+                len(argv) >= 5
+                and argv[0] == sch.NODES["jtl110cpu"]["windows_python"]
+                and "-u" in argv
+                and r"F:\proj\eval.py" in argv
+                and r"F:\proj\ckpts\a.pt" in argv
+            )
+        return with_temp_nodes(_inner)
+
+    def case_windows_backend_refuses_gpu_task_without_network():
+        backend = sch.WindowsBackend()
+        ok1, msg1 = backend.launch({"id": "tX", "node": "jtl110cpu", "est_vram_mb": 1})
+        ok2, msg2 = backend.launch({"id": "tY", "node": "jtl110cpu2", "est_vram_mb": 1})
+        return (not ok1) and (not ok2) and "CPU-only" in msg1 and "CPU-only" in msg2
+
+    def case_windows_auto_adopt_linux_scans_are_skipped():
+        def _inner():
+            return (
+                sch._node_processes("jtl110cpu") == []
+                and sch._node_cpu_processes("jtl110cpu") == []
+                and sch._node_ppid_map("jtl110cpu") == {}
+                and sch._node_processes("jtl110cpu2") == []
+                and sch._node_cpu_processes("jtl110cpu2") == []
+                and sch._node_ppid_map("jtl110cpu2") == {}
+            )
+        return with_temp_nodes(_inner)
+
+    def case_windows_tail_uses_readwrite_share():
+        ps = sch._windows_tail_ps(r"F:\.scheduleurm\logs\t0001.log")
+        return "FileShare]::ReadWrite" in ps and "Get-Content" not in ps
+
+    def case_windows_probe_ignores_powershell_clixml_noise():
+        def _inner():
+            saved = sch._run_windows_ps
+            try:
+                sch._run_windows_ps = lambda *a, **k: (
+                    0,
+                    '#< CLIXML\n<Objs>progress noise</Objs>\n500000|524288|256|25\n',
+                    '',
+                )
+                got = sch._probe_windows_node("jtl110cpu2")
+                return (
+                    got.get("alive") is True
+                    and got.get("os") == "windows"
+                    and got.get("gpus") == []
+                    and got.get("total_cpu") == 128
+                    and got.get("free_cpu") == 96
+                    and got.get("free_ram_mb") == 500000
+                )
+            finally:
+                sch._run_windows_ps = saved
+        return with_temp_nodes(_inner)
+
+    def case_windows_probe_has_process_cpu_delta_fallback():
+        import inspect
+        src = inspect.getsource(sch._probe_windows_node)
+        return (
+            "GetProcessesByName" in src
+            and "TotalProcessorTime.TotalSeconds" in src
+            and "Start-Sleep -Milliseconds 700" in src
+        )
+
+    def case_windows_probe_error_hints_ssh_key_auth():
+        def _inner():
+            msg = sch._windows_probe_error_hint(
+                "jtl110cpu",
+                "Permission denied (publickey,password,keyboard-interactive).",
+            )
+            return (
+                "SSH key auth failed" in msg
+                and "id_ed25519.pub" in msg
+                and "Do not store the password" in msg
+            )
+        return with_temp_nodes(_inner)
+
     cases = [
         ("env value preserves equals", case_env_value_with_equals),
         ("env invalid key rejected", case_env_invalid_key_rejected),
@@ -264,6 +498,23 @@ def run(check, sch):
         ("gpu fits rejects margin shortfall", case_gpu_fits_rejects_vram_margin_shortfall),
         ("slurm bucket missing estimate defaults gpu", case_slurm_bucket_missing_est_defaults_gpu),
         ("format task location slurm cpu and gpu", case_format_task_location_slurm_cpu_and_gpu),
+        ("jtl110cpu configured as Windows CPU node", case_jtl110cpu_is_windows_cpu_node),
+        ("jtl110cpu2 configured as Windows CPU node", case_jtl110cpu2_is_windows_cpu_node),
+        ("scheduler source defines Windows CPU nodes", case_real_scheduler_source_defines_windows_cpu_nodes),
+        ("CPU-only placement prefers jtl110cpu", case_cpu_only_prefers_jtl110cpu),
+        ("CPU-only placement can prefer jtl110cpu2 when freer", case_cpu_only_prefers_less_loaded_windows_cpu_node),
+        ("GPU placement excludes jtl110cpu", case_gpu_task_never_placed_on_jtl110cpu),
+        ("GPU servers use auto RAM detection", case_gpu_servers_use_auto_ram_detection),
+        ("Claim capacity uses probed RAM when auto", case_claim_capacity_uses_probed_ram_when_auto),
+        ("hybrid backend routes jtl110cpu to WindowsBackend", case_hybrid_routes_jtl110cpu_to_windows_backend),
+        ("Windows path mapping uses F drive project layout", case_windows_path_mapping_to_f_drive_project_layout),
+        ("Windows command prep rewrites python and paths", case_windows_prepare_command_rewrites_python_and_paths),
+        ("Windows backend refuses GPU tasks before network", case_windows_backend_refuses_gpu_task_without_network),
+        ("Windows node skips Linux auto-adopt scans", case_windows_auto_adopt_linux_scans_are_skipped),
+        ("Windows log tail uses read-write file share", case_windows_tail_uses_readwrite_share),
+        ("Windows probe ignores PowerShell CLIXML noise", case_windows_probe_ignores_powershell_clixml_noise),
+        ("Windows probe has process CPU delta fallback", case_windows_probe_has_process_cpu_delta_fallback),
+        ("Windows probe SSH auth failure gets key hint", case_windows_probe_error_hints_ssh_key_auth),
     ]
 
     for idx, (name, fn) in enumerate(cases, 1):

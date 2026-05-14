@@ -505,6 +505,38 @@ def test_default_vram_not_inflated():
           est <= 1000,
           diag=f"got est={est}MB (siblings 600/700/800/5000 median is ~750)")
 
+def test_startup_oom_vram_peak_not_trusted():
+    """A short JAX/CUDA OOM can report most of the card as peak VRAM. Do not use it
+    as a steady-state estimate for future runs of the same family."""
+    print("\n[7b] Startup OOM peak ignored for VRAM estimation")
+    bad = {
+        "id": "bad", "status": "failed", "project": "RE-SAC",
+        "description": "RE-SAC b4 sens_anchor_0.01 Ant-v2 seed24",
+        "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+        "peak_vram_mb": 9292, "failure_category": "OOM",
+        "started_at": 1000, "finished_at": 1050,
+        "last_block_reason": "err_pattern: RESOURCE_EXHAUSTED out of memory",
+        "last_progress_line": "Starting training... (first 10000 steps are random exploration)",
+    }
+    good = {
+        "id": "good", "status": "done", "project": "RE-SAC",
+        "description": "RE-SAC b4 sens_anchor_0.01 Ant-v2 seed16",
+        "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_16",
+        "peak_vram_mb": 1348,
+    }
+    state = {"tasks": [bad, good]}
+    new = {
+        "id": "new", "status": "queued", "project": "RE-SAC",
+        "description": "RE-SAC b4 sens_anchor_0.01 Ant-v2 seed42",
+        "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_42",
+        "est_vram_mb": 1500,
+    }
+    check("short OOM before progress classified as untrusted",
+          sch._untrusted_startup_oom_sample(bad), diag=str(bad))
+    est = sch._effective_est_vram(new, state, {})
+    check("9292MB startup-OOM peak does not poison sibling estimate",
+          est < 3000, diag=f"got est={est}")
+
 def test_status_view_no_truncation():
     """TUI/status truncation concern: make sure no part of the active queue is hidden.
     Both cmd_status (CLI) and TUI render-from-cache logic include EVERY task whose
@@ -555,6 +587,53 @@ def test_status_view_no_truncation():
     check("TUI text filter includes Slurm job id/state",
           '"slurm_job_id"' in tui_render_src and '"slurm_state"' in tui_render_src,
           diag="filtering for 'slurm', job id, or Slurm state would miss rows")
+    check("TUI has an owner column for shared-account attribution",
+          '("owner", "owner"' in tui_src and '"owner": sch._format_task_owner(t)' in tui_render_src,
+          diag="TUI must show who/what scheduler owns each row")
+    check("TUI text filter includes owner/source fields",
+          '"submitted_by"' in tui_render_src and '"process_owner"' in tui_render_src
+          and "sch._format_task_owner(t)" in tui_render_src,
+          diag="filtering by shared-account owner would miss rows")
+
+
+def test_display_units_owner_and_kill_actor():
+    """Human-facing status/TUI/log output should use GB and carry actor labels."""
+    print("\n[8b] Display units, owner labels, and kill actor recording")
+    check("2048MB renders as 2.00GB", sch._format_mem_gb(2048) == "2.00GB",
+          diag=sch._format_mem_gb(2048))
+    check("17500MB renders compactly as GB", sch._format_mem_gb(17500) == "17.1GB",
+          diag=sch._format_mem_gb(17500))
+    check("approx memory keeps the approximate marker",
+          sch._format_mem_gb(512, approx=True) == "~0.50GB",
+          diag=sch._format_mem_gb(512, approx=True))
+
+    own_sid = sch._ClaimManager.scheduler_id()
+    check("scheduler-owned task is marked this",
+          sch._format_task_owner({"submitted_by": "alice", "scheduler_id": own_sid}) == "alice:this")
+    check("auto-adopted same-account task is marked external?",
+          sch._format_task_owner({"submitted_by": "alice", "origin": "external",
+                                  "auto_adopted": True}) == "alice:external?")
+    check("manual adopted task is marked manual",
+          sch._format_task_owner({"submitted_by": "alice", "origin": "manual-adopt"}) == "alice:manual")
+    check("different scheduler id is marked other-sched?",
+          sch._format_task_owner({"submitted_by": "alice",
+                                  "scheduler_id": own_sid + ":other"}) == "alice:other-sched?")
+
+    task = {}
+    actor = sch._record_task_kill_actor(task, "unit-test", "resource policy")
+    check("kill actor recorded on task",
+          task.get("last_killed_by") == actor.get("label")
+          and task.get("last_kill_action") == "unit-test"
+          and task.get("last_kill_reason") == "resource policy",
+          diag=str(task))
+    rendered = sch._format_feishu("task_killed", {
+        "task_id": "tkill", "actor": actor, "action": "unit-test",
+        "node": "local", "reason": "resource policy",
+    })
+    check("task_killed log line includes actor label",
+          "tkill" in rendered and actor.get("label") in rendered
+          and "resource policy" in rendered,
+          diag=rendered)
 
 def test_high_defaults_lower_before_placement():
     """High stored/default estimates must not starve a job when sibling evidence says it is small.
@@ -675,11 +754,11 @@ def test_low_ram_estimate_raises_from_live_siblings():
           "ram:" in (queued.get("last_block_reason") or ""),
           diag=f"last_block_reason={queued.get('last_block_reason')!r}")
 
-def test_probe_ram_budget_cap():
-    """Remote physical MemAvailable may exceed configured schedulable budget; placement must use
-    the configured budget, not physical 500GB."""
-    print("\n[10] Probe RAM is capped to schedulable budget")
+def test_probe_ram_auto_detect_and_optional_cap():
+    """Dedicated GPU nodes auto-detect RAM unless a positive ram_mb cap is configured."""
+    print("\n[10] Probe RAM auto-detects; positive ram_mb remains an optional cap")
     orig_run_on = sch.run_on
+    orig_nodes = sch.NODES
     def fake_run_on(node, cmd, timeout=15, check=False):
         out = (
             "0, 0, 12288, 12288, 0\n"
@@ -694,14 +773,29 @@ def test_probe_ram_budget_cap():
     sch.run_on = fake_run_on
     try:
         info = sch.probe_node("jtl110gpu")
+        cap = sch._ClaimManager._build_capacity("jtl110gpu", info)
+
+        sch.NODES = {"capped": {"host": "rbox", "cpu_cores": 12, "ram_mb": 204800,
+                                "ram_headroom_frac": 0.10}}
+        capped = sch.probe_node("capped")
+        capped_cap = sch._ClaimManager._build_capacity("capped", capped)
     finally:
         sch.run_on = orig_run_on
-    check("remote total_ram capped to configured 204800MB", info["total_ram_mb"] == 204800,
+        sch.NODES = orig_nodes
+    check("jtl110gpu ram_mb=0 means auto-detect physical total", info["total_ram_mb"] == 515000,
           diag=str(info))
-    check("remote free_ram capped to configured 204800MB", info["free_ram_mb"] == 204800,
+    check("jtl110gpu free_ram uses probed MemAvailable", info["free_ram_mb"] == 500000,
           diag=str(info))
     check("actual_free_ram still recorded for observability", info["actual_free_ram_mb"] == 500000,
           diag=str(info))
+    check("claim capacity also uses probed RAM when ram_mb=0", cap["ram_mb"] == 515000,
+          diag=str(cap))
+    check("positive ram_mb still caps total_ram", capped["total_ram_mb"] == 204800,
+          diag=str(capped))
+    check("positive ram_mb still caps free_ram", capped["free_ram_mb"] == 204800,
+          diag=str(capped))
+    check("claim capacity honors positive ram cap", capped_cap["ram_mb"] == 204800,
+          diag=str(capped_cap))
 
 def test_running_descendant_resources_counted():
     """A scheduler-launched bash root plus Python child/worker must be accounted as one task."""
@@ -1797,6 +1891,87 @@ def test_resume_checkpoint_node_affinity():
         sch.launch = saved_launch
         sch.save_state = saved_save_state
         sch.RESUME_SCAN_TTL_S = saved_resume_scan_ttl
+
+
+def test_resume_checkpoint_launch_staging_to_remote():
+    """Queued resume tasks can launch on a required remote after small ckpt staging."""
+    print("\n[19c] Resume checkpoint launch staging to remote")
+    saved_nodes = sch.NODES
+    saved_precheck = sch.precheck_git
+    saved_launch = sch.launch
+    saved_save_state = sch.save_state
+    saved_cache = sch._STAGING_CACHE.copy()
+    saved_release = sch._release_task_claims_and_intents
+    try:
+        sch.NODES = {
+            "local": {"host": None, "cpu_cores": 12, "ram_mb": 32000,
+                      "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                      "max_concurrent_running": None},
+            "remote": {"host": "rbox", "cpu_cores": 12, "ram_mb": 32000,
+                       "ram_headroom_frac": 0.10, "max_vram_per_task": None,
+                       "max_concurrent_running": None},
+        }
+        now = time.time()
+        nodes = [
+            {"name": "local", "alive": True, "free_cpu": 12, "total_cpu": 12,
+             "free_ram_mb": 30000, "total_ram_mb": 32000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
+            {"name": "remote", "alive": True, "free_cpu": 12, "total_cpu": 12,
+             "free_ram_mb": 30000, "total_ram_mb": 32000, "running_count": 0,
+             "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 12288, "free_mb": 12288, "util_pct": 0}]},
+        ]
+        task = {
+            "id": "tStageResume", "status": "queued", "signature": "TEST/resume-stage",
+            "description": "resume stage", "cmd": "python train.py --resume",
+            "cwd": "/work", "ckpt_dir": "/work/results/run/checkpoints", "ckpt_glob": "*",
+            "est_vram_mb": 512, "ram_mb": 1000, "cpu_cores": 1,
+            "priority": "high", "submitted_at": now,
+            "preferred_node": None, "require_node": "remote",
+            "resume_managed_by_cmd": True,
+            "resume_locations": [{
+                "node": "local",
+                "path": "/work/results/run/checkpoints/train_state.pkl",
+                "mtime": now - 10,
+                "size": 12345,
+            }],
+            "resume_preferred_nodes": ["local"],
+            "resume_checkpoint_node": "local",
+            "resume_from": "/work/results/run/checkpoints/train_state.pkl",
+        }
+        task["resume_scan_at"] = now
+        task["resume_scan_key"] = sch._resume_scan_key(task, nodes)
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE[("local", "remote", "/work")] = now
+        sch._STAGING_CACHE[sch._resume_ckpt_stage_key(
+            "local", "remote", "/work/results/run/checkpoints")] = now
+
+        launched = []
+        sch.precheck_git = lambda t: (True, "ok")
+        sch.save_state = lambda s: None
+        sch._release_task_claims_and_intents = lambda *args, **kwargs: 0
+        def fake_launch(t, node_state=None):
+            launched.append((t.get("node"), t.get("gpu_idx"), t.get("resume_from")))
+            t["status"] = "running"
+            t["remote_pids"] = [777]
+            t["started_at"] = time.time()
+            return True, "pid=777"
+        sch.launch = fake_launch
+        state = {"tasks": [task], "next_id": 2}
+        events, _ = sch._do_dispatch(state, nodes)
+        post = state["tasks"][0]
+        check("dispatch allows required remote after cached ckpt staging",
+              launched == [("remote", 0, "/work/results/run/checkpoints/train_state.pkl")]
+              and post.get("status") == "running"
+              and any(loc.get("node") == "remote" for loc in post.get("resume_locations") or []),
+              diag=f"launched={launched} post={post} events={events}")
+    finally:
+        sch.NODES = saved_nodes
+        sch.precheck_git = saved_precheck
+        sch.launch = saved_launch
+        sch.save_state = saved_save_state
+        sch._STAGING_CACHE.clear()
+        sch._STAGING_CACHE.update(saved_cache)
+        sch._release_task_claims_and_intents = saved_release
 
 
 def test_env_spec_conda_parsing():
@@ -3328,6 +3503,13 @@ def test_backend_slurm_phase2():
           and "#SBATCH --qos=normal" in script,
           diag=script)
     check("script exports extra_env", "export FOO=bar" in script)
+    jax_task = dict(task)
+    jax_task["project"] = "RE-SAC"
+    jax_task["cmd"] = "python -m jax_experiments.train"
+    jax_script = sb._build_sbatch_script(jax_task, "python -u train.py", "/tmp/jax.log")
+    check("JAX GPU task gets prealloc disabled by default",
+          "export XLA_PYTHON_CLIENT_PREALLOCATE=false" in jax_script,
+          diag=jax_script)
     check("script cd's to cwd", "cd /tmp" in script)
     check("script body has the inner cmd", "python -u train.py --seed 42" in script)
 
@@ -4607,7 +4789,7 @@ def test_phase3_0_10_migration_event_visibility():
         "task_id": "tV", "freed_node": "loaded", "cpu_freed": 4, "ram_freed": 8000
     })
     check("Feishu task_preempted text mentions task id, node, freed resources",
-          "tV" in msg_p and "loaded" in msg_p and "4" in msg_p and "8000" in msg_p,
+          "tV" in msg_p and "loaded" in msg_p and "4" in msg_p and "7.81GB" in msg_p,
           diag=msg_p)
 
 
@@ -8719,6 +8901,29 @@ def test_phase3_2_0_claim_manager():
         check("script: renew → ok with renewed=1",
               r.get("ok") is True and r.get("renewed") == 1, diag=r)
 
+        # 2h2. renew_many also refreshes live resource fields. Launch-time claims
+        # can go stale after probe-based CPU/RAM/VRAM updates; stale active claims
+        # should not keep blocking placement.
+        r = run_op("renew_many",
+                   {"scheduler_id": "h2:2000", "task_ids": ["tC"],
+                    "expires_at": future + 60,
+                    "records": {"tC": {
+                        "gpu_idx": 1, "vram_mb": 1200,
+                        "cpu_cores": 3, "ram_mb": 2500, "pid": 99999,
+                    }}})
+        r_list = run_op("list", {})
+        tC_claim = next((c for c in r_list.get("claims", [])
+                         if c.get("scheduler_id") == "h2:2000"
+                         and c.get("task_id") == "tC"), {})
+        check("script: renew_many syncs active claim resource fields",
+              r.get("ok") is True and r.get("renewed") == 1
+              and r.get("updated") == 1
+              and tC_claim.get("gpu_idx") == 1
+              and tC_claim.get("vram_mb") == 1200
+              and tC_claim.get("cpu_cores") == 3
+              and tC_claim.get("ram_mb") == 2500,
+              diag={"renew_many": r, "claim": tC_claim})
+
         # 2i. Inject a stale claim manually + GC.
         # stale = expires_at < now AND (no pid OR pid not alive)
         with open(os.path.join(td, "claims.json")) as f:
@@ -10213,7 +10418,12 @@ def test_phase3_3_local_windows_host_metrics():
     }
     line = _node_summary_line([n_with_extras])
     check("TUI line shows BOTH WSL and host RAM",
-          "1230MB(WSL)" in line and "17500MB(host)" in line, diag=line)
+          "1.20GB(WSL)" in line and "17.1GB(host)" in line
+          and "1230MB" not in line and "17500MB" not in line,
+          diag=line)
+    check("TUI line shows GPU memory/free memory in GB",
+          "GPU0=0.78GB/7.81GB" in line and "free=7.03GB" in line,
+          diag=line)
     check("TUI line shows BOTH NVML and Compute util",
           "10/88%util(nvml/compute)" in line, diag=line)
 
@@ -10228,6 +10438,9 @@ def test_phase3_3_local_windows_host_metrics():
     line2 = _node_summary_line([n_no_extras])
     check("TUI line omits (host) tag when no host_free_ram_mb",
           "(WSL)" not in line2 and "(host)" not in line2, diag=line2)
+    check("TUI remote line shows ram_free in GB",
+          "ram_free=97.7GB" in line2 and "100000MB" not in line2,
+          diag=line2)
     check("TUI line omits (nvml/compute) tag when no util_pct_compute",
           "nvml/compute" not in line2, diag=line2)
 
@@ -14699,10 +14912,12 @@ if __name__ == "__main__":
     test_cancel_never_becomes_failed()
     test_ram_placement_check()
     test_default_vram_not_inflated()
+    test_startup_oom_vram_peak_not_trusted()
     test_status_view_no_truncation()
+    test_display_units_owner_and_kill_actor()
     test_high_defaults_lower_before_placement()
     test_low_ram_estimate_raises_from_live_siblings()
-    test_probe_ram_budget_cap()
+    test_probe_ram_auto_detect_and_optional_cap()
     test_running_descendant_resources_counted()
     test_kill_uses_process_group_sigkill()
     test_launch_failed_node_fallback_and_notification_events()
@@ -14716,6 +14931,7 @@ if __name__ == "__main__":
     test_diagnose_mid_training_kill()
     test_find_resume_extension_filter()
     test_resume_checkpoint_node_affinity()
+    test_resume_checkpoint_launch_staging_to_remote()
     test_local_max_vram_per_task_dynamic()
     test_env_deploy_wrap_docker()
     test_env_spec_conda_parsing()

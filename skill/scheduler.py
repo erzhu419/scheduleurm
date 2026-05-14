@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Multi-resource scheduler across local (4060 8GB / 16c / 64GB) + jtl110gpu (2x 3080Ti 12GB / 12c / 200GB) + jtl110gpu2 (same).
+"""Multi-resource scheduler across local (4060 8GB / 16c / 64GB) + jtl110gpu
+(2x 3080Ti 12GB / 12c / auto-probed RAM) + jtl110gpu2 (same) + jtl110cpu/jtl110cpu2
+(Windows CPU-only / 128 physical cores / 512GB each).
 
 Resource model: each task declares cpu_cores, ram_mb, vram_mb (or vram=0 for CPU-only). Placement requires
 ALL three to fit on the chosen node + GPU. Per-task resource needs are auto-learned from history (peak
@@ -24,6 +26,7 @@ Subcommands:
 State lives in ~/.claude/scheduler/{queue.json, vram_history.json, logs/}. Inter-process safe via flock.
 """
 import argparse
+import base64
 import fcntl
 import hashlib
 import json
@@ -54,7 +57,8 @@ except Exception:
     env_deploy = None
 
 # ---------- node inventory ----------
-# cpu_cores / ram_mb are the SCHEDULABLE budget, not detected totals.
+# cpu_cores are the schedulable budget. ram_mb is an optional schedulable cap:
+# positive value = cap placement to that many MB; 0/unset = auto-detect MemTotal.
 # Local is WSL2: 16 physical cores / 32 logical threads. Use physical cores as
 # the default schedulable budget; only count hyperthreads if intentionally oversubscribing.
 # RAM headroom can be a fixed
@@ -70,18 +74,40 @@ NODES = {
     # comes from the RSS upward-tracking in _batch_check_running; this cap only catches
     # runaway scenarios (e.g. dozens of tasks declared cpu=1 ram=500MB but each really uses 4GB).
     # local=10 covers the observed steady-state of 8-9 GPU+CPU tasks with one slot of headroom;
-    # remote=None means no cap (200GB RAM, 12 cores schedulable, RAM headroom is the only bound).
+    # remote=None means no concurrency cap (12 cores schedulable, probed RAM headroom is the bound).
     # max_vram_per_task: None = auto-derive from probed GPU total_mb at runtime (set in probe_node).
     # Was hardcoded 4096 from AMD 610 era; after NVIDIA 4060 (8188MB) became the default GPU,
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
     "local":      {"host": None,         "cpu_cores": 16, "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
     # Remote 3080Ti nodes run many small RL jobs. Compute util often pins at 100%
     # with only ~10-20% VRAM used, so let the 1/3 VRAM line + CPU/RAM/claims decide.
-    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
+    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
     # Slurm may be installed on this small node, but the default policy is still
     # scheduleurm-managed local placement so one GPU can hold multiple small jobs.
     # Explicit task Slurm fields or per-node slurm_*_backend="slurm" still opt in.
-    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 200 * 1024, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
+    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
+    # Windows CPU-only box. It has 256 logical / 128 physical cores split across
+    # processor groups; WindowsBackend launches through a Python wrapper that
+    # periodically pins child worker processes to unique physical cores. GPU
+    # tasks never fit here because the probe reports gpus=[].
+    "jtl110cpu":  {"host": "tf290q6n.zjz-service.cn", "ssh_user": "erzhu419", "ssh_port": 22945,
+                   "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
+                   "os": "windows", "cpu_cores": 128, "ram_mb": 512 * 1024,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
+                   "windows_python": r"F:\python\python.exe",
+                   "windows_workspace_root": r"F:\\",
+                   "windows_scheduleurm_dir": r"F:\.scheduleurm",
+                   "windows_auto_pin": True, "windows_skip_ht_pair": True,
+                   "cpu_labor_node": True},
+    "jtl110cpu2": {"host": "tf290q6n.zjz-service.cn", "ssh_user": "erzhu419", "ssh_port": 23565,
+                   "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
+                   "os": "windows", "cpu_cores": 128, "ram_mb": 512 * 1024,
+                   "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
+                   "windows_python": r"F:\python\python.exe",
+                   "windows_workspace_root": r"F:\\",
+                   "windows_scheduleurm_dir": r"F:\.scheduleurm",
+                   "windows_auto_pin": True, "windows_skip_ht_pair": True,
+                   "cpu_labor_node": True},
 }
 
 STATE_DIR = Path.home() / ".claude" / "scheduler"
@@ -784,16 +810,35 @@ def main():
         sid = payload.get("scheduler_id")
         tids = set(payload.get("task_ids") or [])
         new_exp = payload.get("expires_at")
+        records = payload.get("records") or {}
+        if not isinstance(records, dict):
+            records = {}
         renewed = 0
+        updated = 0
         for c in fresh:
             if c.get("scheduler_id") == sid and c.get("task_id") in tids:
                 if new_exp:
                     c["expires_at"] = float(new_exp)
+                rec = records.get(str(c.get("task_id")))
+                if isinstance(rec, dict):
+                    for key in ("gpu_idx", "vram_mb", "cpu_cores", "ram_mb", "pid"):
+                        if key not in rec:
+                            continue
+                        val = rec.get(key)
+                        try:
+                            if key in ("gpu_idx", "pid"):
+                                c[key] = int(val) if val is not None else None
+                            else:
+                                c[key] = max(0, int(val))
+                        except Exception:
+                            pass
+                    updated += 1
                 renewed += 1
         data["claims"] = fresh
         data["intents"] = fresh_intents
         save_to_fd(fd, data)
         print(json.dumps({"ok": True, "renewed": renewed,
+                          "updated": updated,
                           "removed_stale": len(claims) - len(fresh),
                           "removed_stale_intents": len(intents) - len(fresh_intents)}))
     elif op == "gc":
@@ -1001,9 +1046,15 @@ class _ClaimManager:
         ever invoked.
         """
         info = NODES.get(node, {})
+        declared_ram = int(info.get("ram_mb") or 0)
+        probed_ram = int((node_state or {}).get("total_ram_mb") or 0)
+        if declared_ram and probed_ram:
+            ram_cap = min(declared_ram, probed_ram)
+        else:
+            ram_cap = probed_ram or declared_ram
         cap = {
             "cpu_cores": int(info.get("cpu_cores", 0)),
-            "ram_mb": int(info.get("ram_mb", 0)),
+            "ram_mb": ram_cap,
             "gpu_vram_mb": {},
             # Policy fields for cross-scheduler enforcement.
             "max_vram_per_task": info.get("max_vram_per_task"),
@@ -1105,7 +1156,7 @@ class _ClaimManager:
         return bool(result.get("ok"))
 
     @classmethod
-    def renew_many(cls, node: str, task_ids: list) -> int:
+    def renew_many(cls, node: str, task_ids: list, records: Optional[dict] = None) -> int:
         """Bulk renew all our claims on `node` matching any of `task_ids`.
         Returns count renewed; -1 on error; 0 when claims disabled. Used by
         the watcher every cycle so live claims don't expire."""
@@ -1118,6 +1169,7 @@ class _ClaimManager:
             "scheduler_id": cls.scheduler_id(),
             "task_ids": list(task_ids),
             "expires_at": new_exp,
+            "records": records or {},
         })
         if result.get("ok"):
             return int(result.get("renewed", 0))
@@ -1190,6 +1242,27 @@ def _clear_claim_intent_markers(task: dict) -> None:
     task.pop("claim_intent_node", None)
     task.pop("claim_intent_nodes", None)
     task.pop("claim_intent_at", None)
+
+
+def _claim_resource_record_for_task(task: dict) -> dict:
+    """Current claim budget for a running task.
+
+    Claims are the shared scheduler budget, not a one-time launch receipt. CPU/RAM
+    estimates can change after launch as probes learn real usage, and active claims
+    must follow or they will block/allow placement on stale numbers.
+    """
+    pids = task.get("remote_pids") or []
+    current_vram = int(task.get("current_vram_mb") or 0)
+    est_vram = int(task.get("est_vram_mb") or 0)
+    current_ram = int(task.get("current_ram_mb") or 0)
+    est_ram = int(task.get("ram_mb") or DEFAULT_RAM_MB)
+    return {
+        "gpu_idx": task.get("gpu_idx"),
+        "vram_mb": max(0, est_vram, current_vram),
+        "cpu_cores": max(0, int(task.get("cpu_cores") or DEFAULT_CPU_CORES)),
+        "ram_mb": max(0, est_ram, current_ram),
+        "pid": int(pids[0]) if pids else None,
+    }
 
 
 def _release_task_claims_and_intents(task: dict, extra_nodes=None,
@@ -1478,6 +1551,20 @@ def _fetch_log_result_lines(task: dict, max_lines: int = 50) -> list:
             if r.returncode not in (0, 1):
                 return []
             return [l for l in (r.stdout or "").splitlines() if _LOG_RESULT_RE.search(l)]
+        elif node and _node_is_windows(node):
+            win_path = _windows_path_for_task(task, log_path)
+            ps = rf'''
+$path = {_ps_quote(win_path)}
+if (-not (Test-Path -LiteralPath $path)) {{ exit 0 }}
+Get-Content -LiteralPath $path -ErrorAction SilentlyContinue |
+  Select-String -Pattern {_ps_quote(grep_re)} |
+  Select-Object -First {int(max_lines)} |
+  ForEach-Object {{ $_.Line }}
+'''
+            rc, out, _ = _run_windows_ps(node, ps, timeout=15, check=False)
+            if rc != 0 or not out:
+                return []
+            return [l for l in out.splitlines() if _LOG_RESULT_RE.search(l)]
         elif node:
             rc, out, _ = run_on(
                 node,
@@ -1576,6 +1663,40 @@ def history_get(sig):
     if isinstance(raw, int): return {"vram_mb": raw}
     return raw
 
+def _task_duration_s(task):
+    if task.get("started_at") and task.get("finished_at"):
+        return max(0, int(task["finished_at"] - task["started_at"]))
+    return 0
+
+def _task_has_progress_marker(task):
+    """True once a task has made real train/eval progress, not just initialized."""
+    if task.get("runtime_current_unit") or task.get("progress_ratio"):
+        return True
+    line = task.get("last_progress_line") or ""
+    return bool(re.search(r"\bIter\s+\d+\b|\[\s*\d+\s*/\s*\d+\]|Epoch\s+\d+|%\|", line))
+
+def _is_oom_like_task(task):
+    if task.get("failure_category") == "OOM":
+        return True
+    text = f"{task.get('last_block_reason') or ''}\n{(task.get('_diagnosis') or {}).get('reason') or ''}\n{(task.get('_diagnosis') or {}).get('tail') or ''}".lower()
+    return "out of memory" in text or "resource_exhausted" in text
+
+def _untrusted_startup_oom_sample(task, duration_s=None):
+    """Short OOM before progress is usually JAX/CUDA prealloc failure, not steady-state need.
+
+    Example: a JAX task without XLA_PYTHON_CLIENT_PREALLOCATE=false can briefly grab most
+    of a 12GB card during graph instantiation, fail after ~50s, and leave a 9GB peak. Using
+    that as future est_vram pins otherwise small RE-SAC tasks out of the queue.
+    """
+    if task.get("status") != "failed":
+        return False
+    if not _is_oom_like_task(task):
+        return False
+    if _task_has_progress_marker(task):
+        return False
+    duration_s = _task_duration_s(task) if duration_s is None else duration_s
+    return 0 < duration_s <= 5 * 60
+
 def _effective_est_vram(task, state, history):
     """Best-effort VRAM estimate for a task — used when own signature has no history yet.
     Priority cascade (most specific → most general):
@@ -1607,7 +1728,7 @@ def _effective_est_vram(task, state, history):
         td = (t.get("description") or "").split(":")[0].strip().lower()
         if desc_key and td == desc_key:
             peak = t.get("peak_vram_mb", 0)
-            if peak > 100:
+            if peak > 100 and not _untrusted_startup_oom_sample(t):
                 candidates.append(int(peak))
     # Step 3: same top-2 prefix history
     if not candidates and sig:
@@ -1627,7 +1748,7 @@ def _effective_est_vram(task, state, history):
             if t.get("id") == self_id: continue
             if t.get("project") != project: continue
             peak = t.get("peak_vram_mb", 0)
-            if peak > 100:
+            if peak > 100 and not _untrusted_startup_oom_sample(t):
                 candidates.append(int(peak))
     # Step 5: project-level history (any sig under same project)
     if not candidates and project:
@@ -1817,8 +1938,180 @@ def history_record(sig, peak_vram_mb=0, peak_ram_mb=0, cpu_cores=0, duration_s=0
     save_history(h)
 
 # ---------- ssh helpers ----------
+def _node_is_windows(node: str) -> bool:
+    return str((NODES.get(node) or {}).get("os") or "").lower().startswith("win")
+
+
+def _ssh_base_args(node: str) -> list:
+    """Build the ssh argv prefix for a node.
+
+    Existing GPU nodes use ~/.ssh/config aliases (`host=jtl110gpu`). Windows
+    CPU nodes can instead declare host/user/port directly so they do not need
+    an alias entry. BatchMode stays on: the watcher must be unattended, so
+    jtl110cpu needs key-based SSH even if the manual recipe once used a
+    password.
+    """
+    info = NODES[node]
+    host = info["host"]
+    args = [
+        "ssh",
+        "-o", "ConnectTimeout=5",
+        "-o", "ServerAliveInterval=5",
+        "-o", "ServerAliveCountMax=3",
+        "-o", "BatchMode=yes",
+    ]
+    if info.get("ssh_identity"):
+        args.extend(["-i", os.path.expanduser(str(info["ssh_identity"]))])
+    if info.get("ssh_port"):
+        args.extend(["-p", str(info["ssh_port"])])
+    user = info.get("ssh_user")
+    target = f"{user}@{host}" if user and "@" not in str(host) else str(host)
+    args.append(target)
+    return args
+
+
+def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True):
+    """Run a PowerShell script on a Windows node over OpenSSH."""
+    encoded = base64.b64encode((ps_script or "").encode("utf-16le")).decode("ascii")
+    proc = subprocess.run(
+        _ssh_base_args(node) + [
+            "powershell",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy", "Bypass",
+            "-EncodedCommand", encoded,
+        ],
+        capture_output=True, timeout=timeout,
+    )
+    stdout = (proc.stdout or b"").decode("utf-8", "replace")
+    stderr = (proc.stderr or b"").decode("utf-8", "replace")
+    if check and proc.returncode != 0:
+        raise RuntimeError(f"[{node}] powershell failed (rc={proc.returncode}): {stderr.strip()[:300]}")
+    return proc.returncode, stdout, stderr
+
+
+def _windows_probe_error_hint(node: str, msg: str) -> str:
+    text = (msg or "").strip()
+    if "Permission denied" in text or "publickey,password" in text:
+        ident = (NODES.get(node, {}) or {}).get("ssh_identity") or "~/.ssh/id_ed25519"
+        return (f"{text[:180]} | SSH key auth failed for Windows node {node}; "
+                f"install {os.path.expanduser(str(ident))}.pub on the host. "
+                "Do not store the password in scheduler.py.")
+    if "timed out" in text.lower() or "TimeoutExpired" in text:
+        return (f"{text[:180]} | Windows probe timed out; check SSH reachability, "
+                "PowerShell startup, and host CPU pressure.")
+    return text[:300]
+
+
+def _windows_tail_ps(path: str, max_bytes: int = 4096) -> str:
+    """PowerShell snippet that prints the last max_bytes of a text log.
+
+    Use FileShare.ReadWrite because scheduler-owned logs are written by a
+    still-running wrapper process. Get-Content can block or fail on those.
+    """
+    max_bytes = max(1, int(max_bytes))
+    return rf'''
+$p = {_ps_quote(path)}
+if (Test-Path -LiteralPath $p) {{
+  $fs = [IO.File]::Open($p, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+  try {{
+    $len = [int64]$fs.Length
+    $start = [Math]::Max([int64]0, $len - {max_bytes})
+    [void]$fs.Seek($start, [IO.SeekOrigin]::Begin)
+    $buf = New-Object byte[] ([int]($len - $start))
+    $read = $fs.Read($buf, 0, $buf.Length)
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    [Text.Encoding]::UTF8.GetString($buf, 0, $read)
+  }} finally {{
+    $fs.Close()
+  }}
+}}
+'''
+
+
+def _windows_path_for_task(task: dict, path: str) -> str:
+    """Map an absolute or cwd-relative task path onto the Windows node layout."""
+    node = task.get("node")
+    if not node or not _node_is_windows(node) or not path:
+        return path
+    text = str(path).strip().strip('"').strip("'")
+    if re.match(r"^[A-Za-z]:[\\/]", text) or text.startswith("\\\\"):
+        return text.replace("/", "\\")
+    if text.startswith("/home/") or text.startswith(str(Path.home())):
+        return _windows_path_for_node(node, text)
+    cwd = task.get("cwd") or ""
+    if cwd:
+        base = _windows_path_for_node(node, cwd).rstrip("\\/")
+        return base + "\\" + text.replace("/", "\\")
+    return text.replace("/", "\\")
+
+
+def _fetch_windows_text_tail(task: dict, path: str, max_bytes: int = 4096) -> tuple[str, int]:
+    node = task.get("node")
+    if not node:
+        return ("", 0)
+    win_path = _windows_path_for_task(task, path)
+    ps = _windows_tail_ps(win_path, max_bytes=max_bytes) + rf'''
+Write-Output '___SZ___'
+if (Test-Path -LiteralPath {_ps_quote(win_path)}) {{
+  Write-Output ([int64](Get-Item -LiteralPath {_ps_quote(win_path)}).Length)
+}} else {{
+  Write-Output 0
+}}
+'''
+    rc, out, _ = _run_windows_ps(node, ps, timeout=10, check=False)
+    if rc != 0 or not out:
+        return ("", 0)
+    if "___SZ___" in out:
+        body, _, sz_str = out.rpartition("___SZ___")
+        try:
+            return body, int((sz_str or "0").strip().splitlines()[-1])
+        except Exception:
+            return body, 0
+    return out, 0
+
+
+def _scan_windows_log_for_patterns(task: dict, patterns: list[str]) -> list[str]:
+    node = task.get("node")
+    log_path = task.get("log_path")
+    if not node or not log_path:
+        return []
+    win_path = _windows_path_for_task(task, log_path)
+    pats_b64 = base64.b64encode(json.dumps(patterns).encode("utf-8")).decode("ascii")
+    ps = rf'''
+$path = {_ps_quote(win_path)}
+if (-not (Test-Path -LiteralPath $path)) {{ exit 0 }}
+$patterns = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String({_ps_quote(pats_b64)})) | ConvertFrom-Json
+$hits = @()
+foreach ($pat in $patterns) {{
+  if (Select-String -LiteralPath $path -SimpleMatch -Pattern $pat -Quiet -ErrorAction SilentlyContinue) {{
+    $hits += [string]$pat
+  }}
+}}
+$hits | ConvertTo-Json -Compress
+'''
+    rc, out, _ = _run_windows_ps(node, ps, timeout=15, check=False)
+    if rc != 0 or not (out or "").strip():
+        return []
+    try:
+        data = json.loads(out.strip().splitlines()[-1])
+        if isinstance(data, str):
+            return [data]
+        if isinstance(data, list):
+            return [str(x) for x in data]
+    except Exception:
+        return []
+    return []
+
+
 def run_on(node, shell_cmd, timeout=15, check=True):
-    """Run shell_cmd on a node. Returns (returncode, stdout, stderr)."""
+    """Run a bash shell_cmd on a Unix-like node. Returns (returncode, stdout, stderr).
+
+    Remote ssh argv is built by _ssh_base_args(), including
+    ServerAliveInterval=5 and ServerAliveCountMax=3 for half-dead sockets.
+    """
+    if _node_is_windows(node):
+        raise RuntimeError(f"run_on() bash path called for Windows node {node}; use _run_windows_ps")
     host = NODES[node]["host"]
     if host is None:
         proc = subprocess.run(["bash", "-lc", shell_cmd], capture_output=True, timeout=timeout, text=True)
@@ -1828,12 +2121,7 @@ def run_on(node, shell_cmd, timeout=15, check=True):
         # = 15s before ssh declares dead; under our 15s default `timeout=`, this means a
         # broken master surfaces as ssh failure not subprocess timeout.
         proc = subprocess.run(
-            ["ssh",
-             "-o", "ConnectTimeout=5",
-             "-o", "ServerAliveInterval=5",
-             "-o", "ServerAliveCountMax=3",
-             "-o", "BatchMode=yes",
-             host, f"bash -lc {shlex.quote(shell_cmd)}"],
+            _ssh_base_args(node) + [f"bash -lc {shlex.quote(shell_cmd)}"],
             capture_output=True, timeout=timeout, text=True,
         )
     if check and proc.returncode != 0:
@@ -1905,7 +2193,117 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
     return out
 
 
+def _probe_windows_node(name: str) -> dict:
+    """Probe a Windows CPU-only node.
+
+    Windows has no /proc/loadavg and jtl110cpu has no GPU. Prefer non-admin
+    .NET/Get-Counter probes because some Windows SSH users cannot access WMI/CIM.
+    The load percentage is translated into the configured schedulable physical-core
+    budget (128), not whatever logical processor count the current group exposes.
+    """
+    script = r'''
+$ErrorActionPreference = "Continue"
+try {
+  Add-Type -AssemblyName Microsoft.VisualBasic | Out-Null
+  $ci = New-Object Microsoft.VisualBasic.Devices.ComputerInfo
+  $free = [int][math]::Round($ci.AvailablePhysicalMemory / 1MB)
+  $total = [int][math]::Round($ci.TotalPhysicalMemory / 1MB)
+  $logical = [int][System.Environment]::ProcessorCount
+  $loadPct = 0
+  function PythonCpuMap {
+    $m = @{}
+    foreach ($name in @('python','python3')) {
+      foreach ($p in [System.Diagnostics.Process]::GetProcessesByName($name)) {
+        try { $m[[int]$p.Id] = [double]$p.TotalProcessorTime.TotalSeconds } catch {}
+        try { $p.Dispose() } catch {}
+      }
+    }
+    return $m
+  }
+  try {
+    $m0 = PythonCpuMap
+    Start-Sleep -Milliseconds 700
+    $m1 = PythonCpuMap
+    $delta = 0.0
+    foreach ($k in $m1.Keys) {
+      if ($m0.ContainsKey($k)) {
+        $d = [double]$m1[$k] - [double]$m0[$k]
+        if ($d -gt 0) { $delta += $d }
+      }
+    }
+    $denom = [math]::Max(1, $logical) * 0.7
+    $loadPct = [int][math]::Round([math]::Max(0, [math]::Min(100, 100.0 * $delta / $denom)))
+  } catch { $loadPct = 0 }
+  if ($loadPct -le 0) {
+    try {
+      $sample = (Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue
+      $loadPct = [int][math]::Round($sample)
+    } catch { $loadPct = 0 }
+  }
+} catch {
+  $ErrorActionPreference = "Stop"
+  $os = Get-CimInstance Win32_OperatingSystem
+  $cs = Get-CimInstance Win32_ComputerSystem
+  $cpu = Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average
+  $free = [int][math]::Round($os.FreePhysicalMemory / 1024)
+  $total = [int][math]::Round($os.TotalVisibleMemorySize / 1024)
+  $logical = [int]$cs.NumberOfLogicalProcessors
+  $loadPct = 0
+  if ($cpu.Average -ne $null) { $loadPct = [int][math]::Round($cpu.Average) }
+}
+Write-Output "$free|$total|$logical|$loadPct"
+'''
+    try:
+        rc, out, err = _run_windows_ps(name, script, timeout=12, check=False)
+        if rc != 0:
+            return {"name": name, "alive": False,
+                    "error": _windows_probe_error_hint(name, err or out or "powershell probe failed")}
+        lines = [ln.strip() for ln in (out or "").splitlines()]
+        line = next(
+            (ln for ln in reversed(lines)
+             if re.match(r"^\d+(\.\d+)?\|\d+(\.\d+)?\|\d+(\.\d+)?\|\d+(\.\d+)?$", ln)),
+            "",
+        )
+        if not line:
+            raise ValueError((out or "no probe output").strip()[:120])
+        free_s, total_s, logical_s, load_s = line.split("|")[:4]
+        free_ram = int(float(free_s))
+        probed_total_ram = int(float(total_s))
+        logical_cores = int(float(logical_s))
+        load_pct = max(0.0, min(100.0, float(load_s)))
+    except Exception as e:
+        return {"name": name, "alive": False,
+                "error": _windows_probe_error_hint(name, str(e))}
+
+    info = NODES.get(name, {})
+    declared_ram = int(info.get("ram_mb") or 0)
+    if declared_ram and probed_total_ram:
+        total_ram = min(declared_ram, probed_total_ram)
+    else:
+        total_ram = declared_ram or probed_total_ram or max(1, free_ram)
+    sched_free_ram = min(free_ram, total_ram)
+    total_cpu = int(info.get("cpu_cores") or logical_cores or 1)
+    used_cpu = int(round(total_cpu * load_pct / 100.0))
+    free_cpu = max(0, total_cpu - used_cpu)
+    return {
+        "name": name,
+        "alive": True,
+        "gpus": [],
+        "free_ram_mb": sched_free_ram,
+        "actual_free_ram_mb": free_ram,
+        "total_ram_mb": total_ram,
+        "free_cpu": free_cpu,
+        "total_cpu": total_cpu,
+        "loadavg": float(used_cpu),
+        "cpu_load_pct": int(load_pct),
+        "cores": logical_cores,
+        "os": "windows",
+    }
+
+
 def probe_node(name):
+    if _node_is_windows(name):
+        return _probe_windows_node(name)
     # /proc/meminfo is locale-independent (free -m's "Mem:" header is localized on some hosts).
     # util_pct is averaged over 3 samples (initial + 2 follow-ups, 100ms apart) because
     # nvidia-smi's `utilization.gpu` is a single-instant "any-kernel-active%" reading that
@@ -1985,9 +2383,8 @@ def probe_node(name):
         total_ram = declared
     else:
         total_ram = free_ram + 1
-    # cpu_cores / ram_mb in NODES are schedulable budgets, not necessarily physical totals.
-    # If a remote box has more physical RAM than the configured budget, do not let MemAvailable
-    # inflate placement capacity past that budget.
+    # Positive ram_mb in NODES is an optional schedulable cap, not necessarily
+    # the physical total. ram_mb=0/unset means use the probe directly.
     sched_free_ram = min(free_ram, total_ram) if total_ram else free_ram
     total_cpu = info.get("cpu_cores", cores) or cores or 1
     free_cpu = max(0, total_cpu - int(round(loadavg)))
@@ -2144,6 +2541,85 @@ def _set_current_usage(task, vram_mb=0, ram_mb=0, pcpu=0.0):
     task["current_vram_mb"] = int(vram_mb or 0)
     task["current_ram_mb"] = int(ram_mb or 0)
     task["current_pcpu"] = float(pcpu or 0.0)
+
+
+def _format_mem_gb(mb, *, approx: bool = False) -> str:
+    """Format a memory quantity stored in MB as a compact GB string."""
+    try:
+        val = float(mb or 0) / 1024.0
+    except Exception:
+        val = 0.0
+    digits = 2 if abs(val) < 10 else 1
+    prefix = "~" if approx else ""
+    return f"{prefix}{val:.{digits}f}GB"
+
+
+def _local_user() -> str:
+    try:
+        import getpass as _getpass
+        return _getpass.getuser()
+    except Exception:
+        return os.environ.get("USER") or "unknown"
+
+
+def _local_host_short() -> str:
+    try:
+        import socket as _socket
+        return (_socket.gethostname() or "host").split(".", 1)[0]
+    except Exception:
+        return "host"
+
+
+def _actor_info(action: str = "", reason: str = "") -> dict:
+    try:
+        scheduler_id = _ClaimManager.scheduler_id()
+    except Exception:
+        scheduler_id = ""
+    user = _local_user()
+    host = _local_host_short()
+    return {
+        "user": user,
+        "host": host,
+        "label": f"{user}@{host}",
+        "scheduler_id": scheduler_id,
+        "action": action,
+        "reason": str(reason or "")[:500],
+        "ts": time.time(),
+    }
+
+
+def _record_task_kill_actor(task: dict, action: str, reason: str) -> dict:
+    actor = _actor_info(action, reason)
+    task["last_killed_at"] = actor["ts"]
+    task["last_killed_by"] = actor["label"]
+    task["last_kill_actor"] = actor
+    task["last_kill_action"] = action
+    task["last_kill_reason"] = str(reason or "")[:500]
+    return actor
+
+
+def _format_task_owner(task: dict) -> str:
+    """Human-facing owner/source label.
+
+    Same Unix account can hide multiple real people on shared boxes. When a
+    task was adopted rather than launched by this scheduler, mark it explicitly
+    as external? even if the OS user is the same.
+    """
+    user = (task.get("submitted_by") or task.get("process_owner")
+            or task.get("owner") or _local_user())
+    origin = task.get("origin") or ""
+    sid = task.get("scheduler_id") or task.get("submitted_scheduler_id") or ""
+    try:
+        own_sid = _ClaimManager.scheduler_id()
+    except Exception:
+        own_sid = ""
+    if task.get("auto_adopted") or origin in ("external", "manual-adopt"):
+        tag = "external?" if origin != "manual-adopt" else "manual"
+    elif sid and own_sid and sid != own_sid:
+        tag = "other-sched?"
+    else:
+        tag = "this"
+    return f"{user}:{tag}"
 
 
 def _kill_task_processes(task, timeout=15):
@@ -2405,6 +2881,8 @@ def _fetch_log_tail(task) -> tuple[str, int]:
             with open(lp, "rb") as f:
                 f.seek(max(0, sz - 4096))
                 return (f.read().decode("utf-8", errors="replace"), sz)
+        elif node and _node_is_windows(node):
+            return _fetch_windows_text_tail(task, log_path, max_bytes=4096)
         elif node:
             rc, out, _ = run_on(
                 node,
@@ -2475,6 +2953,8 @@ def _scan_full_log_for_success(task) -> list:
                     if len(seen) == len(SUCCESS_PATTERNS):
                         break  # all patterns found; stop early
             return list(seen)
+        elif node and _node_is_windows(node):
+            return _scan_windows_log_for_patterns(task, SUCCESS_PATTERNS)
         elif node:
             # Remote: one grep -F over ssh. -F = literal strings (no regex
             # surprises in patterns like "Saved: " or "[Done]"). -m 1 stops
@@ -2551,6 +3031,8 @@ def _diagnose_terminal(task):
                     with open(lp, "rb") as f:
                         f.seek(max(0, log_size - 4096))
                         tail_text = f.read().decode("utf-8", errors="replace")
+            elif node and _node_is_windows(node):
+                tail_text, log_size = _fetch_windows_text_tail(task, log_path, max_bytes=4096)
             elif node:
                 rc, out, _ = run_on(node,
                     f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null; echo '___SZ___'; wc -c < {shlex.quote(log_path)} 2>/dev/null",
@@ -2589,6 +3071,8 @@ def _diagnose_terminal(task):
                         with open(rp, "rb") as f:
                             f.seek(max(0, log_size - 4096))
                             tail_text = f.read().decode("utf-8", errors="replace")
+                elif node and _node_is_windows(node):
+                    tail_text, log_size = _fetch_windows_text_tail(task, real_log_path, max_bytes=4096)
                 elif node:
                     rc, out, _ = run_on(node,
                         f"tail -c 4096 {shlex.quote(real_log_path)} 2>/dev/null; echo '___SZ___'; wc -c < {shlex.quote(real_log_path)} 2>/dev/null",
@@ -2651,15 +3135,16 @@ def _diagnose_terminal(task):
         try:
             log_path = task.get("log_path") or ""
             log_dir = log_path.rsplit("/", 1)[0] if "/" in log_path else "/tmp"
-            rc_df, out_df, _ = run_on(
-                task.get("node") or "local",
-                f"df -P {shlex.quote(log_dir)} | tail -n +2 | awk '{{print $5}}' | tr -d %",
-                timeout=5, check=False,
-            )
-            if rc_df == 0:
-                pct = int((out_df.strip() or "0").splitlines()[-1])
-                if pct >= 95:
-                    reasons.append(f"DISK_FULL: {log_dir} at {pct}% on {task.get('node')}")
+            if not _node_is_windows(task.get("node") or ""):
+                rc_df, out_df, _ = run_on(
+                    task.get("node") or "local",
+                    f"df -P {shlex.quote(log_dir)} | tail -n +2 | awk '{{print $5}}' | tr -d %",
+                    timeout=5, check=False,
+                )
+                if rc_df == 0:
+                    pct = int((out_df.strip() or "0").splitlines()[-1])
+                    if pct >= 95:
+                        reasons.append(f"DISK_FULL: {log_dir} at {pct}% on {task.get('node')}")
         except Exception:
             pass  # diagnostic only; don't fail diagnose because probe couldn't reach node
     else:
@@ -3043,6 +3528,10 @@ def _requeue_after_crash(parent, state):
         # diagnosis will skip scheduler logs and preemption will treat it as external.
         "adopted": False,
         "auto_adopted": False,
+        "origin": "scheduleurm",
+        "submitted_by": _local_user(),
+        "submitted_host": _local_host_short(),
+        "scheduler_id": _ClaimManager.scheduler_id(),
         "process_group": None,
         "_diagnosis": None,
         "result_artifacts": [],
@@ -3055,6 +3544,9 @@ def _requeue_after_crash(parent, state):
     })
     _clear_live_eta_fields(new_task, clear_runtime_projection=True)
     for k in ("requeued_as", "cancelled_at", "cancelled_by_user", "cancel_reason",
+              "cancelled_by", "cancel_actor",
+              "last_killed_at", "last_killed_by", "last_kill_actor",
+              "last_kill_action", "last_kill_reason",
               "claim_intent_node", "claim_intent_nodes", "claim_intent_at",
               "probe_unknown_since", "last_probe_unknown_at", "probe_unknown_count",
               "last_probe_unknown_duration_s", "last_probe_unknown_count",
@@ -3209,14 +3701,25 @@ def _batch_check_running(state):
             duration_s = 0
             if t.get("started_at") and t.get("finished_at"):
                 duration_s = max(0, int(t["finished_at"] - t["started_at"]))
+            peak_vram_for_history = t.get("peak_vram_mb", 0)
+            peak_ram_for_history = t.get("peak_ram_mb", 0)
+            duration_for_history = duration_s if t.get("status") == "done" else 0
+            if _untrusted_startup_oom_sample(t, duration_s):
+                t["history_skipped_reason"] = (
+                    "startup OOM before progress; peak likely JAX/CUDA preallocation, "
+                    "not steady-state resource need"
+                )
+                peak_vram_for_history = 0
+                peak_ram_for_history = 0
             history_record(
                 t.get("signature"),
-                peak_vram_mb=t.get("peak_vram_mb", 0),
-                peak_ram_mb=t.get("peak_ram_mb", 0),
+                peak_vram_mb=peak_vram_for_history,
+                peak_ram_mb=peak_ram_for_history,
                 cpu_cores=t.get("cpu_cores", 0),
-                duration_s=duration_s,
+                duration_s=duration_for_history,
             )
-            runtime_history_record(t, duration_s=duration_s)
+            if t.get("status") == "done":
+                runtime_history_record(t, duration_s=duration_s)
             continue
         # alive: fold deltas, upward-track ram_mb / cpu_cores estimates
         _remember_last_placement(t)
@@ -3365,6 +3868,17 @@ def _refresh_eta_from_logs(state):
 
     def _probe(node):
         entries = by_node[node]
+        if _node_is_windows(node):
+            parts = []
+            for (t, log_path) in entries:
+                tid = t["id"]
+                parts.append(f"Write-Output {_ps_quote(f'===ETA_LOG_{tid}===')}")
+                parts.append(_windows_tail_ps(_windows_path_for_task(t, log_path), max_bytes=4096))
+            try:
+                rc, out, _ = _run_windows_ps(node, "\n".join(parts), timeout=30, check=False)
+                return out if rc == 0 else None
+            except Exception:
+                return None
         # Build a single ssh cmd that tails each task's log with a marker separator.
         # `tail -c 4096` returns at most 4KB which is plenty for the tqdm/epoch
         # patterns we need. `2>/dev/null` swallows missing-log errors. The trailing
@@ -3863,7 +4377,7 @@ def pick_placement(task, nodes):
     Also consults pending escalations: if THIS signature has a pending ENV_MISSING/PYTHON_IMPORT
     escalation on a node, that node is excluded from candidates here so we don't keep redispatching
     the task to a node we already know can't run it. /scheduler-heal resolves the escalation when
-    the env is fixed, freeing that node again."""
+        the env is fixed, freeing that node again."""
     cpu_only = task.get("est_vram_mb", DEFAULT_VRAM_MB) <= 0
     preferred = task.get("preferred_node")
     require = task.get("require_node")  # HARD pin — never falls back
@@ -3887,6 +4401,8 @@ def pick_placement(task, nodes):
     def _candidates_for_node(n):
         """Return list of (score, name, gpu_idx) candidates this node can offer (may be empty)."""
         if not n["alive"]: return []
+        if _node_is_windows(n["name"]) and not cpu_only:
+            return []
         # Phase 2.3 P1 fix: slurm-managed nodes defer to slurm's own queue — no local
         # capacity check. Without this, login nodes with no GPU (probe gpus=[]) or busy
         # nodes never emit a candidate and the task stays queued in scheduleurm forever,
@@ -3923,7 +4439,9 @@ def pick_placement(task, nodes):
         if not ok: return []
         out = []
         if cpu_only:
-            score = (0, -n["free_cpu"], -n["free_ram_mb"])
+            node_info = NODES.get(n["name"], {})
+            cpu_labor_bonus = -1 if node_info.get("cpu_labor_node") else 0
+            score = (cpu_labor_bonus, -n["free_cpu"], -n["free_ram_mb"])
             out.append((score, n["name"], None))
         else:
             for g in n["gpus"]:
@@ -4030,6 +4548,11 @@ def precheck_git(task):
     if NODES[task["node"]]["host"] is None:
         # Local node — no remote sync to verify
         return True, "; ".join(warnings) or "ok"
+    if _node_is_windows(task["node"]):
+        warnings.append(
+            f"warn: git precheck skipped on Windows node {task['node']} "
+            "(path mapping / git availability is project-specific)")
+        return True, "; ".join(warnings) or "ok"
     try:
         rc, out, _ = run_on(task["node"], f"git -C {shlex.quote(repo)} rev-parse HEAD", timeout=10, check=False)
         if rc != 0:
@@ -4104,6 +4627,48 @@ def _find_resume_on_node(task: dict, node: str) -> Optional[dict]:
     ckpt_dir = task.get("ckpt_dir")
     if not ckpt_dir:
         return None
+    if _node_is_windows(node):
+        win_dir = _windows_path_for_node(node, ckpt_dir)
+        pattern = task.get("ckpt_glob", "*") or "*"
+        ext_list = ",".join(CKPT_EXTS)
+        safe_pat = RESUME_SAFE_NAME_RE.pattern
+        unsafe_pat = RESUME_UNSAFE_NAME_RE.pattern
+        explicit = "1" if pattern != "*" else "0"
+        ps = rf'''
+$dir = {_ps_quote(win_dir)}
+$pattern = {_ps_quote(pattern)}
+$explicit = ({_ps_quote(explicit)} -eq '1')
+$exts = ({_ps_quote(ext_list)}).Split(',')
+$safe = {_ps_quote(safe_pat)}
+$unsafe = {_ps_quote(unsafe_pat)}
+if (-not (Test-Path -LiteralPath $dir)) {{ exit 0 }}
+$files = Get-ChildItem -LiteralPath $dir -File -Filter $pattern -ErrorAction SilentlyContinue | Where-Object {{
+  $ext = $_.Extension.TrimStart('.').ToLowerInvariant()
+  if ($exts -notcontains $ext) {{ return $false }}
+  if ($explicit) {{ return $true }}
+  if ($_.Name -match $unsafe) {{ return $false }}
+  return ($_.Name -match $safe)
+}} | Sort-Object LastWriteTimeUtc -Descending
+if ($files -and $files.Count -gt 0) {{
+  $f = $files[0]
+  [pscustomobject]@{{ path=$f.FullName; mtime=([DateTimeOffset]$f.LastWriteTimeUtc).ToUnixTimeSeconds(); size=$f.Length }} | ConvertTo-Json -Compress
+}}
+'''
+        try:
+            rc, out, err = _run_windows_ps(node, ps, timeout=10, check=False)
+        except Exception as e:
+            raise RuntimeError(str(e))
+        if rc != 0:
+            raise RuntimeError((err or out or f"rc={rc}").strip()[:300])
+        out = out.strip()
+        if not out:
+            return None
+        try:
+            data = json.loads(out.splitlines()[-1])
+        except Exception as e:
+            raise RuntimeError(f"bad Windows checkpoint scan output: {e}")
+        data["node"] = node
+        return data
     pattern = task.get("ckpt_glob", "*") or "*"
     explicit_glob = pattern != "*"
     script = r'''
@@ -4513,6 +5078,506 @@ class Backend:
         raise NotImplementedError
 
 
+def _ps_quote(s: str) -> str:
+    return "'" + str(s).replace("'", "''") + "'"
+
+
+def _windows_path_for_node(node: str, path: str) -> str:
+    r"""Map common local Linux workspace paths to jtl110cpu's Windows layout.
+
+    The manual jtl110cpu workflow used F:\<project>. Keep this mapping
+    conservative and transparent; callers can always submit an explicit
+    Windows path (`F:\foo`) and it will be left untouched.
+    """
+    if not _node_is_windows(node) or not path:
+        return path
+    text = str(path)
+    if re.match(r"^[A-Za-z]:[\\/]", text) or text.startswith("\\\\"):
+        return text.replace("/", "\\")
+    norm = os.path.normpath(text)
+    root = (NODES.get(node, {}) or {}).get("windows_workspace_root") or r"F:\\"
+    root = root.rstrip("\\/") + "\\"
+    prefixes = [
+        str(Path.home() / "mine_code"),
+        str(Path.home()),
+        "/home/erzhu419/mine_code",
+        "/home/erzhu419",
+    ]
+    for pref in prefixes:
+        pref = os.path.normpath(pref)
+        try:
+            if os.path.commonpath([norm, pref]) != pref:
+                continue
+        except Exception:
+            continue
+        rel = os.path.relpath(norm, pref)
+        parts = rel.split(os.sep)
+        if not parts or parts[0] in (".", ".."):
+            continue
+        # /home/u/mine_code/project/subdir -> F:\project\subdir
+        return root + "\\".join(parts)
+    return text.replace("/", "\\")
+
+
+def _windows_rewrite_token(node: str, token: str) -> str:
+    if not token:
+        return token
+    # Python executable paths are almost never portable from Linux/WSL to the
+    # Windows CPU node. Use the node's configured Python for command leaders.
+    base = os.path.basename(token.replace("\\", "/")).lower()
+    if base in ("python", "python.exe", "python3", "python3.exe") or base.startswith("python3."):
+        return (NODES.get(node, {}) or {}).get("windows_python") or token
+    if token.startswith("/home/") or token.startswith(str(Path.home())):
+        return _windows_path_for_node(node, token)
+    return token
+
+
+def _windows_prepare_command(task: dict) -> dict:
+    """Return a wrapper payload command for WindowsBackend.
+
+    Simple commands are passed as argv so Windows quoting is handled by
+    subprocess. Shell-shaped commands fall back to `cmd /c` after path
+    translation; this keeps wrappers like `python eval.py ...` robust while
+    still allowing advanced user commands when needed.
+    """
+    node = task.get("node")
+    inner = _inject_python_u(task.get("cmd") or "")
+    resume_path = task.get("resume_from")
+    resume_flag = task.get("resume_flag") or ""
+    if resume_path and resume_flag:
+        inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
+    shell_meta = bool(re.search(r"[;&|<>]", inner))
+    if not shell_meta:
+        try:
+            toks = shlex.split(inner)
+        except Exception:
+            toks = []
+        if toks:
+            toks[0] = _windows_rewrite_token(node, toks[0])
+            toks = [_windows_rewrite_token(node, t) for t in toks]
+            return {"argv": toks}
+    mapped = inner
+    for pref in (str(Path.home() / "mine_code"), str(Path.home()), "/home/erzhu419/mine_code", "/home/erzhu419"):
+        if pref in mapped:
+            mapped = mapped.replace(pref, _windows_path_for_node(node, pref))
+    return {"cmdline": mapped}
+
+
+_WINDOWS_LAUNCHER = r'''
+import base64, ctypes, json, os, subprocess, sys, time
+from ctypes import wintypes
+
+CREATE_NEW_PROCESS_GROUP = 0x00000200
+TH32CS_SNAPPROCESS = 0x00000002
+TH32CS_SNAPTHREAD = 0x00000004
+INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+THREAD_SET_INFORMATION = 0x0020
+
+k32 = ctypes.windll.kernel32
+
+class PROCESSENTRY32W(ctypes.Structure):
+    _fields_ = [
+        ("dwSize", wintypes.DWORD),
+        ("cntUsage", wintypes.DWORD),
+        ("th32ProcessID", wintypes.DWORD),
+        ("th32DefaultHeapID", ctypes.c_void_p),
+        ("th32ModuleID", wintypes.DWORD),
+        ("cntThreads", wintypes.DWORD),
+        ("th32ParentProcessID", wintypes.DWORD),
+        ("pcPriClassBase", ctypes.c_long),
+        ("dwFlags", wintypes.DWORD),
+        ("szExeFile", wintypes.WCHAR * 260),
+    ]
+
+class THREADENTRY32(ctypes.Structure):
+    _fields_ = [
+        ("dwSize", wintypes.DWORD),
+        ("cntUsage", wintypes.DWORD),
+        ("th32ThreadID", wintypes.DWORD),
+        ("th32OwnerProcessID", wintypes.DWORD),
+        ("tpBasePri", ctypes.c_long),
+        ("tpDeltaPri", ctypes.c_long),
+        ("dwFlags", wintypes.DWORD),
+    ]
+
+class GROUP_AFFINITY(ctypes.Structure):
+    _fields_ = [
+        ("Mask", ctypes.c_size_t),
+        ("Group", wintypes.WORD),
+        ("Reserved", wintypes.WORD * 3),
+    ]
+
+k32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+k32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+k32.Process32FirstW.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESSENTRY32W)]
+k32.Process32FirstW.restype = wintypes.BOOL
+k32.Process32NextW.argtypes = [wintypes.HANDLE, ctypes.POINTER(PROCESSENTRY32W)]
+k32.Process32NextW.restype = wintypes.BOOL
+k32.Thread32First.argtypes = [wintypes.HANDLE, ctypes.POINTER(THREADENTRY32)]
+k32.Thread32First.restype = wintypes.BOOL
+k32.Thread32Next.argtypes = [wintypes.HANDLE, ctypes.POINTER(THREADENTRY32)]
+k32.Thread32Next.restype = wintypes.BOOL
+k32.OpenThread.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+k32.OpenThread.restype = wintypes.HANDLE
+k32.SetThreadGroupAffinity.argtypes = [wintypes.HANDLE, ctypes.POINTER(GROUP_AFFINITY), ctypes.POINTER(GROUP_AFFINITY)]
+k32.SetThreadGroupAffinity.restype = wintypes.BOOL
+k32.CloseHandle.argtypes = [wintypes.HANDLE]
+k32.CloseHandle.restype = wintypes.BOOL
+k32.GetActiveProcessorGroupCount.argtypes = []
+k32.GetActiveProcessorGroupCount.restype = wintypes.WORD
+k32.GetActiveProcessorCount.argtypes = [wintypes.WORD]
+k32.GetActiveProcessorCount.restype = wintypes.DWORD
+
+def process_parent_map():
+    snap = k32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    if snap == INVALID_HANDLE_VALUE:
+        return {}
+    out = {}
+    pe = PROCESSENTRY32W()
+    pe.dwSize = ctypes.sizeof(pe)
+    try:
+        ok = k32.Process32FirstW(snap, ctypes.byref(pe))
+        while ok:
+            out[int(pe.th32ProcessID)] = int(pe.th32ParentProcessID)
+            ok = k32.Process32NextW(snap, ctypes.byref(pe))
+    finally:
+        k32.CloseHandle(snap)
+    return out
+
+def descendants(root):
+    parents = process_parent_map()
+    todo = [int(root)]
+    seen = set()
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        for pid, ppid in list(parents.items()):
+            if ppid == cur and pid not in seen:
+                todo.append(pid)
+    return seen
+
+def threads_for_pid(pid):
+    snap = k32.CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0)
+    if snap == INVALID_HANDLE_VALUE:
+        return []
+    out = []
+    te = THREADENTRY32()
+    te.dwSize = ctypes.sizeof(te)
+    try:
+        ok = k32.Thread32First(snap, ctypes.byref(te))
+        while ok:
+            if int(te.th32OwnerProcessID) == int(pid):
+                out.append(int(te.th32ThreadID))
+            ok = k32.Thread32Next(snap, ctypes.byref(te))
+    finally:
+        k32.CloseHandle(snap)
+    return out
+
+def pin_pid(pid, slot, skip_ht_pair=True):
+    try:
+        n_groups = int(k32.GetActiveProcessorGroupCount())
+        cpus_per = int(k32.GetActiveProcessorCount(0)) if n_groups else 64
+        slots_per_group = max(1, cpus_per // (2 if skip_ht_pair else 1))
+        group = int(slot // slots_per_group) % max(1, n_groups)
+        cpu = int(slot % slots_per_group) * (2 if skip_ht_pair else 1)
+        aff = GROUP_AFFINITY()
+        aff.Mask = 1 << cpu
+        aff.Group = group
+        ok_any = False
+        for tid in threads_for_pid(pid):
+            h = k32.OpenThread(THREAD_SET_INFORMATION, False, tid)
+            if not h:
+                continue
+            try:
+                ok_any = bool(k32.SetThreadGroupAffinity(h, ctypes.byref(aff), None)) or ok_any
+            finally:
+                k32.CloseHandle(h)
+        return ok_any, group, cpu
+    except Exception:
+        return False, -1, -1
+
+def main():
+    payload = json.loads(base64.b64decode(sys.argv[1]).decode("utf-8"))
+    env = os.environ.copy()
+    env.update({str(k): str(v) for k, v in (payload.get("env") or {}).items()})
+    cwd = payload["cwd"]
+    log_path = payload["log_path"]
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    with open(log_path, "ab", buffering=0) as log:
+        log.write(("scheduleurm windows wrapper start task=%s cwd=%s\n" % (payload.get("task_id"), cwd)).encode())
+        if payload.get("argv"):
+            proc = subprocess.Popen(payload["argv"], cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, creationflags=CREATE_NEW_PROCESS_GROUP)
+        else:
+            proc = subprocess.Popen(payload["cmdline"], cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, shell=True, creationflags=CREATE_NEW_PROCESS_GROUP)
+        log.write(("scheduleurm child pid=%s auto_pin=%s\n" % (proc.pid, payload.get("auto_pin"))).encode())
+        assigned = {}
+        next_slot = 0
+        while proc.poll() is None:
+            if payload.get("auto_pin"):
+                active = sorted(descendants(proc.pid))
+                assigned = {pid: slot for pid, slot in assigned.items() if pid in active}
+                used_slots = set(assigned.values())
+                for pid in active:
+                    if pid not in assigned:
+                        while next_slot in used_slots:
+                            next_slot += 1
+                        assigned[pid] = next_slot
+                        used_slots.add(next_slot)
+                        next_slot += 1
+                    ok, group, cpu = pin_pid(pid, assigned[pid], bool(payload.get("skip_ht_pair", True)))
+                    if ok and not os.environ.get("SCHEDULEURM_PIN_QUIET"):
+                        log.write(("[pin] pid=%s slot=%s group=%s cpu=%s\n" % (pid, assigned[pid], group, cpu)).encode())
+            time.sleep(float(payload.get("pin_interval_s", 1.0)))
+        rc = proc.wait()
+        log.write(("scheduleurm child exit rc=%s\n" % rc).encode())
+    sys.exit(rc)
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+class WindowsBackend(Backend):
+    """OpenSSH + PowerShell backend for Windows CPU-only nodes.
+
+    jtl110cpu is a high-core-count Windows host. It cannot use the Linux
+    LocalBackend assumptions (/proc, bash, setsid, nvidia-smi, rsync). This
+    backend launches through a small Python wrapper on the Windows side. The
+    wrapper starts the user's command, tracks descendants, and periodically
+    pins worker processes across Windows processor groups to unique physical
+    cores.
+    """
+    name = "windows"
+
+    def _sched_dir(self, node: str) -> str:
+        return (NODES.get(node, {}) or {}).get("windows_scheduleurm_dir") or r"F:\.scheduleurm"
+
+    def _log_path(self, task: dict) -> str:
+        return self._sched_dir(task["node"]).rstrip("\\/") + rf"\logs\{task['id']}.log"
+
+    def _ensure_launcher(self, node: str) -> tuple[bool, str]:
+        sched_dir = self._sched_dir(node)
+        launcher = sched_dir.rstrip("\\/") + r"\scheduleurm_win_wrapper.py"
+        b64 = base64.b64encode(_WINDOWS_LAUNCHER.encode("utf-8")).decode("ascii")
+        ps = (
+            f"$dir={_ps_quote(sched_dir)}; "
+            "New-Item -ItemType Directory -Force -LiteralPath $dir | Out-Null; "
+            f"$bytes=[Convert]::FromBase64String({_ps_quote(b64)}); "
+            f"[IO.File]::WriteAllBytes({_ps_quote(launcher)}, $bytes); "
+            f"if (Test-Path -LiteralPath {_ps_quote(launcher)}) {{ Write-Output 'READY' }}"
+        )
+        try:
+            rc, out, err = _run_windows_ps(node, ps, timeout=20, check=False)
+        except Exception as e:
+            return False, str(e)[:200]
+        if rc != 0 or "READY" not in out:
+            return False, (err or out or f"launcher deploy rc={rc}").strip()[:200]
+        return True, launcher
+
+    def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
+        node = task["node"]
+        if int(task.get("est_vram_mb") or 0) > 0:
+            return False, "WindowsBackend is CPU-only; refusing GPU task"
+        ok, launcher = self._ensure_launcher(node)
+        if not ok:
+            return False, f"windows launcher deploy failed: {launcher}"
+        cwd = _windows_path_for_node(node, task.get("cwd") or "")
+        log_path = self._log_path(task)
+        py = (NODES.get(node, {}) or {}).get("windows_python") or "python"
+        ps_cwd_check = f"if (Test-Path -LiteralPath {_ps_quote(cwd)}) {{ 'OK' }} else {{ 'MISSING' }}"
+        try:
+            rc_cwd, out_cwd, err_cwd = _run_windows_ps(node, ps_cwd_check, timeout=10, check=False)
+        except Exception as e:
+            return False, f"cwd check failed on {node}: {str(e)[:160]}"
+        if rc_cwd != 0 or "OK" not in out_cwd:
+            return False, f"cwd missing on {node}: {cwd}"
+
+        env = {"CUDA_VISIBLE_DEVICES": "", "SCHEDULEURM_TASK_ID": task.get("id") or ""}
+        # CPU worker-heavy defaults. User-supplied extra_env can still override
+        # these below if a task has a specific threading model.
+        env.update({
+            "OMP_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1",
+            "SCHEDULEURM_WINDOWS_AUTO_PIN": "1",
+        })
+        for k, v in _safe_extra_env_items(_launch_extra_env(task)):
+            if k == "CUDA_VISIBLE_DEVICES":
+                continue
+            env[k] = v
+        cmd_payload = _windows_prepare_command(task)
+        payload = {
+            "task_id": task.get("id"),
+            "cwd": cwd,
+            "log_path": log_path,
+            "env": env,
+            "auto_pin": bool((NODES.get(node, {}) or {}).get("windows_auto_pin", True)),
+            "skip_ht_pair": bool((NODES.get(node, {}) or {}).get("windows_skip_ht_pair", True)),
+            "pin_interval_s": 1.0,
+        }
+        payload.update(cmd_payload)
+        payload_b64 = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
+        sched_dir = self._sched_dir(node)
+        ps = (
+            f"$py={_ps_quote(py)}; $launcher={_ps_quote(launcher)}; "
+            f"$sched={_ps_quote(sched_dir)}; $payload={_ps_quote(payload_b64)}; "
+            "New-Item -ItemType Directory -Force -LiteralPath (Split-Path -Parent "
+            f"{_ps_quote(log_path)}) | Out-Null; "
+            "$p = Start-Process -FilePath $py -ArgumentList @($launcher, $payload) "
+            "-WorkingDirectory $sched -WindowStyle Hidden -PassThru; "
+            "Write-Output ('PID=' + $p.Id)"
+        )
+        try:
+            rc, out, err = _run_windows_ps(node, ps, timeout=20, check=False)
+            if rc != 0:
+                return False, f"windows launch rc={rc}: {(err or out).strip()[:200]}"
+            pid = None
+            for line in out.splitlines():
+                line = line.strip()
+                if line.startswith("PID="):
+                    try:
+                        pid = int(line[4:])
+                    except ValueError:
+                        pass
+            if not pid:
+                return False, f"could not parse Windows PID from launch output: {out[:200]}"
+            task["remote_pids"] = [pid]
+            task["process_group"] = pid
+            task["log_path"] = log_path
+            task["status"] = "running"
+            task["started_at"] = time.time()
+            _remember_last_placement(task)
+            task["peak_vram_mb"] = 0
+            task["peak_ram_mb"] = 0
+            _set_current_usage(task, 0, 0, 0.0)
+            return True, f"win_pid={pid}"
+        except Exception as e:
+            return False, f"windows launch exception: {str(e)[:200]}"
+
+    def kill(self, task: dict, timeout: int = 15) -> tuple[bool, str]:
+        node = task.get("node")
+        pids = [int(p) for p in _task_pids(task) if p]
+        if not node or not pids:
+            return False, "no node/pids"
+        roots = ",".join(str(p) for p in pids)
+        ps = rf'''
+$roots = @({roots})
+$procs = Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId
+$all = New-Object System.Collections.Generic.HashSet[int]
+$queue = New-Object System.Collections.Queue
+foreach ($r in $roots) {{ [void]$queue.Enqueue([int]$r) }}
+while ($queue.Count -gt 0) {{
+  $cur = [int]$queue.Dequeue()
+  if (-not $all.Add($cur)) {{ continue }}
+  foreach ($p in $procs) {{
+    if ([int]$p.ParentProcessId -eq $cur) {{ [void]$queue.Enqueue([int]$p.ProcessId) }}
+  }}
+}}
+foreach ($pid in $all) {{ Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue }}
+Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
+'''
+        try:
+            rc, out, err = _run_windows_ps(node, ps, timeout=timeout, check=False)
+            if rc != 0:
+                return False, (err or out or f"rc={rc}").strip()[:200]
+            return True, out.strip()[:200]
+        except Exception as e:
+            return False, str(e)[:200]
+
+    def batch_probe(self, state: dict) -> dict:
+        by_node = {}
+        for t in state["tasks"]:
+            if t.get("status") != "running":
+                continue
+            node = t.get("node")
+            if not node or not _node_is_windows(node):
+                continue
+            pids = _task_pids(t)
+            if not pids:
+                continue
+            by_node.setdefault(node, []).append((t, pids))
+        results = {}
+        if not by_node:
+            return results
+
+        def _probe(node):
+            roots = sorted({int(p) for _, pids in by_node[node] for p in pids})
+            root_list = ",".join(str(p) for p in roots)
+            ps = rf'''
+$roots = @({root_list})
+$procs = Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,WorkingSetSize
+$rows = @()
+foreach ($r in $roots) {{
+  $all = New-Object System.Collections.Generic.HashSet[int]
+  $queue = New-Object System.Collections.Queue
+  [void]$queue.Enqueue([int]$r)
+  while ($queue.Count -gt 0) {{
+    $cur = [int]$queue.Dequeue()
+    if (-not $all.Add($cur)) {{ continue }}
+    foreach ($p in $procs) {{
+      if ([int]$p.ParentProcessId -eq $cur) {{ [void]$queue.Enqueue([int]$p.ProcessId) }}
+    }}
+  }}
+  $alive = @()
+  $rss = 0
+  foreach ($pid in $all) {{
+    $p = $procs | Where-Object {{ [int]$_.ProcessId -eq [int]$pid }} | Select-Object -First 1
+    if ($p) {{
+      $alive += [int]$pid
+      $rss += [int64]($p.WorkingSetSize)
+    }}
+  }}
+  $rows += [pscustomobject]@{{ root=[int]$r; alive=$alive; ram_mb=[int][math]::Round($rss / 1MB) }}
+}}
+$rows | ConvertTo-Json -Compress -Depth 4
+'''
+            try:
+                rc, out, _ = _run_windows_ps(node, ps, timeout=30, check=False)
+                return out if rc == 0 else None
+            except Exception:
+                return None
+
+        with ThreadPoolExecutor(max_workers=len(by_node)) as ex:
+            outputs = dict(zip(by_node.keys(), ex.map(_probe, by_node.keys())))
+
+        for node, out in outputs.items():
+            if out is None:
+                for t, _ in by_node[node]:
+                    results[t["id"]] = {"state": "unknown", "alive_pids": [],
+                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
+                                        "error": "windows process probe failed"}
+                continue
+            try:
+                data = json.loads((out or "").strip() or "[]")
+                if isinstance(data, dict):
+                    data = [data]
+            except Exception:
+                data = []
+            by_root = {int(r.get("root")): r for r in data if r.get("root") is not None}
+            for t, pids in by_node[node]:
+                alive = []
+                ram = 0
+                for p in pids:
+                    rec = by_root.get(int(p))
+                    if not rec:
+                        continue
+                    a = rec.get("alive") or []
+                    if isinstance(a, int):
+                        a = [a]
+                    alive.extend(int(x) for x in a)
+                    ram += int(rec.get("ram_mb") or 0)
+                if not alive:
+                    results[t["id"]] = {"state": "dead", "alive_pids": [],
+                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
+                else:
+                    results[t["id"]] = {"state": "alive", "alive_pids": sorted(set(alive)),
+                                        "vram_mb": 0, "ram_mb": ram, "pcpu": 0.0}
+        return results
+
+
 class LocalBackend(Backend):
     """ssh + nohup + setsid pattern. Tracks tasks by host-visible PIDs.
 
@@ -4636,7 +5701,7 @@ class LocalBackend(Backend):
         # Phase 3.0.23 P2 fix: filter extra_env at the export site so legacy
         # state.json entries with invalid / reserved keys can't break the
         # export shell or override CUDA_VISIBLE_DEVICES set above.
-        for k, v in _safe_extra_env_items(task.get("extra_env")):
+        for k, v in _safe_extra_env_items(_launch_extra_env(task)):
             env_prefix += f"export {k}={shlex.quote(v)}; "
         # setsid creates a new session + process group leader, so `cancel --force`'s `kill -- -<pid>`
         # reliably catches every worker child. The </dev/null is so the launched process doesn't
@@ -4974,7 +6039,7 @@ class SlurmBackend(Backend):
         # legacy state.json entry with an invalid / reserved key (e.g. one that
         # would override slurm's gres-bound CUDA_VISIBLE_DEVICES) can't break
         # the sbatch script. submit-time validation is the primary gate.
-        for k, v in _safe_extra_env_items(task.get("extra_env")):
+        for k, v in _safe_extra_env_items(_launch_extra_env(task)):
             lines.append(f"export {k}={shlex.quote(v)}")
         # Phase 2.5 P1 fix: cd must be fatal-on-failure. A bare `cd path` followed by
         # the inner cmd silently continues from $HOME (or wherever) if the compute node
@@ -5488,6 +6553,7 @@ class HybridBackend(Backend):
     def __init__(self):
         self._local = LocalBackend()
         self._slurm = SlurmBackend()
+        self._windows = WindowsBackend()
         self._cache: dict = {}  # node_name -> 'slurm' | 'local'
 
     def _node_wants_slurm(self, node: str, task: Optional[dict] = None,
@@ -5501,6 +6567,8 @@ class HybridBackend(Backend):
         default hardware-aware path only choose Slurm for large/shared nodes plus
         jobs that look large enough for Slurm to be the right owner.
         """
+        if _node_is_windows(node):
+            return False
         info = NODES.get(node, {}) or {}
         slurm_backend = info.get("slurm_backend")
         if _slurm_mode_disabled(slurm_backend):
@@ -5580,6 +6648,8 @@ class HybridBackend(Backend):
 
     def _backend_for(self, node: str, task: Optional[dict] = None,
                      node_state: Optional[dict] = None) -> Backend:
+        if _node_is_windows(node):
+            return self._windows
         return self._slurm if self._node_wants_slurm(node, task, node_state=node_state) else self._local
 
     def _backend_for_task(self, task: dict, node_state: Optional[dict] = None) -> Backend:
@@ -5598,11 +6668,13 @@ class HybridBackend(Backend):
         - remote_pids present → LocalBackend (it launched the task)
         - neither → queued, use current Slurm routing policy for the upcoming launch
         """
+        node = task.get("node")
+        if node and _node_is_windows(node):
+            return self._windows
         if task.get("slurm_job_id"):
             return self._slurm
         if task.get("remote_pids"):
             return self._local
-        node = task.get("node")
         if not node:
             return self._local  # no node yet (queued task): launch path will re-route
         return self._backend_for(node, task, node_state=node_state)
@@ -5618,12 +6690,15 @@ class HybridBackend(Backend):
         in the worst case (one local probe + one slurm probe), but each backend's batch_probe
         skips nodes with no relevant tasks so common case is one round-trip per node."""
         # Synthesize per-backend state subsets so each backend only sees its own tasks.
-        local_tasks, slurm_tasks = [], []
+        local_tasks, slurm_tasks, windows_tasks = [], [], []
         for t in state["tasks"]:
             if t["status"] != "running":
                 continue
-            if self._backend_for_task(t) is self._slurm:
+            backend = self._backend_for_task(t)
+            if backend is self._slurm:
                 slurm_tasks.append(t)
+            elif backend is self._windows:
+                windows_tasks.append(t)
             else:
                 local_tasks.append(t)
         merged: dict = {}
@@ -5631,6 +6706,8 @@ class HybridBackend(Backend):
             merged.update(self._local.batch_probe({"tasks": local_tasks}))
         if slurm_tasks:
             merged.update(self._slurm.batch_probe({"tasks": slurm_tasks}))
+        if windows_tasks:
+            merged.update(self._windows.batch_probe({"tasks": windows_tasks}))
         return merged
 
 
@@ -6122,10 +7199,13 @@ def _task_is_descendant_of(task: dict, ancestor_id: str, by_id: dict) -> bool:
 
 def _mark_user_cancelled(task: dict, reason: str = "user cancel") -> None:
     now = time.time()
+    actor = _actor_info("cancel", reason)
     task["status"] = "cancelled"
     task["finished_at"] = now
     task["cancelled_at"] = now
     task["cancelled_by_user"] = True
+    task["cancelled_by"] = actor["label"]
+    task["cancel_actor"] = actor
     task["cancel_reason"] = reason
     task.pop("launching_started_at", None)
     task["last_block_reason"] = reason
@@ -7586,6 +8666,10 @@ def cmd_submit(args):
             # than RESULT_SYNC_TIMEOUT_S + grace are reclaimable.
             "result_syncing_at": None,
             "extra_env": extra_env,
+            "origin": "scheduleurm",
+            "submitted_by": _local_user(),
+            "submitted_host": _local_host_short(),
+            "scheduler_id": _ClaimManager.scheduler_id(),
             "allow_cpu_training": bool(getattr(args, "allow_cpu_training", False)),
             "cpu_training_justification": (getattr(args, "cpu_training_justification", "") or "").strip(),
             "allow_remote_large_data": bool(getattr(args, "allow_remote_large_data", False)),
@@ -7642,6 +8726,8 @@ def _project_from_path(path):
 
 def _project_from_pid(node, pid):
     """Read /proc/<pid>/cwd on the node via readlink — gives the actual working dir of the running process."""
+    if _node_is_windows(node):
+        return ""
     try:
         rc, out, _ = run_on(node, f"readlink /proc/{pid}/cwd 2>/dev/null", timeout=8, check=False)
         return _project_from_path(out.strip()) if rc == 0 else ""
@@ -7677,6 +8763,26 @@ def _safe_extra_env_items(extra_env):
         if k in _RESERVED_ENV_KEYS:
             continue
         yield (k, v)
+
+def _launch_extra_env(task):
+    """Launch-time env after applying conservative defaults for known JAX GPU tasks."""
+    merged = {}
+    cmd = task.get("cmd") or ""
+    project = task.get("project") or ""
+    is_gpu = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0
+    is_jax_task = is_gpu and (
+        project == "RE-SAC"
+        or "jax_experiments" in cmd
+        or "jax" in cmd.lower()
+    )
+    if is_jax_task:
+        # Prevent JAX from preallocating most of a 12GB card and poisoning peak history.
+        merged["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+        merged["XLA_FLAGS"] = "--xla_gpu_enable_triton_gemm=false"
+        if project == "RE-SAC" and task.get("cwd"):
+            merged["PYTHONPATH"] = task["cwd"]
+    merged.update(task.get("extra_env") or {})
+    return merged
 
 
 def _parse_env(pairs):
@@ -8014,6 +9120,8 @@ def _stage_cwd_check(target_node: str, cwd: str):
                        avoids it next cycle
       "needs_stage"  → emit launch_stage_deferred event, leave queued
     """
+    if _node_is_windows(target_node):
+        return "ready"  # WindowsBackend maps cwd and checks it at launch.
     if NODES.get(target_node, {}).get("host") is None:
         return "ready"  # local target, nothing to sync
     cwd_key = ("local", target_node, cwd)
@@ -8044,6 +9152,222 @@ def _stage_failure_reason(target_node: str, cwd: str) -> str:
     if fail is None:
         return ""
     return fail[1] if isinstance(fail, tuple) and len(fail) > 1 else "unknown"
+
+
+def _resume_ckpt_stage_key(source_node: str, target_node: str, ckpt_dir: str) -> tuple:
+    return ("resume_ckpt", source_node, target_node, ckpt_dir)
+
+
+def _resume_stage_source_for_target(task: dict, target_node: str,
+                                    locations: Optional[list] = None) -> Optional[dict]:
+    """Pick a checkpoint source that can be rsync'd to target for launch staging.
+
+    rsync is only supported when one side is local. Prefer local as the source
+    for remote targets because launch cwd staging already treats local as the
+    source of truth. Remote->remote is deliberately unsupported here; without a
+    shared FS/tunnel it can silently become "remote starts from zero".
+    """
+    locations = list(locations if locations is not None else (task.get("resume_locations") or []))
+    if not target_node or not locations:
+        return None
+    for loc in locations:
+        if loc.get("node") == target_node:
+            return dict(loc)
+
+    target_host = NODES.get(target_node, {}).get("host")
+    local_locs = [loc for loc in locations if loc.get("node") == "local"]
+    if target_host and local_locs:
+        return dict(local_locs[0])
+    if target_host is None:
+        for loc in locations:
+            src_node = loc.get("node")
+            if src_node and NODES.get(src_node, {}).get("host"):
+                return dict(loc)
+    for loc in locations:
+        src_node = loc.get("node")
+        if not src_node:
+            continue
+        src_host = NODES.get(src_node, {}).get("host")
+        if bool(src_host) != bool(target_host):
+            return dict(loc)
+    return None
+
+
+def _resume_checkpoint_stage_check(task: dict, target_node: str,
+                                   locations: Optional[list] = None) -> tuple:
+    """Cache-only check for launch-time checkpoint staging.
+
+    Returns (state, source_loc, reason) where state is one of:
+      ready        - target already has ckpt OR a fresh rsync cache entry exists
+      needs_stage  - outside-lock staging has not completed yet
+      cap_exceeded - ckpt_dir is too large to sync automatically
+      stage_failed - recent rsync/probe failure for this source/target
+      unsupported  - checkpoint exists, but no supported source->target route
+    """
+    locations = list(locations if locations is not None else (task.get("resume_locations") or []))
+    if not locations:
+        return "ready", None, "no existing checkpoint"
+    for loc in locations:
+        if loc.get("node") == target_node:
+            return "ready", dict(loc), "checkpoint already on target"
+    src = _resume_stage_source_for_target(task, target_node, locations)
+    if not src:
+        return "unsupported", None, "no local-side rsync route for checkpoint staging"
+    ckpt_dir = task.get("ckpt_dir")
+    if not ckpt_dir:
+        return "ready", src, "no ckpt_dir"
+    key = _resume_ckpt_stage_key(src.get("node"), target_node, ckpt_dir)
+    if _staging_cache_hit(key):
+        staged = dict(src)
+        staged["node"] = target_node
+        return "ready", staged, "checkpoint staged to target"
+    ts = _STAGING_CAP_EXCEEDED.get(key)
+    if ts is not None:
+        if (time.time() - ts) > STAGING_TTL_S:
+            _STAGING_CAP_EXCEEDED.pop(key, None)
+        else:
+            return "cap_exceeded", src, "checkpoint directory exceeds staging cap"
+    fail = _STAGING_FAILS.get(key)
+    if fail is not None:
+        fail_ts = fail[0] if isinstance(fail, tuple) else fail
+        if (time.time() - fail_ts) > STAGING_FAIL_COOLDOWN_S:
+            _STAGING_FAILS.pop(key, None)
+        else:
+            msg = fail[1] if isinstance(fail, tuple) and len(fail) > 1 else "unknown"
+            return "stage_failed", src, msg
+    return "needs_stage", src, "checkpoint not yet staged to target"
+
+
+def _record_staged_resume_location(task: dict, target_node: str, source_loc: Optional[dict]) -> None:
+    """Record that source_loc's checkpoint path is now available on target_node."""
+    if not source_loc or not target_node:
+        return
+    staged_loc = dict(source_loc)
+    staged_loc["node"] = target_node
+    locs = [loc for loc in (task.get("resume_locations") or [])
+            if loc.get("node") != target_node]
+    locs.append(staged_loc)
+    locs.sort(key=lambda x: (float(x.get("mtime") or 0), str(x.get("node") or "")), reverse=True)
+    task["resume_locations"] = locs
+    ordered_nodes = []
+    for loc in locs:
+        node = loc.get("node")
+        if node and node not in ordered_nodes:
+            ordered_nodes.append(node)
+    task["resume_preferred_nodes"] = ordered_nodes
+    best = locs[0] if locs else staged_loc
+    task["resume_checkpoint_node"] = best.get("node")
+    task["resume_from"] = (next((loc.get("path") for loc in locs
+                                 if loc.get("node") == target_node and loc.get("path")), None)
+                           or best.get("path")
+                           or task.get("resume_from"))
+
+
+def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
+                                  source_loc: Optional[dict] = None,
+                                  max_ckpt_mb: int = MIGRATION_MAX_CKPT_SIZE_MB) -> tuple:
+    """Pre-launch rsync of a resume checkpoint directory to a target node.
+
+    This fills the gap between migration staging and first launch staging:
+    queued resume tasks with a small checkpoint on local should be able to run
+    on an idle remote node after rsync, while very large checkpoint trees (for
+    example SimpleSAC snapshot data) stay pinned to the checkpoint-local node.
+    """
+    if not _task_requires_resume_scan(task):
+        return True, "not a resume-scanned task"
+    ckpt_dir = task.get("ckpt_dir")
+    if not ckpt_dir:
+        return True, "no ckpt_dir"
+    if not target_node:
+        return False, "no target node"
+    target_host = NODES.get(target_node, {}).get("host")
+    if source_loc is None:
+        state, source_loc, msg = _resume_checkpoint_stage_check(task, target_node)
+        if state == "ready":
+            return True, msg
+        if not source_loc:
+            return False, msg
+    source_node = source_loc.get("node")
+    if not source_node:
+        return False, "resume source has no node"
+    if source_node == target_node:
+        return True, "source==target; checkpoint already local"
+    src_host = NODES.get(source_node, {}).get("host")
+    if src_host and target_host:
+        return False, (
+            f"ckpt_dir {ckpt_dir} needs rsync but remote→remote is unsupported "
+            f"(src={src_host}, tgt={target_host})"
+        )
+
+    key = _resume_ckpt_stage_key(source_node, target_node, ckpt_dir)
+    if _staging_cache_hit(key):
+        return True, "cache hit (checkpoint already staged)"
+
+    try:
+        rc_test, _, _ = run_on(source_node, f"test -d {shlex.quote(ckpt_dir)}",
+                               timeout=5, check=False)
+    except Exception as e:
+        return False, f"ckpt_dir reachability check on {source_node} failed: {str(e)[:120]}"
+    if rc_test != 0:
+        return False, f"ckpt_dir {ckpt_dir} missing on resume source {source_node}"
+
+    size_mb = -1
+    try:
+        rc, out, _ = run_on(
+            source_node,
+            f"du -sm {shlex.quote(ckpt_dir)} 2>/dev/null | awk '{{print $1}}'",
+            timeout=15, check=False,
+        )
+        if rc == 0 and out.strip().isdigit():
+            size_mb = int(out.strip())
+    except Exception:
+        pass
+    if size_mb < 0:
+        return False, f"ckpt_dir {ckpt_dir} exists on {source_node} but size probe failed"
+    if size_mb > max_ckpt_mb:
+        _STAGING_CAP_EXCEEDED[key] = time.time()
+        return False, (
+            f"CAP_EXCEEDED: ckpt_dir {ckpt_dir} is {size_mb}MB > "
+            f"{max_ckpt_mb}MB cap; keep task on checkpoint-local node"
+        )
+
+    try:
+        run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}", timeout=10, check=False)
+    except Exception:
+        pass
+
+    src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
+    dst_path = (f"{target_host}:" if target_host else "") + ckpt_dir.rstrip("/") + "/"
+    try:
+        r = subprocess.run(["rsync", "-az", "--partial", src_path, dst_path],
+                           capture_output=True, text=True, timeout=600)
+        if r.returncode != 0:
+            return False, f"rsync ckpt failed rc={r.returncode}: {(r.stderr or '').strip()[:200]}"
+    except subprocess.TimeoutExpired:
+        return False, "rsync ckpt timeout (>600s)"
+    except Exception as e:
+        return False, f"rsync ckpt exception: {str(e)[:200]}"
+
+    resume_path = source_loc.get("path")
+    try:
+        if resume_path:
+            rc2, _, _ = run_on(target_node, f"test -e {shlex.quote(resume_path)}",
+                               timeout=5, check=False)
+        else:
+            rc2, _, _ = run_on(
+                target_node,
+                f"ls -1 {shlex.quote(ckpt_dir)} 2>/dev/null | head -1",
+                timeout=5, check=False,
+            )
+        if rc2 != 0:
+            return False, f"ckpt_dir {ckpt_dir} not verified on {target_node} after rsync"
+    except Exception as e:
+        return False, f"post-rsync ckpt check failed: {str(e)[:120]}"
+
+    _STAGING_CACHE[key] = time.time()
+    _STAGING_CAP_EXCEEDED.pop(key, None)
+    _STAGING_FAILS.pop(key, None)
+    return True, f"synced ckpt_dir ({size_mb}MB)"
 
 
 def _stage_cwd_for_launch(task: dict, target_node: str,
@@ -8261,6 +9585,7 @@ def _stage_launch_candidates_outside_lock():
         # may end up choosing a different node and stay in needs_stage forever.
         # So preferred → stage to ALL non-local nodes (preferred + fallbacks).
         candidates: set = set()
+        ckpt_candidates: list = []
         for t in state.get("tasks", []):
             if t.get("status") != "queued":
                 continue
@@ -8275,6 +9600,8 @@ def _stage_launch_candidates_outside_lock():
                 # pick_placement might pick. Filtered to non-local below.
                 tgts = list(NODES.keys())
             for tn in tgts:
+                if _node_is_windows(tn):
+                    continue
                 if NODES.get(tn, {}).get("host") is None:
                     continue
                 cwd_key = ("local", tn, cwd)
@@ -8284,6 +9611,18 @@ def _stage_launch_candidates_outside_lock():
                 if cap_ts is not None and (time.time() - cap_ts) <= STAGING_TTL_S:
                     continue
                 candidates.add((tn, cwd))
+            if _task_requires_resume_scan(t):
+                locs = list(t.get("resume_locations") or [])
+                if locs:
+                    for tn in tgts:
+                        if _node_is_windows(tn):
+                            continue
+                        if NODES.get(tn, {}).get("host") is None:
+                            continue
+                        state_ckpt, src_loc, _ = _resume_checkpoint_stage_check(t, tn, locs)
+                        if state_ckpt != "needs_stage" or not src_loc:
+                            continue
+                        ckpt_candidates.append((dict(t), tn, dict(src_loc)))
     except Exception as e:
         try:
             notify("launch_staging_snapshot_error", {"error": str(e)[:200]},
@@ -8325,6 +9664,42 @@ def _stage_launch_candidates_outside_lock():
             try:
                 notify("launch_staging_exception",
                        {"target": tn, "cwd": cwd, "error": str(e)[:200]},
+                       feishu_enabled=False)
+            except Exception:
+                pass
+
+    for task_snapshot, tn, src_loc in ckpt_candidates:
+        source_node = src_loc.get("node")
+        ckpt_dir = task_snapshot.get("ckpt_dir")
+        ckpt_key = _resume_ckpt_stage_key(source_node, tn, ckpt_dir)
+        if _staging_cache_hit(ckpt_key):
+            continue
+        try:
+            ok, msg = _stage_resume_ckpt_for_launch(task_snapshot, tn, src_loc)
+            if not ok:
+                if msg.startswith("CAP_EXCEEDED:"):
+                    continue
+                _STAGING_FAILS[ckpt_key] = (time.time(), msg[:200])
+                try:
+                    notify("launch_ckpt_staging_failed",
+                           {"task_id": task_snapshot.get("id"),
+                            "source": source_node,
+                            "target": tn,
+                            "ckpt_dir": ckpt_dir,
+                            "reason": msg[:200]},
+                           feishu_enabled=False)
+                except Exception:
+                    pass
+        except Exception as e:
+            _STAGING_FAILS[ckpt_key] = (
+                time.time(), f"exception: {str(e)[:150]}")
+            try:
+                notify("launch_ckpt_staging_exception",
+                       {"task_id": task_snapshot.get("id"),
+                        "source": source_node,
+                        "target": tn,
+                        "ckpt_dir": ckpt_dir,
+                        "error": str(e)[:200]},
                        feishu_enabled=False)
             except Exception:
                 pass
@@ -9273,7 +10648,8 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             }
             reason = (
                 f"evicted from {n['name']}:GPU{g['idx']} after GPU memory freeze-line breach "
-                f"(mem={g['used_mb']}/{g['total_mb']}MB, freeze={freeze}MB, util={g.get('util_pct','?')}%); "
+                f"(mem={_format_mem_gb(g['used_mb'])}/{_format_mem_gb(g['total_mb'])}, "
+                f"freeze={_format_mem_gb(freeze)}, util={g.get('util_pct','?')}%); "
                 f"victim selected by longest ETA / least progress / newest"
             )
             _evict(victim, reason, gpu_payload)
@@ -9300,8 +10676,10 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         }
         reason = (
             f"evicted from {n['name']} after RAM headroom breach "
-            f"(free={ram['free_mb']}MB < eviction_headroom={ram['eviction_headroom_mb']}MB, "
-            f"headroom={ram['headroom_mb']}MB, grace={ram['headroom_grace_mb']}MB); "
+            f"(free={_format_mem_gb(ram['free_mb'])} < "
+            f"eviction_headroom={_format_mem_gb(ram['eviction_headroom_mb'])}, "
+            f"headroom={_format_mem_gb(ram['headroom_mb'])}, "
+            f"grace={_format_mem_gb(ram['headroom_grace_mb'])}); "
             f"victim selected by RAM pressure / least progress / newest with loss protection"
         )
         _evict(victim, reason, ram_payload)
@@ -9323,7 +10701,20 @@ def _evict_to_queue(victim, state, reason, eviction_kind: str = "preempt"):
         _release_task_claims_and_intents(victim)
     except Exception:
         pass
-    _kill_task_processes(victim, timeout=15)
+    old_node = victim.get("node")
+    old_pids = list(_task_pids(victim))
+    actor = _record_task_kill_actor(victim, eviction_kind, reason)
+    ok, kill_msg = _kill_task_processes(victim, timeout=15)
+    notify("task_killed", {
+        "task_id": victim.get("id"),
+        "node": old_node,
+        "pids": old_pids,
+        "actor": actor,
+        "action": eviction_kind,
+        "reason": reason,
+        "kill_ok": ok,
+        "kill_msg": kill_msg,
+    }, feishu_enabled=False)
     victim["status"] = "queued"
     for k in ("node", "gpu_idx", "process_group", "log_path", "started_at", "finished_at", "_diagnosis"):
         victim[k] = None
@@ -9443,7 +10834,7 @@ def _preempt_for_high_priority(state, nodes):
             ram_freed = _task_ram_pressure_mb(victim) or DEFAULT_RAM_MB
             _evict_to_queue(victim, state,
                             f"preempted by {hi['id']} (high-prio waited {wait_min}min; "
-                            f"deficit cpu={cpu_deficit}, ram={ram_deficit}MB)",
+                            f"deficit cpu={cpu_deficit}, ram={_format_mem_gb(ram_deficit)})",
                             "preempt_high_priority")
             evicted.append({"id": victim["id"], "node": node_pin,
                             "cpu_freed": cpu_freed, "ram_freed": ram_freed,
@@ -9625,14 +11016,40 @@ def _do_dispatch(state, nodes):
             continue
         resume_nodes = {loc.get("node") for loc in (resume_locations or []) if loc.get("node")}
         if resume_nodes and t.get("require_node") and t.get("require_node") not in resume_nodes:
-            reason = (
-                f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
-                f"but require_node={t.get('require_node')} has no matching checkpoint; "
-                "refusing to launch there because it would likely restart from step 0"
-            )
-            t["last_block_reason"] = reason
-            events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
-            continue
+            require_node = t.get("require_node")
+            stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
+                t, require_node, resume_locations)
+            if stage_state == "ready" and source_loc:
+                _record_staged_resume_location(t, require_node, source_loc)
+                resume_locations = list(t.get("resume_locations") or [])
+                resume_nodes = {loc.get("node") for loc in resume_locations if loc.get("node")}
+            else:
+                if stage_state == "needs_stage":
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but require_node={require_node} has no matching checkpoint yet; "
+                        "awaiting small-checkpoint rsync staging before remote launch"
+                    )
+                elif stage_state == "cap_exceeded":
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but require_node={require_node} has no checkpoint and ckpt_dir "
+                        f"is too large for automatic staging; keep on checkpoint-local node"
+                    )
+                elif stage_state == "stage_failed":
+                    reason = (
+                        f"resume checkpoint staging to require_node={require_node} failed: "
+                        f"{stage_msg[:220]}"
+                    )
+                else:
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but require_node={require_node} has no matching checkpoint; "
+                        "refusing to launch there because it would likely restart from step 0"
+                    )
+                t["last_block_reason"] = reason
+                events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
+                continue
         wait_file_block = _queued_wait_for_file_block_reason(t)
         if wait_file_block:
             t["last_block_reason"] = wait_file_block
@@ -9718,17 +11135,43 @@ def _do_dispatch(state, nodes):
             continue
         t["node"], t["gpu_idx"] = placement
         if resume_nodes and t.get("node") not in resume_nodes:
-            reason = (
-                f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
-                f"but selected node {t.get('node')} has no matching checkpoint; "
-                "waiting for a checkpoint-local node instead of launching a fresh run"
-            )
-            t["last_block_reason"] = reason
-            _release_task_claims_and_intents(t)
-            t["node"] = None
-            t["gpu_idx"] = None
-            events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
-            continue
+            selected_node = t.get("node")
+            stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
+                t, selected_node, resume_locations)
+            if stage_state == "ready" and source_loc:
+                _record_staged_resume_location(t, selected_node, source_loc)
+                resume_locations = list(t.get("resume_locations") or [])
+                resume_nodes = {loc.get("node") for loc in resume_locations if loc.get("node")}
+            else:
+                if stage_state == "needs_stage":
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but selected node {selected_node} has no matching checkpoint yet; "
+                        "awaiting small-checkpoint rsync staging before remote launch"
+                    )
+                elif stage_state == "cap_exceeded":
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but selected node {selected_node} lacks it and ckpt_dir is too "
+                        "large for automatic staging; waiting for checkpoint-local capacity"
+                    )
+                elif stage_state == "stage_failed":
+                    reason = (
+                        f"resume checkpoint staging to selected node {selected_node} failed: "
+                        f"{stage_msg[:220]}"
+                    )
+                else:
+                    reason = (
+                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                        f"but selected node {selected_node} has no matching checkpoint; "
+                        "waiting for a checkpoint-local node instead of launching a fresh run"
+                    )
+                t["last_block_reason"] = reason
+                _release_task_claims_and_intents(t)
+                t["node"] = None
+                t["gpu_idx"] = None
+                events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
+                continue
         # Clear stale FIFO intents from prior CLAIM_RACE attempts on other
         # nodes. Keep the current node's intent, if any, so the remote upsert
         # preserves the original FIFO timestamp for this retry.
@@ -10011,11 +11454,13 @@ def _print_node_summary(nodes):
         gpu_parts = []
         for g in n["gpus"]:
             mem_pct = int(round(100 * g["used_mb"] / max(g["total_mb"], 1)))
-            gpu_parts.append(f"GPU{g['idx']}={g['used_mb']}/{g['total_mb']}MB(mem:{mem_pct}%, util:{g['util_pct']}%)")
-        gpu_str = ", ".join(gpu_parts)
+            gpu_parts.append(
+                f"GPU{g['idx']}={_format_mem_gb(g['used_mb'])}/{_format_mem_gb(g['total_mb'])}"
+                f"(free={_format_mem_gb(g.get('free_mb', 0))}, mem:{mem_pct}%, util:{g['util_pct']}%)")
+        gpu_str = ", ".join(gpu_parts) if gpu_parts else "CPU-only"
         load = n.get("loadavg", 0)
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
-        ram_str = f"ram_free={n['free_ram_mb']}MB"
+        ram_str = f"ram_free={_format_mem_gb(n['free_ram_mb'])}"
         claim_str = _format_node_claim_summary(n)
         print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
 
@@ -10043,10 +11488,11 @@ def _claim_wait_s(c: dict) -> int:
 def _format_claim_record(c: dict) -> str:
     gpu = c.get("gpu_idx")
     loc = "CPU" if gpu is None else f"GPU{gpu}"
-    return (f"{c.get('scheduler_id','?')}/{c.get('task_id','?')}:{loc} "
-            f"vram={int(c.get('vram_mb') or 0)}MB "
+    owner = c.get("owner") or "?"
+    return (f"{owner}/{c.get('scheduler_id','?')}/{c.get('task_id','?')}:{loc} "
+            f"vram={_format_mem_gb(c.get('vram_mb') or 0)} "
             f"cpu={int(c.get('cpu_cores') or 0)} "
-            f"ram={int(c.get('ram_mb') or 0)}MB "
+            f"ram={_format_mem_gb(c.get('ram_mb') or 0)} "
             f"age={_claim_wait_s(c)}s")
 
 
@@ -10067,6 +11513,16 @@ def _format_node_claim_summary(n: dict) -> str:
         parts.append(f"intents={len(intents)} head={head.get('task_id','?')}@{_claim_wait_s(head)}s")
     if err:
         parts.append(f"claims_error={err[:60]}")
+    other = []
+    try:
+        own_sid = _ClaimManager.scheduler_id()
+        other = [c for c in (active + pending + intents)
+                 if c.get("scheduler_id") and c.get("scheduler_id") != own_sid]
+    except Exception:
+        other = []
+    if other:
+        owners = ",".join(sorted({str(c.get("owner") or "?") for c in other})[:3])
+        parts.append(f"other_schedulers={len(other)} owner={owners}")
     return ("  claims(" + ", ".join(parts) + ")") if parts else ""
 
 
@@ -10110,6 +11566,8 @@ def _try_recover_orphan_slurm_job(task: dict, node: str, state: Optional[dict] =
 
     Returns True iff orphan was found + adopted (caller should NOT revert).
     """
+    if _node_is_windows(node):
+        return False
     job_name = f"scheduleurm-{task['id']}"
     # squeue -h: no header. -n NAME: filter by name. -t all: include finished.
     # -o "%i %T": "<jobid> <state>" per line.
@@ -10263,6 +11721,8 @@ def _try_recover_orphan_local_task(task: dict, node: str) -> bool:
 
     Returns True iff an orphan was found + adopted.
     """
+    if _node_is_windows(node):
+        return False
     tid = task.get("id") or ""
     if not tid:
         return False
@@ -10401,6 +11861,8 @@ def _try_finalize_terminal_local_task(task: dict, node: str, state: dict) -> boo
     Returns True iff the task was finalized (done or failed). False means
     no log evidence — caller falls back to the revert path.
     """
+    if _node_is_windows(node):
+        return False
     tid = task.get("id") or ""
     if not tid:
         return False
@@ -10832,7 +12294,7 @@ def cmd_dispatch(args):
                   f"{ev.get('to_node') or '?'}  (eta={ev.get('eta_seconds', 0)}s, load-balance)")
         elif ev["type"] == "preempted":
             print(f"  [{tid}] PREEMPT on {ev.get('freed_node') or '?'} "
-                  f"(freed {ev.get('cpu_freed', 0)}c / {ev.get('ram_freed', 0)}MB)")
+                  f"(freed {ev.get('cpu_freed', 0)}c / {_format_mem_gb(ev.get('ram_freed', 0))})")
         elif ev["type"] == "claim_race":
             print(f"  [{tid}] CLAIM-RACE {ev['reason'][:200]}")
 
@@ -10914,7 +12376,12 @@ def _format_feishu(event_type, payload):
     if event_type == "task_preempted":
         return (f"[scheduler] ⚡ {payload['task_id']} preempted on "
                 f"{payload.get('freed_node') or '?'} "
-                f"(freed {payload.get('cpu_freed', 0)}c/{payload.get('ram_freed', 0)}MB)")
+                f"(freed {payload.get('cpu_freed', 0)}c/{_format_mem_gb(payload.get('ram_freed', 0))})")
+    if event_type == "task_killed":
+        a = payload.get("actor") or {}
+        return (f"[scheduler] kill {payload.get('task_id','?')} by "
+                f"{a.get('label') or '?'} action={payload.get('action','?')} "
+                f"node={payload.get('node','?')} reason={str(payload.get('reason',''))[:120]}")
     if event_type == "task_launch_retry":
         return (f"[scheduler] ⚠ {payload['task_id']} launch failed "
                 f"({payload.get('attempt','?')}/{MAX_LAUNCH_RETRY}); will retry/fallback: "
@@ -10949,6 +12416,8 @@ def _format_feishu(event_type, payload):
 
 _TASK_EVENT_PAYLOAD_KEYS = (
     "id", "status", "description", "project", "signature", "cmd", "cwd",
+    "origin", "submitted_by", "submitted_host", "scheduler_id",
+    "process_owner", "shared_account_suspect",
     "est_vram_mb", "ram_mb", "cpu_cores", "priority", "preferred_node",
     "require_node", "node", "gpu_idx", "remote_pids", "slurm_job_id",
     "slurm_state", "log_path", "submitted_at", "started_at", "finished_at",
@@ -10958,6 +12427,8 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "last_progress_line", "result_artifacts", "result_artifacts_discovered_at",
     "parent_id", "retry_count", "requeued_as", "launch_fail_count",
     "failure_category", "last_block_reason", "notified_done", "notified_launch",
+    "cancelled_by", "cancel_reason", "last_killed_by", "last_kill_action",
+    "last_kill_reason",
 )
 
 
@@ -11000,6 +12471,8 @@ def notify(event_type, payload, feishu_enabled=True):
 def _node_processes(name):
     """One ssh call per node — fetch every GPU compute app's (pid, gpu_idx, used_mb, owner, cwd, rss_mb).
     Used by the watcher to discover externally-launched tasks. Returns [] on failure."""
+    if _node_is_windows(name):
+        return []
     # cmdline capture: read /proc/<pid>/cmdline (NUL-separated args), translate to spaces,
     # cap at 4KB. Used by adopt to record the real launch command so a crashed adopted task
     # can be auto-requeued instead of disappearing silently. Field 6 (cmdline) may contain
@@ -11087,6 +12560,8 @@ def _node_ppid_map(name):
     adopting a child of an already-tracked PID as a separate phantom task. Without this, a
     scheduler-launched bash wrapper (tracked PID) and its python child (different PID) get
     counted as TWO tasks, doubling resource accounting and eating concurrency cap slots."""
+    if _node_is_windows(name):
+        return {}
     try:
         rc, out, _ = run_on(name, "ps -eo pid=,ppid=", timeout=15, check=False)
         if rc != 0: return {}
@@ -11146,6 +12621,8 @@ def _node_cpu_processes(name):
     """Find user-owned CPU-burning python processes NOT in nvidia-smi compute-apps. Catches CPU-only
     workloads (eval scripts, multi-worker batches, etc.) that the GPU-only probe misses.
     Threshold: pcpu >= 50% (half a sustained core). Returns same shape as _node_processes plus pcpu."""
+    if _node_is_windows(name):
+        return []
     import getpass
     me = getpass.getuser()
     # cmdline appended for adopt-time cmd capture; see _node_processes for rationale.
@@ -11329,6 +12806,8 @@ def _reconcile_external_tasks(state):
         sum_vram = sum(p["used_mb"] for p in procs)
         sum_rss = sum(p.get("rss_mb", 0) for p in procs)
         sum_pcpu = sum(p.get("pcpu", 0.0) for p in procs)
+        owners = sorted({p.get("owner") or me for p in procs})
+        proc_owner = owners[0] if len(owners) == 1 else ",".join(owners[:3])
         cwd_sample = procs[0]["cwd"]
         # Capture cmdline from /proc — lets the watcher auto-requeue the task if it later
         # ends incomplete (lifetime < 50% of historical EWMA AND status != cancelled).
@@ -11374,6 +12853,12 @@ def _reconcile_external_tasks(state):
             "ckpt_glob": "*",
             "resume_flag": "",
             "extra_env": {},
+            "origin": "external",
+            "submitted_by": proc_owner,
+            "process_owner": proc_owner,
+            "submitted_host": node,
+            "scheduler_id": None,
+            "shared_account_suspect": True,
             "node": node,
             "gpu_idx": gpu_idx,
             "remote_pids": pids,
@@ -11405,7 +12890,7 @@ def _build_heartbeat_payload(state, nodes):
     for n in nodes:
         if not n["alive"]:
             node_strs.append(f"{n['name']}:DOWN"); continue
-        gpu_brief = "/".join(f"{g['used_mb']}MB" for g in n["gpus"])
+        gpu_brief = "/".join(_format_mem_gb(g.get("used_mb", 0)) for g in n["gpus"])
         node_strs.append(f"{n['name']}:{gpu_brief}")
     return {"running": running, "launching": launching, "queued": queued, "nodes": node_strs}
 
@@ -11461,6 +12946,10 @@ def _smoke_test_envs():
         # nodes that legitimately don't have the env).
         target = t.get("node") or t.get("require_node") or t.get("preferred_node")
         if not target:
+            continue
+        if _node_is_windows(target):
+            # WindowsBackend rewrites python/path tokens and validates cwd at
+            # launch. This Linux bash smoke test would be a false failure.
             continue
         for probe_cmd, label in probes:
             key = (target, label)
@@ -11784,6 +13273,7 @@ def _watch_iteration(args):
             cur_state = load_state()
         running_by_node = {}
         active_claim_ids_by_node = {}
+        claim_records_by_node = {}
         # Phase 3.4.9 P1: also collect (task_id -> live PID) per node for
         # claim pid reconcile. update_pid in launch / orphan-adopt is best-
         # effort with try/except; if those failed (transport blip, claims
@@ -11800,6 +13290,9 @@ def _watch_iteration(args):
                 continue
             if node and _ClaimManager.enabled_for(node):
                 running_by_node.setdefault(node, []).append(t["id"])
+                claim_records_by_node.setdefault(node, {})[t["id"]] = (
+                    _claim_resource_record_for_task(t)
+                )
                 pids = t.get("remote_pids") or []
                 if pids:
                     live_pid_by_node.setdefault(node, {})[t["id"]] = int(pids[0])
@@ -11837,7 +13330,8 @@ def _watch_iteration(args):
                            feishu_enabled=False)
                 ids = running_by_node.get(node, [])
                 if ids:
-                    _ClaimManager.renew_many(node, ids)
+                    _ClaimManager.renew_many(
+                        node, ids, claim_records_by_node.get(node, {}))
                     # Reconcile claim PIDs against task remote_pids[0]. We
                     # only update when (a) we know a live PID for the task
                     # and (b) the claim record's pid is missing or differs.
@@ -11891,20 +13385,20 @@ def _format_task_vram_usage(task):
     if task.get("status") == "running":
         cur = int(task.get("current_vram_mb") or 0)
         if cur > 0:
-            return f"cur={cur}MB"
+            return f"cur={_format_mem_gb(cur)}"
     if task.get("peak_vram_mb"):
-        return f"peak={task['peak_vram_mb']}MB"
-    return f"~{task.get('est_vram_mb', 0)}MB"
+        return f"peak={_format_mem_gb(task['peak_vram_mb'])}"
+    return _format_mem_gb(task.get("est_vram_mb", 0), approx=True)
 
 
 def _format_task_ram_usage(task):
     if task.get("status") == "running":
         cur = int(task.get("current_ram_mb") or 0)
         if cur > 0:
-            return f"Rcur={cur}MB"
+            return f"Rcur={_format_mem_gb(cur)}"
     if task.get("peak_ram_mb"):
-        return f"Rpeak={task['peak_ram_mb']}MB"
-    return f"~{task.get('ram_mb', 0)}MB"
+        return f"Rpeak={_format_mem_gb(task['peak_ram_mb'])}"
+    return _format_mem_gb(task.get("ram_mb", 0), approx=True)
 
 
 def _task_result_artifacts_for_display(task: dict, include_log: bool = True) -> list:
@@ -11945,7 +13439,9 @@ def cmd_status(args):
         gpu_parts = []
         for g in n["gpus"]:
             mem_pct = int(round(100 * g["used_mb"] / max(g["total_mb"], 1)))
-            gpu_parts.append(f"GPU{g['idx']}={g['used_mb']}/{g['total_mb']}MB(mem:{mem_pct}%, util:{g['util_pct']}%)")
+            gpu_parts.append(
+                f"GPU{g['idx']}={_format_mem_gb(g['used_mb'])}/{_format_mem_gb(g['total_mb'])}"
+                f"(free={_format_mem_gb(g.get('free_mb', 0))}, mem:{mem_pct}%, util:{g['util_pct']}%)")
         gpu_str = ", ".join(gpu_parts)
         load = n.get("loadavg", 0)
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
@@ -11961,7 +13457,7 @@ def cmd_status(args):
         else:
             etaload_str = f"  eta_load={etaload/86400:.1f}d"
         claim_str = _format_node_claim_summary(n)
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={n['free_ram_mb']}MB{etaload_str}{claim_str}")
+        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={_format_mem_gb(n['free_ram_mb'])}{etaload_str}{claim_str}")
     print("\n=== tasks ===")
     show_done = args.all
     rows = [t for t in state["tasks"] if show_done or t["status"] in ("queued", "launching", "running")]
@@ -11978,7 +13474,8 @@ def cmd_status(args):
         eta = _format_task_eta(t)
         eta = f" {eta:15s}" if eta else " " * 16
         proj = (t.get("project") or "?")[:14]
-        print(f"  [{t['id']}] {t['status']:9s} {loc:20s} {proj:14s} {peak:14s} {pram:13s}{runtime}{eta} {t['description'][:55]}")
+        owner = _format_task_owner(t)[:18]
+        print(f"  [{t['id']}] {t['status']:9s} {loc:20s} {proj:14s} {owner:18s} {peak:14s} {pram:13s}{runtime}{eta} {t['description'][:55]}")
 
 
 def cmd_claims(args):
@@ -12028,7 +13525,10 @@ def cmd_show(args):
         print("\n# source: archive (terminal task moved out of hot queue.json)")
     if t.get("log_path") and t.get("node"):
         host = NODES.get(t["node"], {}).get("host") or "local"
-        print(f"\n# tail log: ssh {host} tail -f {t['log_path']}")
+        if _node_is_windows(t["node"]):
+            print(f"\n# tail log: ssh {host} powershell Get-Content -Tail 80 -Wait -LiteralPath '{t['log_path']}'")
+        else:
+            print(f"\n# tail log: ssh {host} tail -f {t['log_path']}")
     _print_result_artifacts(t, include_log=True)
 
 
@@ -12120,13 +13620,21 @@ def cmd_cancel(args):
                 related = _cancel_related_queued_retries(state, t, "user cancel")
                 t.pop("launching_started_at", None)
                 save_state(state)
+                notify("task_cancelled", {
+                    "task_id": t.get("id"),
+                    "status_before": prev,
+                    "actor": t.get("cancel_actor"),
+                    "reason": t.get("cancel_reason"),
+                    "related_cancelled": related,
+                }, feishu_enabled=False)
                 suffix = f" (+{related} duplicate queued retry)" if related else ""
-                print(f"cancelled {prev} task {args.id}{suffix}")
+                print(f"cancelled {prev} task {args.id}{suffix} by {t.get('cancelled_by')}")
                 return
             if t["status"] == "running":
                 if not args.force:
                     sys.exit(f"task {args.id} is RUNNING — pass --force to kill it (will not affect other tasks)")
                 pids = _task_pids(t)
+                actor = _record_task_kill_actor(t, "user force-cancel", "scheduler.py cancel --force")
                 ok, kill_msg = _kill_task_processes(t, timeout=15)
                 # Phase 3.2.1: release the cross-scheduler claim too. Best-
                 # effort; failure leaves the claim to expire via TTL + GC.
@@ -12135,11 +13643,24 @@ def cmd_cancel(args):
                 except Exception:
                     pass
                 _mark_user_cancelled(t, "user force-cancel")
+                t["last_kill_actor"] = actor
+                t["last_killed_by"] = actor["label"]
                 related = _cancel_related_queued_retries(state, t, "user force-cancel")
                 save_state(state)
+                notify("task_killed", {
+                    "task_id": t.get("id"),
+                    "node": t.get("node"),
+                    "pids": pids,
+                    "actor": actor,
+                    "action": "user force-cancel",
+                    "reason": "scheduler.py cancel --force",
+                    "kill_ok": ok,
+                    "kill_msg": kill_msg,
+                    "related_cancelled": related,
+                }, feishu_enabled=False)
                 suffix = kill_msg if ok else f"kill warning: {kill_msg}"
                 dup_suffix = f"; also cancelled {related} duplicate queued retry" if related else ""
-                print(f"killed pids={pids} on {t['node']} and cancelled {args.id} ({suffix}{dup_suffix})")
+                print(f"killed pids={pids} on {t['node']} by {actor['label']} and cancelled {args.id} ({suffix}{dup_suffix})")
                 return
             sys.exit(f"task {args.id} is in state {t['status']!r} — nothing to do")
         sys.exit(f"task {args.id} not found")
@@ -12173,6 +13694,11 @@ def cmd_clear_queue(args):
                 _release_task_claims_and_intents(t)
                 _mark_user_cancelled(t, "user clear-queue")
         save_state(state)
+        notify("clear_queue_cancelled", {
+            "count": len(ids),
+            "task_ids": ids,
+            "actor": _actor_info("clear-queue", "user clear-queue"),
+        }, feishu_enabled=False)
         print(f"cancelled {len(ids)} queued tasks (running tasks untouched)")
 
 def cmd_rebalance_pending(args):
@@ -12600,6 +14126,8 @@ def cmd_install_slurm(args):
 
 def cmd_adopt(args):
     """Register externally-launched process(es) as a tracked task. Verifies PIDs alive and on the claimed GPU."""
+    if _node_is_windows(args.node):
+        sys.exit("adopt is Linux/GPU-only for now; Windows jtl110cpu tasks must be launched through scheduler.py")
     pids = list(args.pids)
     if not pids:
         sys.exit("--pid requires at least one PID")
@@ -12713,6 +14241,12 @@ def cmd_adopt(args):
             "ckpt_glob": "*",
             "resume_flag": "",
             "extra_env": {},
+            "origin": "manual-adopt",
+            "submitted_by": _local_user(),
+            "process_owner": _local_user(),
+            "submitted_host": args.node,
+            "scheduler_id": None,
+            "shared_account_suspect": True,
             "node": args.node,
             "gpu_idx": args.gpu,
             "remote_pids": pids,

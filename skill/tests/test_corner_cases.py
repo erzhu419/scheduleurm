@@ -341,6 +341,80 @@ def run(check, sch):
             return sch.pick_placement(task, nodes) is None
         return with_temp_nodes(_inner)
 
+    def case_cpu_worker_plan_901_on_128_physical():
+        p = sch._cpu_worker_plan_for_items(901, 128)
+        return (
+            p["waves"] == 8
+            and p["workers"] == 113
+            and p["last_wave_items"] == 110
+        )
+
+    def case_cpu_batch_plan_splits_two_128_nodes():
+        def _inner():
+            plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"])
+            return (
+                len(plan) == 2
+                and sum(p["items"] for p in plan) == 901
+                and all(p["physical_cores"] == 128 for p in plan)
+                and all(p["workers"] == 113 for p in plan)
+                and max(p["waves"] for p in plan) == 4
+                and {p["node"] for p in plan} == {"jtl110cpu", "jtl110cpu2"}
+            )
+        return with_temp_nodes(_inner)
+
+    def case_cpu_parallel_template_and_auto_worker_flag():
+        plan = {
+            "node": "jtl110cpu", "start": 0, "end": 451,
+            "items": 451, "workers": 113, "waves": 4,
+            "physical_cores": 128, "last_wave_items": 112,
+            "shard_index": 0, "num_shards": 2,
+        }
+        cmd = "python eval.py --start {start} --end {end} --workers auto --tag {node}"
+        got = sch._rewrite_cpu_parallel_cmd(cmd, plan, total_items=901)
+        return (
+            "--start 0" in got
+            and "--end 451" in got
+            and "--workers 113" in got
+            and "--tag jtl110cpu" in got
+        )
+
+    def case_node_physical_cores_infers_half_logical_when_unconfigured():
+        saved = dict(sch.NODES)
+        try:
+            sch.NODES.clear()
+            sch.NODES["win"] = {"os": "windows", "windows_skip_ht_pair": True}
+            return sch._node_physical_cores("win", {"logical_cpu": 256}) == 128
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved)
+
+    def case_submit_cpu_batch_cli_exists():
+        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        return (
+            "submit-cpu-batch" in src
+            and "cpu-plan" in src
+            and "cmd_submit_cpu_batch" in src
+            and "SCHEDULEURM_CPU_WORKERS" in src
+        )
+
+    def case_cpu_parallel_env_keeps_zero_start_index():
+        env = sch._cpu_parallel_env({
+            "cpu_parallel_total_items": 901,
+            "cpu_parallel_items": 451,
+            "cpu_parallel_start": 0,
+            "cpu_parallel_end": 451,
+            "cpu_auto_workers": 113,
+            "cpu_parallel_waves": 4,
+            "cpu_parallel_physical_cores": 128,
+            "cpu_parallel_shard_index": 0,
+            "cpu_parallel_num_shards": 2,
+        })
+        return (
+            env.get("SCHEDULEURM_CPU_SHARD_START") == "0"
+            and env.get("SCHEDULEURM_CPU_SHARD_INDEX") == "0"
+            and env.get("SCHEDULEURM_CPU_WORKERS") == "113"
+        )
+
     def case_gpu_servers_use_auto_ram_detection():
         try:
             src = open(sch.__file__, encoding="utf-8").read()
@@ -504,6 +578,12 @@ def run(check, sch):
         ("CPU-only placement prefers jtl110cpu", case_cpu_only_prefers_jtl110cpu),
         ("CPU-only placement can prefer jtl110cpu2 when freer", case_cpu_only_prefers_less_loaded_windows_cpu_node),
         ("GPU placement excludes jtl110cpu", case_gpu_task_never_placed_on_jtl110cpu),
+        ("CPU worker plan 901 items on 128 physical cores", case_cpu_worker_plan_901_on_128_physical),
+        ("CPU batch plan splits 901 items across two 128-core nodes", case_cpu_batch_plan_splits_two_128_nodes),
+        ("CPU parallel template rewrites worker auto flag", case_cpu_parallel_template_and_auto_worker_flag),
+        ("Node physical cores infers half of logical cores", case_node_physical_cores_infers_half_logical_when_unconfigured),
+        ("submit-cpu-batch CLI exists", case_submit_cpu_batch_cli_exists),
+        ("CPU parallel env keeps zero start/index", case_cpu_parallel_env_keeps_zero_start_index),
         ("GPU servers use auto RAM detection", case_gpu_servers_use_auto_ram_detection),
         ("Claim capacity uses probed RAM when auto", case_claim_capacity_uses_probed_ram_when_auto),
         ("hybrid backend routes jtl110cpu to WindowsBackend", case_hybrid_routes_jtl110cpu_to_windows_backend),

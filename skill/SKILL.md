@@ -1,7 +1,7 @@
 ---
 name: scheduler
 description: Multi-resource (CPU + RAM + VRAM) scheduler across local 4060 + jtl110gpu (2x 3080Ti) + jtl110gpu2 (2x 3080Ti) + jtl110cpu/jtl110cpu2 (Windows CPU-only 128 physical cores each). Use whenever the user wants to launch ANY computation that consumes meaningful resources — GPU training, CPU-only training, data preprocessing, batch evaluation. Trigger phrases (English / 中文 — both fire equally, examples not exhaustive) — RUN A JOB / SUBMIT A JOB / LAUNCH A JOB / TRAIN / EVAL / INFERENCE / RUN THIS SCRIPT / RUN THIS PYTHON / RUN THIS EVAL / RUN A SWEEP / DATA PREP / N_WORKERS / --device cpu / multi-worker / multi-seed / "kick off X" / "fire off X" / "queue up X" / "schedule X" / "dispatch X" / "deploy X" / "send to GPU" / "put on jtl110gpu" / 跑训练 / 跑评估 / 跑推理 / 跑这个脚本 / 跑这个 python / 跑这个评估 / 跑 X / 提交任务 / 派活 / 派任务 / 部署 / 在 GPU 上跑 / 在 jtl110gpu 跑. STATUS QUERIES — "GPU free?" / "any free RAM?" / "what's running?" / "which node has room?" / "node status" / "show queue" / "show jobs" / "show tasks" / "how many tasks running" / GPU 还空吗 / 显存还够吗 / 哪个节点空 / 现在跑啥呢 / 节点状态 / 看看队列 / 看看任务. JOB CONTROL — "cancel job" / "kill job" / "stop job" / "clear queue" / "forget X" / "rebalance" / "redispatch" / "reassign" / 取消任务 / 杀掉任务 / 停止任务 / 清空队列 / 重新分配 / 重新派发 — also fire whenever a node frees up and queued work should be re-routed. CPU-only tasks must use --vram 0. Handles 1/3-VRAM packing rule, CPU/RAM constraints, WSL OOM defense on local, git-sync precheck, checkpoint resume, Windows CPU-node auto pinning, and auto-discovery of externally-launched tasks (GPU and Linux CPU).
-argument-hint: "[submit | dispatch | status | doctor | profile-local | results | cancel | forget | clear-queue | show | history | adopt]"
+argument-hint: "[submit | submit-cpu-batch | cpu-plan | dispatch | status | doctor | profile-local | results | cancel | forget | clear-queue | show | history | adopt]"
 allowed-tools: Bash(*), Read
 ---
 
@@ -107,6 +107,34 @@ For scheduler-launched Windows tasks, the wrapper periodically pins child worker
 to unique physical cores across processor groups, so future high-parallel CPU eval jobs do
 not need project-level edits for pinning. `scripts/jtl110cpu_pin_block.py` remains a manual
 helper for processes launched outside scheduler.py.
+
+CPU batch worker sizing is built into scheduler.py. For M independent CPU items on N
+physical cores, use `e = ceil(M / N)` waves and `workers = ceil(M / e)`. Example: 901
+items on one 128-physical-core node → 8 waves, 113 workers, final wave 110 items. Do not
+hand-compute this in future turns; use:
+
+```bash
+python ~/.claude/skills/scheduler/scheduler.py cpu-plan --items 901
+```
+
+By default this plans across all CPU-labor nodes (`jtl110cpu,jtl110cpu2`), splitting by
+physical-core capacity. To submit a generic sharded CPU batch, use `submit-cpu-batch`
+with a command template:
+
+```bash
+python ~/.claude/skills/scheduler/scheduler.py submit-cpu-batch \
+  --items 901 \
+  --cmd-template 'python eval.py --start {start} --end {end} --workers {workers}' \
+  --cwd /home/erzhu419/mine_code/PROJECT \
+  --signature 'PROJECT/eval/{node}' \
+  --description 'PROJECT eval {node} [{start},{end})'
+```
+
+Template placeholders include `{start}`, `{end}`, `{items}`, `{workers}`, `{node}`,
+`{shard_index}`, and `{num_shards}`. The scheduler also exports
+`SCHEDULEURM_CPU_*` env vars for scripts that prefer reading shard/worker metadata from
+the environment. Multi-node templates must include shard placeholders unless you pass
+`--allow-env-only-shard`, which is only safe when the script reads those env vars.
 
 Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every 60s and **auto-adopts** any externally-launched user-owned process (BOTH GPU compute apps AND CPU-burning python procs ≥50% CPU under `/home/erzhu419/<project>/`). Notifications go to `~/.claude/scheduler/logs/watcher.log` (and Feishu if `~/.claude/feishu.json` is configured).
 

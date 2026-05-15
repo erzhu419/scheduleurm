@@ -78,16 +78,20 @@ NODES = {
     # max_vram_per_task: None = auto-derive from probed GPU total_mb at runtime (set in probe_node).
     # Was hardcoded 4096 from AMD 610 era; after NVIDIA 4060 (8188MB) became the default GPU,
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
-    "local":      {"host": None,         "cpu_cores": 16, "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None},
+    "local":      {"host": None,         "cpu_cores": 16, "reserved_cpu_cores": int(os.environ.get("SCHEDULEURM_LOCAL_RESERVED_CPU_CORES", "4")),
+                   "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None,
+                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
     # Keep JAX/XLA GPU tasks off jtl110gpu: its 525 driver cannot initialize the
     # current resac-jax CUDA plugin, so those tasks silently fall back to CPU.
     # Non-JAX CUDA work (e.g. the RE-SAC bus PyTorch jobs) is allowed.
     "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None,
+                   "capabilities": ["cpu", "cuda", "torch_cuda"],
                    "blocked_gpu_cmd_patterns": ["resac-jax", "jax_experiments", "XLA_PYTHON_CLIENT", "XLA_FLAGS"]},
     # Slurm may be installed on this small node, but the default policy is still
     # scheduleurm-managed local placement so one GPU can hold multiple small jobs.
     # Explicit task Slurm fields or per-node slurm_*_backend="slurm" still opt in.
-    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None},
+    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None,
+                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
     # Windows CPU-only box. It has 256 logical / 128 physical cores split across
     # processor groups; WindowsBackend launches through a Python wrapper that
     # periodically pins child worker processes to unique physical cores. GPU
@@ -100,6 +104,7 @@ NODES = {
                    "windows_workspace_root": r"F:\erzhu419_smoke",
                    "windows_scheduleurm_dir": r"F:\erzhu419_smoke\.scheduleurm",
                    "windows_auto_pin": True, "windows_skip_ht_pair": True,
+                   "capabilities": ["cpu", "jax_cpu"],
                    "cpu_labor_node": True},
     "jtl110cpu2": {"host": "tf290q6n.zjz-service.cn", "ssh_user": "erzhu419", "ssh_port": 23565,
                    "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
@@ -109,6 +114,7 @@ NODES = {
                    "windows_workspace_root": r"F:\erzhu419_smoke",
                    "windows_scheduleurm_dir": r"F:\erzhu419_smoke\.scheduleurm",
                    "windows_auto_pin": True, "windows_skip_ht_pair": True,
+                   "capabilities": ["cpu", "jax_cpu"],
                    "cpu_labor_node": True},
 }
 
@@ -1871,10 +1877,10 @@ def _live_sibling_ram_floor(task, state):
             return int(candidates[len(candidates) // 2])
     return 0
 
-HISTORY_MAX_ENTRIES = 500  # cap per item 25 (vram_history.json bloat)
+HISTORY_MAX_ENTRIES = int(os.environ.get("SCHEDULEURM_HISTORY_MAX_ENTRIES", "5000"))
 HISTORY_SAMPLES_PER_SIG = 10
 HISTORY_PERCENTILE = 80   # p80 of last N samples → estimate
-RUNTIME_HISTORY_MAX_ENTRIES = 1000
+RUNTIME_HISTORY_MAX_ENTRIES = int(os.environ.get("SCHEDULEURM_RUNTIME_HISTORY_MAX_ENTRIES", "5000"))
 RUNTIME_HISTORY_SAMPLES_PER_KEY = 10
 RUNTIME_HISTORY_PERCENTILE = 80
 RUNTIME_WALLTIME_MULT = 1.20
@@ -4947,8 +4953,12 @@ def _node_resources_ok(task, node_state, node_info):
     if cap is not None and cur_running >= cap:
         return False, f"concurrency cap: {cur_running}/{cap} tasks already running on {node_state.get('name','?')}"
     needed_cpu = task.get("cpu_cores", DEFAULT_CPU_CORES)
-    if node_state.get("free_cpu", 0) < needed_cpu:
-        return False, f"cpu: need {needed_cpu}, free {node_state.get('free_cpu', 0)}/{node_state.get('total_cpu', '?')}"
+    raw_free_cpu = int(node_state.get("free_cpu", 0) or 0)
+    reserved_cpu = max(0, int((node_info or {}).get("reserved_cpu_cores") or 0))
+    sched_free_cpu = max(0, raw_free_cpu - reserved_cpu)
+    if sched_free_cpu < needed_cpu:
+        reserve_note = f" (reserve {reserved_cpu})" if reserved_cpu else ""
+        return False, f"cpu: need {needed_cpu}, free {sched_free_cpu}/{node_state.get('total_cpu', '?')}{reserve_note}"
     needed_ram = task.get("ram_mb", DEFAULT_RAM_MB)
     headroom = _node_ram_headroom_mb(node_state, node_info)
     if node_state.get("free_ram_mb", 0) - needed_ram < headroom:
@@ -4964,16 +4974,60 @@ def _node_gpu_util_limit(node_info):
     return int(util_limit)
 
 
+def _task_capability_text(task: dict) -> str:
+    return "\n".join(str(task.get(k) or "") for k in (
+        "cmd", "cwd", "description", "signature", "project"
+    )).lower()
+
+
+def _task_gpu_capability(task: dict) -> str:
+    """Classify the GPU runtime a task needs for node compatibility checks."""
+    text = _task_capability_text(task)
+    if any(p in text for p in ("resac-jax", "jax_experiments", "xla_python_client", "xla_flags")):
+        return "jax_cuda"
+    if any(p in text for p in ("torch", "pytorch", "sac_ensemble_original_logging.py")):
+        return "torch_cuda"
+    return "cuda"
+
+
+def _task_cpu_fallback_capability(task: dict) -> str:
+    gpu_cap = _task_gpu_capability(task)
+    if gpu_cap == "jax_cuda":
+        return "jax_cpu"
+    if gpu_cap == "torch_cuda":
+        return "torch_cpu"
+    return "cpu"
+
+
+def _node_cpu_fallback_block_reason(task, node_name, node_info):
+    """Return why a GPU task cannot opportunistically run CPU-only on this node."""
+    if (task.get("est_vram_mb") or 0) <= 0:
+        return None
+    caps = set(str(c).lower() for c in ((node_info or {}).get("capabilities") or []))
+    need = _task_cpu_fallback_capability(task)
+    if caps and need not in caps:
+        return f"cpu-fallback capability block: need {need}"
+    return None
+
+
+def _task_launch_cpu_mode(task: dict) -> bool:
+    return int(task.get("est_vram_mb") or 0) <= 0 or bool(task.get("cpu_fallback_selected"))
+
+
 def _node_gpu_task_block_reason(task, node_name, node_info):
     """Return a node policy reason if this GPU task should not run on node_name."""
     if (task.get("est_vram_mb") or 0) <= 0:
         return None
+    caps = set(str(c).lower() for c in ((node_info or {}).get("capabilities") or []))
+    need = _task_gpu_capability(task)
+    if caps and need not in caps and "cuda" not in caps:
+        return f"gpu capability block: need {need}"
+    if caps and need not in caps and need != "cuda":
+        return f"gpu capability block: need {need}"
     patterns = (node_info or {}).get("blocked_gpu_cmd_patterns") or []
     if not patterns:
         return None
-    text = "\n".join(str(task.get(k) or "") for k in (
-        "cmd", "cwd", "description", "signature", "project"
-    )).lower()
+    text = _task_capability_text(task)
     for pattern in patterns:
         pat = str(pattern or "").strip()
         if pat and pat.lower() in text:
@@ -5048,7 +5102,17 @@ def pick_placement(task, nodes):
     def _candidates_for_node(n):
         """Return list of (score, name, gpu_idx) candidates this node can offer (may be empty)."""
         if not n["alive"]: return []
-        if _node_is_windows(n["name"]) and not cpu_only:
+        node_info = NODES[n["name"]]
+        cpu_fallback = False
+        if not cpu_only:
+            cpu_fallback = (
+                _node_is_windows(n["name"])
+                or not n.get("gpus")
+                or node_info.get("max_vram_per_task") == 0
+            )
+            if cpu_fallback and _node_cpu_fallback_block_reason(task, n["name"], node_info):
+                return []
+        if _node_is_windows(n["name"]) and not (cpu_only or cpu_fallback):
             return []
         # Phase 2.3 P1 fix: slurm-managed nodes defer to slurm's own queue — no local
         # capacity check. Without this, login nodes with no GPU (probe gpus=[]) or busy
@@ -5081,16 +5145,19 @@ def pick_placement(task, nodes):
             # node. If no Slurm-capable/Slurm-routed node exists, the task stays queued
             # with an explicit reason instead of running with the wrong policy.
             return []
-        node_info = NODES[n["name"]]
         if not cpu_only and _node_gpu_task_block_reason(task, n["name"], node_info):
-            return []
+            if not cpu_fallback:
+                return []
         ok, _why = _node_resources_ok(task, n, node_info)
         if not ok: return []
         out = []
-        if cpu_only:
+        if cpu_only or cpu_fallback:
             node_info = NODES.get(n["name"], {})
             cpu_labor_bonus = -1 if node_info.get("cpu_labor_node") else 0
-            score = (cpu_labor_bonus, -n["free_cpu"], -n["free_ram_mb"])
+            fallback_penalty = 2 if cpu_fallback and not cpu_only else 0
+            rt = _candidate_runtime_seconds(task, n["name"], None)
+            rt_unknown = 1 if rt <= 0 else 0
+            score = (fallback_penalty, rt_unknown, rt, cpu_labor_bonus, -n["free_cpu"], -n["free_ram_mb"])
             out.append((score, n["name"], None))
         else:
             for g in n["gpus"]:
@@ -5105,10 +5172,12 @@ def pick_placement(task, nodes):
                 total = max(1, int(g.get("total_mb") or 1))
                 need = int(task.get("est_vram_mb") or 0)
                 occupied = 1 if used >= GPU_EMPTY_USED_MB else 0
+                rt = _candidate_runtime_seconds(task, n["name"], g["idx"])
+                rt_unknown = 1 if rt <= 0 else 0
                 if occupied:
-                    score = (occupied, float(used + need) / float(total), used + need)
+                    score = (occupied, rt_unknown, rt, float(used + need) / float(total), used + need)
                 else:
-                    score = (occupied, fits_remaining)
+                    score = (occupied, rt_unknown, rt, fits_remaining)
                 out.append((score, n["name"], g["idx"]))
         return out
 
@@ -5817,7 +5886,7 @@ def _windows_prepare_command(task: dict) -> dict:
                 return {"argv": [], "env": env}
             toks[0] = _windows_rewrite_token(node, toks[0])
             toks = [_windows_rewrite_token(node, t) for t in toks]
-            if int(task.get("est_vram_mb") or 0) <= 0:
+            if _task_launch_cpu_mode(task):
                 device_aware = "--device" in toks or any("jax_experiments" in tok for tok in toks)
                 if "--device" in toks:
                     idx = toks.index("--device")
@@ -6164,7 +6233,7 @@ Write-Output 'READY'
 
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         node = task["node"]
-        if int(task.get("est_vram_mb") or 0) > 0:
+        if int(task.get("est_vram_mb") or 0) > 0 and not task.get("cpu_fallback_selected"):
             return False, "WindowsBackend is CPU-only; refusing GPU task"
         env_err = _windows_env_spec_error(task)
         if env_err:
@@ -8596,6 +8665,32 @@ def _task_runtime_keys(task: dict) -> list:
     return keys
 
 
+def _runtime_device_kind_for_task(task: dict, gpu_idx=None) -> str:
+    if gpu_idx is None or _task_launch_cpu_mode(task):
+        return "cpu"
+    return "gpu"
+
+
+def _runtime_node_bucket_key(node: str, device_kind: str) -> str:
+    return f"{node or '?'}:{device_kind or '?'}"
+
+
+def _candidate_runtime_seconds(task: dict, node: str, gpu_idx=None) -> int:
+    """Return node/device-specific runtime history for placement scoring, or 0 if unknown."""
+    h = load_runtime_history()
+    device = _runtime_device_kind_for_task(task, gpu_idx)
+    bucket = _runtime_node_bucket_key(node, device)
+    for key, _kind, _payload in _task_runtime_keys(task):
+        rec = h.get(key)
+        if not isinstance(rec, dict):
+            continue
+        node_runtime = rec.get("node_runtime") or {}
+        b = node_runtime.get(bucket)
+        if isinstance(b, dict) and int(b.get("total_s") or 0) > 0:
+            return int(b.get("total_s") or 0)
+    return 0
+
+
 def _load_eta_tracker_module():
     try:
         from . import eta_tracker  # type: ignore
@@ -8868,6 +8963,32 @@ def runtime_history_record(task: dict, duration_s: int = 0):
             cur["unit_s"] = float(_percentile([int(x * 1000) for x in us], RUNTIME_HISTORY_PERCENTILE)) / 1000.0
         if total_units > 0:
             cur["total_units"] = total_units
+        node = task.get("node") or task.get("last_node") or ""
+        if node:
+            device = _runtime_device_kind_for_task(task, task.get("gpu_idx"))
+            bucket = _runtime_node_bucket_key(node, device)
+            node_runtime = cur.get("node_runtime")
+            if not isinstance(node_runtime, dict):
+                node_runtime = {}
+            node_rec = node_runtime.get(bucket)
+            if not isinstance(node_rec, dict):
+                node_rec = {}
+            ns = node_rec.get("total_s_samples") or []
+            ns.append(int(total_s))
+            ns = ns[-RUNTIME_HISTORY_SAMPLES_PER_KEY:]
+            node_rec["total_s_samples"] = ns
+            node_rec["total_s"] = _percentile(ns, RUNTIME_HISTORY_PERCENTILE)
+            if unit_s > 0:
+                nus = node_rec.get("unit_s_samples") or []
+                nus.append(float(unit_s))
+                nus = nus[-RUNTIME_HISTORY_SAMPLES_PER_KEY:]
+                node_rec["unit_s_samples"] = nus
+                node_rec["unit_s"] = float(_percentile([int(x * 1000) for x in nus], RUNTIME_HISTORY_PERCENTILE)) / 1000.0
+            node_rec["runs"] = int(node_rec.get("runs") or 0) + 1
+            node_rec["last_seen"] = now
+            node_rec["device_kind"] = device
+            node_runtime[bucket] = node_rec
+            cur["node_runtime"] = node_runtime
         cur["source"] = source or cur.get("source") or "duration"
         cur["kind"] = kind
         cur["signature"] = payload.get("signature") or ""
@@ -10193,7 +10314,7 @@ def _launch_extra_env(task):
     merged = {}
     cmd = task.get("cmd") or ""
     project = task.get("project") or ""
-    is_gpu = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0
+    is_gpu = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0 and not _task_launch_cpu_mode(task)
     is_jax_task = is_gpu and (
         project == "RE-SAC"
         or "jax_experiments" in cmd
@@ -12819,6 +12940,21 @@ def _do_dispatch(state, nodes):
                 if _task_requests_slurm(t):
                     reasons.append(f"{n['name']}=not-slurm-route")
                     continue
+                cpu_fallback_node = (
+                    (t.get("est_vram_mb") or 0) > 0
+                    and (_node_is_windows(n["name"]) or not n.get("gpus") or NODES[n["name"]].get("max_vram_per_task") == 0)
+                )
+                if cpu_fallback_node:
+                    cpu_fb_block = _node_cpu_fallback_block_reason(t, n["name"], NODES[n["name"]])
+                    if cpu_fb_block:
+                        reasons.append(f"{n['name']}={cpu_fb_block}")
+                        continue
+                    ok_node, why_node = _node_resources_ok(t, n, NODES[n["name"]])
+                    if not ok_node:
+                        reasons.append(f"{n['name']}={why_node}")
+                    else:
+                        reasons.append(f"{n['name']}=cpu-fallback fits?(unexpected)")
+                    continue
                 gpu_policy_block = _node_gpu_task_block_reason(t, n["name"], NODES[n["name"]])
                 if gpu_policy_block:
                     reasons.append(f"{n['name']}={gpu_policy_block}")
@@ -12855,6 +12991,20 @@ def _do_dispatch(state, nodes):
             events.append({"type": "no_fit", "task_id": t["id"], "task": t})
             continue
         t["node"], t["gpu_idx"] = placement
+        selected_info = NODES.get(t.get("node"), {})
+        selected_cpu_fallback = (
+            int(t.get("est_vram_mb") or 0) > 0
+            and t.get("gpu_idx") is None
+            and not _node_cpu_fallback_block_reason(t, t.get("node"), selected_info)
+        )
+        if selected_cpu_fallback:
+            t["cpu_fallback_selected"] = True
+            t["cpu_fallback_original_vram_mb"] = int(t.get("est_vram_mb") or 0)
+            t["cpu_fallback_capability"] = _task_cpu_fallback_capability(t)
+        else:
+            t.pop("cpu_fallback_selected", None)
+            t.pop("cpu_fallback_original_vram_mb", None)
+            t.pop("cpu_fallback_capability", None)
         if resume_nodes and t.get("node") not in resume_nodes:
             selected_node = t.get("node")
             stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
@@ -13180,7 +13330,9 @@ def _print_node_summary(nodes):
                 f"(free={_format_mem_gb(g.get('free_mb', 0))}, mem:{mem_pct}%, util:{g['util_pct']}%)")
         gpu_str = ", ".join(gpu_parts) if gpu_parts else "CPU-only"
         load = n.get("loadavg", 0)
-        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
+        reserve = int(NODES.get(n.get("name"), {}).get("reserved_cpu_cores") or 0)
+        reserve_str = f", reserve {reserve}" if reserve else ""
+        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f}{reserve_str})"
         ram_str = f"ram_free={_format_mem_gb(n['free_ram_mb'])}"
         claim_str = _format_node_claim_summary(n)
         print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
@@ -15340,7 +15492,9 @@ def cmd_status(args):
                 f"(free={_format_mem_gb(g.get('free_mb', 0))}, mem:{mem_pct}%, util:{g['util_pct']}%)")
         gpu_str = ", ".join(gpu_parts)
         load = n.get("loadavg", 0)
-        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f})"
+        reserve = int(NODES.get(n.get("name"), {}).get("reserved_cpu_cores") or 0)
+        reserve_str = f", reserve {reserve}" if reserve else ""
+        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f}{reserve_str})"
         # Phase 3.0.2: show node ETA-load (sum of in-flight task ETAs) so the user
         # sees imbalance directly. Migration trigger (Phase 3.0.3) acts on this metric.
         etaload = node_loads.get(n["name"], 0)

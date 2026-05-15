@@ -86,6 +86,9 @@ def submit_task(
     allow_no_ckpt: bool = False,
     allow_shared_ckpt_dir: bool = False,
     allow_remote_large_data: bool = False,
+    stage_excludes: Optional[list[str]] = None,
+    reroute_on_node_down: bool = False,
+    node_down_requeue_s: Optional[int] = None,
     env_spec: str = "none",
     image: Optional[str] = None,
 ) -> dict:
@@ -120,6 +123,9 @@ def submit_task(
         REFUSED unless allow_no_resume=True.
       - ckpt_dir already in use by an active task with a DIFFERENT signature →
         REFUSED unless allow_shared_ckpt_dir=True.
+      - identical run identity already queued/running/launching, or a terminal retry
+        record still has live/unknown launch artifacts → REFUSED unless the caller
+        intentionally sets the CLI's duplicate override outside this MCP wrapper.
 
     Env delivery (env_spec / image):
       - 'none' (default): cmd assumes env (e.g. conda) exists on target. Use when target
@@ -174,11 +180,141 @@ def submit_task(
     if allow_no_ckpt:          args += ["--allow-no-ckpt"]
     if allow_shared_ckpt_dir:  args += ["--allow-shared-ckpt-dir"]
     if allow_remote_large_data: args += ["--allow-remote-large-data"]
+    if stage_excludes:
+        for path in stage_excludes:
+            args += ["--stage-exclude", str(path)]
+    if reroute_on_node_down:
+        args += ["--reroute-on-node-down"]
+    if node_down_requeue_s is not None:
+        args += ["--node-down-requeue-s", str(node_down_requeue_s)]
     if env_spec and env_spec != "none":
         args += ["--env-spec", env_spec]
     if image:
         args += ["--image", image]
     return _run(args)
+
+
+@mcp.tool()
+def cpu_plan(
+    items: int,
+    item_multiplier: int = 1,
+    nodes: Optional[str] = None,
+    use_total_cores: bool = False,
+) -> dict:
+    """Plan a CPU-heavy batch across CPU-labor nodes without submitting it.
+
+    `items` is the logical item count, such as checkpoint count. Use
+    `item_multiplier` when each logical item expands into multiple independent work
+    items. For checkpoint eval with 39 checkpoints and 10 episodes each, pass
+    items=39 and item_multiplier=10; scheduler plans 390 work items.
+    """
+    args = [
+        "cpu-plan",
+        "--items", str(items),
+        "--item-multiplier", str(item_multiplier),
+        "--json",
+    ]
+    if nodes:
+        args += ["--nodes", nodes]
+    if use_total_cores:
+        args += ["--use-total-cores"]
+    return _run(args, timeout=120)
+
+
+@mcp.tool()
+def submit_cpu_batch(
+    description: str,
+    cmd_template: str,
+    cwd: str,
+    signature: str,
+    items: int,
+    item_multiplier: int = 1,
+    nodes: Optional[str] = None,
+    use_total_cores: bool = False,
+    ram_mb: Optional[int] = None,
+    priority: str = "normal",
+    project: Optional[str] = None,
+    extra_env: Optional[dict[str, str]] = None,
+    result_dir_template: Optional[str] = None,
+    local_result_dir_template: Optional[str] = None,
+    wait_for_file_templates: Optional[list[str]] = None,
+    allow_env_only_shard: bool = False,
+    allow_cpu_training: bool = False,
+    cpu_training_justification: Optional[str] = None,
+    allow_no_ckpt: bool = False,
+    allow_no_resume: bool = False,
+    allow_shared_result_dir: bool = False,
+    allow_remote_large_data: bool = False,
+    allow_duplicate: bool = False,
+    stage_excludes: Optional[list[str]] = None,
+    node_down_requeue_s: Optional[int] = None,
+    env_spec: str = "none",
+    image: Optional[str] = None,
+    dry_run: bool = False,
+) -> dict:
+    """Split a CPU-heavy batch across CPU nodes and submit one shard per node.
+
+    This wraps scheduler.py `submit-cpu-batch`. Use placeholders like {start}, {end},
+    {items}, {total_items}, {logical_items}, {item_multiplier}, {workers}, {node},
+    {shard_index}, and {num_shards} in templates. For ckpt eval, prefer
+    item_multiplier=episodes_per_ckpt so worker count is based on ckpt*episode work
+    items rather than checkpoint count alone.
+    """
+    args = [
+        "submit-cpu-batch",
+        "--description", description,
+        "--cmd-template", cmd_template,
+        "--cwd", cwd,
+        "--signature", signature,
+        "--items", str(items),
+        "--item-multiplier", str(item_multiplier),
+        "--priority", priority,
+    ]
+    if nodes:
+        args += ["--nodes", nodes]
+    if use_total_cores:
+        args += ["--use-total-cores"]
+    if ram_mb is not None:
+        args += ["--ram-mb", str(ram_mb)]
+    if project:
+        args += ["--project", project]
+    if extra_env:
+        args += ["--env"] + [f"{k}={v}" for k, v in extra_env.items()]
+    if result_dir_template:
+        args += ["--result-dir-template", result_dir_template]
+    if local_result_dir_template:
+        args += ["--local-result-dir-template", local_result_dir_template]
+    if wait_for_file_templates:
+        for path in wait_for_file_templates:
+            args += ["--wait-for-file-template", str(path)]
+    if allow_env_only_shard:
+        args += ["--allow-env-only-shard"]
+    if allow_cpu_training:
+        args += ["--allow-cpu-training"]
+        if cpu_training_justification:
+            args += ["--cpu-training-justification", cpu_training_justification]
+    if allow_no_ckpt:
+        args += ["--allow-no-ckpt"]
+    if allow_no_resume:
+        args += ["--allow-no-resume"]
+    if allow_shared_result_dir:
+        args += ["--allow-shared-result-dir"]
+    if allow_remote_large_data:
+        args += ["--allow-remote-large-data"]
+    if allow_duplicate:
+        args += ["--allow-duplicate"]
+    if stage_excludes:
+        for path in stage_excludes:
+            args += ["--stage-exclude", str(path)]
+    if node_down_requeue_s is not None:
+        args += ["--node-down-requeue-s", str(node_down_requeue_s)]
+    if env_spec and env_spec != "none":
+        args += ["--env-spec", env_spec]
+    if image:
+        args += ["--image", image]
+    if dry_run:
+        args += ["--dry-run", "--json"]
+    return _run(args, timeout=180)
 
 
 @mcp.tool()

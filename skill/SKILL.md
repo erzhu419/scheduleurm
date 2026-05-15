@@ -120,6 +120,33 @@ hand-compute this in future turns; use:
 python ~/.claude/skills/scheduler/scheduler.py cpu-plan --items 901
 ```
 
+On Windows CPU nodes, a single Python multiprocessing process must stay below the Windows
+wait-handle limit. Scheduler caps one process at 60 workers and automatically splits a
+larger node shard into multiple same-node shards so total workers still match the formula as
+closely as possible. When this creates multiple shards on the same node, include
+`{shard_index}` or `{start}-{end}` in output filenames; otherwise concurrent shards can
+write the same CSV.
+
+When a logical item expands into multiple independent CPU units, make scheduler plan over
+the expanded work-item count instead of the logical count. Checkpoint eval is the common
+case: if there are 39 checkpoints and 10 episodes per checkpoint, use
+`--items 39 --item-multiplier 10` so the planner sees 390 independent items. The eval
+script should interpret `[start,end)` as flattened work-item indices, e.g.
+`ckpt_idx = item_idx // item_multiplier` and `episode_idx = item_idx % item_multiplier`.
+Do not size workers from checkpoint count alone when each checkpoint runs many episodes.
+`submit-cpu-batch` shards are soft-preferred to their planned CPU node and constrained to
+the CPU-labor node set, not hard-pinned. If one CPU node is down before launch or disappears
+long enough during a running shard, the shard is eligible to reroute/requeue onto another
+CPU-labor node, but only after the scheduler can prove the old launch is not still alive.
+If the Windows/OpenSSH/proc probe is unknown, or a terminal retry parent still has live or
+unknown launch artifacts for the same run identity, scheduler must fail closed and block the
+duplicate dispatch rather than start the same shard twice. For Windows staging problems
+caused by irrelevant external symlinks, pass
+repeatable `--stage-exclude <relative-path-or-glob>` instead of hand-editing the project
+tree. Only exclude data that the job definitely does not read; for SUMO evals, do not
+exclude small runtime assets such as `env/sumo_env/initialize_obj`, because missing files
+there produce fast all-error CSVs.
+
 By default this plans across all CPU-labor nodes (`jtl110cpu,jtl110cpu2`) from live
 `free_cpu` values, skipping full/down nodes. Add `--use-total-cores` only for offline
 what-if planning. To submit a generic sharded CPU batch, use `submit-cpu-batch` with a
@@ -128,6 +155,9 @@ command template:
 ```bash
 python ~/.claude/skills/scheduler/scheduler.py submit-cpu-batch \
   --items 901 \
+  --item-multiplier 1 \
+  --stage-exclude 'env/calibrated_env/_line_envs/*/data' \
+  --stage-exclude 'data/datasets_v2' \
   --cmd-template 'python eval.py --start {start} --end {end} --workers {workers}' \
   --cwd /home/erzhu419/mine_code/PROJECT \
   --signature 'PROJECT/eval/{node}' \
@@ -135,7 +165,8 @@ python ~/.claude/skills/scheduler/scheduler.py submit-cpu-batch \
 ```
 
 Template placeholders include `{start}`, `{end}`, `{items}`, `{workers}`, `{node}`,
-`{shard_index}`, and `{num_shards}`. The scheduler also exports
+`{total_items}`, `{logical_items}`, `{item_multiplier}`, `{shard_index}`, and
+`{num_shards}`. The scheduler also exports
 `SCHEDULEURM_CPU_*` env vars for scripts that prefer reading shard/worker metadata from
 the environment. Multi-node templates must include shard placeholders unless you pass
 `--allow-env-only-shard`, which is only safe when the script reads those env vars.
@@ -232,7 +263,7 @@ When the user says "跑这 9 个 ablation":
 | `--git-repo` | for sync check (refuses launch if local dirty or remote out of sync) |
 | `--ckpt-dir` | abs path on target for resume detection |
 | `--resume-flag` | flag the script accepts (e.g. `--resume_from`); scheduler appends `<flag> <ckpt_path>` to cmd on re-dispatch when `find_resume()` locates a ckpt. Empty default = no injection. Pair with `--ckpt-dir`. Required for auto-resume to actually take effect. |
-| `--result-dir` | **Phase 3.5: opt-in auto result pull-back.** Abs path on TARGET node containing the experiment results (logs / final models / metrics). On task completion (status=done), watcher rsyncs this dir to local once. Intermediate ckpts should stay in `--ckpt-dir` (NOT auto-synced; migration / eval pulls them on demand). Set this when you want results back without manual `scp`. |
+| `--result-dir` | **Phase 3.5: opt-in auto result pull-back.** Abs path on TARGET node containing the experiment results (logs / final models / metrics). On task completion (status=done), watcher pulls this dir to local once: rsync for Linux nodes, SSH+tar for Windows CPU nodes. Intermediate ckpts should stay in `--ckpt-dir` (NOT auto-synced; migration / eval pulls them on demand). Set this when you want results back without manual `scp`. |
 | `--local-result-dir` | Optional override for where on local to land the rsync. Defaults to mirroring the target path. Use when local home differs, or you want to collect runs under one dir. |
 | `--test-log` | Local preflight/test log containing tqdm/progress output. Use whenever the code was already run locally before submit; scheduler records runtime history immediately so ETA/walltime start from the local profile. |
 | `--test-peak-vram-mb` / `--test-peak-ram-mb` / `--test-cpu` | Peak resource measurements from local preflight. Pass these when available so first dispatch is sized from measured data instead of broad project defaults. |

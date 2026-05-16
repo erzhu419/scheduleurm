@@ -1523,7 +1523,131 @@ def _result_artifacts_from_cmd(task: dict) -> list:
                         artifacts, task, os.path.join(root, rn), "dir",
                         "cmd:save_root+run_name",
                     )
+                    # RE-SAC/bus-style runners keep final models and logs under
+                    # ROOT/{model,logs,pic}/RUN_NAME rather than ROOT/RUN_NAME.
+                    for subdir in ("model", "logs", "pic"):
+                        _add_result_artifact(
+                            artifacts, task, os.path.join(root, subdir, rn), "dir",
+                            f"cmd:save_root+{subdir}+run_name",
+                        )
     return artifacts
+
+
+_FINAL_MODEL_SUCCESS_FILES = ("final_policy", "final_q", "final_norm")
+
+
+def _save_root_run_name_pairs_from_cmd(task: dict) -> list:
+    cmd = task.get("cmd") or ""
+    if not cmd or (cmd.startswith("(auto-adopted") and " --" not in cmd):
+        return []
+    try:
+        tokens = shlex.split(cmd)
+    except Exception:
+        tokens = cmd.split()
+    vals = _cmd_flag_values(
+        tokens,
+        {"--save-root", "--save_root", "--run-name", "--run_name", "--name"},
+    )
+    roots = []
+    for k in ("--save-root", "--save_root"):
+        roots.extend(vals.get(k, []))
+    run_names = []
+    for k in ("--run-name", "--run_name", "--name"):
+        run_names.extend(vals.get(k, []))
+    pairs = []
+    for root in roots:
+        if not root or str(root).startswith("-"):
+            continue
+        for rn in run_names:
+            if rn and not str(rn).startswith("-"):
+                pairs.append((str(root), str(rn)))
+    return pairs
+
+
+def _bash_path_arg(path: str) -> str:
+    p = str(path)
+    if p.startswith("~/"):
+        rest = p[2:]
+        if not rest:
+            return '"$HOME"'
+        return '"$HOME"/' + shlex.quote(rest)
+    return shlex.quote(p)
+
+
+def _final_model_file_groups_from_cmd(task: dict) -> list:
+    groups = []
+    for root, rn in _save_root_run_name_pairs_from_cmd(task):
+        model_dir = _resolve_task_path(task, os.path.join(root, "model", rn))
+        if not model_dir:
+            continue
+        groups.append((
+            model_dir,
+            [os.path.join(model_dir, name) for name in _FINAL_MODEL_SUCCESS_FILES],
+        ))
+    return groups
+
+
+def _mtimes_match_task_window(task: dict, mtimes: list) -> bool:
+    if len(mtimes) < len(_FINAL_MODEL_SUCCESS_FILES):
+        return False
+    started = float(task.get("started_at") or 0)
+    if started > 0 and min(float(x) for x in mtimes) < started - 300:
+        return False
+    return True
+
+
+def _terminal_final_model_success(task: dict) -> str:
+    """Treat complete final model triplets as a success marker for runners
+    that exit without printing one."""
+    groups = _final_model_file_groups_from_cmd(task)
+    if not groups:
+        return ""
+    node = task.get("node") or "local"
+    node_info = NODES.get(node) or {}
+    for _model_dir, files in groups:
+        try:
+            if node_info.get("host") is None:
+                mtimes = []
+                for path in files:
+                    p = Path(os.path.expanduser(path))
+                    if not p.is_file():
+                        break
+                    mtimes.append(int(p.stat().st_mtime))
+                if _mtimes_match_task_window(task, mtimes):
+                    return "final_model_files"
+            elif _node_is_windows(node):
+                win_files = [_windows_path_for_task(task, p) for p in files]
+                arr = "@(" + ",".join(_ps_quote(p) for p in win_files) + ")"
+                ps = rf'''
+$paths = {arr}
+$mtimes = @()
+foreach ($p in $paths) {{
+  if (-not (Test-Path -LiteralPath $p -PathType Leaf)) {{ exit 1 }}
+  $mtime = (Get-Item -LiteralPath $p).LastWriteTimeUtc
+  $mtimes += [int64]([DateTimeOffset]::new($mtime).ToUnixTimeSeconds())
+}}
+$mtimes | ConvertTo-Json -Compress
+'''
+                rc, out, _ = _run_windows_ps(node, ps, timeout=10, check=False)
+                if rc != 0 or not (out or "").strip():
+                    continue
+                data = json.loads(out.strip().splitlines()[-1])
+                mtimes = data if isinstance(data, list) else [data]
+                if _mtimes_match_task_window(task, mtimes):
+                    return "final_model_files"
+            else:
+                quoted = [_bash_path_arg(p) for p in files]
+                tests = " && ".join(f"test -f {p}" for p in quoted)
+                cmd = f"{tests} && stat -c %Y {' '.join(quoted)}"
+                rc, out, _ = run_on(node, cmd, timeout=10, check=False)
+                if rc != 0 or not (out or "").strip():
+                    continue
+                mtimes = [int(x) for x in out.split() if x.strip().isdigit()]
+                if _mtimes_match_task_window(task, mtimes):
+                    return "final_model_files"
+        except Exception:
+            continue
+    return ""
 
 
 _LOG_RESULT_RE = re.compile(
@@ -3606,6 +3730,10 @@ def _diagnose_terminal(task):
         full_log_success = _scan_full_log_for_success(task)
         if full_log_success:
             success_matched = full_log_success
+    if not success_matched:
+        final_model_success = _terminal_final_model_success(task)
+        if final_model_success:
+            success_matched = [final_model_success]
     reasons = []
     is_crash = False
     # Decision tree (ordered):

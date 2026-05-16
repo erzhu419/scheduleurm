@@ -4781,6 +4781,9 @@ def _summarize_task_for_resource_log(task: dict) -> dict:
         "peak_vram_mb": int(task.get("peak_vram_mb") or 0),
         "current_ram_mb": int(task.get("current_ram_mb") or 0),
         "peak_ram_mb": int(task.get("peak_ram_mb") or 0),
+        "cpu_cores": int(task.get("cpu_cores") or 0),
+        "windows_pin_base": task.get("windows_pin_base"),
+        "windows_pin_cores": task.get("windows_pin_cores"),
         "ram_pressure_mb": _task_ram_pressure_mb(task),
         "ckpt_dir": task.get("ckpt_dir"),
         "resume_scan_at": task.get("resume_scan_at"),
@@ -4792,6 +4795,53 @@ def _summarize_task_for_resource_log(task: dict) -> dict:
         "last_progress_line": (task.get("last_progress_line") or "")[-240:],
     }
     return out
+
+
+def _assign_windows_pin_plan(task: dict, state: dict, node_state: Optional[dict]):
+    node = task.get("node")
+    if not node or not _node_is_windows(node):
+        task.pop("windows_pin_base", None)
+        task.pop("windows_pin_cores", None)
+        return
+    total = max(1, int(_node_physical_cores(node, node_state) or NODES.get(node, {}).get("cpu_cores") or 1))
+    width = max(1, min(total, int(task.get("cpu_cores") or DEFAULT_CPU_CORES or 1)))
+    occupied = [False] * total
+    legacy_cursor = 0
+    running = [
+        t for t in state.get("tasks", [])
+        if t is not task
+        and t.get("status") in ("running", "launching")
+        and (t.get("node") or t.get("assigned_node")) == node
+    ]
+    running.sort(key=lambda t: t.get("started_at") or t.get("submitted_at") or 0)
+    for other in running:
+        other_width = max(1, min(total, int(other.get("windows_pin_cores")
+                                            or other.get("cpu_cores")
+                                            or DEFAULT_CPU_CORES
+                                            or 1)))
+        base = other.get("windows_pin_base")
+        if base is None:
+            base = legacy_cursor
+            legacy_cursor += other_width
+        try:
+            base = int(base)
+        except Exception:
+            continue
+        for i in range(other_width):
+            occupied[(base + i) % total] = True
+
+    def fits(start: int) -> bool:
+        return all(not occupied[(start + i) % total] for i in range(width))
+
+    base = None
+    for start in range(total):
+        if fits(start):
+            base = start
+            break
+    if base is None:
+        base = min(total - 1, legacy_cursor % total)
+    task["windows_pin_base"] = int(base)
+    task["windows_pin_cores"] = int(width)
 
 
 def _resource_snapshot_for_placement(state: dict, nodes: list, task: dict,
@@ -6217,6 +6267,8 @@ def main():
         log.write(("scheduleurm child pid=%s auto_pin=%s\n" % (proc.pid, payload.get("auto_pin"))).encode())
         assigned = {}
         next_slot = 0
+        pin_base = int(payload.get("pin_base") or 0)
+        pin_cores = max(1, int(payload.get("pin_cores") or 1))
         started_at = time.time()
         last_resource_log = 0.0
         loop_count = 0
@@ -6232,14 +6284,15 @@ def main():
                     if pid not in assigned:
                         while next_slot in used_slots:
                             next_slot += 1
-                        assigned[pid] = next_slot
+                        assigned[pid] = next_slot % pin_cores
                         used_slots.add(next_slot)
                         next_slot += 1
-                    ok, group, cpu = pin_pid(pid, assigned[pid], bool(payload.get("skip_ht_pair", True)))
+                    pin_slot = pin_base + (assigned[pid] % pin_cores)
+                    ok, group, cpu = pin_pid(pid, pin_slot, bool(payload.get("skip_ht_pair", True)))
                     if ok:
                         pin_ok_count += 1
                     if ok and not os.environ.get("SCHEDULEURM_PIN_QUIET"):
-                        log.write(("[pin] pid=%s slot=%s group=%s cpu=%s\n" % (pid, assigned[pid], group, cpu)).encode())
+                        log.write(("[pin] pid=%s slot=%s group=%s cpu=%s\n" % (pid, pin_slot, group, cpu)).encode())
             now = time.time()
             if now - last_resource_log >= resource_interval:
                 progress = {
@@ -6251,6 +6304,8 @@ def main():
                     "pinned_process_count": len(assigned),
                     "pin_ok_this_loop": pin_ok_count,
                     "next_pin_slot": next_slot,
+                    "pin_base": pin_base,
+                    "pin_cores": pin_cores,
                     "auto_pin": bool(payload.get("auto_pin")),
                     "cpu_plan": cpu_plan,
                 }
@@ -6410,6 +6465,8 @@ Write-Output 'READY'
             "env": env,
             "auto_pin": bool((NODES.get(node, {}) or {}).get("windows_auto_pin", True)),
             "skip_ht_pair": bool((NODES.get(node, {}) or {}).get("windows_skip_ht_pair", True)),
+            "pin_base": int(task.get("windows_pin_base") or 0),
+            "pin_cores": int(task.get("windows_pin_cores") or task.get("cpu_cores") or 1),
             "pin_interval_s": 1.0,
             "resource_log_interval_s": WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S,
             "cpu_plan": cpu_env,
@@ -6657,82 +6714,67 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
             ps = rf'''
 $roots = @({root_list})
 $specs = @(({_ps_quote(spec_json)} | ConvertFrom-Json))
-$useCim = $true
+$procByPid = @{{}}
 try {{
-  $procs = Get-CimInstance Win32_Process -ErrorAction Stop | Select-Object ProcessId,ParentProcessId,WorkingSetSize,CreationDate
-}} catch {{
-  $useCim = $false
-  $procs = @()
-}}
+  foreach ($p in (Get-Process -ErrorAction SilentlyContinue)) {{
+    $procByPid[[int]$p.Id] = $p
+  }}
+}} catch {{ }}
 $rows = @()
 foreach ($spec in $specs) {{
   $r = [int]$spec.root
   $startedAt = [double]($spec.started_at)
   $finishedAt = [double]($spec.finished_at)
-  if ($useCim) {{
-    $all = New-Object System.Collections.Generic.HashSet[int]
-    $queue = New-Object System.Collections.Queue
-    [void]$queue.Enqueue([int]$r)
-    while ($queue.Count -gt 0) {{
-      $cur = [int]$queue.Dequeue()
-      if (-not $all.Add($cur)) {{ continue }}
-      foreach ($p in $procs) {{
-        if ([int]$p.ParentProcessId -eq $cur) {{ [void]$queue.Enqueue([int]$p.ProcessId) }}
-      }}
+  $all = New-Object System.Collections.Generic.HashSet[int]
+  [void]$all.Add([int]$r)
+  foreach ($knownPid in @($spec.known)) {{
+    try {{ [void]$all.Add([int]$knownPid) }} catch {{ }}
+  }}
+  $log = [string]$spec.log
+  $logExit = $false
+  $logMtime = 0
+  $seedCountBeforeLog = $all.Count
+  if ($log -and (Test-Path -LiteralPath $log)) {{
+    try {{
+      $it = Get-Item -LiteralPath $log -ErrorAction SilentlyContinue
+      if ($it) {{ $logMtime = [int64]([DateTimeOffset]::new($it.LastWriteTimeUtc).ToUnixTimeSeconds()) }}
+    }} catch {{ }}
+    $lines = Get-Content -LiteralPath $log -Tail 30 -ErrorAction SilentlyContinue
+    foreach ($line in $lines) {{
+      if ($line -match 'scheduleurm windows wrapper start' -or
+          $line -match 'scheduleurm child pid=' -or
+          $line -match 'scheduleurm resource-progress') {{ $logExit = $false }}
+      if ($line -match 'scheduleurm child exit rc=') {{ $logExit = $true }}
+      if ($line -match 'scheduleurm child pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
+      if ($line -match 'pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
+      if ($line -match '"root_pid"\s*:\s*(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
     }}
-    $alive = @()
-    $rss = 0
-    foreach ($procId in $all) {{
-      $p = $procs | Where-Object {{ [int]$_.ProcessId -eq [int]$procId }} | Select-Object -First 1
-      if ($p) {{
-        $keep = $true
-        try {{
-          if ($p.CreationDate) {{
-            $st = [System.Management.ManagementDateTimeConverter]::ToDateTime([string]$p.CreationDate)
-            $unix = [int64](([DateTimeOffset]$st).ToUnixTimeSeconds())
-            if ($startedAt -gt 0 -and $unix -lt ($startedAt - 120)) {{ $keep = $false }}
-            if ($finishedAt -gt 0 -and $unix -gt ($finishedAt + 120)) {{ $keep = $false }}
-          }}
-        }} catch {{ }}
-        if (-not $keep) {{ continue }}
-        $alive += [int]$procId
-        $rss += [int64]($p.WorkingSetSize)
-      }}
+  }}
+  $alive = @()
+  $rss = 0
+  foreach ($procId in $all) {{
+    if ($procByPid.ContainsKey([int]$procId)) {{
+      $p = $procByPid[[int]$procId]
+      $keep = $true
+      try {{
+        if ($p.StartTime) {{
+          $unix = [int64](([DateTimeOffset]$p.StartTime).ToUnixTimeSeconds())
+          if ($startedAt -gt 0 -and $unix -lt ($startedAt - 120)) {{ $keep = $false }}
+          if ($finishedAt -gt 0 -and $unix -gt ($finishedAt + 120)) {{ $keep = $false }}
+        }}
+      }} catch {{ }}
+      if (-not $keep) {{ continue }}
+      $alive += [int]$procId
+      $rss += [int64]$p.WorkingSet64
     }}
-    $rows += [pscustomobject]@{{ root=[int]$r; alive=$alive; ram_mb=[int][math]::Round($rss / 1MB) }}
-  }} else {{
-    $all = New-Object System.Collections.Generic.HashSet[int]
-    [void]$all.Add([int]$r)
-    foreach ($knownPid in @($spec.known)) {{
-      try {{ [void]$all.Add([int]$knownPid) }} catch {{ }}
-    }}
-    $log = [string]$spec.log
-    if ($log -and (Test-Path -LiteralPath $log)) {{
-      $lines = Get-Content -LiteralPath $log -Tail 2000 -ErrorAction SilentlyContinue
-      foreach ($line in $lines) {{
-        if ($line -match 'pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
-        if ($line -match '"root_pid"\s*:\s*(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
-      }}
-    }}
-    $alive = @()
-    $rss = 0
-    foreach ($procId in $all) {{
-      $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
-      if ($p) {{
-        $keep = $true
-        try {{
-          if ($p.StartTime) {{
-            $unix = [int64](([DateTimeOffset]$p.StartTime).ToUnixTimeSeconds())
-            if ($startedAt -gt 0 -and $unix -lt ($startedAt - 120)) {{ $keep = $false }}
-            if ($finishedAt -gt 0 -and $unix -gt ($finishedAt + 120)) {{ $keep = $false }}
-          }}
-        }} catch {{ }}
-        if (-not $keep) {{ continue }}
-        $alive += [int]$procId
-        $rss += [int64]$p.WorkingSet64
-      }}
-    }}
-    $rows += [pscustomobject]@{{ root=[int]$r; alive=$alive; ram_mb=[int][math]::Round($rss / 1MB) }}
+  }}
+  $rows += [pscustomobject]@{{
+    root=[int]$r
+    alive=$alive
+    ram_mb=[int][math]::Round($rss / 1MB)
+    log_exit=[bool]$logExit
+    log_mtime=[int64]$logMtime
+    log_seeded=[bool]($all.Count -gt $seedCountBeforeLog)
   }}
 }}
 $rows | ConvertTo-Json -Compress -Depth 4
@@ -6776,6 +6818,10 @@ $rows | ConvertTo-Json -Compress -Depth 4
                     rec = by_root.get(int(p))
                     if not rec:
                         continue
+                    if rec.get("log_exit"):
+                        alive = []
+                        ram = 0
+                        break
                     a = rec.get("alive") or []
                     if isinstance(a, int):
                         a = [a]
@@ -13133,6 +13179,8 @@ def _do_dispatch(state, nodes):
             t.pop("cpu_fallback_selected", None)
             t.pop("cpu_fallback_original_vram_mb", None)
             t.pop("cpu_fallback_capability", None)
+        picked_state = next((n for n in nodes if n.get("name") == t.get("node")), None)
+        _assign_windows_pin_plan(t, state, picked_state)
         if resume_nodes and t.get("node") not in resume_nodes:
             selected_node = t.get("node")
             stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
@@ -13325,7 +13373,6 @@ def _do_dispatch(state, nodes):
         # Phase 3.2.1: pass the picked node's probe state so LocalBackend
         # can build a capacity payload for cross-scheduler claim() without a
         # second ssh round-trip.
-        picked_state = next((n for n in nodes if n.get("name") == t.get("node")), None)
         ok, msg = launch(t, node_state=picked_state)
         if not ok:
             # Phase 3.2.1: claim race is contention, not a real launch failure.

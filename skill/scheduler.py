@@ -2107,7 +2107,7 @@ def _ssh_base_args(node: str) -> list:
     return args
 
 
-def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True):
+def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True, input_data: bytes | None = None):
     """Run a PowerShell script on a Windows node over OpenSSH."""
     encoded = base64.b64encode((ps_script or "").encode("utf-16le")).decode("ascii")
     base_cmd = _ssh_base_args(node) + [
@@ -2121,9 +2121,12 @@ def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True):
             base_cmd + [
                 "-EncodedCommand", encoded,
             ],
+            input=input_data,
             capture_output=True, timeout=timeout,
         )
     else:
+        if input_data is not None:
+            raise RuntimeError("cannot pass stdin to oversized Windows PowerShell script")
         # Windows command lines cap out around 8 KiB; larger scheduler probes
         # must travel over stdin to a temporary script instead of directly in
         # -EncodedCommand. The short runner still uses EncodedCommand so SSH
@@ -6323,6 +6326,32 @@ if __name__ == "__main__":
 '''
 
 
+_WINDOWS_DETACHER = r'''
+import os, subprocess, sys
+
+py, launcher, payload, outp, errp, pidp = sys.argv[1:7]
+CREATE_NEW_PROCESS_GROUP = 0x00000200
+DETACHED_PROCESS = 0x00000008
+CREATE_BREAKAWAY_FROM_JOB = 0x01000000
+flags = CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB
+os.makedirs(os.path.dirname(outp), exist_ok=True)
+os.makedirs(os.path.dirname(pidp), exist_ok=True)
+out = open(outp, "ab", buffering=0)
+err = open(errp, "ab", buffering=0)
+p = subprocess.Popen(
+    [py, launcher, "--payload-file", payload],
+    stdin=subprocess.DEVNULL,
+    stdout=out,
+    stderr=err,
+    close_fds=True,
+    creationflags=flags,
+)
+with open(pidp, "w", encoding="ascii") as f:
+    f.write(str(p.pid))
+print("PID=" + str(p.pid))
+'''
+
+
 class WindowsBackend(Backend):
     """OpenSSH + PowerShell backend for Windows CPU-only nodes.
 
@@ -6414,6 +6443,68 @@ Write-Output 'READY'
             return False, (err or out or f"launcher deploy rc={rc}").strip()[:200]
         return True, launcher
 
+    def _ensure_detacher(self, node: str) -> tuple[bool, str]:
+        sched_dir = self._sched_dir(node)
+        detacher_bytes = _WINDOWS_DETACHER.encode("utf-8")
+        full_digest = hashlib.sha1(detacher_bytes).hexdigest()
+        digest = full_digest[:12]
+        detacher = sched_dir.rstrip("\\/") + rf"\scheduleurm_win_detacher_{digest}.py"
+        ps = rf'''
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+$dir={_ps_quote(sched_dir)}
+$detacher={_ps_quote(detacher)}
+$expected={_ps_quote(full_digest)}
+[IO.Directory]::CreateDirectory($dir) | Out-Null
+if (Test-Path -LiteralPath $detacher) {{
+  Write-Output 'READY'
+  exit 0
+}}
+$tmp = $detacher + ('.tmp.' + $PID)
+$fs = [IO.File]::Open($tmp, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::None)
+try {{
+  [Console]::OpenStandardInput().CopyTo($fs)
+}} finally {{
+  $fs.Close()
+}}
+$tmpHash = (Get-FileHash -Algorithm SHA1 -LiteralPath $tmp).Hash.ToLowerInvariant()
+if ($tmpHash -ne $expected) {{
+  Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+  throw ('detacher hash mismatch: ' + $tmpHash)
+}}
+if (Test-Path -LiteralPath $detacher) {{
+  Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+  Write-Output 'READY'
+  exit 0
+}}
+Move-Item -LiteralPath $tmp -Destination $detacher
+$actual = (Get-FileHash -Algorithm SHA1 -LiteralPath $detacher).Hash.ToLowerInvariant()
+if ($actual -ne $expected) {{ throw ('detacher deploy verify failed: ' + $actual) }}
+Write-Output 'READY'
+'''
+        encoded = base64.b64encode(ps.encode("utf-16le")).decode("ascii")
+        try:
+            proc = subprocess.run(
+                _ssh_base_args(node) + [
+                    "powershell",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-ExecutionPolicy", "Bypass",
+                    "-EncodedCommand", encoded,
+                ],
+                input=detacher_bytes,
+                capture_output=True,
+                timeout=20,
+            )
+            rc = proc.returncode
+            out = (proc.stdout or b"").decode("utf-8", "replace")
+            err = (proc.stderr or b"").decode("utf-8", "replace")
+        except Exception as e:
+            return False, str(e)[:200]
+        if rc != 0 or "READY" not in out:
+            return False, (err or out or f"detacher deploy rc={rc}").strip()[:200]
+        return True, detacher
+
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         node = task["node"]
         if int(task.get("est_vram_mb") or 0) > 0 and not task.get("cpu_fallback_selected"):
@@ -6424,6 +6515,9 @@ Write-Output 'READY'
         ok, launcher = self._ensure_launcher(node)
         if not ok:
             return False, f"windows launcher deploy failed: {launcher}"
+        ok, detacher = self._ensure_detacher(node)
+        if not ok:
+            return False, f"windows detacher deploy failed: {detacher}"
         cwd = _windows_path_for_node(node, task.get("cwd") or "")
         log_path = self._log_path(task)
         py = (NODES.get(node, {}) or {}).get("windows_python") or "python"
@@ -6477,59 +6571,51 @@ Write-Output 'READY'
         safe_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(task.get("id") or "task"))
         launch_nonce = f"{time.time_ns()}_{os.getpid()}"
         pid_path = sched_dir.rstrip("\\/") + rf"\pids\{safe_id}_{launch_nonce}.pid"
+        boot_out_path = log_path + f".{launch_nonce}.boot.out"
+        boot_err_path = log_path + f".{launch_nonce}.boot.err"
         payload["wrapper_pid_path"] = pid_path
         payload_b64 = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
-        ps = rf'''
+        write_payload_ps = rf'''
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$py={_ps_quote(py)}
-$launcher={_ps_quote(launcher)}
-$sched={_ps_quote(sched_dir)}
 $payloadPath={_ps_quote(payload_path)}
-$logPath={_ps_quote(log_path)}
-$pidPath={_ps_quote(pid_path)}
-$bootOut=$logPath + '.boot.out'
-$bootErr=$logPath + '.boot.err'
 [IO.Directory]::CreateDirectory((Split-Path -Parent $payloadPath)) | Out-Null
-[IO.Directory]::CreateDirectory((Split-Path -Parent $logPath)) | Out-Null
-[IO.Directory]::CreateDirectory((Split-Path -Parent $pidPath)) | Out-Null
-Remove-Item -LiteralPath $bootOut,$bootErr -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $pidPath -Force -ErrorAction SilentlyContinue
 $fs = [IO.File]::Open($payloadPath, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::None)
 try {{
   [Console]::OpenStandardInput().CopyTo($fs)
 }} finally {{
   $fs.Close()
 }}
-$detacher=$sched.TrimEnd('\','/') + '\scheduleurm_win_detacher.py'
-$detacherCode = @'
-import os, subprocess, sys
-py, launcher, payload, outp, errp, pidp = sys.argv[1:7]
-CREATE_NEW_PROCESS_GROUP = 0x00000200
-DETACHED_PROCESS = 0x00000008
-CREATE_BREAKAWAY_FROM_JOB = 0x01000000
-flags = CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB
-os.makedirs(os.path.dirname(outp), exist_ok=True)
-os.makedirs(os.path.dirname(pidp), exist_ok=True)
-out = open(outp, "ab", buffering=0)
-err = open(errp, "ab", buffering=0)
-p = subprocess.Popen(
-    [py, launcher, "--payload-file", payload],
-    stdin=subprocess.DEVNULL,
-    stdout=out,
-    stderr=err,
-    close_fds=True,
-    creationflags=flags,
-)
-with open(pidp, "w", encoding="ascii") as f:
-    f.write(str(p.pid))
-print("PID=" + str(p.pid))
-'@
-if (-not (Test-Path -LiteralPath $detacher)) {{
-if (-not (Test-Path -LiteralPath $detacher)) {{
-  [IO.File]::WriteAllText($detacher, $detacherCode, (New-Object System.Text.UTF8Encoding $false))
-}}
-}}
+Write-Output 'WROTE'
+'''
+        try:
+            rc_payload, out_payload, err_payload = _run_windows_ps(
+                node,
+                write_payload_ps,
+                timeout=20,
+                check=False,
+                input_data=payload_b64.encode("ascii"),
+            )
+        except Exception as e:
+            return False, f"windows payload upload failed: {str(e)[:180]}"
+        if rc_payload != 0 or "WROTE" not in out_payload:
+            msg = (err_payload or out_payload or f"rc={rc_payload}").strip()
+            return False, f"windows payload upload failed: {msg[:200]}"
+        ps = rf'''
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+$py={_ps_quote(py)}
+$launcher={_ps_quote(launcher)}
+$detacher={_ps_quote(detacher)}
+$payloadPath={_ps_quote(payload_path)}
+$logPath={_ps_quote(log_path)}
+$pidPath={_ps_quote(pid_path)}
+$bootOut={_ps_quote(boot_out_path)}
+$bootErr={_ps_quote(boot_err_path)}
+[IO.Directory]::CreateDirectory((Split-Path -Parent $logPath)) | Out-Null
+[IO.Directory]::CreateDirectory((Split-Path -Parent $pidPath)) | Out-Null
+Remove-Item -LiteralPath $bootOut,$bootErr -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $pidPath -Force -ErrorAction SilentlyContinue
 $detOut = & $py $detacher $py $launcher $payloadPath $bootOut $bootErr $pidPath
 if ($LASTEXITCODE -ne 0) {{
   throw ('windows detacher failed: ' + (($detOut | Out-String).Trim()))
@@ -6557,35 +6643,20 @@ if (-not $alive -and -not $hasLog) {{
 Write-Output ('PID=' + $pidText)
 exit 0
 '''
-        encoded = base64.b64encode(ps.encode("utf-16le")).decode("ascii")
         try:
             LOG_DIR.mkdir(parents=True, exist_ok=True)
             local_ssh_log = LOG_DIR / f"{task.get('id')}.winssh.log"
-            ssh_cmd = (
-                _ssh_base_args(node) + [
-                    "powershell",
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-ExecutionPolicy", "Bypass",
-                    "-EncodedCommand", encoded,
-                ]
-            )
-            proc = subprocess.run(
-                ssh_cmd,
-                input=payload_b64.encode("ascii"),
-                capture_output=True,
-                timeout=20,
-            )
+            rc_launch, out_launch, err_launch = _run_windows_ps(node, ps, timeout=20, check=False)
             with open(local_ssh_log, "ab", buffering=0) as lf:
-                if proc.stdout:
-                    lf.write(proc.stdout)
-                if proc.stderr:
-                    lf.write(proc.stderr)
-            if proc.returncode != 0:
-                msg = ((proc.stderr or b"") + (proc.stdout or b"")).decode("utf-8", "replace")
-                return False, f"windows detached launch ssh rc={proc.returncode}: {msg.strip()[:200]}"
+                if out_launch:
+                    lf.write(out_launch.encode("utf-8", "replace"))
+                if err_launch:
+                    lf.write(err_launch.encode("utf-8", "replace"))
+            if rc_launch != 0:
+                msg = ((err_launch or "") + (out_launch or ""))
+                return False, f"windows detached launch ssh rc={rc_launch}: {msg.strip()[:200]}"
             pid = None
-            launch_out = (proc.stdout or b"").decode("utf-8", "replace")
+            launch_out = out_launch or ""
             m = re.search(r"PID=(\d+)", launch_out)
             if m:
                 pid = int(m.group(1))
@@ -6606,8 +6677,8 @@ if (Test-Path -LiteralPath $p) {{ [IO.File]::ReadAllText($p).Trim() }}
             task["remote_pids"] = [pid]
             task["process_group"] = pid
             task["log_path"] = log_path
-            task["bootstrap_stdout_path"] = log_path + ".boot.out"
-            task["bootstrap_stderr_path"] = log_path + ".boot.err"
+            task["bootstrap_stdout_path"] = boot_out_path
+            task["bootstrap_stderr_path"] = boot_err_path
             task.pop("local_ssh_pid", None)
             task["local_ssh_log_path"] = str(local_ssh_log)
             task["wrapper_pid_path"] = pid_path
@@ -12092,9 +12163,10 @@ def _sync_one_result(candidate: dict) -> tuple:
 # reclaim. Grace is 10 min on top of the 30 min timeout = 40 min worst case
 # before a stuck task becomes eligible again.
 RESULT_SYNC_STALE_GRACE_S = int(os.environ.get("SCHEDULEURM_RESULT_SYNC_STALE_GRACE_S", "600"))
+RESULT_SYNC_MAX_PER_CYCLE = max(1, int(os.environ.get("SCHEDULEURM_RESULT_SYNC_MAX_PER_CYCLE", "1")))
 
 
-def _sync_completed_results_outside_lock():
+def _sync_completed_results_outside_lock(max_candidates: Optional[int] = None):
     """Phase 3.5: pull results back to local for tasks transitioned to
     status='done' with result_dir set. Three phases (short lock → rsync
     OUTSIDE lock → short lock to commit) mirror _stage_migration_*.
@@ -12119,6 +12191,7 @@ def _sync_completed_results_outside_lock():
     a separate field so the user explicitly chooses what comes back.
     """
     stale_threshold = RESULT_SYNC_TIMEOUT_S + RESULT_SYNC_STALE_GRACE_S
+    limit = RESULT_SYNC_MAX_PER_CYCLE if max_candidates is None else max(1, int(max_candidates))
     candidates = []
     try:
         # Phase 3.4.11 P2 fix: claim each candidate atomically by writing
@@ -12130,6 +12203,8 @@ def _sync_completed_results_outside_lock():
             state = load_state()
             now = time.time()
             for t in state.get("tasks", []):
+                if len(candidates) >= limit:
+                    break
                 if t.get("status") != "done":
                     continue
                 rd = t.get("result_dir")
@@ -15305,15 +15380,6 @@ def _watch_iteration(args):
     except Exception as _e:
         notify("launch_staging_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
-    # Phase 3.5: pull results back from remote nodes for done tasks
-    # opted in via --result-dir. Outside-lock so multi-GB rsync doesn't
-    # stall the watcher cycle. See cmd_dispatch comment for the same
-    # rationale as migration staging.
-    try:
-        _sync_completed_results_outside_lock()
-    except Exception as _e:
-        notify("result_sync_error_outer", {"error": str(_e)[:200]},
-               feishu_enabled=False)
     with state_lock():
         state = load_state()
         recovered_launching_count += recover_stale_launching_tasks(state)
@@ -15461,6 +15527,13 @@ def _watch_iteration(args):
         # no_fit / resume_found are not surfaced — too noisy for Feishu, but they're in the JSONL log.
     notify("dispatch_cycle", _dispatch_cycle_log_payload(state, nodes, events, qcount),
            feishu_enabled=False)
+    # Result sync is deliberately after dispatch. A stale multi-GB result pull
+    # should not keep newly queued tasks idle when nodes are available.
+    try:
+        _sync_completed_results_outside_lock()
+    except Exception as _e:
+        notify("result_sync_error_outer", {"error": str(_e)[:200]},
+               feishu_enabled=False)
     for t in auto_adopted:
         notify("task_auto_adopted", _compact_task_event_payload(t))
     for batch in batch_completions:

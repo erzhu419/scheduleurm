@@ -149,6 +149,8 @@ WATCHER_LOG_MAX_MB = 50     # detailed resource telemetry needs a longer JSONL t
 WATCHER_LOG_GENERATIONS = 3 # keep .log + .log.1 + .log.2 + .log.3 (oldest dropped on next rotation)
 RESOURCE_LOG_INTERVAL_S = max(30, int(os.environ.get("SCHEDULEURM_RESOURCE_LOG_INTERVAL_S", "300")))
 WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S = max(10, int(os.environ.get("SCHEDULEURM_WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S", "60")))
+RUNNING_PROBE_MIN_INTERVAL_S = max(0, int(os.environ.get("SCHEDULEURM_RUNNING_PROBE_MIN_INTERVAL_S", "60")))
+ETA_REFRESH_MIN_INTERVAL_S = max(0, int(os.environ.get("SCHEDULEURM_ETA_REFRESH_MIN_INTERVAL_S", "120")))
 MAX_AUTO_RETRY = 3          # auto-requeue cap after crash (parent.retry_count + 1 > this → give up)
 MAX_LAUNCH_RETRY = 3        # launch-failure cap (cwd missing, ssh timeout, etc.) before terminal failed + heal
 LAUNCHING_RESET_S = 60      # stale WAL launch marker age before reverting to queued
@@ -2315,6 +2317,7 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
     alongside the WSL view:
       host_free_ram_mb         — Win32_OperatingSystem.FreePhysicalMemory
       host_total_ram_mb        — Win32_OperatingSystem.TotalVisibleMemorySize
+      host_cpu_load_pct        — Windows host CPU load percentage
       gpu_compute_util_pct     — max DXGI Compute engine utilization
                                  (the metric Task Manager's GPU widget uses)
 
@@ -2337,11 +2340,14 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
         "$os = Get-CimInstance Win32_OperatingSystem; "
         "$free = [math]::Round($os.FreePhysicalMemory / 1024); "  # KB → MB
         "$tot  = [math]::Round($os.TotalVisibleMemorySize / 1024); "
+        "$cpu = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue "
+        "| Measure-Object -Property LoadPercentage -Average; "
+        "$cpu_pct = if ($cpu.Average -ne $null) { [math]::Round($cpu.Average) } else { 0 }; "
         "$gpu = (Get-Counter '\\GPU Engine(*engtype_Compute*)\\Utilization "
         "Percentage' -ErrorAction SilentlyContinue).CounterSamples "
         "| Measure-Object -Maximum CookedValue; "
         "$gpu_pct = if ($gpu.Maximum) { [math]::Round($gpu.Maximum) } else { 0 }; "
-        "Write-Output \"$free|$tot|$gpu_pct\""
+        "Write-Output \"$free|$tot|$gpu_pct|$cpu_pct\""
     )
     try:
         r = subprocess.run(
@@ -2357,6 +2363,8 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
                 out["host_free_ram_mb"] = int(bits[0])
                 out["host_total_ram_mb"] = int(bits[1])
                 out["gpu_compute_util_pct"] = int(bits[2])
+                if len(bits) >= 4:
+                    out["host_cpu_load_pct"] = int(bits[3])
             except ValueError:
                 pass
     except Exception:
@@ -2367,11 +2375,63 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
 def _probe_windows_node(name: str) -> dict:
     """Probe a Windows CPU-only node.
 
-    Windows has no /proc/loadavg and jtl110cpu has no GPU. Prefer non-admin
-    .NET/Get-Counter probes because some Windows SSH users cannot access WMI/CIM.
-    The load percentage is translated into the configured schedulable physical-core
-    budget (128), not whatever logical processor count the current group exposes.
+    Windows has no /proc/loadavg and jtl110cpu has no GPU. Use host-wide CPU
+    load, then translate it into the configured schedulable physical-core
+    budget (128), not the current processor group size (often 64 logical CPUs).
     """
+    def _queue_accounting_fallback(reason: str) -> dict:
+        """Fallback when live Windows counters time out under heavy CPU load.
+
+        Windows PowerShell/CIM can become too slow exactly when the box is full.
+        Reporting the node as DOWN in that case is also wrong: active scheduler
+        tasks are still alive, and the TUI/dispatcher should at least see the
+        scheduler-owned CPU budget already placed on that host. Verify a cheap
+        SSH command first so true network outages still show DOWN.
+        """
+        try:
+            ping = subprocess.run(
+                _ssh_base_args(name) + ["cmd", "/c", "echo", "OK"],
+                capture_output=True, timeout=6,
+            )
+            if ping.returncode != 0 or b"OK" not in (ping.stdout or b""):
+                return {"name": name, "alive": False,
+                        "error": _windows_probe_error_hint(name, reason)}
+        except Exception:
+            return {"name": name, "alive": False,
+                    "error": _windows_probe_error_hint(name, reason)}
+        info = NODES.get(name, {})
+        total_cpu = int(info.get("cpu_cores") or 1)
+        total_ram = int(info.get("ram_mb") or 0)
+        used_cpu = 0
+        used_ram = 0
+        try:
+            raw = json.loads(QUEUE_FILE.read_text())
+            for t in raw.get("tasks", []):
+                if t.get("status") != "running" or t.get("node") != name:
+                    continue
+                used_cpu += max(0, int(t.get("cpu_cores") or 0))
+                used_ram += max(0, int(t.get("current_ram_mb") or t.get("ram_mb") or 0))
+        except Exception:
+            pass
+        return {
+            "name": name,
+            "alive": True,
+            "gpus": [],
+            "free_ram_mb": max(0, total_ram - used_ram) if total_ram else 0,
+            "actual_free_ram_mb": 0,
+            "total_ram_mb": total_ram,
+            "free_cpu": max(0, total_cpu - used_cpu),
+            "total_cpu": total_cpu,
+            "loadavg": float(min(total_cpu, used_cpu)),
+            "cpu_load_pct": int(round(100.0 * min(total_cpu, used_cpu) / max(1, total_cpu))),
+            "cores": 0,
+            "logical_cpu": 0,
+            "physical_cpu": total_cpu,
+            "os": "windows",
+            "probe_fallback": "queue_accounting",
+            "probe_fallback_reason": str(reason)[:200],
+        }
+
     script = r'''
 $ErrorActionPreference = "Continue"
 try {
@@ -2380,30 +2440,14 @@ try {
   $free = [int][math]::Round($ci.AvailablePhysicalMemory / 1MB)
   $total = [int][math]::Round($ci.TotalPhysicalMemory / 1MB)
   $logical = [int][System.Environment]::ProcessorCount
-  $loadPct = 0
-  function PythonCpuMap {
-    $m = @{}
-    foreach ($name in @('python','python3')) {
-      foreach ($p in [System.Diagnostics.Process]::GetProcessesByName($name)) {
-        try { $m[[int]$p.Id] = [double]$p.TotalProcessorTime.TotalSeconds } catch {}
-        try { $p.Dispose() } catch {}
-      }
-    }
-    return $m
-  }
   try {
-    $m0 = PythonCpuMap
-    Start-Sleep -Milliseconds 700
-    $m1 = PythonCpuMap
-    $delta = 0.0
-    foreach ($k in $m1.Keys) {
-      if ($m0.ContainsKey($k)) {
-        $d = [double]$m1[$k] - [double]$m0[$k]
-        if ($d -gt 0) { $delta += $d }
-      }
-    }
-    $denom = [math]::Max(1, $logical) * 0.7
-    $loadPct = [int][math]::Round([math]::Max(0, [math]::Min(100, 100.0 * $delta / $denom)))
+    $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
+    if ($cs.NumberOfLogicalProcessors) { $logical = [int]$cs.NumberOfLogicalProcessors }
+  } catch {}
+  $loadPct = 0
+  try {
+    $cpu = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Measure-Object -Property LoadPercentage -Average
+    if ($cpu.Average -ne $null) { $loadPct = [int][math]::Round($cpu.Average) }
   } catch { $loadPct = 0 }
   if ($loadPct -le 0) {
     try {
@@ -2425,7 +2469,7 @@ try {
 Write-Output "$free|$total|$logical|$loadPct"
 '''
     try:
-        rc, out, err = _run_windows_ps(name, script, timeout=12, check=False)
+        rc, out, err = _run_windows_ps(name, script, timeout=6, check=False)
         if rc != 0:
             return {"name": name, "alive": False,
                     "error": _windows_probe_error_hint(name, err or out or "powershell probe failed")}
@@ -2443,8 +2487,7 @@ Write-Output "$free|$total|$logical|$loadPct"
         logical_cores = int(float(logical_s))
         load_pct = max(0.0, min(100.0, float(load_s)))
     except Exception as e:
-        return {"name": name, "alive": False,
-                "error": _windows_probe_error_hint(name, str(e))}
+        return _queue_accounting_fallback(str(e))
 
     info = NODES.get(name, {})
     declared_ram = int(info.get("ram_mb") or 0)
@@ -2565,15 +2608,24 @@ def probe_node(name):
               "free_ram_mb": sched_free_ram, "actual_free_ram_mb": free_ram, "total_ram_mb": total_ram,
               "free_cpu": free_cpu, "total_cpu": total_cpu, "loadavg": loadavg,
               "cores": cores}
-    # Phase 3.3: for WSL2 `local`, fold Windows-host metrics so the TUI can
-    # show numbers that match what the user sees in Task Manager. These are
-    # *display* values only; dispatch placement still uses the WSL view (the
-    # only correct number for "can a new task fit inside the WSL VM").
+    # Phase 3.3/3.6: for WSL2 `local`, fold Windows-host metrics so the TUI can
+    # show numbers that match what the user sees in Task Manager. CPU is not
+    # display-only: Windows-side saturation still steals physical cores from WSL,
+    # so local placement uses the more conservative of WSL loadavg and host CPU.
     if name == "local":
         extras = _probe_windows_host_extras()
         if extras:
             result["host_free_ram_mb"] = extras.get("host_free_ram_mb")
             result["host_total_ram_mb"] = extras.get("host_total_ram_mb")
+            host_cpu = extras.get("host_cpu_load_pct")
+            if host_cpu is not None:
+                host_cpu = max(0, min(100, int(host_cpu)))
+                host_used = int(round(total_cpu * host_cpu / 100.0))
+                result["host_cpu_load_pct"] = host_cpu
+                result["host_cpu_used_cores"] = host_used
+                result["wsl_free_cpu"] = result["free_cpu"]
+                result["wsl_loadavg"] = loadavg
+                result["free_cpu"] = min(result["free_cpu"], max(0, total_cpu - host_used))
             cu = extras.get("gpu_compute_util_pct")
             if cu is not None:
                 # Single-GPU on local; if multi, attach to all and let the
@@ -4450,8 +4502,15 @@ def _batch_check_running(state):
 def update_running_tasks(state):
     """Batched version — one ssh per node instead of one per task. See _batch_check_running.
     Phase 3.0.1: also refreshes per-task eta_seconds from log-tail progress parsing."""
-    _batch_check_running(state)
-    _refresh_eta_from_logs(state)
+    now = time.time()
+    last_probe = float(state.get("_last_running_probe_at") or 0)
+    if RUNNING_PROBE_MIN_INTERVAL_S <= 0 or now - last_probe >= RUNNING_PROBE_MIN_INTERVAL_S:
+        _batch_check_running(state)
+        state["_last_running_probe_at"] = time.time()
+    last_eta = float(state.get("_last_eta_refresh_at") or 0)
+    if ETA_REFRESH_MIN_INTERVAL_S <= 0 or now - last_eta >= ETA_REFRESH_MIN_INTERVAL_S:
+        _refresh_eta_from_logs(state)
+        state["_last_eta_refresh_at"] = time.time()
 
 
 def _effective_elapsed_s(task: dict) -> float:
@@ -6785,12 +6844,6 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
             ps = rf'''
 $roots = @({root_list})
 $specs = @(({_ps_quote(spec_json)} | ConvertFrom-Json))
-$procByPid = @{{}}
-try {{
-  foreach ($p in (Get-Process -ErrorAction SilentlyContinue)) {{
-    $procByPid[[int]$p.Id] = $p
-  }}
-}} catch {{ }}
 $rows = @()
 foreach ($spec in $specs) {{
   $r = [int]$spec.root
@@ -6824,8 +6877,9 @@ foreach ($spec in $specs) {{
   $alive = @()
   $rss = 0
   foreach ($procId in $all) {{
-    if ($procByPid.ContainsKey([int]$procId)) {{
-      $p = $procByPid[[int]$procId]
+    try {{
+      $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
+      if (-not $p) {{ continue }}
       $keep = $true
       try {{
         if ($p.StartTime) {{
@@ -6837,7 +6891,7 @@ foreach ($spec in $specs) {{
       if (-not $keep) {{ continue }}
       $alive += [int]$procId
       $rss += [int64]$p.WorkingSet64
-    }}
+    }} catch {{ }}
   }}
   $rows += [pscustomobject]@{{
     root=[int]$r
@@ -6851,20 +6905,38 @@ foreach ($spec in $specs) {{
 $rows | ConvertTo-Json -Compress -Depth 4
 '''
             try:
-                rc, out, _ = _run_windows_ps(node, ps, timeout=30, check=False)
+                rc, out, _ = _run_windows_ps(node, ps, timeout=8, check=False)
                 return out if rc == 0 else None
             except Exception:
                 return None
 
-        with ThreadPoolExecutor(max_workers=len(by_node)) as ex:
-            outputs = dict(zip(by_node.keys(), ex.map(_probe, by_node.keys())))
+        # Windows OpenSSH/PowerShell over the same public SSH gateway is fragile
+        # when two large stdin-fed probe scripts run concurrently: one side can
+        # stall in the temporary-script runner and the whole node reports
+        # unknown/0 CPU. Probe Windows nodes sequentially; it is a display/control
+        # loop, so correctness beats shaving a few seconds off refresh latency.
+        outputs = {node: _probe(node) for node in by_node.keys()}
 
         for node, out in outputs.items():
             if out is None:
-                for t, _ in by_node[node]:
-                    results[t["id"]] = {"state": "unknown", "alive_pids": [],
-                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
-                                        "error": "windows process probe failed"}
+                for t, pids in by_node[node]:
+                    known = []
+                    for x in (t.get("alive_pids") or []):
+                        try:
+                            known.append(int(x))
+                        except Exception:
+                            pass
+                    known.extend(int(p) for p in pids if p)
+                    ram = int(t.get("current_ram_mb") or t.get("peak_ram_mb") or t.get("ram_mb") or 0)
+                    pcpu = float(max(1, int(t.get("cpu_cores") or 1)) * 100)
+                    results[t["id"]] = {
+                        "state": "alive",
+                        "alive_pids": sorted(set(known)),
+                        "vram_mb": 0,
+                        "ram_mb": ram,
+                        "pcpu": pcpu,
+                        "probe_fallback": "windows_queue_accounting",
+                    }
                 continue
             try:
                 raw = (out or "").strip()
@@ -6876,15 +6948,30 @@ $rows | ConvertTo-Json -Compress -Depth 4
                 if not isinstance(data, list) or not data:
                     raise ValueError("windows process probe returned no rows")
             except Exception as e:
-                for t, _ in by_node[node]:
-                    results[t["id"]] = {"state": "unknown", "alive_pids": [],
-                                        "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0,
-                                        "error": f"windows process probe parse failed: {str(e)[:160]}"}
+                for t, pids in by_node[node]:
+                    known = []
+                    for x in (t.get("alive_pids") or []):
+                        try:
+                            known.append(int(x))
+                        except Exception:
+                            pass
+                    known.extend(int(p) for p in pids if p)
+                    ram = int(t.get("current_ram_mb") or t.get("peak_ram_mb") or t.get("ram_mb") or 0)
+                    pcpu = float(max(1, int(t.get("cpu_cores") or 1)) * 100)
+                    results[t["id"]] = {
+                        "state": "alive",
+                        "alive_pids": sorted(set(known)),
+                        "vram_mb": 0,
+                        "ram_mb": ram,
+                        "pcpu": pcpu,
+                        "probe_fallback": f"windows_parse_failed: {str(e)[:80]}",
+                    }
                 continue
             by_root = {int(r.get("root")): r for r in data if r.get("root") is not None}
             for t, pids in by_node[node]:
                 alive = []
                 ram = 0
+                pcpu = 0.0
                 for p in pids:
                     rec = by_root.get(int(p))
                     if not rec:
@@ -6892,12 +6979,17 @@ $rows | ConvertTo-Json -Compress -Depth 4
                     if rec.get("log_exit"):
                         alive = []
                         ram = 0
+                        pcpu = 0.0
                         break
                     a = rec.get("alive") or []
                     if isinstance(a, int):
                         a = [a]
                     alive.extend(int(x) for x in a)
                     ram += int(rec.get("ram_mb") or 0)
+                    try:
+                        pcpu += float(rec.get("pcpu") or 0.0)
+                    except Exception:
+                        pass
                 if not alive:
                     if _local_launch_transport_alive(t):
                         results[t["id"]] = {"state": "unknown", "alive_pids": [],
@@ -6907,8 +6999,10 @@ $rows | ConvertTo-Json -Compress -Depth 4
                     results[t["id"]] = {"state": "dead", "alive_pids": [],
                                         "vram_mb": 0, "ram_mb": 0, "pcpu": 0.0}
                 else:
+                    if pcpu <= 0:
+                        pcpu = float(max(1, int(t.get("cpu_cores") or 1)) * 100)
                     results[t["id"]] = {"state": "alive", "alive_pids": sorted(set(alive)),
-                                        "vram_mb": 0, "ram_mb": ram, "pcpu": 0.0}
+                                        "vram_mb": 0, "ram_mb": ram, "pcpu": pcpu}
         return results
 
 
@@ -13581,8 +13675,21 @@ def _print_node_summary(nodes):
         gpu_str = ", ".join(gpu_parts) if gpu_parts else "CPU-only"
         load = n.get("loadavg", 0)
         reserve = int(NODES.get(n.get("name"), {}).get("reserved_cpu_cores") or 0)
-        reserve_str = f", reserve {reserve}" if reserve else ""
-        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}(load {load:.1f}{reserve_str})"
+        cpu_parts = []
+        if isinstance(load, (int, float)):
+            cpu_parts.append(f"load {load:.1f}")
+        host_cpu = n.get("host_cpu_load_pct")
+        if host_cpu is not None:
+            wsl_load = n.get("wsl_loadavg")
+            if isinstance(wsl_load, (int, float)):
+                cpu_parts[-1:] = [f"wsl_load {wsl_load:.1f}"]
+            cpu_parts.append(f"host {int(host_cpu)}%")
+        if n.get("probe_fallback"):
+            cpu_parts.append(str(n.get("probe_fallback")))
+        if reserve:
+            cpu_parts.append(f"reserve {reserve}")
+        cpu_tail = f"({', '.join(cpu_parts)})" if cpu_parts else ""
+        cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}{cpu_tail}"
         ram_str = f"ram_free={_format_mem_gb(n['free_ram_mb'])}"
         claim_str = _format_node_claim_summary(n)
         print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")

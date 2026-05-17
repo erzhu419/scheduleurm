@@ -129,6 +129,15 @@ def _node_summary_line(nodes):
         gpus = "  ".join(_gpu_segment(g) for g in n["gpus"])
         load = n.get("loadavg")
         load_s = f"load {load:.1f}" if isinstance(load, (int, float)) else ""
+        host_cpu = n.get("host_cpu_load_pct")
+        if host_cpu is not None:
+            wsl_load = n.get("wsl_loadavg")
+            if isinstance(wsl_load, (int, float)):
+                load_s = f"wsl_load {wsl_load:.1f}, host_cpu {int(host_cpu)}%"
+            else:
+                load_s = f"host_cpu {int(host_cpu)}%"
+        if n.get("probe_fallback"):
+            load_s = (load_s + ", " if load_s else "") + str(n.get("probe_fallback"))
         ram_free = n.get("free_ram_mb")
         host_free = n.get("host_free_ram_mb")
         if ram_free is not None and host_free is not None:
@@ -155,8 +164,8 @@ COLUMNS = [
     ("owner", "owner", 18),
     ("priority", "prio", 6),
     ("runtime", "runtime", 9),
-    ("vram", "peak_vram", 10),
-    ("ram", "peak_ram", 10),
+    ("vram", "vram", 10),
+    ("ram", "ram", 10),
     ("eta", "eta", 14),
     ("desc", "description", 60),
 ]

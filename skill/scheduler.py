@@ -4318,6 +4318,8 @@ def _batch_check_running(state):
             _set_current_usage(t, 0, 0, 0.0)
             t["status"] = "done"
             t["finished_at"] = time.time()
+            if res.get("exit_code") is not None:
+                t["exit_code"] = res.get("exit_code")
             # Phase 3.2.1: free the cross-scheduler claim now that the task
             # is terminal. Best-effort — failure to release just leaves the
             # claim to expire via TTL + GC. No-op when claims disabled for
@@ -6821,6 +6823,129 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
         if not by_node:
             return results
 
+        def _terminal_log_result(rc_int):
+            return {
+                "state": "dead",
+                "alive_pids": [],
+                "vram_mb": 0,
+                "ram_mb": 0,
+                "pcpu": 0.0,
+                "terminal_ok": (rc_int == 0) if rc_int is not None else None,
+                "backend_state": f"WINDOWS_LOG_RC_{rc_int}" if rc_int is not None else "WINDOWS_LOG_EXIT",
+                "terminal_reason": (
+                    f"windows wrapper child exit rc={rc_int}"
+                    if rc_int is not None else
+                    "windows wrapper child exit observed in log"
+                ),
+                "exit_code": rc_int,
+            }
+
+        def _probe_log_exits(node):
+            """Cheap terminal fallback for saturated Windows CPU nodes."""
+            specs = []
+            scan_all = len(by_node.get(node, [])) <= 16
+            for t, _pids in by_node[node]:
+                log_path = t.get("log_path") or ""
+                if not log_path:
+                    continue
+                last_line = t.get("last_progress_line") or ""
+                try:
+                    progress_ratio = float(t.get("progress_ratio") or 0.0)
+                except Exception:
+                    progress_ratio = 0.0
+                if progress_ratio <= 0:
+                    try:
+                        cur = float(t.get("runtime_current_unit") or 0.0)
+                        total = float(t.get("runtime_total_units") or 0.0)
+                        if total > 0:
+                            progress_ratio = cur / total
+                    except Exception:
+                        pass
+                try:
+                    eta_seconds = float(t.get("eta_seconds") or 0.0)
+                except Exception:
+                    eta_seconds = 0.0
+                if (not scan_all
+                        and "scheduleurm child exit rc=" not in last_line
+                        and not any(p in last_line for p in SUCCESS_PATTERNS)
+                        and progress_ratio < 0.999
+                        and not (eta_seconds > 0 and eta_seconds <= 600 and progress_ratio >= 0.98)):
+                    continue
+                specs.append({
+                    "id": t.get("id"),
+                    "log": _windows_path_for_task(t, log_path),
+                })
+            if not specs:
+                return {}
+            spec_json = json.dumps(specs)
+            ps = rf'''
+$specs = @(({_ps_quote(spec_json)} | ConvertFrom-Json))
+$rows = @()
+foreach ($spec in $specs) {{
+  $id = [string]$spec.id
+  $log = [string]$spec.log
+  $logExit = $false
+  $logRc = $null
+  $logMtime = 0
+  if ($log -and (Test-Path -LiteralPath $log)) {{
+    try {{
+      $it = Get-Item -LiteralPath $log -ErrorAction SilentlyContinue
+      if ($it) {{ $logMtime = [int64]([DateTimeOffset]::new($it.LastWriteTimeUtc).ToUnixTimeSeconds()) }}
+      $fs = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+      try {{
+        $len = [int64]$fs.Length
+        $start = [Math]::Max([int64]0, $len - 4096)
+        [void]$fs.Seek($start, [IO.SeekOrigin]::Begin)
+        $buf = New-Object byte[] ([int]($len - $start))
+        $read = $fs.Read($buf, 0, $buf.Length)
+        $text = [Text.Encoding]::UTF8.GetString($buf, 0, $read)
+        foreach ($line in ($text -split "`r?`n")) {{
+          if ($line -match 'scheduleurm windows wrapper start' -or
+              $line -match 'scheduleurm child pid=' -or
+              $line -match 'scheduleurm resource-progress') {{ $logExit = $false; $logRc = $null }}
+          if ($line -match 'scheduleurm child exit rc=([+-]?\d+)') {{
+            $logExit = $true
+            $logRc = [int]$Matches[1]
+          }}
+        }}
+      }} finally {{
+        $fs.Close()
+      }}
+    }} catch {{ }}
+  }}
+  $rows += [pscustomobject]@{{
+    id=$id
+    log_exit=[bool]$logExit
+    exit_code=$logRc
+    log_mtime=[int64]$logMtime
+  }}
+}}
+$rows | ConvertTo-Json -Compress -Depth 4
+'''
+            try:
+                rc, out, _ = _run_windows_ps(node, ps, timeout=20, check=False)
+                if rc != 0 or not (out or "").strip():
+                    return {}
+                data = json.loads((out or "").strip())
+                if isinstance(data, dict):
+                    data = [data]
+                if not isinstance(data, list):
+                    return {}
+                ret = {}
+                for row in data:
+                    tid = str(row.get("id") or "")
+                    if not tid or not row.get("log_exit"):
+                        continue
+                    rc_val = row.get("exit_code")
+                    try:
+                        rc_int = int(rc_val)
+                    except Exception:
+                        rc_int = None
+                    ret[tid] = _terminal_log_result(rc_int)
+                return ret
+            except Exception:
+                return {}
+
         def _probe(node):
             specs = []
             for t, pids in by_node[node]:
@@ -6833,7 +6958,7 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
                 for p in pids:
                     specs.append({
                         "root": int(p),
-                        "log": t.get("log_path") or "",
+                        "log": _windows_path_for_task(t, t.get("log_path") or ""),
                         "known": sorted(set(known)),
                         "started_at": float(t.get("started_at") or 0),
                         "finished_at": float(t.get("finished_at") or 0),
@@ -6856,6 +6981,7 @@ foreach ($spec in $specs) {{
   }}
   $log = [string]$spec.log
   $logExit = $false
+  $logRc = $null
   $logMtime = 0
   $seedCountBeforeLog = $all.Count
   if ($log -and (Test-Path -LiteralPath $log)) {{
@@ -6867,8 +6993,8 @@ foreach ($spec in $specs) {{
     foreach ($line in $lines) {{
       if ($line -match 'scheduleurm windows wrapper start' -or
           $line -match 'scheduleurm child pid=' -or
-          $line -match 'scheduleurm resource-progress') {{ $logExit = $false }}
-      if ($line -match 'scheduleurm child exit rc=') {{ $logExit = $true }}
+          $line -match 'scheduleurm resource-progress') {{ $logExit = $false; $logRc = $null }}
+      if ($line -match 'scheduleurm child exit rc=([+-]?\d+)') {{ $logExit = $true; $logRc = [int]$Matches[1] }}
       if ($line -match 'scheduleurm child pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
       if ($line -match 'pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
       if ($line -match '"root_pid"\s*:\s*(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
@@ -6898,6 +7024,7 @@ foreach ($spec in $specs) {{
     alive=$alive
     ram_mb=[int][math]::Round($rss / 1MB)
     log_exit=[bool]$logExit
+    exit_code=$logRc
     log_mtime=[int64]$logMtime
     log_seeded=[bool]($all.Count -gt $seedCountBeforeLog)
   }}
@@ -6916,10 +7043,19 @@ $rows | ConvertTo-Json -Compress -Depth 4
         # unknown/0 CPU. Probe Windows nodes sequentially; it is a display/control
         # loop, so correctness beats shaving a few seconds off refresh latency.
         outputs = {node: _probe(node) for node in by_node.keys()}
+        log_exit_results = {
+            node: _probe_log_exits(node)
+            for node, out in outputs.items()
+            if out is None
+        }
 
         for node, out in outputs.items():
             if out is None:
                 for t, pids in by_node[node]:
+                    log_res = (log_exit_results.get(node) or {}).get(t["id"])
+                    if log_res:
+                        results[t["id"]] = log_res
+                        continue
                     known = []
                     for x in (t.get("alive_pids") or []):
                         try:
@@ -6948,7 +7084,12 @@ $rows | ConvertTo-Json -Compress -Depth 4
                 if not isinstance(data, list) or not data:
                     raise ValueError("windows process probe returned no rows")
             except Exception as e:
+                log_res_by_id = _probe_log_exits(node)
                 for t, pids in by_node[node]:
+                    log_res = log_res_by_id.get(t["id"])
+                    if log_res:
+                        results[t["id"]] = log_res
+                        continue
                     known = []
                     for x in (t.get("alive_pids") or []):
                         try:
@@ -6977,9 +7118,12 @@ $rows | ConvertTo-Json -Compress -Depth 4
                     if not rec:
                         continue
                     if rec.get("log_exit"):
-                        alive = []
-                        ram = 0
-                        pcpu = 0.0
+                        rc_val = rec.get("exit_code")
+                        try:
+                            rc_int = int(rc_val)
+                        except Exception:
+                            rc_int = None
+                        results[t["id"]] = _terminal_log_result(rc_int)
                         break
                     a = rec.get("alive") or []
                     if isinstance(a, int):
@@ -6990,6 +7134,8 @@ $rows | ConvertTo-Json -Compress -Depth 4
                         pcpu += float(rec.get("pcpu") or 0.0)
                     except Exception:
                         pass
+                if t["id"] in results:
+                    continue
                 if not alive:
                     if _local_launch_transport_alive(t):
                         results[t["id"]] = {"state": "unknown", "alive_pids": [],

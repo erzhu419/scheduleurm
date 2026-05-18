@@ -2376,9 +2376,55 @@ def _probe_windows_node(name: str) -> dict:
     """Probe a Windows CPU-only node.
 
     Windows has no /proc/loadavg and jtl110cpu has no GPU. Use host-wide CPU
-    load, then translate it into the configured schedulable physical-core
-    budget (128), not the current processor group size (often 64 logical CPUs).
+    load, then translate it into the observed schedulable physical-core budget.
+    The static config is only an upper cap: after BIOS / hardware changes a node
+    may expose fewer logical CPUs than it used to.
     """
+    def _schedulable_cpu_from_logical(logical_cores: int, info: dict) -> int:
+        try:
+            declared = int(info.get("cpu_cores") or 0)
+        except Exception:
+            declared = 0
+        try:
+            logical = int(logical_cores or 0)
+        except Exception:
+            logical = 0
+        observed = 0
+        if logical > 0:
+            observed = logical
+            if info.get("windows_skip_ht_pair", True) and logical > 1:
+                observed = max(1, logical // 2)
+        if declared > 0 and observed > 0:
+            return max(1, min(declared, observed))
+        return max(1, declared or observed or 1)
+
+    def _cheap_observed_cpu_capacity(info: dict) -> tuple[int, int]:
+        """Return (schedulable_physical, observed_logical) without WMI/CIM."""
+        ps = r'''
+$logical = [int][System.Environment]::ProcessorCount
+try {
+  $envLogical = [int]$env:NUMBER_OF_PROCESSORS
+  if ($envLogical -gt $logical) { $logical = $envLogical }
+} catch {}
+try {
+  $regCount = (Get-ChildItem 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor' -ErrorAction Stop | Measure-Object).Count
+  if ($regCount -gt $logical) { $logical = [int]$regCount }
+} catch {}
+Write-Output $logical
+'''
+        try:
+            rc, out, _ = _run_windows_ps(name, ps, timeout=5, check=False)
+            if rc == 0:
+                for line in reversed((out or "").splitlines()):
+                    line = line.strip()
+                    if re.match(r"^\d+$", line):
+                        logical = int(line)
+                        return _schedulable_cpu_from_logical(logical, info), logical
+        except Exception:
+            pass
+        total = _schedulable_cpu_from_logical(0, info)
+        return total, 0
+
     def _queue_accounting_fallback(reason: str) -> dict:
         """Fallback when live Windows counters time out under heavy CPU load.
 
@@ -2400,7 +2446,7 @@ def _probe_windows_node(name: str) -> dict:
             return {"name": name, "alive": False,
                     "error": _windows_probe_error_hint(name, reason)}
         info = NODES.get(name, {})
-        total_cpu = int(info.get("cpu_cores") or 1)
+        total_cpu, observed_logical = _cheap_observed_cpu_capacity(info)
         total_ram = int(info.get("ram_mb") or 0)
         used_cpu = 0
         used_ram = 0
@@ -2424,8 +2470,8 @@ def _probe_windows_node(name: str) -> dict:
             "total_cpu": total_cpu,
             "loadavg": float(min(total_cpu, used_cpu)),
             "cpu_load_pct": int(round(100.0 * min(total_cpu, used_cpu) / max(1, total_cpu))),
-            "cores": 0,
-            "logical_cpu": 0,
+            "cores": observed_logical,
+            "logical_cpu": observed_logical,
             "physical_cpu": total_cpu,
             "os": "windows",
             "probe_fallback": "queue_accounting",
@@ -2441,8 +2487,16 @@ try {
   $total = [int][math]::Round($ci.TotalPhysicalMemory / 1MB)
   $logical = [int][System.Environment]::ProcessorCount
   try {
+    $envLogical = [int]$env:NUMBER_OF_PROCESSORS
+    if ($envLogical -gt $logical) { $logical = $envLogical }
+  } catch {}
+  try {
+    $regCount = (Get-ChildItem 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor' -ErrorAction Stop | Measure-Object).Count
+    if ($regCount -gt $logical) { $logical = [int]$regCount }
+  } catch {}
+  try {
     $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
-    if ($cs.NumberOfLogicalProcessors) { $logical = [int]$cs.NumberOfLogicalProcessors }
+    if ($cs.NumberOfLogicalProcessors -and [int]$cs.NumberOfLogicalProcessors -gt $logical) { $logical = [int]$cs.NumberOfLogicalProcessors }
   } catch {}
   $loadPct = 0
   try {
@@ -2462,7 +2516,7 @@ try {
   $cpu = Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average
   $free = [int][math]::Round($os.FreePhysicalMemory / 1024)
   $total = [int][math]::Round($os.TotalVisibleMemorySize / 1024)
-  $logical = [int]$cs.NumberOfLogicalProcessors
+  if ($cs.NumberOfLogicalProcessors -and [int]$cs.NumberOfLogicalProcessors -gt $logical) { $logical = [int]$cs.NumberOfLogicalProcessors }
   $loadPct = 0
   if ($cpu.Average -ne $null) { $loadPct = [int][math]::Round($cpu.Average) }
 }
@@ -2496,7 +2550,7 @@ Write-Output "$free|$total|$logical|$loadPct"
     else:
         total_ram = declared_ram or probed_total_ram or max(1, free_ram)
     sched_free_ram = min(free_ram, total_ram)
-    total_cpu = int(info.get("cpu_cores") or logical_cores or 1)
+    total_cpu = _schedulable_cpu_from_logical(logical_cores, info)
     used_cpu = int(round(total_cpu * load_pct / 100.0))
     free_cpu = max(0, total_cpu - used_cpu)
     return {

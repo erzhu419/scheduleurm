@@ -2400,6 +2400,22 @@ def _probe_windows_node(name: str) -> dict:
 
     def _cheap_observed_cpu_capacity(info: dict) -> tuple[int, int]:
         """Return (schedulable_physical, observed_logical) without WMI/CIM."""
+        cap = _cheap_host_capacity(info)
+        if cap.get("logical_cpu"):
+            logical = int(cap["logical_cpu"])
+            return _schedulable_cpu_from_logical(logical, info), logical
+        total = _schedulable_cpu_from_logical(0, info)
+        return total, 0
+
+    def _cheap_host_capacity(info: dict, timeout_s: float = 8.0) -> dict:
+        """Return cheap Windows host capacity counters without WMI/CIM.
+
+        The high-core-count Windows boxes can be so CPU-saturated that CIM and
+        Get-Counter calls time out. Microsoft.VisualBasic.Devices.ComputerInfo
+        plus registry CPU counting has stayed responsive under that load, so use
+        it as the RAM/core source even when the richer probe falls back to queue
+        accounting for CPU load.
+        """
         ps = r'''
 $logical = [int][System.Environment]::ProcessorCount
 try {
@@ -2410,20 +2426,46 @@ try {
   $regCount = (Get-ChildItem 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor' -ErrorAction Stop | Measure-Object).Count
   if ($regCount -gt $logical) { $logical = [int]$regCount }
 } catch {}
-Write-Output $logical
+try {
+  Add-Type -AssemblyName Microsoft.VisualBasic | Out-Null
+  $ci = New-Object Microsoft.VisualBasic.Devices.ComputerInfo
+  $free = [int][math]::Round($ci.AvailablePhysicalMemory / 1MB)
+  $total = [int][math]::Round($ci.TotalPhysicalMemory / 1MB)
+} catch {
+  $free = 0
+  $total = 0
+}
+Write-Output "$free|$total|$logical"
 '''
         try:
-            rc, out, _ = _run_windows_ps(name, ps, timeout=5, check=False)
+            rc, out, _ = _run_windows_ps(name, ps, timeout=timeout_s, check=False)
             if rc == 0:
                 for line in reversed((out or "").splitlines()):
                     line = line.strip()
-                    if re.match(r"^\d+$", line):
-                        logical = int(line)
-                        return _schedulable_cpu_from_logical(logical, info), logical
+                    if re.match(r"^\d+\|\d+\|\d+$", line):
+                        free_s, total_s, logical_s = line.split("|", 2)
+                        return {
+                            "free_ram_mb": int(free_s),
+                            "total_ram_mb": int(total_s),
+                            "logical_cpu": int(logical_s),
+                        }
         except Exception:
             pass
-        total = _schedulable_cpu_from_logical(0, info)
-        return total, 0
+        return {}
+
+    def _windows_queue_usage() -> tuple[int, int]:
+        used_cpu = 0
+        used_ram = 0
+        try:
+            raw = json.loads(QUEUE_FILE.read_text())
+            for t in raw.get("tasks", []):
+                if t.get("status") != "running" or t.get("node") != name:
+                    continue
+                used_cpu += max(0, int(t.get("cpu_cores") or 0))
+                used_ram += max(0, int(t.get("current_ram_mb") or t.get("ram_mb") or 0))
+        except Exception:
+            pass
+        return used_cpu, used_ram
 
     def _queue_accounting_fallback(reason: str) -> dict:
         """Fallback when live Windows counters time out under heavy CPU load.
@@ -2447,24 +2489,26 @@ Write-Output $logical
                     "error": _windows_probe_error_hint(name, reason)}
         info = NODES.get(name, {})
         total_cpu, observed_logical = _cheap_observed_cpu_capacity(info)
-        total_ram = int(info.get("ram_mb") or 0)
-        used_cpu = 0
-        used_ram = 0
-        try:
-            raw = json.loads(QUEUE_FILE.read_text())
-            for t in raw.get("tasks", []):
-                if t.get("status") != "running" or t.get("node") != name:
-                    continue
-                used_cpu += max(0, int(t.get("cpu_cores") or 0))
-                used_ram += max(0, int(t.get("current_ram_mb") or t.get("ram_mb") or 0))
-        except Exception:
-            pass
+        cap = _cheap_host_capacity(info)
+        declared_ram = int(info.get("ram_mb") or 0)
+        probed_total_ram = int(cap.get("total_ram_mb") or 0)
+        actual_free_ram = int(cap.get("free_ram_mb") or 0)
+        if declared_ram and probed_total_ram:
+            total_ram = min(declared_ram, probed_total_ram)
+        else:
+            total_ram = declared_ram or probed_total_ram
+        used_cpu, used_ram = _windows_queue_usage()
+        queue_free_ram = max(0, total_ram - used_ram) if total_ram else 0
+        sched_free_ram = (
+            min(actual_free_ram, total_ram) if actual_free_ram and total_ram
+            else queue_free_ram
+        )
         return {
             "name": name,
             "alive": True,
             "gpus": [],
-            "free_ram_mb": max(0, total_ram - used_ram) if total_ram else 0,
-            "actual_free_ram_mb": 0,
+            "free_ram_mb": max(0, sched_free_ram),
+            "actual_free_ram_mb": actual_free_ram,
             "total_ram_mb": total_ram,
             "free_cpu": max(0, total_cpu - used_cpu),
             "total_cpu": total_cpu,
@@ -2477,6 +2521,44 @@ Write-Output $logical
             "probe_fallback": "queue_accounting",
             "probe_fallback_reason": str(reason)[:200],
         }
+
+    info = NODES.get(name, {})
+    cpu_load_source = str(
+        info.get("windows_cpu_load_source")
+        or os.environ.get("SCHEDULEURM_WINDOWS_CPU_LOAD_SOURCE")
+        or "queue"
+    ).strip().lower()
+    if cpu_load_source in ("queue", "accounting", "queue_accounting"):
+        cap = _cheap_host_capacity(info)
+        if cap:
+            observed_logical = int(cap.get("logical_cpu") or 0)
+            total_cpu = _schedulable_cpu_from_logical(observed_logical, info)
+            declared_ram = int(info.get("ram_mb") or 0)
+            probed_total_ram = int(cap.get("total_ram_mb") or 0)
+            actual_free_ram = int(cap.get("free_ram_mb") or 0)
+            if declared_ram and probed_total_ram:
+                total_ram = min(declared_ram, probed_total_ram)
+            else:
+                total_ram = declared_ram or probed_total_ram or max(1, actual_free_ram)
+            used_cpu, _used_ram = _windows_queue_usage()
+            free_cpu = max(0, total_cpu - used_cpu)
+            return {
+                "name": name,
+                "alive": True,
+                "gpus": [],
+                "free_ram_mb": min(actual_free_ram, total_ram) if total_ram else actual_free_ram,
+                "actual_free_ram_mb": actual_free_ram,
+                "total_ram_mb": total_ram,
+                "free_cpu": free_cpu,
+                "total_cpu": total_cpu,
+                "loadavg": float(min(total_cpu, used_cpu)),
+                "cpu_load_pct": int(round(100.0 * min(total_cpu, used_cpu) / max(1, total_cpu))),
+                "cores": observed_logical,
+                "logical_cpu": observed_logical,
+                "physical_cpu": total_cpu,
+                "os": "windows",
+                "probe_fallback": "queue_cpu_live_ram",
+            }
 
     script = r'''
 $ErrorActionPreference = "Continue"
@@ -2543,7 +2625,11 @@ Write-Output "$free|$total|$logical|$loadPct"
     except Exception as e:
         return _queue_accounting_fallback(str(e))
 
-    info = NODES.get(name, {})
+    if free_ram <= 0 or probed_total_ram <= 0 or logical_cores <= 0:
+        cap = _cheap_host_capacity(info)
+        free_ram = free_ram or int(cap.get("free_ram_mb") or 0)
+        probed_total_ram = probed_total_ram or int(cap.get("total_ram_mb") or 0)
+        logical_cores = logical_cores or int(cap.get("logical_cpu") or 0)
     declared_ram = int(info.get("ram_mb") or 0)
     if declared_ram and probed_total_ram:
         total_ram = min(declared_ram, probed_total_ram)
@@ -6897,11 +6983,27 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
         def _probe_log_exits(node):
             """Cheap terminal fallback for saturated Windows CPU nodes."""
             specs = []
-            scan_all = len(by_node.get(node, [])) <= 16
+            # If the full process probe timed out, queue-accounting fallback can
+            # otherwise keep dead Windows tasks "alive" indefinitely. Scan every
+            # task log in that path; this is slower, but it is the correctness
+            # fallback for saturated CPU nodes.
+            scan_all = True
             for t, _pids in by_node[node]:
                 log_path = t.get("log_path") or ""
                 if not log_path:
                     continue
+                known = []
+                for x in (t.get("alive_pids") or []):
+                    try:
+                        known.append(int(x))
+                    except Exception:
+                        pass
+                roots = []
+                for x in (_pids or []):
+                    try:
+                        roots.append(int(x))
+                    except Exception:
+                        pass
                 last_line = t.get("last_progress_line") or ""
                 try:
                     progress_ratio = float(t.get("progress_ratio") or 0.0)
@@ -6928,6 +7030,8 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
                 specs.append({
                     "id": t.get("id"),
                     "log": _windows_path_for_task(t, log_path),
+                    "roots": sorted(set(roots)),
+                    "known": sorted(set(known)),
                 })
             if not specs:
                 return {}
@@ -6935,12 +7039,19 @@ Write-Output ("STOPPED=" + (($all | Sort-Object) -join ","))
             ps = rf'''
 $specs = @(({_ps_quote(spec_json)} | ConvertFrom-Json))
 $rows = @()
-foreach ($spec in $specs) {{
-  $id = [string]$spec.id
-  $log = [string]$spec.log
-  $logExit = $false
-  $logRc = $null
-  $logMtime = 0
+	foreach ($spec in $specs) {{
+	  $id = [string]$spec.id
+	  $log = [string]$spec.log
+	  $all = New-Object System.Collections.Generic.HashSet[int]
+	  foreach ($pid0 in @($spec.roots)) {{
+	    try {{ [void]$all.Add([int]$pid0) }} catch {{ }}
+	  }}
+	  foreach ($pid0 in @($spec.known)) {{
+	    try {{ [void]$all.Add([int]$pid0) }} catch {{ }}
+	  }}
+	  $logExit = $false
+	  $logRc = $null
+	  $logMtime = 0
   if ($log -and (Test-Path -LiteralPath $log)) {{
     try {{
       $it = Get-Item -LiteralPath $log -ErrorAction SilentlyContinue
@@ -6957,27 +7068,44 @@ foreach ($spec in $specs) {{
           if ($line -match 'scheduleurm windows wrapper start' -or
               $line -match 'scheduleurm child pid=' -or
               $line -match 'scheduleurm resource-progress') {{ $logExit = $false; $logRc = $null }}
-          if ($line -match 'scheduleurm child exit rc=([+-]?\d+)') {{
-            $logExit = $true
-            $logRc = [int]$Matches[1]
-          }}
-        }}
-      }} finally {{
-        $fs.Close()
-      }}
-    }} catch {{ }}
-  }}
-  $rows += [pscustomobject]@{{
-    id=$id
-    log_exit=[bool]$logExit
-    exit_code=$logRc
-    log_mtime=[int64]$logMtime
+	          if ($line -match 'scheduleurm child exit rc=([+-]?\d+)') {{
+	            $logExit = $true
+	            $logRc = [int]$Matches[1]
+	          }}
+	          if ($line -match 'scheduleurm child pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
+	          if ($line -match 'pid=(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
+	          if ($line -match '"root_pid"\s*:\s*(\d+)') {{ [void]$all.Add([int]$Matches[1]) }}
+	        }}
+	      }} finally {{
+	        $fs.Close()
+	      }}
+	    }} catch {{ }}
+	  }}
+	  $alive = @()
+	  $rss = 0
+	  foreach ($procId in $all) {{
+	    try {{
+	      $p = Get-Process -Id ([int]$procId) -ErrorAction SilentlyContinue
+	      if (-not $p) {{ continue }}
+	      $alive += [int]$procId
+	      $rss += [int64]$p.WorkingSet64
+	    }} catch {{ }}
+	  }}
+	  $rows += [pscustomobject]@{{
+	    id=$id
+	    alive=$alive
+	    ram_mb=[int][math]::Round($rss / 1MB)
+	    candidate_count=[int]$all.Count
+	    log_exit=[bool]$logExit
+	    exit_code=$logRc
+	    log_mtime=[int64]$logMtime
   }}
 }}
 $rows | ConvertTo-Json -Compress -Depth 4
 '''
             try:
-                rc, out, _ = _run_windows_ps(node, ps, timeout=20, check=False)
+                fallback_timeout = max(20, min(60, 8 + len(specs) // 2))
+                rc, out, _ = _run_windows_ps(node, ps, timeout=fallback_timeout, check=False)
                 if rc != 0 or not (out or "").strip():
                     return {}
                 data = json.loads((out or "").strip())
@@ -6988,14 +7116,39 @@ $rows | ConvertTo-Json -Compress -Depth 4
                 ret = {}
                 for row in data:
                     tid = str(row.get("id") or "")
-                    if not tid or not row.get("log_exit"):
+                    if not tid:
                         continue
                     rc_val = row.get("exit_code")
                     try:
                         rc_int = int(rc_val)
                     except Exception:
                         rc_int = None
-                    ret[tid] = _terminal_log_result(rc_int)
+                    if row.get("log_exit"):
+                        ret[tid] = _terminal_log_result(rc_int)
+                        continue
+                    alive = row.get("alive") or []
+                    if isinstance(alive, int):
+                        alive = [alive]
+                    alive = sorted(set(int(x) for x in alive))
+                    if alive:
+                        ret[tid] = {
+                            "state": "alive",
+                            "alive_pids": alive,
+                            "vram_mb": 0,
+                            "ram_mb": int(row.get("ram_mb") or 0),
+                            "pcpu": 0.0,
+                            "probe_fallback": "windows_log_pid_liveness",
+                        }
+                        continue
+                    if int(row.get("candidate_count") or 0) > 0:
+                        ret[tid] = {
+                            "state": "dead",
+                            "alive_pids": [],
+                            "vram_mb": 0,
+                            "ram_mb": 0,
+                            "pcpu": 0.0,
+                            "probe_fallback": "windows_log_pid_liveness",
+                        }
                 return ret
             except Exception:
                 return {}
@@ -7086,7 +7239,8 @@ foreach ($spec in $specs) {{
 $rows | ConvertTo-Json -Compress -Depth 4
 '''
             try:
-                rc, out, _ = _run_windows_ps(node, ps, timeout=8, check=False)
+                probe_timeout = max(12, min(60, 6 + len(specs) // 2))
+                rc, out, _ = _run_windows_ps(node, ps, timeout=probe_timeout, check=False)
                 return out if rc == 0 else None
             except Exception:
                 return None
@@ -7096,7 +7250,18 @@ $rows | ConvertTo-Json -Compress -Depth 4
         # stall in the temporary-script runner and the whole node reports
         # unknown/0 CPU. Probe Windows nodes sequentially; it is a display/control
         # loop, so correctness beats shaving a few seconds off refresh latency.
-        outputs = {node: _probe(node) for node in by_node.keys()}
+        high_fanout_threshold = max(1, int(os.environ.get(
+            "SCHEDULEURM_WINDOWS_PROCESS_PROBE_HIGH_FANOUT", "32")))
+        outputs = {}
+        for node in by_node.keys():
+            if len(by_node.get(node, [])) > high_fanout_threshold:
+                # A single giant PowerShell probe over dozens of Windows tasks
+                # consistently times out on saturated CPU nodes. Go straight to
+                # the cheaper log/PID fallback, which still catches exits and
+                # verifies recently logged child PIDs when possible.
+                outputs[node] = None
+            else:
+                outputs[node] = _probe(node)
         log_exit_results = {
             node: _probe_log_exits(node)
             for node, out in outputs.items()

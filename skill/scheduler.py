@@ -57,6 +57,26 @@ except Exception:
     env_deploy = None
 
 # ---------- node inventory ----------
+GPU_A_RE_SAC_JAX_ENV = "/home/researcher/.venvs/resac-jax-gpu1-0438"
+GPU_A_RE_SAC_JAX_SITE = f"{GPU_A_RE_SAC_JAX_ENV}/lib/python3.11/site-packages"
+GPU_A_RE_SAC_JAX_NVIDIA_LIBS = ":".join([
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cublas/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cuda_nvcc/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cuda_nvrtc/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cuda_runtime/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cudnn/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cufft/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/curand/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cusolver/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cusparse/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/nccl/lib",
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/nvjitlink/lib",
+])
+GPU_A_RE_SAC_JAX_PATH = (
+    f"{GPU_A_RE_SAC_JAX_SITE}/nvidia/cuda_nvcc/bin:"
+    "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+)
+
 # cpu_cores are the schedulable budget. ram_mb is an optional schedulable cap:
 # positive value = cap placement to that many MB; 0/unset = auto-detect MemTotal.
 # Local is WSL2: 16 physical cores / 32 logical threads. Use physical cores as
@@ -81,12 +101,20 @@ NODES = {
     "local":      {"host": None,         "cpu_cores": 16, "reserved_cpu_cores": int(os.environ.get("SCHEDULEURM_LOCAL_RESERVED_CPU_CORES", "4")),
                    "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None,
                    "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
-    # Keep JAX/XLA GPU tasks off gpu_a: its 525 driver cannot initialize the
-    # current resac-jax CUDA plugin, so those tasks silently fall back to CPU.
-    # Non-JAX CUDA work (e.g. the RE-SAC bus PyTorch jobs) is allowed.
+    # gpu_a has a 525 driver, so the shared resac-jax JAX 0.9 CUDA plugin
+    # cannot initialize there. Route RE-SAC JAX commands through a node-local
+    # JAX 0.4.38 venv with CUDA/cuDNN wheels verified on this driver.
     "gpu_a":  {"host": "gpu_a",  "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None,
-                   "capabilities": ["cpu", "cuda", "torch_cuda"],
-                   "blocked_gpu_cmd_patterns": ["resac-jax", "jax_experiments", "XLA_PYTHON_CLIENT", "XLA_FLAGS"]},
+                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+                   "cmd_rewrites": [
+                       ("/home/researcher/.conda/envs/resac-jax/bin/python",
+                        f"{GPU_A_RE_SAC_JAX_ENV}/bin/python"),
+                   ],
+                   "launch_extra_env": {
+                       "PATH": GPU_A_RE_SAC_JAX_PATH,
+                       "LD_LIBRARY_PATH": GPU_A_RE_SAC_JAX_NVIDIA_LIBS,
+                       "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
+                   }},
     # Slurm may be installed on this small node, but the default policy is still
     # scheduleurm-managed local placement so one GPU can hold multiple small jobs.
     # Explicit task Slurm fields or per-node slurm_*_backend="slurm" still opt in.
@@ -113,7 +141,7 @@ NODES = {
                    "windows_python": r"F:\researcher_smoke\venv\Scripts\python.exe",
                    "windows_workspace_root": r"F:\researcher_smoke",
                    "windows_scheduleurm_dir": r"F:\researcher_smoke\.scheduleurm",
-                   "windows_auto_pin": True, "windows_skip_ht_pair": True,
+                   "windows_auto_pin": True, "windows_skip_ht_pair": False,
                    "capabilities": ["cpu", "jax_cpu"],
                    "cpu_labor_node": True},
 }
@@ -7386,7 +7414,7 @@ class LocalBackend(Backend):
         log_path = f"{STATE_DIR}/logs/{task['id']}.log" if NODES[task["node"]]["host"] is None \
                    else f"/tmp/sched_{task['id']}.log"
         cwd = task["cwd"]
-        inner = task["cmd"]
+        inner = _apply_node_cmd_rewrites(task.get("node"), task["cmd"])
         # `-u` injection for python invocations: without unbuffered stdout, python's full-buffering
         # mode (when stdout is a file) holds output in a 4KB block until process exit OR explicit
         # flush. If the process is SIGKILL'd (eviction, OOM, watcher kill) BEFORE the buffer fills,
@@ -7494,7 +7522,7 @@ class LocalBackend(Backend):
         # Phase 3.0.23 P2 fix: filter extra_env at the export site so legacy
         # state.json entries with invalid / reserved keys can't break the
         # export shell or override CUDA_VISIBLE_DEVICES set above.
-        for k, v in _safe_extra_env_items(_launch_extra_env(task)):
+        for k, v in _safe_extra_env_items(_node_launch_extra_env(task)):
             env_prefix += f"export {k}={shlex.quote(v)}; "
         # setsid creates a new session + process group leader, so `cancel --force`'s `kill -- -<pid>`
         # reliably catches every worker child. The </dev/null is so the launched process doesn't
@@ -11013,6 +11041,17 @@ def _safe_extra_env_items(extra_env):
             continue
         yield (k, v)
 
+def _apply_node_cmd_rewrites(node, cmd):
+    """Apply deterministic node-local command rewrites before launch."""
+    if not node or not cmd:
+        return cmd
+    for old, new in (NODES.get(node, {}).get("cmd_rewrites") or []):
+        old = str(old or "")
+        new = str(new or "")
+        if old and new and old in cmd:
+            cmd = cmd.replace(old, new)
+    return cmd
+
 def _launch_extra_env(task):
     """Launch-time env after applying conservative defaults for known JAX GPU tasks."""
     merged = {}
@@ -11031,6 +11070,13 @@ def _launch_extra_env(task):
         if project == "RE-SAC" and task.get("cwd"):
             merged["PYTHONPATH"] = task["cwd"]
     merged.update(task.get("extra_env") or {})
+    return merged
+
+def _node_launch_extra_env(task):
+    """Merge node-local launch env with task/JAX defaults."""
+    node = task.get("node") or ""
+    merged = dict((NODES.get(node, {}) or {}).get("launch_extra_env") or {})
+    merged.update(_launch_extra_env(task))
     return merged
 
 

@@ -9034,6 +9034,9 @@ def _recorded_launch_safety_state(task: dict) -> tuple[str, str]:
         return "dead", "no recorded launch artifacts"
     if _local_launch_transport_alive(task):
         return "alive", f"local launch transport pid {task.get('local_ssh_pid')} is alive"
+    terminal = task.get("status") in ("done", "failed", "cancelled", "forgotten")
+    if terminal and task.get("finished_at") and not (_task_pids(task) or task.get("slurm_job_id")):
+        return "dead", "terminal task has no backend pid/job; log artifact alone is not live"
     has_backend_artifact = bool(
         _task_pids(task)
         or task.get("slurm_job_id")

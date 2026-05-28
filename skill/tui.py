@@ -14,6 +14,7 @@ Keys:
   ctrl+r       → force refresh now
   ctrl+c       → quit
 You can also CLICK a column header to sort by it (click again = reverse).
+Drag a column header to reorder columns; drag the visible │ separator to resize it.
 """
 from __future__ import annotations
 
@@ -24,6 +25,7 @@ import time
 from pathlib import Path
 
 try:
+    from rich.text import Text
     from textual.app import App, ComposeResult
     from textual.binding import Binding
     from textual.reactive import reactive
@@ -36,17 +38,23 @@ sys.path.insert(0, str(Path(__file__).parent))
 import scheduler as sch  # noqa: E402
 
 _SCHED_SOURCE = Path(getattr(sch, "__file__", Path(__file__).with_name("scheduler.py"))).resolve()
-try:
-    _SCHED_SOURCE_MTIME_NS = _SCHED_SOURCE.stat().st_mtime_ns
-except OSError:
-    _SCHED_SOURCE_MTIME_NS = 0
+_TUI_SOURCE = Path(__file__).resolve()
+_SOURCE_MTIMES = {}
+for _src in (_SCHED_SOURCE, _TUI_SOURCE):
+    try:
+        _SOURCE_MTIMES[_src] = _src.stat().st_mtime_ns
+    except OSError:
+        _SOURCE_MTIMES[_src] = 0
 
 
 def _scheduler_source_changed() -> bool:
-    try:
-        return _SCHED_SOURCE.stat().st_mtime_ns != _SCHED_SOURCE_MTIME_NS
-    except OSError:
-        return False
+    for src, old_mtime in _SOURCE_MTIMES.items():
+        try:
+            if src.stat().st_mtime_ns != old_mtime:
+                return True
+        except OSError:
+            return True
+    return False
 
 
 def _fmt_min(secs):
@@ -110,11 +118,13 @@ def _node_summary_line(nodes):
             err = (n.get("error", "?") or "?")[:60].replace("[", "(").replace("]", ")")
             lines.append(f"{n['name']:<11s} DOWN ({err})")
             continue
+        if n.get("slurm_cluster"):
+            lines.append(f"{n['name']:<11s} {sch._format_slurm_cluster_summary(n)}")
+            continue
         # Phase 3.3: for `local` (WSL2), supplement NVML util with the DXGI
-        # Compute-engine reading (matches Task Manager) and free-RAM with
-        # the Windows host view. Dispatch still uses the WSL/NVML numbers
-        # (correct for "can the WSL VM fit one more task"); these are
-        # display-only sanity checks for the user.
+        # Compute-engine reading (matches Task Manager). RAM display uses
+        # scheduler's effective free value so WSL's inflated VM-internal
+        # MemAvailable does not distract from real placement capacity.
         def _gpu_segment(g):
             mem_pct = g['used_mb'] * 100 // max(g['total_mb'], 1)
             util = f"{g['util_pct']}%util"
@@ -138,16 +148,7 @@ def _node_summary_line(nodes):
                 load_s = f"host_cpu {int(host_cpu)}%"
         if n.get("probe_fallback"):
             load_s = (load_s + ", " if load_s else "") + str(n.get("probe_fallback"))
-        ram_free = n.get("free_ram_mb")
-        host_free = n.get("host_free_ram_mb")
-        if ram_free is not None and host_free is not None:
-            # Display both: WSL-VM view + Windows-host view, since they're
-            # different memory pools and the user's reference is Task Manager.
-            ram_s = f"ram_free={sch._format_mem_gb(ram_free)}(WSL)/{sch._format_mem_gb(host_free)}(host)"
-        elif ram_free is not None:
-            ram_s = f"ram_free={sch._format_mem_gb(ram_free)}"
-        else:
-            ram_s = ""
+        ram_s = sch._format_node_ram_summary(n)
         cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
         claim_s = sch._format_node_claim_summary(n)
         claim_s = claim_s.strip() if claim_s else ""
@@ -160,34 +161,167 @@ COLUMNS = [
     ("id", "id", 6),
     ("status", "status", 9),
     ("node", "location", 24),
-    ("project", "project", 14),
-    ("owner", "owner", 18),
+    ("project", "project", 12),
+    ("owner", "owner", 14),
     ("priority", "prio", 6),
     ("runtime", "runtime", 9),
     ("vram", "vram", 10),
     ("ram", "ram", 10),
     ("eta", "eta", 14),
-    ("desc", "description", 60),
+    ("desc", "description", 36),
 ]
+COLUMN_BY_KEY = {key: (label, width) for key, label, width in COLUMNS}
+DEFAULT_COLUMN_ORDER = [key for key, _, _ in COLUMNS]
+DEFAULT_COLUMN_WIDTHS = {key: width for key, _, width in COLUMNS}
+COLUMN_MIN_WIDTHS = {
+    "id": 4,
+    "status": 7,
+    "node": 10,
+    "project": 6,
+    "owner": 8,
+    "priority": 4,
+    "runtime": 6,
+    "vram": 6,
+    "ram": 6,
+    "eta": 7,
+    "desc": 10,
+}
+COLUMN_MAX_WIDTHS = {
+    "id": 14,
+    "status": 14,
+    "node": 60,
+    "project": 60,
+    "owner": 40,
+    "priority": 10,
+    "runtime": 14,
+    "vram": 16,
+    "ram": 16,
+    "eta": 24,
+    "desc": 100,
+}
 SORT_KEYS = ["id", "status", "node", "project", "owner", "priority", "runtime", "vram", "ram", "eta"]
+TUI_LAYOUT_FILE = sch.STATE_DIR / "tui_layout.json"
+HEADER_SEPARATOR = "│"
+HEADER_RESIZE_GRAB_CELLS = 2
+
+
+def _clamp_column_width(key: str, width) -> int:
+    try:
+        value = int(width)
+    except (TypeError, ValueError):
+        value = DEFAULT_COLUMN_WIDTHS.get(key, 10)
+    return max(COLUMN_MIN_WIDTHS.get(key, 4), min(COLUMN_MAX_WIDTHS.get(key, 80), value))
+
+
+def _sanitize_column_order(order) -> list[str]:
+    clean = []
+    for key in order or []:
+        key = str(key)
+        if key in COLUMN_BY_KEY and key not in clean:
+            clean.append(key)
+    for key in DEFAULT_COLUMN_ORDER:
+        if key not in clean:
+            clean.append(key)
+    return clean
+
+
+def _load_tui_layout() -> tuple[list[str], dict[str, int]]:
+    order = list(DEFAULT_COLUMN_ORDER)
+    widths = dict(DEFAULT_COLUMN_WIDTHS)
+    try:
+        raw = json.loads(TUI_LAYOUT_FILE.read_text())
+    except Exception:
+        return order, widths
+    if isinstance(raw, dict):
+        order = _sanitize_column_order(raw.get("column_order"))
+        raw_widths = raw.get("column_widths") or {}
+        if isinstance(raw_widths, dict):
+            for key in DEFAULT_COLUMN_ORDER:
+                if key in raw_widths:
+                    widths[key] = _clamp_column_width(key, raw_widths[key])
+    return order, widths
+
+
+def _save_tui_layout(order: list[str], widths: dict[str, int]) -> None:
+    try:
+        TUI_LAYOUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "column_order": _sanitize_column_order(order),
+            "column_widths": {key: _clamp_column_width(key, widths.get(key)) for key in DEFAULT_COLUMN_ORDER},
+        }
+        tmp = TUI_LAYOUT_FILE.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(payload, indent=2, sort_keys=True))
+        os.replace(tmp, TUI_LAYOUT_FILE)
+    except Exception:
+        pass
+
+
+def _header_label(label: str, width: int) -> Text:
+    """Render a visible resize handle at each header's right edge."""
+    content_width = max(1, int(width))
+    if content_width == 1:
+        return Text(HEADER_SEPARATOR, style="bright_black")
+    visible = str(label)[:content_width - 1].ljust(content_width - 1)
+    text = Text(visible)
+    text.append(HEADER_SEPARATOR, style="bright_black")
+    return text
+
+
+class SchedulerDataTable(DataTable):
+    def on_mouse_down(self, event) -> None:
+        handler = getattr(self.app, "_handle_table_mouse_down", None)
+        if handler and handler(self, event):
+            event.prevent_default()
+            event.stop()
+
+    def on_mouse_move(self, event) -> None:
+        handler = getattr(self.app, "_handle_table_mouse_move", None)
+        if handler and handler(self, event):
+            event.prevent_default()
+            event.stop()
+
+    def on_mouse_up(self, event) -> None:
+        handler = getattr(self.app, "_handle_table_mouse_up", None)
+        if handler and handler(self, event):
+            event.prevent_default()
+            event.stop()
 
 
 def _probe_snapshot():
-    """Background worker — gathers everything the UI needs in one go."""
+    """Background worker — gathers everything the UI needs in one go.
+
+    The TUI is a read-only monitor. Do not take scheduler's global state lock
+    here: a watcher dispatch can legitimately hold it while SSH/Slurm work is
+    in flight, and blocking on that lock makes the device list look frozen.
+    queue.json is written with atomic os.replace(), so unlocked reads are safe
+    for display; the watcher remains responsible for mutating/reconciling state.
+    """
     try:
-        with sch.state_lock():
-            state = sch.load_state()
-            sch.recover_stale_launching_tasks(state)
-            sch.update_running_tasks(state)
-            sch.save_state(state)
-    except Exception:
         state = sch.load_state()
-    hist = sch.load_history()
+    except Exception:
+        state = {"tasks": []}
+    try:
+        hist = sch.load_history()
+    except Exception:
+        hist = {}
     try:
         nodes = sch.probe_all()
     except Exception:
         nodes = []
     return {"state": state, "hist": hist, "nodes": nodes, "ts": time.time()}
+
+
+def _fast_snapshot():
+    """Cheap first paint: show queue rows before SSH/Slurm/node probes finish."""
+    try:
+        state = sch.load_state()
+    except Exception:
+        state = {"tasks": []}
+    try:
+        hist = sch.load_history()
+    except Exception:
+        hist = {}
+    return {"state": state, "hist": hist, "nodes": [], "ts": 0}
 
 
 class SchedulerTUI(App):
@@ -229,6 +363,10 @@ class SchedulerTUI(App):
         super().__init__()
         self._snap = {"state": {"tasks": []}, "hist": {}, "nodes": [], "ts": 0}
         self._probing = False
+        self.column_order, self.column_widths = _load_tui_layout()
+        self._table_layout_sig = None
+        self._column_drag = None
+        self._suppress_header_sort_until = 0.0
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -237,20 +375,186 @@ class SchedulerTUI(App):
         # would otherwise parse as malformed markup and raise "Expected markup value".
         yield Static("(loading...)", id="node_summary", markup=False)
         yield Input(placeholder="filter (id/project/location/owner/slurm/sig/desc) — Enter to apply, Esc to close", id="filter_input")
-        yield DataTable(id="task_table", zebra_stripes=True, cursor_type="row")
+        yield SchedulerDataTable(id="task_table", zebra_stripes=True, cursor_type="row")
         yield Footer()
 
     def on_mount(self):
         table = self.query_one(DataTable)
-        for key, label, width in COLUMNS:
-            # Don't pin width — let textual auto-fit so click areas are larger.
-            table.add_column(label, key=key)
+        table.show_row_labels = False
+        self._apply_table_columns(table)
         # Initial probe + render. Subsequent probes via interval timer.
         # We render only on probe-complete or user action — periodic rendering caused
         # cursor/scroll to snap back to top mid-scroll. Runtime/eta numbers therefore
         # update only every 5s, but the table stays scroll-able.
+        self._snap = _fast_snapshot()
+        self._render_from_cache()
         self._kick_probe()
         self.set_interval(5.0, self._kick_probe)
+
+    def _layout_signature(self):
+        return (
+            tuple(self.column_order),
+            tuple((key, self.column_widths.get(key)) for key in DEFAULT_COLUMN_ORDER),
+        )
+
+    def _apply_table_columns(self, table: DataTable):
+        table.clear(columns=True)
+        table.show_row_labels = False
+        for key in self.column_order:
+            label, default_width = COLUMN_BY_KEY[key]
+            width = _clamp_column_width(key, self.column_widths.get(key, default_width))
+            self.column_widths[key] = width
+            table.add_column(_header_label(label, width), key=key, width=width)
+        self._table_layout_sig = self._layout_signature()
+
+    def _table_header_virtual_x(self, table: DataTable, event, *, require_header: bool = True):
+        if require_header and int(event.y) >= int(getattr(table, "header_height", 1) or 1):
+            return None
+        scroll_x = int(getattr(table, "scroll_x", 0) or 0)
+        row_label_width = int(getattr(table, "_row_label_column_width", 0) or 0)
+        virtual_x = int(event.x) + scroll_x - row_label_width
+        if virtual_x < 0:
+            return None
+        return virtual_x
+
+    def _table_header_boundary_hit(self, table: DataTable, event):
+        virtual_x = self._table_header_virtual_x(table, event)
+        if virtual_x is None:
+            return None
+        left = 0
+        prev = None
+        for column in table.ordered_columns:
+            key = str(column.key.value)
+            width = int(column.get_render_width(table))
+            right = left + width
+            if prev and abs(virtual_x - left) <= HEADER_RESIZE_GRAB_CELLS:
+                return {
+                    "key": prev["key"], "left": prev["left"], "right": prev["right"],
+                    "width": prev["width"], "virtual_x": virtual_x,
+                }
+            if abs(virtual_x - right) <= HEADER_RESIZE_GRAB_CELLS:
+                return {"key": key, "left": left, "right": right, "width": width, "virtual_x": virtual_x}
+            prev = {"key": key, "left": left, "right": right, "width": width}
+            left = right
+        return None
+
+    def _table_header_hit(self, table: DataTable, event, *, require_header: bool = True):
+        virtual_x = self._table_header_virtual_x(table, event, require_header=require_header)
+        if virtual_x is None:
+            return None
+        left = 0
+        last = None
+        for column in table.ordered_columns:
+            key = str(column.key.value)
+            width = int(column.get_render_width(table))
+            right = left + width
+            if left <= virtual_x < right:
+                return {"key": key, "left": left, "right": right, "width": width, "virtual_x": virtual_x}
+            last = {"key": key, "left": left, "right": right, "width": width, "virtual_x": virtual_x}
+            left = right
+        if last and virtual_x >= last["right"]:
+            last = dict(last)
+            last["after_last"] = True
+            return last
+        return None
+
+    def _event_screen_x(self, event) -> int:
+        sx = getattr(event, "screen_x", None)
+        return int(sx if sx is not None else event.x)
+
+    def _handle_table_mouse_down(self, table: DataTable, event) -> bool:
+        boundary = self._table_header_boundary_hit(table, event)
+        hit = boundary or self._table_header_hit(table, event)
+        if not hit or hit.get("key") not in COLUMN_BY_KEY:
+            self._column_drag = None
+            return False
+        key = hit["key"]
+        screen_x = self._event_screen_x(event)
+        if boundary:
+            self._column_drag = {
+                "mode": "resize",
+                "key": key,
+                "start_x": screen_x,
+                "start_width": int(self.column_widths.get(key, DEFAULT_COLUMN_WIDTHS.get(key, 10))),
+                "changed": False,
+            }
+            try:
+                table.capture_mouse()
+            except Exception:
+                pass
+            self._suppress_header_sort_until = time.time() + 0.5
+            return True
+        self._column_drag = {
+            "mode": "reorder",
+            "key": key,
+            "start_x": screen_x,
+            "changed": False,
+        }
+        try:
+            table.capture_mouse()
+        except Exception:
+            pass
+        return False
+
+    def _handle_table_mouse_move(self, table: DataTable, event) -> bool:
+        drag = self._column_drag
+        if not drag:
+            return False
+        dx = self._event_screen_x(event) - int(drag.get("start_x") or 0)
+        if drag.get("mode") == "resize":
+            key = drag["key"]
+            new_width = _clamp_column_width(key, int(drag.get("start_width") or 0) + dx)
+            if new_width != self.column_widths.get(key):
+                self.column_widths[key] = new_width
+                drag["changed"] = True
+                self._render_from_cache(force_rebuild=True)
+                self.title = f"scheduler resize {key}={new_width}"
+            return True
+        if abs(dx) >= 3:
+            drag["changed"] = True
+            self._suppress_header_sort_until = time.time() + 0.5
+            hit = self._table_header_hit(table, event, require_header=False)
+            if hit and hit.get("key"):
+                self.title = f"scheduler move {drag['key']} -> {hit['key']}"
+            return True
+        return False
+
+    def _handle_table_mouse_up(self, table: DataTable, event) -> bool:
+        drag = self._column_drag
+        if not drag:
+            return False
+        self._column_drag = None
+        try:
+            table.release_mouse()
+        except Exception:
+            pass
+        if drag.get("mode") == "resize":
+            if drag.get("changed"):
+                _save_tui_layout(self.column_order, self.column_widths)
+                self.notify(f"{drag['key']} width={self.column_widths.get(drag['key'])}", timeout=2)
+            self._suppress_header_sort_until = time.time() + 0.5
+            return True
+        if not drag.get("changed"):
+            return False
+        hit = self._table_header_hit(table, event, require_header=False)
+        source = drag.get("key")
+        target = hit.get("key") if hit else None
+        if source == target:
+            self._suppress_header_sort_until = time.time() + 0.5
+            return True
+        if source in self.column_order and target in self.column_order:
+            order = [key for key in self.column_order if key != source]
+            idx = order.index(target)
+            if hit.get("after_last") or hit.get("virtual_x", 0) >= (hit.get("left", 0) + hit.get("right", 0)) / 2:
+                idx += 1
+            order.insert(idx, source)
+            if order != self.column_order:
+                self.column_order = order
+                _save_tui_layout(self.column_order, self.column_widths)
+                self._render_from_cache(force_rebuild=True)
+                self.notify(f"moved {source}", timeout=2)
+        self._suppress_header_sort_until = time.time() + 0.5
+        return True
 
     # Background probe ---------------------------------------------------
     def _kick_probe(self):
@@ -314,6 +618,9 @@ class SchedulerTUI(App):
 
     def on_data_table_header_selected(self, event):
         """Click a column header → sort by it."""
+        if time.time() < self._suppress_header_sort_until:
+            return
+        self._suppress_header_sort_until = 0.0
         key = str(event.column_key.value) if event.column_key else None
         if key in SORT_KEYS:
             self.action_sort_by(key)
@@ -392,7 +699,14 @@ class SchedulerTUI(App):
             self.notify(f"clipboard unavailable — id: {tid}", severity="warning", timeout=4)
 
     # Render from cache --------------------------------------------------
-    def _render_from_cache(self):
+    def _cell_renderable(self, key: str, value, status: str):
+        text = "" if value is None else str(value)
+        style = ""
+        if status == "running":
+            style = "bold green" if key == "status" else "green"
+        return Text(text, style=style, overflow="fold", no_wrap=False)
+
+    def _render_from_cache(self, *, force_rebuild: bool = False):
         try:
             snap = self._snap
             state = snap.get("state", {"tasks": []})
@@ -472,12 +786,16 @@ class SchedulerTUI(App):
             tasks.sort(key=keyfn, reverse=self.sort_reverse)
 
             table = self.query_one(DataTable)
+            layout_changed = force_rebuild or self._table_layout_sig != self._layout_signature()
 
             new_id_order = [t["id"] for t in tasks]
-            try:
-                current_id_order = [k.value for k in table.rows.keys()]
-            except Exception:
+            if layout_changed:
                 current_id_order = []
+            else:
+                try:
+                    current_id_order = [k.value for k in table.rows.keys()]
+                except Exception:
+                    current_id_order = []
 
             def _row_for(t):
                 node_str = sch._format_task_location(t)
@@ -508,13 +826,19 @@ class SchedulerTUI(App):
                 }
 
             if current_id_order == new_id_order and current_id_order:
-                # Fast path: same tasks in same order → update only mutable cells in place.
+                # Fast path: same tasks in same order -> update cells in place.
                 # Avoids clear() + add_row() which interrupts scroll/cursor.
                 for t in tasks:
                     cells = _row_for(t)
-                    for col_key in ("status", "node", "owner", "runtime", "vram", "ram", "eta", "priority"):
+                    status = cells.get("status", "-")
+                    for col_key in self.column_order:
                         try:
-                            table.update_cell(t["id"], col_key, cells[col_key], update_width=False)
+                            table.update_cell(
+                                t["id"],
+                                col_key,
+                                self._cell_renderable(col_key, cells.get(col_key, ""), status),
+                                update_width=False,
+                            )
                         except Exception:
                             pass
             else:
@@ -533,12 +857,21 @@ class SchedulerTUI(App):
                 except Exception:
                     saved_scroll_y = 0
 
-                table.clear()
+                if layout_changed:
+                    self._apply_table_columns(table)
+                else:
+                    table.clear()
                 for t in tasks:
                     cells = _row_for(t)
-                    table.add_row(cells["id"], cells["status"], cells["node"], cells["project"],
-                                  cells["owner"], cells["priority"], cells["runtime"], cells["vram"], cells["ram"],
-                                  cells["eta"], cells["desc"], key=t["id"])
+                    status = cells.get("status", "-")
+                    table.add_row(
+                        *[
+                            self._cell_renderable(col_key, cells.get(col_key, ""), status)
+                            for col_key in self.column_order
+                        ],
+                        key=t["id"],
+                        height=None,
+                    )
 
                 if saved_task_id and saved_task_id in new_id_order:
                     try:

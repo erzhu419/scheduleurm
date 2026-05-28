@@ -213,6 +213,16 @@ These fire at `submit` time and must be addressed by the submitter — you canno
 
 The justification + override flags are persisted on the task record so future-you can audit why a CPU/no-ckpt/no-resume task was permitted.
 
+## Relay / jump-host Slurm note
+
+For `local -> gpu2 -> zhengliang-hpc` relay commands, ordinary remote shell
+commands must run the outer SSH with `ssh -n`. Without `-n`, an inner `ssh` or
+`rsync` started on gpu2 can consume the outer SSH stdin and cause later
+rsync/sbatch commands in the parent script to be skipped. In scheduler code,
+use `run_on()` / `_ssh_no_stdin_args()` for those ordinary relay commands.
+Do **not** use `ssh -n` for the Slurm submit path that streams the script to
+`sbatch /dev/stdin`; that path intentionally needs stdin.
+
 ## Reboot recovery (automatic — but know the contract)
 
 When the local box reboots:

@@ -6,6 +6,7 @@ passes in its check() function plus the already-loaded scheduler module.
 
 from __future__ import annotations
 
+import argparse
 import os
 import tempfile
 import time
@@ -102,6 +103,25 @@ def run(check, sch):
     def case_cmd_flag_missing_value_ignored():
         got = sch._cmd_flag_values(["--out"], {"--out"})
         return got == {}
+
+    def case_shell_wrapped_final_model_success_detected():
+        with tempfile.TemporaryDirectory() as td:
+            model_dir = os.path.join(td, "runs", "model", "expA")
+            os.makedirs(model_dir, exist_ok=True)
+            for name in ("final_policy", "final_q", "final_norm"):
+                with open(os.path.join(model_dir, name), "w", encoding="utf-8") as f:
+                    f.write("ok\n")
+            task = _base_task(
+                cmd=("bash -lc 'set -euo pipefail; python train.py "
+                     "--save_root runs --run_name expA --seed 0'"),
+                cwd=td,
+                node="local",
+                started_at=time.time() - 60,
+            )
+            return (
+                sch._save_root_run_name_pairs_from_cmd(task) == [("runs", "expA")]
+                and sch._terminal_final_model_success(task) == "final_model_files"
+            )
 
     def case_arg_value_equals_form():
         return sch._arg_value(["--seed=42"], "--seed") == "42"
@@ -250,6 +270,120 @@ def run(check, sch):
         task = {"est_vram_mb": 700}
         gpu = {"total_mb": 12000, "used_mb": 0, "free_mb": 1000, "util_pct": 0}
         return not sch._gpu_fits(task, gpu, {"max_vram_per_task": None})
+
+    def case_remote_gpu_task_ignores_cpu_pressure():
+        task = _base_task(est_vram_mb=1000, cpu_cores=8, ram_mb=1000)
+        node = {"name": "remote-gpu", "alive": True, "free_cpu": 0,
+                "total_cpu": 12, "free_ram_mb": 100000, "running_count": 0,
+                "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                          "used_mb": 0, "util_pct": 0}]}
+        info = {"host": "remote-gpu", "cpu_cores": 12, "ram_mb": 0,
+                "max_vram_per_task": None}
+        ok, why = sch._node_resources_ok(task, node, info)
+        return ok and why == "ok"
+
+    def case_local_gpu_task_still_checks_cpu_pressure():
+        task = _base_task(est_vram_mb=1000, cpu_cores=2, ram_mb=1000)
+        node = {"name": "local", "alive": True, "free_cpu": 0,
+                "total_cpu": 16, "free_ram_mb": 100000, "running_count": 0,
+                "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                          "used_mb": 0, "util_pct": 0}]}
+        ok, why = sch._node_resources_ok(task, node, dict(local_cfg))
+        return (not ok) and "cpu:" in why
+
+    def case_remote_cpu_only_still_checks_cpu_pressure():
+        task = _base_task(est_vram_mb=0, cpu_cores=2, ram_mb=1000)
+        node = {"name": "remote-gpu", "alive": True, "free_cpu": 0,
+                "total_cpu": 12, "free_ram_mb": 100000, "running_count": 0,
+                "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                          "used_mb": 0, "util_pct": 0}]}
+        info = {"host": "remote-gpu", "cpu_cores": 12, "ram_mb": 0,
+                "max_vram_per_task": None}
+        ok, why = sch._node_resources_ok(task, node, info)
+        return (not ok) and "cpu:" in why
+
+    def case_remote_gpu_claim_omits_cpu_capacity():
+        saved_nodes = dict(sch.NODES)
+        saved_claim_op = sch._claims_remote_op
+        captured = {}
+        try:
+            sch.NODES["remote-gpu"] = {"host": "remote-gpu", "enable_claims": True,
+                                       "cpu_cores": 12, "ram_mb": 0,
+                                       "max_vram_per_task": None}
+
+            def fake_claim_op(node, op, record, capacity=None):
+                captured["node"] = node
+                captured["op"] = op
+                captured["record"] = dict(record)
+                captured["capacity"] = dict(capacity or {})
+                return {"ok": True}
+
+            sch._claims_remote_op = fake_claim_op
+            node_state = {"name": "remote-gpu", "total_ram_mb": 100000,
+                          "gpus": [{"idx": 0, "total_mb": 12000}]}
+            ok, rec, kind = sch._ClaimManager.claim(
+                "remote-gpu",
+                _base_task(id="tGpu", est_vram_mb=1000, cpu_cores=8, ram_mb=1000),
+                gpu_idx=0,
+                node_state=node_state,
+            )
+            return (
+                ok is True and kind == "ok"
+                and rec.get("cpu_cores") == 0
+                and rec.get("ignore_cpu_capacity") is True
+                and rec.get("ignore_one_third_pack_rule") is False
+                and captured.get("record", {}).get("ignore_cpu_capacity") is True
+            )
+        finally:
+            sch._claims_remote_op = saved_claim_op
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
+
+    def case_require_gpu_idx_limits_placement():
+        saved_nodes = dict(sch.NODES)
+        try:
+            sch.NODES["remote-gpu"] = {"host": "remote-gpu", "cpu_cores": 12,
+                                       "ram_mb": 0, "max_vram_per_task": None}
+            task = _base_task(est_vram_mb=1000, cpu_cores=1, ram_mb=1000,
+                              require_node="remote-gpu", require_gpu_idx=1)
+            nodes = [{"name": "remote-gpu", "alive": True, "free_cpu": 0,
+                      "total_cpu": 12, "free_ram_mb": 100000,
+                      "running_count": 0,
+                      "gpus": [
+                          {"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                           "used_mb": 0, "util_pct": 0},
+                          {"idx": 1, "total_mb": 12000, "free_mb": 12000,
+                           "used_mb": 0, "util_pct": 0},
+                      ]}]
+            return sch.pick_placement(task, nodes) == ("remote-gpu", 1)
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
+
+    def case_one_third_override_allows_manual_gpu_packing():
+        saved_nodes = dict(sch.NODES)
+        try:
+            sch.NODES["remote-gpu"] = {"host": "remote-gpu", "cpu_cores": 12,
+                                       "ram_mb": 0, "max_vram_per_task": None}
+            task = _base_task(est_vram_mb=1154, cpu_cores=1, ram_mb=1000,
+                              require_node="remote-gpu", require_gpu_idx=0,
+                              allow_gpu_over_one_third=True)
+            nodes = [{"name": "remote-gpu", "alive": True, "free_cpu": 0,
+                      "total_cpu": 12, "free_ram_mb": 100000,
+                      "running_count": 0,
+                      "gpus": [{"idx": 0, "total_mb": 12288,
+                                "free_mb": 8600, "used_mb": 3630,
+                                "util_pct": 0}]}]
+            record = sch._claim_resource_record_for_task(
+                dict(task, node="remote-gpu", gpu_idx=0, remote_pids=[123])
+            )
+            return (
+                sch.pick_placement(task, nodes) == ("remote-gpu", 0)
+                and record.get("ignore_one_third_pack_rule") is True
+            )
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
 
     def case_slurm_bucket_missing_est_defaults_gpu():
         return sch._slurm_pending_bucket_for_task({}) == "gpu"
@@ -809,6 +943,150 @@ def run(check, sch):
             and "dispatch_cycle" in src
         )
 
+    def case_bapr_seed_loop_splits_run_seed_tasks():
+        args = argparse.Namespace(
+            cmd=("bash -lc 'set -euo pipefail; : --resume; "
+                 "for seed in 0 1 2; do bash /home/erzhu419/bapr_v15/run_seed.sh "
+                 "sac Walker2d-v2 \"$seed\" 1500 60 min paper_negative_v2; done'"),
+            cwd="/home/erzhu419/mine_code/BAPR",
+            signature="BAPR/paper_negative_v2/Walker2d-v2/sac",
+            project="BAPR",
+            description="BAPR negative-result check Walker2d-v2 SAC seeds 0-2",
+            ckpt_dir=None,
+            result_dir=None,
+            local_result_dir=None,
+            wait_for_files=None,
+            allow_seed_batch=False,
+        )
+        expanded = sch._split_bapr_seed_batch_submit_args(args)
+        return (
+            len(expanded) == 3
+            and [x.signature.rsplit("/", 1)[-1] for x in expanded] == ["s0", "s1", "s2"]
+            and all("for seed in" not in x.cmd for x in expanded)
+            and 'Walker2d-v2 "1" 1500' in expanded[1].cmd
+        )
+
+    def case_bapr_seed_loop_splits_braced_seed_tasks():
+        args = argparse.Namespace(
+            cmd=("bash -lc 'set -euo pipefail; for seed in 0 1 2; do "
+                 "/home/erzhu419/anaconda3/bin/python sac_ensemble_baseline_stress.py "
+                 "--run_name sac_mode_s${seed} --seed ${seed}; done'"),
+            cwd="/home/erzhu419/mine_code/BAPR",
+            signature="BAPR/bus_v2/sac",
+            project="BAPR",
+            description="BAPR bus SAC seeds 0-2",
+            ckpt_dir=None,
+            result_dir=None,
+            local_result_dir=None,
+            wait_for_files=None,
+            allow_seed_batch=False,
+        )
+        expanded = sch._split_bapr_seed_batch_submit_args(args)
+        return (
+            len(expanded) == 3
+            and "--run_name sac_mode_s1 --seed 1" in expanded[1].cmd
+            and "for seed in" not in expanded[2].cmd
+        )
+
+    def case_bapr_seed_loop_opt_out_keeps_batch():
+        args = argparse.Namespace(
+            cmd="bash -lc 'for seed in 0 1; do echo $seed; done'",
+            cwd="/home/erzhu419/mine_code/BAPR",
+            signature="BAPR/test",
+            project="BAPR",
+            description="batch",
+            allow_seed_batch=True,
+        )
+        return sch._split_bapr_seed_batch_submit_args(args) == []
+
+    def case_bapr_run_seed_ckpt_inferred_inside_bash_lc():
+        cmd = ("bash -lc 'set -euo pipefail; : --resume; "
+               "bash /home/erzhu419/bapr_v15/run_seed.sh sac Walker2d-v2 "
+               "\"1\" 1500 60 min paper_negative_v2'")
+        got = sch._infer_checkpoint_from_submit(cmd, "/home/erzhu419/mine_code/BAPR")
+        return (
+            got is not None
+            and got.get("resume_managed_by_cmd") is True
+            and got.get("result_dir")
+            == "/home/erzhu419/bapr_v15/jax_experiments/results_paper/"
+               "paper_negative_v2_sac_Walker2d_dw60_s1"
+            and got.get("ckpt_dir")
+            == "/home/erzhu419/bapr_v15/jax_experiments/results_paper/"
+               "paper_negative_v2_sac_Walker2d_dw60_s1/checkpoints"
+        )
+
+    def case_bapr_batch_result_dirs_inferred_for_sync():
+        cmd = ("bash -lc 'set -euo pipefail; : --resume; "
+               "for seed in 0 1 2; do bash /home/erzhu419/bapr_v15/run_seed.sh "
+               "sac Hopper-v2 \"$seed\" 1500 60 min paper_negative_v2; done'")
+        got = sch._infer_bapr_result_dirs_from_cmd(cmd, "/home/erzhu419/mine_code/BAPR")
+        return (
+            len(got) == 3
+            and got[0].endswith("paper_negative_v2_sac_Hopper_dw60_s0")
+            and got[2].endswith("paper_negative_v2_sac_Hopper_dw60_s2")
+        )
+
+    def case_bapr_batch_eta_counts_completed_seeds():
+        cmd = ("bash -lc 'set -euo pipefail; : --resume; "
+               "for seed in 0 1 2 3 4; do bash /tmp/bapr_v15/run_seed.sh "
+               "sac Ant-v2 \"$seed\" 1500 60 min paper_full_v2; done'")
+        tail = (
+            "Iter 1105 | Reward: 123.4 | 25.6s/iter\n"
+            "Results saved to: /tmp/bapr_v15/jax_experiments/results_paper/"
+            "paper_full_v2_sac_Ant_dw60_s0/logs\n"
+            "Results saved to: /tmp/bapr_v15/jax_experiments/results_paper/"
+            "paper_full_v2_sac_Ant_dw60_s1/logs\n"
+        )
+        proj = sch._bapr_batch_projection(
+            {"cmd": cmd, "cwd": "/home/erzhu419/mine_code/BAPR"},
+            tail,
+            elapsed_s=82000,
+        )
+        return (
+            proj is not None
+            and proj.get("source") == "bapr_seed_batch"
+            and proj.get("completed_seeds") == 2
+            and proj.get("seed_count") == 5
+            and proj.get("current") == 4105
+            and proj.get("total_units") == 7500
+            and int(proj.get("eta_s") or 0) > 0
+        )
+
+    def case_crash_retry_rescans_resume_and_clears_stale_migration_pin():
+        parent = _base_task(
+            id="t0001",
+            status="failed",
+            cmd="python train.py --resume --max_iters 100",
+            cwd="/tmp/ext",
+            ckpt_dir="/tmp/ext/ckpt",
+            retry_count=0,
+            staged_node="jtl110gpu2",
+            migrated_from="local",
+            migrated_at=time.time(),
+            resume_locations=[{"node": "local", "path": "/tmp/ext/ckpt/old.pkl", "mtime": 1}],
+            resume_preferred_nodes=["local"],
+            resume_checkpoint_node="local",
+            resume_scan_at=time.time(),
+            resume_scan_key=["/tmp/ext/ckpt", "*", ["local"]],
+            resume_from="/tmp/ext/ckpt/old.pkl",
+            _diagnosis={"reason": "simulated app crash"},
+        )
+        state = {"next_id": 2, "tasks": [parent]}
+        new_id = sch._requeue_after_crash(parent, state)
+        child = next((t for t in state["tasks"] if t.get("id") == new_id), {})
+        cleared = (
+            "staged_node", "migrated_from", "migrated_at",
+            "resume_locations", "resume_preferred_nodes", "resume_checkpoint_node",
+            "resume_scan_at", "resume_scan_key",
+        )
+        return (
+            new_id == "t0002"
+            and child.get("status") == "queued"
+            and child.get("resume_from") is None
+            and child.get("ckpt_dir") == "/tmp/ext/ckpt"
+            and all(k not in child for k in cleared)
+        )
+
     cases = [
         ("env value preserves equals", case_env_value_with_equals),
         ("env invalid key rejected", case_env_invalid_key_rejected),
@@ -816,6 +1094,7 @@ def run(check, sch):
         ("cmd flag equals value", case_cmd_flag_equals_value),
         ("cmd flag space value", case_cmd_flag_space_value),
         ("cmd flag missing value ignored", case_cmd_flag_missing_value_ignored),
+        ("shell-wrapped final model success detected", case_shell_wrapped_final_model_success_detected),
         ("arg value equals form", case_arg_value_equals_form),
         ("arg value next-token form", case_arg_value_next_token_form),
         ("explicit CPU detects empty CUDA_VISIBLE_DEVICES", case_cpu_flag_detects_empty_cuda_visible_devices),
@@ -841,6 +1120,12 @@ def run(check, sch):
         ("gpu fits allows slight one-third crossing", case_gpu_fits_allows_slight_one_third_crossing),
         ("gpu fits rejects crossing freeze line from below", case_gpu_fits_rejects_crossing_freeze_line_from_below),
         ("gpu fits rejects margin shortfall", case_gpu_fits_rejects_vram_margin_shortfall),
+        ("remote GPU task ignores CPU pressure", case_remote_gpu_task_ignores_cpu_pressure),
+        ("local GPU task still checks CPU pressure", case_local_gpu_task_still_checks_cpu_pressure),
+        ("remote CPU-only still checks CPU pressure", case_remote_cpu_only_still_checks_cpu_pressure),
+        ("remote GPU claim omits CPU capacity", case_remote_gpu_claim_omits_cpu_capacity),
+        ("require_gpu_idx limits placement", case_require_gpu_idx_limits_placement),
+        ("one-third override allows manual GPU packing", case_one_third_override_allows_manual_gpu_packing),
         ("slurm bucket missing estimate defaults gpu", case_slurm_bucket_missing_est_defaults_gpu),
         ("format task location slurm cpu and gpu", case_format_task_location_slurm_cpu_and_gpu),
         ("jtl110cpu configured as Windows CPU node", case_jtl110cpu_is_windows_cpu_node),
@@ -881,6 +1166,13 @@ def run(check, sch):
         ("Windows probe SSH auth failure gets key hint", case_windows_probe_error_hints_ssh_key_auth),
         ("Windows wrapper logs CPU plan and resource progress", case_windows_wrapper_logs_cpu_plan_and_resource_progress),
         ("watcher has periodic node CPU accounting log", case_watcher_has_periodic_node_cpu_accounting_log),
+        ("BAPR submit auto-splits run_seed seed loops", case_bapr_seed_loop_splits_run_seed_tasks),
+        ("BAPR submit auto-splits braced seed loops", case_bapr_seed_loop_splits_braced_seed_tasks),
+        ("BAPR seed loop opt-out keeps batch", case_bapr_seed_loop_opt_out_keeps_batch),
+        ("BAPR run_seed ckpt inferred inside bash -lc", case_bapr_run_seed_ckpt_inferred_inside_bash_lc),
+        ("BAPR batch result dirs inferred for sync", case_bapr_batch_result_dirs_inferred_for_sync),
+        ("BAPR batch ETA counts completed seeds", case_bapr_batch_eta_counts_completed_seeds),
+        ("crash retry rescans resume and clears stale migration pin", case_crash_retry_rescans_resume_and_clears_stale_migration_pin),
     ]
 
     for idx, (name, fn) in enumerate(cases, 1):

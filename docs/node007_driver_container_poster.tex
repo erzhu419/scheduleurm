@@ -1,0 +1,232 @@
+\documentclass[UTF8,zihao=-4,fontset=none]{ctexart}
+\usepackage[a4paper,landscape,margin=8mm]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{tikz}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fontspec}
+\usepackage{hyperref}
+\pagestyle{empty}
+
+\setCJKmainfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+\setmainfont{DejaVu Sans}
+
+\definecolor{ink}{HTML}{0F172A}
+\definecolor{subtle}{HTML}{475569}
+\definecolor{paper}{HTML}{F8FAFC}
+\definecolor{line}{HTML}{D7DEE8}
+\definecolor{blue}{HTML}{2563EB}
+\definecolor{green}{HTML}{16A34A}
+\definecolor{purple}{HTML}{9333EA}
+\definecolor{orange}{HTML}{EA580C}
+\definecolor{softblue}{HTML}{EFF6FF}
+\definecolor{softgreen}{HTML}{F0FDF4}
+\definecolor{softpurple}{HTML}{FAF5FF}
+\definecolor{softorange}{HTML}{FFF7ED}
+
+\hypersetup{colorlinks=true,urlcolor=blue}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=1.4em,itemsep=2.5pt,topsep=2pt}
+\renewcommand{\arraystretch}{1.28}
+
+\newcommand{\PageBg}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[paper] (current page.south west) rectangle (current page.north east);
+  \end{tikzpicture}
+}
+
+\newcommand{\Chip}[3]{%
+  \tikz[baseline=(n.base)] \node[
+    rounded corners=2.5mm,
+    inner xsep=3.4mm,
+    inner ysep=1.6mm,
+    draw=#2!65,
+    fill=#2!9,
+    text=#3,
+    font=\small
+  ] (n) {#1};%
+}
+
+\newcommand{\Card}[4]{%
+  \begin{tikzpicture}
+    \node[
+      rounded corners=3mm,
+      draw=line,
+      fill=white,
+      line width=.45pt,
+      minimum width=\linewidth,
+      minimum height=#1,
+      inner sep=0pt,
+      anchor=north west
+    ] (box) at (0,0) {};
+    \fill[#2,rounded corners=3mm] (box.north west) rectangle ([yshift=-5mm]box.north east);
+    \fill[#2] ([yshift=-2.6mm]box.north west) rectangle ([yshift=-5mm]box.north east);
+    \node[anchor=north west,text=ink,font=\large\bfseries] at ([xshift=5mm,yshift=-8mm]box.north west) {#3};
+    \node[anchor=north west,text=ink!82,text width=\linewidth-10mm,font=\small,align=left] at ([xshift=5mm,yshift=-18mm]box.north west) {#4};
+  \end{tikzpicture}
+}
+
+\newcommand{\SectionCard}[4]{%
+  \begin{minipage}[t]{#1}
+    \Card{70mm}{#2}{#3}{#4}
+  \end{minipage}
+}
+
+\newcommand{\Foot}[1]{%
+  \begingroup
+  \setbox0=\hbox{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \draw[line, line width=.35pt] ([xshift=8mm,yshift=9mm]current page.south west) -- ([xshift=-8mm,yshift=9mm]current page.south east);
+      \node[anchor=south west,text=subtle,font=\scriptsize] at ([xshift=8mm,yshift=3.5mm]current page.south west) {zhengliang-hpc node007 GPU 环境方案汇报 | page #1/2};
+      \node[anchor=south east,text=subtle,font=\scriptsize] at ([xshift=-8mm,yshift=3.5mm]current page.south east) {原则：只改 node007 本地 NVIDIA driver，不动 /cm/shared/apps 与 license};
+    \end{tikzpicture}%
+  }%
+  \wd0=0pt\ht0=0pt\dp0=0pt\box0
+  \endgroup
+}
+
+\begin{document}
+
+\PageBg
+\Foot{1}
+{\fontsize{25}{29}\selectfont\bfseries\textcolor{ink}{node007 GPU 环境：驱动升级 vs 容器化}}\\[-1mm]
+{\large\textcolor{subtle}{目标：让新的 GPU 训练任务能跑，同时不破坏 Ansys / Fluent / COMSOL / MATLAB。}}\\[4mm]
+
+\Chip{node007 是唯一 GPU 节点：4 × RTX 2080 Ti}{blue}{blue}
+\hspace{1.5mm}
+\Chip{当前 driver：440.64，CUDA driver API≈10.2}{orange}{orange}
+\hspace{1.5mm}
+\Chip{CUDA / cuDNN / 工业软件在 /cm/shared/apps 共享}{green}{green}
+
+\vspace{6mm}
+
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{64mm}{blue}{现状边界}{
+    node001--006 是 CPU 节点，没有 \texttt{/dev/nvidia*}；node007 有 NVIDIA kernel module 和 GPU 设备。\\[1mm]
+    CUDA toolkit、cuDNN、Ansys、COMSOL、MATLAB 在共享目录。\\[1mm]
+    NVIDIA kernel driver 是 node007 全局唯一资源，不能按用户隔离。
+  }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{64mm}{green}{工业软件依赖}{
+    COMSOL：当前安装未见 CUDA / NVIDIA / OpenCL 依赖，计算功能基本不依赖 CUDA。\\[1mm]
+    Fluent：含 CUDA runtime 6.0 / OpenCL wrapper，GPU 功能才会触发。\\[1mm]
+    MATLAB 2018a：GPU 库含 CUDA 9.0 / cuDNN 7，普通 CPU 使用不依赖。
+  }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{64mm}{purple}{关键判断}{
+    Docker / Conda 能隔离用户态 CUDA runtime、cuDNN、Python 包。\\[1mm]
+    但容器仍使用宿主机 NVIDIA kernel driver，不能替代驱动升级。\\[1mm]
+    新 driver 通常向后兼容旧 CUDA runtime；旧软件 GPU 功能仍需实测。
+  }
+\end{minipage}
+
+\vspace{3mm}
+
+\rowcolors{2}{white}{softblue}
+\begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{0.16\linewidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X}
+\rowcolor{softblue}
+\textcolor{ink}{维度} & \textbf{\textcolor{ink}{方案 A：升级 node007 驱动}} & \textbf{\textcolor{ink}{方案 B：容器化 Docker / Apptainer}} \\
+\hline
+解决的问题 &
+直接解决 CUDA 11/12、PyTorch/JAX 与旧 440 驱动不兼容。 &
+隔离 Python、CUDA runtime、cuDNN、包版本；不解决宿主驱动太旧。 \\
+\hline
+对工业软件 &
+不改 \texttt{/cm/shared/apps} 和 license；旧 CUDA 6.0/9.0 runtime 通常受新驱动向后兼容保护。 &
+Ansys / COMSOL / MATLAB 继续走原 module；你的任务走镜像环境。 \\
+\hline
+当前缺口 &
+需要管理员 drain node007、升级驱动、保留回滚。 &
+node007 有 nvidia-container-runtime，但 Docker daemon 未开，用户不在 docker 组。 \\
+\hline
+结论 &
+\textbf{必要项。} 先做这个，否则现代 GPU 框架仍会失败。 &
+\textbf{增强项。} 适合环境可复现，但必须依赖已升级或足够新的宿主驱动。 \\
+\end{tabularx}
+
+\vspace{3mm}
+{\scriptsize\textcolor{subtle}{依据：NVIDIA CUDA Compatibility / driver matrix 说明新驱动对旧 CUDA runtime 应用保持向后兼容；但旧软件是否完整支持 RTX 2080 Ti/Turing 需要实测。}}
+\newpage
+
+\PageBg
+\Foot{2}
+{\fontsize{25}{29}\selectfont\bfseries\textcolor{ink}{推荐路线：先驱动，后容器}}\\[-1mm]
+{\large\textcolor{subtle}{把升级范围控制在 node007 本地；把可复现环境作为第二阶段。}}\\[7mm]
+
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{86mm}{blue}{1. node007 驱动升级}{
+    \begin{itemize}
+      \item Slurm drain node007，确认无工业软件任务运行。
+      \item 只升级 node007 本地 NVIDIA driver / kernel module。
+      \item 不动 \texttt{/cm/shared/apps}、CUDA toolkit、cuDNN、license。
+      \item 保留 440.64 回滚包或系统快照。
+      \item 升级后检查 \texttt{nvidia-smi}、CUDA driver API、\texttt{/dev/nvidia*}。
+    \end{itemize}
+  }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{86mm}{green}{2. 工业软件验证}{
+    \begin{itemize}
+      \item COMSOL：普通 batch / help / 小算例，重点确认 license 与 CPU 求解。
+      \item Fluent：普通 CPU 启动；如有条件验证 GPU / OpenCL 功能。
+      \item MATLAB：普通启动 + \texttt{gpuDevice} 检测。
+      \item 出问题时只回滚 node007 driver，不回滚共享软件目录。
+    \end{itemize}
+  }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.315\linewidth}
+  \Card{86mm}{purple}{3. 容器 / Conda 第二阶段}{
+    \begin{itemize}
+      \item 当前 Docker daemon 未开放，用户也不在 docker 组。
+      \item HPC 更适合 Apptainer / Singularity；Docker 需管理员配置 Slurm 安全策略。
+      \item 容器用于固定 PyTorch/JAX/CUDA runtime/cuDNN 版本。
+      \item 容器仍依赖宿主 driver；不能绕过 440.64 的限制。
+    \end{itemize}
+  }
+\end{minipage}
+
+\vspace{7mm}
+
+\begin{tikzpicture}
+  \node[
+    rounded corners=3mm,
+    draw=ink,
+    fill=ink,
+    text width=\linewidth-18mm,
+    inner xsep=7mm,
+    inner ysep=5.5mm,
+    align=left
+  ] {
+    {\Large\bfseries\textcolor{white}{最终建议}}\\[2mm]
+    {\large\textcolor{white!90}{
+    建议只在 node007 上升级 NVIDIA driver，不动 \texttt{/cm/shared/apps} 里的 Ansys、COMSOL、MATLAB、CUDA toolkit、cuDNN 与 license。
+    旧软件使用的 CUDA 6.0/9.0 runtime 通常由新 driver 向后兼容；升级后按清单验证 Fluent / MATLAB 的 GPU 功能和 COMSOL CPU/batch 功能。
+    Docker/Apptainer 可作为后续环境封装手段，但不是替代 driver 升级的方案。
+    }}
+  };
+\end{tikzpicture}
+
+\vspace{5mm}
+\begin{tikzpicture}
+  \node[
+    rounded corners=2mm,
+    draw=green!55,
+    fill=softgreen,
+    text=green!60!black,
+    text width=\linewidth-12mm,
+    inner xsep=5mm,
+    inner ysep=2.5mm,
+    align=left,
+    font=\large\bfseries
+  ] {推荐决策：先升级 node007 driver 并保留回滚；容器化作为环境可复现的第二阶段，而不是驱动替代方案。};
+\end{tikzpicture}
+
+\end{document}

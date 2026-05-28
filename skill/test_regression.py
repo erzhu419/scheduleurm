@@ -693,6 +693,52 @@ def test_high_defaults_lower_before_placement():
           not queued.get("last_block_reason"),
           diag=f"last_block_reason={queued.get('last_block_reason')!r}")
 
+def test_explicit_ram_not_lowered_before_placement():
+    """Explicit --ram-mb is an override and must not be lowered by sibling guesses."""
+    print("\n[9a] Explicit RAM estimates are not lowered before placement")
+    now = time.time()
+    queued = {
+        "id": "tq", "status": "queued", "signature": "P/cpu_eval/shard0",
+        "cmd": "python eval.py", "cwd": "/tmp", "priority": "normal",
+        "ram_mb": 50000, "ram_mb_explicit": True,
+        "est_vram_mb": 0, "cpu_cores": 20,
+        "submitted_at": now, "extra_env": {}, "remote_pids": [],
+        "alive_pids": [], "log_path": None, "started_at": None, "node": None,
+        "gpu_idx": None, "peak_vram_mb": 0, "peak_ram_mb": 0, "resume_from": None,
+        "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
+        "preferred_node": None, "require_node": None, "project": "P",
+        "description": "CPU eval shard",
+    }
+    state = {"tasks": [
+        {"id": "sib", "status": "done", "project": "P", "signature": "P/cpu_eval/shard_old",
+         "description": "CPU eval shard", "peak_vram_mb": 0, "peak_ram_mb": 3000},
+        queued,
+    ], "next_id": 100}
+    nodes = [{"name": "local", "alive": True, "free_cpu": 64, "total_cpu": 64,
+              "free_ram_mb": 12000, "total_ram_mb": 32000, "loadavg": 1.0,
+              "running_count": 0, "gpus": []}]
+    saved = {
+        "load_history": sch.load_history,
+        "precheck_git": sch.precheck_git,
+        "find_resume": sch.find_resume,
+        "save_state": sch.save_state,
+    }
+    sch.load_history = lambda: {}
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    sch.save_state = lambda s: None
+    try:
+        events, _ = sch._do_dispatch(state, copy.deepcopy(nodes))
+    finally:
+        for k, v in saved.items():
+            setattr(sch, k, v)
+    check("explicit RAM remains at submitted value",
+          queued["ram_mb"] == 50000,
+          diag=f"ram={queued.get('ram_mb')}")
+    check("task remains queued instead of launching with lowered RAM",
+          queued["status"] == "queued" and not any(ev.get("type") == "task_launched" for ev in events),
+          diag=f"status={queued.get('status')}, events={events}")
+
 def test_low_ram_estimate_raises_from_live_siblings():
     """Stale low RAM estimates must be raised from live siblings before placement."""
     print("\n[9b] Low RAM estimate raises from live siblings before placement")
@@ -907,8 +953,8 @@ def test_requeue_from_adopt_becomes_scheduler_owned():
 # -----------------------------------------------------------------------------
 def test_post_dispatch_eviction_and_rule():
     """_enforce_post_dispatch_thresholds must ignore util-only pressure, but GPU
-    memory over 1/3 with colocated scheduler tasks requeues the least-progress /
-    longest-ETA task. There is intentionally no warmup exemption."""
+    memory over 1/3 with colocated scheduler tasks requeues fresh/no-progress
+    rollback candidates without knocking down stable progress-bearing work."""
     print("\n[10] Resource-pressure eviction (1/3 memory freeze, no util-only eviction)")
     now = time.time()
     def make_state(elder_age_s, young_age_s):
@@ -974,6 +1020,38 @@ def test_post_dispatch_eviction_and_rule():
               young.get("last_resource_eviction", {}).get("kind") == "gpu_one_third",
               diag=str(young.get("last_resource_eviction")))
 
+        # Case C2: a long-running progress-bearing task must not be chosen just
+        # because its ETA is large. Roll back the fresh colocated launch instead.
+        state = make_state(elder_age_s=8 * 3600, young_age_s=120)
+        state["tasks"][0]["last_progress_line"] = "Iter 900 | Reward: 1.0"
+        state["tasks"][0]["runtime_current_unit"] = 900
+        state["tasks"][0]["runtime_total_units"] = 1500
+        state["tasks"][0]["eta_seconds"] = 999999
+        state["tasks"][1]["last_progress_line"] = "Iter 1 | Reward: 0.0"
+        state["tasks"][1]["eta_seconds"] = 100
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("GPU pressure rolls back fresh launch, not long-running progress task",
+              evicted == ["tyoung"], diag=f"got evicted={evicted}")
+        young = [t for t in state["tasks"] if t["id"] == "tyoung"][0]
+        check("GPU eviction payload lists stable protected task",
+              young.get("last_resource_eviction", {}).get("protected_stable_progress_task_ids") == ["telder"],
+              diag=str(young.get("last_resource_eviction", {})))
+
+        # Case C3: if only stable progress-bearing tasks share the card, leave
+        # them alone. The pack rule will block additional launches.
+        state = make_state(elder_age_s=8 * 3600, young_age_s=7 * 3600)
+        for idx, task in enumerate(state["tasks"], start=1):
+            task["last_progress_line"] = f"Iter {idx * 100} | Reward: 1.0"
+            task["runtime_current_unit"] = idx * 100
+            task["runtime_total_units"] = 1500
+        kill_count_before = len(kill_calls)
+        evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
+        check("GPU pressure does not evict stable progress-bearing colocated tasks",
+              evicted == [], diag=f"got evicted={evicted}")
+        check("stable progress skip does not kill processes",
+              len(kill_calls) == kill_count_before,
+              diag=f"kill_calls={len(kill_calls)} before={kill_count_before}")
+
         # Case D: BOTH high even if youngest is in warmup → still evict the colocated victim.
         state = make_state(elder_age_s=600, young_age_s=30)  # young is 30s old
         evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
@@ -993,6 +1071,75 @@ def test_post_dispatch_eviction_and_rule():
         state["tasks"][1]["auto_adopted"] = True
         evicted = sch._enforce_post_dispatch_thresholds(state, make_nodes(used_mb=6000, util=100))
         check("youngest is auto-adopted → never evict", evicted == [])
+
+        # Case G: local is the only node where CPU pressure should trigger a
+        # rollback. This catches bus/SUMO jobs whose measured CPU estimate rises
+        # after launch and would otherwise keep saturating the workstation.
+        state = {"tasks": [
+            {"id": "tkeep", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 600, "remote_pids": [9101],
+             "auto_adopted": False, "cpu_cores": 12},
+            {"id": "tnew1", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 120, "remote_pids": [9102],
+             "auto_adopted": False, "cpu_cores": 10},
+            {"id": "tnew2", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 60, "remote_pids": [9103],
+             "auto_adopted": False, "cpu_cores": 10},
+        ]}
+        local_nodes = [{"name": "local", "alive": True, "total_cpu": 16,
+                        "host_cpu_load_pct": 65,
+                        "free_ram_mb": 30000, "total_ram_mb": 40000,
+                        "gpus": [{"idx": 0, "used_mb": 1200, "total_mb": 12288,
+                                  "free_mb": 11088, "util_pct": 10}]}]
+        evicted = sch._enforce_post_dispatch_thresholds(state, local_nodes)
+        check("local CPU over-reservation alone does not evict when host CPU is moderate",
+              evicted == [], diag=f"got evicted={evicted}")
+
+        state = {"tasks": [
+            {"id": "tkeep", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 600, "remote_pids": [9101],
+             "auto_adopted": False, "cpu_cores": 12},
+            {"id": "tnew1", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 120, "remote_pids": [9102],
+             "auto_adopted": False, "cpu_cores": 10},
+            {"id": "tnew2", "status": "running", "node": "local", "gpu_idx": 0,
+             "started_at": now - 60, "remote_pids": [9103],
+             "auto_adopted": False, "cpu_cores": 10},
+        ]}
+        local_nodes = [{"name": "local", "alive": True, "total_cpu": 16,
+                        "host_cpu_load_pct": 96,
+                        "free_ram_mb": 30000, "total_ram_mb": 40000,
+                        "gpus": [{"idx": 0, "used_mb": 1200, "total_mb": 12288,
+                                  "free_mb": 11088, "util_pct": 10}]}]
+        evicted = sch._enforce_post_dispatch_thresholds(state, local_nodes)
+        check("local CPU budget breach evicts newest tasks only under real host pressure",
+              evicted == ["tnew2", "tnew1"], diag=f"got evicted={evicted}")
+        check("local CPU eviction keeps older survivor running",
+              [t for t in state["tasks"] if t["id"] == "tkeep"][0]["status"] == "running")
+        check("local CPU eviction records CPU-pressure kind",
+              [t for t in state["tasks"] if t["id"] == "tnew2"][0]
+              .get("last_resource_eviction", {}).get("kind") == "local_cpu_budget")
+        evicted_task = [t for t in state["tasks"] if t["id"] == "tnew2"][0]
+        check("local CPU eviction does not use global cooldown",
+              "evict_cooldown_until" not in evicted_task)
+        check("local CPU eviction blocks only local relaunch",
+              "local" in (evicted_task.get("evict_node_cooldowns") or {}),
+              diag=str(evicted_task.get("evict_node_cooldowns")))
+        check("local CPU eviction leaves remote nodes immediately eligible",
+              not sch._evict_node_cooldown_block_reason(evicted_task, "jtl110gpu2"))
+        check("local GPU task may fit at cpu=0/16 when host CPU is moderate",
+              sch._node_resources_ok(
+                  {"id": "tgpu", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 1000},
+                  {"name": "local", "free_cpu": 0, "total_cpu": 16,
+                   "host_cpu_load_pct": 65, "free_ram_mb": 16000},
+                  sch.NODES["local"])[0] is True)
+        ok, why = sch._node_resources_ok(
+            {"id": "tgpu", "est_vram_mb": 1000, "cpu_cores": 2, "ram_mb": 1000},
+            {"name": "local", "free_cpu": 0, "total_cpu": 16,
+             "host_cpu_load_pct": 96, "free_ram_mb": 16000},
+            sch.NODES["local"])
+        check("local GPU task blocks when host CPU is genuinely high",
+              ok is False and "host cpu pressure" in why, diag=why)
     finally:
         sch.run_on = orig_run_on
 
@@ -1825,10 +1972,10 @@ def test_resume_checkpoint_node_affinity():
              "gpus": [{"idx": 0, "used_mb": 0, "total_mb": 8192, "free_mb": 8192, "util_pct": 0}]},
         ]
         locs, errs = sch.scan_resume_locations(task, nodes=nodes, cache={})
-        check("resume scan checks all configured nodes and sorts newest first",
+        check("resume scan checks alive candidate nodes and sorts newest first",
               [x.get("node") for x in locs] == ["n2", "n1"]
               and errs == {}
-              and calls == ["local", "n1", "n2", "n3"],
+              and sorted(calls) == ["local", "n1", "n2"],
               diag=f"locs={locs} errs={errs} calls={calls}")
         calls.clear()
         sch._refresh_resume_locations_for_task(task, nodes, {})
@@ -1844,8 +1991,10 @@ def test_resume_checkpoint_node_affinity():
               diag=f"calls={calls} first={first_refresh_calls}")
         task["resume_scan_at"] -= sch.RESUME_SCAN_TTL_S + 1
         sch._refresh_resume_locations_for_task(task, nodes, {})
-        check("expired resume scan TTL forces a fresh all-node scan",
-              len(calls) == len(first_refresh_calls) + 4,
+        fresh_calls = calls[len(first_refresh_calls):]
+        check("expired resume scan TTL forces a fresh alive-node scan",
+              len(calls) == len(first_refresh_calls) + 3
+              and sorted(fresh_calls) == ["local", "n1", "n2"],
               diag=f"calls={calls} first={first_refresh_calls}")
         placement = sch.pick_placement(task, nodes)
         check("placement prefers checkpoint node over ordinary preferred_node",
@@ -2182,6 +2331,41 @@ def test_run_on_has_server_alive_options():
               diag=block[:400])
         check("ServerAliveCountMax option present", "ServerAliveCountMax=3" in block,
               diag=block[:400])
+
+
+def test_run_on_uses_no_stdin_ssh_except_sbatch_pipe():
+    """Relay/jump-host fix: ordinary remote commands must detach ssh stdin.
+
+    When a gpu2 relay command itself starts ssh/rsync/sbatch, the inner command can
+    otherwise drain the outer ssh's stdin and prevent later script lines from
+    running. Slurm submission is the exception because it intentionally streams
+    the sbatch script to `sbatch /dev/stdin`.
+    """
+    print("\n[40b] run_on uses ssh -n, while sbatch /dev/stdin keeps stdin")
+    src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
+    idx = src.find("def run_on(")
+    check("run_on() definition found", idx > 0)
+    if idx > 0:
+        block = src[idx:idx + 1600]
+        check("run_on remote branch uses no-stdin ssh helper",
+              "_ssh_no_stdin_args(node)" in block,
+              diag=block[:600])
+
+    helper_idx = src.find("def _ssh_no_stdin_args(")
+    check("_ssh_no_stdin_args() helper defined", helper_idx > 0)
+    if helper_idx > 0:
+        helper_block = src[helper_idx:helper_idx + 700]
+        check("_ssh_no_stdin_args injects ssh -n",
+              '["-n"]' in helper_block,
+              diag=helper_block)
+
+    sb_idx = src.find("class SlurmBackend(Backend):")
+    sb_kill_idx = src.find("def kill(self,", sb_idx)
+    sb_launch_body = src[sb_idx:sb_kill_idx]
+    check("SlurmBackend keeps stdin-capable ssh for sbatch /dev/stdin",
+          "_ssh_base_args(task[\"node\"])" in sb_launch_body
+          and "_ssh_no_stdin_args(task[\"node\"])" not in sb_launch_body,
+          diag=sb_launch_body[-1600:])
 
 
 def test_env_deploy_doc_matches_code():
@@ -3039,6 +3223,30 @@ def test_inject_python_u():
         got = sch._inject_python_u(inp)
         check(f"{inp[:50]!r:55s} → injected={got != inp}", got == want,
               diag=f"got={got!r} want={want!r}")
+
+    bus_cmd = ("bash -lc 'set -euo pipefail; "
+               "/home/erzhu419/anaconda3/bin/python sac_ensemble_bapr.py --seed 2'")
+    rewritten = sch._apply_node_cmd_rewrites("jtl110gpu2", bus_cmd)
+    check("bus sac_ensemble command rewrites from CPU anaconda to offline-sumo",
+          sch.OFFLINE_SUMO_PYTHON in rewritten and "/home/erzhu419/anaconda3/bin/python" not in rewritten,
+          diag=rewritten)
+    bus_env = sch._node_launch_extra_env({
+        "node": "jtl110gpu2", "project": "bapr_v15", "cmd": bus_cmd,
+        "est_vram_mb": 1154,
+    })
+    check("bus torch task does not inherit JAX LD_LIBRARY_PATH",
+          "LD_LIBRARY_PATH" not in bus_env and "PATH" not in bus_env,
+          diag=str(bus_env))
+    jax_env = sch._node_launch_extra_env({
+        "node": "jtl110gpu2", "project": "RE-SAC",
+        "cmd": "/home/erzhu419/.conda/envs/resac-jax/bin/python train.py",
+        "cwd": "/tmp/resac", "est_vram_mb": 1024,
+    })
+    check("JAX task still gets node-local CUDA library env",
+          "LD_LIBRARY_PATH" in jax_env and "XLA_PYTHON_CLIENT_PREALLOCATE" in jax_env,
+          diag=str(jax_env))
+    check("BAPR bus tasks can pack past one-third guard",
+          sch._task_ignores_one_third_pack_rule({"signature": "BAPR/bus_v2/bapr/s2"}, {}) is True)
 
 def test_dispatch_skips_duplicate_signature():
     """Race-condition guard: identical run identity is skipped, broad signatures are not."""
@@ -10242,9 +10450,9 @@ def test_phase3_3_local_windows_host_metrics():
     The discrepancy: WSL2 sees ~1GB MemAvailable inside its 30GB-cap VM,
     while the host has 17GB+ free in a 64GB pool. Similarly nvidia-smi's
     NVML utilization.gpu reads ~10% during RL bursts while Task Manager's
-    Compute engine shows 90%+. Both numbers are correct for their model;
-    showing both prevents user confusion and surfaces the right number for
-    each mental model (placement decisions still use the WSL/NVML view).
+    Compute engine shows 90%+. RAM placement and display use the conservative
+    effective value min(WSL available, host available), while GPU placement
+    still uses NVML.
     """
     print("\n[98] Phase 3.3: local probe surfaces Windows-host RAM + DXGI Compute util")
 
@@ -10252,10 +10460,9 @@ def test_phase3_3_local_windows_host_metrics():
     src = open(os.path.expanduser("~/.claude/skills/scheduler/scheduler.py")).read()
     check("_probe_windows_host_extras helper exists",
           "def _probe_windows_host_extras" in src)
-    check("helper queries Win32_OperatingSystem for free/total physical memory",
-          "Win32_OperatingSystem" in src
-          and "FreePhysicalMemory" in src
-          and "TotalVisibleMemorySize" in src)
+    check("helper queries Windows available/total physical memory",
+          "AvailablePhysicalMemory" in src
+          and "TotalPhysicalMemory" in src)
     check("helper queries DXGI Compute engine counter (matches Task Manager)",
           "GPU Engine" in src
           and "engtype_Compute" in src)
@@ -10266,9 +10473,9 @@ def test_phase3_3_local_windows_host_metrics():
           'host_free_ram_mb' in src
           and 'host_total_ram_mb' in src
           and 'util_pct_compute' in src)
-    check("TUI _node_summary_line displays WSL / host RAM side-by-side",
-          'WSL' in open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read()
-          and 'host' in open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read())
+    check("TUI _node_summary_line displays effective RAM without raw WSL RAM",
+          'eff' in src and 'wsl_free_ram_mb' in src
+          and 'wsl=' not in src)
     tui_src = open(os.path.expanduser("~/.claude/skills/scheduler/tui.py")).read()
     check("TUI shows both NVML and Compute util when both available",
           "nvml/compute" in tui_src or "util_pct_compute" in tui_src)
@@ -10285,8 +10492,11 @@ def test_phase3_3_local_windows_host_metrics():
     captured_cmds = []
     def fake_pwsh_ok(cmd, capture_output=True, text=True, timeout=None):
         captured_cmds.append(cmd)
-        # Simulate PowerShell return: "free|total|gpu_pct"
-        return FakeRun("17500|65536|94\n")
+        joined = " ".join(str(x) for x in cmd)
+        if "engtype_Compute" in joined:
+            return FakeRun("94\n")
+        # Simulate PowerShell host return: "available|total|cpu_pct"
+        return FakeRun("17500|65536|42\n")
     # Path.exists check on /mnt/c... for powershell binary
     sch.Path.exists = lambda self: True
     sch.subprocess.run = fake_pwsh_ok
@@ -10302,7 +10512,7 @@ def test_phase3_3_local_windows_host_metrics():
               any("-NoProfile" in arg for arg in captured_cmds[0])
               and any("-NonInteractive" in arg for arg in captured_cmds[0]))
         check("helper: invocation queries DXGI Compute engine counter",
-              any("engtype_Compute" in arg for arg in captured_cmds[0]))
+              any("engtype_Compute" in str(arg) for cmd in captured_cmds for arg in cmd))
 
         # 2b. Garbage output → returns {} instead of crashing.
         sch.subprocess.run = lambda *a, **kw: FakeRun("nope")
@@ -10375,10 +10585,10 @@ def test_phase3_3_local_windows_host_metrics():
         check("probe_node(local): util_pct_compute attached to each GPU",
               all(g.get("util_pct_compute") == 88 for g in n["gpus"]),
               diag=str(n["gpus"]))
-        # WSL-side ram_free still reflects /proc/meminfo (placement decisions
-        # use this, NOT the host value).
-        check("probe_node(local): WSL free_ram_mb still reflects /proc/meminfo",
-              n.get("free_ram_mb") == 20000)
+        check("probe_node(local): wsl_free_ram_mb preserves /proc/meminfo",
+              n.get("wsl_free_ram_mb") == 20000)
+        check("probe_node(local): free_ram_mb is effective min(WSL, host)",
+              n.get("free_ram_mb") == 17500)
     finally:
         sch.run_on = saved_run_on
         sch.NODES = saved_NODES
@@ -10407,18 +10617,19 @@ def test_phase3_3_local_windows_host_metrics():
         sch.NODES = saved_NODES
         sch._probe_windows_host_extras = saved_extras
 
-    # 5. TUI _node_summary_line uses both host + WSL when present.
+    # 5. TUI _node_summary_line uses effective RAM when host + WSL are present.
     from tui import _node_summary_line
     n_with_extras = {
         "name": "local", "alive": True,
         "free_cpu": 7, "total_cpu": 12, "loadavg": 5.0,
-        "free_ram_mb": 1230, "host_free_ram_mb": 17500,
+        "free_ram_mb": 1230, "wsl_free_ram_mb": 20000,
+        "host_free_ram_mb": 17500,
         "gpus": [{"idx": 0, "used_mb": 800, "total_mb": 8000,
                     "free_mb": 7200, "util_pct": 10, "util_pct_compute": 88}],
     }
     line = _node_summary_line([n_with_extras])
-    check("TUI line shows BOTH WSL and host RAM",
-          "1.20GB(WSL)" in line and "17.1GB(host)" in line
+    check("TUI line shows effective RAM and hides raw WSL/host RAM",
+          "ram_free=1.20GB(eff)" in line and "wsl=" not in line and "host=" not in line
           and "1230MB" not in line and "17500MB" not in line,
           diag=line)
     check("TUI line shows GPU memory/free memory in GB",
@@ -10436,8 +10647,8 @@ def test_phase3_3_local_windows_host_metrics():
                     "free_mb": 12000, "util_pct": 0}],
     }
     line2 = _node_summary_line([n_no_extras])
-    check("TUI line omits (host) tag when no host_free_ram_mb",
-          "(WSL)" not in line2 and "(host)" not in line2, diag=line2)
+    check("TUI line omits effective tag when no host_free_ram_mb",
+          "(eff)" not in line2 and "wsl=" not in line2 and "host=" not in line2, diag=line2)
     check("TUI remote line shows ram_free in GB",
           "ram_free=97.7GB" in line2 and "100000MB" not in line2,
           diag=line2)
@@ -14916,6 +15127,7 @@ if __name__ == "__main__":
     test_status_view_no_truncation()
     test_display_units_owner_and_kill_actor()
     test_high_defaults_lower_before_placement()
+    test_explicit_ram_not_lowered_before_placement()
     test_low_ram_estimate_raises_from_live_siblings()
     test_probe_ram_auto_detect_and_optional_cap()
     test_running_descendant_resources_counted()
@@ -14942,6 +15154,7 @@ if __name__ == "__main__":
     test_invariant_race_guard_includes_launching()
     test_systemd_unit_restart_always()
     test_run_on_has_server_alive_options()
+    test_run_on_uses_no_stdin_ssh_except_sbatch_pipe()
     test_has_image_digest_drift()
     test_env_deploy_doc_matches_code()
     test_pick_placement_empty_first_then_coolest_warm()

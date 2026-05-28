@@ -38,7 +38,7 @@ import subprocess
 import sys
 import time
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
@@ -76,6 +76,14 @@ JTL110GPU_RE_SAC_JAX_PATH = (
     f"{JTL110GPU_RE_SAC_JAX_SITE}/nvidia/cuda_nvcc/bin:"
     "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 )
+OFFLINE_SUMO_ENV = "/home/erzhu419/.conda/envs/offline-sumo"
+OFFLINE_SUMO_PYTHON = f"{OFFLINE_SUMO_ENV}/bin/python"
+BUS_TORCH_CMD_REWRITES = [
+    ("/home/erzhu419/anaconda3/bin/python -u sac_ensemble",
+     f"{OFFLINE_SUMO_PYTHON} -u sac_ensemble"),
+    ("/home/erzhu419/anaconda3/bin/python sac_ensemble",
+     f"{OFFLINE_SUMO_PYTHON} sac_ensemble"),
+]
 
 # cpu_cores are the schedulable budget. ram_mb is an optional schedulable cap:
 # positive value = cap placement to that many MB; 0/unset = auto-detect MemTotal.
@@ -98,15 +106,16 @@ NODES = {
     # max_vram_per_task: None = auto-derive from probed GPU total_mb at runtime (set in probe_node).
     # Was hardcoded 4096 from AMD 610 era; after NVIDIA 4060 (8188MB) became the default GPU,
     # the static cap silently blocked single-task allocations >4GB even though physically OK.
-    "local":      {"host": None,         "cpu_cores": 16, "reserved_cpu_cores": int(os.environ.get("SCHEDULEURM_LOCAL_RESERVED_CPU_CORES", "4")),
-                   "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "gpu_util_saturation_pct": None,
-                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
+    "local":      {"host": None,         "cpu_cores": 16, "reserved_cpu_cores": int(os.environ.get("SCHEDULEURM_LOCAL_RESERVED_CPU_CORES", "0")),
+                   "ram_mb": 56 * 1024,  "ram_headroom_mb": 2048, "ram_headroom_frac": 0.20, "max_vram_per_task": None, "max_concurrent_running": 10, "max_tasks_per_gpu": 3, "gpu_util_saturation_pct": None,
+                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+                   "cmd_rewrites": BUS_TORCH_CMD_REWRITES},
     # jtl110gpu has a 525 driver, so the shared resac-jax JAX 0.9 CUDA plugin
     # cannot initialize there. Route RE-SAC JAX commands through a node-local
     # JAX 0.4.38 venv with CUDA/cuDNN wheels verified on this driver.
-    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None,
+    "jtl110gpu":  {"host": "jtl110gpu",  "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "max_tasks_per_gpu": 4, "enable_claims": True, "gpu_util_saturation_pct": None,
                    "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
-                   "cmd_rewrites": [
+                   "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
                        ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
                         f"{JTL110GPU_RE_SAC_JAX_ENV}/bin/python"),
                    ],
@@ -118,8 +127,81 @@ NODES = {
     # Slurm may be installed on this small node, but the default policy is still
     # scheduleurm-managed local placement so one GPU can hold multiple small jobs.
     # Explicit task Slurm fields or per-node slurm_*_backend="slurm" still opt in.
-    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "enable_claims": True, "gpu_util_saturation_pct": None,
-                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
+    "jtl110gpu2": {"host": "jtl110gpu2", "cpu_cores": 12, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "max_tasks_per_gpu": 4, "enable_claims": True, "gpu_util_saturation_pct": None,
+                   "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+                   "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
+                       ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
+                        f"{JTL110GPU_RE_SAC_JAX_ENV}/bin/python"),
+                   ],
+                   "launch_extra_env": {
+                       "PATH": JTL110GPU_RE_SAC_JAX_PATH,
+                       "LD_LIBRARY_PATH": JTL110GPU_RE_SAC_JAX_NVIDIA_LIBS,
+                       "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
+                   }},
+    # Campus-only HPC login node. Local Codex cannot reach it directly; route
+    # all SSH/rsync/Slurm control traffic through GPU2, which is on campus net.
+    # Workspaces are staged under the HPC account's home rather than preserving
+    # /home/erzhu419, which that account cannot create.
+    "zhengliang-hpc": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
+                       "ssh_proxy_jump": "jtl110gpu2",
+                       "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
+                       "max_vram_per_task": None, "max_concurrent_running": None,
+                       "slurm_backend": "slurm", "slurm_auto_large": True,
+                       "slurm_auto_gpu_count": 4,
+                       "slurm_gpu_partition": "gpu",
+                       "slurm_cpu_partition": "cpu",
+                       "slurm_gpu_details": {
+                           "node007": {"model": "GeForce RTX 2080 Ti", "memory_gb": 11},
+                       },
+                       "only_when_targeted": True,
+                       "stage_only_when_targeted": True,
+                       "relay_node": "jtl110gpu2",
+                       "relay_root": "/tmp/scheduleurm-hpc-relay/zhengliang-hpc",
+                       "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
+                       "remote_path_prefixes": [
+                           str(Path.home() / "mine_code"),
+                           "/home/erzhu419/mine_code",
+                       ],
+                       "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
+    # Direct compute-node mode for node007. The cluster's normal sshd PAM policy
+    # rejects ordinary zhengliang01 SSH sessions on compute nodes unless Slurm
+    # owns an allocation, but zndx can sudo-ssh to node007 as root. Run commands
+    # through that root hop and immediately drop back to zhengliang01 so files and
+    # experiment processes stay user-owned while scheduleurm can pack several
+    # small RL jobs per physical GPU.
+    "node007-direct": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
+                       "ssh_proxy_jump": "jtl110gpu2",
+                       "sudo_ssh_host": "node007",
+                       "sudo_ssh_run_as": "zhengliang01",
+                       "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
+                       "max_vram_per_task": None, "max_concurrent_running": 16,
+                       "max_tasks_per_gpu": 4,
+                       "allow_gpu_over_one_third": True,
+                       "gpu_util_saturation_pct": None,
+                       "ignore_cpu_for_gpu_tasks": True,
+                       "enable_claims": False,
+                       "skip_launch_staging": True,
+                       "only_when_targeted": True,
+                       "stage_only_when_targeted": True,
+                       "relay_node": "jtl110gpu2",
+                       "relay_root": "/tmp/scheduleurm-hpc-relay/node007-direct",
+                       "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
+                       "remote_path_prefixes": [
+                           str(Path.home() / "mine_code"),
+                           "/home/erzhu419/mine_code",
+                       ],
+                       "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
+                           ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
+                            "/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin/python"),
+                       ],
+                       "launch_extra_env": {
+                           "PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin:/usr/local/bin:/usr/bin:/bin",
+                           "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+                           "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
+                       },
+                       "resume_scan_python": "/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin/python",
+                       "nvidia_smi_path": "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi",
+                       "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
     # Windows CPU-only box. It has 256 logical / 128 physical cores split across
     # processor groups; WindowsBackend launches through a Python wrapper that
     # periodically pins child worker processes to unique physical cores. GPU
@@ -128,7 +210,7 @@ NODES = {
                    "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
                    "os": "windows", "cpu_cores": 128, "ram_mb": 512 * 1024,
                    "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
-                   "windows_python": r"F:\erzhu419_smoke\venv\Scripts\python.exe",
+                   "windows_python": r"F:\v\Scripts\python.exe",
                    "windows_workspace_root": r"F:\erzhu419_smoke",
                    "windows_scheduleurm_dir": r"F:\erzhu419_smoke\.scheduleurm",
                    "windows_auto_pin": True, "windows_skip_ht_pair": True,
@@ -138,7 +220,7 @@ NODES = {
                    "ssh_identity": str(Path.home() / ".ssh" / "id_ed25519"),
                    "os": "windows", "cpu_cores": 128, "ram_mb": 512 * 1024,
                    "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
-                   "windows_python": r"F:\erzhu419_smoke\venv\Scripts\python.exe",
+                   "windows_python": r"F:\v\Scripts\python.exe",
                    "windows_workspace_root": r"F:\erzhu419_smoke",
                    "windows_scheduleurm_dir": r"F:\erzhu419_smoke\.scheduleurm",
                    "windows_auto_pin": True, "windows_skip_ht_pair": False,
@@ -157,6 +239,8 @@ VRAM_MARGIN_MB = 500       # headroom on a GPU after placing a task
 RAM_HEADROOM_FRAC = 0.10   # keep 10% of node RAM unallocated as buffer for OS/other procs
 ONE_THIRD_PACK_RULE = True # don't add to a GPU already past the 1/3+grace freeze line
 ONE_THIRD_PACK_GRACE_MB = int(os.environ.get("SCHEDULEURM_ONE_THIRD_PACK_GRACE_MB", "512"))
+GPU_EVICT_ROLLBACK_MAX_AGE_S = int(os.environ.get("SCHEDULEURM_GPU_EVICT_ROLLBACK_MAX_AGE_S", "1800"))
+GPU_EVICT_STABLE_PROGRESS_MIN_AGE_S = int(os.environ.get("SCHEDULEURM_GPU_EVICT_STABLE_PROGRESS_MIN_AGE_S", "900"))
 RAM_HEADROOM_EVICTION_GRACE_MB = int(os.environ.get("SCHEDULEURM_RAM_HEADROOM_EVICTION_GRACE_MB", "512"))
 RAM_EVICT_CKPT_PROTECT_MIN_AGE_S = int(os.environ.get("SCHEDULEURM_RAM_EVICT_CKPT_PROTECT_MIN_AGE_S", "300"))
 RAM_EVICT_CKPT_PROTECT_PROGRESS = float(os.environ.get("SCHEDULEURM_RAM_EVICT_CKPT_PROTECT_PROGRESS", "0.01"))
@@ -164,8 +248,8 @@ GPU_UTIL_SATURATION_PCT = 85  # if an occupied GPU is past this compute util, do
 DEFAULT_VRAM_MB = 512      # est for unknown signatures (no history, no siblings).
 GPU_EMPTY_USED_MB = 200    # treat driver/runtime noise below this as an empty GPU
                            # Optimistic-low by design: if a task actually needs more, the
-                           # post-dispatch resource-pressure rollback re-queues the least-progress
-                           # / longest-ETA colocated task. Once a card crosses the 1/3+grace
+                           # post-dispatch resource-pressure rollback re-queues newly-launched
+                           # colocated work before stable progress-bearing tasks. Once a card crosses the 1/3+grace
                            # freeze line, new GPU work is frozen until old work frees memory.
                            # Was 4096 → 1024 → 512. User passes --vram N when known larger.
 DEFAULT_RAM_MB = 4096      # ditto for RAM
@@ -550,7 +634,10 @@ def capacity_conflicts(payload, active_claims, capacity):
     Shared by capacity rejection and FIFO/backfill checks so the remote
     arbiter uses exactly one resource model.
     """
-    used_cpu = sum(c.get("cpu_cores", 0) for c in active_claims)
+    used_cpu = sum(
+        0 if c.get("ignore_cpu_capacity") else c.get("cpu_cores", 0)
+        for c in active_claims
+    )
     used_ram = sum(c.get("ram_mb", 0) for c in active_claims)
     per_gpu = {}
     for c in active_claims:
@@ -569,7 +656,8 @@ def capacity_conflicts(payload, active_claims, capacity):
     vram_margin = int(capacity.get("vram_margin_mb", 0) or 0)
     third_rule = bool(capacity.get("third_pack_rule"))
     conflicts = []
-    if used_cpu + cpu_need > cpu_cap:
+    ignore_cpu = bool(payload.get("ignore_cpu_capacity"))
+    if not ignore_cpu and used_cpu + cpu_need > cpu_cap:
         conflicts.append("cpu: need %d + claimed %d > cap %d" % (cpu_need, used_cpu, cpu_cap))
     if used_ram + ram_need > ram_cap:
         conflicts.append("ram: need %dMB + claimed %dMB > cap %dMB" % (ram_need, used_ram, ram_cap))
@@ -595,7 +683,7 @@ def capacity_conflicts(payload, active_claims, capacity):
         #     OR this claim would cross it. The line includes a small grace
         #     window because 1/3 is a heuristic, not a physical OOM boundary.
         # There is deliberately no small-task exemption.
-        if third_rule and gcap > 0:
+        if third_rule and not bool(payload.get("ignore_one_third_pack_rule")) and gcap > 0:
             third = gcap // 3
             grace = max(0, int(capacity.get("one_third_grace_mb", 0) or 0))
             freeze = min(gcap, third + grace)
@@ -658,7 +746,10 @@ def live_external_claims(active_claims, capacity):
     snap = _read_live_snapshot(capacity)
     externals = []
     running_claims = [c for c in active_claims if c.get("pid")]
-    claimed_cpu = sum(int(c.get("cpu_cores") or 0) for c in running_claims)
+    claimed_cpu = sum(
+        0 if c.get("ignore_cpu_capacity") else int(c.get("cpu_cores") or 0)
+        for c in running_claims
+    )
     claimed_ram = sum(int(c.get("ram_mb") or 0) for c in running_claims)
     claimed_gpu = {}
     for c in running_claims:
@@ -864,12 +955,15 @@ def main():
                     c["expires_at"] = float(new_exp)
                 rec = records.get(str(c.get("task_id")))
                 if isinstance(rec, dict):
-                    for key in ("gpu_idx", "vram_mb", "cpu_cores", "ram_mb", "pid"):
+                    for key in ("gpu_idx", "vram_mb", "cpu_cores", "ram_mb", "pid",
+                                "ignore_cpu_capacity", "ignore_one_third_pack_rule"):
                         if key not in rec:
                             continue
                         val = rec.get(key)
                         try:
-                            if key in ("gpu_idx", "pid"):
+                            if key in ("ignore_cpu_capacity", "ignore_one_third_pack_rule"):
+                                c[key] = bool(val)
+                            elif key in ("gpu_idx", "pid"):
                                 c[key] = int(val) if val is not None else None
                             else:
                                 c[key] = max(0, int(val))
@@ -1139,14 +1233,20 @@ class _ClaimManager:
             owner = os.environ.get("USER") or os.getlogin() or "?"
         except Exception:
             owner = "?"
+        ignore_cpu = _ignore_cpu_for_server_gpu_task(
+            task, node_state=node_state, node_info=NODES.get(node, {}),
+            node_name=node, gpu_idx=gpu_idx)
+        ignore_one_third = _task_ignores_one_third_pack_rule(task, NODES.get(node, {}))
         record = {
             "owner": owner,
             "scheduler_id": cls.scheduler_id(),
             "task_id": task["id"],
             "gpu_idx": gpu_idx,
             "vram_mb": int(task.get("est_vram_mb") or 0),
-            "cpu_cores": int(task.get("cpu_cores") or DEFAULT_CPU_CORES),
+            "cpu_cores": 0 if ignore_cpu else int(task.get("cpu_cores") or DEFAULT_CPU_CORES),
             "ram_mb": int(task.get("ram_mb") or DEFAULT_RAM_MB),
+            "ignore_cpu_capacity": bool(ignore_cpu),
+            "ignore_one_third_pack_rule": bool(ignore_one_third),
             "claimed_at": now,
             "expires_at": now + ttl,
             "intent_expires_at": now + intent_ttl,
@@ -1299,11 +1399,18 @@ def _claim_resource_record_for_task(task: dict) -> dict:
     est_vram = int(task.get("est_vram_mb") or 0)
     current_ram = int(task.get("current_ram_mb") or 0)
     est_ram = int(task.get("ram_mb") or DEFAULT_RAM_MB)
+    node = task.get("node")
+    ignore_cpu = _ignore_cpu_for_server_gpu_task(
+        task, node_info=NODES.get(node or "", {}), node_name=node,
+        gpu_idx=task.get("gpu_idx"))
+    ignore_one_third = _task_ignores_one_third_pack_rule(task, NODES.get(node or "", {}))
     return {
         "gpu_idx": task.get("gpu_idx"),
         "vram_mb": max(0, est_vram, current_vram),
-        "cpu_cores": max(0, int(task.get("cpu_cores") or DEFAULT_CPU_CORES)),
+        "cpu_cores": 0 if ignore_cpu else max(0, int(task.get("cpu_cores") or DEFAULT_CPU_CORES)),
         "ram_mb": max(0, est_ram, current_ram),
+        "ignore_cpu_capacity": bool(ignore_cpu),
+        "ignore_one_third_pack_rule": bool(ignore_one_third),
         "pid": int(pids[0]) if pids else None,
     }
 
@@ -1520,17 +1627,55 @@ def _cmd_flag_values(tokens: list, flags: set) -> dict:
     return vals
 
 
+def _cmd_token_variants(cmd: str) -> list:
+    """Return shlex token views for a command, including simple shell -c bodies."""
+    if not cmd:
+        return []
+    variants = []
+
+    def add(tokens):
+        if tokens and tokens not in variants:
+            variants.append(tokens)
+
+    try:
+        add(shlex.split(cmd))
+    except Exception:
+        add(str(cmd).split())
+
+    shells = {"bash", "sh", "dash", "zsh", "ksh"}
+    for tokens in list(variants):
+        shell_seen = False
+        for i, tok in enumerate(tokens[:-1]):
+            if os.path.basename(str(tok)) in shells:
+                shell_seen = True
+                continue
+            if shell_seen and tok in ("-c", "-lc"):
+                try:
+                    add(shlex.split(tokens[i + 1]))
+                except Exception:
+                    add(str(tokens[i + 1]).split())
+                break
+    return variants
+
+
+def _cmd_flag_values_from_cmd(cmd: str, flags: set) -> dict:
+    vals = {}
+    for tokens in _cmd_token_variants(cmd):
+        for flag, items in _cmd_flag_values(tokens, flags).items():
+            bucket = vals.setdefault(flag, [])
+            for item in items:
+                if item not in bucket:
+                    bucket.append(item)
+    return vals
+
+
 def _result_artifacts_from_cmd(task: dict) -> list:
     cmd = task.get("cmd") or ""
     artifacts = []
     if not cmd or (cmd.startswith("(auto-adopted") and " --" not in cmd):
         return artifacts
-    try:
-        tokens = shlex.split(cmd)
-    except Exception:
-        tokens = cmd.split()
-    file_vals = _cmd_flag_values(tokens, _RESULT_FILE_FLAGS)
-    dir_vals = _cmd_flag_values(tokens, _RESULT_DIR_FLAGS)
+    file_vals = _cmd_flag_values_from_cmd(cmd, _RESULT_FILE_FLAGS)
+    dir_vals = _cmd_flag_values_from_cmd(cmd, _RESULT_DIR_FLAGS)
     for flag, vals in file_vals.items():
         for v in vals:
             _add_result_artifact(artifacts, task, v, "file", f"cmd:{flag}")
@@ -1544,7 +1689,7 @@ def _result_artifacts_from_cmd(task: dict) -> list:
         roots.extend(dir_vals.get(k, []))
     run_names = []
     for k in ("--run-name", "--run_name", "--name"):
-        run_names.extend(_cmd_flag_values(tokens, {k}).get(k, []))
+        run_names.extend(_cmd_flag_values_from_cmd(cmd, {k}).get(k, []))
     if roots and run_names:
         for root in roots:
             for rn in run_names:
@@ -1570,12 +1715,8 @@ def _save_root_run_name_pairs_from_cmd(task: dict) -> list:
     cmd = task.get("cmd") or ""
     if not cmd or (cmd.startswith("(auto-adopted") and " --" not in cmd):
         return []
-    try:
-        tokens = shlex.split(cmd)
-    except Exception:
-        tokens = cmd.split()
-    vals = _cmd_flag_values(
-        tokens,
+    vals = _cmd_flag_values_from_cmd(
+        cmd,
         {"--save-root", "--save_root", "--run-name", "--run_name", "--name"},
     )
     roots = []
@@ -2131,10 +2272,28 @@ def _ssh_base_args(node: str) -> list:
         args.extend(["-i", os.path.expanduser(str(info["ssh_identity"]))])
     if info.get("ssh_port"):
         args.extend(["-p", str(info["ssh_port"])])
+    proxy_jump = info.get("ssh_proxy_jump") or info.get("proxy_jump")
+    if proxy_jump:
+        args.extend(["-J", str(proxy_jump)])
+    for opt in (info.get("ssh_options") or []):
+        opt = str(opt or "").strip()
+        if opt:
+            args.extend(["-o", opt])
     user = info.get("ssh_user")
     target = f"{user}@{host}" if user and "@" not in str(host) else str(host)
     args.append(target)
     return args
+
+
+def _ssh_no_stdin_args(node: str) -> list:
+    """Build ssh argv for commands that must not consume scheduler stdin.
+
+    Relay commands can run another ssh/rsync/sbatch on the remote host. If the
+    outer ssh keeps stdin open, an inner ssh may drain the parent script's stdin
+    and skip later commands. Use this for ordinary remote shell commands only.
+    """
+    args = _ssh_base_args(node)
+    return args[:1] + ["-n"] + args[1:]
 
 
 def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True, input_data: bytes | None = None):
@@ -2310,6 +2469,8 @@ def run_on(node, shell_cmd, timeout=15, check=True):
 
     Remote ssh argv is built by _ssh_base_args(), including
     ServerAliveInterval=5 and ServerAliveCountMax=3 for half-dead sockets.
+    For ordinary commands it is wrapped with `ssh -n` so relay-side nested ssh
+    calls cannot consume scheduler stdin.
     """
     if _node_is_windows(node):
         raise RuntimeError(f"run_on() bash path called for Windows node {node}; use _run_windows_ps")
@@ -2317,17 +2478,54 @@ def run_on(node, shell_cmd, timeout=15, check=True):
     if host is None:
         proc = subprocess.run(["bash", "-lc", shell_cmd], capture_output=True, timeout=timeout, text=True)
     else:
+        remote_cmd = _remote_bash_command_for_node(node, shell_cmd, timeout=timeout)
         # ServerAlive*: detect dead ControlMaster sockets fast (item 9 — half-dead persistent
         # connection used to take the full subprocess timeout to surface). 5s × 3 missed pings
         # = 15s before ssh declares dead; under our 15s default `timeout=`, this means a
         # broken master surfaces as ssh failure not subprocess timeout.
         proc = subprocess.run(
-            _ssh_base_args(node) + [f"bash -lc {shlex.quote(shell_cmd)}"],
+            _ssh_no_stdin_args(node) + [remote_cmd],
             capture_output=True, timeout=timeout, text=True,
         )
     if check and proc.returncode != 0:
         raise RuntimeError(f"[{node}] cmd failed (rc={proc.returncode}): {proc.stderr.strip()[:300]}")
     return proc.returncode, proc.stdout, proc.stderr
+
+
+def _remote_bash_command_for_node(node: str, shell_cmd: str, timeout: Optional[int] = None) -> str:
+    """Build the command executed by the outer SSH target.
+
+    Most Unix nodes execute the command directly on the SSH target. Some campus
+    compute nodes are reachable only by first SSHing to a login node and then
+    sudo-SSHing to the compute node; for those, run the command through the
+    inner root hop and optionally drop to the configured user before executing
+    the actual bash payload.
+    """
+    info = NODES.get(node, {}) or {}
+    inner_host = str(info.get("sudo_ssh_host") or "").strip()
+    if not inner_host:
+        return f"bash -lc {shlex.quote(shell_cmd)}"
+    # Avoid login shells here. The HPC account's login profile prints Slurm
+    # status tables to stdout, which corrupts machine-readable probes such as
+    # nvidia-smi CSV and claim-manager JSON.
+    inner = f"bash -c {shlex.quote(shell_cmd)}"
+    run_as = str(info.get("sudo_ssh_run_as") or "").strip()
+    if run_as and run_as != "root":
+        inner = f"su {shlex.quote(run_as)} -s /bin/bash -c {shlex.quote(inner)}"
+    ssh_bin = str(info.get("sudo_ssh_bin") or "/usr/bin/ssh")
+    # zndx already has a narrow sudoers rule shaped like:
+    #   zhengliang01 ALL=(root) NOPASSWD: /usr/bin/ssh node007, /usr/bin/ssh node007 *
+    # Keep the host immediately after ssh_bin so that rule matches. Stdin is
+    # detached via shell redirection rather than `ssh -n`, which would change
+    # argv and miss the sudoers command pattern.
+    inner_ssh_args = [ssh_bin, inner_host, inner]
+    sudo_cmd = "sudo -n " + " ".join(shlex.quote(arg) for arg in inner_ssh_args) + " </dev/null"
+    try:
+        remote_timeout = max(1, int(timeout) - 1) if timeout else 0
+    except Exception:
+        remote_timeout = 0
+    wrapped = f"timeout -k 2s {remote_timeout}s {sudo_cmd}" if remote_timeout else sudo_cmd
+    return f"bash -c {shlex.quote(wrapped)}"
 
 # ---------- node probe ----------
 def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
@@ -2343,8 +2541,8 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
 
     This helper queries Windows-side ground truth so the TUI can show it
     alongside the WSL view:
-      host_free_ram_mb         — Win32_OperatingSystem.FreePhysicalMemory
-      host_total_ram_mb        — Win32_OperatingSystem.TotalVisibleMemorySize
+      host_free_ram_mb         — Windows available physical memory
+      host_total_ram_mb        — Windows total physical memory
       host_cpu_load_pct        — Windows host CPU load percentage
       gpu_compute_util_pct     — max DXGI Compute engine utilization
                                  (the metric Task Manager's GPU widget uses)
@@ -2362,20 +2560,24 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
             pwsh = alt
         else:
             return out
-    # Combine all queries into one PowerShell invocation to amortize the
-    # WSL→Windows interop startup cost (~200ms each spawn).
+    # Keep host RAM/CPU separate from GPU counters. The GPU Engine counter can
+    # stall for several seconds under load; host RAM is cheap and should still
+    # be reported so TUI/status can explain WSL-vs-Windows memory differences.
     script = (
-        "$os = Get-CimInstance Win32_OperatingSystem; "
-        "$free = [math]::Round($os.FreePhysicalMemory / 1024); "  # KB → MB
-        "$tot  = [math]::Round($os.TotalVisibleMemorySize / 1024); "
+        "try { "
+        "  Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction Stop; "
+        "  $ci = New-Object Microsoft.VisualBasic.Devices.ComputerInfo; "
+        "  $free = [math]::Round($ci.AvailablePhysicalMemory / 1MB); "
+        "  $tot  = [math]::Round($ci.TotalPhysicalMemory / 1MB); "
+        "} catch { "
+        "  $os = Get-CimInstance Win32_OperatingSystem; "
+        "  $free = [math]::Round($os.FreePhysicalMemory / 1024); "
+        "  $tot  = [math]::Round($os.TotalVisibleMemorySize / 1024); "
+        "} "
         "$cpu = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue "
         "| Measure-Object -Property LoadPercentage -Average; "
         "$cpu_pct = if ($cpu.Average -ne $null) { [math]::Round($cpu.Average) } else { 0 }; "
-        "$gpu = (Get-Counter '\\GPU Engine(*engtype_Compute*)\\Utilization "
-        "Percentage' -ErrorAction SilentlyContinue).CounterSamples "
-        "| Measure-Object -Maximum CookedValue; "
-        "$gpu_pct = if ($gpu.Maximum) { [math]::Round($gpu.Maximum) } else { 0 }; "
-        "Write-Output \"$free|$tot|$gpu_pct|$cpu_pct\""
+        "Write-Output \"$free|$tot|$cpu_pct\""
     )
     try:
         r = subprocess.run(
@@ -2386,15 +2588,32 @@ def _probe_windows_host_extras(timeout_s: float = 4.0) -> dict:
             return out
         line = (r.stdout or "").strip().splitlines()[-1] if r.stdout else ""
         bits = line.split("|")
-        if len(bits) >= 3:
+        if len(bits) >= 2:
             try:
                 out["host_free_ram_mb"] = int(bits[0])
                 out["host_total_ram_mb"] = int(bits[1])
-                out["gpu_compute_util_pct"] = int(bits[2])
-                if len(bits) >= 4:
-                    out["host_cpu_load_pct"] = int(bits[3])
+                if len(bits) >= 3:
+                    out["host_cpu_load_pct"] = int(bits[2])
             except ValueError:
                 pass
+    except Exception:
+        pass
+    gpu_script = (
+        "$gpu = (Get-Counter '\\GPU Engine(*engtype_Compute*)\\Utilization "
+        "Percentage' -ErrorAction SilentlyContinue).CounterSamples "
+        "| Measure-Object -Maximum CookedValue; "
+        "$gpu_pct = if ($gpu.Maximum) { [math]::Round($gpu.Maximum) } else { 0 }; "
+        "Write-Output \"$gpu_pct\""
+    )
+    try:
+        r = subprocess.run(
+            [pwsh, "-NoProfile", "-NonInteractive", "-Command", gpu_script],
+            capture_output=True, text=True, timeout=max(1.0, min(3.0, timeout_s)),
+        )
+        if r.returncode == 0:
+            line = (r.stdout or "").strip().splitlines()[-1] if r.stdout else ""
+            if line:
+                out["gpu_compute_util_pct"] = int(float(line))
     except Exception:
         pass
     return out
@@ -2685,9 +2904,240 @@ Write-Output "$free|$total|$logical|$loadPct"
     }
 
 
+def _parse_slurm_int(value, default: int = 0) -> int:
+    try:
+        return int(float(str(value or "").strip()))
+    except Exception:
+        return default
+
+
+def _parse_slurm_tres(text: str) -> dict:
+    out = {}
+    for part in str(text or "").split(","):
+        if "=" not in part:
+            continue
+        k, v = part.split("=", 1)
+        out[k.strip()] = _parse_slurm_int(v, 0)
+    return out
+
+
+def _parse_slurm_gres_gpu(gres: str, cfg_tres: str = "") -> int:
+    gres = str(gres or "")
+    if gres and gres != "(null)":
+        total = 0
+        for m in re.finditer(r"(?:^|,)gpu(?::[^:,]+)?:(\d+)", gres):
+            total += _parse_slurm_int(m.group(1), 0)
+        if total:
+            return total
+    return _parse_slurm_tres(cfg_tres).get("gres/gpu", 0)
+
+
+def _format_slurm_gpu_memory_label(detail: dict) -> str:
+    raw = detail.get("memory_label")
+    if raw:
+        return str(raw)
+    raw = detail.get("memory_gb")
+    if raw is not None:
+        try:
+            gb = float(raw)
+            return f"{gb:g}GB"
+        except Exception:
+            return str(raw)
+    raw = detail.get("memory_mb")
+    if raw is not None:
+        return _format_mem_gb(raw)
+    return ""
+
+
+def _parse_scontrol_node_line(line: str) -> Optional[dict]:
+    if not line.startswith("NodeName="):
+        return None
+    fields = {m.group(1): m.group(2) for m in re.finditer(r"(\w+)=([^ ]+)", line)}
+    if not fields.get("NodeName"):
+        return None
+    total_cpu = _parse_slurm_int(fields.get("CPUTot"), 0)
+    alloc_cpu = _parse_slurm_int(fields.get("CPUAlloc"), 0)
+    real_mem = _parse_slurm_int(fields.get("RealMemory"), 0)
+    alloc_mem = _parse_slurm_int(fields.get("AllocMem"), 0)
+    free_mem = _parse_slurm_int(fields.get("FreeMem"), 0)
+    total_gpus = _parse_slurm_gres_gpu(fields.get("Gres"), fields.get("CfgTRES"))
+    alloc_gpus = _parse_slurm_tres(fields.get("AllocTRES")).get("gres/gpu", 0)
+    state = (fields.get("State") or "UNKNOWN").split("+", 1)[0]
+    parts = [p for p in (fields.get("Partitions") or "").split(",") if p and p != "(null)"]
+    return {
+        "name": fields.get("NodeName"),
+        "partitions": parts,
+        "state": state,
+        "gres": fields.get("Gres") or "(null)",
+        "total_cpu": total_cpu,
+        "alloc_cpu": alloc_cpu,
+        "free_cpu": max(0, total_cpu - alloc_cpu),
+        "loadavg": float(fields.get("CPULoad") or 0.0),
+        "real_mem_mb": real_mem,
+        "alloc_mem_mb": alloc_mem,
+        "sched_free_mem_mb": max(0, real_mem - alloc_mem) if real_mem else max(0, free_mem),
+        "host_free_mem_mb": free_mem,
+        "total_gpus": total_gpus,
+        "alloc_gpus": alloc_gpus,
+        "free_gpus": max(0, total_gpus - alloc_gpus),
+    }
+
+
+def _partition_state_counts(nodes: list[dict]) -> str:
+    counts = {}
+    for rec in nodes:
+        st = str(rec.get("state") or "UNKNOWN").lower()
+        counts[st] = counts.get(st, 0) + 1
+    return ",".join(f"{k}:{counts[k]}" for k in sorted(counts))
+
+
+def _probe_slurm_cluster_node(name: str) -> dict:
+    """Probe real Slurm compute resources instead of login-node CPU/RAM.
+
+    For campus clusters reached through a login node, /proc and nvidia-smi on
+    the SSH target describe the login host. The schedulable resources live in
+    Slurm's controller, so TUI/status should render partition/node/GRES data.
+    """
+    cmd = (
+        "LC_ALL=C sinfo -h -o 'SINFO|%P|%D|%t|%C|%G|%m|%N' 2>/dev/null; "
+        "echo __SCHED_SCONTROL__; "
+        "LC_ALL=C scontrol show node -o 2>/dev/null"
+    )
+    try:
+        rc, out, err = run_on(name, cmd, timeout=20, check=False)
+    except Exception as e:
+        return {"name": name, "alive": False, "error": str(e)[:160]}
+    if rc != 0:
+        return {"name": name, "alive": False, "error": (err or out or f"slurm probe rc={rc}")[:160]}
+
+    node_recs = []
+    for line in (out or "").splitlines():
+        line = line.strip()
+        rec = _parse_scontrol_node_line(line)
+        if rec:
+            node_recs.append(rec)
+    if not node_recs:
+        return {"name": name, "alive": False, "error": "slurm probe returned no compute nodes"}
+
+    gpu_details = (NODES.get(name, {}) or {}).get("slurm_gpu_details") or {}
+    for rec in node_recs:
+        detail = gpu_details.get(rec.get("name")) or {}
+        if not isinstance(detail, dict):
+            continue
+        model = detail.get("model") or detail.get("gpu_model") or detail.get("name")
+        mem_label = _format_slurm_gpu_memory_label(detail)
+        if model:
+            rec["gpu_model"] = str(model)
+        if mem_label:
+            rec["gpu_mem_label"] = mem_label
+
+    parts: dict[str, list[dict]] = {}
+    for rec in node_recs:
+        for part in rec.get("partitions") or ["unknown"]:
+            parts.setdefault(part, []).append(rec)
+
+    part_summaries = []
+    for part, recs in sorted(parts.items(), key=lambda kv: (0 if kv[0] == "gpu" else 1, kv[0])):
+        total_cpu = sum(int(r.get("total_cpu") or 0) for r in recs)
+        free_cpu = sum(int(r.get("free_cpu") or 0) for r in recs)
+        total_mem = sum(int(r.get("real_mem_mb") or 0) for r in recs)
+        free_mem = sum(int(r.get("sched_free_mem_mb") or 0) for r in recs)
+        total_gpus = sum(int(r.get("total_gpus") or 0) for r in recs)
+        free_gpus = sum(int(r.get("free_gpus") or 0) for r in recs)
+        gpu_recs = [r for r in recs if int(r.get("total_gpus") or 0) > 0]
+        gpu_model_values = sorted({
+            str(r.get("gpu_model"))
+            for r in gpu_recs
+            if r.get("gpu_model")
+        })
+        gpu_mem_values = sorted({
+            str(r.get("gpu_mem_label"))
+            for r in gpu_recs
+            if r.get("gpu_mem_label")
+        })
+        gpu_model = ""
+        if gpu_recs and len(gpu_model_values) == 1 and all(r.get("gpu_model") for r in gpu_recs):
+            gpu_model = gpu_model_values[0]
+        gpu_mem_label = ""
+        if gpu_recs and len(gpu_mem_values) == 1 and all(r.get("gpu_mem_label") for r in gpu_recs):
+            gpu_mem_label = gpu_mem_values[0]
+        part_summaries.append({
+            "name": part,
+            "nodes": len(recs),
+            "node_names": [r.get("name") for r in recs],
+            "states": _partition_state_counts(recs),
+            "total_cpu": total_cpu,
+            "free_cpu": free_cpu,
+            "total_mem_mb": total_mem,
+            "free_mem_mb": free_mem,
+            "total_gpus": total_gpus,
+            "free_gpus": free_gpus,
+            "gpu_model": gpu_model,
+            "gpu_mem_label": gpu_mem_label,
+        })
+
+    total_cpu = sum(int(r.get("total_cpu") or 0) for r in node_recs)
+    free_cpu = sum(int(r.get("free_cpu") or 0) for r in node_recs)
+    total_mem = sum(int(r.get("real_mem_mb") or 0) for r in node_recs)
+    free_mem = sum(int(r.get("sched_free_mem_mb") or 0) for r in node_recs)
+    total_gpus = sum(int(r.get("total_gpus") or 0) for r in node_recs)
+    free_gpus = sum(int(r.get("free_gpus") or 0) for r in node_recs)
+    return {
+        "name": name,
+        "alive": True,
+        "gpus": [],
+        "slurm_cluster": True,
+        "slurm_nodes": node_recs,
+        "slurm_partitions": part_summaries,
+        "total_gpus": total_gpus,
+        "free_gpus": free_gpus,
+        "free_cpu": free_cpu,
+        "total_cpu": total_cpu,
+        "loadavg": sum(float(r.get("loadavg") or 0.0) for r in node_recs),
+        "free_ram_mb": free_mem,
+        "actual_free_ram_mb": free_mem,
+        "total_ram_mb": total_mem,
+        "probe_source": "slurm",
+    }
+
+
+def _format_slurm_cluster_summary(n: dict) -> str:
+    parts = []
+    for p in n.get("slurm_partitions") or []:
+        name = p.get("name") or "?"
+        nodes = p.get("nodes") or 0
+        node_names = ",".join(p.get("node_names") or [])
+        node_part = f"{nodes} node" + ("" if nodes == 1 else "s")
+        if node_names and nodes <= 3:
+            node_part = node_names
+        bits = [
+            f"{name}: {node_part}",
+            f"cpu={p.get('free_cpu', 0)}/{p.get('total_cpu', 0)}",
+            f"mem={_format_mem_gb(p.get('free_mem_mb', 0))}/{_format_mem_gb(p.get('total_mem_mb', 0))}",
+        ]
+        if int(p.get("total_gpus") or 0) > 0:
+            gpu_bit = f"gpu={p.get('free_gpus', 0)}/{p.get('total_gpus', 0)}"
+            gpu_detail = " ".join(
+                str(x) for x in (
+                    f"{p.get('gpu_mem_label')}/card" if p.get("gpu_mem_label") else "",
+                    p.get("gpu_model") or "",
+                ) if x
+            )
+            if gpu_detail:
+                gpu_bit += f"({gpu_detail})"
+            bits.insert(1, gpu_bit)
+        if p.get("states"):
+            bits.append(f"state={p.get('states')}")
+        parts.append(" ".join(bits))
+    return "slurm " + " ; ".join(parts) if parts else "slurm (no partitions)"
+
+
 def probe_node(name):
     if _node_is_windows(name):
         return _probe_windows_node(name)
+    info = NODES.get(name, {})
+    if _slurm_mode_enabled(info.get("slurm_backend")) or info.get("probe_slurm_cluster"):
+        return _probe_slurm_cluster_node(name)
     # /proc/meminfo is locale-independent (free -m's "Mem:" header is localized on some hosts).
     # util_pct is averaged over 3 samples (initial + 2 follow-ups, 100ms apart) because
     # nvidia-smi's `utilization.gpu` is a single-instant "any-kernel-active%" reading that
@@ -2700,7 +3150,8 @@ def probe_node(name):
     # when Task Manager / `nvidia-smi.exe` show ~50%. We use the Windows-side `nvidia-smi.exe`
     # (via WSL interop) when available so scheduler decisions reflect TRUE remaining headroom,
     # not just WSL-side usage. Fall back to plain `nvidia-smi` if the .exe isn't present.
-    nvsmi = "nvidia-smi"
+    info = NODES.get(name, {})
+    nvsmi = str(info.get("nvidia_smi_path") or info.get("nvidia_smi") or "nvidia-smi")
     if name == "local":
         win_nvsmi = "/mnt/c/WINDOWS/system32/nvidia-smi.exe"
         if Path(win_nvsmi).exists():
@@ -2754,7 +3205,6 @@ def probe_node(name):
         loadavg = float(parts[3].strip()) if len(parts) > 3 else 0.0
     except ValueError:
         loadavg = 0.0
-    info = NODES.get(name, {})
     # Use min(configured, probed) so an over-declared config can't inflate the headroom denominator
     # past what the machine actually has. (Bug seen on WSL local: configured 56GB vs actual 30GB
     # produced a 14GB headroom that blocked all packing once a single 2GB task launched.)
@@ -2783,7 +3233,17 @@ def probe_node(name):
     if name == "local":
         extras = _probe_windows_host_extras()
         if extras:
-            result["host_free_ram_mb"] = extras.get("host_free_ram_mb")
+            host_free = extras.get("host_free_ram_mb")
+            if host_free is not None:
+                try:
+                    host_free = max(0, int(host_free))
+                    result["wsl_free_ram_mb"] = result.get("free_ram_mb")
+                    result["wsl_actual_free_ram_mb"] = result.get("actual_free_ram_mb")
+                    result["wsl_total_ram_mb"] = result.get("total_ram_mb")
+                    result["host_free_ram_mb"] = host_free
+                    result["free_ram_mb"] = min(int(result.get("free_ram_mb") or 0), host_free)
+                except Exception:
+                    pass
             result["host_total_ram_mb"] = extras.get("host_total_ram_mb")
             host_cpu = extras.get("host_cpu_load_pct")
             if host_cpu is not None:
@@ -2858,9 +3318,15 @@ def _fold_claims_into_probe(nodes: list) -> list:
             g.setdefault("observed_used_mb", int(g.get("used_mb") or 0))
             g.setdefault("observed_free_mb", int(g.get("free_mb") or 0))
 
-        active_cpu = sum(int(c.get("cpu_cores") or 0) for c in active)
+        active_cpu = sum(
+            0 if c.get("ignore_cpu_capacity") else int(c.get("cpu_cores") or 0)
+            for c in active
+        )
         active_ram = sum(int(c.get("ram_mb") or 0) for c in active)
-        pending_cpu = sum(int(c.get("cpu_cores") or 0) for c in pending)
+        pending_cpu = sum(
+            0 if c.get("ignore_cpu_capacity") else int(c.get("cpu_cores") or 0)
+            for c in pending
+        )
         pending_ram = sum(int(c.get("ram_mb") or 0) for c in pending)
         per_gpu_active = {}
         per_gpu_pending = {}
@@ -2951,6 +3417,16 @@ def _format_mem_gb(mb, *, approx: bool = False) -> str:
     digits = 2 if abs(val) < 10 else 1
     prefix = "~" if approx else ""
     return f"{prefix}{val:.{digits}f}GB"
+
+
+def _format_node_ram_summary(n: dict) -> str:
+    free = n.get("free_ram_mb")
+    if free is None:
+        return ""
+    host_free = n.get("host_free_ram_mb")
+    if host_free is not None:
+        return f"ram_free={_format_mem_gb(free)}(eff)"
+    return f"ram_free={_format_mem_gb(free)}"
 
 
 def _local_user() -> str:
@@ -3577,10 +4053,11 @@ _LIVE_REMAINING_ETA_SOURCES = {
     "tqdm",
     "inline_eta",
     "progress_rate",
+    "bapr_seed_batch",
     "runtime_history_fallback",
     "duration_ewma_fallback",
 }
-_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "inline_eta", "progress_rate"}
+_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "inline_eta", "progress_rate", "bapr_seed_batch"}
 _ETA_AUDIT_FIELDS = (
     "eta_seconds", "eta_source", "eta_confidence", "eta_updated_at",
     "eta_detail", "eta_log_bytes", "eta_probe_error", "last_progress_line",
@@ -3629,7 +4106,7 @@ def _eta_confidence_for_source(source: str) -> str:
     base = _eta_source_base(source)
     if base in ("tqdm", "inline_eta", "local_test_tqdm"):
         return "high"
-    if base in ("progress_rate", "local_test_progress", "runtime_history"):
+    if base in ("progress_rate", "local_test_progress", "runtime_history", "bapr_seed_batch"):
         return "medium"
     return "low"
 
@@ -3653,6 +4130,8 @@ def _eta_source_tag(source: object) -> str:
         return "logeta"
     if base == "progress_rate":
         return "prog"
+    if base == "bapr_seed_batch":
+        return "bapr"
     if base in ("runtime_history", "runtime_history_fallback"):
         return "hist"
     if base in ("duration_ewma", "duration_ewma_fallback"):
@@ -4411,7 +4890,19 @@ def _requeue_after_crash(parent, state):
               "claim_intent_node", "claim_intent_nodes", "claim_intent_at",
               "probe_unknown_since", "last_probe_unknown_at", "probe_unknown_count",
               "last_probe_unknown_duration_s", "last_probe_unknown_count",
-              "last_probe_unknown_reason", "last_reconnected_at"):
+              "last_probe_unknown_reason", "last_reconnected_at",
+              "cpu_fallback_selected", "cpu_fallback_original_vram_mb",
+              "cpu_fallback_capability", "windows_pin_base", "windows_pin_cores",
+              "bootstrap_stdout_path", "bootstrap_stderr_path", "local_ssh_log_path",
+              "wrapper_pid_path", "last_launch_pre_snapshot",
+              "last_launch_post_snapshot", "last_node", "last_gpu_idx",
+              # Retry clones must re-scan checkpoints and re-decide placement.
+              # A stale migration pin or resume scan can otherwise hard-pin the
+              # retry to an old staged node or miss a newer checkpoint written
+              # just before the crash.
+              "staged_node", "migrated_from", "migrated_at",
+              "resume_locations", "resume_scan_errors", "resume_preferred_nodes",
+              "resume_checkpoint_node", "resume_scan_at", "resume_scan_key"):
         new_task.pop(k, None)
     state["tasks"].append(new_task)
     return new_id
@@ -4802,8 +5293,12 @@ def _refresh_eta_from_logs(state):
         parts = []
         for (t, log_path) in entries:
             tid = t["id"]
+            q_log = shlex.quote(log_path)
             parts.append(f"echo '===ETA_LOG_{tid}==='")
-            parts.append(f"tail -c 4096 {shlex.quote(log_path)} 2>/dev/null")
+            parts.append(
+                f"(tail -c 4096 {q_log} 2>/dev/null; "
+                f"grep -a 'Results saved to:' {q_log} 2>/dev/null | tail -n 100)"
+            )
         cmd = "; ".join(parts) + "; true"
         try:
             rc, out, _ = run_on(node, cmd, timeout=30, check=False)
@@ -4861,12 +5356,22 @@ def _refresh_eta_from_logs(state):
                 t["last_progress_line"] = progress_line
             projection = eta_tracker.runtime_projection(
                 tail_text, elapsed_s=elapsed, cmd=t.get("cmd"))
+            bapr_projection = _bapr_batch_projection(t, tail_text, elapsed)
+            if bapr_projection:
+                projection = bapr_projection
+                t["eta_seconds"] = int(bapr_projection.get("eta_s") or 0)
             _apply_runtime_projection(t, projection)
             if projection:
                 source = projection.get("source") or "progress"
                 t["eta_source"] = source
-                t["eta_confidence"] = "high" if source == "tqdm" else "medium"
-                t["eta_detail"] = f"parsed {source} from scheduler log tail"
+                t["eta_confidence"] = _eta_confidence_for_source(source)
+                if source == "bapr_seed_batch":
+                    done = projection.get("completed_seeds")
+                    total = projection.get("seed_count")
+                    suffix = f"; completed_seeds={done}/{total}" if done is not None and total is not None else ""
+                    t["eta_detail"] = f"parsed BAPR seed batch progress from scheduler log tail{suffix}"
+                else:
+                    t["eta_detail"] = f"parsed {source} from scheduler log tail"
             elif t.get("eta_seconds"):
                 t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
                 t["eta_confidence"] = "low"
@@ -4945,6 +5450,16 @@ def _task_progress_ratio(task: dict) -> Optional[float]:
     if total <= 0 or current < 0:
         return None
     return max(0.0, min(1.0, float(current) / float(total)))
+
+
+def _task_has_progress_evidence(task: dict) -> bool:
+    ratio = _task_progress_ratio(task)
+    if ratio is not None and ratio > 0.0:
+        return True
+    if int(task.get("runtime_current_unit") or 0) > 0:
+        return True
+    line = task.get("last_progress_line") or ""
+    return bool(re.search(r"\b(?:Iter|Epoch|Step|Episode)\s*[#:]?\s*[1-9]\d*\b", line))
 
 
 def _task_ram_pressure_mb(task: dict) -> int:
@@ -5352,6 +5867,114 @@ def _build_oom_forensics_payload(crash_payload: dict, state: dict) -> dict:
     }
 
 
+def _task_is_gpu_capacity_task(task: dict) -> bool:
+    try:
+        need_vram = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0)
+    except Exception:
+        need_vram = int(DEFAULT_VRAM_MB or 0)
+    return need_vram > 0 and not bool(task.get("cpu_fallback_selected"))
+
+
+def _flag_enabled(value, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return value.strip().lower() not in ("", "0", "false", "no", "off", "none")
+    return bool(value)
+
+
+def _ignore_cpu_for_server_gpu_task(task: dict, node_state: Optional[dict] = None,
+                                    node_info: Optional[dict] = None,
+                                    node_name: Optional[str] = None,
+                                    gpu_idx: Optional[int] = None) -> bool:
+    """Remote Linux GPU jobs are GPU/RAM placed; CPU pressure only gates local and CPU-only work."""
+    if not _task_is_gpu_capacity_task(task):
+        return False
+    node_name = node_name or (node_state or {}).get("name") or task.get("node")
+    if not node_name or node_name == "local" or _node_is_windows(node_name):
+        return False
+    info = node_info if node_info is not None else NODES.get(node_name, {})
+    if not (info or {}).get("host"):
+        return False
+    if (info or {}).get("max_vram_per_task") == 0:
+        return False
+    if node_state is not None:
+        if not node_state.get("gpus"):
+            return False
+    elif gpu_idx is None and task.get("gpu_idx") is None:
+        return False
+    return _flag_enabled((info or {}).get("ignore_cpu_for_gpu_tasks"), True)
+
+
+def _task_ignores_one_third_pack_rule(task: dict, node_info: Optional[dict] = None) -> bool:
+    if _flag_enabled((task or {}).get("allow_gpu_over_one_third"), False):
+        return True
+    if str((task or {}).get("signature") or "").startswith("BAPR/bus_v2/"):
+        return True
+    return _flag_enabled((node_info or {}).get("allow_gpu_over_one_third"), False)
+
+
+def _task_required_gpu_idx(task: dict) -> Optional[int]:
+    raw = task.get("require_gpu_idx")
+    if raw is None or raw == "":
+        return None
+    try:
+        idx = int(raw)
+    except Exception:
+        return None
+    return idx if idx >= 0 else None
+
+
+def _node_numeric(node_state: Optional[dict], *keys, default=None):
+    for key in keys:
+        if not node_state or key not in node_state:
+            continue
+        val = node_state.get(key)
+        if val is None or val == "":
+            continue
+        try:
+            return float(val)
+        except Exception:
+            continue
+    return default
+
+
+def _local_cpu_pressure_high(node_state: Optional[dict], threshold_pct: int) -> tuple[bool, str]:
+    """True when local is actually CPU pressured, not merely over-reserved.
+
+    For WSL local, loadavg can look full while Windows host CPU still has real
+    headroom. Prefer the Windows host CPU percentage when present; fall back to
+    WSL/loadavg only if the host probe is unavailable.
+    """
+    host_cpu = _node_numeric(node_state, "host_cpu_load_pct")
+    if host_cpu is not None:
+        high = host_cpu >= threshold_pct
+        return high, f"host_cpu={int(host_cpu)}% threshold={threshold_pct}%"
+    total = int(_node_numeric(node_state, "total_cpu", default=0) or 0)
+    free = _node_numeric(node_state, "observed_free_cpu", "wsl_free_cpu", "free_cpu")
+    load = _node_numeric(node_state, "observed_loadavg", "wsl_loadavg", "loadavg")
+    if total <= 0:
+        return False, "cpu pressure unknown"
+    if free is not None:
+        high = int(free) <= 0
+        return high, f"free_cpu={int(free)}/{total}"
+    if load is not None:
+        high = float(load) >= max(1, total)
+        return high, f"load={float(load):.1f}/{total}"
+    return False, "cpu pressure unknown"
+
+
+def _local_gpu_cpu_block_reason(task: dict, node_state: Optional[dict]) -> str:
+    if (node_state or {}).get("name") != "local":
+        return ""
+    if not _task_is_gpu_capacity_task(task):
+        return ""
+    high, why = _local_cpu_pressure_high(node_state, LOCAL_GPU_HOST_CPU_BLOCK_PCT)
+    if high:
+        return f"host cpu pressure: {why}"
+    return ""
+
+
 def _node_resources_ok(task, node_state, node_info):
     """CPU + RAM + concurrency check at node level (independent of which GPU). Returns (ok, reason).
     `node_state['running_count']` is set by _do_dispatch before pick_placement loop and incremented
@@ -5362,13 +5985,18 @@ def _node_resources_ok(task, node_state, node_info):
     cur_running = node_state.get("running_count", 0)
     if cap is not None and cur_running >= cap:
         return False, f"concurrency cap: {cur_running}/{cap} tasks already running on {node_state.get('name','?')}"
-    needed_cpu = task.get("cpu_cores", DEFAULT_CPU_CORES)
-    raw_free_cpu = int(node_state.get("free_cpu", 0) or 0)
-    reserved_cpu = max(0, int((node_info or {}).get("reserved_cpu_cores") or 0))
-    sched_free_cpu = max(0, raw_free_cpu - reserved_cpu)
-    if sched_free_cpu < needed_cpu:
-        reserve_note = f" (reserve {reserved_cpu})" if reserved_cpu else ""
-        return False, f"cpu: need {needed_cpu}, free {sched_free_cpu}/{node_state.get('total_cpu', '?')}{reserve_note}"
+    if not _ignore_cpu_for_server_gpu_task(task, node_state, node_info):
+        local_gpu_block = _local_gpu_cpu_block_reason(task, node_state)
+        if local_gpu_block:
+            return False, local_gpu_block
+        if not ((node_state or {}).get("name") == "local" and _task_is_gpu_capacity_task(task)):
+            needed_cpu = task.get("cpu_cores", DEFAULT_CPU_CORES)
+            raw_free_cpu = int(node_state.get("free_cpu", 0) or 0)
+            reserved_cpu = max(0, int((node_info or {}).get("reserved_cpu_cores") or 0))
+            sched_free_cpu = max(0, raw_free_cpu - reserved_cpu)
+            if sched_free_cpu < needed_cpu:
+                reserve_note = f" (reserve {reserved_cpu})" if reserved_cpu else ""
+                return False, f"cpu: need {needed_cpu}, free {sched_free_cpu}/{node_state.get('total_cpu', '?')}{reserve_note}"
     needed_ram = task.get("ram_mb", DEFAULT_RAM_MB)
     headroom = _node_ram_headroom_mb(node_state, node_info)
     if node_state.get("free_ram_mb", 0) - needed_ram < headroom:
@@ -5413,6 +6041,11 @@ def _node_cpu_fallback_block_reason(task, node_name, node_info):
     """Return why a GPU task cannot opportunistically run CPU-only on this node."""
     if (task.get("est_vram_mb") or 0) <= 0:
         return None
+    if not bool(task.get("allow_cpu_training", False)):
+        return (
+            "cpu-fallback disabled: task has vram>0 and is treated as GPU-required; "
+            "resubmit with --allow-cpu-training only if CPU training is intentional"
+        )
     caps = set(str(c).lower() for c in ((node_info or {}).get("capabilities") or []))
     need = _task_cpu_fallback_capability(task)
     if caps and need not in caps:
@@ -5420,8 +6053,24 @@ def _node_cpu_fallback_block_reason(task, node_name, node_info):
     return None
 
 
+def _clear_disallowed_cpu_fallback_selection(task: dict) -> bool:
+    """Drop stale CPU fallback placement left by older watcher versions."""
+    if int(task.get("est_vram_mb") or 0) <= 0:
+        return False
+    if not task.get("cpu_fallback_selected"):
+        return False
+    if bool(task.get("allow_cpu_training", False)):
+        return False
+    task.pop("cpu_fallback_selected", None)
+    task.pop("cpu_fallback_original_vram_mb", None)
+    task.pop("cpu_fallback_capability", None)
+    return True
+
+
 def _task_launch_cpu_mode(task: dict) -> bool:
-    return int(task.get("est_vram_mb") or 0) <= 0 or bool(task.get("cpu_fallback_selected"))
+    if int(task.get("est_vram_mb") or 0) <= 0:
+        return True
+    return bool(task.get("cpu_fallback_selected")) and bool(task.get("allow_cpu_training", False))
 
 
 def _node_gpu_task_block_reason(task, node_name, node_info):
@@ -5459,7 +6108,7 @@ def _gpu_fits(task, gpu, node_info):
     cap = node_info.get("max_vram_per_task")
     if cap is not None and task["est_vram_mb"] > cap:
         return False
-    if ONE_THIRD_PACK_RULE:
+    if ONE_THIRD_PACK_RULE and not _task_ignores_one_third_pack_rule(task, node_info):
         freeze = _gpu_freeze_line_mb(int(gpu.get("total_mb") or 0))
         used = int(gpu.get("used_mb") or 0)
         need = int(task.get("est_vram_mb") or 0)
@@ -5492,6 +6141,7 @@ def pick_placement(task, nodes):
         nodes = [n for n in nodes if n.get("name") in allowed]
     preferred = task.get("preferred_node")
     require = task.get("require_node")  # HARD pin — never falls back
+    require_gpu_idx = _task_required_gpu_idx(task)
     resume_preferred = []
     for n in (task.get("resume_preferred_nodes") or []):
         if n and n not in resume_preferred:
@@ -5512,18 +6162,18 @@ def pick_placement(task, nodes):
     def _candidates_for_node(n):
         """Return list of (score, name, gpu_idx) candidates this node can offer (may be empty)."""
         if not n["alive"]: return []
-        node_info = NODES[n["name"]]
-        cpu_fallback = False
-        if not cpu_only:
-            cpu_fallback = (
-                _node_is_windows(n["name"])
-                or not n.get("gpus")
-                or node_info.get("max_vram_per_task") == 0
-            )
-            if cpu_fallback and _node_cpu_fallback_block_reason(task, n["name"], node_info):
-                return []
-        if _node_is_windows(n["name"]) and not (cpu_only or cpu_fallback):
+        if _evict_node_cooldown_block_reason(task, n["name"], node_state=n):
             return []
+        node_info = NODES[n["name"]]
+        if node_info.get("only_when_targeted"):
+            targeted = (
+                require == n["name"]
+                or preferred == n["name"]
+                or n["name"] in (task.get("allowed_nodes") or [])
+                or _task_requests_slurm(task)
+            )
+            if not targeted:
+                return []
         # Phase 2.3 P1 fix: slurm-managed nodes defer to slurm's own queue — no local
         # capacity check. Without this, login nodes with no GPU (probe gpus=[]) or busy
         # nodes never emit a candidate and the task stays queued in scheduleurm forever,
@@ -5549,6 +6199,17 @@ def pick_placement(task, nodes):
             if pending >= cap:
                 return []  # throttled — let this bucket drain
             return [((9999,), n["name"], None)]
+        cpu_fallback = False
+        if not cpu_only:
+            cpu_fallback = (
+                _node_is_windows(n["name"])
+                or not n.get("gpus")
+                or node_info.get("max_vram_per_task") == 0
+            )
+            if cpu_fallback and _node_cpu_fallback_block_reason(task, n["name"], node_info):
+                return []
+        if _node_is_windows(n["name"]) and not (cpu_only or cpu_fallback):
+            return []
         if _task_requests_slurm(task):
             # The user supplied Slurm-only fields, so do not silently discard
             # them by launching through LocalBackend on a non-Slurm/default-local
@@ -5571,6 +6232,22 @@ def pick_placement(task, nodes):
             out.append((score, n["name"], None))
         else:
             for g in n["gpus"]:
+                try:
+                    g_idx = int(g.get("idx"))
+                except Exception:
+                    continue
+                if require_gpu_idx is not None and g_idx != require_gpu_idx:
+                    continue
+                max_tasks_per_gpu = node_info.get("max_tasks_per_gpu")
+                if max_tasks_per_gpu is not None:
+                    try:
+                        gpu_task_count = int(g.get("running_task_count") or 0)
+                        gpu_task_cap = int(max_tasks_per_gpu)
+                    except Exception:
+                        gpu_task_count = 0
+                        gpu_task_cap = 0
+                    if gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap:
+                        continue
                 if not _gpu_fits(task, g, node_info): continue
                 # Empty-first placement: if a node has a genuinely idle GPU, use it before
                 # stacking onto a warm card. Among warm fitting cards, prefer the lowest
@@ -5705,6 +6382,7 @@ RESUME_UNSAFE_NAME_RE = re.compile(
     re.IGNORECASE,
 )
 RESUME_SCAN_TTL_S = int(os.environ.get("SCHEDULEURM_RESUME_SCAN_TTL_S", "120"))
+RESUME_SCAN_WORKERS = max(1, int(os.environ.get("SCHEDULEURM_RESUME_SCAN_WORKERS", "4")))
 
 def _resume_candidate_is_safe(path: str, explicit_glob: bool = False) -> bool:
     """Default resume selection should pick training-state checkpoints, not output artifacts.
@@ -5721,13 +6399,75 @@ def _resume_candidate_is_safe(path: str, explicit_glob: bool = False) -> bool:
         return False
     return bool(RESUME_SAFE_NAME_RE.search(base))
 
-def _resume_node_names(nodes: Optional[list] = None) -> list:
-    """Configured nodes whose filesystem can be checked for checkpoints."""
+def _resume_node_names(task: Optional[dict] = None, nodes: Optional[list] = None) -> list:
+    """Configured nodes whose filesystem can be checked for this task's checkpoints.
+
+    Keep resume scans scoped to nodes the task could actually use. Bulk RE-SAC
+    queues can contain hundreds of resume-capable tasks; probing every node for
+    every task serially starves dispatch even when only a few GPU slots are open.
+    """
     names = []
-    source = [n.get("name") for n in (nodes or []) if n.get("name")]
-    for name in source + list(NODES.keys()):
-        if name and name not in names:
-            names.append(name)
+    live_names = None
+    if nodes is not None:
+        live_names = {n.get("name") for n in nodes if n.get("name") and n.get("alive")}
+
+    def add(name, *, force: bool = False):
+        if not name or name not in NODES or name in names:
+            return
+        if live_names is not None and name not in live_names and not force:
+            return
+        names.append(name)
+
+    known_resume_nodes = []
+    if task:
+        for loc in (task.get("resume_locations") or []):
+            node = loc.get("node") if isinstance(loc, dict) else None
+            if node and node not in known_resume_nodes:
+                known_resume_nodes.append(node)
+        for key in ("resume_checkpoint_node", "staged_node", "node", "assigned_node"):
+            node = task.get(key)
+            if node and node not in known_resume_nodes:
+                known_resume_nodes.append(node)
+
+        explicit = []
+        require_node = task.get("require_node")
+        if require_node:
+            explicit.append(require_node)
+        for node in (task.get("allowed_nodes") or []):
+            if node and node not in explicit:
+                explicit.append(node)
+
+        for node in explicit:
+            add(str(node))
+        # A known checkpoint location is safety-critical. Keep it in the scan
+        # set even if the current probe marks the node down, so dispatch does
+        # not silently restart elsewhere while the old checkpoint is unavailable.
+        for node in known_resume_nodes:
+            add(str(node), force=True)
+        if explicit and names:
+            return names
+        # preferred_node and resume_preferred_nodes are soft placement hints.
+        # Scan them first, but continue to fallback nodes because pick_placement
+        # may legally place elsewhere if the preferred node is full.
+        preferred = []
+        for node in [task.get("preferred_node")] + list(task.get("resume_preferred_nodes") or []):
+            if node and node not in preferred:
+                preferred.append(node)
+        for node in preferred:
+            add(str(node))
+
+    fallback = [n.get("name") for n in (nodes or []) if n.get("name")] or list(NODES.keys())
+    gpu_task = bool(task and int(task.get("est_vram_mb") or 0) > 0)
+    need_cap = _task_gpu_capability(task or {}) if gpu_task else None
+    for name in fallback:
+        info = NODES.get(name, {})
+        if gpu_task:
+            if _node_is_windows(name) or info.get("max_vram_per_task") == 0:
+                continue
+            caps = set(str(c).lower() for c in (info.get("capabilities") or []))
+            if caps and need_cap not in caps and "cuda" not in caps:
+                continue
+        add(name)
     return names
 
 
@@ -5735,7 +6475,7 @@ def _resume_scan_key(task: dict, nodes: Optional[list] = None) -> list:
     return [
         task.get("ckpt_dir"),
         task.get("ckpt_glob", "*") or "*",
-        _resume_node_names(nodes),
+        sorted(_resume_node_names(task, nodes)),
     ]
 
 
@@ -5799,6 +6539,7 @@ if ($files -and $files.Count -gt 0) {{
             raise RuntimeError(f"bad Windows checkpoint scan output: {e}")
         data["node"] = node
         return data
+    scan_dir = _remote_path_for_node(node, ckpt_dir)
     pattern = task.get("ckpt_glob", "*") or "*"
     explicit_glob = pattern != "*"
     script = r'''
@@ -5823,11 +6564,16 @@ if paths:
     p = paths[0]
     print(json.dumps({"path": p, "mtime": os.path.getmtime(p), "size": os.path.getsize(p)}))
 '''
+    marker_begin = "__SCHEDULEURM_RESUME_SCAN_JSON_BEGIN__"
+    marker_end = "__SCHEDULEURM_RESUME_SCAN_JSON_END__"
+    py = str((NODES.get(node, {}) or {}).get("resume_scan_python") or "python3")
     cmd = (
-        f"python3 - {shlex.quote(ckpt_dir)} {shlex.quote(pattern)} "
+        f"printf '%s\\n' {shlex.quote(marker_begin)}; "
+        f"{shlex.quote(py)} - {shlex.quote(scan_dir)} {shlex.quote(pattern)} "
         f"{'1' if explicit_glob else '0'} {shlex.quote(','.join(CKPT_EXTS))} "
         f"{shlex.quote(RESUME_SAFE_NAME_RE.pattern)} {shlex.quote(RESUME_UNSAFE_NAME_RE.pattern)}"
-        f" <<'PY'\n{script}\nPY"
+        f" <<'PY'\n{script}\nPY\n"
+        f"rc=$?; printf '%s\\n' {shlex.quote(marker_end)}; exit $rc"
     )
     try:
         rc, out, err = run_on(node, cmd, timeout=10, check=False)
@@ -5835,7 +6581,10 @@ if paths:
         raise RuntimeError(str(e))
     if rc != 0:
         raise RuntimeError((err or out or f"rc={rc}").strip()[:300])
-    out = out.strip()
+    text = out or ""
+    if marker_begin in text and marker_end in text:
+        text = text.split(marker_begin, 1)[1].split(marker_end, 1)[0]
+    out = text.strip()
     if not out:
         return None
     try:
@@ -5855,20 +6604,32 @@ def scan_resume_locations(task: dict, nodes: Optional[list] = None, cache: Optio
     """
     if not _task_requires_resume_scan(task):
         return [], {}
-    node_names = _resume_node_names(nodes)
+    node_names = _resume_node_names(task, nodes)
     key = (task.get("ckpt_dir"), task.get("ckpt_glob", "*") or "*", tuple(node_names))
     if cache is not None and key in cache:
         locs, errs = cache[key]
         return list(locs), dict(errs)
     locations = []
     errors = {}
-    for node in node_names:
+    def _scan_one(node):
         try:
-            found = _find_resume_on_node(task, node)
+            return node, _find_resume_on_node(task, node), None
         except Exception as e:
-            errors[node] = str(e)[:300]
-            continue
-        if found:
+            return node, None, str(e)[:300]
+
+    workers = min(RESUME_SCAN_WORKERS, len(node_names))
+    if workers <= 1 or len(node_names) <= 1:
+        results = [_scan_one(node) for node in node_names]
+    else:
+        results = []
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = {ex.submit(_scan_one, node): node for node in node_names}
+            for fut in as_completed(futures):
+                results.append(fut.result())
+    for node, found, err in results:
+        if err:
+            errors[node] = err
+        elif found:
             locations.append(found)
     locations.sort(key=lambda x: (float(x.get("mtime") or 0), str(x.get("node") or "")), reverse=True)
     if cache is not None:
@@ -6247,6 +7008,65 @@ def _windows_path_for_node(node: str, path: str) -> str:
         # /home/u/mine_code/project/subdir -> F:\project\subdir
         return root + "\\".join(parts)
     return text.replace("/", "\\")
+
+
+def _remote_path_for_node(node: str, path: str) -> str:
+    """Map a local POSIX workspace path to a node-specific remote path.
+
+    Linux GPU nodes share the same user/path convention as local, so they leave
+    paths unchanged. Campus/HPC accounts often have a different home directory;
+    those nodes can declare remote_workspace_root + remote_path_prefixes.
+    """
+    if not path:
+        return path
+    if _node_is_windows(node):
+        return _windows_path_for_node(node, path)
+    info = NODES.get(node, {}) or {}
+    root = str(info.get("remote_workspace_root") or "").strip()
+    if not root:
+        return path
+    text = str(path)
+    if not text.startswith("/"):
+        return text
+    norm = os.path.normpath(text)
+    prefixes = list(info.get("remote_path_prefixes") or [])
+    if not prefixes:
+        prefixes = [
+            str(Path.home() / "mine_code"),
+            "/home/erzhu419/mine_code",
+        ]
+    root = root.rstrip("/")
+    for pref in prefixes:
+        pref = os.path.normpath(os.path.expanduser(str(pref)))
+        try:
+            if os.path.commonpath([norm, pref]) != pref:
+                continue
+        except Exception:
+            continue
+        rel = os.path.relpath(norm, pref)
+        if not rel or rel == ".":
+            return root
+        parts = rel.split(os.sep)
+        if parts[0] == "..":
+            continue
+        return root + "/" + "/".join(parts)
+    return text
+
+
+def _rewrite_command_paths_for_node(node: str, cmd: str) -> str:
+    """Rewrite configured local workspace prefixes inside a shell command."""
+    if not node or not cmd or _node_is_windows(node):
+        return cmd
+    info = NODES.get(node, {}) or {}
+    if not info.get("remote_workspace_root"):
+        return cmd
+    out = str(cmd)
+    for pref in (info.get("remote_path_prefixes") or []):
+        pref = os.path.normpath(os.path.expanduser(str(pref)))
+        mapped = _remote_path_for_node(node, pref)
+        if mapped and mapped != pref:
+            out = out.replace(pref, mapped)
+    return out
 
 
 def _windows_rewrite_token(node: str, token: str) -> str:
@@ -6736,8 +7556,12 @@ Write-Output 'READY'
 
     def launch(self, task: dict, node_state: Optional[dict] = None) -> tuple[bool, str]:
         node = task["node"]
-        if int(task.get("est_vram_mb") or 0) > 0 and not task.get("cpu_fallback_selected"):
-            return False, "WindowsBackend is CPU-only; refusing GPU task"
+        if int(task.get("est_vram_mb") or 0) > 0:
+            block = _node_cpu_fallback_block_reason(task, node, NODES.get(node, {}))
+            if block:
+                return False, f"WindowsBackend is CPU-only; refusing GPU task: {block}"
+            if not task.get("cpu_fallback_selected"):
+                return False, "WindowsBackend is CPU-only; refusing GPU task"
         env_err = _windows_env_spec_error(task)
         if env_err:
             return False, env_err
@@ -7414,7 +8238,9 @@ class LocalBackend(Backend):
         log_path = f"{STATE_DIR}/logs/{task['id']}.log" if NODES[task["node"]]["host"] is None \
                    else f"/tmp/sched_{task['id']}.log"
         cwd = task["cwd"]
+        remote_cwd = _remote_path_for_node(task["node"], cwd)
         inner = _apply_node_cmd_rewrites(task.get("node"), task["cmd"])
+        inner = _rewrite_command_paths_for_node(task.get("node"), inner)
         # `-u` injection for python invocations: without unbuffered stdout, python's full-buffering
         # mode (when stdout is a file) holds output in a 4KB block until process exit OR explicit
         # flush. If the process is SIGKILL'd (eviction, OOM, watcher kill) BEFORE the buffer fills,
@@ -7429,23 +8255,23 @@ class LocalBackend(Backend):
         resume_path = task.get("resume_from")
         resume_flag = task.get("resume_flag") or ""
         if resume_path and resume_flag:
-            inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
+            inner = f"{inner} {resume_flag} {shlex.quote(_remote_path_for_node(task['node'], resume_path))}"
         # Env-deploy wrapping (docker). Done AFTER -u + resume injection so the inner shell cmd
         # is fully assembled before being wrapped in `docker run`. For env_spec='none' this is a
         # no-op; for 'auto', probes target and falls back to 'none' if docker isn't accessible;
         # for explicit 'docker' returns an error that fails the launch fast (per Codex review,
         # silent host fallback was unsafe).
-        inner, docker_err = _maybe_wrap_docker(task, inner, cwd)
+        inner, docker_err = _maybe_wrap_docker(task, inner, remote_cwd)
         if docker_err:
             return False, docker_err
         # Pre-flight: cwd must exist on target node. Skips a wasted launch + 2-3 retry cycles +
         # eventual ENV_MISSING escalation when a node simply doesn't have the repo synced.
         try:
-            rc_cwd, _, err_cwd = run_on(task["node"], f"test -d {shlex.quote(cwd)}", timeout=10, check=False)
+            rc_cwd, _, err_cwd = run_on(task["node"], f"test -d {shlex.quote(remote_cwd)}", timeout=10, check=False)
         except Exception as e:
             rc_cwd, err_cwd = 1, str(e)
         if rc_cwd != 0:
-            return False, f"cwd missing on {task['node']}: {cwd}"
+            return False, f"cwd missing on {task['node']}: {remote_cwd}"
         # Phase 3.2.1 P1 fix: cross-scheduler claim. When the node has
         # enable_claims=True, atomically reserve CPU/RAM/VRAM in
         # /tmp/scheduleurm/claims.json BEFORE ssh+nohup. If another
@@ -7528,7 +8354,7 @@ class LocalBackend(Backend):
         # reliably catches every worker child. The </dev/null is so the launched process doesn't
         # inherit ssh's stdin pipe (which would otherwise keep the ssh-side bash alive).
         full = (f"mkdir -p {shlex.quote(os.path.dirname(log_path))}; "
-                f"cd {shlex.quote(cwd)} && {env_prefix} "
+                f"cd {shlex.quote(remote_cwd)} && {env_prefix} "
                 f"setsid bash -c {shlex.quote(inner)} > {shlex.quote(log_path)} 2>&1 < /dev/null & echo PID=$!")
         try:
             rc, out, err = run_on(task["node"], full, timeout=20, check=False)
@@ -7824,8 +8650,10 @@ class SlurmBackend(Backend):
             return f"{days}-{hours:02d}:{mins:02d}:00"
         return f"{hours:02d}:{mins:02d}:00"
 
-    def _build_sbatch_script(self, task: dict, inner_cmd: str, log_path: str) -> str:
+    def _build_sbatch_script(self, task: dict, inner_cmd: str, log_path: str,
+                             cwd: Optional[str] = None) -> str:
         """Build the sbatch script as a string. Streamed via stdin to `sbatch /dev/stdin`."""
+        script_cwd = cwd or task["cwd"]
         lines = ["#!/bin/bash"]
         lines.append(f"#SBATCH --job-name=scheduleurm-{task['id']}")
         lines.append(f"#SBATCH --output={log_path}")
@@ -7843,9 +8671,16 @@ class SlurmBackend(Backend):
             # multi-GPU is the user's launcher's responsibility.
             lines.append("#SBATCH --gres=gpu:1")
         lines.append(f"#SBATCH --time={self._format_walltime(self._walltime_for(task))}")
+        node_info = NODES.get(task.get("node"), {}) or {}
+        default_partition = (
+            node_info.get("slurm_gpu_partition")
+            if vram > 0 else node_info.get("slurm_cpu_partition")
+        )
+        partition = task.get("slurm_partition") or default_partition
+        if partition:
+            lines.append(f"#SBATCH --partition={partition}")
         # Optional slurm-specific fields if user set them on the task
         for slurm_field, sbatch_flag in (
-            ("slurm_partition", "--partition"),
             ("slurm_account",   "--account"),
             ("slurm_qos",       "--qos"),
         ):
@@ -7860,7 +8695,7 @@ class SlurmBackend(Backend):
         # legacy state.json entry with an invalid / reserved key (e.g. one that
         # would override slurm's gres-bound CUDA_VISIBLE_DEVICES) can't break
         # the sbatch script. submit-time validation is the primary gate.
-        for k, v in _safe_extra_env_items(_launch_extra_env(task)):
+        for k, v in _safe_extra_env_items(_node_launch_extra_env(task)):
             lines.append(f"export {k}={shlex.quote(v)}")
         # Phase 2.5 P1 fix: cd must be fatal-on-failure. A bare `cd path` followed by
         # the inner cmd silently continues from $HOME (or wherever) if the compute node
@@ -7869,10 +8704,10 @@ class SlurmBackend(Backend):
         # diagnose has no signal — log just has whatever bash printed about cd. Match
         # LocalBackend's `cd ... && cmd` semantics with an explicit guard that also
         # leaves a parseable error in the log so diagnose can route to ENV_MISSING.
-        cwd_q = shlex.quote(task['cwd'])
+        cwd_q = shlex.quote(script_cwd)
         lines.append(
             f"cd {cwd_q} || {{ "
-            f"echo \"scheduleurm: cwd not accessible on compute node: {task['cwd']}\" >&2; "
+            f"echo \"scheduleurm: cwd not accessible on compute node: {script_cwd}\" >&2; "
             f"exit 1; "
             f"}}"
         )
@@ -7890,15 +8725,17 @@ class SlurmBackend(Backend):
         # `test -d cwd` already passes; we add `mkdir -p .scheduleurm` to it so sbatch's
         # --output directive can write there.
         cwd = task["cwd"]
+        remote_cwd = _remote_path_for_node(task["node"], cwd)
         log_path = (f"{STATE_DIR}/logs/{task['id']}.log"
                     if NODES[task["node"]]["host"] is None
-                    else f"{cwd}/.scheduleurm/{task['id']}.log")
-        inner = task["cmd"]
+                    else f"{remote_cwd}/.scheduleurm/{task['id']}.log")
+        inner = _apply_node_cmd_rewrites(task.get("node"), task["cmd"])
+        inner = _rewrite_command_paths_for_node(task.get("node"), inner)
         inner = _inject_python_u(inner)
         resume_path = task.get("resume_from")
         resume_flag = task.get("resume_flag") or ""
         if resume_path and resume_flag:
-            inner = f"{inner} {resume_flag} {shlex.quote(resume_path)}"
+            inner = f"{inner} {resume_flag} {shlex.quote(_remote_path_for_node(task['node'], resume_path))}"
         # Env-deploy wrapping (docker) — Phase 2.6 P1 fix: pass gpu_runtime_env so the
         # docker `--gpus` arg is `device=$CUDA_VISIBLE_DEVICES` (literal, expanded by
         # bash at sbatch runtime) rather than `device=N` with a stale scheduleurm-picked
@@ -7911,7 +8748,7 @@ class SlurmBackend(Backend):
         # CPU-only slurm tasks (est_vram_mb=0): leave gpu_runtime_env=None so wrapper
         # emits no --gpus at all (existing behavior).
         gpu_runtime_env = "CUDA_VISIBLE_DEVICES" if int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0 else None
-        inner, docker_err = _maybe_wrap_docker(task, inner, cwd, gpu_runtime_env=gpu_runtime_env)
+        inner, docker_err = _maybe_wrap_docker(task, inner, remote_cwd, gpu_runtime_env=gpu_runtime_env)
         if docker_err:
             return False, docker_err
 
@@ -7925,15 +8762,15 @@ class SlurmBackend(Backend):
         try:
             rc_cwd, _, _ = run_on(
                 task["node"],
-                f"test -d {shlex.quote(cwd)} && mkdir -p {shlex.quote(log_dir)}",
+                f"test -d {shlex.quote(remote_cwd)} && mkdir -p {shlex.quote(log_dir)}",
                 timeout=10, check=False,
             )
         except Exception as e:
             rc_cwd = 1
         if rc_cwd != 0:
-            return False, f"cwd missing or log_dir uncreatable on {task['node']}: {cwd}"
+            return False, f"cwd missing or log_dir uncreatable on {task['node']}: {remote_cwd}"
 
-        script = self._build_sbatch_script(task, inner, log_path)
+        script = self._build_sbatch_script(task, inner, log_path, cwd=remote_cwd)
         # Pipe script via stdin to `sbatch /dev/stdin`. Phase 2.10 P1 fix: empirically
         # `sbatch -` (the "argv shorthand for stdin" form) is rejected on Ubuntu 24.04 /
         # slurm 23.11.4 with "Unable to open file -" — the package's argv parser doesn't
@@ -7948,9 +8785,10 @@ class SlurmBackend(Backend):
                     capture_output=True, text=True, timeout=30,
                 )
             else:
+                # Deliberately do not use _ssh_no_stdin_args() here: sbatch reads
+                # the script from stdin via /dev/stdin.
                 proc = subprocess.run(
-                    ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes",
-                     host, "sbatch /dev/stdin"],
+                    _ssh_base_args(task["node"]) + ["sbatch /dev/stdin"],
                     input=script, capture_output=True, text=True, timeout=30,
                 )
             if proc.returncode != 0:
@@ -8668,6 +9506,108 @@ def _shell_expand_simple(value: str, env: dict) -> str:
     value = re.sub(r"\$([A-Za-z_][A-Za-z0-9_]*)", lambda mo: env.get(mo.group(1), ""), value)
     return value
 
+def _seed_value_substitute(value, seed: str):
+    """Substitute the simple shell seed forms used by BAPR batch submit commands."""
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [_seed_value_substitute(v, seed) for v in value]
+    text = str(value)
+    text = text.replace("${seed}", str(seed))
+    text = re.sub(r"\$seed\b", str(seed), text)
+    return text
+
+def _submit_context_is_bapr(cmd: str = "", cwd: str = "", signature: str = "",
+                            project: str = "") -> bool:
+    hay = " ".join(str(x or "") for x in (cmd, cwd, signature, project))
+    return (
+        str(signature or "").startswith("BAPR/")
+        or str(project or "") == "BAPR"
+        or "/BAPR" in hay
+        or "/bapr_v15" in hay
+    )
+
+def _expand_simple_seed_loop_inner(inner: str):
+    """Expand `prefix; for seed in 0 1; do body; done` into per-seed shell bodies.
+
+    This is deliberately conservative: it only handles literal integer seed lists.
+    More complex shell loops stay as-is unless the caller rewrites them explicitly.
+    """
+    if "for seed in" not in (inner or ""):
+        return []
+    m = re.match(
+        r"(?s)^(?P<prefix>.*?)\bfor\s+seed\s+in\s+"
+        r"(?P<seeds>[0-9][0-9 \t]*)\s*;\s*do\s+"
+        r"(?P<body>.*?)\s*;\s*done\s*$",
+        inner.strip(),
+    )
+    if not m:
+        return []
+    seeds = [s for s in m.group("seeds").split() if s]
+    if len(seeds) <= 1:
+        return []
+    prefix = m.group("prefix").strip()
+    while prefix.endswith(";"):
+        prefix = prefix[:-1].rstrip()
+    body = m.group("body").strip()
+    expanded = []
+    for seed in seeds:
+        seed_body = _seed_value_substitute(body, seed)
+        new_inner = "; ".join([p for p in (prefix, seed_body) if p])
+        expanded.append((seed, new_inner))
+    return expanded
+
+def _split_bapr_seed_batch_submit_args(args):
+    """Return per-seed submit args for BAPR seed-loop commands, else [].
+
+    The scheduler stays generic, but BAPR training/eval batches have repeatedly
+    hidden multiple long seed runs inside one task. For BAPR only, split those
+    simple shell loops at submit time so resource placement and requeue happen
+    per seed.
+    """
+    if getattr(args, "allow_seed_batch", False):
+        return []
+    if not _submit_context_is_bapr(
+        getattr(args, "cmd", ""),
+        getattr(args, "cwd", ""),
+        getattr(args, "signature", ""),
+        getattr(args, "project", ""),
+    ):
+        return []
+    try:
+        toks = shlex.split(getattr(args, "cmd", "") or "")
+    except Exception:
+        return []
+    if len(toks) < 3 or os.path.basename(toks[0]) not in ("bash", "sh", "zsh", "dash"):
+        return []
+    c_i = None
+    for i, tok in enumerate(toks[1:], 1):
+        if tok in ("-c", "-lc"):
+            c_i = i
+            break
+    if c_i is None or c_i + 1 >= len(toks):
+        return []
+    expanded_inners = _expand_simple_seed_loop_inner(toks[c_i + 1])
+    if not expanded_inners:
+        return []
+    result = []
+    for seed, new_inner in expanded_inners:
+        vals = vars(args).copy()
+        new_toks = list(toks)
+        new_toks[c_i + 1] = new_inner
+        vals["cmd"] = " ".join(shlex.quote(t) for t in new_toks)
+        sig = str(getattr(args, "signature", "") or "").rstrip("/")
+        vals["signature"] = f"{sig}/s{seed}" if sig else f"s{seed}"
+        desc = str(getattr(args, "description", "") or "").strip()
+        vals["description"] = f"{desc} seed {seed}".strip()
+        for key in ("ckpt_dir", "result_dir", "local_result_dir"):
+            if key in vals and vals[key]:
+                vals[key] = _seed_value_substitute(vals[key], seed)
+        if vals.get("wait_for_files"):
+            vals["wait_for_files"] = _seed_value_substitute(vals["wait_for_files"], seed)
+        result.append(argparse.Namespace(**vals))
+    return result
+
 def _simple_shell_env_from_script(script_text: str, script_args: list) -> dict:
     env = {str(i + 1): str(v) for i, v in enumerate(script_args or [])}
     for stmt in _shell_split_statements(script_text):
@@ -8761,13 +9701,239 @@ def _infer_wrapper_ckpt(cmd: str, cwd: str = ""):
     if "$" in save_root or "$" in run_name or not run_name.strip():
         return None
     return {
+        "result_dir": os.path.join(_abs_under(script_cwd, save_root), run_name),
         "ckpt_dir": os.path.join(_abs_under(script_cwd, save_root), run_name, "checkpoints"),
         "resume_managed_by_cmd": _cmd_has_resume_flag(text),
         "source": f"wrapper:{os.path.basename(script)}",
     }
 
+def _infer_bapr_run_seed_ckpt(cmd: str, cwd: str = ""):
+    """Infer BAPR run_seed.sh checkpoints even when hidden inside `bash -lc`.
+
+    `run_seed.sh` computes:
+      RUN_NAME="${TAG}_${ALGO}_${ENV%-v2}_dw${DWELL}_s${SEED}"
+      save_root=jax_experiments/results_paper
+    so the checkpoint path is deterministic from the wrapper args.
+    """
+    candidates = []
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = []
+    if toks:
+        candidates.append(toks)
+        for i, tok in enumerate(toks[:-1]):
+            if tok in ("-c", "-lc"):
+                try:
+                    candidates.append(shlex.split(toks[i + 1]))
+                except Exception:
+                    pass
+    for ctoks in candidates:
+        for i, tok in enumerate(ctoks):
+            if not tok.endswith("run_seed.sh"):
+                continue
+            args = ctoks[i + 1:]
+            if args and os.path.basename(tok) == "run_seed.sh":
+                script_path = tok
+            else:
+                continue
+            if len(args) < 3:
+                continue
+            algo, env_name, seed = args[0], args[1], args[2]
+            dwell = args[4] if len(args) >= 5 and args[4] else "60"
+            tag = args[6] if len(args) >= 7 and args[6] else "paper"
+            if any(("$" in str(x) or ";" in str(x)) for x in (algo, env_name, seed, dwell, tag)):
+                continue
+            env_short = env_name[:-3] if env_name.endswith("-v2") else env_name
+            run_name = f"{tag}_{algo}_{env_short}_dw{dwell}_s{seed}"
+            if os.path.isabs(script_path):
+                base = os.path.dirname(script_path)
+            else:
+                base = cwd or os.getcwd()
+            result_dir = os.path.join(base, "jax_experiments", "results_paper", run_name)
+            return {
+                "result_dir": result_dir,
+                "ckpt_dir": os.path.join(result_dir, "checkpoints"),
+                "resume_managed_by_cmd": True,
+                "source": "wrapper:run_seed.sh",
+            }
+    return None
+
+def _infer_bapr_result_dirs_from_cmd(cmd: str, cwd: str = "") -> list:
+    """Infer one or more BAPR run directories from run_seed.sh commands."""
+    out = []
+    inferred = _infer_bapr_run_seed_ckpt(cmd, cwd)
+    if inferred and inferred.get("result_dir"):
+        out.append(inferred["result_dir"])
+
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = []
+    for i, tok in enumerate(toks[:-1]):
+        if tok not in ("-c", "-lc"):
+            continue
+        for _, inner in _expand_simple_seed_loop_inner(toks[i + 1]):
+            shell = " ".join([shlex.quote(toks[0]), shlex.quote(tok), shlex.quote(inner)])
+            inferred = _infer_bapr_run_seed_ckpt(shell, cwd)
+            if inferred and inferred.get("result_dir"):
+                out.append(inferred["result_dir"])
+
+    dedup = []
+    seen = set()
+    for path in out:
+        key = _conflict_path_key(path)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        dedup.append(path)
+    return dedup
+
+def _bapr_run_seed_metas_from_cmd(cmd: str, cwd: str = "") -> list[dict]:
+    """Return per-seed metadata for BAPR `run_seed.sh` invocations in a command."""
+    try:
+        toks = shlex.split(cmd or "")
+    except Exception:
+        toks = []
+    candidate_token_lists = []
+    if toks:
+        candidate_token_lists.append(toks)
+        for i, tok in enumerate(toks[:-1]):
+            if tok in ("-c", "-lc"):
+                inner = toks[i + 1]
+                try:
+                    candidate_token_lists.append(shlex.split(inner))
+                except Exception:
+                    pass
+                for _seed, expanded_inner in _expand_simple_seed_loop_inner(inner):
+                    try:
+                        candidate_token_lists.append(shlex.split(expanded_inner))
+                    except Exception:
+                        pass
+
+    metas = []
+    seen = set()
+    for ctoks in candidate_token_lists:
+        for i, tok in enumerate(ctoks):
+            if not tok.endswith("run_seed.sh"):
+                continue
+            args = ctoks[i + 1:]
+            if os.path.basename(tok) != "run_seed.sh" or len(args) < 3:
+                continue
+            algo, env_name, seed = args[0], args[1], args[2]
+            max_iters = args[3] if len(args) >= 4 and args[3] else "1500"
+            dwell = args[4] if len(args) >= 5 and args[4] else "60"
+            target_mode = args[5] if len(args) >= 6 and args[5] else "min"
+            tag = args[6] if len(args) >= 7 and args[6] else "paper"
+            if any(("$" in str(x) or ";" in str(x)) for x in (
+                algo, env_name, seed, max_iters, dwell, target_mode, tag,
+            )):
+                continue
+            try:
+                max_iters_i = int(max_iters)
+            except Exception:
+                continue
+            env_short = env_name[:-3] if env_name.endswith("-v2") else env_name
+            run_name = f"{tag}_{algo}_{env_short}_dw{dwell}_s{seed}"
+            base = os.path.dirname(tok) if os.path.isabs(tok) else (cwd or os.getcwd())
+            result_dir = os.path.join(base, "jax_experiments", "results_paper", run_name)
+            key = _conflict_path_key(result_dir)
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            metas.append({
+                "algo": algo,
+                "env": env_name,
+                "seed": str(seed),
+                "max_iters": max_iters_i,
+                "dwell": str(dwell),
+                "target_mode": str(target_mode),
+                "tag": str(tag),
+                "run_name": run_name,
+                "result_dir": result_dir,
+            })
+    return metas
+
+def _bapr_batch_projection(task: dict, tail_text: str, elapsed_s: float) -> Optional[dict]:
+    """Whole-task ETA for legacy BAPR multi-seed batches.
+
+    BAPR logs print `Iter N` for the current seed, while the old batch command
+    hides total work in `for seed ... run_seed.sh ... 1500 ...`. Generic ETA
+    can only see the current seed or history. This projects across all seeds.
+    """
+    metas = _bapr_run_seed_metas_from_cmd(task.get("cmd", ""), task.get("cwd", ""))
+    if len(metas) <= 1:
+        return None
+    et = _load_eta_tracker_module()
+    if not et:
+        return None
+    try:
+        current = et._extract_current_only_from_tail(tail_text)
+    except Exception:
+        current = None
+    if current is None:
+        try:
+            progress = et.parse_progress(tail_text, cmd=task.get("cmd"))
+            current = progress[0] if progress else None
+        except Exception:
+            current = None
+
+    run_to_idx = {m["run_name"]: i for i, m in enumerate(metas)}
+    completed = set()
+    for m in re.finditer(r"Results saved to:\s*(\S+)", tail_text or ""):
+        raw = _clean_result_path(m.group(1))
+        parts = Path(raw).parts
+        run_name = ""
+        if parts:
+            run_name = parts[-2] if parts[-1] == "logs" and len(parts) >= 2 else parts[-1]
+        idx = run_to_idx.get(run_name)
+        if idx is not None:
+            completed.add(idx)
+    for i, meta in enumerate(metas):
+        try:
+            if (Path(meta["result_dir"]) / "done.ok").exists():
+                completed.add(i)
+        except Exception:
+            pass
+
+    completed_count = 0
+    while completed_count < len(metas) and completed_count in completed:
+        completed_count += 1
+    total_units = sum(int(m.get("max_iters") or 0) for m in metas)
+    completed_units = sum(int(metas[i].get("max_iters") or 0) for i in range(completed_count))
+    if completed_count >= len(metas):
+        return {
+            "source": "bapr_seed_batch",
+            "eta_s": 0,
+            "total_s": int(max(0, elapsed_s)),
+            "current": total_units,
+            "total_units": total_units,
+            "unit_s": (float(elapsed_s) / float(total_units)) if total_units > 0 else None,
+        }
+    if current is None:
+        return None
+    current_total = int(metas[completed_count].get("max_iters") or 0)
+    current = max(0, min(int(current), current_total))
+    current_units = completed_units + current
+    if total_units <= 0 or current_units <= 0 or elapsed_s <= 0:
+        return None
+    unit_s = float(elapsed_s) / float(current_units)
+    eta_s = int(max(0, (total_units - current_units) * unit_s))
+    return {
+        "source": "bapr_seed_batch",
+        "eta_s": eta_s,
+        "total_s": int(max(elapsed_s, total_units * unit_s)),
+        "current": int(current_units),
+        "total_units": int(total_units),
+        "unit_s": unit_s,
+        "completed_seeds": completed_count,
+        "seed_count": len(metas),
+    }
+
 def _infer_checkpoint_from_submit(cmd: str, cwd: str = ""):
-    return _infer_direct_jax_train_ckpt(cmd, cwd) or _infer_wrapper_ckpt(cmd, cwd)
+    return (_infer_direct_jax_train_ckpt(cmd, cwd)
+            or _infer_wrapper_ckpt(cmd, cwd)
+            or _infer_bapr_run_seed_ckpt(cmd, cwd))
 
 def _candidate_training_source_paths(cmd: str, cwd: str = ""):
     paths = []
@@ -9060,6 +10226,13 @@ def _recorded_launch_safety_state(task: dict) -> tuple[str, str]:
         err = (res or {}).get("error") or "backend probe returned unknown"
         return "unknown", str(err)[:200]
     if res.get("state") == "alive":
+        fallback = str(res.get("probe_fallback") or "")
+        if terminal and (fallback == "windows_queue_accounting" or fallback.startswith("windows_parse_failed")):
+            return (
+                "dead",
+                f"terminal Windows task only has unverified liveness fallback {fallback}; "
+                "treating recorded pid as stale",
+            )
         return "alive", "backend probe reports recorded pid/job alive"
     if res.get("state") == "dead":
         return "dead", "backend probe reports recorded pid/job dead"
@@ -9071,8 +10244,25 @@ def _same_run_identity_live_artifact_reason(task: dict, state: dict, run_key=Non
     if not key:
         return None
     target_id = task.get("id")
-    for other in state.get("tasks", []):
+    tasks = state.get("tasks", [])
+    by_id = {t.get("id"): t for t in tasks if t.get("id")}
+    ancestor_ids = set()
+    cur = task
+    seen = set()
+    while cur:
+        pid = cur.get("parent_id")
+        if not pid or pid in seen:
+            break
+        seen.add(pid)
+        ancestor_ids.add(pid)
+        cur = by_id.get(pid)
+    for other in tasks:
         if other is task or other.get("id") == target_id:
+            continue
+        if other.get("id") in ancestor_ids:
+            # A retry clone intentionally represents the same run identity as
+            # its parent. Old launch handles retained on the terminal lineage
+            # are audit data, not a reason to block that lineage's next retry.
             continue
         if _task_run_identity(other) != key:
             continue
@@ -10348,20 +11538,32 @@ def cmd_profile_local(args):
         print(f"  runtime_total={rp.get('total_s')}s source={rp.get('source')}")
 
 def cmd_submit(args):
+    split_args = _split_bapr_seed_batch_submit_args(args)
+    if split_args:
+        print(f"NOTE: auto-splitting BAPR seed batch into {len(split_args)} per-seed tasks",
+              file=sys.stderr)
+        for child_args in split_args:
+            cmd_submit(child_args)
+        return
+
     raw_submit_cmd = args.cmd
     policy_cmd = _submit_policy_text(args.cmd, args.cwd)
     inferred_checkpoint = _infer_checkpoint_from_submit(args.cmd, args.cwd)
     inferred_ckpt_dir = ""
+    inferred_result_dir = ""
     inferred_resume_managed = False
     inferred_ckpt_source = ""
     if inferred_checkpoint:
         inferred_ckpt_dir = inferred_checkpoint.get("ckpt_dir") or ""
+        inferred_result_dir = inferred_checkpoint.get("result_dir") or ""
         inferred_resume_managed = bool(inferred_checkpoint.get("resume_managed_by_cmd"))
         inferred_ckpt_source = inferred_checkpoint.get("source") or ""
     ckpt_dir_was_inferred = False
     if not args.ckpt_dir and inferred_ckpt_dir:
         args.ckpt_dir = inferred_ckpt_dir
         ckpt_dir_was_inferred = True
+    if not getattr(args, "result_dir", None) and inferred_result_dir:
+        args.result_dir = inferred_result_dir
 
     large_data_reason = _simple_sac_large_data_reason(raw_submit_cmd, args.cwd)
     if large_data_reason and not getattr(args, "allow_remote_large_data", False):
@@ -10666,6 +11868,9 @@ def cmd_submit(args):
             "est_vram_mb": int(est_vram),
             "ram_mb": int(ram_mb),
             "cpu_cores": int(cpu_cores),
+            "est_vram_mb_explicit": args.vram is not None,
+            "ram_mb_explicit": args.ram_mb is not None,
+            "cpu_cores_explicit": args.cpu is not None,
             "priority": args.priority,
             "preferred_node": args.preferred_node,
             "require_node": args.require_node,
@@ -11055,22 +12260,25 @@ def _apply_node_cmd_rewrites(node, cmd):
             cmd = cmd.replace(old, new)
     return cmd
 
-def _launch_extra_env(task):
-    """Launch-time env after applying conservative defaults for known JAX GPU tasks."""
-    merged = {}
+def _task_needs_jax_launch_env(task: dict) -> bool:
     cmd = task.get("cmd") or ""
     project = task.get("project") or ""
     is_gpu = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0 and not _task_launch_cpu_mode(task)
-    is_jax_task = is_gpu and (
+    return bool(is_gpu and (
         project == "RE-SAC"
         or "jax_experiments" in cmd
         or "jax" in cmd.lower()
-    )
-    if is_jax_task:
+    ))
+
+
+def _launch_extra_env(task):
+    """Launch-time env after applying conservative defaults for known JAX GPU tasks."""
+    merged = {}
+    if _task_needs_jax_launch_env(task):
         # Prevent JAX from preallocating most of a 12GB card and poisoning peak history.
         merged["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
         merged["XLA_FLAGS"] = "--xla_gpu_enable_triton_gemm=false"
-        if project == "RE-SAC" and task.get("cwd"):
+        if task.get("project") == "RE-SAC" and task.get("cwd"):
             merged["PYTHONPATH"] = task["cwd"]
     merged.update(task.get("extra_env") or {})
     return merged
@@ -11078,8 +12286,14 @@ def _launch_extra_env(task):
 def _node_launch_extra_env(task):
     """Merge node-local launch env with task/JAX defaults."""
     node = task.get("node") or ""
-    merged = dict((NODES.get(node, {}) or {}).get("launch_extra_env") or {})
+    node_env = dict((NODES.get(node, {}) or {}).get("launch_extra_env") or {})
+    merged = node_env if _task_needs_jax_launch_env(task) else {}
     merged.update(_launch_extra_env(task))
+    if node:
+        merged = {
+            k: _rewrite_command_paths_for_node(node, str(v))
+            for k, v in merged.items()
+        }
     return merged
 
 
@@ -11233,6 +12447,12 @@ LAUNCH_MAX_CWD_SIZE_MB = int(os.environ.get("SCHEDULEURM_LAUNCH_MAX_CWD_SIZE_MB"
 # pre-rsync via local du; if the local working tree is huge (large data /
 # checkpoints inlined), the dispatch reroutes back to local rather than
 # attempting a multi-minute transfer that would starve other dispatches.
+
+LAUNCH_STAGING_MAX_CANDIDATES_PER_PASS = int(os.environ.get(
+    "SCHEDULEURM_LAUNCH_STAGING_MAX_CANDIDATES_PER_PASS", "4"))
+# Cold-start staging can include multi-GB Windows CPU workspaces. Keep each
+# dispatch/watch pass bounded so a low-urgency sync cannot delay high-priority
+# GPU crash recovery for minutes.
 
 
 def compute_node_load_seconds(state: dict) -> dict:
@@ -11420,6 +12640,8 @@ def _stage_cwd_check(target_node: str, cwd: str):
     """
     if NODES.get(target_node, {}).get("host") is None:
         return "ready"  # local target, nothing to sync
+    if NODES.get(target_node, {}).get("skip_launch_staging"):
+        return "ready"
     cwd_key = ("local", target_node, cwd)
     if _staging_cache_hit(cwd_key):
         return "ready"
@@ -11559,8 +12781,8 @@ def _resume_ckpt_stage_key(source_node: str, target_node: str, ckpt_dir: str) ->
 def _resume_location_for_target(source_loc: dict, target_node: str) -> dict:
     staged = dict(source_loc or {})
     staged["node"] = target_node
-    if _node_is_windows(target_node) and staged.get("path"):
-        staged["path"] = _windows_path_for_node(target_node, staged["path"])
+    if staged.get("path"):
+        staged["path"] = _remote_path_for_node(target_node, staged["path"])
     return staged
 
 
@@ -11713,19 +12935,21 @@ def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
     if _staging_cache_hit(key):
         return True, "cache hit (checkpoint already staged)"
 
+    source_ckpt_dir = _remote_path_for_node(source_node, ckpt_dir)
+    target_ckpt_dir = _remote_path_for_node(target_node, ckpt_dir)
     try:
-        rc_test, _, _ = run_on(source_node, f"test -d {shlex.quote(ckpt_dir)}",
+        rc_test, _, _ = run_on(source_node, f"test -d {shlex.quote(source_ckpt_dir)}",
                                timeout=5, check=False)
     except Exception as e:
         return False, f"ckpt_dir reachability check on {source_node} failed: {str(e)[:120]}"
     if rc_test != 0:
-        return False, f"ckpt_dir {ckpt_dir} missing on resume source {source_node}"
+        return False, f"ckpt_dir {source_ckpt_dir} missing on resume source {source_node}"
 
     size_mb = -1
     try:
         rc, out, _ = run_on(
             source_node,
-            f"du -sm {shlex.quote(ckpt_dir)} 2>/dev/null | awk '{{print $1}}'",
+            f"du -sm {shlex.quote(source_ckpt_dir)} 2>/dev/null | awk '{{print $1}}'",
             timeout=15, check=False,
         )
         if rc == 0 and out.strip().isdigit():
@@ -11782,16 +13006,78 @@ def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
         _STAGING_FAILS.pop(key, None)
         return True, f"synced ckpt_dir to Windows ({size_mb}MB): {msg}"
 
+    relay_node = _relay_node_for_node(target_node)
+    if relay_node and not src_host:
+        relay_ckpt_dir = _relay_path_for_node(target_node, target_ckpt_dir)
+        try:
+            run_on(relay_node, f"mkdir -p {shlex.quote(relay_ckpt_dir)}", timeout=10, check=False)
+        except Exception:
+            pass
+        src_path = source_ckpt_dir.rstrip("/") + "/"
+        relay_dst = _rsync_path_for_node(relay_node, relay_ckpt_dir.rstrip("/") + "/")
+        try:
+            rsync_args = ["rsync", "-az", "--partial"]
+            relay_shell = _ssh_rsync_shell_for_node(relay_node)
+            if relay_shell:
+                rsync_args.extend(["-e", relay_shell])
+            rsync_args.extend([src_path, relay_dst])
+            r = subprocess.run(rsync_args, capture_output=True, text=True, timeout=600)
+            if r.returncode != 0:
+                return False, f"rsync ckpt local→relay rc={r.returncode}: {(r.stderr or '').strip()[:200]}"
+        except subprocess.TimeoutExpired:
+            return False, "rsync ckpt local→relay timeout (>600s)"
+        except Exception as e:
+            return False, f"rsync ckpt local→relay exception: {str(e)[:200]}"
+        try:
+            run_on(target_node, f"mkdir -p {shlex.quote(target_ckpt_dir)}", timeout=10, check=False)
+        except Exception:
+            pass
+        target = _relay_ssh_target_for_node(target_node)
+        relay_cmd = " ".join(shlex.quote(a) for a in [
+            "rsync", "-az", "--partial",
+            relay_ckpt_dir.rstrip("/") + "/",
+            f"{target}:{target_ckpt_dir.rstrip('/')}/",
+        ])
+        try:
+            rc, out, err = run_on(relay_node, relay_cmd, timeout=600, check=False)
+            if rc != 0:
+                return False, f"rsync ckpt relay→target rc={rc}: {(err or out).strip()[:200]}"
+        except Exception as e:
+            return False, f"rsync ckpt relay→target exception: {str(e)[:200]}"
+        try:
+            if resume_path := source_loc.get("path"):
+                target_resume = _remote_path_for_node(target_node, resume_path)
+                rc2, _, _ = run_on(target_node, f"test -e {shlex.quote(target_resume)}",
+                                   timeout=5, check=False)
+            else:
+                rc2, _, _ = run_on(
+                    target_node,
+                    f"ls -1 {shlex.quote(target_ckpt_dir)} 2>/dev/null | head -1",
+                    timeout=5, check=False,
+                )
+            if rc2 != 0:
+                return False, f"ckpt_dir {target_ckpt_dir} not verified on {target_node} after relay rsync"
+        except Exception as e:
+            return False, f"post-relay ckpt check failed: {str(e)[:120]}"
+        _STAGING_CACHE[key] = time.time()
+        _STAGING_CAP_EXCEEDED.pop(key, None)
+        _STAGING_FAILS.pop(key, None)
+        return True, f"synced ckpt_dir via {relay_node} ({size_mb}MB)"
+
     try:
-        run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}", timeout=10, check=False)
+        run_on(target_node, f"mkdir -p {shlex.quote(target_ckpt_dir)}", timeout=10, check=False)
     except Exception:
         pass
 
-    src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
-    dst_path = (f"{target_host}:" if target_host else "") + ckpt_dir.rstrip("/") + "/"
+    src_path = _rsync_path_for_node(source_node, source_ckpt_dir.rstrip("/") + "/")
+    dst_path = _rsync_path_for_node(target_node, target_ckpt_dir.rstrip("/") + "/")
     try:
-        r = subprocess.run(["rsync", "-az", "--partial", src_path, dst_path],
-                           capture_output=True, text=True, timeout=600)
+        rsync_args = ["rsync", "-az", "--partial"]
+        rsync_shell = _rsync_shell_for_pair(source_node, target_node)
+        if rsync_shell:
+            rsync_args.extend(["-e", rsync_shell])
+        rsync_args.extend([src_path, dst_path])
+        r = subprocess.run(rsync_args, capture_output=True, text=True, timeout=600)
         if r.returncode != 0:
             return False, f"rsync ckpt failed rc={r.returncode}: {(r.stderr or '').strip()[:200]}"
     except subprocess.TimeoutExpired:
@@ -11802,16 +13088,17 @@ def _stage_resume_ckpt_for_launch(task: dict, target_node: str,
     resume_path = source_loc.get("path")
     try:
         if resume_path:
-            rc2, _, _ = run_on(target_node, f"test -e {shlex.quote(resume_path)}",
+            target_resume = _remote_path_for_node(target_node, resume_path)
+            rc2, _, _ = run_on(target_node, f"test -e {shlex.quote(target_resume)}",
                                timeout=5, check=False)
         else:
             rc2, _, _ = run_on(
                 target_node,
-                f"ls -1 {shlex.quote(ckpt_dir)} 2>/dev/null | head -1",
+                f"ls -1 {shlex.quote(target_ckpt_dir)} 2>/dev/null | head -1",
                 timeout=5, check=False,
             )
         if rc2 != 0:
-            return False, f"ckpt_dir {ckpt_dir} not verified on {target_node} after rsync"
+            return False, f"ckpt_dir {target_ckpt_dir} not verified on {target_node} after rsync"
     except Exception as e:
         return False, f"post-rsync ckpt check failed: {str(e)[:120]}"
 
@@ -11950,13 +13237,77 @@ def _stage_cwd_for_launch(task: dict, target_node: str,
         return (True, f"{msg} ({cwd_size_mb}MB)")
 
     # Ensure target dir exists (mkdir -p is idempotent; cheap).
+    remote_cwd = _remote_path_for_node(target_node, cwd)
     try:
-        run_on(target_node, f"mkdir -p {shlex.quote(cwd)}", timeout=10, check=False)
+        run_on(target_node, f"mkdir -p {shlex.quote(remote_cwd)}", timeout=10, check=False)
     except Exception:
         pass  # if mkdir fails the rsync below will too — surface the rsync error
 
+    relay_node = _relay_node_for_node(target_node)
+    if relay_node:
+        relay_cwd = _relay_path_for_node(target_node, remote_cwd)
+        try:
+            run_on(relay_node, f"mkdir -p {shlex.quote(relay_cwd)}", timeout=10, check=False)
+        except Exception:
+            pass
+
+        src_path = cwd.rstrip("/") + "/"
+        relay_dst = _rsync_path_for_node(relay_node, relay_cwd.rstrip("/") + "/")
+        local_to_relay = ["rsync", "-az", "--partial", "--delete",
+                          "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
+                          "--exclude=results/", "--exclude=results_*/",
+                          "--exclude=logs/", "--exclude=logs_*/",
+                          "--exclude=experiment_output/",
+                          "--exclude=archive*/", "--exclude=*.tar.gz"]
+        if extra_excludes:
+            for ex in extra_excludes:
+                if ex:
+                    local_to_relay.extend([f"--exclude={ex}"])
+        relay_shell = _ssh_rsync_shell_for_node(relay_node)
+        if relay_shell:
+            local_to_relay.extend(["-e", relay_shell])
+        local_to_relay.extend([src_path, relay_dst])
+        try:
+            r = subprocess.run(local_to_relay, capture_output=True, text=True, timeout=600)
+            if r.returncode != 0:
+                return (False, f"rsync local→relay rc={r.returncode}: {(r.stderr or '').strip()[:200]}")
+        except subprocess.TimeoutExpired:
+            return (False, "rsync local→relay timeout (>600s)")
+        except Exception as e:
+            return (False, f"rsync local→relay exception: {str(e)[:200]}")
+
+        try:
+            run_on(target_node, f"mkdir -p {shlex.quote(remote_cwd)}", timeout=10, check=False)
+        except Exception:
+            pass
+        target = _relay_ssh_target_for_node(target_node)
+        relay_src = relay_cwd.rstrip("/") + "/"
+        relay_to_hpc = ["rsync", "-az", "--partial", "--delete",
+                        "--exclude=.git/", "--exclude=__pycache__/", "--exclude=*.pyc",
+                        "--exclude=results/", "--exclude=results_*/",
+                        "--exclude=logs/", "--exclude=logs_*/",
+                        "--exclude=experiment_output/",
+                        "--exclude=archive*/", "--exclude=*.tar.gz"]
+        if extra_excludes:
+            for ex in extra_excludes:
+                if ex:
+                    relay_to_hpc.extend([f"--exclude={ex}"])
+        relay_to_hpc.extend([relay_src, f"{target}:{remote_cwd.rstrip('/')}/"])
+        relay_cmd = " ".join(shlex.quote(a) for a in relay_to_hpc)
+        try:
+            rc, out, err = run_on(relay_node, relay_cmd, timeout=600, check=False)
+            if rc != 0:
+                return (False, f"rsync relay→target rc={rc}: {(err or out).strip()[:200]}")
+        except Exception as e:
+            return (False, f"rsync relay→target exception: {str(e)[:200]}")
+
+        _STAGING_CACHE[cwd_key] = time.time()
+        _STAGING_CAP_EXCEEDED.pop(cwd_key, None)
+        _STAGING_FAILS.pop(cwd_key, None)
+        return (True, f"synced via {relay_node} ({cwd_size_mb}MB)")
+
     src_path = cwd.rstrip("/") + "/"
-    dst_path = f"{tgt_host}:{cwd.rstrip('/')}/"
+    dst_path = _rsync_path_for_node(target_node, remote_cwd.rstrip("/") + "/")
     # Phase 3.4.11 P2 fix: --delete enforces "local is source-of-truth"
     # semantics. Without it, files that were renamed/deleted on local
     # remain on remote, so a stale code path could still execute (e.g.
@@ -11980,6 +13331,9 @@ def _stage_cwd_for_launch(task: dict, target_node: str,
         for ex in extra_excludes:
             if ex:
                 rsync_args.extend([f"--exclude={ex}"])
+    rsync_shell = _ssh_rsync_shell_for_node(target_node)
+    if rsync_shell:
+        rsync_args.extend(["-e", rsync_shell])
     rsync_args.extend([src_path, dst_path])
     try:
         r = subprocess.run(
@@ -12070,10 +13424,25 @@ def _stage_launch_candidates_outside_lock():
         # falls back to other nodes; if we only stage to preferred, dispatch
         # may end up choosing a different node and stay in needs_stage forever.
         # So preferred → stage to ALL non-local nodes (preferred + fallbacks).
+        queued_tasks = [t for t in state.get("tasks", []) if t.get("status") == "queued"]
+        high_gpu_tasks = [
+            t for t in queued_tasks
+            if t.get("priority") == "high" and int(t.get("est_vram_mb") or 0) > 0
+        ]
+        if high_gpu_tasks:
+            # Fast lane for crash/reboot recovery: do not let unrelated CPU
+            # workspace syncs delay high-priority GPU retries.
+            queued_tasks = high_gpu_tasks
+        gpu_staging_pending = any(
+            int(t.get("est_vram_mb") or 0) > 0
+            and not _queued_wait_for_file_block_reason(t)
+            for t in queued_tasks
+        )
+
         candidates: set = set()
         ckpt_candidates: list = []
-        for t in state.get("tasks", []):
-            if t.get("status") != "queued":
+        for t in queued_tasks:
+            if _queued_wait_for_file_block_reason(t):
                 continue
             cwd = t.get("cwd")
             if not cwd:
@@ -12089,7 +13458,27 @@ def _stage_launch_candidates_outside_lock():
             if allowed:
                 tgts = [tn for tn in tgts if tn in allowed]
             for tn in tgts:
-                if NODES.get(tn, {}).get("host") is None:
+                node_info = NODES.get(tn, {})
+                if node_info.get("host") is None:
+                    continue
+                if node_info.get("skip_launch_staging"):
+                    continue
+                if gpu_staging_pending and _node_is_windows(tn):
+                    continue
+                if node_info.get("stage_only_when_targeted"):
+                    targeted = (
+                        require == tn
+                        or t.get("preferred_node") == tn
+                        or tn in allowed
+                        or _task_requests_slurm(t)
+                    )
+                    if not targeted:
+                        continue
+                cpu_fallback_target = (
+                    int(t.get("est_vram_mb") or 0) > 0
+                    and (_node_is_windows(tn) or node_info.get("max_vram_per_task") == 0)
+                )
+                if cpu_fallback_target and _node_cpu_fallback_block_reason(t, tn, node_info):
                     continue
                 cwd_key = ("local", tn, cwd)
                 if _staging_cache_hit(cwd_key):
@@ -12102,7 +13491,27 @@ def _stage_launch_candidates_outside_lock():
                 locs = list(t.get("resume_locations") or [])
                 if locs:
                     for tn in tgts:
-                        if NODES.get(tn, {}).get("host") is None:
+                        node_info = NODES.get(tn, {})
+                        if node_info.get("host") is None:
+                            continue
+                        if node_info.get("skip_launch_staging"):
+                            continue
+                        if gpu_staging_pending and _node_is_windows(tn):
+                            continue
+                        if node_info.get("stage_only_when_targeted"):
+                            targeted = (
+                                require == tn
+                                or t.get("preferred_node") == tn
+                                or tn in allowed
+                                or _task_requests_slurm(t)
+                            )
+                            if not targeted:
+                                continue
+                        cpu_fallback_target = (
+                            int(t.get("est_vram_mb") or 0) > 0
+                            and (_node_is_windows(tn) or node_info.get("max_vram_per_task") == 0)
+                        )
+                        if cpu_fallback_target and _node_cpu_fallback_block_reason(t, tn, node_info):
                             continue
                         state_ckpt, src_loc, _ = _resume_checkpoint_stage_check(t, tn, locs)
                         if state_ckpt != "needs_stage" or not src_loc:
@@ -12119,7 +13528,25 @@ def _stage_launch_candidates_outside_lock():
     if not candidates and not ckpt_candidates:
         return
 
-    for tn, cwd in candidates:
+    def _launch_stage_candidate_key(item):
+        tn, cwd = item
+        node_info = NODES.get(tn, {})
+        caps = set(str(c).lower() for c in (node_info.get("capabilities") or []))
+        if _node_is_windows(tn):
+            node_rank = 3
+        elif "cuda" in caps or "jax_cuda" in caps or "torch_cuda" in caps:
+            node_rank = 0
+        elif _slurm_mode_enabled(node_info.get("slurm_backend")):
+            node_rank = 1
+        else:
+            node_rank = 2
+        return (node_rank, tn, cwd)
+
+    ordered_candidates = sorted(candidates, key=_launch_stage_candidate_key)
+    if LAUNCH_STAGING_MAX_CANDIDATES_PER_PASS > 0:
+        ordered_candidates = ordered_candidates[:LAUNCH_STAGING_MAX_CANDIDATES_PER_PASS]
+
+    for tn, cwd in ordered_candidates:
         cwd_norm = cwd.rstrip("/")
         extra = sorted(protected_under_cwd.get(cwd_norm, set()))
         try:
@@ -12235,10 +13662,12 @@ def _stage_for_migration(task: dict, target_node: str,
         src_host = src_info.get("host")
         tgt_info = NODES.get(target_node, {})
         tgt_host = tgt_info.get("host")
+        source_cwd = _remote_path_for_node(source_node, cwd)
+        target_cwd = _remote_path_for_node(target_node, cwd)
         # Build src/dst rsync paths
-        src_path = (f"{src_host}:" if src_host else "") + cwd.rstrip("/") + "/"
-        dst_path = (f"{tgt_host}:" if tgt_host else "") + cwd.rstrip("/") + "/"
-        mkdir_cmd = f"mkdir -p {shlex.quote(cwd)}"
+        src_path = _rsync_path_for_node(source_node, source_cwd.rstrip("/") + "/")
+        dst_path = _rsync_path_for_node(target_node, target_cwd.rstrip("/") + "/")
+        mkdir_cmd = f"mkdir -p {shlex.quote(target_cwd)}"
         try:
             run_on(target_node, mkdir_cmd, timeout=10, check=False)
         except Exception:
@@ -12263,7 +13692,7 @@ def _stage_for_migration(task: dict, target_node: str,
                 rc_du, out_du, _ = run_on(
                     source_node,
                     f"du -sm --exclude=.git --exclude=__pycache__ "
-                    f"--exclude='*.pyc' {shlex.quote(cwd)} 2>/dev/null | "
+                    f"--exclude='*.pyc' {shlex.quote(source_cwd)} 2>/dev/null | "
                     f"awk '{{print $1}}'",
                     timeout=15, check=False,
                 )
@@ -12278,10 +13707,14 @@ def _stage_for_migration(task: dict, target_node: str,
                     f"(rsync would risk hitting the 600s timeout)")
         try:
             import subprocess as _sp
-            r = _sp.run(["rsync", "-az", "--partial",
-                         "--exclude=.git", "--exclude=__pycache__",
-                         "--exclude=*.pyc", src_path, dst_path],
-                        capture_output=True, text=True, timeout=600)
+            rsync_args = ["rsync", "-az", "--partial",
+                          "--exclude=.git", "--exclude=__pycache__",
+                          "--exclude=*.pyc"]
+            rsync_shell = _rsync_shell_for_pair(source_node, target_node)
+            if rsync_shell:
+                rsync_args.extend(["-e", rsync_shell])
+            rsync_args.extend([src_path, dst_path])
+            r = _sp.run(rsync_args, capture_output=True, text=True, timeout=600)
             if r.returncode != 0:
                 return (False, f"rsync cwd failed rc={r.returncode}: {r.stderr.strip()[:200]}")
         except _sp.TimeoutExpired:
@@ -12290,7 +13723,7 @@ def _stage_for_migration(task: dict, target_node: str,
             return (False, f"rsync cwd exception: {e}")
         # Verify after rsync
         try:
-            rc2, _, _ = run_on(target_node, f"test -d {shlex.quote(cwd)}",
+            rc2, _, _ = run_on(target_node, f"test -d {shlex.quote(target_cwd)}",
                                timeout=5, check=False)
             if rc2 != 0:
                 return (False, "cwd still missing after rsync")
@@ -12317,9 +13750,10 @@ def _stage_for_migration(task: dict, target_node: str,
         #     transferring the ckpt we know is there).
         src_present = False
         if source_node:
+            source_ckpt_dir = _remote_path_for_node(source_node, ckpt_dir)
             try:
                 rc_test, _, _ = run_on(
-                    source_node, f"test -d {shlex.quote(ckpt_dir)}",
+                    source_node, f"test -d {shlex.quote(source_ckpt_dir)}",
                     timeout=5, check=False,
                 )
                 src_present = (rc_test == 0)
@@ -12337,7 +13771,7 @@ def _stage_for_migration(task: dict, target_node: str,
             size_mb = -1  # sentinel: "unknown"
             try:
                 rc, out, _ = run_on(source_node,
-                                    f"du -sm {shlex.quote(ckpt_dir)} 2>/dev/null | "
+                                    f"du -sm {shlex.quote(source_ckpt_dir)} 2>/dev/null | "
                                     f"awk '{{print $1}}'",
                                     timeout=15, check=False)
                 if rc == 0 and out.strip().isdigit():
@@ -12375,15 +13809,20 @@ def _stage_for_migration(task: dict, target_node: str,
                         f"remote→remote not supported (src={src_host}, tgt={tgt_host}); "
                         f"task would lose its checkpoint on migration. User must "
                         f"sync ckpt manually OR via shared NFS")
-            src_path = (f"{src_host}:" if src_host else "") + ckpt_dir.rstrip("/") + "/"
-            dst_path = (f"{tgt_host}:" if tgt_host else "") + ckpt_dir.rstrip("/") + "/"
+            source_ckpt_dir = _remote_path_for_node(source_node, ckpt_dir)
+            target_ckpt_dir = _remote_path_for_node(target_node, ckpt_dir)
+            src_path = _rsync_path_for_node(source_node, source_ckpt_dir.rstrip("/") + "/")
+            dst_path = _rsync_path_for_node(target_node, target_ckpt_dir.rstrip("/") + "/")
             try:
-                run_on(target_node, f"mkdir -p {shlex.quote(ckpt_dir)}",
+                run_on(target_node, f"mkdir -p {shlex.quote(target_ckpt_dir)}",
                        timeout=10, check=False)
                 import subprocess as _sp
-                r = _sp.run(["rsync", "-az", "--partial",
-                             src_path, dst_path],
-                            capture_output=True, text=True, timeout=600)
+                rsync_args = ["rsync", "-az", "--partial"]
+                rsync_shell = _rsync_shell_for_pair(source_node, target_node)
+                if rsync_shell:
+                    rsync_args.extend(["-e", rsync_shell])
+                rsync_args.extend([src_path, dst_path])
+                r = _sp.run(rsync_args, capture_output=True, text=True, timeout=600)
                 if r.returncode != 0:
                     return (False, f"rsync ckpt failed rc={r.returncode}: "
                                    f"{r.stderr.strip()[:200]}")
@@ -12395,18 +13834,20 @@ def _stage_for_migration(task: dict, target_node: str,
             # failure (don't migrate a resume task to an empty ckpt path).
             try:
                 rc2, out2, _ = run_on(target_node,
-                                      f"ls -1 {shlex.quote(ckpt_dir)} 2>/dev/null | head -1",
+                                      f"ls -1 {shlex.quote(target_ckpt_dir)} 2>/dev/null | head -1",
                                       timeout=5, check=False)
                 if rc2 != 0 or not (out2 or "").strip():
-                    return (False, f"ckpt_dir {ckpt_dir} appears empty on {target_node} "
+                    return (False, f"ckpt_dir {target_ckpt_dir} appears empty on {target_node} "
                                    f"after rsync (rc={rc2}); migration aborted")
             except Exception as e:
                 return (False, f"post-rsync ckpt check failed: {e}")
             # Only cache on successful + verified rsync
             _STAGING_CACHE[ckpt_key] = time.time()
 
-    # Step 4: env probe — extract python path from cmd
-    cmd_str = task.get("cmd") or ""
+    # Step 4: env probe — extract python path after node-local rewrites.
+    # A task may be submitted with a local-only interpreter path while the target
+    # node has an equivalent env under a different absolute path.
+    cmd_str = _apply_node_cmd_rewrites(target_node, task.get("cmd") or "")
     py_path = None
     py_match = re.search(r'(/[\w./-]+/python\d*(?:\.\d+)?)\b', cmd_str)
     if py_match:
@@ -12569,6 +14010,49 @@ def _ssh_target_for_node(node: str) -> str:
     return _ssh_base_args(node)[-1]
 
 
+def _rsync_path_for_node(node: str, path: str) -> str:
+    host = (NODES.get(node, {}) or {}).get("host")
+    if not host:
+        return path
+    return f"{_ssh_target_for_node(node)}:{path}"
+
+
+def _relay_node_for_node(node: str) -> Optional[str]:
+    relay = (NODES.get(node, {}) or {}).get("relay_node")
+    return str(relay) if relay else None
+
+
+def _relay_path_for_node(node: str, remote_path: str) -> str:
+    info = NODES.get(node, {}) or {}
+    root = str(info.get("relay_root") or f"/tmp/scheduleurm-relay/{node}").rstrip("/")
+    clean = os.path.normpath(str(remote_path or "")).lstrip("/")
+    if not clean or clean == ".":
+        clean = "_root"
+    return f"{root}/{clean}"
+
+
+def _relay_ssh_target_for_node(node: str) -> str:
+    info = NODES.get(node, {}) or {}
+    explicit = info.get("relay_ssh_target")
+    if explicit:
+        return str(explicit)
+    host = info.get("host")
+    user = info.get("ssh_user")
+    return f"{user}@{host}" if user and "@" not in str(host) else str(host)
+
+
+def _rsync_shell_for_pair(source_node: str, target_node: str) -> Optional[str]:
+    src_host = (NODES.get(source_node or "", {}) or {}).get("host")
+    tgt_host = (NODES.get(target_node or "", {}) or {}).get("host")
+    if src_host and tgt_host:
+        return None
+    if src_host:
+        return _ssh_rsync_shell_for_node(source_node)
+    if tgt_host:
+        return _ssh_rsync_shell_for_node(target_node)
+    return None
+
+
 def _sync_windows_result(candidate: dict) -> tuple:
     """Pull a Windows result directory to local via SSH+tar.
 
@@ -12638,18 +14122,81 @@ def _sync_one_result(candidate: dict) -> tuple:
     """Pull remote `result_dir` → local `local_result_dir`.
 
     Trailing slash on rsync source means "contents", so dst structure mirrors
-    source. NEVER pulls ckpts — those live in `ckpt_dir`, a separate field.
+    source. The caller chooses the result_dir boundary; if it points at a run
+    directory, checkpoints under that run are mirrored too.
     """
     node = candidate.get("node") or ""
+    if candidate.get("result_dirs"):
+        result_dirs = list(candidate.get("result_dirs") or [])
+        local_dirs = list(candidate.get("local_result_dirs") or [])
+        errors = []
+        synced = 0
+        for idx, rd in enumerate(result_dirs):
+            child = dict(candidate)
+            child.pop("result_dirs", None)
+            child.pop("local_result_dirs", None)
+            child.pop("local_result_dir_base", None)
+            child["result_dir"] = rd
+            if idx < len(local_dirs) and local_dirs[idx]:
+                child["local_result_dir"] = local_dirs[idx]
+            elif candidate.get("local_result_dir_base"):
+                child["local_result_dir"] = os.path.join(
+                    candidate["local_result_dir_base"],
+                    os.path.basename(str(rd).rstrip("/")),
+                )
+            else:
+                child["local_result_dir"] = rd
+            ok, msg = _sync_one_result(child)
+            if ok:
+                synced += 1
+            else:
+                errors.append(f"{rd}: {msg}")
+        if errors:
+            return (False, f"synced {synced}/{len(result_dirs)} dirs; "
+                           + "; ".join(errors)[:220])
+        return (True, f"synced {synced} dirs")
+
     if _node_is_windows(node):
         return _sync_windows_result(candidate)
 
-    src = f"{_ssh_target_for_node(node)}:{candidate['result_dir'].rstrip('/')}/"
+    remote_dir = _remote_path_for_node(node, candidate["result_dir"].rstrip("/"))
     dst = candidate['local_result_dir'].rstrip('/') + "/"
     try:
         Path(dst).mkdir(parents=True, exist_ok=True)
     except Exception as e:
         return (False, f"mkdir local target failed: {str(e)[:120]}")
+    relay_node = _relay_node_for_node(node)
+    if relay_node:
+        relay_dir = _relay_path_for_node(node, remote_dir)
+        target = _relay_ssh_target_for_node(node)
+        pull_to_relay = [
+            "rsync", "-az", "--partial",
+            f"{target}:{remote_dir.rstrip('/')}/",
+            relay_dir.rstrip("/") + "/",
+        ]
+        pull_cmd = " ".join(shlex.quote(a) for a in pull_to_relay)
+        try:
+            run_on(relay_node, f"mkdir -p {shlex.quote(relay_dir)}", timeout=10, check=False)
+            rc, out, err = run_on(relay_node, pull_cmd, timeout=RESULT_SYNC_TIMEOUT_S, check=False)
+            if rc != 0:
+                return (False, f"relay result pull rc={rc}: {(err or out).strip()[:200]}")
+        except Exception as e:
+            return (False, f"relay result pull exception: {str(e)[:200]}")
+        try:
+            r = subprocess.run(
+                ["rsync", "-az", "--partial", "-e", _ssh_rsync_shell_for_node(relay_node),
+                 _rsync_path_for_node(relay_node, relay_dir.rstrip("/") + "/"), dst],
+                capture_output=True, text=True, timeout=RESULT_SYNC_TIMEOUT_S,
+            )
+            if r.returncode != 0:
+                return (False, f"relay→local rsync rc={r.returncode}: {r.stderr.strip()[:200]}")
+            return (True, "ok")
+        except subprocess.TimeoutExpired:
+            return (False, f"relay→local rsync timeout (>{RESULT_SYNC_TIMEOUT_S}s)")
+        except Exception as e:
+            return (False, f"relay→local rsync exception: {str(e)[:200]}")
+
+    src = f"{_ssh_target_for_node(node)}:{remote_dir.rstrip('/')}/"
     try:
         r = subprocess.run(
             ["rsync", "-az", "--partial", "-e", _ssh_rsync_shell_for_node(node), src, dst],
@@ -12716,7 +14263,10 @@ def _sync_completed_results_outside_lock(max_candidates: Optional[int] = None):
                 if t.get("status") != "done":
                     continue
                 rd = t.get("result_dir")
-                if not rd:
+                rds = list(t.get("result_dirs") or [])
+                if not rd and not rds:
+                    rds = _infer_bapr_result_dirs_from_cmd(t.get("cmd", ""), t.get("cwd", ""))
+                if not rd and not rds:
                     continue
                 if t.get("result_synced_at"):
                     continue
@@ -12743,13 +14293,22 @@ def _sync_completed_results_outside_lock(max_candidates: Optional[int] = None):
                         pass
                 # Claim the task atomically.
                 t["result_syncing_at"] = now
-                candidates.append({
+                candidate = {
                     "id": t["id"],
                     "node": node,
                     "host": host,
                     "result_dir": rd,
                     "local_result_dir": t.get("local_result_dir") or rd,
-                })
+                }
+                if rds:
+                    candidate["result_dirs"] = rds
+                    if t.get("local_result_dirs"):
+                        candidate["local_result_dirs"] = list(t.get("local_result_dirs") or [])
+                    elif t.get("local_result_dir"):
+                        candidate["local_result_dir_base"] = t.get("local_result_dir")
+                    candidate["result_dir"] = rds[0]
+                    candidate["local_result_dir"] = t.get("local_result_dir") or rds[0]
+                candidates.append(candidate)
             if candidates:
                 save_state(state)
     except Exception as e:
@@ -13146,10 +14705,11 @@ def _enforce_post_dispatch_thresholds(state, nodes):
     """Resource-pressure rollback.
 
     If a GPU is over the 1/3 memory freeze line and multiple scheduler-owned
-    tasks are sharing it, requeue the least-progress / longest-ETA colocated
-    task. This is intentionally about memory only; util saturation alone is not
-    enough to evict anything, but memory over 1/3 means this GPU should not keep
-    stacked work. The victim choice protects older or nearly-finished work.
+    tasks are sharing it, requeue newly-launched or no-progress colocated work.
+    This is intentionally about memory only; util saturation alone is not enough
+    to evict anything. Stable progress-bearing tasks are protected so a fresh
+    dispatch cannot knock down a long-running experiment that had already been
+    making progress on the GPU.
 
     Also applies the same idea at node RAM level: if probed free RAM is below
     configured headroom minus grace, requeue one scheduler-owned task on that
@@ -13159,13 +14719,28 @@ def _enforce_post_dispatch_thresholds(state, nodes):
     evicted = []
     evicted_set = set()
 
-    def _victim_key(t):
+    def _gpu_evict_candidate(t):
+        elapsed = _effective_elapsed_s(t)
+        if (
+            elapsed >= max(0, int(GPU_EVICT_STABLE_PROGRESS_MIN_AGE_S))
+            and _task_has_progress_evidence(t)
+        ):
+            return False
+        if elapsed <= max(0, int(GPU_EVICT_ROLLBACK_MAX_AGE_S)):
+            return True
+        return True
+
+    def _gpu_victim_key(t):
         eta = int(t.get("eta_seconds") or 0)
         # Unknown ETA is treated as very long: we cannot prove it is close to done.
         eta_rank = eta if eta > 0 else 10 ** 12
         progress = _task_progress_ratio(t)
         progress_rank = -(progress if progress is not None else 0.0)
-        return (eta_rank, progress_rank, float(t.get("started_at") or 0))
+        no_progress_rank = 0 if _task_has_progress_evidence(t) else 1
+        # Prefer rolling back the freshest colocated launch. This turns the
+        # freeze-line path into a failed-placement rollback instead of a
+        # preemption policy for long-running work.
+        return (float(t.get("started_at") or 0), no_progress_rank, progress_rank, eta_rank)
 
     def _ram_victim_key(t):
         progress = _task_progress_ratio(t)
@@ -13173,6 +14748,17 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         eta = int(t.get("eta_seconds") or 0)
         eta_rank = eta if eta > 0 else 0
         return (_task_ram_pressure_mb(t), progress_rank, float(t.get("started_at") or 0), eta_rank)
+
+    def _cpu_victim_key(t):
+        progress = _task_progress_ratio(t)
+        progress_rank = -(progress if progress is not None else 0.0)
+        no_progress_rank = 0 if _task_has_progress_evidence(t) else 1
+        return (
+            no_progress_rank,
+            progress_rank,
+            float(t.get("started_at") or 0),
+            max(0, int(t.get("cpu_cores") or DEFAULT_CPU_CORES)),
+        )
 
     def _eligible_running(where):
         return [
@@ -13194,6 +14780,52 @@ def _enforce_post_dispatch_thresholds(state, nodes):
     for n in nodes:
         if not n.get("alive"):
             continue
+        if n.get("name") == "local":
+            budget = int(NODES.get("local", {}).get("cpu_cores") or n.get("total_cpu") or 0)
+            if budget > 0:
+                tasks_here = _eligible_running(lambda t: t.get("node") == "local")
+                reserved = sum(
+                    max(0, int(t.get("cpu_cores") or DEFAULT_CPU_CORES))
+                    for t in tasks_here
+                )
+                if reserved > budget:
+                    cpu_high, cpu_why = _local_cpu_pressure_high(n, LOCAL_GPU_HOST_CPU_EVICT_PCT)
+                    if not cpu_high:
+                        notify("local_cpu_over_reserved_no_evict", {
+                            "reserved": reserved,
+                            "budget": budget,
+                            "reason": cpu_why,
+                            "task_ids": [t.get("id") for t in tasks_here],
+                        }, feishu_enabled=False)
+                        continue
+                while reserved > budget and len(tasks_here) > 1:
+                    protected = [t for t in tasks_here if _task_evict_loss_protected(t)]
+                    protected_ids = {id(t) for t in protected}
+                    candidates = [t for t in tasks_here if id(t) not in protected_ids] or tasks_here
+                    if not candidates:
+                        break
+                    victim = max(candidates, key=_cpu_victim_key)
+                    cpu_payload = {
+                        "kind": "local_cpu_budget",
+                        "task_id": victim["id"],
+                        "node": "local",
+                        "cpu_reserved": reserved,
+                        "cpu_budget": budget,
+                        "same_node_tasks": [_summarize_task_for_resource_log(t) for t in tasks_here],
+                        "protected_evict_loss_task_ids": [t.get("id") for t in protected],
+                        "selection": "least_progress_then_newest_then_highest_cpu",
+                    }
+                    reason = (
+                        f"evicted from local after CPU budget breach "
+                        f"(reserved={reserved}/{budget}); "
+                        f"victim selected by least progress / newest / highest CPU"
+                    )
+                    freed = max(0, int(victim.get("cpu_cores") or DEFAULT_CPU_CORES))
+                    _evict(victim, reason, cpu_payload)
+                    reserved = max(0, reserved - freed)
+                    tasks_here = [t for t in tasks_here if t.get("id") != victim.get("id")]
+                    if not tasks_here:
+                        break
         for g in n["gpus"]:
             freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
             occupied = g["used_mb"] > 100
@@ -13205,7 +14837,15 @@ def _enforce_post_dispatch_thresholds(state, nodes):
             )
             if len(tasks_here) < 2:
                 continue  # single big task on the GPU — design exception, leave it
-            victim = max(tasks_here, key=_victim_key)
+            candidates = [
+                t for t in tasks_here
+                if _gpu_evict_candidate(t)
+                and not _task_ignores_one_third_pack_rule(t, NODES.get(t.get("node") or "", {}))
+            ]
+            if not candidates:
+                continue
+            protected = [t for t in tasks_here if t not in candidates]
+            victim = max(candidates, key=_gpu_victim_key)
             gpu_payload = {
                 "kind": "gpu_one_third",
                 "task_id": victim["id"],
@@ -13213,13 +14853,14 @@ def _enforce_post_dispatch_thresholds(state, nodes):
                 "gpu_idx": g["idx"],
                 "gpu": _gpu_threshold_snapshot(g),
                 "same_gpu_tasks": [_summarize_task_for_resource_log(t) for t in tasks_here],
-                "selection": "longest_eta_then_least_progress_then_newest",
+                "protected_stable_progress_task_ids": [t.get("id") for t in protected],
+                "selection": "newest_launch_rollback_then_no_progress_then_least_progress",
             }
             reason = (
                 f"evicted from {n['name']}:GPU{g['idx']} after GPU memory freeze-line breach "
                 f"(mem={_format_mem_gb(g['used_mb'])}/{_format_mem_gb(g['total_mb'])}, "
                 f"freeze={_format_mem_gb(freeze)}, util={g.get('util_pct','?')}%); "
-                f"victim selected by longest ETA / least progress / newest"
+                f"victim selected by newest launch rollback / no progress / least progress"
             )
             _evict(victim, reason, gpu_payload)
 
@@ -13255,6 +14896,10 @@ def _enforce_post_dispatch_thresholds(state, nodes):
     return evicted
 
 EVICT_RELAUNCH_COOLDOWN_S = int(os.environ.get("SCHED_EVICT_RELAUNCH_COOLDOWN_S", str(30 * 60)))
+LOCAL_CPU_EVICT_NODE_COOLDOWN_S = int(os.environ.get(
+    "SCHED_LOCAL_CPU_EVICT_NODE_COOLDOWN_S", str(30 * 60)))
+LOCAL_GPU_HOST_CPU_BLOCK_PCT = int(os.environ.get("SCHED_LOCAL_GPU_HOST_CPU_BLOCK_PCT", "85"))
+LOCAL_GPU_HOST_CPU_EVICT_PCT = int(os.environ.get("SCHED_LOCAL_GPU_HOST_CPU_EVICT_PCT", "92"))
 PREEMPT_QUEUE_WAIT_MIN = 5      # high-prio waits > N min before we consider preempting
 PREEMPT_VICTIM_MIN_AGE_MIN = 10 # don't evict a task younger than this (let it settle)
 PREEMPT_VICTIM_MAX_AGE_MIN = 240 # don't evict a task that's been stable too long (probably load-bearing)
@@ -13298,7 +14943,21 @@ def _evict_to_queue(victim, state, reason, eviction_kind: str = "preempt"):
     now = time.time()
     victim["last_evicted_at"] = now
     victim["last_eviction_kind"] = eviction_kind
-    victim["evict_cooldown_until"] = now + max(0, int(EVICT_RELAUNCH_COOLDOWN_S))
+    if eviction_kind == "local_cpu_budget":
+        victim.pop("evict_cooldown_until", None)
+        node_cooldown = max(0, int(LOCAL_CPU_EVICT_NODE_COOLDOWN_S))
+        if old_node and node_cooldown > 0:
+            raw = victim.get("evict_node_cooldowns")
+            if not isinstance(raw, dict):
+                raw = {}
+                victim["evict_node_cooldowns"] = raw
+            raw[str(old_node)] = now + node_cooldown
+        return
+    cooldown = max(0, int(EVICT_RELAUNCH_COOLDOWN_S))
+    if cooldown > 0:
+        victim["evict_cooldown_until"] = now + cooldown
+    else:
+        victim.pop("evict_cooldown_until", None)
 
 
 def _eviction_cooldown_block_reason(task: dict, now: Optional[float] = None) -> str:
@@ -13313,6 +14972,67 @@ def _eviction_cooldown_block_reason(task: dict, now: Optional[float] = None) -> 
     return (
         f"recently {task.get('last_eviction_kind') or 'evicted'}; "
         f"cooling down {remain}s before relaunch to avoid kill/relaunch thrash"
+    )
+
+
+def _evict_node_cooldown_block_reason(task: dict, node: str, now: Optional[float] = None,
+                                      node_state: Optional[dict] = None) -> str:
+    """Block only the node that just evicted this task.
+
+    Local CPU rollback should not globally cool the task down: remote GPU nodes
+    may become available immediately. But without a local-only cooldown, the
+    dispatcher can relaunch the task onto local and the post-dispatch budget
+    guard will kill it again in a tight loop.
+    """
+    if not node:
+        return ""
+    now = time.time() if now is None else now
+    raw = task.get("evict_node_cooldowns")
+    if not isinstance(raw, dict):
+        raw = {}
+    until = 0.0
+    try:
+        until = float(raw.get(node) or 0)
+    except Exception:
+        until = 0.0
+    if until <= 0 and node == "local" and task.get("last_eviction_kind") == "local_cpu_budget":
+        try:
+            last = float(task.get("last_evicted_at") or 0)
+        except Exception:
+            last = 0.0
+        if last > 0:
+            until = last + max(0, int(LOCAL_CPU_EVICT_NODE_COOLDOWN_S))
+            if until > now:
+                raw[node] = until
+                task["evict_node_cooldowns"] = raw
+    if (
+        until > now
+        and node == "local"
+        and task.get("last_eviction_kind") == "local_cpu_budget"
+        and node_state is not None
+    ):
+        high, _ = _local_cpu_pressure_high(node_state, LOCAL_GPU_HOST_CPU_BLOCK_PCT)
+        if not high:
+            raw.pop(node, None)
+            if raw:
+                task["evict_node_cooldowns"] = raw
+            else:
+                task.pop("evict_node_cooldowns", None)
+            return ""
+    if until <= 0:
+        return ""
+    if until <= now:
+        if raw:
+            raw.pop(node, None)
+            if raw:
+                task["evict_node_cooldowns"] = raw
+            else:
+                task.pop("evict_node_cooldowns", None)
+        return ""
+    remain = int(max(0, until - now))
+    return (
+        f"recently {task.get('last_eviction_kind') or 'evicted'} on {node}; "
+        f"cooling down {remain}s before relaunching there"
     )
 
 def _preempt_for_high_priority(state, nodes):
@@ -13352,7 +15072,10 @@ def _preempt_for_high_priority(state, nodes):
         free_ram = int((node_state or {}).get("free_ram_mb") or 0)
         headroom = _node_ram_headroom_mb(node_state or {}, node_info) if node_info else 0
         schedulable_ram = max(0, free_ram - headroom)
-        cpu_deficit = max(0, int(cpu_need) - free_cpu)
+        ignore_cpu = _ignore_cpu_for_server_gpu_task(
+            hi, node_state=node_state, node_info=node_info, node_name=node_pin,
+            gpu_idx=hi.get("require_gpu_idx") if hi.get("require_gpu_idx") is not None else hi.get("gpu_idx"))
+        cpu_deficit = 0 if ignore_cpu else max(0, int(cpu_need) - free_cpu)
         ram_deficit = max(0, int(ram_need) - schedulable_ram)
         if cpu_deficit <= 0 and ram_deficit <= 0:
             continue
@@ -13456,32 +15179,43 @@ def _do_dispatch(state, nodes):
     from collections import Counter as _Counter
     running_per_node = _Counter(t.get("node") for t in state["tasks"]
                                  if _counts_against_node_concurrency(t))
+    running_per_gpu = _Counter(
+        (t.get("node"), t.get("gpu_idx")) for t in state["tasks"]
+        if _counts_against_node_concurrency(t) and t.get("gpu_idx") is not None
+    )
     cpu_labor_names = _cpu_labor_node_names()
-    cpu_labor_reserved = _Counter()
+    cpu_slot_names = set(cpu_labor_names)
+    if "local" in NODES:
+        cpu_slot_names.add("local")
+    cpu_slot_reserved = _Counter()
     for _t in state["tasks"]:
         if _t.get("status") not in ("running", "launching"):
             continue
         _node = _t.get("node") or _t.get("assigned_node")
-        if _node not in cpu_labor_names:
+        if _node not in cpu_slot_names:
             continue
-        cpu_labor_reserved[_node] += max(0, int(_t.get("cpu_cores") or DEFAULT_CPU_CORES))
+        cpu_slot_reserved[_node] += max(0, int(_t.get("cpu_cores") or DEFAULT_CPU_CORES))
     # Phase 2.16/3.4.13: count OUR slurm-pending tasks per node and split by
     # CPU/GPU bucket. pick_placement throttles further dispatch only when the
     # matching bucket is full, so CPU-only work can proceed behind pending GPU jobs.
     slurm_pending_per_node = _count_slurm_pending_per_node(state)
     for n in nodes:
         n["running_count"] = running_per_node.get(n["name"], 0)
-        if n["name"] in cpu_labor_names:
+        for g in n.get("gpus") or []:
+            g["running_task_count"] = running_per_gpu.get((n["name"], g.get("idx")), 0)
+        if n["name"] in cpu_slot_names:
             total_cpu = int(NODES.get(n["name"], {}).get("cpu_cores") or n.get("total_cpu") or 0)
             if total_cpu > 0:
-                reserved_cpu = min(total_cpu, int(cpu_labor_reserved.get(n["name"], 0)))
+                raw_reserved_cpu = int(cpu_slot_reserved.get(n["name"], 0))
+                reserved_cpu = min(total_cpu, raw_reserved_cpu)
                 n["observed_free_cpu"] = n.get("free_cpu")
                 n["observed_loadavg"] = n.get("loadavg")
                 n["cpu_slot_accounting"] = True
-                n["cpu_slot_reserved"] = reserved_cpu
+                n["cpu_slot_reserved"] = raw_reserved_cpu
                 n["total_cpu"] = total_cpu
-                n["free_cpu"] = max(0, total_cpu - reserved_cpu)
-                n["loadavg"] = float(reserved_cpu)
+                if n["name"] != "local":
+                    n["free_cpu"] = max(0, total_cpu - reserved_cpu)
+                    n["loadavg"] = float(reserved_cpu)
         # Phase 3.4.13 P1 fix: store split (cpu, gpu) on the node dict for
         # pick_placement to consult. Keep the legacy `slurm_pending_count`
         # field as the SUM (cpu + gpu) for backwards compat — surfaces in
@@ -13516,20 +15250,24 @@ def _do_dispatch(state, nodes):
         if isinstance(h, int): h = {"vram_mb": h}
         if isinstance(h, dict) and h.get("vram_mb"):
             # OWN-signature history: this is real, trust it both up and down.
-            new_est = int(h["vram_mb"])
-            if new_est != t.get("est_vram_mb"):
-                t["est_vram_mb"] = new_est
+            if not t.get("est_vram_mb_explicit"):
+                new_est = int(h["vram_mb"])
+                if new_est != t.get("est_vram_mb"):
+                    t["est_vram_mb"] = new_est
         else:
             # NO own history yet: cascade is a guess from siblings/project. Only allow it to
             # LOWER the stored est, never raise it. Reason: if a guess says 4096 but user / prior
             # state said 512, raising hurts schedulability and the eviction mechanism would
             # immediately catch a real OOM. Symmetric trust would let one giant sibling pollute
             # all small siblings' est upward forever.
-            new_est = _effective_est_vram(t, state, history_cache)
-            cur = t.get("est_vram_mb") or 0
-            if new_est and 0 < new_est < cur:
-                t["est_vram_mb"] = new_est
-        if isinstance(h, dict) and h.get("ram_mb"):
+            if not t.get("est_vram_mb_explicit"):
+                new_est = _effective_est_vram(t, state, history_cache)
+                cur = t.get("est_vram_mb") or 0
+                if new_est and 0 < new_est < cur:
+                    t["est_vram_mb"] = new_est
+        if t.get("ram_mb_explicit"):
+            pass
+        elif isinstance(h, dict) and h.get("ram_mb"):
             new_ram = int(h["ram_mb"])
             if new_ram != t.get("ram_mb"):
                 t["ram_mb"] = new_ram
@@ -13569,6 +15307,11 @@ def _do_dispatch(state, nodes):
     )
     resume_scan_cache = {}
     for t in queued:
+        if _clear_disallowed_cpu_fallback_selection(t):
+            t["last_block_reason"] = (
+                "cleared stale CPU fallback placement; task has vram>0 and "
+                "will wait for GPU/local placement"
+            )
         artifact_event = _reconcile_queued_launch_artifacts_before_dispatch(t, state)
         if artifact_event:
             events.append(artifact_event)
@@ -13598,53 +15341,6 @@ def _do_dispatch(state, nodes):
             t["last_block_reason"] = cooldown_block
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": cooldown_block})
             continue
-        resume_locations, resume_errors = _refresh_resume_locations_for_task(
-            t, nodes, resume_scan_cache)
-        if _task_requires_resume_scan(t) and resume_errors and not resume_locations:
-            reason = (
-                "resume checkpoint scan failed on all checked nodes; refusing to dispatch "
-                "because a checkpoint may exist on an unchecked server: "
-                + "; ".join(f"{n}: {msg}" for n, msg in sorted(resume_errors.items())[:3])
-            )
-            t["last_block_reason"] = reason
-            events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
-            continue
-        resume_nodes = {loc.get("node") for loc in (resume_locations or []) if loc.get("node")}
-        if resume_nodes and t.get("require_node") and t.get("require_node") not in resume_nodes:
-            require_node = t.get("require_node")
-            stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
-                t, require_node, resume_locations)
-            if stage_state == "ready" and source_loc:
-                _record_staged_resume_location(t, require_node, source_loc)
-                resume_locations = list(t.get("resume_locations") or [])
-                resume_nodes = {loc.get("node") for loc in resume_locations if loc.get("node")}
-            else:
-                if stage_state == "needs_stage":
-                    reason = (
-                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
-                        f"but require_node={require_node} has no matching checkpoint yet; "
-                        "awaiting small-checkpoint staging before remote launch"
-                    )
-                elif stage_state == "cap_exceeded":
-                    reason = (
-                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
-                        f"but require_node={require_node} has no checkpoint and ckpt_dir "
-                        f"is too large for automatic staging; keep on checkpoint-local node"
-                    )
-                elif stage_state == "stage_failed":
-                    reason = (
-                        f"resume checkpoint staging to require_node={require_node} failed: "
-                        f"{stage_msg[:220]}"
-                    )
-                else:
-                    reason = (
-                        f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
-                        f"but require_node={require_node} has no matching checkpoint; "
-                        "refusing to launch there because it would likely restart from step 0"
-                    )
-                t["last_block_reason"] = reason
-                events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
-                continue
         wait_file_block = _queued_wait_for_file_block_reason(t)
         if wait_file_block:
             t["last_block_reason"] = wait_file_block
@@ -13655,7 +15351,66 @@ def _do_dispatch(state, nodes):
             t["last_block_reason"] = cpu_training_block
             events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": cpu_training_block})
             continue
-        placement = pick_placement(t, nodes)
+        resume_locations = []
+        resume_errors = {}
+        resume_nodes = set()
+        placement = None
+        if _task_requires_resume_scan(t):
+            # Cheap capacity gate before slow checkpoint scans. If no node/GPU
+            # can accept this task right now, scanning every remote filesystem is
+            # pure latency and can starve the few tasks that could launch.
+            pre_scan_placement = pick_placement(t, nodes)
+            if pre_scan_placement is not None:
+                resume_locations, resume_errors = _refresh_resume_locations_for_task(
+                    t, nodes, resume_scan_cache)
+                if resume_errors and not resume_locations:
+                    reason = (
+                        "resume checkpoint scan failed on all checked nodes; refusing to dispatch "
+                        "because a checkpoint may exist on an unchecked server: "
+                        + "; ".join(f"{n}: {msg}" for n, msg in sorted(resume_errors.items())[:3])
+                    )
+                    t["last_block_reason"] = reason
+                    events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
+                    continue
+                resume_nodes = {loc.get("node") for loc in (resume_locations or []) if loc.get("node")}
+                if resume_nodes and t.get("require_node") and t.get("require_node") not in resume_nodes:
+                    require_node = t.get("require_node")
+                    stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
+                        t, require_node, resume_locations)
+                    if stage_state == "ready" and source_loc:
+                        _record_staged_resume_location(t, require_node, source_loc)
+                        resume_locations = list(t.get("resume_locations") or [])
+                        resume_nodes = {loc.get("node") for loc in resume_locations if loc.get("node")}
+                    else:
+                        if stage_state == "needs_stage":
+                            reason = (
+                                f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                                f"but require_node={require_node} has no matching checkpoint yet; "
+                                "awaiting small-checkpoint staging before remote launch"
+                            )
+                        elif stage_state == "cap_exceeded":
+                            reason = (
+                                f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                                f"but require_node={require_node} has no checkpoint and ckpt_dir "
+                                f"is too large for automatic staging; keep on checkpoint-local node"
+                            )
+                        elif stage_state == "stage_failed":
+                            reason = (
+                                f"resume checkpoint staging to require_node={require_node} failed: "
+                                f"{stage_msg[:220]}"
+                            )
+                        else:
+                            reason = (
+                                f"resume checkpoint exists on {','.join(sorted(resume_nodes))}, "
+                                f"but require_node={require_node} has no matching checkpoint; "
+                                "refusing to launch there because it would likely restart from step 0"
+                            )
+                        t["last_block_reason"] = reason
+                        events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
+                        continue
+                placement = pick_placement(t, nodes)
+        else:
+            placement = pick_placement(t, nodes)
         if placement is None:
             # Build a precise reason by re-checking each candidate node. Helps user see e.g.
             # "GPU 1/3 locked + cpu insufficient on require_node" instead of generic "no fit".
@@ -13666,6 +15421,9 @@ def _do_dispatch(state, nodes):
             for n in nodes:
                 if not n.get("alive"):
                     reasons.append(f"{n['name']}=DOWN"); continue
+                node_evict_cooldown = _evict_node_cooldown_block_reason(t, n["name"], node_state=n)
+                if node_evict_cooldown:
+                    reasons.append(f"{n['name']}={node_evict_cooldown}"); continue
                 if n["name"] in (blocked or set()):
                     reasons.append(f"{n['name']}=blocklisted"); continue
                 # Phase 2.3 P1: slurm nodes don't go through local capacity gate, so showing
@@ -13722,9 +15480,19 @@ def _do_dispatch(state, nodes):
                 if (t.get("est_vram_mb") or 0) > 0:
                     gpu_reasons = []
                     for g in n["gpus"]:
+                        sub = []
+                        max_tasks_per_gpu = NODES[n["name"]].get("max_tasks_per_gpu")
+                        if max_tasks_per_gpu is not None:
+                            try:
+                                gpu_task_count = int(g.get("running_task_count") or 0)
+                                gpu_task_cap = int(max_tasks_per_gpu)
+                            except Exception:
+                                gpu_task_count = 0
+                                gpu_task_cap = 0
+                            if gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap:
+                                sub.append(f"tasks {gpu_task_count}/{gpu_task_cap}")
                         if not _gpu_fits(t, g, NODES[n["name"]]):
                             freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
-                            sub = []
                             if g["used_mb"] > 100 and (
                                     g["used_mb"] >= freeze
                                     or g["used_mb"] + (t.get("est_vram_mb") or 0) >= freeze):
@@ -13738,13 +15506,14 @@ def _do_dispatch(state, nodes):
                             cap = NODES[n["name"]].get("max_vram_per_task")
                             if cap is not None and t.get("est_vram_mb", 0) > cap:
                                 sub.append(f"per-task cap {cap}")
-                            gpu_reasons.append(f"GPU{g['idx']}=" + "&".join(sub or ["?"]))
+                        if sub:
+                            gpu_reasons.append(f"GPU{g['idx']}=" + "&".join(sub))
                     if gpu_reasons:
                         reasons.append(f"{n['name']}=node-ok-but-" + "/".join(gpu_reasons))
                     else:
                         reasons.append(f"{n['name']}=fits?(unexpected)")
             pin = f"require={require} " if require else (f"prefer={prefer} " if prefer else "")
-            t["last_block_reason"] = f"no fit ({pin}prio={t.get('priority','normal')}): " + " | ".join(reasons[:3])
+            t["last_block_reason"] = f"no fit ({pin}prio={t.get('priority','normal')}): " + " | ".join(reasons[:4])
             events.append({"type": "no_fit", "task_id": t["id"], "task": t})
             continue
         t["node"], t["gpu_idx"] = placement
@@ -14011,6 +15780,7 @@ def _do_dispatch(state, nodes):
         t.pop("launch_fail_count", None)
         t.pop("launch_failed_nodes", None)
         t.pop("evict_cooldown_until", None)
+        t.pop("evict_node_cooldowns", None)
         if not str(t.get("last_block_reason") or "").startswith("warn:"):
             t.pop("last_block_reason", None)
         _clear_claim_intent_markers(t)
@@ -14034,7 +15804,8 @@ def _do_dispatch(state, nodes):
         # see the resources as already consumed (CPU + RAM at node level, VRAM at GPU level).
         for n in nodes:
             if n["name"] != t["node"]: continue
-            n["free_cpu"] = max(0, n.get("free_cpu", 0) - t.get("cpu_cores", DEFAULT_CPU_CORES))
+            cpu_debit = 0 if (n["name"] == "local" and _task_is_gpu_capacity_task(t)) else t.get("cpu_cores", DEFAULT_CPU_CORES)
+            n["free_cpu"] = max(0, n.get("free_cpu", 0) - cpu_debit)
             n["free_ram_mb"] = max(0, n.get("free_ram_mb", 0) - t.get("ram_mb", DEFAULT_RAM_MB))
             n["running_count"] = n.get("running_count", 0) + 1  # for max_concurrent_running cap
             # Phase 2.16 + 3.4.13: bump slurm pending count too so pick_placement
@@ -14053,6 +15824,7 @@ def _do_dispatch(state, nodes):
                 if g["idx"] != t["gpu_idx"]: continue
                 g["used_mb"] += t["est_vram_mb"]
                 g["free_mb"] = max(0, g["free_mb"] - t["est_vram_mb"])
+                g["running_task_count"] = int(g.get("running_task_count") or 0) + 1
         post_launch_snapshot = _resource_snapshot_for_placement(
             state, nodes, t, t.get("node"), t.get("gpu_idx"), "post_launch_estimated",
         )
@@ -14080,6 +15852,9 @@ def _print_node_summary(nodes):
     for n in nodes:
         if not n["alive"]:
             print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
+        if n.get("slurm_cluster"):
+            print(f"  {n['name']:11s} {_format_slurm_cluster_summary(n)}")
+            continue
         gpu_parts = []
         for g in n["gpus"]:
             mem_pct = int(round(100 * g["used_mb"] / max(g["total_mb"], 1)))
@@ -14104,7 +15879,7 @@ def _print_node_summary(nodes):
             cpu_parts.append(f"reserve {reserve}")
         cpu_tail = f"({', '.join(cpu_parts)})" if cpu_parts else ""
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}{cpu_tail}"
-        ram_str = f"ram_free={_format_mem_gb(n['free_ram_mb'])}"
+        ram_str = _format_node_ram_summary(n)
         claim_str = _format_node_claim_summary(n)
         print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
 
@@ -15076,7 +16851,8 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "cpu_parallel_num_shards", "cpu_parallel_total_physical_cores",
     "cpu_parallel_last_wave_items", "cpu_batch_plan",
     "est_vram_mb", "ram_mb", "cpu_cores", "priority", "preferred_node",
-    "require_node", "allowed_nodes", "stage_excludes", "reroute_on_node_down",
+    "require_node", "require_gpu_idx", "allow_gpu_over_one_third",
+    "allowed_nodes", "stage_excludes", "reroute_on_node_down",
     "node_down_requeue_s", "node", "gpu_idx", "remote_pids", "slurm_job_id",
     "slurm_state", "log_path", "submitted_at", "started_at", "finished_at",
     "peak_vram_mb", "peak_ram_mb", "current_vram_mb", "current_ram_mb",
@@ -15619,6 +17395,11 @@ def _cpu_ownership_snapshot(state, nodes) -> list:
             "external_tracked_task_ids": [x.get("id") for x in (bucket.get("external_tasks") or [])[:50]],
             "untracked_or_other_user_cpu_est": untracked_other,
             "over_reserved_cpu_est": over_reserved,
+            "host_cpu_load_pct": n.get("host_cpu_load_pct"),
+            "host_cpu_used_cores": n.get("host_cpu_used_cores"),
+            "wsl_loadavg": n.get("wsl_loadavg"),
+            "observed_free_cpu": n.get("observed_free_cpu"),
+            "cpu_slot_reserved": n.get("cpu_slot_reserved"),
             "free_ram_mb": n.get("free_ram_mb"),
             "total_ram_mb": n.get("total_ram_mb"),
             "running_count": n.get("running_count"),
@@ -15684,6 +17465,9 @@ def _build_heartbeat_payload(state, nodes):
     for n in nodes:
         if not n["alive"]:
             node_strs.append(f"{n['name']}:DOWN"); continue
+        if n.get("slurm_cluster"):
+            node_strs.append(f"{n['name']}:slurm gpu={n.get('free_gpus', 0)}/{n.get('total_gpus', 0)}")
+            continue
         gpu_brief = "/".join(_format_mem_gb(g.get("used_mb", 0)) for g in n["gpus"])
         node_strs.append(f"{n['name']}:{gpu_brief}")
     return {
@@ -15723,11 +17507,19 @@ def _smoke_test_envs():
         spec = (t.get("env_spec") or "none").lower()
         if spec.startswith("docker"):
             continue
-        cmd = t.get("cmd", "") or ""
+        raw_cmd = t.get("cmd", "") or ""
         # Two cmd shapes to handle:
         #   (a) absolute path: /home/user/conda/envs/X/bin/python ... → probe that path directly
         #   (b) `conda run -n <env> python ...` → probe via `conda run -n <env> which python`
         probes: list[tuple[str, str]] = []  # (probe_cmd, label)
+        target = t.get("node") or t.get("require_node") or t.get("preferred_node")
+        if not target:
+            continue
+        if _node_is_windows(target):
+            # WindowsBackend rewrites python/path tokens and validates cwd at
+            # launch. This Linux bash smoke test would be a false failure.
+            continue
+        cmd = _apply_node_cmd_rewrites(target, raw_cmd)
         m_abs = _re.search(r"(/[\w/.\-]+/python[\d.]*)\b", cmd)
         if m_abs:
             py = m_abs.group(1)
@@ -15740,16 +17532,6 @@ def _smoke_test_envs():
                 f"conda:{envname}",
             ))
         if not probes:
-            continue
-        # Probe target node only. For queued-without-placement tasks, prefer require_node;
-        # if neither set, skip (don't blast every node — was generating false positives for
-        # nodes that legitimately don't have the env).
-        target = t.get("node") or t.get("require_node") or t.get("preferred_node")
-        if not target:
-            continue
-        if _node_is_windows(target):
-            # WindowsBackend rewrites python/path tokens and validates cwd at
-            # launch. This Linux bash smoke test would be a false failure.
             continue
         for probe_cmd, label in probes:
             key = (target, label)
@@ -16176,6 +17958,13 @@ def _watch_iteration(args):
     # 5. Heartbeat — independent timer. Snapshot only, no event recap (those got their own notifications).
     me = json.loads(WATCHER_STATE.read_text()) if WATCHER_STATE.exists() else {}
     now = time.time()
+    if not isinstance(me, dict):
+        me = {}
+    me.setdefault("pid", os.getpid())
+    me.setdefault("started_at", now)
+    me.setdefault("interval", getattr(args, "interval", 60))
+    me.setdefault("heartbeat", getattr(args, "heartbeat", 3600))
+    me.setdefault("resource_log_interval", getattr(args, "resource_log_interval", RESOURCE_LOG_INTERVAL_S))
     resource_interval = max(0, int(getattr(args, "resource_log_interval", RESOURCE_LOG_INTERVAL_S) or 0))
     me_dirty = False
     if resource_interval and now - me.get("last_resource_log_ts", 0) >= resource_interval:
@@ -16234,7 +18023,8 @@ def _print_result_artifacts(task: dict, include_log: bool = True):
         node = rec.get("node") or task.get("node") or "unknown"
         kind = rec.get("kind") or "path"
         src = rec.get("source") or "inferred"
-        print(f"#   - [{kind}] {node}:{rec.get('path')}  ({src})")
+        path = _remote_path_for_node(node, rec.get("path")) if node in NODES else rec.get("path")
+        print(f"#   - [{kind}] {node}:{path}  ({src})")
 
 
 def cmd_status(args):
@@ -16253,6 +18043,18 @@ def cmd_status(args):
     for n in probe_all():
         if not n["alive"]:
             print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
+        if n.get("slurm_cluster"):
+            etaload = node_loads.get(n["name"], 0)
+            if etaload <= 0:
+                etaload_str = ""
+            elif etaload < 3600:
+                etaload_str = f"  eta_load={etaload/60:.0f}m"
+            elif etaload < 86400:
+                etaload_str = f"  eta_load={etaload/3600:.1f}h"
+            else:
+                etaload_str = f"  eta_load={etaload/86400:.1f}d"
+            print(f"  {n['name']:11s} {_format_slurm_cluster_summary(n)}{etaload_str}")
+            continue
         gpu_parts = []
         for g in n["gpus"]:
             mem_pct = int(round(100 * g["used_mb"] / max(g["total_mb"], 1)))
@@ -16276,7 +18078,8 @@ def cmd_status(args):
         else:
             etaload_str = f"  eta_load={etaload/86400:.1f}d"
         claim_str = _format_node_claim_summary(n)
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  ram_free={_format_mem_gb(n['free_ram_mb'])}{etaload_str}{claim_str}")
+        ram_str = _format_node_ram_summary(n)
+        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{etaload_str}{claim_str}")
     print("\n=== tasks ===")
     show_done = args.all
     rows = [t for t in state["tasks"] if show_done or t["status"] in ("queued", "launching", "running")]
@@ -16345,9 +18148,16 @@ def cmd_show(args):
     if t.get("log_path") and t.get("node"):
         host = NODES.get(t["node"], {}).get("host") or "local"
         if _node_is_windows(t["node"]):
-            print(f"\n# tail log: ssh {host} powershell Get-Content -Tail 80 -Wait -LiteralPath '{t['log_path']}'")
+            cmd = _ssh_base_args(t["node"]) + [
+                "powershell", "Get-Content", "-Tail", "80", "-Wait",
+                "-LiteralPath", t["log_path"],
+            ]
+            print(f"\n# tail log: {' '.join(shlex.quote(a) for a in cmd)}")
+        elif host == "local":
+            print(f"\n# tail log: tail -f {shlex.quote(t['log_path'])}")
         else:
-            print(f"\n# tail log: ssh {host} tail -f {t['log_path']}")
+            cmd = _ssh_base_args(t["node"]) + [f"tail -f {shlex.quote(t['log_path'])}"]
+            print(f"\n# tail log: {' '.join(shlex.quote(a) for a in cmd)}")
     _print_result_artifacts(t, include_log=True)
 
 
@@ -17144,9 +18954,10 @@ def cmd_edit(args):
     """
     if all(getattr(args, k, None) is None for k in
            ("vram_mb", "ram_mb", "cpu", "description", "preferred_node",
-            "require_node")):
+            "require_node", "require_gpu_idx", "allow_gpu_over_one_third")):
         sys.exit("specify at least one of --vram-mb / --ram-mb / --cpu / "
-                 "--description / --preferred-node / --require-node")
+                 "--description / --preferred-node / --require-node / --require-gpu / "
+                 "--allow-gpu-over-one-third")
     with state_lock():
         state = load_state()
         for t in state["tasks"]:
@@ -17161,12 +18972,15 @@ def cmd_edit(args):
             if args.vram_mb is not None:
                 changes.append(("est_vram_mb", t.get("est_vram_mb"), int(args.vram_mb)))
                 t["est_vram_mb"] = int(args.vram_mb)
+                t["est_vram_mb_explicit"] = True
             if args.ram_mb is not None:
                 changes.append(("ram_mb", t.get("ram_mb"), int(args.ram_mb)))
                 t["ram_mb"] = int(args.ram_mb)
+                t["ram_mb_explicit"] = True
             if args.cpu is not None:
                 changes.append(("cpu_cores", t.get("cpu_cores"), int(args.cpu)))
                 t["cpu_cores"] = int(args.cpu)
+                t["cpu_cores_explicit"] = True
             if args.description is not None:
                 changes.append(("description", t.get("description"), args.description))
                 t["description"] = args.description
@@ -17185,6 +18999,32 @@ def cmd_edit(args):
                 changes.append(("require_node", t.get("require_node"),
                                 args.require_node or None))
                 t["require_node"] = args.require_node or None
+                placement_changed = True
+            if args.require_gpu_idx is not None:
+                raw = str(args.require_gpu_idx).strip()
+                if raw == "":
+                    new_gpu = None
+                else:
+                    try:
+                        new_gpu = int(raw)
+                    except ValueError:
+                        sys.exit(f"--require-gpu expects a non-negative integer or empty string, got {raw!r}")
+                    if new_gpu < 0:
+                        sys.exit(f"--require-gpu expects a non-negative integer or empty string, got {raw!r}")
+                changes.append(("require_gpu_idx", t.get("require_gpu_idx"), new_gpu))
+                if new_gpu is None:
+                    t.pop("require_gpu_idx", None)
+                else:
+                    t["require_gpu_idx"] = new_gpu
+                placement_changed = True
+            if args.allow_gpu_over_one_third is not None:
+                new_allow = bool(args.allow_gpu_over_one_third)
+                changes.append(("allow_gpu_over_one_third",
+                                t.get("allow_gpu_over_one_third"), new_allow))
+                if new_allow:
+                    t["allow_gpu_over_one_third"] = True
+                else:
+                    t.pop("allow_gpu_over_one_third", None)
                 placement_changed = True
             if placement_changed:
                 keep = t.get("require_node") or t.get("preferred_node")
@@ -17241,6 +19081,15 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
     if cpu_only:
         return (f"FITS (CPU-only): free_cpu={node_state.get('free_cpu')} "
                 f"free_ram={node_state.get('free_ram_mb')}MB{soft_note}")
+    cpu_fallback_node = (
+        _node_is_windows(name)
+        or not node_state.get("gpus")
+        or node_info.get("max_vram_per_task") == 0
+    )
+    if cpu_fallback_node:
+        block = _node_cpu_fallback_block_reason(task, name, node_info)
+        if block:
+            return f"BLOCKED: {block}{soft_note}"
     fit_gpus = []
     reject_gpus = []
     est = int(task.get("est_vram_mb") or 0)
@@ -17254,7 +19103,9 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
         if cap_per_task is not None and est > cap_per_task:
             reasons.append(f"est={est}>per-task cap={cap_per_task}")
         freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
-        if freeze > 0 and g["used_mb"] > 100 and (g["used_mb"] >= freeze or g["used_mb"] + est >= freeze):
+        if (not _task_ignores_one_third_pack_rule(task, node_info)
+                and freeze > 0 and g["used_mb"] > 100
+                and (g["used_mb"] >= freeze or g["used_mb"] + est >= freeze)):
             reasons.append(f"used+est {g['used_mb']}+{est}/{g['total_mb']}MB ≥ 1/3+grace {freeze}MB (packing rule)")
         util_limit = _node_gpu_util_limit(node_info)
         if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
@@ -17284,7 +19135,9 @@ def cmd_why(args):
     print(f"  description:  {(task.get('description') or '')[:100]}")
     print(f"  signature:    {task.get('signature')}")
     print(f"  priority:     {task.get('priority')}")
-    print(f"  preferred:    {task.get('preferred_node')!r}  require:    {task.get('require_node')!r}")
+    gpu_pin = task.get("require_gpu_idx")
+    gpu_pin_text = "" if gpu_pin is None else f"  require_gpu: {gpu_pin!r}"
+    print(f"  preferred:    {task.get('preferred_node')!r}  require:    {task.get('require_node')!r}{gpu_pin_text}")
     print(f"  est:          vram={task.get('est_vram_mb')}MB ram={task.get('ram_mb')}MB cpu={task.get('cpu_cores')}")
     if task.get("wait_for_files"):
         print(f"  wait_files:   {task.get('wait_for_files')}")
@@ -17497,6 +19350,8 @@ def main():
                         "staging snapshot/per-policy data on the target node.")
     s.add_argument("--allow-duplicate", dest="allow_duplicate", action="store_true",
                    help="Allow submission even when run identity matches an existing queued/launching/running task")
+    s.add_argument("--allow-seed-batch", dest="allow_seed_batch", action="store_true",
+                   help="Do not auto-split simple BAPR `for seed in ...` shell loops at submit time.")
     s.add_argument("--stage-exclude", dest="stage_excludes", action="append",
                    help="Extra cwd staging exclude path/glob, relative to --cwd. Repeatable.")
     s.add_argument("--reroute-on-node-down", dest="reroute_on_node_down", action="store_true",
@@ -17719,6 +19574,14 @@ def main():
                    help="Set / change soft preferred node (must be a known node)")
     s.add_argument("--require-node", dest="require_node",
                    help="Set / change hard pin (use empty string to clear)")
+    s.add_argument("--require-gpu", dest="require_gpu_idx",
+                   help="Set / change hard GPU index pin on the selected node (use empty string to clear)")
+    s.add_argument("--allow-gpu-over-one-third", dest="allow_gpu_over_one_third",
+                   action="store_true", default=None,
+                   help="Allow this queued GPU task to exceed the 1/3 GPU packing guard")
+    s.add_argument("--clear-gpu-over-one-third", dest="allow_gpu_over_one_third",
+                   action="store_false", default=None,
+                   help="Clear the per-task 1/3 GPU packing override")
     s.set_defaults(func=cmd_edit)
 
     s = sub.add_parser("why", help="Diagnose why a queued task isn't being dispatched")

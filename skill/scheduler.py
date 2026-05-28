@@ -56,6 +56,17 @@ try:
 except Exception:
     env_deploy = None
 
+_SKILL_DIR = Path(__file__).resolve().parent
+_SCHEDULEURM_ROOT = _SKILL_DIR.parent
+for _p in (str(_SKILL_DIR), str(_SCHEDULEURM_ROOT)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+try:
+    from algorithm import load_placement_policy
+except Exception:
+    load_placement_policy = None
+
 # ---------- node inventory ----------
 JTL110GPU_RE_SAC_JAX_ENV = "/home/erzhu419/.venvs/resac-jax-gpu1-0438"
 JTL110GPU_RE_SAC_JAX_SITE = f"{JTL110GPU_RE_SAC_JAX_ENV}/lib/python3.11/site-packages"
@@ -254,6 +265,107 @@ GPU_EMPTY_USED_MB = 200    # treat driver/runtime noise below this as an empty G
                            # Was 4096 → 1024 → 512. User passes --vram N when known larger.
 DEFAULT_RAM_MB = 4096      # ditto for RAM
 DEFAULT_CPU_CORES = 1      # most ML jobs are single-process at the dispatch level (workers are forked)
+
+_PLACEMENT_POLICY = None
+_PLACEMENT_POLICY_NAME = ""
+_PLACEMENT_POLICY_LOAD_ERROR = ""
+
+
+def _configure_algorithm(name: Optional[str] = None):
+    """Load the optional placement policy.
+
+    `legacy` is behavior-preserving.  Non-legacy policies live under sibling
+    algorithm/ and are selected by env or CLI, so experiments can switch
+    algorithms without editing scheduler.py.
+    """
+    global _PLACEMENT_POLICY, _PLACEMENT_POLICY_NAME, _PLACEMENT_POLICY_LOAD_ERROR
+    explicit = bool(name)
+    selected = (
+        name
+        or os.environ.get("SCHEDULEURM_ALGORITHM")
+        or os.environ.get("SCHEDULEURM_PLACEMENT_POLICY")
+        or "legacy"
+    )
+    if load_placement_policy is None:
+        selected = "legacy"
+        policy = None
+    else:
+        try:
+            policy = load_placement_policy(selected)
+            _PLACEMENT_POLICY_LOAD_ERROR = ""
+        except Exception as e:
+            if explicit:
+                raise SystemExit(f"invalid --algorithm {selected!r}: {e}") from e
+            _PLACEMENT_POLICY_LOAD_ERROR = str(e)
+            policy = load_placement_policy("legacy")
+    _PLACEMENT_POLICY = policy
+    _PLACEMENT_POLICY_NAME = getattr(policy, "name", selected) if policy is not None else "legacy"
+    return policy
+
+
+def _algorithm_runtime_context() -> dict:
+    return {
+        "gpu_empty_used_mb": GPU_EMPTY_USED_MB,
+        "vram_margin_mb": VRAM_MARGIN_MB,
+        "one_third_pack_rule": ONE_THIRD_PACK_RULE,
+        "one_third_pack_grace_mb": ONE_THIRD_PACK_GRACE_MB,
+        "gpu_util_saturation_pct": GPU_UTIL_SATURATION_PCT,
+    }
+
+
+def _algorithm_name() -> str:
+    if _PLACEMENT_POLICY is None:
+        return "legacy"
+    return getattr(_PLACEMENT_POLICY, "name", "legacy")
+
+
+def _algorithm_config_snapshot() -> dict:
+    policy = _PLACEMENT_POLICY
+    if policy is None or not hasattr(policy, "snapshot"):
+        return {"name": "legacy"}
+    try:
+        out = policy.snapshot()
+        if _PLACEMENT_POLICY_LOAD_ERROR:
+            out["load_error"] = _PLACEMENT_POLICY_LOAD_ERROR
+        return out
+    except Exception:
+        return {"name": _algorithm_name(), "snapshot_error": True}
+
+
+def _algorithm_gpu_fit_block_reason(task: dict, gpu: dict, node_info: dict) -> str:
+    policy = _PLACEMENT_POLICY
+    if policy is None:
+        return ""
+    try:
+        return str(policy.gpu_fit_block_reason(
+            task, gpu, node_info, _algorithm_runtime_context()) or "")
+    except Exception as e:
+        return f"algorithm:{_algorithm_name()}: error {str(e)[:120]}"
+
+
+def _algorithm_gpu_score(task: dict, node_state: dict, gpu: dict, legacy_score):
+    policy = _PLACEMENT_POLICY
+    if policy is None:
+        return legacy_score
+    try:
+        return policy.gpu_score(
+            task, node_state, gpu, legacy_score, _algorithm_runtime_context())
+    except Exception:
+        return legacy_score
+
+
+def _algorithm_selected_gpu_audit(task: dict, node_state: dict, gpu: dict) -> dict:
+    policy = _PLACEMENT_POLICY
+    if policy is None or not hasattr(policy, "selected_gpu_audit"):
+        return {}
+    try:
+        return policy.selected_gpu_audit(
+            task, node_state, gpu, _algorithm_runtime_context()) or {}
+    except Exception as e:
+        return {"error": str(e)[:120], "algorithm": _algorithm_name()}
+
+
+_configure_algorithm()
 
 ARCHIVE_FILE = STATE_DIR / "queue_archive.jsonl"
 ARCHIVE_AGE_DAYS = 7        # terminal tasks older than this move from queue.json into archive
@@ -6122,6 +6234,8 @@ def _gpu_fits(task, gpu, node_info):
         return False
     if gpu["free_mb"] < task["est_vram_mb"] + VRAM_MARGIN_MB:
         return False
+    if _algorithm_gpu_fit_block_reason(task, gpu, node_info):
+        return False
     return True
 
 def pick_placement(task, nodes):
@@ -6265,6 +6379,7 @@ def pick_placement(task, nodes):
                     score = (occupied, rt_unknown, rt, float(used + need) / float(total), used + need)
                 else:
                     score = (occupied, rt_unknown, rt, fits_remaining)
+                score = _algorithm_gpu_score(task, n, g, score)
                 out.append((score, n["name"], g["idx"]))
         return out
 
@@ -15481,6 +15596,9 @@ def _do_dispatch(state, nodes):
                     gpu_reasons = []
                     for g in n["gpus"]:
                         sub = []
+                        algo_reason = _algorithm_gpu_fit_block_reason(t, g, NODES[n["name"]])
+                        if algo_reason:
+                            sub.append(algo_reason)
                         max_tasks_per_gpu = NODES[n["name"]].get("max_tasks_per_gpu")
                         if max_tasks_per_gpu is not None:
                             try:
@@ -15517,6 +15635,8 @@ def _do_dispatch(state, nodes):
             events.append({"type": "no_fit", "task_id": t["id"], "task": t})
             continue
         t["node"], t["gpu_idx"] = placement
+        t["placement_algorithm"] = _algorithm_name()
+        t["placement_algorithm_config"] = _algorithm_config_snapshot()
         selected_info = NODES.get(t.get("node"), {})
         selected_cpu_fallback = (
             int(t.get("est_vram_mb") or 0) > 0
@@ -15532,6 +15652,23 @@ def _do_dispatch(state, nodes):
             t.pop("cpu_fallback_original_vram_mb", None)
             t.pop("cpu_fallback_capability", None)
         picked_state = next((n for n in nodes if n.get("name") == t.get("node")), None)
+        selected_gpu = None
+        if picked_state is not None and t.get("gpu_idx") is not None:
+            for g in picked_state.get("gpus") or []:
+                try:
+                    if int(g.get("idx")) == int(t.get("gpu_idx")):
+                        selected_gpu = g
+                        break
+                except Exception:
+                    continue
+        if selected_gpu is not None:
+            algo_audit = _algorithm_selected_gpu_audit(t, picked_state, selected_gpu)
+            if algo_audit:
+                t["placement_algorithm_audit"] = algo_audit
+            else:
+                t.pop("placement_algorithm_audit", None)
+        else:
+            t.pop("placement_algorithm_audit", None)
         _assign_windows_pin_plan(t, state, picked_state)
         if resume_nodes and t.get("node") not in resume_nodes:
             selected_node = t.get("node")
@@ -16617,6 +16754,7 @@ def _preload_docker_images_outside_lock():
 
 
 def cmd_dispatch(args):
+    _configure_algorithm(getattr(args, "algorithm", None) or None)
     recovered_launching = 0
     # Quick pre-flight recovery: make stale WAL launch markers queued BEFORE preload scans.
     # The expensive env push/sync remains outside state_lock; this short lock only rewrites
@@ -16858,6 +16996,7 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "peak_vram_mb", "peak_ram_mb", "current_vram_mb", "current_ram_mb",
     "current_pcpu", "resume_from", "eta_seconds", "eta_source",
     "eta_confidence", "runtime_current_unit", "runtime_total_units",
+    "placement_algorithm", "placement_algorithm_config", "placement_algorithm_audit",
     "last_progress_line", "result_artifacts", "result_artifacts_discovered_at",
     "parent_id", "retry_count", "requeued_as", "launch_fail_count",
     "failure_category", "last_block_reason", "notified_done", "notified_launch",
@@ -17433,6 +17572,8 @@ def _dispatch_cycle_log_payload(state, nodes, events, queued_count: int) -> dict
                 "cpu_cores": t.get("cpu_cores"),
                 "ram_mb": t.get("ram_mb"),
                 "est_vram_mb": t.get("est_vram_mb"),
+                "placement_algorithm": t.get("placement_algorithm"),
+                "placement_algorithm_audit": t.get("placement_algorithm_audit"),
                 "description": (t.get("description") or "")[:100],
             })
         elif typ == "blocked":
@@ -17448,6 +17589,8 @@ def _dispatch_cycle_log_payload(state, nodes, events, queued_count: int) -> dict
             })
     payload = _resource_accounting_payload(state, nodes)
     payload.update({
+        "placement_algorithm": _algorithm_name(),
+        "placement_algorithm_config": _algorithm_config_snapshot(),
         "queued_seen_by_dispatch": int(queued_count or 0),
         "event_counts": event_counts,
         "launched": launched[:100],
@@ -17584,6 +17727,7 @@ def _post_reboot_triage_announce():
 def cmd_watch(args):
     """Background daemon: every --interval s, update running tasks + dispatch queue.
     Notifications fire on task done, dispatch launches, and every --heartbeat s. No duplicates."""
+    _configure_algorithm(getattr(args, "algorithm", None) or None)
     # Refuse to start a second watcher.
     if WATCHER_STATE.exists():
         try:
@@ -19100,6 +19244,9 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
             continue
         # explain rejection
         reasons = []
+        algo_reason = _algorithm_gpu_fit_block_reason(task, g, node_info)
+        if algo_reason:
+            reasons.append(algo_reason)
         if cap_per_task is not None and est > cap_per_task:
             reasons.append(f"est={est}>per-task cap={cap_per_task}")
         freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
@@ -19432,7 +19579,10 @@ def main():
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_submit_cpu_batch)
 
-    sub.add_parser("dispatch", help="Probe nodes & launch what fits (also rebalances queue)").set_defaults(func=cmd_dispatch)
+    s = sub.add_parser("dispatch", help="Probe nodes & launch what fits (also rebalances queue)")
+    s.add_argument("--algorithm", default="",
+                   help="Placement algorithm policy (default/env: legacy). Examples: legacy, sweetspot_v1")
+    s.set_defaults(func=cmd_dispatch)
 
     s = sub.add_parser("wait-for", help="Block until matching tasks reach terminal state; exit fires a task-notification when wrapped in Bash run_in_background. Match by --signature glob or --task-id list (or both).")
     s.add_argument("--signature", help="fnmatch glob over task signatures (e.g. 'H2Oplus/multiseed_*')")
@@ -19448,6 +19598,8 @@ def main():
     s.add_argument("--resource-log-interval", dest="resource_log_interval", type=int,
                    default=RESOURCE_LOG_INTERVAL_S,
                    help=f"Write detailed node CPU/RAM attribution to watcher.log every N seconds (default {RESOURCE_LOG_INTERVAL_S})")
+    s.add_argument("--algorithm", default="",
+                   help="Placement algorithm policy (default/env: legacy). Examples: legacy, sweetspot_v1")
     s.set_defaults(func=cmd_watch)
 
     s = sub.add_parser("status", help="Show node + task state")

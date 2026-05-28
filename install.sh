@@ -15,7 +15,9 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_SRC="$REPO_DIR/skill"
+ALGORITHM_SRC="$REPO_DIR/algorithm"
 SKILL_DST="${SCHEDULEURM_SKILL_DIR:-$HOME/.claude/skills/scheduler}"
+ALGORITHM_DST="$(dirname "$SKILL_DST")/algorithm"
 UNIT_SRC="$REPO_DIR/systemd/scheduler.service"
 UNIT_DST="$HOME/.config/systemd/user/scheduler.service"
 
@@ -80,6 +82,10 @@ else
     if [[ -d "$SKILL_SRC/tests" ]]; then
         rm -rf "$SKILL_DST/tests"
         cp -R "$SKILL_SRC/tests"        "$SKILL_DST/tests"
+    fi
+    if [[ -d "$ALGORITHM_SRC" ]]; then
+        rm -rf "$ALGORITHM_DST"
+        cp -R "$ALGORITHM_SRC"         "$ALGORITHM_DST"
     fi
     cp "$SKILL_SRC/test_hook.sh"        "$SKILL_DST/test_hook.sh"
     cp "$SKILL_SRC/integrations/scheduler_mcp.py" "$SKILL_DST/integrations/scheduler_mcp.py"

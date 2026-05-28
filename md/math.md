@@ -17,6 +17,37 @@ GPT：
 
 BAPR 已经有 piecewise-stationary regime、BOCD belief、frozen-belief contraction 这类结构；BAPR-HRO 已经有“保留候选集、在线重排序”和 per-candidate Wasserstein DRO score 的思想。你的 scheduler 问题要做成 9/10 数学，需要把这两个东西嵌入一个完整的 queueing-control 模型，而不是只做单任务候选排序。 
 
+先把口径收准：下面是一条 **8.5–9/10 数学路线 proposal + 当前 Lean proof spine**，不是无条件闭合的 throughput-optimality claim。主线不能把完整 operational iff 直接写死；应该先证明 stationary-mix / support-function capacity base、candidate-restricted robust MaxWeight drift，再在具体 stochastic arrival/service model 里证明 conditional drift domination，并由 Foster-Lyapunov drift certificate 推出 finite-small-set return。按 round2 revise，主 paper theorem 已经收束成一条：full-action support slack + fabric-cover candidate loss + lower-service estimation loss + queue-scaled penalty + bounded finite-support stochastic model \(\Rightarrow\) positive recurrence。仍必须靠 scheduleurm profiling / 实验校准的部分单独列在 `md/experimental_open_items.md`。
+
+按 round3 revise，正式论文里 capacity region 必须写成 **downward-closed service region**；positive recurrence 必须写成 **finite-set Foster recurrence certificate**，除非额外加 irreducibility / single closed communicating class 条件；learning / lower-service 部分必须写成 confidence-event certificate，而不是无条件 online-learning theorem。
+
+为了避免 round2 指出的 Lean artifact / 正文不一致，当前 theorem 名称和上传单文件里的可搜索名字单独列在：
+
+```text
+md/lean_artifact_map.md
+```
+
+其中最核心的 paper theorem 是：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+```
+
+它还有一个更强的 calibration-facing 版本：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric
+```
+
+这个版本不直接把 \(L\)-Lipschitz 和 \(\rho\)-cover 当黑箱，而是从 candidate projection certificate、feature-level service sensitivity envelope、feature coefficient domination 推出。上传 `ScheduleurmUpload.lean` 时必须确认这些名字都在单文件里可直接搜索。
+
+round3 后还新增了 bounded-second-moment 主 theorem 版本：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound
+```
+
 ---
 
 # 1. 核心数学对象：configuration stochastic processing network
@@ -365,10 +396,10 @@ BAPR-HRO 里，关键思想是：
 \Psi_t(a)
 =========
 
-## Q(t)^\top \underline{\mu}_t(a)
-
-## K(a_{t-1},a)
-
+Q(t)^\top \underline{\mu}_t(a)
+-
+K(a_{t-1},a)
+-
 R_t(a)
 ]
 
@@ -385,7 +416,7 @@ R_t(a)
 ====================
 
 \inf_{\mathbb P:
-W_1(\mathbb P,\widehat{\mathbb P}*{t,a})\leq \epsilon*{t,a}}
+W_1(\mathbb P,\widehat{\mathbb P}_{t,a})\leq \epsilon_{t,a}}
 \mathbb E_{\mathbb P}[\mu(a)]
 ]
 
@@ -395,7 +426,7 @@ W_1(\mathbb P,\widehat{\mathbb P}*{t,a})\leq \epsilon*{t,a}}
 
 [
 \inf_{\mathbb P:
-W_1(\mathbb P,\widehat{\mathbb P}*{t,a})\leq \epsilon*{t,a}}
+W_1(\mathbb P,\widehat{\mathbb P}_{t,a})\leq \epsilon_{t,a}}
 \mathbb E_{\mathbb P}
 \left[
 Q(t)^\top S(a)
@@ -406,74 +437,117 @@ Q(t)^\top S(a)
 
 ---
 
-# 6. 容量区域：这是真正的排队论核心
+# 6. 容量区域：先做 support-function capacity base
 
-如果 regime (z) 固定，并且服务率已知，则系统容量区域是：
+如果 regime \(z\) 固定，并且服务率已知，完整动作空间仍然是：
 
 [
-\Lambda_z
-=========
-
-\text{int},
-\text{conv}
-{
-\mu^z(a): a\in \mathcal A_z
-}
+\mathcal A_z^{full}
 ]
 
-含义是：只要 arrival rate
+不是为了证明方便改成一个很小的动作集合。stationary randomized policy 的服务均值集合是：
 
 [
-\lambda = (\lambda_1,\ldots,\lambda_{|\mathcal I|})
+\mathcal C_z^{full}
+=
+\operatorname{conv}
+\{
+\mu^z(a): a\in \mathcal A_z^{full}
+\}
 ]
 
-落在这个区域内部，就存在某种调度策略能稳定队列。
-
-如果 regime 随时间切换，且长期占比为 (\pi_z)，则容量区域变成：
+严格的 queueing capacity region 不是单纯的 convex hull 边界，而是这个 service set 的 downward closure：
 
 [
-\Lambda_\pi
-===========
-
-\left{
-\lambda:
-\lambda
-<
-\sum_z \pi_z
-\sum_{a\in\mathcal A_z}
-x_{z,a}\mu^z(a),
+\Lambda_z^{full}
+=
+\left\{
+\lambda\ge 0:
+\exists v\in \mathcal C_z^{full},
 \quad
-x_z\in\Delta(\mathcal A_z)
-\right}
+\lambda_i\le v_i,\ \forall i
+\right\}.
 ]
 
-这已经是一个很强的 OR / stochastic networks 数学对象。
+直观上，service 可以浪费；到达率不需要等于某个 service vector，只要被某个 stationary average service vector coordinate-wise 支配即可。Lean 里对应：
 
-如果服务率未知，还要定义 robust capacity region：
+```text
+InDownwardCapacityWithSlack
+downward_capacity_monotone
+main_downward_capacity_support_slack
+```
+
+如果存在 mixing distribution \(x\in \Delta(\mathcal A_z^{full})\) 和 slack \(\delta>0\)，使得：
 
 [
-\Lambda^{rob}_t
-===============
-
-\left{
-\lambda:
-\lambda
-<
-\sum_z b_t(z)
-\sum_a x_a
-\underline{\mu}_t^z(a)
-\right}
+\lambda_i+\delta
+\leq
+\sum_{a\in\mathcal A_z^{full}}
+x_a\mu_i^z(a),
+\quad \forall i\in\mathcal I,
 ]
 
-这表示在当前 posterior ambiguity 下，系统可保证稳定的到达率集合。
+那么对任意非负 queue vector \(q\)，有 support-function slack：
 
-9/10 的数学贡献之一就是：
+[
+q^\top \lambda
++
+\delta\|q\|_1
+\leq
+H_z^{full}(q)
+:=
+\max_{a\in\mathcal A_z^{full}}
+q^\top \mu^z(a).
+]
 
-> **刻画这个 configuration-based capacity region，并证明某类策略在该区域内 throughput-optimal。**
+这是 capacity/stability 证明的真正底座。它不是 operational stability iff；它只是把 full configuration action space 压成 support function，让 MaxWeight drift 能接上。
+
+operational 的 “队列系统可稳定当且仅当 \(\lambda\in\Lambda_z\)” 要额外补三类条件：
+
+```text
+1. concrete stochastic arrival/service model；
+2. conditional expected Lyapunov drift dominated by the deterministic drift；
+3. necessity / conservation-law：任何 stabilizing policy 的长期平均服务必须落在 capacity set 内。
+```
+
+如果 regime 随时间切换，且长期占比为 \(\pi_z\)，则 average capacity base 是：
+
+[
+\mathcal C_\pi^{full}
+=
+\left\{
+\sum_z \pi_z
+\sum_{a\in\mathcal A_z^{full}}
+x_{z,a}\mu^z(a):
+x_z\in\Delta(\mathcal A_z^{full})
+\right\}.
+]
+
+但这里也不能直接说稳定：如果只在长期 mixture 上有 slack，需要额外控制 dwell time、切换损失和 queue buildup。若要得到更稳的主 theorem，应先用 uniform-in-regime slack；average-regime stability 放成更强扩展。
+
+如果服务率未知，还要定义 robust support base：
+
+[
+H_t^{rob}(q)
+=
+\max_{a\in\mathcal A_t^{cand}}
+q^\top \underline{\mu}_t(a),
+]
+
+或者用 belief-weighted / posterior ambiguity 的 lower service。这里的数学贡献不是简单写出 \(\Lambda^{rob}_t\)，而是证明：
+
+```text
+full support slack
+→ candidate cover loses at most εcand ||q||1
+→ lower-service estimation loses at most εest ||q||1
+→ bounded / queue-scaled penalty consumes explicit slack
+→ approximate optimization oracle consumes α0 + α1 ||q||1 when exact argmax is unavailable
+→ remaining MaxWeight drift is negative.
+```
 
 ---
 
-# 7. 9/10 数学问题的主定理应该长什么样
+# 7. 主 paper theorem 应该收束成一条
 
 一个真正强的数学问题，不应该只证明：
 
@@ -481,352 +555,421 @@ x_z\in\Delta(\mathcal A_z)
 \text{score} = \text{DRO upper bound}
 ]
 
-而应该证明下面这种东西。
+而应该证明下面这条闭合链。这里的重点是：**full action space 不缩小**；\(\mathcal A^{cand}\) 只是 \(\mathcal A^{full}\) 的可计算 cover，并且 cover loss 要进入 slack accounting。
+
+论文正文最好不要把 A/B/C/D/E/F/G 都写成同等主 theorem。按 round2 的建议，主 paper theorem 应该是一条：
+
+> **Theorem 1: Robust candidate MaxWeight stability under fabric-cover approximation.**
+
+假设：
+
+```text
+1. job class 有限，full global configuration action family 有限；
+2. A_cand 是 A_full 在 finite-feature fabric metric d_Φ 下的 ρ-cover；
+3. 真实服务 μ 对 d_Φ 是 L-Lipschitz；
+4. λ 在 full-action downward-closed capacity/support region 内有 slack δ；
+5. lower-service model 的 support error 至多 ε_est ||Q||_1；
+6. switching / rollback / risk penalty ≤ P0 + β||Q||_1；
+7. solver/oracle error ≤ α0 + α1||Q||_1；exact argmax 是 α0=α1=0 的特例；
+8. arrival/service 有 bounded conditional second-order moment；Lean artifact 还给出 bounded finite-support specialization；
+9. coordinate conditional means 满足 E[A_i|Q]≤λ_i 和 lower_i(a(Q))≤E[S_i|Q]。
+```
+
+若：
+
+[
+\delta>L\rho+\epsilon_{est}+\beta+\alpha_1,
+]
+
+并且 finite backlog set \(N\) 取到足够大，使：
+
+[
+\frac12\sum_i(Amax_i^2+Smax_i^2)+P_0+\alpha_0+\alpha
+\le
+\left(\delta-(L\rho+\epsilon_{est}+\beta+\alpha_1)\right)N,
+]
+
+则得到 finite-set Foster recurrence certificate：
+
+```text
+PositiveRecurrentViaFiniteSet M.K (natQueueSmallSet N)
+```
+
+在标准 irreducibility / single closed communicating class 条件下，这个 finite-small-set certificate 才可翻译成通常意义上的 countable-state Markov chain positive recurrence。正文里不要把这个 certificate 无条件说成完整链的 positive recurrence。
+
+Lean 里这一条已经作为 paper-facing wrapper：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+```
+
+真实 scheduler 如果使用 greedy / local search / time-limited ILP，不需要假装精确 argmax；Lean 里有 approximate-oracle 版本：
+
+```text
+main_robust_candidate_maxweight_drift_approx_oracle
+main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound_approx_oracle
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle
+```
+
+如果要把 \(L\) 和 \(\rho\) 从“assumption”推进成“profiling/candidate-generator certificate”，Lean 里对应：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric
+```
+
+如果 feasible family 随 queue state、available jobs 或 regime 改变，cover 不能只写固定 \(\mathcal A^{full}\)。非实验性 theorem 已经支持 indexed/statewise 版本：
+
+```text
+indexed_calibrated_fabric_cover_support_gap
+indexed_calibrated_fabric_cover_support_gap_uniform
+```
+
+主 theorem 可以先用 fixed feasible family；动态 feasibility 版本需要给出对每个 state/regime index 都成立的 uniform cover certificate。
+
+下面的 Theorem A-D 是这条主 theorem 的 proof decomposition，不是四个彼此抢主线的贡献；Theorem E-G 是 extension。
 
 ---
 
-## Theorem A：configuration capacity region characterization
+## Theorem A：stationary-mix / support-function capacity base
 
-给定有限 configuration action set (\mathcal A)，固定 regime (z)，队列系统可稳定当且仅当：
-
-[
-\lambda \in \Lambda_z
-]
-
-其中：
+给定完整 global configuration action set \(\mathcal A_z^{full}\)，固定 regime \(z\)。如果存在 stationary mix \(x\in\Delta(\mathcal A_z^{full})\) 和 slack \(\delta>0\)，使得：
 
 [
-\Lambda_z
-=========
-
-\text{int conv}{\mu^z(a):a\in\mathcal A_z}
+\lambda_i+\delta
+\leq
+\sum_{a\in\mathcal A_z^{full}}x_a\mu_i^z(a),
+\quad \forall i,
 ]
 
-这个定理把所有 CPU/GPU/多卡/共驻问题压缩成一个 capacity-region 问题。
+那么对任意非负 queue vector \(q\)，有：
 
-它的价值是：
+[
+q^\top\lambda+\delta\|q\|_1
+\leq
+\max_{a\in\mathcal A_z^{full}}
+q^\top\mu^z(a).
+]
 
-> 不管任务形态多复杂，只要能表示成 configuration action，就可以统一分析稳定性。
+这个 theorem 才是 capacity-to-MaxWeight 的数学底座。operational stability iff 不是在这里无条件宣称；它要接 concrete stochastic model、drift domination 和 necessity conservation law。Lean 里对应的是 `capacity_slack_implies_support_slack`，而不是把 “stable iff \(\lambda\in\Lambda_z\)” 写成定义同义反复。
 
 ---
 
-## Theorem B：robust MaxWeight throughput optimality
+## Theorem B：finite-feature fabric cover 的 candidate-set capacity approximation
+
+定义 finite-feature fabric/interference metric：
+
+[
+d_\Phi(a,a')
+=
+\sum_{r\in\mathcal D}
+w_r|\Phi_r(a)-\Phi_r(a')|.
+]
+
+\(\Phi_r(a)\) 可以编码 placement、GPU co-location profile、NUMA / PCIe / NVLink path、memory pressure、network path class、rollback/preemption attribute 等 scheduler 可观察结构。
+
+如果：
+
+```text
+A_cand 是 A_full 在 d_Φ 下的 ρ-cover；
+真实服务 μ 对 d_Φ 是 L-Lipschitz；
+```
+
+则对任意非负 queue vector \(q\)：
+
+[
+H^{full}(q)
+\leq
+H^{cand}(q)+L\rho\|q\|_1.
+]
+
+normalized support-function capacity distance 也满足：
+
+[
+\sup_{\|q\|_1\leq 1,q\geq0}
+\left(H^{full}(q)-H^{cand}(q)\right)
+\leq
+L\rho.
+]
+
+此外，不依赖 compact-convex support/Hausdorff duality，也可以直接证明一个构造性的 capacity-set coordinate-Hausdorff 版本：把 full action 的 stationary mix 通过 cover map \(a\mapsto \pi(a)\in\mathcal A^{cand}\) push forward 到 candidate mix，得到：
+
+[
+\forall v\in\Lambda^{full},\exists w\in\Lambda^{cand},
+\quad
+\|v-w\|_{\infty,\mathrm{coord}}
+\leq L\rho,
+]
+
+反向因为 \(\mathcal A^{cand}\subseteq \mathcal A^{full}\) 是零误差。Lean 里对应：
+
+```text
+main_candidate_restricted_capacity_coordinate_hausdorff
+```
+
+如果论文确实要写 ambient metric Hausdorff \(d_H\)，那一版仍然需要 compact convex support-function duality assumption：
+
+[
+d_H(\Lambda^{full},\Lambda^{cand})\leq L\rho.
+]
+
+这不是缩小动作空间；相反，它证明了 full action space 可以通过可计算候选 cover 近似，而 capacity slack 损失被显式记账。\(L\) 和 \(\rho\) 的数值仍需要由 profiling / perturbation experiment 校准。
+
+round2 里指出 \(d_\Phi,L,\rho\) 不能是 free assumption；Lean 现在有一个 certificate layer：
+
+```text
+FabricCandidateProjection.covers
+fabric_service_lipschitz_of_feature_sensitivity
+calibrated_fabric_cover_support_gap
+main_candidate_restricted_capacity_approximation_from_calibration
+```
+
+也就是说，实验仍要给出 feature sensitivity coefficients 和 candidate projection，但一旦这些 finite certificates 成立，support loss \(L\rho\) 就不是口头假设，而是 Lean theorem 的结论。
+
+---
+
+## Theorem C：robust candidate MaxWeight drift with slack accounting
 
 定义 robust configuration policy：
 
 [
 a_t
 \in
-\arg\max_{a\in\mathcal A}
-\left{
-Q(t)^\top \underline{\mu}_t(a)
-------------------------------
-
-## K(a_{t-1},a)
-
-R_t(a)
-\right}
-]
-
-如果真实 arrival rate 满足：
-
-[
-\lambda \in \Lambda^{rob}(\delta)
-]
-
-也就是在 robust capacity region 内部有 slack (\delta>0)，那么队列过程 (Q(t)) positive recurrent，并且存在 Lyapunov drift：
-
-[
-\mathbb E[
-V(Q(t+1))-V(Q(t))
-\mid Q(t)
-]
-\leq
-B
+\arg\max_{a\in\mathcal A^{cand}}
+\{
+Q(t)^\top\underline{\mu}_t(a)
 -
-
-\epsilon \sum_i Q_i(t)
+K(a_{t-1},a)
+-
+R_t(a)
+\}.
 ]
 
-其中：
+如果 full action capacity 有 slack \(\delta\)，candidate cover 损失为 \(\epsilon_{cand}\)，lower-service estimation 损失为 \(\epsilon_{est}\)，且 penalty 满足：
 
 [
-V(Q)=\frac12 \sum_i Q_i^2
+0\leq K+R_t
+\leq
+P_0+\beta\|Q(t)\|_1,
 ]
 
-这就是标准 MaxWeight 风格，但这里的难点是：
+那么只要：
 
-```text
-服务率状态相关
-configuration action 非加性
-存在共驻干扰
-存在鲁棒 posterior lower bound
-存在切换成本
-```
+[
+\delta>\epsilon_{cand}+\epsilon_{est}+\beta,
+]
 
-把这些都放进去并证明稳定性，就已经是很强的数学贡献。
+就有 deterministic MaxWeight drift：
+
+[
+V([Q-\underline{\mu}(a_t)]^+ + \lambda)-V(Q)
+\leq
+B+P_0
+-
+\left(\delta-\epsilon_{cand}-\epsilon_{est}-\beta\right)\|Q\|_1.
+]
+
+如果用 Theorem B 的 fabric cover，则 \(\epsilon_{cand}=L\rho\)。这条是主 theorem 的核心：切换、风险、candidate approximation、服务估计误差都不能藏起来，必须逐项消耗 slack。
 
 ---
 
-## Theorem C：piecewise-stationary hidden-regime stability
+## Theorem D：concrete finite-support stochastic stability
 
-引入 BAPR 的 hidden regime belief：
+选定一个具体 stochastic arrival/service model。令 \(\omega\in\Omega\) 是有限样本空间，每步：
 
 [
-b_t(h,z)
+Q_i(t+1)
+=
+\left[Q_i(t)-S_i(Q(t),\omega_t)\right]^+
++
+A_i(Q(t),\omega_t).
 ]
 
 假设：
 
 ```text
-regime 可分离
-change-point 检测延迟为 O(log(1/δ))
-每段 stationary segment 足够长
-服务率估计误差可控
+prob(Q,ω) ≥ 0 且 Σ_ω prob(Q,ω)=1；
+bounded conditional second-order moment：E[1/2 Σ_i(A_i^2+S_i^2)|Q]≤B；
+可选的 finite-support specialization：A_i(Q,ω)≤Amax_i, S_i(Q,ω)≤Smax_i；
+coordinate conditional arrival mean：E[A_i|Q]≤λ_i；
+coordinate conditional selected service mean：lower_i(a(Q))≤E[S_i|Q]；
+full action capacity slack + fabric cover + robust candidate MaxWeight 条件成立。
 ```
 
-则可证明：
+在一般 queueing 表述里，二阶项可以直接作为 bounded conditional moment \(B\)。在 Lean 的 finite-support specialization 里，二阶漂移常数还可以由 bounded samples 构造性推出：
 
 [
-\text{queue instability cost}
+\mathbb E\left[
+\frac12\sum_i(A_i^2+S_i^2)
+\mid Q
+\right]
 \leq
-O\left(
-\sum_{k=1}^{N_{cp}}
-\tau_{\text{detect},k}
-\cdot |Q(\tau_k)|
-+
-\text{estimation error}
-\right)
+\frac12\sum_i(Amax_i^2+Smax_i^2).
 ]
 
-更强一点：
+再结合 Theorem C，得到：
 
-如果每段长度 (L_k) 足够大，且 arrival rate 在每个 segment 的 robust capacity region 内有统一 slack，则系统在 piecewise-stationary regime 下仍然稳定。
+[
+\mathbb E[
+V(Q(t+1))-V(Q(t))
+\mid Q(t)=Q
+]
+\leq
+B+P_0
+-
+\eta\|Q\|_1,
+]
 
-这就是把 BAPR 从单-agent non-stationary RL 推到 queueing network。
+其中：
+
+[
+\eta
+=
+\delta-(L\rho+\epsilon_{est}+\beta)>0.
+]
+
+Foster-Lyapunov 推出 hitting finite backlog set；local return 也可以由同一个 drift certificate 在一步之后的 hitting-time bound 推出。因此不需要把 `drift_dominated` 或 finite-small-set return 永久留成黑箱。Lean 里对应的 paper-facing 主 theorem 是：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+```
+
+它有两个口径：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound
+main_concrete_fabric_cover_robust_candidate_stochastic_stability_from_bounded_samples'
+```
+
+如果 lower service 来自 learning / posterior / BAPR belief，它不能在正文里被写成无条件 truth；必须写成 confidence event 上的 deterministic certificate。Lean 里现在有 generic lifting：
+
+```text
+main_high_probability_stability_from_certificate_event
+```
+
+也就是说：sampler-specific 部分要证明 lower-service domination event；一旦该 event 成立，稳定性 certificate 的概率提升是 Lean theorem。
+
+operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。守恒律方向只能推出 zero-slack capacity closure：若 operationally stable 的模型给出长期 action occupation measure，并且平均服务支配平均到达，则
+
+[
+\lambda \in \overline{\Lambda}^{full}.
+]
+
+Lean 里对应：
+
+```text
+main_operational_conservation_law_necessity
+main_operational_capacity_sandwich
+```
 
 ---
 
-## Theorem D：unknown service learning + queue stability
+## Theorem E：hidden regime 必须分成两版
 
-服务率 (\mu^z(a)) 一开始未知，只能通过运行 configuration (a) 观察到 noisy service：
+hidden regime 不能混着说。应该分成：
+
+```text
+uniform-in-regime stability：
+  每个 regime z 都有 slack δ_z，并且 inf_z δ_z 足够大。
+
+average-regime stability：
+  只有长期 mixture Σ_z π_z C_z 有 slack。
+```
+
+uniform-in-regime 版本可以直接接 robust drift，只要 detection / estimation error 不吞掉统一 slack。average-regime 版本更强，但需要额外证明 dwell time、switching process、queue buildup 和 change-point delay 的累计影响：
 
 [
-Y_t(a)=S(a,Z_t)+\xi_t
+\sum_k
+\tau_{\text{detect},k}\|Q(\tau_k)\|
++
+\text{estimation loss}
++
+\text{switching loss}.
 ]
 
-定义 posterior / confidence radius：
+这部分不能作为主 theorem 偷偷并进 Theorem D；它应作为 hidden-regime extension。现在已经证明一个有限时域 dwell/switching 版本：若每个 segment 内 detection/switching 标记窗口的 backlog mass 至多是该 segment 总 backlog mass 的 \(\theta\) 倍，再加固定 residual，则 marked-window overhead 只会把 drift margin 从 \(m\) 降到 \(m-\chi\theta\)。Lean 里对应：
+
+```text
+main_hidden_regime_dwell_switching_drift
+```
+
+---
+
+## Theorem F：structured learning，不用 \(|\mathcal A|\) regret
+
+全局 action set \(\mathcal A^{full}\) 是组合对象，直接写：
 
 [
-\epsilon_{t,a,z}
-\asymp
-\sqrt{\frac{\log T}{N_t(a,z)}}
+\tilde O(\sqrt{|\mathcal A||\mathcal Z|T})
 ]
 
-然后使用 robust lower confidence service：
+容易 vacuous。应该用 structured bucket / semi-bandit / factorized feedback：
 
 [
-\underline{\mu}_{t}^z(a)
-========================
-
-## \widehat{\mu}_t^z(a)
-
-\epsilon_{t,a,z}
+\mathcal B_{active}
+=
+\{
+\text{fabric neighborhood bucket},
+\text{co-location profile},
+\text{resource-path factor},
+\text{job-class service bucket}
+\}.
 ]
 
-目标是证明两件事同时成立：
-
-1. **stability**：只要 (\lambda) 在真实 capacity region 内有足够 slack，队列稳定；
-2. **learning regret**：相对知道真实 (\mu) 的 oracle，损失是次线性的。
-
-例如：
+在 confidence event 上，regret 应写成：
 
 [
-\text{Regret}(T)
-================
-
 \tilde O
 \left(
 \sqrt{
-|\mathcal A|
-|\mathcal Z|
-T
+|\mathcal B_{active}|T
 }
 +
 N_{cp}\log T
 +
 \text{switching cost}
-\right)
+\right).
 ]
 
-这比单纯做 RL scheduler 高很多，因为它结合了：
+这样仍然保留 full action space；学习复杂度来自实际被观测和更新的结构化因子，而不是枚举所有 global packings。
+
+Lean 里对应的 active-bucket event 已经不是全体 bucket 的 union bound，而是显式依赖 `active.card`，并且有从 high-probability input event 到 high-probability regret event 的提升：
 
 ```text
-queue stability
-unknown service rates
-hidden regime
-configuration actions
-non-stationarity
+main_active_bucket_lcb_learning_regret
+main_active_bucket_lcb_learning_regret_high_probability
 ```
 
 ---
 
-## Theorem E：candidate-set structural robustness
+## Theorem G：sweet spot / admission threshold 是 extension + experiment-driven theorem
 
-这是从 BAPR-HRO 里最应该抽象出来的数学定理。
-
-BAPR-HRO 的核心 insight 是：
-
-> 候选集合结构通常是对的，错的是排序。
-
-在 scheduler 里，对应：
-
-> 候选 configuration set 不必包含所有可能配置，只要它是 full configuration space 的一个好 cover。
-
-定义完整 feasible action set：
+你强调的 “每张 GPU 放几个任务的 sweet spot” 很重要，但它需要吞吐曲线或结构假设支撑。单 GPU 可以设：
 
 [
-\mathcal A^{full}
+g_z(n)=\text{同一 GPU 上 }n\text{ 个任务的总 goodput}.
 ]
 
-实际维护的候选 action set：
-
-[
-\mathcal A^{cand}
-\subseteq
-\mathcal A^{full}
-]
-
-定义一个 topology/interference metric：
-
-[
-d(a,a')
-]
-
-如果对任意 full action (a)，存在 candidate action (\tilde a)，满足：
-
-[
-d(a,\tilde a)\leq \varepsilon
-]
-
-并且服务率对这个 metric Lipschitz：
-
-[
-|\mu^z(a)-\mu^z(\tilde a)|
-\leq
-L\varepsilon
-]
-
-那么可证明：
-
-[
-d_H(
-\Lambda_z^{full},
-\Lambda_z^{cand}
-)
-\leq
-L\varepsilon
-]
-
-其中 (d_H) 是 Hausdorff distance。
-
-这就是一个非常强的“keep-and-rerank”数学化版本：
-
-> 只要候选 configuration hypergraph 覆盖得足够好，限制在候选集上重排序只损失 (O(\varepsilon)) 的 capacity。
-
-这个定理会让 BAPR-HRO 的思想从“经验上重排序有用”变成“候选集近似 capacity region”。
-
----
-
-## Theorem F：sweet spot / admission threshold
-
-你一直强调的“每张卡放几个任务的 sweet spot”可以做成正式 theorem。
-
-考虑单个共享资源，例如一张 GPU。令：
-
-[
-g_z(n)
-]
-
-表示在 regime (z) 下，同一张 GPU 上同时跑 (n) 个任务时的总服务率。
-
-典型形状是：
-
-[
-g_z(1)<g_z(2)<g_z(3)<g_z(4)
-]
-
-但：
-
-[
-g_z(5)<g_z(4)
-]
-
-也就是总吞吐先升后降。
-
-假设 (g_z(n)) 是 unimodal，即存在：
-
-[
-n_z^*
-=====
-
-\arg\max_n g_z(n)
-]
-
-则可以证明最优 admission limit 是 threshold 型：
+若 profiling 证明 \(g_z(n)\) unimodal，则最优 admission limit 是 threshold 型：
 
 [
 \text{allow new job}
 \iff
-n<n_z^*
+n<n_z^*.
 ]
 
-更一般地，如果不同任务类型有 mixture (m)，则：
+多类型任务时，用 set function：
 
 [
-g_z(m)
+g_z(S)
 ]
 
-是 set function。如果它满足 submodularity / diminishing returns：
+若 profiling / model 支持 submodularity 或 diminishing returns，则 admission 由 marginal goodput 决定：
 
 [
-g_z(S\cup{j})-g_z(S)
-\geq
-g_z(T\cup{j})-g_z(T)
-\quad
-S\subseteq T
+Q_j\Delta_j(S) > \text{switching/rollback risk}.
 ]
 
-则可以得到：
-
-```text
-边际收益递减
-greedy admission 有近似保证
-第 k+1 个任务是否进入由 marginal goodput 决定
-```
-
-形式上：
-
-[
-\Delta_j(S)
-===========
-
-g_z(S\cup{j})-g_z(S)
-]
-
-准入规则是：
-
-[
-\Delta_j(S)>0
-]
-
-或者带 holding cost：
-
-[
-Q_j \Delta_j(S) > \text{switching/rollback risk}
-]
-
-这就是把“sweet spot”从工程经验变成数学结构。
+这条应放 extension 或 experiment-driven theorem。它不是三大主 theorem 的替代品，但可以提供非常强的 operational insight。
 
 ---
 
@@ -834,15 +977,13 @@ Q_j \Delta_j(S) > \text{switching/rollback risk}
 
 我会把论文级数学问题写成：
 
-> **A Bayesian robust stochastic processing network with configuration actions: characterize the capacity region and design a belief-robust, candidate-restricted control policy that remains stable and near-optimal under hidden piecewise-stationary service regimes and unknown co-location interference.**
+> **A configuration-action stochastic processing network for heterogeneous compute fabrics: prove support-function capacity approximation for full-action fabric covers, robust candidate MaxWeight drift with explicit slack accounting, and positive recurrence for a concrete bounded finite-support arrival/service model; then extend to hidden regimes, structured learning, and admission sweet spots.**
 
 中文就是：
 
-> **带 configuration action 的贝叶斯鲁棒随机处理网络：刻画其容量区域，并证明在隐藏分段平稳服务状态与未知共驻干扰下，基于候选集重排序的鲁棒控制策略仍然稳定且近似最优。**
+> **面向异构 compute fabric 的 configuration-action stochastic processing network：在 full action space 上证明 fabric-cover 的 support-capacity approximation、带显式 slack 记账的 robust candidate MaxWeight drift，以及 bounded finite-support 到达/服务模型下的 positive recurrence；hidden regime、structured learning 和 sweet spot 作为扩展层继续证明或实验校准。**
 
-这个比“多场景模式识别”强很多。
-
-模式识别只是：
+这个比“多场景模式识别”强很多。模式识别只是：
 
 [
 \mathcal F_t \rightarrow b_t(z)
@@ -851,19 +992,19 @@ Q_j \Delta_j(S) > \text{switching/rollback risk}
 真正的数学问题是：
 
 [
-(Q_t,b_t,\mathcal A)
+(Q_t,b_t,\mathcal A^{full},\mathcal A^{cand},\Phi)
 \rightarrow
-a_t
+a_t.
 ]
 
-并且要证明：
+要证明的主链是：
 
 ```text
-capacity region
-stability
-regret
-approximation loss
-threshold structure
+stationary-mix support slack
+→ finite-feature fabric cover support loss
+→ robust candidate MaxWeight drift
+→ concrete stochastic drift domination
+→ Foster positive recurrence
 ```
 
 ---
@@ -878,11 +1019,11 @@ threshold structure
 score(c)
 ========
 
-## \widehat{\mu}(c)
-
-## \beta\sigma(c)
-
-risk(c)
+\widehat{\mu}(c)
+-
+\beta\sigma(c)
+-
+\text{risk}(c)
 ]
 
 然后证明：
@@ -915,34 +1056,30 @@ A_i(t)
 
 [
 a_t
-\in
-\arg\max_{a\in\mathcal A}
+\text{approximately maximizes over }a\in\mathcal A^{cand}
+\{
 Q(t)^\top \underline{\mu}_t(a)
-------------------------------
-
-## K(a_{t-1},a)
-
+-
+K(a_{t-1},a)
+-
 R_t(a)
+\}
 ]
 
 并证明：
 
 [
-\lambda \in \Lambda^{rob}
+\delta > L\rho+\epsilon_{est}+\beta+\alpha_1
 \Rightarrow
-{Q(t)}
-\text{ stable}
+\text{finite-set Foster recurrence certificate under a concrete bounded stochastic model}
 ]
 
 同时证明：
 
 [
-d_H(
-\Lambda^{full},
-\Lambda^{cand}
-)
+H^{full}(q)-H^{cand}(q)
 \leq
-O(\varepsilon)
+L\rho\|q\|_1
 ]
 
 以及：
@@ -956,47 +1093,69 @@ O(\varepsilon)
 O(N_{cp}\log T)
 ]
 
-这才是 OR/排队论意义上的强数学问题。
+其中 regret 的 \(\sqrt{T}\) 不能来自枚举 \(|\mathcal A|\)，而要来自 structured active buckets / semi-bandit factors。这才是 OR/排队论意义上的强数学问题。
 
 ---
 
-# 10. 我会建议主问题只选三个 theorem 做核心
+# 10. 主论文只保留三条贡献
 
-不要贪多。真正可以构成一篇强数学论文的主线是：
+不要贪多。真正可以构成一篇强数学论文的主贡献应该是：
 
-1. **Configuration capacity region theorem**
+1. **Global configuration-action SPN model for heterogeneous compute fabrics**
 
-[
-\Lambda
-=======
+一个 action 同时编码 malleable jobs、shareable jobs、gang scheduling、GPU co-location、NUMA / PCIe / NVLink / network placement。这是模型贡献，但不要把 “capacity region 是 convex hull” 当主要创新；那只是 SPN 底座。
 
-\text{conv}{\mu(a):a\in\mathcal A}
-]
-
-2. **Belief-robust MaxWeight stability theorem**
+2. **Candidate fabric-cover approximation theorem**
 
 [
-\lambda\in\Lambda^{rob}(\delta)
-\Rightarrow
-\text{positive recurrence}
-]
-
-3. **Candidate-set approximation theorem**
-
-[
-d_H(\Lambda^{full},\Lambda^{cand})
+q^\top\lambda+\delta\|q\|_1
 \leq
-L\varepsilon
+H^{full}(q),
+\quad
+H^{full}(q)
+\leq
+H^{cand}(q)+L\rho\|q\|_1.
 ]
 
-这三个如果做扎实，就已经比单纯 BAPR-HRO 的 per-candidate DRO scoring 深很多。
+这条是最像原创 OR 数学贡献的部分：它把 BAPR-HRO 的 “keep candidate structure, re-rank candidates” 提升为 support/capacity geometry theorem。
+
+3. **Robust candidate MaxWeight stability theorem**
+
+[
+\delta
+>
+L\rho+\epsilon_{est}+\beta
+\Rightarrow
+\Delta V(Q)
+\leq
+B+P_0-\eta\|Q\|_1.
+]
+
+并接上 concrete stochastic positive recurrence：
+
+[
+\text{bounded finite-support arrival/service}
++
+\text{coordinate moment bounds}
++
+\text{Foster drift}
+\Rightarrow
+\text{positive recurrence via finite backlog set}.
+]
+
+这三条如果做扎实，就已经比单纯 BAPR-HRO 的 per-candidate DRO scoring 深很多，而且没有把 full action space 缩小掉。Lean 中对应的单条主 theorem 是：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+```
 
 然后再作为附加结果给出：
 
 ```text
-piecewise-stationary regret
-sweet-spot threshold
-unknown-service learning bound
+uniform hidden-regime stability and dwell/switching budget
+average-regime stability as a stronger extension, not the main claim
+structured active-bucket learning regret as extension
+sweet-spot threshold with profiling support
 ```
 
 ---
@@ -1057,7 +1216,11 @@ a_t
 \Lambda
 =======
 
-\text{conv}{\mu^z(a):a\in\mathcal A}
+\left\{
+\lambda\ge0:
+\exists v\in\operatorname{conv}{\mu^z(a):a\in\mathcal A},
+\lambda\le v
+\right\}
 }
 ]
 

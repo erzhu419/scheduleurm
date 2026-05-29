@@ -27,13 +27,19 @@ BAPR 已经有 piecewise-stationary regime、BOCD belief、frozen-belief contrac
 md/lean_artifact_map.md
 ```
 
-其中最核心的 paper theorem 是：
+其中最核心的 exact-oracle paper theorem 是：
 
 ```text
 main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
 ```
 
-它还有一个更强的 calibration-facing 版本：
+现实 scheduler 一般是 greedy / local-search / time-limited solver，reviewer-facing 主 theorem 应优先引用 approximate-oracle 版本：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle
+```
+
+exact-oracle theorem 是 \(\alpha_0=\alpha_1=0\) 的干净特例。它还有一个 calibration-facing exact 版本：
 
 ```text
 main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric
@@ -46,6 +52,8 @@ round3 后还新增了 bounded-second-moment 主 theorem 版本：
 ```text
 main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound
 main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound
+main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound_approx_oracle
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
 ```
 
 ---
@@ -597,18 +605,19 @@ PositiveRecurrentViaFiniteSet M.K (natQueueSmallSet N)
 
 在标准 irreducibility / single closed communicating class 条件下，这个 finite-small-set certificate 才可翻译成通常意义上的 countable-state Markov chain positive recurrence。正文里不要把这个 certificate 无条件说成完整链的 positive recurrence。
 
-Lean 里这一条已经作为 paper-facing wrapper：
+Lean 里的 exact-oracle wrapper 是：
 
 ```text
 main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
 ```
 
-真实 scheduler 如果使用 greedy / local search / time-limited ILP，不需要假装精确 argmax；Lean 里有 approximate-oracle 版本：
+真实 scheduler 如果使用 greedy / local search / time-limited ILP，不需要假装精确 argmax；论文主 theorem 应引用 approximate-oracle 版本：
 
 ```text
 main_robust_candidate_maxweight_drift_approx_oracle
 main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound_approx_oracle
 main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
 ```
 
 如果要把 \(L\) 和 \(\rho\) 从“assumption”推进成“profiling/candidate-generator certificate”，Lean 里对应：
@@ -625,6 +634,11 @@ indexed_calibrated_fabric_cover_support_gap_uniform
 ```
 
 主 theorem 可以先用 fixed feasible family；动态 feasibility 版本需要给出对每个 state/regime index 都成立的 uniform cover certificate。
+Lean 现在已有 statewise end-to-end approximate-oracle wrapper：
+
+```text
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
+```
 
 下面的 Theorem A-D 是这条主 theorem 的 proof decomposition，不是四个彼此抢主线的贡献；Theorem E-G 是 extension。
 
@@ -752,7 +766,7 @@ R_t(a)
 P_0+\beta\|Q(t)\|_1,
 ]
 
-那么只要：
+若 exact argmax 成立，那么只要：
 
 [
 \delta>\epsilon_{cand}+\epsilon_{est}+\beta,
@@ -766,6 +780,28 @@ V([Q-\underline{\mu}(a_t)]^+ + \lambda)-V(Q)
 B+P_0
 -
 \left(\delta-\epsilon_{cand}-\epsilon_{est}-\beta\right)\|Q\|_1.
+]
+
+若用 approximate oracle：
+
+[
+\text{candidate optimum}-\text{chosen score}
+\leq
+\alpha_0+\alpha_1\|Q\|_1,
+]
+
+则条件和 drift 常数变为：
+
+[
+\delta>\epsilon_{cand}+\epsilon_{est}+\beta+\alpha_1,
+]
+
+[
+V([Q-\underline{\mu}(a_t)]^+ + \lambda)-V(Q)
+\leq
+B+P_0+\alpha_0
+-
+\left(\delta-\epsilon_{cand}-\epsilon_{est}-\beta-\alpha_1\right)\|Q\|_1.
 ]
 
 如果用 Theorem B 的 fabric cover，则 \(\epsilon_{cand}=L\rho\)。这条是主 theorem 的核心：切换、风险、candidate approximation、服务估计误差都不能藏起来，必须逐项消耗 slack。
@@ -814,7 +850,7 @@ V(Q(t+1))-V(Q(t))
 \mid Q(t)=Q
 ]
 \leq
-B+P_0
+B+P_0+\alpha_0
 -
 \eta\|Q\|_1,
 ]
@@ -824,13 +860,14 @@ B+P_0
 [
 \eta
 =
-\delta-(L\rho+\epsilon_{est}+\beta)>0.
+\delta-(L\rho+\epsilon_{est}+\beta+\alpha_1)>0.
 ]
 
 Foster-Lyapunov 推出 hitting finite backlog set；local return 也可以由同一个 drift certificate 在一步之后的 hitting-time bound 推出。因此不需要把 `drift_dominated` 或 finite-small-set return 永久留成黑箱。Lean 里对应的 paper-facing 主 theorem 是：
 
 ```text
-main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
 ```
 
 它有两个口径：
@@ -848,7 +885,21 @@ main_high_probability_stability_from_certificate_event
 
 也就是说：sampler-specific 部分要证明 lower-service domination event；一旦该 event 成立，稳定性 certificate 的概率提升是 Lean theorem。
 
-operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。守恒律方向只能推出 zero-slack capacity closure：若 operationally stable 的模型给出长期 action occupation measure，并且平均服务支配平均到达，则
+operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。Operational stabilizability 也不能只是“存在某个稳定 Markov model”；Lean 里已经把它改成 load-certified finite-support arrival/service model：
+
+```text
+ModelEncodesLoad
+LoadCertifiedNatQueueModel
+OperationallyStabilizesIntegerLoad
+```
+
+也就是说，稳定模型必须显式携带一个具体 finite-support arrival/service model，证明该模型诱导同一个 transition kernel，并且逐状态满足：
+
+[
+\mathbb E[A_i\mid Q]=\lambda_i.
+]
+
+上面 Theorem D 的 \(E[A_i\mid Q]\leq\lambda_i\) 是 drift upper-envelope 条件；如果正文要把结论说成“这个 arrival rate \(\lambda\) 被 operationally stabilized”，则 load certificate 用的是等式版 mean-arrival accounting，而不是任意更小到达过程。守恒律方向只能推出 zero-slack capacity closure：若 operationally stable 的 load-certified model 给出长期 action occupation measure，并且平均服务支配平均到达，则
 
 [
 \lambda \in \overline{\Lambda}^{full}.
@@ -1124,11 +1175,11 @@ H^{cand}(q)+L\rho\|q\|_1.
 [
 \delta
 >
-L\rho+\epsilon_{est}+\beta
+L\rho+\epsilon_{est}+\beta+\alpha_1
 \Rightarrow
 \Delta V(Q)
 \leq
-B+P_0-\eta\|Q\|_1.
+B+P_0+\alpha_0-\eta\|Q\|_1.
 ]
 
 并接上 concrete stochastic positive recurrence：
@@ -1143,10 +1194,17 @@ B+P_0-\eta\|Q\|_1.
 \text{positive recurrence via finite backlog set}.
 ]
 
-这三条如果做扎实，就已经比单纯 BAPR-HRO 的 per-candidate DRO scoring 深很多，而且没有把 full action space 缩小掉。Lean 中对应的单条主 theorem 是：
+这三条如果做扎实，就已经比单纯 BAPR-HRO 的 per-candidate DRO scoring 深很多，而且没有把 full action space 缩小掉。Lean 中对应的 fixed-family exact theorem 是：
 
 ```text
 main_theorem_robust_candidate_maxweight_stability_under_fabric_cover
+```
+
+现实 scheduler / reviewer-facing 版本应引用：
+
+```text
+main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
 ```
 
 然后再作为附加结果给出：

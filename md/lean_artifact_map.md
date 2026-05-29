@@ -24,8 +24,18 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 | One-statement paper theorem from calibrated projection and feature-sensitivity certificates | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric` |
 | Calibrated one-statement theorem with bounded conditional second-order moment | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound` |
 | Calibrated one-statement theorem with bounded conditional second-order moment and approximate oracle | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle` |
+| Statewise/dynamic feasible-family calibrated theorem with bounded second moment and approximate oracle | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle` |
 | Zero-slack operational necessity from a conservation law | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_operational_conservation_law_necessity` |
 | Operational capacity sandwich: positive slack sufficiency plus zero-slack necessity | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_operational_capacity_sandwich` |
+
+## Operational load binding internals
+
+| Obligation | Split Lean source | Searchable theorem/name |
+|---|---|---|
+| A concrete finite-support arrival/service model explicitly encodes the offered load vector and induces the same transition kernel | `/home/erzhu419/mine_code/proof/Scheduleurm/OperationalCapacity.lean` | `ModelEncodesLoad` |
+| Constructor tying a finite-support model's exact conditional mean arrivals to `lam` | `/home/erzhu419/mine_code/proof/Scheduleurm/OperationalCapacity.lean` | `finite_support_model_encodes_load` |
+| Operational stabilizability uses a model bundled with its load certificate | `/home/erzhu419/mine_code/proof/Scheduleurm/OperationalCapacity.lean` | `LoadCertifiedNatQueueModel` |
+| Load-certified operational stabilizability predicate | `/home/erzhu419/mine_code/proof/Scheduleurm/OperationalCapacity.lean` | `OperationallyStabilizesIntegerLoad` |
 
 ## Extension theorem spine
 

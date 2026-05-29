@@ -1,3 +1,9 @@
+> Status: historical GPT planning note. This file is kept for provenance only.
+> The current reviewer-facing route is `math.md` + `lean_artifact_map.md` +
+> `experimental_open_items.md`; do not use this file as the canonical theorem
+> statement because it predates the exact/approx-oracle split, load-certified
+> operational semantics, and statewise feasible-family theorem.
+
 我会这样判断：
 
 > **如果目标是 OR / 排队论方向，下一步应该以“证明问题”为主，但要先做一个很小的实验来验证数学假设不是空想。**
@@ -115,9 +121,8 @@ a_t
 \arg\max_{a\in \mathcal A^{cand}}
 \left{
 Q(t)^\top \underline{\mu}_t(a)
-------------------------------
-
-## K(a_{t-1},a)
+-
+K(a_{t-1},a)
 
 R_t(a)
 \right}
@@ -337,9 +342,8 @@ Q(t)^\top \mu(a_t)
 \geq
 \max_{a\in\mathcal A^{full}}
 Q(t)^\top \mu(a)
-----------------
-
-## \varepsilon |Q(t)|_1
+-
+\varepsilon |Q(t)|_1
 
 C
 ]

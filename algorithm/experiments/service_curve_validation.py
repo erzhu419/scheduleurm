@@ -153,6 +153,20 @@ def _wait_for_profile_progress(
         time.sleep(max(1, int(poll_s)))
 
 
+def select_measurement_summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
+    if not samples:
+        return {}
+    selected = None
+    for summary in samples:
+        if int(summary.get("running_with_rate_count") or 0) > 0:
+            selected = dict(summary)
+    if selected is None:
+        return dict(samples[-1])
+    selected["summary_selection"] = "last_running_rate_sample"
+    selected["terminal_status_counts"] = samples[-1].get("status_counts") or {}
+    return selected
+
+
 def _measure_profile(
     *,
     phase: str,
@@ -164,7 +178,7 @@ def _measure_profile(
     raw_dir = run_dir / "raw"
     end = time.time() + max(0, int(measure_s))
     sample_idx = 0
-    last_summary: dict[str, Any] = {}
+    sample_summaries: list[dict[str, Any]] = []
     while True:
         sample_idx += 1
         _status_refresh(raw_dir, f"{phase}_measure_status_{sample_idx:03d}")
@@ -176,6 +190,7 @@ def _measure_profile(
             ids=ids,
             sample_idx=sample_idx,
         )
+        sample_summaries.append(dict(last_summary))
         _record_event(
             run_dir,
             "service_curve_measure",
@@ -185,7 +200,7 @@ def _measure_profile(
             summary=last_summary,
         )
         if time.time() >= end:
-            final_summary = _summarize_phase(phase, tasks)
+            final_summary = select_measurement_summary(sample_summaries) or _summarize_phase(phase, tasks)
             _write_json(run_dir / "reports" / f"{phase}_summary.json", final_summary)
             return final_summary
         time.sleep(min(max(1, int(poll_s)), max(0.0, end - time.time())))

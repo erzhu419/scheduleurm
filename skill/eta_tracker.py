@@ -267,10 +267,32 @@ def _extract_current_only_from_tail(tail_text: str) -> Optional[int]:
     return last
 
 
+def _min_progress_for_rate(total: int, configured: Optional[int] = None) -> int:
+    """Minimum progress count before cumulative rate math is trusted.
+
+    Startup-heavy JAX jobs can spend thousands of seconds in compilation/import
+    before the first few iterations. Projecting total runtime from Iter 1/2000
+    turns that warmup into a multi-thousand-hour ETA. Use a small adaptive
+    threshold: roughly 1% of the run, capped at 20 units, with a floor of 3 for
+    short jobs. Explicit callers can still pass a stricter threshold.
+    """
+    try:
+        total_i = max(1, int(total))
+    except Exception:
+        total_i = 1
+    if configured is not None:
+        try:
+            return max(1, min(total_i, int(configured)))
+        except Exception:
+            return 1
+    adaptive = max(3, min(20, (total_i + 99) // 100))
+    return max(1, min(total_i, adaptive))
+
+
 def compute_eta_seconds(tail_text: str,
                         elapsed_s: float,
                         fallback_ewma_s: float = 0,
-                        min_progress_for_rate: int = 1,
+                        min_progress_for_rate: Optional[int] = None,
                         cmd: Optional[str] = None) -> int:
     """Returns ETA (remaining seconds) as int. 0 means unknown / done / no signal.
 
@@ -308,7 +330,7 @@ def compute_eta_seconds(tail_text: str,
     progress = parse_progress(tail_text, cmd=cmd)
     if progress is not None:
         current, total = progress
-        if current >= min_progress_for_rate:
+        if current >= _min_progress_for_rate(total, min_progress_for_rate):
             rate = current / elapsed
             if rate > 0:
                 remaining = (total - current) / rate
@@ -323,7 +345,8 @@ def compute_eta_seconds(tail_text: str,
 
 def runtime_projection(tail_text: str,
                        elapsed_s: float,
-                       cmd: Optional[str] = None) -> Optional[dict]:
+                       cmd: Optional[str] = None,
+                       min_progress_for_rate: Optional[int] = None) -> Optional[dict]:
     """Project total runtime from the latest progress signal.
 
     Returns a small dict:
@@ -370,7 +393,8 @@ def runtime_projection(tail_text: str,
 
     if progress is not None:
         current, total = progress
-        if current > 0 and total > 0 and elapsed > 0:
+        if (current >= _min_progress_for_rate(total, min_progress_for_rate)
+                and total > 0 and elapsed > 0):
             unit_s = float(elapsed) / float(current)
             total_s = int(max(0, unit_s * float(total)))
             eta_s = int(max(0, total_s - elapsed))

@@ -1,4 +1,7 @@
-from algorithm.experiments.service_curve_validation import build_service_curve_verdict
+from algorithm.experiments.service_curve_validation import (
+    build_service_curve_verdict,
+    select_measurement_summary,
+)
 
 
 def _summary(count, mean_rate, aggregate_rate=None, evictions=0, blocked=0):
@@ -80,3 +83,29 @@ def test_service_curve_verdict_can_report_measured_best_without_fixed_expectatio
           and verdict["best_makespan_count_per_gpu"] == 1
           and not verdict["expected_sweetspot_checked"],
           diag=str(verdict))
+
+
+def test_service_curve_summary_keeps_last_valid_rate_when_tasks_finish(check, sch):
+    selected = select_measurement_summary([
+        {
+            "phase": "profile_1_per_gpu",
+            "running_count": 2,
+            "running_with_rate_count": 2,
+            "mean_active_rate_step_s": 34.0,
+            "aggregate_active_rate_step_s": 68.0,
+            "status_counts": {"running": 2},
+        },
+        {
+            "phase": "profile_1_per_gpu",
+            "running_count": 0,
+            "running_with_rate_count": 0,
+            "mean_active_rate_step_s": 0.0,
+            "aggregate_active_rate_step_s": 0.0,
+            "status_counts": {"done": 2},
+        },
+    ])
+    check("service curve keeps last valid rate sample after short jobs finish",
+          selected["mean_active_rate_step_s"] == 34.0
+          and selected["summary_selection"] == "last_running_rate_sample"
+          and selected["terminal_status_counts"] == {"done": 2},
+          diag=str(selected))

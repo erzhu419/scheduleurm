@@ -280,8 +280,17 @@ def build_service_curve_verdict(
         running = int(summary.get("running_count") or 0)
         with_rate = int(summary.get("running_with_rate_count") or 0)
         expected_running = sum(int(v) for v in (summary.get("per_gpu_running") or {}).values())
-        mean_rate = float(summary.get("mean_active_rate_step_s") or 0.0)
-        aggregate_rate = float(summary.get("aggregate_active_rate_step_s") or 0.0)
+        mean_rate = float(
+            summary.get("mean_active_rate_unit_s")
+            if summary.get("mean_active_rate_unit_s") is not None
+            else summary.get("mean_active_rate_step_s") or 0.0
+        )
+        aggregate_rate = float(
+            summary.get("aggregate_active_rate_unit_s")
+            if summary.get("aggregate_active_rate_unit_s") is not None
+            else summary.get("aggregate_active_rate_step_s") or 0.0
+        )
+        rate_units = sorted(str(x) for x in (summary.get("rate_units") or []) if str(x))
         active_slots = max(1, running)
         flow_proxy = _mean_completion_time_proxy_s(
             task_count=total_jobs_for_proxy,
@@ -301,6 +310,9 @@ def build_service_curve_verdict(
             "running_with_rate_count": with_rate,
             "expected_running_from_per_gpu": expected_running,
             "per_gpu_running": summary.get("per_gpu_running") or {},
+            "rate_units": rate_units,
+            "mean_active_rate_unit_s": mean_rate,
+            "aggregate_active_rate_unit_s": aggregate_rate,
             "mean_active_rate_step_s": mean_rate,
             "aggregate_active_rate_step_s": aggregate_rate,
             "legacy_six_job_flow_time_proxy_s": flow_proxy,
@@ -312,6 +324,10 @@ def build_service_curve_verdict(
             failure_reasons.append(
                 f"profile {count}/GPU did not measure every running task: "
                 f"running={running}, with_rate={with_rate}"
+            )
+        if with_rate > 0 and len(rate_units) != 1:
+            failure_reasons.append(
+                f"profile {count}/GPU has ambiguous progress-rate units: {rate_units}"
             )
         if int(summary.get("eviction_count") or 0) > 0:
             failure_reasons.append(f"profile {count}/GPU had evictions")
@@ -382,13 +398,15 @@ def _write_curve_markdown(path: Path, verdict: dict[str, Any]) -> None:
         f"Node: `{verdict['node']}`",
         f"Pass: `{verdict['pass']}`",
         "",
-        "| Count/GPU | Running | With rate | Mean step/s | Aggregate step/s | Evictions | Blocks |",
-        "|---:|---:|---:|---:|---:|---:|---:|",
+        "| Count/GPU | Running | With rate | Unit | Mean unit/s | Aggregate unit/s | Evictions | Blocks |",
+        "|---:|---:|---:|:---|---:|---:|---:|---:|",
     ]
     for row in verdict.get("rows") or []:
+        unit = ",".join(row.get("rate_units") or []) or "unknown"
         lines.append(
             "| {count_per_gpu} | {running_count} | {running_with_rate_count} | "
-            "{mean_active_rate_step_s:.6f} | {aggregate_active_rate_step_s:.6f} | "
+            f"{unit} | "
+            "{mean_active_rate_unit_s:.6f} | {aggregate_active_rate_unit_s:.6f} | "
             "{eviction_count} | {blocked_count} |".format(**row)
         )
     for table in verdict.get("proxy_tables") or []:

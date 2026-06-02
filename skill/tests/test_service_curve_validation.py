@@ -10,6 +10,7 @@ def _summary(count, mean_rate, aggregate_rate=None, evictions=0, blocked=0):
         "running_count": running,
         "running_with_rate_count": running,
         "per_gpu_running": {"0": count, "1": count},
+        "rate_units": ["step"],
         "mean_active_rate_step_s": mean_rate,
         "aggregate_active_rate_step_s": aggregate_rate if aggregate_rate is not None else mean_rate * running,
         "eviction_count": evictions,

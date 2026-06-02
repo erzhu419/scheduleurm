@@ -17,6 +17,7 @@ import time
 from pathlib import Path
 from typing import Any, Iterable
 
+from .progress_units import task_progress_observation, task_rate_per_s
 from .trace_export import init_run
 
 
@@ -135,18 +136,16 @@ def _parse_submit_id(stdout: str) -> str:
 
 
 def _parse_rate(line: str | None) -> float:
-    if not line:
-        return 0.0
-    m = re.search(r"\brate=([0-9]+(?:\.[0-9]+)?)\s*step/s\b", line)
-    if not m:
-        return 0.0
-    return float(m.group(1))
+    return task_rate_per_s({"last_progress_line": line or ""})
 
 
 def _task_row(task: dict[str, Any], *, phase: str, stage: str, sample_idx: int | None = None) -> dict[str, Any]:
     cfg = task.get("placement_algorithm_config") or {}
     audit = task.get("placement_algorithm_audit") or {}
     score = audit.get("score") or {}
+    progress = task_progress_observation(task)
+    rate = float(progress.rate_per_s or 0.0) if progress else 0.0
+    unit = progress.unit if progress else None
     return {
         "ts": time.time(),
         "phase": phase,
@@ -161,7 +160,13 @@ def _task_row(task: dict[str, Any], *, phase: str, stage: str, sample_idx: int |
         "candidate_bucket": audit.get("candidate_bucket"),
         "score": score.get("score"),
         "score_components": score.get("components"),
-        "rate_step_s": _parse_rate(task.get("last_progress_line")),
+        "rate_unit_s": rate,
+        "rate_unit": unit,
+        "rate_source": progress.source if progress else None,
+        "seconds_per_unit": progress.seconds_per_unit if progress else None,
+        "parsed_progress_current": progress.current if progress else None,
+        "parsed_progress_total": progress.total if progress else None,
+        "rate_step_s": rate,
         "runtime_current_unit": task.get("runtime_current_unit"),
         "runtime_total_units": task.get("runtime_total_units"),
         "eta_seconds": task.get("eta_seconds"),
@@ -185,7 +190,7 @@ def _task_row(task: dict[str, Any], *, phase: str, stage: str, sample_idx: int |
 def _has_progress(task: dict[str, Any]) -> bool:
     if int(task.get("runtime_current_unit") or 0) > 0:
         return True
-    return _parse_rate(task.get("last_progress_line")) > 0
+    return task_rate_per_s(task) > 0
 
 
 def _snapshot(raw_dir: Path, label: str, ids: list[str]) -> list[dict[str, Any]]:
@@ -402,6 +407,7 @@ def _summarize_phase(phase: str, tasks: list[dict[str, Any]]) -> dict[str, Any]:
     running = [t for t in tasks if t.get("status") == "running"]
     queued = [t for t in tasks if t.get("status") == "queued"]
     rates = []
+    rate_units = []
     per_gpu: dict[str, int] = {}
     progress_units = []
     evictions = []
@@ -409,9 +415,11 @@ def _summarize_phase(phase: str, tasks: list[dict[str, Any]]) -> dict[str, Any]:
     for t in running:
         gpu = str(t.get("gpu_idx"))
         per_gpu[gpu] = per_gpu.get(gpu, 0) + 1
-        rate = _parse_rate(t.get("last_progress_line"))
+        progress = task_progress_observation(t)
+        rate = float(progress.rate_per_s or 0.0) if progress else 0.0
         if rate > 0:
             rates.append(rate)
+            rate_units.append(progress.unit if progress else "unit")
         if int(t.get("runtime_current_unit") or 0) > 0:
             progress_units.append(int(t.get("runtime_current_unit") or 0))
     for t in tasks:
@@ -442,7 +450,13 @@ def _summarize_phase(phase: str, tasks: list[dict[str, Any]]) -> dict[str, Any]:
         "queued_count": len(queued),
         "running_count": len(running),
         "running_with_rate_count": len(rates),
+        "rate_units": sorted(set(rate_units)),
+        "rates_unit_s": rates,
         "rates_step_s": rates,
+        "aggregate_active_rate_unit_s": sum(rates),
+        "mean_active_rate_unit_s": statistics.fmean(rates) if rates else 0.0,
+        "min_active_rate_unit_s": min(rates) if rates else 0.0,
+        "max_active_rate_unit_s": max(rates) if rates else 0.0,
         "aggregate_active_rate_step_s": sum(rates),
         "mean_active_rate_step_s": statistics.fmean(rates) if rates else 0.0,
         "min_active_rate_step_s": min(rates) if rates else 0.0,

@@ -68,6 +68,7 @@ experiments/    manifest and trace/bootstrap utilities
   penalty_fit.py    P0,beta finite envelope
   oracle_audit.py   alpha0,alpha1 approximate-oracle envelope
   capacity_lp.py    full-action capacity slack and drift margin eta,N
+  progress_units.py task-native progress parser: step/s, iter/s, s/iter
   report.py         calibration table / PASS-FAIL helpers
   service_curve_validation.py  pinned live co-location service-curve runner
 ```

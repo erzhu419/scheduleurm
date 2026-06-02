@@ -61,8 +61,16 @@ scoring.py      bounded robust score components used by sweetspot_v1
 candidates.py   active-bucket representative selection utilities
 placement.py    scheduler-facing policy interface
 experiments/    manifest and trace/bootstrap utilities
+  fabric_metric.py  rho cover audit and L service-Lipschitz calibration
+  slot_builder.py   queue recurrence and nonnegative arrival/service records
+  action_model.py   per-slot full/candidate/chosen action-family validation
+  service_model.py  lower-service LCB rows and epsilon_est residual
+  penalty_fit.py    P0,beta finite envelope
+  oracle_audit.py   alpha0,alpha1 approximate-oracle envelope
+  capacity_lp.py    full-action capacity slack and drift margin eta,N
+  report.py         calibration table / PASS-FAIL helpers
 ```
 
-These are experimental controls.  They do not replace the theorem calibration
-pipeline; they are the knobs whose effects should later be audited by
-`md/experiment_development_manual.md`.
+These are experimental controls plus theorem-calibration utilities.  Live
+scheduler behavior is still selected by policy name; theorem claims must be
+made from the calibration artifacts, not from raw throughput curves alone.

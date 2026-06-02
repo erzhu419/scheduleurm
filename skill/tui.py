@@ -157,6 +157,62 @@ def _node_summary_line(nodes):
     return "\n".join(lines)
 
 
+def _slurm_status_for_tui(state):
+    up = str(state or "").upper()
+    if up in ("RUNNING", "COMPLETING"):
+        return "running"
+    if up in ("PENDING", "CONFIGURING", "RESIZING", "SUSPENDED"):
+        return "queued"
+    if up in ("COMPLETED", "CANCELLED", "FAILED", "TIMEOUT", "NODE_FAIL", "OUT_OF_MEMORY"):
+        return up.lower()
+    return "launching"
+
+
+def _virtual_slurm_tasks_from_nodes(nodes, existing_tasks):
+    existing_slurm_ids = {
+        str(t.get("slurm_job_id"))
+        for t in existing_tasks
+        if t.get("slurm_job_id") is not None
+    }
+    existing_ids = {str(t.get("id")) for t in existing_tasks if t.get("id")}
+    out = []
+    for n in nodes or []:
+        if not n.get("alive") or not n.get("slurm_cluster"):
+            continue
+        for job in n.get("slurm_jobs") or []:
+            job_id = str(job.get("job_id") or "").strip()
+            if not job_id or job_id in existing_slurm_ids:
+                continue
+            task_id = f"slurm:{job_id}"
+            if task_id in existing_ids:
+                continue
+            bucket = job.get("bucket") or "cpu"
+            state = job.get("state") or "UNKNOWN"
+            cpus = _int_or_default(job.get("cpus"), 0)
+            out.append({
+                "id": task_id,
+                "status": _slurm_status_for_tui(state),
+                "node": job.get("nodes") or n.get("name"),
+                "project": job.get("name") or "slurm",
+                "priority": "-",
+                "cpu_cores": cpus,
+                "ram_mb": 0,
+                "est_vram_mb": 1 if bucket == "gpu" else 0,
+                "process_owner": job.get("user"),
+                "submitted_by": job.get("user"),
+                "origin": "external",
+                "auto_adopted": True,
+                "slurm_job_id": job_id,
+                "slurm_state": state,
+                "slurm_gres": job.get("gres"),
+                "description": (
+                    f"slurm {state} cpus={cpus or '?'} "
+                    f"mem={job.get('mem') or '?'} gres={job.get('gres') or '?'}"
+                ),
+            })
+    return out
+
+
 COLUMNS = [
     ("id", "id", 6),
     ("status", "status", 9),
@@ -716,6 +772,7 @@ class SchedulerTUI(App):
             stale_tag = "" if stale is None or stale < 7 else f"  (snap {int(stale)}s old)"
             self.query_one("#node_summary", Static).update(_node_summary_line(nodes) + stale_tag)
             tasks = list(state.get("tasks", []))
+            tasks.extend(_virtual_slurm_tasks_from_nodes(nodes, tasks))
             if self.state_filter == "running":
                 tasks = [t for t in tasks if t.get("status") == "running"]
             elif self.state_filter == "queued":

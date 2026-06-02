@@ -88,7 +88,7 @@ def build_manifest(
         "regime_key_version": "v1_node_gpu_external_load",
         "algorithm_modules": dict(DEFAULT_ALGORITHM_MODULES),
         "finite_feature_metric": "algorithm.features:finite_feature_metric",
-        "action_space_mode": "full_exact|full_sampled|historical_full",
+        "action_space_mode": "statewise_uniform|all_feasible|full_sampled|historical_full",
         "candidate_generator_version": "v1_scheduleurm_greedy_neighborhood_active_bucket",
         "active_bucket_representative_rule": "min robust score per finite bucket",
         "progress_tiers_allowed_for_theorem": ["A", "B-count"],

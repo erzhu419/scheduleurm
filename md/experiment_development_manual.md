@@ -334,7 +334,7 @@ skill/tests/test_experiment_calibration.py
   "proof_repo": "/home/erzhu419/mine_code/proof",
   "proof_commit": "<git rev-parse HEAD>",
   "proof_upload_sha256": "08b661a71a10ceffcb8df719319e1a6f80801821e226e6c54036624a65fac777",
-  "theorem_target": "main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle",
+  "theorem_target": "main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle",
   "slot_policy": {
     "source": "watcher_cycle",
     "delta_ref_s": 60,

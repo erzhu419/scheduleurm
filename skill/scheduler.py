@@ -67,6 +67,15 @@ try:
 except Exception:
     load_placement_policy = None
 
+try:
+    from algorithm.hard_rules import (
+        should_bypass_hard_rule as _algorithm_should_bypass_hard_rule,
+        snapshot as _algorithm_hard_rule_snapshot,
+    )
+except Exception:
+    _algorithm_should_bypass_hard_rule = None
+    _algorithm_hard_rule_snapshot = None
+
 # ---------- node inventory ----------
 JTL110GPU_RE_SAC_JAX_ENV = "/home/erzhu419/.venvs/resac-jax-gpu1-0438"
 JTL110GPU_RE_SAC_JAX_SITE = f"{JTL110GPU_RE_SAC_JAX_ENV}/lib/python3.11/site-packages"
@@ -185,11 +194,13 @@ NODES = {
                        "sudo_ssh_host": "node007",
                        "sudo_ssh_run_as": "zhengliang01",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
-                       "max_vram_per_task": None, "max_concurrent_running": 16,
+                       "max_vram_per_task": None, "max_concurrent_running": 15,
                        "max_tasks_per_gpu": 4,
                        "allow_gpu_over_one_third": True,
                        "gpu_util_saturation_pct": None,
                        "ignore_cpu_for_gpu_tasks": True,
+                       "min_free_user_threads_for_gpu_task": 256,
+                       "max_user_thread_fraction_for_gpu_task": 0.92,
                        "enable_claims": False,
                        "skip_launch_staging": True,
                        "only_when_targeted": True,
@@ -238,6 +249,29 @@ NODES = {
                    "capabilities": ["cpu", "jax_cpu"],
                    "cpu_labor_node": True},
 }
+
+for _hpc_cpu_idx in range(1, 7):
+    _hpc_cpu_node = f"node{_hpc_cpu_idx:03d}"
+    NODES[_hpc_cpu_node] = {"host": "202.197.46.16", "ssh_user": "zhengliang01",
+                            "ssh_proxy_jump": "jtl110gpu2",
+                            "sudo_ssh_host": _hpc_cpu_node,
+                            "sudo_ssh_run_as": "zhengliang01",
+                            "cpu_cores": 192, "ram_mb": 0,
+                            "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
+                            "max_concurrent_running": None,
+                            "skip_launch_staging": True,
+                            "only_when_targeted": True,
+                            "stage_only_when_targeted": True,
+                            "relay_node": "jtl110gpu2",
+                            "relay_root": f"/tmp/scheduleurm-hpc-relay/{_hpc_cpu_node}",
+                            "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
+                            "disable_auto_adopt": True,
+                            "auto_adopt_owners": ["zhengliang01", "root"],
+                            "remote_path_prefixes": [
+                                str(Path.home() / "mine_code"),
+                                "/home/erzhu419/mine_code",
+                            ],
+                            "capabilities": ["cpu"]}
 
 STATE_DIR = Path.home() / ".claude" / "scheduler"
 QUEUE_FILE = STATE_DIR / "queue.json"
@@ -322,14 +356,19 @@ def _algorithm_name() -> str:
 def _algorithm_config_snapshot() -> dict:
     policy = _PLACEMENT_POLICY
     if policy is None or not hasattr(policy, "snapshot"):
-        return {"name": "legacy"}
+        return {"name": "legacy", "hard_rule_override": _hard_rule_override_snapshot()}
     try:
         out = policy.snapshot()
         if _PLACEMENT_POLICY_LOAD_ERROR:
             out["load_error"] = _PLACEMENT_POLICY_LOAD_ERROR
+        out["hard_rule_override"] = _hard_rule_override_snapshot()
         return out
     except Exception:
-        return {"name": _algorithm_name(), "snapshot_error": True}
+        return {
+            "name": _algorithm_name(),
+            "snapshot_error": True,
+            "hard_rule_override": _hard_rule_override_snapshot(),
+        }
 
 
 def _algorithm_gpu_fit_block_reason(task: dict, gpu: dict, node_info: dict) -> str:
@@ -363,6 +402,40 @@ def _algorithm_selected_gpu_audit(task: dict, node_state: dict, gpu: dict) -> di
             task, node_state, gpu, _algorithm_runtime_context()) or {}
     except Exception as e:
         return {"error": str(e)[:120], "algorithm": _algorithm_name()}
+
+
+def _hard_rule_bypassed(rule: str, task: Optional[dict] = None,
+                        node_info: Optional[dict] = None,
+                        node_state: Optional[dict] = None,
+                        gpu: Optional[dict] = None) -> bool:
+    if _algorithm_should_bypass_hard_rule is None:
+        return False
+    try:
+        return bool(_algorithm_should_bypass_hard_rule(
+            rule,
+            task=task or {},
+            node_info=node_info or {},
+            node_state=node_state or {},
+            gpu=gpu or {},
+            context={"algorithm": _algorithm_name()},
+        ))
+    except Exception:
+        return False
+
+
+def _hard_rule_override_snapshot(task: Optional[dict] = None) -> dict:
+    if _algorithm_hard_rule_snapshot is None:
+        return {"mode": "none", "active_rules": []}
+    try:
+        return _algorithm_hard_rule_snapshot(task)
+    except Exception as e:
+        return {"mode": "error", "error": str(e)[:120], "active_rules": []}
+
+
+def _set_hard_rule_mode(mode: Optional[str]) -> None:
+    raw = str(mode or "").strip()
+    if raw:
+        os.environ["SCHEDULEURM_AB_HARD_RULE_MODE"] = raw
 
 
 _configure_algorithm()
@@ -3095,6 +3168,75 @@ def _parse_scontrol_node_line(line: str) -> Optional[dict]:
     }
 
 
+def _parse_squeue_job_line(line: str) -> Optional[dict]:
+    parts = str(line or "").strip().split("|", 7)
+    if len(parts) < 8:
+        return None
+    job_id = parts[0].strip()
+    if not re.match(r"^\d+(?:[_.]\d+)?(?:\+\d+)?$", job_id):
+        return None
+    state = parts[2].strip() or "UNKNOWN"
+    cpus = _parse_slurm_int(parts[4], 0)
+    gres = parts[6].strip()
+    nodes = parts[3].strip()
+    is_gpu = "gpu" in gres.lower() or "node007" in nodes
+    return {
+        "job_id": job_id,
+        "user": parts[1].strip(),
+        "state": state,
+        "nodes": nodes,
+        "cpus": cpus,
+        "mem": parts[5].strip(),
+        "gres": gres,
+        "name": parts[7].strip(),
+        "bucket": "gpu" if is_gpu else "cpu",
+    }
+
+
+def _expand_slurm_nodelist(text: str) -> list[str]:
+    raw = str(text or "").strip()
+    if not raw or raw in ("N/A", "(null)", "None"):
+        return []
+    if "[" not in raw or "]" not in raw:
+        return [p for p in raw.split(",") if p]
+    out = []
+    for match in re.finditer(r"([^,\[]+)\[([^\]]+)\]", raw):
+        prefix = match.group(1)
+        for item in match.group(2).split(","):
+            item = item.strip()
+            if not item:
+                continue
+            if "-" in item:
+                start, end = item.split("-", 1)
+                try:
+                    width = max(len(start), len(end))
+                    for idx in range(int(start), int(end) + 1):
+                        out.append(f"{prefix}{idx:0{width}d}")
+                except Exception:
+                    out.append(f"{prefix}{item}")
+            else:
+                out.append(f"{prefix}{item}")
+    return out or [raw]
+
+
+def _probe_slurm_jobs(name: str) -> list[dict]:
+    cmd = "LC_ALL=C squeue -h -o '%i|%u|%T|%N|%C|%m|%b|%j' 2>/dev/null"
+    try:
+        rc, out, _err = run_on(name, cmd, timeout=20, check=False)
+    except Exception:
+        return []
+    if rc != 0:
+        return []
+    jobs = []
+    for line in (out or "").splitlines():
+        if "|" not in line:
+            continue
+        job = _parse_squeue_job_line(line)
+        if job:
+            jobs.append(job)
+    return jobs
+
+
 def _partition_state_counts(nodes: list[dict]) -> str:
     counts = {}
     for rec in nodes:
@@ -3142,6 +3284,16 @@ def _probe_slurm_cluster_node(name: str) -> dict:
             rec["gpu_model"] = str(model)
         if mem_label:
             rec["gpu_mem_label"] = mem_label
+
+    slurm_jobs = _probe_slurm_jobs(name)
+    for rec in node_recs:
+        rec_name = rec.get("name")
+        if not rec_name:
+            continue
+        rec["slurm_jobs"] = [
+            job for job in slurm_jobs
+            if rec_name in _expand_slurm_nodelist(job.get("nodes") or "")
+        ]
 
     parts: dict[str, list[dict]] = {}
     for rec in node_recs:
@@ -3201,6 +3353,7 @@ def _probe_slurm_cluster_node(name: str) -> dict:
         "slurm_cluster": True,
         "slurm_nodes": node_recs,
         "slurm_partitions": part_summaries,
+        "slurm_jobs": slurm_jobs,
         "total_gpus": total_gpus,
         "free_gpus": free_gpus,
         "free_cpu": free_cpu,
@@ -3275,7 +3428,13 @@ def probe_node(name):
            "awk '{print $1}' /proc/loadavg; echo '===SEP==='; "
            f"for i in 1 2; do sleep 0.1; "
            f"{nvsmi} --query-gpu=index,utilization.gpu --format=csv,noheader,nounits 2>/dev/null; "
-           "echo '---SAMPLE---'; done")
+           "echo '---SAMPLE---'; done; echo '===SEP==='; "
+           "u=$(id -un 2>/dev/null || whoami); "
+           "ut=$(ps -eLo user= 2>/dev/null | awk -v u=\"$u\" '$1==u{c++} END{print c+0}'); "
+           "ul=$(ulimit -u 2>/dev/null || echo 0); "
+           "cg=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo 0); "
+           "cm=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo 0); "
+           "printf '%s %s %s %s\\n' \"$ut\" \"$ul\" \"$cg\" \"$cm\"")
     try:
         rc, out, _ = run_on(name, cmd, timeout=15, check=False)
         if rc != 0:
@@ -3317,6 +3476,23 @@ def probe_node(name):
         loadavg = float(parts[3].strip()) if len(parts) > 3 else 0.0
     except ValueError:
         loadavg = 0.0
+    thread_vals = parts[5].strip().split() if len(parts) > 5 else []
+
+    def _parse_probe_int(idx: int):
+        if idx >= len(thread_vals):
+            return None
+        raw = str(thread_vals[idx]).strip()
+        if not raw or raw.lower() in ("max", "unlimited"):
+            return None
+        try:
+            return int(raw)
+        except ValueError:
+            return None
+
+    user_threads = _parse_probe_int(0)
+    user_thread_limit = _parse_probe_int(1)
+    cgroup_pids_current = _parse_probe_int(2)
+    cgroup_pids_max = _parse_probe_int(3)
     # Use min(configured, probed) so an over-declared config can't inflate the headroom denominator
     # past what the machine actually has. (Bug seen on WSL local: configured 56GB vs actual 30GB
     # produced a 14GB headroom that blocked all packing once a single 2GB task launched.)
@@ -3338,6 +3514,18 @@ def probe_node(name):
               "free_ram_mb": sched_free_ram, "actual_free_ram_mb": free_ram, "total_ram_mb": total_ram,
               "free_cpu": free_cpu, "total_cpu": total_cpu, "loadavg": loadavg,
               "cores": cores}
+    if user_threads is not None:
+        result["user_threads"] = user_threads
+    if user_thread_limit is not None:
+        result["user_thread_limit"] = user_thread_limit
+        if user_threads is not None:
+            result["free_user_threads"] = max(0, user_thread_limit - user_threads)
+    if cgroup_pids_current is not None:
+        result["cgroup_pids_current"] = cgroup_pids_current
+    if cgroup_pids_max is not None:
+        result["cgroup_pids_max"] = cgroup_pids_max
+        if cgroup_pids_current is not None:
+            result["free_cgroup_pids"] = max(0, cgroup_pids_max - cgroup_pids_current)
     # Phase 3.3/3.6: for WSL2 `local`, fold Windows-host metrics so the TUI can
     # show numbers that match what the user sees in Task Manager. CPU is not
     # display-only: Windows-side saturation still steals physical cores from WSL,
@@ -6019,6 +6207,8 @@ def _ignore_cpu_for_server_gpu_task(task: dict, node_state: Optional[dict] = Non
 
 
 def _task_ignores_one_third_pack_rule(task: dict, node_info: Optional[dict] = None) -> bool:
+    if _hard_rule_bypassed("one_third_pack", task, node_info=node_info):
+        return True
     if _flag_enabled((task or {}).get("allow_gpu_over_one_third"), False):
         return True
     if str((task or {}).get("signature") or "").startswith("BAPR/bus_v2/"):
@@ -6087,6 +6277,44 @@ def _local_gpu_cpu_block_reason(task: dict, node_state: Optional[dict]) -> str:
     return ""
 
 
+def _node_thread_pressure_block_reason(task: dict, node_state: Optional[dict],
+                                       node_info: Optional[dict]) -> str:
+    """Block new GPU launches when a shared node is near its process/thread cap.
+
+    node007 can have plenty of free VRAM while zhengliang01 is close to
+    RLIMIT_NPROC. JAX/Brax then starts and aborts in pthread_create before doing
+    useful work. This gate is dynamic: it opens again as existing jobs exit.
+    """
+    if (task.get("est_vram_mb") or 0) <= 0:
+        return ""
+    node_info = node_info or {}
+    node_state = node_state or {}
+    min_free = int(node_info.get("min_free_user_threads_for_gpu_task") or 0)
+    max_frac = float(node_info.get("max_user_thread_fraction_for_gpu_task") or 0.0)
+    if min_free <= 0 and max_frac <= 0:
+        return ""
+    used = _node_numeric(node_state, "user_threads")
+    limit = _node_numeric(node_state, "user_thread_limit")
+    if used is None or limit is None:
+        return "user thread pressure: probe missing user_threads/user_thread_limit"
+    used = int(used)
+    limit = int(limit)
+    if limit <= 0:
+        return ""
+    free = max(0, limit - used)
+    if min_free > 0 and free < min_free:
+        return (
+            f"user thread pressure: free {free}/{limit} "
+            f"(used {used}, reserve {min_free})"
+        )
+    if max_frac > 0 and used / max(1, limit) >= max_frac:
+        return (
+            f"user thread pressure: used {used}/{limit} "
+            f"({used / max(1, limit):.0%}, limit {max_frac:.0%})"
+        )
+    return ""
+
+
 def _node_resources_ok(task, node_state, node_info):
     """CPU + RAM + concurrency check at node level (independent of which GPU). Returns (ok, reason).
     `node_state['running_count']` is set by _do_dispatch before pick_placement loop and incremented
@@ -6095,8 +6323,12 @@ def _node_resources_ok(task, node_state, node_info):
     # for SUMO/RL workloads. Even if cpu/ram math says "fits", refuse if we're at the cap.
     cap = node_info.get("max_concurrent_running")
     cur_running = node_state.get("running_count", 0)
-    if cap is not None and cur_running >= cap:
+    if (cap is not None and cur_running >= cap
+            and not _hard_rule_bypassed("node_concurrency", task, node_info=node_info, node_state=node_state)):
         return False, f"concurrency cap: {cur_running}/{cap} tasks already running on {node_state.get('name','?')}"
+    thread_block = _node_thread_pressure_block_reason(task, node_state, node_info)
+    if thread_block and not _hard_rule_bypassed("thread_pressure", task, node_info=node_info, node_state=node_state):
+        return False, thread_block
     if not _ignore_cpu_for_server_gpu_task(task, node_state, node_info):
         local_gpu_block = _local_gpu_cpu_block_reason(task, node_state)
         if local_gpu_block:
@@ -6218,7 +6450,8 @@ def _gpu_fits(task, gpu, node_info):
     forensics ambiguous and can kill useful in-flight progress.
     """
     cap = node_info.get("max_vram_per_task")
-    if cap is not None and task["est_vram_mb"] > cap:
+    if (cap is not None and task["est_vram_mb"] > cap
+            and not _hard_rule_bypassed("max_vram_per_task", task, node_info=node_info, gpu=gpu)):
         return False
     if ONE_THIRD_PACK_RULE and not _task_ignores_one_third_pack_rule(task, node_info):
         freeze = _gpu_freeze_line_mb(int(gpu.get("total_mb") or 0))
@@ -6230,10 +6463,14 @@ def _gpu_fits(task, gpu, node_info):
     # don't pack more — the new task would just steal cycles and slow everyone down.
     # The "occupied" guard (>100MB) avoids blocking on a transient util spike on an empty GPU.
     util_limit = _node_gpu_util_limit(node_info)
-    if util_limit is not None and gpu["used_mb"] > 100 and gpu.get("util_pct", 0) >= util_limit:
+    if (util_limit is not None and gpu["used_mb"] > 100 and gpu.get("util_pct", 0) >= util_limit
+            and not _hard_rule_bypassed("gpu_util_saturation", task, node_info=node_info, gpu=gpu)):
         return False
     if gpu["free_mb"] < task["est_vram_mb"] + VRAM_MARGIN_MB:
-        return False
+        if not _hard_rule_bypassed("vram_margin", task, node_info=node_info, gpu=gpu):
+            return False
+        if gpu["free_mb"] < task["est_vram_mb"]:
+            return False
     if _algorithm_gpu_fit_block_reason(task, gpu, node_info):
         return False
     return True
@@ -6279,6 +6516,8 @@ def pick_placement(task, nodes):
         if _evict_node_cooldown_block_reason(task, n["name"], node_state=n):
             return []
         node_info = NODES[n["name"]]
+        if node_info.get("monitor_only"):
+            return []
         if node_info.get("only_when_targeted"):
             targeted = (
                 require == n["name"]
@@ -6360,7 +6599,10 @@ def pick_placement(task, nodes):
                     except Exception:
                         gpu_task_count = 0
                         gpu_task_cap = 0
-                    if gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap:
+                    if (gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap
+                            and not _hard_rule_bypassed(
+                                "max_tasks_per_gpu", task, node_info=node_info,
+                                node_state=n, gpu=g)):
                         continue
                 if not _gpu_fits(task, g, node_info): continue
                 # Empty-first placement: if a node has a genuinely idle GPU, use it before
@@ -10132,6 +10374,9 @@ def _cmd_explicitly_cpu(cmd: str) -> bool:
     the CPU partition for a training batch."""
     lower = (cmd or "").lower()
     norm = lower.replace("=", " ")
+    # Storage-placement flags such as RE-SAC's ``--replay_device cpu`` do not
+    # mean the training computation itself should run on CPU.
+    norm = re.sub(r"(?:^|\s)--replay[-_]?device\s+cpu(?:\s|$)", " ", norm)
     cuda_empty = bool(re.search(
         r"(?:^|\s)(?:export\s+)?cuda_visible_devices\s*=\s*(?:\"\"|''|-1|;|$|\s)",
         lower,
@@ -13546,8 +13791,15 @@ def _stage_launch_candidates_outside_lock():
         ]
         if high_gpu_tasks:
             # Fast lane for crash/reboot recovery: do not let unrelated CPU
-            # workspace syncs delay high-priority GPU retries.
-            queued_tasks = high_gpu_tasks
+            # workspace syncs delay high-priority GPU retries. Keep ready
+            # CPU-only tasks in the staging set, otherwise GPU backlogs can
+            # indefinitely starve Windows CPU eval/audit launches.
+            ready_cpu_tasks = [
+                t for t in queued_tasks
+                if int(t.get("est_vram_mb") or 0) <= 0
+                and not _queued_wait_for_file_block_reason(t)
+            ]
+            queued_tasks = high_gpu_tasks + ready_cpu_tasks
         gpu_staging_pending = any(
             int(t.get("est_vram_mb") or 0) > 0
             and not _queued_wait_for_file_block_reason(t)
@@ -13578,7 +13830,8 @@ def _stage_launch_candidates_outside_lock():
                     continue
                 if node_info.get("skip_launch_staging"):
                     continue
-                if gpu_staging_pending and _node_is_windows(tn):
+                task_needs_gpu = int(t.get("est_vram_mb") or 0) > 0
+                if gpu_staging_pending and task_needs_gpu and _node_is_windows(tn):
                     continue
                 if node_info.get("stage_only_when_targeted"):
                     targeted = (
@@ -13611,7 +13864,8 @@ def _stage_launch_candidates_outside_lock():
                             continue
                         if node_info.get("skip_launch_staging"):
                             continue
-                        if gpu_staging_pending and _node_is_windows(tn):
+                        task_needs_gpu = int(t.get("est_vram_mb") or 0) > 0
+                        if gpu_staging_pending and task_needs_gpu and _node_is_windows(tn):
                             continue
                         if node_info.get("stage_only_when_targeted"):
                             targeted = (
@@ -14738,6 +14992,8 @@ def _reserve_inflight_vram(state, nodes):
             continue  # Phase 2.12: slurm allocates its own VRAM via cgroup; we don't reserve here
         if t.get("gpu_idx") is None:
             continue
+        if _hard_rule_bypassed("startup_vram_reserve", t, node_info=NODES.get(t.get("node") or "", {})):
+            continue
         n = by_node.get(t.get("node"))
         if not n or not n.get("alive"):
             continue
@@ -14887,6 +15143,34 @@ def _enforce_post_dispatch_thresholds(state, nodes):
         ]
 
     def _evict(victim, reason, payload):
+        if payload.get("kind") == "gpu_one_third":
+            # A freeze-line rollback often means the task's submitted VRAM
+            # estimate was too low. Preserve the observation before
+            # _evict_to_queue clears live usage, otherwise dispatch can launch
+            # the same task back onto the same over-packed GPU after cooldown.
+            observed_vram = max(
+                int(victim.get("current_vram_mb") or 0),
+                int(victim.get("peak_vram_mb") or 0),
+            )
+            for rec in payload.get("same_gpu_tasks") or []:
+                if rec.get("id") == victim.get("id"):
+                    observed_vram = max(
+                        observed_vram,
+                        int(rec.get("current_vram_mb") or 0),
+                        int(rec.get("peak_vram_mb") or 0),
+                    )
+            cur_est = int(victim.get("est_vram_mb") or 0)
+            if observed_vram >= 100 and observed_vram > cur_est:
+                new_est = max(observed_vram + 128, int(observed_vram * 1.15))
+                victim["est_vram_mb"] = new_est
+                victim["est_vram_mb_adjusted_by_eviction"] = {
+                    "kind": payload.get("kind"),
+                    "old_est_vram_mb": cur_est,
+                    "observed_vram_mb": observed_vram,
+                    "new_est_vram_mb": new_est,
+                    "ts": time.time(),
+                    "reason": "gpu freeze-line rollback observed higher live VRAM than estimate",
+                }
         _evict_to_queue(victim, state, reason, payload.get("kind") or "resource_pressure")
         victim["last_resource_eviction"] = payload
         evicted.append(victim["id"])
@@ -15607,7 +15891,10 @@ def _do_dispatch(state, nodes):
                             except Exception:
                                 gpu_task_count = 0
                                 gpu_task_cap = 0
-                            if gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap:
+                            if (gpu_task_cap > 0 and gpu_task_count >= gpu_task_cap
+                                    and not _hard_rule_bypassed(
+                                        "max_tasks_per_gpu", t, node_info=NODES[n["name"]],
+                                        node_state=n, gpu=g)):
                                 sub.append(f"tasks {gpu_task_count}/{gpu_task_cap}")
                         if not _gpu_fits(t, g, NODES[n["name"]]):
                             freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
@@ -15619,7 +15906,10 @@ def _do_dispatch(state, nodes):
                             util_limit = _node_gpu_util_limit(NODES[n["name"]])
                             if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
                                 sub.append(f"util {g['util_pct']}%")
-                            if g["free_mb"] < (t.get("est_vram_mb") or 0) + VRAM_MARGIN_MB:
+                            if (g["free_mb"] < (t.get("est_vram_mb") or 0) + VRAM_MARGIN_MB
+                                    and not _hard_rule_bypassed(
+                                        "vram_margin", t, node_info=NODES[n["name"]],
+                                        node_state=n, gpu=g)):
                                 sub.append(f"free<est+margin")
                             cap = NODES[n["name"]].get("max_vram_per_task")
                             if cap is not None and t.get("est_vram_mb", 0) > cap:
@@ -16754,6 +17044,7 @@ def _preload_docker_images_outside_lock():
 
 
 def cmd_dispatch(args):
+    _set_hard_rule_mode(getattr(args, "hard_rule_mode", None))
     _configure_algorithm(getattr(args, "algorithm", None) or None)
     recovered_launching = 0
     # Quick pre-flight recovery: make stale WAL launch markers queued BEFORE preload scans.
@@ -17190,27 +17481,101 @@ def _descendants_of(roots, ppid_of):
                 break
     return descendants
 
+def _node_expected_process_owner(name: str) -> str:
+    """OS account whose direct processes should be visible on a configured node."""
+    info = NODES.get(name, {}) or {}
+    return str(info.get("sudo_ssh_run_as") or info.get("ssh_user") or _local_user())
+
+
+def _node_auto_adopt_owners(name: str) -> set[str]:
+    info = NODES.get(name, {}) or {}
+    owners = []
+    raw = info.get("auto_adopt_owners") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    owners.extend(str(x).strip() for x in raw if str(x).strip())
+    owners.append(_node_expected_process_owner(name))
+    return {x for x in owners if x}
+
+
+def _node_auto_adopt_roots(name: str, owner: str) -> list[str]:
+    """Workspace roots that are safe to consider for direct-process adoption."""
+    info = NODES.get(name, {}) or {}
+    roots = []
+    remote_root = str(info.get("remote_workspace_root") or "").strip()
+    if remote_root:
+        roots.append(remote_root)
+    if owner:
+        roots.append(f"/home/{owner}")
+    local = _local_user()
+    if local and local != owner:
+        roots.append(f"/home/{local}")
+
+    out = []
+    seen = set()
+    for root in roots:
+        norm = os.path.normpath(root)
+        if not norm or norm == "." or norm in seen:
+            continue
+        seen.add(norm)
+        out.append(norm)
+    return out
+
+
+def _path_under_roots(path: str, roots: list[str]) -> bool:
+    if not path:
+        return False
+    norm = os.path.normpath(path)
+    for root in roots:
+        root_norm = os.path.normpath(root)
+        if norm == root_norm or norm.startswith(root_norm.rstrip("/") + "/"):
+            return True
+    return False
+
+
+def _infer_adopt_cwd_from_cmdline(cmdline: str, roots: list[str]) -> str:
+    """Fallback when /proc/<pid>/cwd is unreadable, usually for root-owned direct jobs."""
+    if not cmdline:
+        return ""
+    try:
+        parts = shlex.split(cmdline)
+    except Exception:
+        parts = cmdline.split()
+    for part in parts:
+        if not part.startswith("/"):
+            continue
+        path = os.path.normpath(part)
+        if not _path_under_roots(path, roots):
+            continue
+        base = os.path.basename(path)
+        if base.startswith("python") and "/bin/" in path:
+            continue
+        if "." in base:
+            return os.path.dirname(path)
+        return path
+    return ""
+
+
 def _node_cpu_processes(name):
     """Find user-owned CPU-burning python processes NOT in nvidia-smi compute-apps. Catches CPU-only
     workloads (eval scripts, multi-worker batches, etc.) that the GPU-only probe misses.
     Threshold: pcpu >= 50% (half a sustained core). Returns same shape as _node_processes plus pcpu."""
     if _node_is_windows(name):
         return []
-    import getpass
-    me = getpass.getuser()
     # cmdline appended for adopt-time cmd capture; see _node_processes for rationale.
     # Phase 2.2: emit `sl` flag (1 = slurm-managed) so caller skips slurm-owned procs.
     script = (
-        f"PIDS=$(ps -eo pid,user,pcpu,cmd --no-headers 2>/dev/null | "
-        f"awk -v u={me} '$2==u && $4~/python/ && $3+0>=50 {{print $1}}'); "
+        f"PIDS=$(ps -eo pid,pcpu,cmd --no-headers 2>/dev/null | "
+        f"awk '$3~/python/ && $2+0>=50 {{print $1}}'); "
         f"for p in $PIDS; do "
+        f"  own=$(ps -o user= -p $p 2>/dev/null | tr -d ' '); "
         f"  pcpu=$(ps -o pcpu= -p $p 2>/dev/null | tr -d ' '); "
         f"  rss=$(ps -o rss= -p $p 2>/dev/null | tr -d ' '); "
         f"  pg=$(ps -o pgid= -p $p 2>/dev/null | tr -d ' '); "
         f"  cwd=$(readlink /proc/$p/cwd 2>/dev/null); "
         f"  sl=0; grep -aqE 'SLURM_JOB_ID=|SLURM_JOBID=' /proc/$p/environ 2>/dev/null && sl=1; "
         f"  cl=$(head -c 4096 /proc/$p/cmdline 2>/dev/null | tr '\\0' ' ' | sed 's/[[:space:]]*$//'); "
-        f"  echo \"${{p}}|${{pcpu}}|${{rss}}|${{pg}}|${{cwd}}|${{sl}}|${{cl}}\"; "
+        f"  echo \"${{p}}|${{own}}|${{pcpu}}|${{rss}}|${{pg}}|${{cwd}}|${{sl}}|${{cl}}\"; "
         f"done"
     )
     try:
@@ -17220,21 +17585,22 @@ def _node_cpu_processes(name):
         return []
     out_list = []
     for line in out.splitlines():
-        # maxsplit=6 keeps cmdline (last field) intact even if it contains `|` chars.
+        # maxsplit=7 keeps cmdline (last field) intact even if it contains `|` chars.
         # Phase 2.2: extra `sl` field after cwd indicates slurm-managed PID.
-        bits = line.strip().split("|", 6)
-        if len(bits) < 5: continue
+        bits = line.strip().split("|", 7)
+        if len(bits) < 6: continue
         try:
             pid = int(bits[0])
-            pcpu = float(bits[1]) if bits[1] else 0.0
-            rss_kb = int(bits[2]) if bits[2].isdigit() else 0
-            pgid = int(bits[3]) if bits[3].isdigit() else pid
+            owner = bits[1].strip()
+            pcpu = float(bits[2]) if bits[2] else 0.0
+            rss_kb = int(bits[3]) if bits[3].isdigit() else 0
+            pgid = int(bits[4]) if bits[4].isdigit() else pid
         except ValueError:
             continue
-        cwd = bits[4].strip()
-        is_slurm = (len(bits) >= 6 and bits[5].strip() == "1")
-        cmdline = bits[6].strip() if len(bits) >= 7 else ""
-        out_list.append({"node": name, "pid": pid, "owner": me, "rss_mb": rss_kb // 1024,
+        cwd = bits[5].strip()
+        is_slurm = (len(bits) >= 7 and bits[6].strip() == "1")
+        cmdline = bits[7].strip() if len(bits) >= 8 else ""
+        out_list.append({"node": name, "pid": pid, "owner": owner, "rss_mb": rss_kb // 1024,
                           "cwd": cwd, "pcpu": pcpu, "gpu_idx": None, "used_mb": 0,
                           "is_cpu_only": True, "pgid": pgid, "cmdline": cmdline,
                           "is_slurm": is_slurm})
@@ -17291,8 +17657,6 @@ def _reconcile_external_tasks(state):
     Mutates state. Returns newly-adopted task records."""
     import getpass
     me = getpass.getuser()
-    home_root = f"/home/{me}/"
-    home_basename = me  # so a cwd of just /home/erzhu419 resolves to project=erzhu419 — we'll skip that
     tracked = set()
     for t in state["tasks"]:
         if t["status"] != "running" or not t.get("node"): continue
@@ -17301,15 +17665,45 @@ def _reconcile_external_tasks(state):
     # Probe GPU compute-apps + CPU-burning python procs + PPID maps in parallel across nodes.
     # PPID map lets us reject a candidate whose ancestor is an already-tracked PID — fixes the
     # bash-wrapper-and-its-python-child being counted as two separate tasks.
-    with ThreadPoolExecutor(max_workers=len(NODES) * 3) as ex:
-        gpu_proc_lists = list(ex.map(_node_processes, NODES.keys()))
-        cpu_proc_lists = list(ex.map(_node_cpu_processes, NODES.keys()))
-        ppid_maps = list(ex.map(_node_ppid_map, NODES.keys()))
-    ppid_by_node = dict(zip(NODES.keys(), ppid_maps))
+    adopt_node_names = [
+        n for n, info in NODES.items()
+        if not (info or {}).get("monitor_only")
+        and not (info or {}).get("disable_auto_adopt")
+    ]
+    adopt_owner_by_node = {n: _node_expected_process_owner(n) for n in adopt_node_names}
+    adopt_owners_by_node = {n: _node_auto_adopt_owners(n) for n in adopt_node_names}
+    adopt_roots_by_node = {
+        n: _node_auto_adopt_roots(n, adopt_owner_by_node.get(n) or me)
+        for n in adopt_node_names
+    }
+    adopt_skip_projects_by_node = {
+        n: {
+            me,
+            adopt_owner_by_node.get(n) or "",
+            *(os.path.basename(root.rstrip("/")) for root in adopt_roots_by_node.get(n, [])),
+        }
+        for n in adopt_node_names
+    }
+    cleanup_node_names = []
+    for n in adopt_node_names:
+        if n not in cleanup_node_names:
+            cleanup_node_names.append(n)
+    for t in state["tasks"]:
+        n = t.get("node")
+        if t.get("status") == "running" and n in NODES and n not in cleanup_node_names:
+            cleanup_node_names.append(n)
+
+    with ThreadPoolExecutor(max_workers=max(1, len(adopt_node_names) * 2)) as ex:
+        gpu_proc_lists = list(ex.map(_node_processes, adopt_node_names))
+        cpu_proc_lists = list(ex.map(_node_cpu_processes, adopt_node_names))
+    with ThreadPoolExecutor(max_workers=max(1, len(cleanup_node_names))) as ex:
+        ppid_maps = list(ex.map(_node_ppid_map, cleanup_node_names))
+    ppid_by_node = dict(zip(cleanup_node_names, ppid_maps))
     # Build per-node set of descendants of already-tracked PIDs. Any candidate PID in this set
     # is a child of a task we already know about → skip adoption.
     tracked_pids_by_node = {}
     scheduler_roots_by_node = {}
+    scheduler_pgroups_by_node = {}
     for (n, p) in tracked:
         tracked_pids_by_node.setdefault(n, set()).add(p)
     for t in state["tasks"]:
@@ -17317,12 +17711,18 @@ def _reconcile_external_tasks(state):
             continue
         for p in _task_pids(t):
             scheduler_roots_by_node.setdefault(t["node"], set()).add(int(p))
+        try:
+            pgid = int(t.get("process_group") or 0)
+        except Exception:
+            pgid = 0
+        if pgid > 1:
+            scheduler_pgroups_by_node.setdefault(t["node"], set()).add(pgid)
     descendants_by_node = {n: _descendants_of(tracked_pids_by_node.get(n, set()),
                                                 ppid_by_node.get(n, {}))
-                           for n in NODES.keys()}
+                           for n in adopt_node_names}
     scheduler_descendants_by_node = {n: _descendants_of(scheduler_roots_by_node.get(n, set()),
                                                         ppid_by_node.get(n, {}))
-                                     for n in NODES.keys()}
+                                     for n in cleanup_node_names}
     # Clean up phantom adopts created by older watcher versions: if an auto-adopted task's
     # PIDs are actually children of a scheduler-owned root PID, it is not an external task.
     # Mark it forgotten instead of killing anything.
@@ -17330,17 +17730,25 @@ def _reconcile_external_tasks(state):
         if t.get("status") != "running" or not t.get("auto_adopted") or not t.get("node"):
             continue
         pids = set(int(p) for p in _task_pids(t))
-        if pids and pids.issubset(scheduler_descendants_by_node.get(t["node"], set())):
+        try:
+            pgid = int(t.get("process_group") or 0)
+        except Exception:
+            pgid = 0
+        same_scheduler_group = pgid > 1 and pgid in scheduler_pgroups_by_node.get(t["node"], set())
+        child_of_scheduler = pids and pids.issubset(scheduler_descendants_by_node.get(t["node"], set()))
+        if same_scheduler_group or child_of_scheduler:
             t["status"] = "forgotten"
             t["finished_at"] = time.time()
-            t["last_block_reason"] = "auto-forgotten: duplicate child process of a scheduler-launched task"
+            t["last_block_reason"] = (
+                "auto-forgotten: duplicate child/process-group of a scheduler-launched task"
+            )
     # Refresh resource estimates on already-adopted running tasks (lower-only) so the original
     # len(pids) overestimate self-corrects. Cheap because we already have the proc data.
     _refresh_adopted_resources(state, gpu_proc_lists, cpu_proc_lists)
     all_procs = []
     for procs in gpu_proc_lists: all_procs.extend(procs)
     # CPU procs: exclude any PID already counted as GPU compute-app on the same node.
-    gpu_pids_per_node = {n: {p["pid"] for p in plist} for n, plist in zip(NODES.keys(), gpu_proc_lists)}
+    gpu_pids_per_node = {n: {p["pid"] for p in plist} for n, plist in zip(adopt_node_names, gpu_proc_lists)}
     for procs in cpu_proc_lists:
         for p in procs:
             if p["pid"] in gpu_pids_per_node.get(p["node"], set()): continue
@@ -17358,10 +17766,13 @@ def _reconcile_external_tasks(state):
         if (p["node"], p["pid"]) in tracked: continue
         if p["pid"] in descendants_by_node.get(p["node"], set()): continue
         if p.get("is_slurm"): continue  # Phase 2.2: don't shadow slurm-managed work
-        if p["owner"] != me: continue
-        if not p["cwd"] or not p["cwd"].startswith(home_root): continue
-        project = _project_from_path(p["cwd"])
-        if not project or project == home_basename: continue
+        if p["owner"] not in adopt_owners_by_node.get(p["node"], {me}): continue
+        roots = adopt_roots_by_node.get(p["node"], [])
+        adopt_cwd = p.get("cwd") or _infer_adopt_cwd_from_cmdline(p.get("cmdline") or "", roots)
+        if not _path_under_roots(adopt_cwd, roots): continue
+        p["cwd"] = adopt_cwd
+        project = _project_from_path(adopt_cwd)
+        if not project or project in adopt_skip_projects_by_node.get(p["node"], set()): continue
         candidates.append((p, project))
     if not candidates:
         return []
@@ -17542,6 +17953,12 @@ def _cpu_ownership_snapshot(state, nodes) -> list:
             "free_ram_mb": n.get("free_ram_mb"),
             "total_ram_mb": n.get("total_ram_mb"),
             "running_count": n.get("running_count"),
+            "user_threads": n.get("user_threads"),
+            "user_thread_limit": n.get("user_thread_limit"),
+            "free_user_threads": n.get("free_user_threads"),
+            "cgroup_pids_current": n.get("cgroup_pids_current"),
+            "cgroup_pids_max": n.get("cgroup_pids_max"),
+            "free_cgroup_pids": n.get("free_cgroup_pids"),
         })
     return out
 
@@ -17727,6 +18144,7 @@ def _post_reboot_triage_announce():
 def cmd_watch(args):
     """Background daemon: every --interval s, update running tasks + dispatch queue.
     Notifications fire on task done, dispatch launches, and every --heartbeat s. No duplicates."""
+    _set_hard_rule_mode(getattr(args, "hard_rule_mode", None))
     _configure_algorithm(getattr(args, "algorithm", None) or None)
     # Refuse to start a second watcher.
     if WATCHER_STATE.exists():
@@ -19247,7 +19665,8 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
         algo_reason = _algorithm_gpu_fit_block_reason(task, g, node_info)
         if algo_reason:
             reasons.append(algo_reason)
-        if cap_per_task is not None and est > cap_per_task:
+        if (cap_per_task is not None and est > cap_per_task
+                and not _hard_rule_bypassed("max_vram_per_task", task, node_info=node_info, node_state=node_state, gpu=g)):
             reasons.append(f"est={est}>per-task cap={cap_per_task}")
         freeze = _gpu_freeze_line_mb(int(g.get("total_mb") or 0))
         if (not _task_ignores_one_third_pack_rule(task, node_info)
@@ -19255,9 +19674,11 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
                 and (g["used_mb"] >= freeze or g["used_mb"] + est >= freeze)):
             reasons.append(f"used+est {g['used_mb']}+{est}/{g['total_mb']}MB ≥ 1/3+grace {freeze}MB (packing rule)")
         util_limit = _node_gpu_util_limit(node_info)
-        if util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit:
+        if (util_limit is not None and g["used_mb"] > 100 and g.get("util_pct", 0) >= util_limit
+                and not _hard_rule_bypassed("gpu_util_saturation", task, node_info=node_info, node_state=node_state, gpu=g)):
             reasons.append(f"util={g.get('util_pct')}% ≥ {util_limit}% (compute saturation)")
-        if g["free_mb"] < est + VRAM_MARGIN_MB:
+        if (g["free_mb"] < est + VRAM_MARGIN_MB
+                and not _hard_rule_bypassed("vram_margin", task, node_info=node_info, node_state=node_state, gpu=g)):
             reasons.append(f"free={g['free_mb']}MB < est+margin ({est}+{VRAM_MARGIN_MB})")
         reject_gpus.append(f"GPU{g['idx']}({'; '.join(reasons) or 'unknown'})")
     if fit_gpus:
@@ -19582,6 +20003,8 @@ def main():
     s = sub.add_parser("dispatch", help="Probe nodes & launch what fits (also rebalances queue)")
     s.add_argument("--algorithm", default="",
                    help="Placement algorithm policy (default/env: legacy). Examples: legacy, sweetspot_v1")
+    s.add_argument("--hard-rule-mode", default="",
+                   help="Experiment hard-rule override mode from algorithm.hard_rules, e.g. clean_bench")
     s.set_defaults(func=cmd_dispatch)
 
     s = sub.add_parser("wait-for", help="Block until matching tasks reach terminal state; exit fires a task-notification when wrapped in Bash run_in_background. Match by --signature glob or --task-id list (or both).")
@@ -19600,6 +20023,8 @@ def main():
                    help=f"Write detailed node CPU/RAM attribution to watcher.log every N seconds (default {RESOURCE_LOG_INTERVAL_S})")
     s.add_argument("--algorithm", default="",
                    help="Placement algorithm policy (default/env: legacy). Examples: legacy, sweetspot_v1")
+    s.add_argument("--hard-rule-mode", default="",
+                   help="Experiment hard-rule override mode from algorithm.hard_rules, e.g. clean_bench")
     s.set_defaults(func=cmd_watch)
 
     s = sub.add_parser("status", help="Show node + task state")

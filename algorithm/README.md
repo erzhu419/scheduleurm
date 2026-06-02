@@ -69,6 +69,7 @@ experiments/    manifest and trace/bootstrap utilities
   oracle_audit.py   alpha0,alpha1 approximate-oracle envelope
   capacity_lp.py    full-action capacity slack and drift margin eta,N
   report.py         calibration table / PASS-FAIL helpers
+  service_curve_validation.py  pinned live co-location service-curve runner
 ```
 
 These are experimental controls plus theorem-calibration utilities.  Live

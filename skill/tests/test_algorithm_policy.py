@@ -70,3 +70,43 @@ def test_algorithm_gpu_admission_params(check, sch):
         else:
             os.environ["SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU"] = old
         sch._configure_algorithm("legacy")
+
+
+def test_algorithm_hard_rule_clean_bench_scope(check, sch):
+    old = os.environ.get("SCHEDULEURM_AB_HARD_RULE_MODE")
+    os.environ.pop("SCHEDULEURM_AB_HARD_RULE_MODE", None)
+    try:
+        bench = {"project": "ScheduleurmBench", "est_vram_mb": 500}
+        normal = {"project": "ResearchJob", "est_vram_mb": 500}
+        gpu = {
+            "idx": 0,
+            "running_task_count": 4,
+            "used_mb": 5000,
+            "free_mb": 600,
+            "total_mb": 12000,
+            "util_pct": 99,
+        }
+        node_info = {"gpu_util_saturation_pct": 80, "max_tasks_per_gpu": 4}
+
+        check("hard rule override off by default",
+              not sch._hard_rule_bypassed("one_third_pack", bench, node_info=node_info, gpu=gpu))
+        check("normal scheduler rejects guarded overpack",
+              not sch._gpu_fits(bench, dict(gpu), node_info))
+
+        os.environ["SCHEDULEURM_AB_HARD_RULE_MODE"] = "clean_bench"
+        check("clean bench applies to ScheduleurmBench task",
+              sch._hard_rule_bypassed("one_third_pack", bench, node_info=node_info, gpu=gpu))
+        check("clean bench does not apply to ordinary task",
+              not sch._hard_rule_bypassed("one_third_pack", normal, node_info=node_info, gpu=gpu))
+        check("clean bench bypasses guard rails but keeps physical capacity",
+              sch._gpu_fits(bench, dict(gpu), node_info))
+
+        too_full = dict(gpu)
+        too_full["free_mb"] = 400
+        check("clean bench still rejects below physical estimate",
+              not sch._gpu_fits(bench, too_full, node_info))
+    finally:
+        if old is None:
+            os.environ.pop("SCHEDULEURM_AB_HARD_RULE_MODE", None)
+        else:
+            os.environ["SCHEDULEURM_AB_HARD_RULE_MODE"] = old

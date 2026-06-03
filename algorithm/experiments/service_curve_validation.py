@@ -32,6 +32,14 @@ from .sweetspot_ab_validation import (
 from .trace_export import init_run
 
 
+class ServiceCurveCapacityBoundary(RuntimeError):
+    def __init__(self, phase: str, reasons: list[str]):
+        self.phase = phase
+        self.reasons = list(reasons)
+        joined = "; ".join(self.reasons) if self.reasons else "capacity boundary"
+        super().__init__(f"{phase} capacity boundary: {joined}")
+
+
 def _submit_profile(
     *,
     run_id: str,
@@ -117,6 +125,8 @@ def _wait_for_profile_progress(
     required: int,
     timeout_s: int,
     poll_s: int,
+    min_runtime_unit: int = 1,
+    boundary_reason_fn: Any | None = None,
 ) -> None:
     raw_dir = run_dir / "raw"
     deadline = time.time() + max(1, int(timeout_s))
@@ -132,7 +142,8 @@ def _wait_for_profile_progress(
             ids=ids,
             sample_idx=attempt,
         )
-        progressed = int(summary.get("running_with_rate_count") or 0)
+        progressed = profile_progress_count(summary, min_runtime_unit=min_runtime_unit)
+        boundary_reasons = list(boundary_reason_fn(summary) if boundary_reason_fn else [])
         _record_event(
             run_dir,
             "service_curve_warmup",
@@ -140,30 +151,104 @@ def _wait_for_profile_progress(
             attempt=attempt,
             progressed=progressed,
             required=required,
+            min_runtime_unit=max(1, int(min_runtime_unit)),
+            boundary_reasons=boundary_reasons,
             summary=summary,
         )
+        if boundary_reasons:
+            _record_event(
+                run_dir,
+                "service_curve_warmup_capacity_boundary",
+                phase=phase,
+                attempt=attempt,
+                reasons=boundary_reasons,
+                summary=summary,
+            )
+            raise ServiceCurveCapacityBoundary(phase, boundary_reasons)
         if progressed >= required:
             return
         if time.time() >= deadline:
             statuses = {str(t.get("id")): t.get("status") for t in tasks}
             raise RuntimeError(
                 f"{phase} warmup timed out: progressed={progressed}, required={required}, "
-                f"statuses={statuses}"
+                f"min_runtime_unit={max(1, int(min_runtime_unit))}, statuses={statuses}"
             )
         time.sleep(max(1, int(poll_s)))
+
+
+def profile_progress_count(summary: dict[str, Any], *, min_runtime_unit: int = 1) -> int:
+    min_unit = max(1, int(min_runtime_unit))
+    with_rate = int(summary.get("running_with_rate_count") or 0)
+    units = [
+        int(x)
+        for x in (summary.get("runtime_current_units") or [])
+        if int(x) >= min_unit
+    ]
+    if min_unit <= 1:
+        return with_rate
+    return min(with_rate, len(units))
+
+
+def _aggregate_rate(summary: dict[str, Any]) -> float:
+    for key in ("aggregate_active_rate_unit_s", "aggregate_active_rate_step_s"):
+        if summary.get(key) is not None:
+            return float(summary.get(key) or 0.0)
+    return 0.0
+
+
+def _mean_rate(summary: dict[str, Any]) -> float:
+    for key in ("mean_active_rate_unit_s", "mean_active_rate_step_s"):
+        if summary.get(key) is not None:
+            return float(summary.get(key) or 0.0)
+    return 0.0
+
+
+def _measurement_candidates(samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    full = [
+        dict(summary)
+        for summary in samples
+        if int(summary.get("running_count") or 0) > 0
+        and int(summary.get("running_with_rate_count") or 0) >= int(summary.get("running_count") or 0)
+        and _aggregate_rate(summary) > 0.0
+    ]
+    if full:
+        return full
+    return [
+        dict(summary)
+        for summary in samples
+        if int(summary.get("running_with_rate_count") or 0) > 0
+        and _aggregate_rate(summary) > 0.0
+    ]
 
 
 def select_measurement_summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
     if not samples:
         return {}
-    selected = None
-    for summary in samples:
-        if int(summary.get("running_with_rate_count") or 0) > 0:
-            selected = dict(summary)
-    if selected is None:
-        return dict(samples[-1])
-    selected["summary_selection"] = "last_running_rate_sample"
-    selected["terminal_status_counts"] = samples[-1].get("status_counts") or {}
+    candidates = _measurement_candidates(samples)
+    if not candidates:
+        selected = dict(samples[-1])
+        selected["summary_selection"] = "last_sample_no_running_rate"
+        selected["measurement_sample_count"] = len(samples)
+        selected["measurement_valid_sample_count"] = 0
+        selected["terminal_status_counts"] = samples[-1].get("status_counts") or {}
+        return selected
+
+    rates = sorted(_aggregate_rate(summary) for summary in candidates)
+    mid = len(rates) // 2
+    median_rate = rates[mid] if len(rates) % 2 else (rates[mid - 1] + rates[mid]) / 2.0
+    selected = min(candidates, key=lambda summary: (abs(_aggregate_rate(summary) - median_rate), -_aggregate_rate(summary)))
+    last = samples[-1]
+    selected["summary_selection"] = "median_running_rate_sample"
+    selected["measurement_sample_count"] = len(samples)
+    selected["measurement_valid_sample_count"] = len(candidates)
+    selected["measurement_aggregate_rate_unit_s_min"] = min(rates)
+    selected["measurement_aggregate_rate_unit_s_max"] = max(rates)
+    selected["measurement_aggregate_rate_unit_s_median"] = median_rate
+    selected["measurement_raw_last_aggregate_rate_unit_s"] = _aggregate_rate(last)
+    selected["measurement_raw_last_mean_rate_unit_s"] = _mean_rate(last)
+    selected["measurement_raw_last_running_count"] = int(last.get("running_count") or 0)
+    selected["measurement_raw_last_running_with_rate_count"] = int(last.get("running_with_rate_count") or 0)
+    selected["terminal_status_counts"] = last.get("status_counts") or {}
     return selected
 
 
@@ -190,7 +275,9 @@ def _measure_profile(
             ids=ids,
             sample_idx=sample_idx,
         )
-        sample_summaries.append(dict(last_summary))
+        sample_summary = dict(last_summary)
+        sample_summary["measurement_sample_idx"] = sample_idx
+        sample_summaries.append(sample_summary)
         _record_event(
             run_dir,
             "service_curve_measure",
@@ -407,7 +494,7 @@ def build_service_curve_verdict(
                 f"2/GPU per-task service gain over 3/GPU {gain_2_vs_3:.6f} "
                 f"< {min_two_vs_three_gain:.6f}"
             )
-    else:
+    elif float(min_two_vs_three_gain or 0.0) > 0.0:
         failure_reasons.append("profiles 2/GPU and 3/GPU are both required")
 
     counts = [int(x) for x in (proxy_job_counts or []) if int(x) > 0]

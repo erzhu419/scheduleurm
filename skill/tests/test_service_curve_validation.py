@@ -1,5 +1,6 @@
 from algorithm.experiments.service_curve_validation import (
     build_service_curve_verdict,
+    profile_progress_count,
     select_measurement_summary,
 )
 
@@ -86,6 +87,31 @@ def test_service_curve_verdict_can_report_measured_best_without_fixed_expectatio
           diag=str(verdict))
 
 
+def test_service_curve_tail_verdict_does_not_require_two_three_gain_when_disabled(check, sch):
+    boundary = _summary(9, 0.01)
+    boundary["capacity_boundary"] = True
+    boundary["boundary_reasons"] = ["tOOM: out of memory"]
+    verdict = build_service_curve_verdict(
+        run_id="tail",
+        node="node",
+        steps=30,
+        total_jobs_for_proxy=120,
+        proxy_job_counts=[120],
+        expected_sweetspot_count=0,
+        min_two_vs_three_gain=0.0,
+        summaries={
+            7: _summary(7, 0.030, aggregate_rate=0.210),
+            8: _summary(8, 0.022, aggregate_rate=0.176),
+            9: boundary,
+        },
+    )
+    check("tail-only service curve does not require 2/GPU and 3/GPU when gain check is disabled",
+          verdict["pass"]
+          and verdict["best_makespan_count_per_gpu"] == 7
+          and verdict["capacity_boundaries"][0]["count_per_gpu"] == 9,
+          diag=str(verdict))
+
+
 def test_service_curve_summary_keeps_last_valid_rate_when_tasks_finish(check, sch):
     selected = select_measurement_summary([
         {
@@ -107,6 +133,53 @@ def test_service_curve_summary_keeps_last_valid_rate_when_tasks_finish(check, sc
     ])
     check("service curve keeps last valid rate sample after short jobs finish",
           selected["mean_active_rate_step_s"] == 34.0
-          and selected["summary_selection"] == "last_running_rate_sample"
+          and selected["summary_selection"] == "median_running_rate_sample"
           and selected["terminal_status_counts"] == {"done": 2},
           diag=str(selected))
+
+
+def test_service_curve_summary_uses_median_rate_against_eval_noise(check, sch):
+    selected = select_measurement_summary([
+        {
+            "phase": "profile_6_per_gpu",
+            "running_count": 6,
+            "running_with_rate_count": 6,
+            "mean_active_rate_unit_s": 0.028,
+            "aggregate_active_rate_unit_s": 0.168,
+            "status_counts": {"running": 6},
+        },
+        {
+            "phase": "profile_6_per_gpu",
+            "running_count": 6,
+            "running_with_rate_count": 6,
+            "mean_active_rate_unit_s": 0.035,
+            "aggregate_active_rate_unit_s": 0.210,
+            "status_counts": {"running": 6},
+        },
+        {
+            "phase": "profile_6_per_gpu",
+            "running_count": 6,
+            "running_with_rate_count": 6,
+            "mean_active_rate_unit_s": 0.016,
+            "aggregate_active_rate_unit_s": 0.096,
+            "status_counts": {"running": 6},
+        },
+    ])
+    check("service curve selects the median running-rate sample against eval noise",
+          selected["aggregate_active_rate_unit_s"] == 0.168
+          and selected["measurement_raw_last_aggregate_rate_unit_s"] == 0.096
+          and selected["measurement_aggregate_rate_unit_s_median"] == 0.168,
+          diag=str(selected))
+
+
+def test_service_curve_warmup_can_require_min_progress_unit(check, sch):
+    summary = {
+        "running_with_rate_count": 4,
+        "runtime_current_units": [5, 5, 2, 0],
+    }
+    check("warmup default accepts all running tasks with a rate",
+          profile_progress_count(summary) == 4,
+          diag=str(summary))
+    check("warmup min unit filters compile-only early samples",
+          profile_progress_count(summary, min_runtime_unit=5) == 2,
+          diag=str(summary))

@@ -21,6 +21,7 @@ from .service_curve_validation import (
     _wait_for_profile_progress,
     _write_curve_markdown,
     build_service_curve_verdict,
+    ServiceCurveCapacityBoundary,
 )
 from .sweetspot_ab_validation import (
     _cancel_all,
@@ -246,6 +247,12 @@ def main() -> int:
     parser.add_argument("--max-iters", type=int, default=200)
     parser.add_argument("--total-units", type=int, default=0)
     parser.add_argument("--warmup-timeout-s", type=int, default=600)
+    parser.add_argument(
+        "--warmup-min-unit",
+        type=int,
+        default=1,
+        help="Require every measured task to reach this progress unit before the measurement window starts.",
+    )
     parser.add_argument("--measure-s", type=int, default=120)
     parser.add_argument("--poll-s", type=int, default=30)
     parser.add_argument("--hard-rule-mode", default="clean_bench")
@@ -343,10 +350,17 @@ def main() -> int:
                     required=len(ids),
                     timeout_s=args.warmup_timeout_s,
                     poll_s=args.poll_s,
+                    min_runtime_unit=args.warmup_min_unit,
+                    boundary_reason_fn=runtime_capacity_boundary_reasons if args.stop_on_capacity_boundary else None,
                 )
-            except RuntimeError as exc:
+            except (RuntimeError, ServiceCurveCapacityBoundary) as exc:
                 if not args.stop_on_capacity_boundary:
                     raise
+                boundary_reasons = (
+                    list(exc.reasons)
+                    if isinstance(exc, ServiceCurveCapacityBoundary)
+                    else [str(exc)]
+                )
                 _status_refresh(raw_dir, f"{phase}_capacity_boundary_status", ids)
                 _tasks, summary = _record_observation(
                     run_dir=run_dir,
@@ -357,7 +371,7 @@ def main() -> int:
                 )
                 summary = annotate_expected_placement(summary, plan)
                 summary["capacity_boundary"] = True
-                summary["boundary_reasons"] = [str(exc)]
+                summary["boundary_reasons"] = boundary_reasons
                 _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
                 summaries[count] = summary
                 _record_event(
@@ -367,6 +381,7 @@ def main() -> int:
                     count_per_gpu=count,
                     summary=summary,
                     reason=str(exc),
+                    reasons=boundary_reasons,
                 )
                 _cancel_all(raw_dir, phase, ids)
                 _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)

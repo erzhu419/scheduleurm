@@ -57,6 +57,23 @@ def _tasks_by_ids(ids: Iterable[str]) -> list[dict[str, Any]]:
     return [t for t in _load_queue_tasks() if str(t.get("id")) in wanted]
 
 
+def _compact_task_snapshot(task: dict[str, Any]) -> dict[str, Any]:
+    keys = (
+        "id", "status", "description", "project", "signature", "cmd", "node",
+        "gpu_idx", "remote_pids", "log_path", "submitted_at", "started_at",
+        "finished_at", "est_vram_mb", "current_vram_mb", "peak_vram_mb",
+        "ram_mb", "current_ram_mb", "peak_ram_mb", "cpu_cores", "current_pcpu",
+        "eta_seconds", "eta_source", "eta_confidence", "runtime_current_unit",
+        "runtime_total_units", "progress_ratio", "last_progress_line",
+        "last_block_reason", "last_eviction_kind", "last_resource_eviction",
+        "last_kill_action", "last_kill_reason", "launch_error",
+        "placement_algorithm", "placement_algorithm_config",
+        "placement_algorithm_audit", "require_node", "require_gpu_idx",
+        "allow_gpu_over_one_third",
+    )
+    return {k: task.get(k) for k in keys if k in task}
+
+
 def _run_cmd(
     args: list[str],
     *,
@@ -194,7 +211,7 @@ def _has_progress(task: dict[str, Any]) -> bool:
 
 
 def _snapshot(raw_dir: Path, label: str, ids: list[str]) -> list[dict[str, Any]]:
-    tasks = _tasks_by_ids(ids)
+    tasks = [_compact_task_snapshot(t) for t in _tasks_by_ids(ids)]
     _write_json(raw_dir / f"{label}.json", tasks)
     return tasks
 
@@ -206,9 +223,13 @@ def _record_event(run_dir: Path, kind: str, **payload: Any) -> None:
     )
 
 
-def _status_refresh(raw_dir: Path, label: str) -> None:
+def _status_refresh(raw_dir: Path, label: str, ids: Iterable[str] | None = None) -> None:
+    args = ["status", "--json", "--brief"]
+    id_list = [str(x) for x in (ids or []) if str(x)]
+    if id_list:
+        args.extend(["--ids", ",".join(id_list)])
     _scheduler_cmd(
-        ["status", "--json"],
+        args,
         raw_dir=raw_dir,
         label=label,
         env={
@@ -324,7 +345,7 @@ def _wait_for_progress(
     attempt = 0
     while True:
         attempt += 1
-        _status_refresh(raw_dir, f"{phase}_warmup_status_{attempt:03d}")
+        _status_refresh(raw_dir, f"{phase}_warmup_status_{attempt:03d}", ids)
         last_tasks, summary = _record_observation(
             run_dir=run_dir,
             raw_dir=raw_dir,
@@ -381,7 +402,7 @@ def _measure_window(
     last_tasks: list[dict[str, Any]] = []
     while True:
         sample_idx += 1
-        _status_refresh(raw_dir, f"{phase}_measure_status_{sample_idx:03d}")
+        _status_refresh(raw_dir, f"{phase}_measure_status_{sample_idx:03d}", ids)
         last_tasks, summary = _record_observation(
             run_dir=run_dir,
             raw_dir=raw_dir,
@@ -560,7 +581,7 @@ def _run_phase(
     _record_event(run_dir, "dispatch_start", phase=phase, algorithm=algorithm)
     _dispatch_phase(raw_dir, phase, algorithm, args.hard_rule_mode)
     _record_event(run_dir, "dispatch_done", phase=phase, algorithm=algorithm)
-    _status_refresh(raw_dir, f"{phase}_post_dispatch_status")
+    _status_refresh(raw_dir, f"{phase}_post_dispatch_status", ids)
     _record_observation(
         run_dir=run_dir,
         raw_dir=raw_dir,
@@ -586,7 +607,7 @@ def _run_phase(
         measure_s=args.measure_s,
         poll_s=args.poll_s,
     )
-    _status_refresh(raw_dir, f"{phase}_post_measure_status")
+    _status_refresh(raw_dir, f"{phase}_post_measure_status", ids)
     measured, summary = _record_observation(
         run_dir=run_dir,
         raw_dir=raw_dir,
@@ -598,7 +619,7 @@ def _run_phase(
     _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
     _record_event(run_dir, "phase_summary", phase=phase, summary=summary)
     _cancel_all(raw_dir, phase, ids)
-    _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+    _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)
     _record_observation(
         run_dir=run_dir,
         raw_dir=raw_dir,

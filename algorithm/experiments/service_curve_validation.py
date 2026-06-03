@@ -123,7 +123,7 @@ def _wait_for_profile_progress(
     attempt = 0
     while True:
         attempt += 1
-        _status_refresh(raw_dir, f"{phase}_warmup_status_{attempt:03d}")
+        _status_refresh(raw_dir, f"{phase}_warmup_status_{attempt:03d}", ids)
         tasks, summary = _record_observation(
             run_dir=run_dir,
             raw_dir=raw_dir,
@@ -181,7 +181,7 @@ def _measure_profile(
     sample_summaries: list[dict[str, Any]] = []
     while True:
         sample_idx += 1
-        _status_refresh(raw_dir, f"{phase}_measure_status_{sample_idx:03d}")
+        _status_refresh(raw_dir, f"{phase}_measure_status_{sample_idx:03d}", ids)
         tasks, last_summary = _record_observation(
             run_dir=run_dir,
             raw_dir=raw_dir,
@@ -626,7 +626,7 @@ def main() -> int:
             _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
             summaries[count] = summary
             _cancel_all(raw_dir, phase, ids)
-            _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+            _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)
             _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
             _record_event(run_dir, "profile_done", phase=phase, count_per_gpu=count, summary=summary)
 

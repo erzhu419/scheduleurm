@@ -71,6 +71,7 @@ experiments/    manifest and trace/bootstrap utilities
   progress_units.py task-native progress parser: step/s, iter/s, s/iter
   report.py         calibration table / PASS-FAIL helpers
   service_curve_validation.py  pinned live co-location service-curve runner
+  workload_service_curve_validation.py  fixed-profile runner for real commands
 ```
 
 These are experimental controls plus theorem-calibration utilities.  Live

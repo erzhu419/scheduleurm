@@ -1,4 +1,7 @@
-from algorithm.experiments.service_curve_validation import build_service_curve_verdict
+from algorithm.experiments.service_curve_validation import (
+    annotate_expected_placement,
+    build_service_curve_verdict,
+)
 from algorithm.experiments.workload_service_curve_validation import render_workload_command
 
 
@@ -88,4 +91,67 @@ def test_workload_service_curve_accepts_iter_units(check, sch):
           verdict["pass"]
           and verdict["best_flow_time_count_per_gpu"] == 5
           and verdict["rows"][-1]["rate_units"] == ["iter"],
+          diag=str(verdict))
+
+
+def test_workload_service_curve_rejects_cross_gpu_profile_contamination(check, sch):
+    contaminated = _iter_summary(15, 0.20)
+    contaminated["per_gpu_running"] = {"0": 1, "1": 14}
+    contaminated = annotate_expected_placement(contaminated, [1] * 15)
+    verdict = build_service_curve_verdict(
+        run_id="rl",
+        node="node",
+        steps=80,
+        total_jobs_for_proxy=15,
+        proxy_job_counts=[15],
+        expected_sweetspot_count=0,
+        min_two_vs_three_gain=0.0,
+        summaries={
+            2: annotate_expected_placement(_iter_summary(2, 0.10), [0, 0]),
+            3: annotate_expected_placement(_iter_summary(3, 0.09), [0, 0, 0]),
+            15: contaminated,
+        },
+    )
+    check("cross-GPU profile contamination fails validation",
+          not verdict["pass"]
+          and any("placement invalid" in reason for reason in verdict["failure_reasons"]),
+          diag=str(verdict))
+    check("invalid contaminated profile is excluded from best-count selection",
+          verdict["best_flow_time_count_per_gpu"] != 15,
+          diag=str(verdict))
+
+
+def test_workload_service_curve_records_capacity_boundary_without_failing_curve(check, sch):
+    boundary = _iter_summary(14, 0.01)
+    boundary["queued_count"] = 1
+    boundary["blocked_count"] = 1
+    boundary["per_gpu_running"] = {"1": 14}
+    boundary = annotate_expected_placement(boundary, [1] * 15)
+    boundary["capacity_boundary"] = True
+    boundary["boundary_reasons"] = ["gpu1 post-claim free 288MB < margin 500MB"]
+    verdict = build_service_curve_verdict(
+        run_id="rl",
+        node="node",
+        steps=80,
+        total_jobs_for_proxy=15,
+        proxy_job_counts=[15],
+        expected_sweetspot_count=0,
+        min_two_vs_three_gain=0.0,
+        summaries={
+            2: annotate_expected_placement(_iter_summary(2, 0.10), [0, 0]),
+            3: annotate_expected_placement(_iter_summary(3, 0.09), [0, 0, 0]),
+            14: annotate_expected_placement(
+                _iter_summary(14, 0.02) | {"per_gpu_running": {"1": 14}},
+                [1] * 14,
+            ),
+            15: boundary,
+        },
+    )
+    check("capacity boundary is reported without failing validated curve",
+          verdict["pass"]
+          and verdict["capacity_boundaries"]
+          and verdict["capacity_boundaries"][0]["count_per_gpu"] == 15,
+          diag=str(verdict))
+    check("capacity boundary is excluded from best-count selection",
+          verdict["best_flow_time_count_per_gpu"] != 15,
           diag=str(verdict))

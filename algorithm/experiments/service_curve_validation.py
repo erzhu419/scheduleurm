@@ -217,6 +217,34 @@ def _gpu_plan(gpus: list[int], count_per_gpu: int) -> list[int]:
     return out
 
 
+def expected_per_gpu_from_plan(gpu_plan: list[int]) -> dict[str, int]:
+    expected: dict[str, int] = {}
+    for gpu in gpu_plan:
+        key = str(int(gpu))
+        expected[key] = expected.get(key, 0) + 1
+    return dict(sorted(expected.items()))
+
+
+def annotate_expected_placement(summary: dict[str, Any], gpu_plan: list[int]) -> dict[str, Any]:
+    """Attach the intended pinned GPU placement and whether the profile obeyed it."""
+
+    expected = expected_per_gpu_from_plan(gpu_plan)
+    actual = {
+        str(k): int(v)
+        for k, v in (summary.get("per_gpu_running") or {}).items()
+        if int(v) > 0
+    }
+    actual = dict(sorted(actual.items()))
+    issues: list[str] = []
+    if actual != expected:
+        issues.append(f"actual per-GPU running {actual} != expected {expected}")
+    out = dict(summary)
+    out["expected_per_gpu_running"] = expected
+    out["placement_valid"] = not issues
+    out["placement_issues"] = issues
+    return out
+
+
 def _makespan_proxy_s(*, task_count: int, steps: int, active_slots: int, mean_rate: float) -> float:
     n = max(0, int(task_count))
     slots = max(0, int(active_slots))
@@ -256,7 +284,12 @@ def _proxy_rows_for_job_count(
 
 
 def _best_count(rows: list[dict[str, Any]], key: str) -> int | None:
-    finite = [row for row in rows if float(row.get(key) or 0.0) > 0.0]
+    finite = [
+        row for row in rows
+        if row.get("placement_valid", True) is not False
+        and row.get("capacity_boundary", False) is not True
+        and float(row.get(key) or 0.0) > 0.0
+    ]
     if not finite:
         return None
     best = min(finite, key=lambda row: row[key])
@@ -279,7 +312,25 @@ def build_service_curve_verdict(
     for count, summary in sorted(summaries.items()):
         running = int(summary.get("running_count") or 0)
         with_rate = int(summary.get("running_with_rate_count") or 0)
-        expected_running = sum(int(v) for v in (summary.get("per_gpu_running") or {}).values())
+        expected_per_gpu = {
+            str(k): int(v)
+            for k, v in (summary.get("expected_per_gpu_running") or {}).items()
+        }
+        actual_per_gpu = {
+            str(k): int(v)
+            for k, v in (summary.get("per_gpu_running") or {}).items()
+        }
+        expected_running = sum(int(v) for v in (expected_per_gpu or actual_per_gpu).values())
+        placement_issues = list(summary.get("placement_issues") or [])
+        placement_valid = bool(summary.get("placement_valid", True))
+        capacity_boundary = bool(summary.get("capacity_boundary", False))
+        boundary_reasons = list(summary.get("boundary_reasons") or [])
+        if expected_per_gpu and actual_per_gpu != expected_per_gpu:
+            placement_valid = False
+            if not placement_issues:
+                placement_issues.append(
+                    f"actual per-GPU running {actual_per_gpu} != expected {expected_per_gpu}"
+                )
         mean_rate = float(
             summary.get("mean_active_rate_unit_s")
             if summary.get("mean_active_rate_unit_s") is not None
@@ -310,6 +361,11 @@ def build_service_curve_verdict(
             "running_with_rate_count": with_rate,
             "expected_running_from_per_gpu": expected_running,
             "per_gpu_running": summary.get("per_gpu_running") or {},
+            "expected_per_gpu_running": expected_per_gpu,
+            "placement_valid": placement_valid,
+            "placement_issues": placement_issues,
+            "capacity_boundary": capacity_boundary,
+            "boundary_reasons": boundary_reasons,
             "rate_units": rate_units,
             "mean_active_rate_unit_s": mean_rate,
             "aggregate_active_rate_unit_s": aggregate_rate,
@@ -320,18 +376,24 @@ def build_service_curve_verdict(
             "eviction_count": int(summary.get("eviction_count") or 0),
             "blocked_count": int(summary.get("blocked_count") or 0),
         })
-        if running <= 0 or with_rate < running:
+        if capacity_boundary:
+            pass
+        elif running <= 0 or with_rate < running:
             failure_reasons.append(
                 f"profile {count}/GPU did not measure every running task: "
                 f"running={running}, with_rate={with_rate}"
+            )
+        if not placement_valid and not capacity_boundary:
+            failure_reasons.append(
+                f"profile {count}/GPU placement invalid: {'; '.join(placement_issues)}"
             )
         if with_rate > 0 and len(rate_units) != 1:
             failure_reasons.append(
                 f"profile {count}/GPU has ambiguous progress-rate units: {rate_units}"
             )
-        if int(summary.get("eviction_count") or 0) > 0:
+        if int(summary.get("eviction_count") or 0) > 0 and not capacity_boundary:
             failure_reasons.append(f"profile {count}/GPU had evictions")
-        if int(summary.get("blocked_count") or 0) > 0:
+        if int(summary.get("blocked_count") or 0) > 0 and not capacity_boundary:
             failure_reasons.append(f"profile {count}/GPU had placement blocks")
 
     by_count = {row["count_per_gpu"]: row for row in rows}
@@ -385,6 +447,17 @@ def build_service_curve_verdict(
         "min_two_vs_three_gain": min_two_vs_three_gain,
         "rows": rows,
         "proxy_tables": proxy_tables,
+        "capacity_boundaries": [
+            {
+                "count_per_gpu": row["count_per_gpu"],
+                "per_gpu_running": row.get("per_gpu_running") or {},
+                "expected_per_gpu_running": row.get("expected_per_gpu_running") or {},
+                "boundary_reasons": row.get("boundary_reasons") or [],
+                "placement_issues": row.get("placement_issues") or [],
+            }
+            for row in rows
+            if row.get("capacity_boundary")
+        ],
         "failure_reasons": failure_reasons,
         "pass": not failure_reasons,
     }
@@ -398,16 +471,21 @@ def _write_curve_markdown(path: Path, verdict: dict[str, Any]) -> None:
         f"Node: `{verdict['node']}`",
         f"Pass: `{verdict['pass']}`",
         "",
-        "| Count/GPU | Running | With rate | Unit | Mean unit/s | Aggregate unit/s | Evictions | Blocks |",
-        "|---:|---:|---:|:---|---:|---:|---:|---:|",
+        "| Count/GPU | Running | With rate | Actual GPUs | Placement | Boundary | Unit | Mean unit/s | Aggregate unit/s | Evictions | Blocks |",
+        "|---:|---:|---:|:---|:---|:---|:---|---:|---:|---:|---:|",
     ]
     for row in verdict.get("rows") or []:
         unit = ",".join(row.get("rate_units") or []) or "unknown"
+        actual = json.dumps(row.get("per_gpu_running") or {}, sort_keys=True)
+        placement = "ok" if row.get("placement_valid", True) is not False else "invalid"
+        boundary = "yes" if row.get("capacity_boundary") else "no"
         lines.append(
-            "| {count_per_gpu} | {running_count} | {running_with_rate_count} | "
-            f"{unit} | "
-            "{mean_active_rate_unit_s:.6f} | {aggregate_active_rate_unit_s:.6f} | "
-            "{eviction_count} | {blocked_count} |".format(**row)
+            f"| {row['count_per_gpu']} | {row['running_count']} | "
+            f"{row['running_with_rate_count']} | `{actual}` | {placement} | "
+            f"{boundary} | {unit} | "
+            f"{row['mean_active_rate_unit_s']:.6f} | "
+            f"{row['aggregate_active_rate_unit_s']:.6f} | "
+            f"{row['eviction_count']} | {row['blocked_count']} |"
         )
     for table in verdict.get("proxy_tables") or []:
         lines.extend([
@@ -544,6 +622,8 @@ def main() -> int:
                 measure_s=args.measure_s,
                 poll_s=args.poll_s,
             )
+            summary = annotate_expected_placement(summary, plan)
+            _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
             summaries[count] = summary
             _cancel_all(raw_dir, phase, ids)
             _status_refresh(raw_dir, f"{phase}_post_cancel_status")

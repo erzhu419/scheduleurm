@@ -8643,7 +8643,8 @@ class LocalBackend(Backend):
             # If the picked GPU loses a race, try other GPUs on the same node
             # before punting the task back to the next watcher tick. This keeps
             # a busy GPU0 claim from starving an otherwise-free GPU1.
-            if original_gpu is not None and node_state:
+            require_gpu_idx = _task_required_gpu_idx(task)
+            if original_gpu is not None and node_state and require_gpu_idx is None:
                 try:
                     node_info = NODES[task["node"]]
                     for g in node_state.get("gpus") or []:

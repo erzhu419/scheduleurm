@@ -2,7 +2,10 @@ from algorithm.experiments.service_curve_validation import (
     annotate_expected_placement,
     build_service_curve_verdict,
 )
-from algorithm.experiments.workload_service_curve_validation import render_workload_command
+from algorithm.experiments.workload_service_curve_validation import (
+    render_workload_command,
+    runtime_capacity_boundary_reasons,
+)
 
 
 def test_workload_command_template_renders_unique_identity(check, sch):
@@ -154,4 +157,50 @@ def test_workload_service_curve_records_capacity_boundary_without_failing_curve(
           diag=str(verdict))
     check("capacity boundary is excluded from best-count selection",
           verdict["best_flow_time_count_per_gpu"] != 15,
+          diag=str(verdict))
+
+
+def test_workload_service_curve_detects_runtime_oom_boundary(check, sch):
+    boundary = _iter_summary(13, 0.023)
+    boundary["running_count"] = 12
+    boundary["running_with_rate_count"] = 12
+    boundary["per_gpu_running"] = {"0": 12}
+    boundary["status_counts"] = {"running": 12, "failed": 1}
+    boundary["blocked_count"] = 1
+    boundary["blocked"] = [
+        {
+            "id": "tOOM",
+            "status": "failed",
+            "last_block_reason": "err_pattern: Traceback ... RuntimeError: out of memory",
+        }
+    ]
+    boundary = annotate_expected_placement(boundary, [0] * 13)
+    reasons = runtime_capacity_boundary_reasons(boundary)
+    check("runtime OOM is recognized as a capacity boundary reason",
+          bool(reasons) and "out of memory" in reasons[0].lower(),
+          diag=str(reasons))
+    boundary["capacity_boundary"] = True
+    boundary["boundary_reasons"] = reasons
+    verdict = build_service_curve_verdict(
+        run_id="rl",
+        node="node",
+        steps=80,
+        total_jobs_for_proxy=60,
+        proxy_job_counts=[12, 24, 60],
+        expected_sweetspot_count=0,
+        min_two_vs_three_gain=0.0,
+        summaries={
+            2: annotate_expected_placement(_iter_summary(2, 0.10), [0, 0]),
+            3: annotate_expected_placement(_iter_summary(3, 0.09), [0, 0, 0]),
+            12: annotate_expected_placement(_iter_summary(12, 0.028), [0] * 12),
+            13: boundary,
+        },
+    )
+    check("runtime OOM boundary does not invalidate the validated lower curve",
+          verdict["pass"]
+          and verdict["capacity_boundaries"]
+          and verdict["capacity_boundaries"][0]["count_per_gpu"] == 13,
+          diag=str(verdict))
+    check("runtime OOM boundary is excluded from best-count selection",
+          verdict["best_flow_time_count_per_gpu"] != 13,
           diag=str(verdict))

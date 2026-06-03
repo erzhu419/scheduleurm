@@ -18590,7 +18590,30 @@ def _print_result_artifacts(task: dict, include_log: bool = True):
         print(f"#   - [{kind}] {node}:{path}  ({src})")
 
 
+def _compact_status_task(task: dict) -> dict:
+    keys = (
+        "id", "status", "description", "project", "signature", "node", "gpu_idx",
+        "remote_pids", "log_path", "submitted_at", "started_at", "finished_at",
+        "est_vram_mb", "current_vram_mb", "peak_vram_mb", "ram_mb",
+        "current_ram_mb", "peak_ram_mb", "cpu_cores", "current_pcpu",
+        "eta_seconds", "eta_source", "eta_confidence", "runtime_current_unit",
+        "runtime_total_units", "progress_ratio", "last_progress_line",
+        "last_block_reason", "last_eviction_kind", "last_resource_eviction",
+        "last_kill_action", "last_kill_reason", "launch_error",
+        "placement_algorithm", "placement_algorithm_config",
+        "placement_algorithm_audit", "require_node", "require_gpu_idx",
+        "allow_gpu_over_one_third",
+    )
+    return {k: task.get(k) for k in keys if k in task}
+
+
 def cmd_status(args):
+    filter_ids = set()
+    for raw in getattr(args, "ids", None) or []:
+        for part in str(raw).split(","):
+            part = part.strip()
+            if part:
+                filter_ids.add(part)
     with state_lock():
         state = load_state()
         recover_stale_launching_tasks(state)
@@ -18598,8 +18621,15 @@ def cmd_status(args):
         _seed_pending_eta_from_history(state)
         reconcile_requeue_lineage_invariants(state)
         save_state(state)
+    filtered_tasks = [
+        t for t in state["tasks"]
+        if not filter_ids or str(t.get("id")) in filter_ids
+    ]
     if args.json:
-        print(json.dumps({"tasks": state["tasks"]}, indent=2))
+        tasks_out = [
+            _compact_status_task(t) for t in filtered_tasks
+        ] if getattr(args, "brief", False) else filtered_tasks
+        print(json.dumps({"tasks": tasks_out}, indent=2))
         return
     print("=== nodes ===")
     node_loads = compute_node_load_seconds(state)
@@ -18645,7 +18675,10 @@ def cmd_status(args):
         print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{etaload_str}{claim_str}")
     print("\n=== tasks ===")
     show_done = args.all
-    rows = [t for t in state["tasks"] if show_done or t["status"] in ("queued", "launching", "running")]
+    rows = [
+        t for t in filtered_tasks
+        if show_done or t["status"] in ("queued", "launching", "running")
+    ]
     if not rows:
         print("  (no active tasks; pass --all to see history)")
     for t in rows:
@@ -20031,6 +20064,13 @@ def main():
     s = sub.add_parser("status", help="Show node + task state")
     s.add_argument("--all", action="store_true", help="Include done/failed/cancelled tasks")
     s.add_argument("--json", action="store_true")
+    s.add_argument("--brief", action="store_true", help="With --json, emit compact task records")
+    s.add_argument(
+        "--ids",
+        nargs="*",
+        default=[],
+        help="Limit task output to specific IDs. Accepts space-separated IDs or comma-separated groups.",
+    )
     s.set_defaults(func=cmd_status)
 
     s = sub.add_parser("doctor", help="Audit active queue invariants; --fix applies safe queued-task repairs")

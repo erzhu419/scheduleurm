@@ -191,6 +191,41 @@ def _read_template(args: argparse.Namespace) -> str:
     return str(args.cmd_template or "").strip()
 
 
+_RUNTIME_CAPACITY_PATTERNS = (
+    "out of memory",
+    "cuda out of memory",
+    "cuda_error_out_of_memory",
+    "resource exhausted",
+    "cublas_status_alloc_failed",
+    "cannot allocate memory",
+)
+
+
+def _contains_runtime_capacity_pattern(value: Any) -> bool:
+    text = str(value or "").lower()
+    return any(pattern in text for pattern in _RUNTIME_CAPACITY_PATTERNS)
+
+
+def runtime_capacity_boundary_reasons(summary: dict[str, Any]) -> list[str]:
+    """Return concrete workload-runtime reasons that certify a capacity boundary.
+
+    This intentionally does not treat every failed task or placement mismatch
+    as a boundary.  The runner uses it for true runtime saturation signals such
+    as CUDA/JAX OOM after a profile was successfully launched.
+    """
+
+    reasons: list[str] = []
+    for task in summary.get("blocked") or []:
+        reason = str(task.get("last_block_reason") or task.get("launch_error") or "")
+        if _contains_runtime_capacity_pattern(reason):
+            tid = str(task.get("id") or "unknown")
+            reasons.append(f"{tid}: {reason}")
+    for issue in summary.get("placement_issues") or []:
+        if _contains_runtime_capacity_pattern(issue):
+            reasons.append(str(issue))
+    return reasons
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", default="")
@@ -312,7 +347,7 @@ def main() -> int:
             except RuntimeError as exc:
                 if not args.stop_on_capacity_boundary:
                     raise
-                _status_refresh(raw_dir, f"{phase}_capacity_boundary_status")
+                _status_refresh(raw_dir, f"{phase}_capacity_boundary_status", ids)
                 _tasks, summary = _record_observation(
                     run_dir=run_dir,
                     raw_dir=raw_dir,
@@ -334,7 +369,7 @@ def main() -> int:
                     reason=str(exc),
                 )
                 _cancel_all(raw_dir, phase, ids)
-                _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+                _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)
                 _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
                 break
             else:
@@ -346,10 +381,28 @@ def main() -> int:
                     poll_s=args.poll_s,
                 )
                 summary = annotate_expected_placement(summary, plan)
+                runtime_boundary_reasons = runtime_capacity_boundary_reasons(summary)
+                if args.stop_on_capacity_boundary and runtime_boundary_reasons:
+                    summary["capacity_boundary"] = True
+                    summary["boundary_reasons"] = list(summary.get("boundary_reasons") or []) + runtime_boundary_reasons
+                    _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
+                    summaries[count] = summary
+                    _record_event(
+                        run_dir,
+                        "workload_profile_runtime_capacity_boundary",
+                        phase=phase,
+                        count_per_gpu=count,
+                        summary=summary,
+                        reasons=runtime_boundary_reasons,
+                    )
+                    _cancel_all(raw_dir, phase, ids)
+                    _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)
+                    _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
+                    break
                 _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
                 summaries[count] = summary
                 _cancel_all(raw_dir, phase, ids)
-                _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+                _status_refresh(raw_dir, f"{phase}_post_cancel_status", ids)
                 _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
                 _record_event(run_dir, "workload_profile_done", phase=phase, count_per_gpu=count, summary=summary)
 

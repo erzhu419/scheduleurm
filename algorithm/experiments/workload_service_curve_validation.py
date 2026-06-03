@@ -14,6 +14,7 @@ from string import Formatter
 from typing import Any
 
 from .service_curve_validation import (
+    annotate_expected_placement,
     _gpu_plan,
     _measure_profile,
     _profile_phase_name,
@@ -218,6 +219,11 @@ def main() -> int:
     parser.add_argument("--proxy-job-counts", default="")
     parser.add_argument("--min-two-vs-three-gain", type=float, default=0.0)
     parser.add_argument("--allow-active-watcher", action="store_true")
+    parser.add_argument(
+        "--stop-on-capacity-boundary",
+        action="store_true",
+        help="Record a blocked/partial profile as the saturation boundary instead of timing out the run.",
+    )
     args = parser.parse_args()
 
     cmd_template = _read_template(args)
@@ -294,26 +300,58 @@ def main() -> int:
                 timeout_s=1200,
             )
             _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_dispatch", ids=ids)
-            _wait_for_profile_progress(
-                phase=phase,
-                run_dir=run_dir,
-                ids=ids,
-                required=len(ids),
-                timeout_s=args.warmup_timeout_s,
-                poll_s=args.poll_s,
-            )
-            summary = _measure_profile(
-                phase=phase,
-                run_dir=run_dir,
-                ids=ids,
-                measure_s=args.measure_s,
-                poll_s=args.poll_s,
-            )
-            summaries[count] = summary
-            _cancel_all(raw_dir, phase, ids)
-            _status_refresh(raw_dir, f"{phase}_post_cancel_status")
-            _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
-            _record_event(run_dir, "workload_profile_done", phase=phase, count_per_gpu=count, summary=summary)
+            try:
+                _wait_for_profile_progress(
+                    phase=phase,
+                    run_dir=run_dir,
+                    ids=ids,
+                    required=len(ids),
+                    timeout_s=args.warmup_timeout_s,
+                    poll_s=args.poll_s,
+                )
+            except RuntimeError as exc:
+                if not args.stop_on_capacity_boundary:
+                    raise
+                _status_refresh(raw_dir, f"{phase}_capacity_boundary_status")
+                _tasks, summary = _record_observation(
+                    run_dir=run_dir,
+                    raw_dir=raw_dir,
+                    phase=phase,
+                    stage="capacity_boundary",
+                    ids=ids,
+                )
+                summary = annotate_expected_placement(summary, plan)
+                summary["capacity_boundary"] = True
+                summary["boundary_reasons"] = [str(exc)]
+                _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
+                summaries[count] = summary
+                _record_event(
+                    run_dir,
+                    "workload_profile_capacity_boundary",
+                    phase=phase,
+                    count_per_gpu=count,
+                    summary=summary,
+                    reason=str(exc),
+                )
+                _cancel_all(raw_dir, phase, ids)
+                _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+                _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
+                break
+            else:
+                summary = _measure_profile(
+                    phase=phase,
+                    run_dir=run_dir,
+                    ids=ids,
+                    measure_s=args.measure_s,
+                    poll_s=args.poll_s,
+                )
+                summary = annotate_expected_placement(summary, plan)
+                _write_json(run_dir / "reports" / f"{phase}_summary.json", summary)
+                summaries[count] = summary
+                _cancel_all(raw_dir, phase, ids)
+                _status_refresh(raw_dir, f"{phase}_post_cancel_status")
+                _record_observation(run_dir=run_dir, raw_dir=raw_dir, phase=phase, stage="post_cancel", ids=ids)
+                _record_event(run_dir, "workload_profile_done", phase=phase, count_per_gpu=count, summary=summary)
 
         verdict = build_service_curve_verdict(
             run_id=run_id,

@@ -106,10 +106,10 @@ python3 -m simulation.cli \
 
 For `q01_gpu_bound_compute`, the makespan-only replay objective selects 8/GPU
 against the legacy 3/GPU cap. That improves all-task makespan but worsens mean
-flow. Module26 fixes this with a resource-class guarded statewise selector:
-pure GPU-heavy profiles first stay inside a measured makespan-regret guard, then
-use the bounded delay/congestion penalty to select lower co-location. The
-validated q01 result now reports both makespan and mean-flow improvement.
+flow. Module26 added the delay endpoint, 1/GPU. Module28 makes the
+reviewer-facing default a guarded Pareto knee, 4/GPU: it stays within 2% of the
+measured makespan optimum and then minimizes mean-flow inside that guard. The
+validated q01 result now reports the throughput/delay tradeoff explicitly.
 
 The CLI refuses incomplete tasksets by default. For example, `q01_gpu_bound_compute`
 will not run as a full benchmark until profiles 4-8 are measured. Exploratory

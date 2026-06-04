@@ -185,33 +185,29 @@
     "candidate_pareto_dominated_by": [],
     "candidate_policy": {
       "calibrated": true,
-      "calibrated_objective": "makespan",
+      "calibrated_objective": "guarded_mean_flow",
       "fixed_profiles": {},
-      "guarded_resource_kinds": [
-        "gpu_heavy"
-      ],
+      "guarded_resource_kinds": [],
       "max_makespan_regret": 0.02,
-      "name": "calibrated_guarded_statewise",
-      "statewise": true,
-      "statewise_regret_slack": 0.6,
-      "statewise_resource_kinds": [
-        "gpu_heavy"
-      ]
+      "name": "calibrated_guarded_knee",
+      "statewise": false,
+      "statewise_regret_slack": 0.0,
+      "statewise_resource_kinds": []
     }
   },
   "q01_gpu_bound_compute": {
     "baselines": [
       {
-        "baseline_over_ours_makespan": 0.970587294764635,
-        "baseline_over_ours_mean_flow": 1.2207078309359933,
+        "baseline_over_ours_makespan": 0.9852834230275137,
+        "baseline_over_ours_mean_flow": 1.1106399868202321,
         "baseline_profiles": {
           "gpu_heavy_jax_matmul": 8
         },
         "candidate_profiles": {
-          "gpu_heavy_jax_matmul": 1
+          "gpu_heavy_jax_matmul": 4
         },
-        "candidate_vs_baseline_makespan": 0.970587294764635,
-        "candidate_vs_baseline_mean_flow": 1.2207078309359933,
+        "candidate_vs_baseline_makespan": 0.9852834230275137,
+        "candidate_vs_baseline_mean_flow": 1.1106399868202321,
         "name": "throughput_table_goodput",
         "representative_systems": [
           "Gavel",
@@ -220,16 +216,16 @@
         ]
       },
       {
-        "baseline_over_ours_makespan": 1.0,
-        "baseline_over_ours_mean_flow": 1.0,
+        "baseline_over_ours_makespan": 1.01514148015552,
+        "baseline_over_ours_mean_flow": 0.9098327697043074,
         "baseline_profiles": {
           "gpu_heavy_jax_matmul": 1
         },
         "candidate_profiles": {
-          "gpu_heavy_jax_matmul": 1
+          "gpu_heavy_jax_matmul": 4
         },
-        "candidate_vs_baseline_makespan": 1.0,
-        "candidate_vs_baseline_mean_flow": 1.0,
+        "candidate_vs_baseline_makespan": 1.01514148015552,
+        "candidate_vs_baseline_mean_flow": 0.9098327697043074,
         "name": "delay_oracle",
         "representative_systems": [
           "SRPT",
@@ -238,16 +234,16 @@
         ]
       },
       {
-        "baseline_over_ours_makespan": 1.0,
-        "baseline_over_ours_mean_flow": 1.0,
+        "baseline_over_ours_makespan": 1.01514148015552,
+        "baseline_over_ours_mean_flow": 0.9098327697043074,
         "baseline_profiles": {
           "gpu_heavy_jax_matmul": 1
         },
         "candidate_profiles": {
-          "gpu_heavy_jax_matmul": 1
+          "gpu_heavy_jax_matmul": 4
         },
-        "candidate_vs_baseline_makespan": 1.0,
-        "candidate_vs_baseline_mean_flow": 1.0,
+        "candidate_vs_baseline_makespan": 1.01514148015552,
+        "candidate_vs_baseline_mean_flow": 0.9098327697043074,
         "name": "interference_guard",
         "representative_systems": [
           "IADeep",
@@ -258,10 +254,10 @@
         "baseline_over_ours_makespan": 1.0,
         "baseline_over_ours_mean_flow": 1.0,
         "baseline_profiles": {
-          "gpu_heavy_jax_matmul": 1
+          "gpu_heavy_jax_matmul": 4
         },
         "candidate_profiles": {
-          "gpu_heavy_jax_matmul": 1
+          "gpu_heavy_jax_matmul": 4
         },
         "candidate_vs_baseline_makespan": 1.0,
         "candidate_vs_baseline_mean_flow": 1.0,
@@ -277,18 +273,14 @@
     "candidate_pareto_dominated_by": [],
     "candidate_policy": {
       "calibrated": true,
-      "calibrated_objective": "makespan",
+      "calibrated_objective": "guarded_mean_flow",
       "fixed_profiles": {},
-      "guarded_resource_kinds": [
-        "gpu_heavy"
-      ],
+      "guarded_resource_kinds": [],
       "max_makespan_regret": 0.02,
-      "name": "calibrated_guarded_statewise",
-      "statewise": true,
-      "statewise_regret_slack": 0.6,
-      "statewise_resource_kinds": [
-        "gpu_heavy"
-      ]
+      "name": "calibrated_guarded_knee",
+      "statewise": false,
+      "statewise_regret_slack": 0.0,
+      "statewise_resource_kinds": []
     }
   },
   "q10_cpu_host_bound": {
@@ -369,18 +361,14 @@
     "candidate_pareto_dominated_by": [],
     "candidate_policy": {
       "calibrated": true,
-      "calibrated_objective": "makespan",
+      "calibrated_objective": "guarded_mean_flow",
       "fixed_profiles": {},
-      "guarded_resource_kinds": [
-        "gpu_heavy"
-      ],
+      "guarded_resource_kinds": [],
       "max_makespan_regret": 0.02,
-      "name": "calibrated_guarded_statewise",
-      "statewise": true,
-      "statewise_regret_slack": 0.6,
-      "statewise_resource_kinds": [
-        "gpu_heavy"
-      ]
+      "name": "calibrated_guarded_knee",
+      "statewise": false,
+      "statewise_regret_slack": 0.0,
+      "statewise_resource_kinds": []
     }
   },
   "q11_cpu_gpu_coupled": {
@@ -461,18 +449,14 @@
     "candidate_pareto_dominated_by": [],
     "candidate_policy": {
       "calibrated": true,
-      "calibrated_objective": "makespan",
+      "calibrated_objective": "guarded_mean_flow",
       "fixed_profiles": {},
-      "guarded_resource_kinds": [
-        "gpu_heavy"
-      ],
+      "guarded_resource_kinds": [],
       "max_makespan_regret": 0.02,
-      "name": "calibrated_guarded_statewise",
-      "statewise": true,
-      "statewise_regret_slack": 0.6,
-      "statewise_resource_kinds": [
-        "gpu_heavy"
-      ]
+      "name": "calibrated_guarded_knee",
+      "statewise": false,
+      "statewise_regret_slack": 0.0,
+      "statewise_resource_kinds": []
     }
   }
 }

@@ -76,7 +76,7 @@ The current default calibrated replay after module27 is:
 
 ```text
 hybrid_rl_resac_ant: profile 1/GPU in the mixed portfolio, 10/GPU standalone
-gpu_heavy_jax_matmul: profile 1/GPU
+gpu_heavy_jax_matmul: profile 1/GPU in the mixed portfolio, 4/GPU standalone q01 knee
 cpu_heavy_protocol: profile 16 workers
 ```
 

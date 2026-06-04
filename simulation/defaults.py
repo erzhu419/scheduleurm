@@ -113,7 +113,16 @@ def legacy_policy() -> ReplayPolicy:
 
 def calibrated_policy() -> ReplayPolicy:
     return ReplayPolicy(
-        name="calibrated_guarded_statewise",
+        name="calibrated_guarded_knee",
+        calibrated=True,
+        calibrated_objective="guarded_mean_flow",
+        max_makespan_regret=0.02,
+    )
+
+
+def calibrated_delay_statewise_policy() -> ReplayPolicy:
+    return ReplayPolicy(
+        name="calibrated_delay_statewise",
         calibrated=True,
         calibrated_objective="makespan",
         max_makespan_regret=0.02,

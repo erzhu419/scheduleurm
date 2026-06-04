@@ -25,6 +25,9 @@ def test_simulation_cache_reuses_existing_eta_profile(check, sch):
           missing_exact_profiles(cache, "hybrid_rl_resac_ant", range(1, 11)) == [])
     check("unknown RE-SAC profile still needs measurement",
           cache_needs_probe(cache, "hybrid_rl_resac_ant", 99))
+    check("RE-SAC profile 13 is treated as unusable after runtime OOM",
+          cache_needs_probe(cache, "hybrid_rl_resac_ant", 13),
+          diag=str(cache.get("hybrid_rl_resac_ant", 13).snapshot()))
 
 
 def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
@@ -81,7 +84,7 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
               for row in comparison.candidate.workloads
           } == {
               "hybrid_rl_resac_ant": 10,
-              "gpu_heavy_jax_matmul": 1,
+              "gpu_heavy_jax_matmul": 6,
               "cpu_heavy_protocol": 16,
           },
           diag=str(comparison.snapshot()))

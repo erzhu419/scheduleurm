@@ -52,11 +52,11 @@ def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     check("light control remains a real-probe obligation",
           missing.get("q00_light_control", {}).get("light_control_protocol") == [1, 2, 4, 8, 16],
           diag=str(missing))
-    check("GPU-bound full saturation set refuses to invent profiles beyond measured curve",
-          missing.get("q01_gpu_bound_compute", {}).get("gpu_heavy_jax_matmul") == [4, 5, 6, 7, 8],
+    check("GPU-bound full saturation set has measured profiles 1-8",
+          "q01_gpu_bound_compute" not in missing,
           diag=str(missing))
-    check("coupled RL set records remaining saturation probes",
-          missing.get("q11_cpu_gpu_coupled", {}).get("hybrid_rl_resac_ant") == [14, 15, 16],
+    check("coupled RL set is closed by measured profile 13 capacity boundary",
+          "q11_cpu_gpu_coupled" not in missing,
           diag=str(missing))
 
 
@@ -72,3 +72,15 @@ def test_replayable_only_filters_unmeasured_members(check, sch):
           and {spec.workload_key for spec in hybrid_specs}
           == {"hybrid_rl_resac_ant", "gpu_heavy_jax_matmul", "cpu_heavy_protocol"},
           diag=str(hybrid_specs))
+
+
+def test_capacity_boundary_closes_higher_required_profiles(check, sch):
+    cache = build_default_cache()
+    snapshot = taskset_by_name("q11_cpu_gpu_coupled").snapshot(cache)
+    member = snapshot["members"][0]
+    check("q11 snapshot records profile 13 as the closing boundary",
+          member["closed_by_capacity_boundary_profile"] == 13,
+          diag=str(snapshot))
+    check("q11 missing-measurement list stops at the measured boundary",
+          snapshot["missing_measurements"] == {},
+          diag=str(snapshot))

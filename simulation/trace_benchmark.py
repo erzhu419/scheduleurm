@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import heapq
 import json
+import math
 import random
 from pathlib import Path
 from statistics import mean
@@ -187,6 +188,54 @@ def replay_trace_suite(
         "relative_to_legacy": _relative(results, baseline_name="legacy_fixed_caps"),
         "relative_to_candidate": _relative(results, baseline_name=_candidate_name(results)),
         "sota_tasklist_comparison": sota_comparison,
+    }
+
+
+def replay_trace_matrix(
+    cache: ServiceRateCache,
+    taskset_names: Iterable[str],
+    *,
+    arrival_mode: str = "static",
+    trace_seed: int = 42,
+    replay_seed: int = 7,
+) -> dict[str, Any]:
+    """Replay every policy on every taskset and aggregate by fixed policy.
+
+    This is the non-stitched SOTA comparison: a SOTA policy that is best on one
+    quadrant must also complete all other task lists under the same semantics.
+    """
+    taskset_reports = []
+    for name in taskset_names:
+        trace = build_task_trace(name, arrival_mode=arrival_mode, seed=trace_seed)
+        report = replay_trace_suite(cache, trace, seed=replay_seed)
+        taskset_reports.append(
+            {
+                "taskset": name,
+                "trace_name": trace.name,
+                "job_count": len(trace.jobs),
+                "results": report["results"],
+            }
+        )
+    policy_rows = _policy_matrix_rows(taskset_reports)
+    aggregate_rows = _aggregate_policy_rows(policy_rows)
+    aggregate_dominators = _aggregate_sota_pareto_dominators(aggregate_rows)
+    return {
+        "arrival_mode": arrival_mode,
+        "trace_seed": trace_seed,
+        "replay_seed": replay_seed,
+        "tasksets": [
+            {
+                "name": row["taskset"],
+                "trace_name": row["trace_name"],
+                "job_count": row["job_count"],
+            }
+            for row in taskset_reports
+        ],
+        "policy_matrix": policy_rows,
+        "aggregate_by_policy": aggregate_rows,
+        "aggregate_candidate_pareto_dominated_by": aggregate_dominators,
+        "aggregate_candidate_not_pareto_dominated": not aggregate_dominators,
+        "winner_transfer": _winner_transfer_rows(policy_rows, aggregate_rows),
     }
 
 
@@ -457,6 +506,220 @@ def _sota_pareto_dominators(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _improvement(baseline_value: float, candidate_value: float) -> float:
     return baseline_value / candidate_value if candidate_value > 0 else 0.0
+
+
+def _policy_matrix_rows(taskset_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    metadata = _policy_metadata()
+    rows: list[dict[str, Any]] = []
+    for report in taskset_reports:
+        results = report["results"]
+        candidate = next(row for row in results if row["policy"].startswith("calibrated_"))
+        for result in results:
+            policy = result["policy"]
+            policy_key = _policy_key(policy)
+            policy_meta = _policy_row_metadata(policy, metadata)
+            row = {
+                "taskset": report["taskset"],
+                "job_count": report["job_count"],
+                "policy": policy,
+                "policy_key": policy_key,
+                "baseline_name": policy_meta["baseline_name"],
+                "representative_systems": policy_meta["representative_systems"],
+                "policy_family": policy_meta["policy_family"],
+                "profiles": result["profiles"],
+                "makespan_s": result["makespan_s"],
+                "mean_flow_s": result["mean_flow_s"],
+                "p90_flow_s": result["p90_flow_s"],
+                "completed_jobs": result["completed_jobs"],
+                "candidate_policy": candidate["policy"],
+                "candidate_makespan_s": candidate["makespan_s"],
+                "candidate_mean_flow_s": candidate["mean_flow_s"],
+                "candidate_p90_flow_s": candidate["p90_flow_s"],
+                "candidate_vs_policy_makespan": _improvement(
+                    result["makespan_s"],
+                    candidate["makespan_s"],
+                ),
+                "candidate_vs_policy_mean_flow": _improvement(
+                    result["mean_flow_s"],
+                    candidate["mean_flow_s"],
+                ),
+                "candidate_vs_policy_p90_flow": _improvement(
+                    result["p90_flow_s"],
+                    candidate["p90_flow_s"],
+                ),
+            }
+            rows.append(row)
+    return rows
+
+
+def _aggregate_policy_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        grouped.setdefault(row["policy_key"], []).append(row)
+    out = []
+    for policy_key, policy_rows in sorted(grouped.items()):
+        job_count = sum(int(row["completed_jobs"]) for row in policy_rows)
+        total_makespan = sum(float(row["makespan_s"]) for row in policy_rows)
+        weighted_mean_flow = (
+            sum(float(row["mean_flow_s"]) * int(row["completed_jobs"]) for row in policy_rows)
+            / max(1, job_count)
+        )
+        candidate_total_makespan = sum(float(row["candidate_makespan_s"]) for row in policy_rows)
+        candidate_weighted_mean_flow = (
+            sum(float(row["candidate_mean_flow_s"]) * int(row["completed_jobs"]) for row in policy_rows)
+            / max(1, job_count)
+        )
+        ratios_makespan = [float(row["candidate_vs_policy_makespan"]) for row in policy_rows]
+        ratios_mean_flow = [float(row["candidate_vs_policy_mean_flow"]) for row in policy_rows]
+        first = policy_rows[0]
+        out.append(
+            {
+                "policy": policy_key,
+                "policies": sorted({row["policy"] for row in policy_rows}),
+                "baseline_name": first["baseline_name"],
+                "representative_systems": first["representative_systems"],
+                "policy_family": first["policy_family"],
+                "taskset_count": len(policy_rows),
+                "completed_jobs": job_count,
+                "sum_makespan_s": total_makespan,
+                "job_weighted_mean_flow_s": weighted_mean_flow,
+                "candidate_sum_makespan_s": candidate_total_makespan,
+                "candidate_job_weighted_mean_flow_s": candidate_weighted_mean_flow,
+                "candidate_vs_policy_sum_makespan": _improvement(
+                    total_makespan,
+                    candidate_total_makespan,
+                ),
+                "candidate_vs_policy_job_weighted_mean_flow": _improvement(
+                    weighted_mean_flow,
+                    candidate_weighted_mean_flow,
+                ),
+                "candidate_vs_policy_geom_makespan": _geomean(ratios_makespan),
+                "candidate_vs_policy_geom_mean_flow": _geomean(ratios_mean_flow),
+            }
+        )
+    return out
+
+
+def _winner_transfer_rows(
+    policy_rows: list[dict[str, Any]],
+    aggregate_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    aggregate_by_policy = {row["policy"]: row for row in aggregate_rows}
+    tasksets = sorted({row["taskset"] for row in policy_rows})
+    out = []
+    for taskset in tasksets:
+        sota_rows = [
+            row for row in policy_rows
+            if row["taskset"] == taskset and row["policy_family"] == "sota_style"
+        ]
+        for objective, metric in (
+            ("best_all_job_makespan", "makespan_s"),
+            ("best_mean_flow", "mean_flow_s"),
+        ):
+            winner = min(sota_rows, key=lambda row: float(row[metric]))
+            best_value = float(winner[metric])
+            tied = [
+                row["policy"] for row in sota_rows
+                if abs(float(row[metric]) - best_value) <= 1e-9
+            ]
+            aggregate = aggregate_by_policy[winner["policy"]]
+            out.append(
+                {
+                    "source_taskset": taskset,
+                    "objective": objective,
+                    "winner_policy": winner["policy"],
+                    "winner_baseline_name": winner["baseline_name"],
+                    "tied_winner_policies": tied,
+                    "source_metric_s": best_value,
+                    "winner_profiles_on_source": winner["profiles"],
+                    "aggregate_completed_jobs": aggregate["completed_jobs"],
+                    "candidate_vs_winner_sum_makespan": aggregate[
+                        "candidate_vs_policy_sum_makespan"
+                    ],
+                    "candidate_vs_winner_job_weighted_mean_flow": aggregate[
+                        "candidate_vs_policy_job_weighted_mean_flow"
+                    ],
+                    "candidate_vs_winner_geom_makespan": aggregate[
+                        "candidate_vs_policy_geom_makespan"
+                    ],
+                    "candidate_vs_winner_geom_mean_flow": aggregate[
+                        "candidate_vs_policy_geom_mean_flow"
+                    ],
+                }
+            )
+    return out
+
+
+def _aggregate_sota_pareto_dominators(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    dominators = []
+    eps = 1e-12
+    for row in rows:
+        if row["policy_family"] != "sota_style":
+            continue
+        makespan = float(row["candidate_vs_policy_sum_makespan"])
+        mean_flow = float(row["candidate_vs_policy_job_weighted_mean_flow"])
+        if (
+            makespan <= 1.0 + eps
+            and mean_flow <= 1.0 + eps
+            and (makespan < 1.0 - eps or mean_flow < 1.0 - eps)
+        ):
+            dominators.append(
+                {
+                    "policy": row["policy"],
+                    "baseline_name": row["baseline_name"],
+                    "representative_systems": row["representative_systems"],
+                    "candidate_vs_policy_sum_makespan": makespan,
+                    "candidate_vs_policy_job_weighted_mean_flow": mean_flow,
+                }
+            )
+    return dominators
+
+
+def _policy_metadata() -> dict[str, dict[str, Any]]:
+    metadata = {
+        "legacy_fixed_caps": {
+            "baseline_name": "Scheduleurm legacy",
+            "representative_systems": [],
+            "policy_family": "legacy",
+        }
+    }
+    for spec in sota_baseline_specs():
+        metadata[spec.policy.name] = {
+            "baseline_name": spec.name,
+            "representative_systems": list(spec.representative_systems),
+            "policy_family": "sota_style",
+        }
+    return metadata
+
+
+def _policy_key(policy: str) -> str:
+    if policy.startswith("calibrated_"):
+        return "scheduleurm_candidate"
+    return policy
+
+
+def _policy_row_metadata(policy: str, metadata: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    if policy.startswith("calibrated_"):
+        return {
+            "baseline_name": "Scheduleurm candidate",
+            "representative_systems": [],
+            "policy_family": "candidate",
+        }
+    return metadata.get(
+        policy,
+        {
+            "baseline_name": policy,
+            "representative_systems": [],
+            "policy_family": "unknown",
+        },
+    )
+
+
+def _geomean(values: list[float]) -> float:
+    positives = [max(1e-12, float(value)) for value in values]
+    if not positives:
+        return 0.0
+    return math.exp(sum(math.log(value) for value in positives) / len(positives))
 
 
 def _positive_lognormal(rng: random.Random, mean_value: float, cv: float) -> float:

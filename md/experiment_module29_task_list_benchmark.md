@@ -56,6 +56,17 @@ python3 -m simulation.trace_benchmark_cli --taskset q11_cpu_gpu_coupled --arriva
 python3 -m simulation.trace_benchmark_cli --taskset hybrid_research_portfolio --arrival-mode static --seed 42 --replay-seed 7
 ```
 
+Fixed-policy matrix command:
+
+```bash
+python3 -m simulation.trace_benchmark_cli \
+  --matrix \
+  --arrival-mode static \
+  --seed 42 \
+  --replay-seed 7 \
+  --report-out /tmp/scheduleurm_tasklist_matrix.json
+```
+
 Optional trace export:
 
 ```bash
@@ -105,6 +116,55 @@ Scheduleurm candidate vs SOTA-style baselines on the same explicit task lists:
 | `hybrid_research_portfolio` | throughput table endpoint | 1.000x | 1.006x | candidate better mean-flow |
 | `hybrid_research_portfolio` | interference/composite endpoint | 1.000x | 1.006x | candidate better mean-flow |
 | `hybrid_research_portfolio` | delay oracle endpoint | 1.000x | 1.000x | tie |
+
+## Fixed SOTA-Policy Matrix
+
+The previous table is per-taskset. This subsection answers the stricter
+question: if a SOTA-style policy is best on q00, q01, q10, or q11, can that
+same fixed policy complete every other task list better than Scheduleurm?
+
+The answer is no under the current measured service cache. No individual
+SOTA-style policy Pareto-dominates Scheduleurm candidate on total makespan and
+job-weighted mean flow.
+
+Interpretation of ratio columns:
+
+```text
+candidate vs policy > 1: Scheduleurm candidate is faster/better.
+candidate vs policy < 1: that fixed SOTA-style policy is faster/better.
+```
+
+Four-quadrant suite, excluding portfolio to avoid double-counting the mixed
+portfolio jobs:
+
+| Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
+|---|---|---:|---:|---:|---:|---:|
+| Scheduleurm candidate | this work | 976 | 110844.614 | 14480.992 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 976 | 110817.316 | 14486.506 | 0.9998x | 1.0004x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 976 | 111917.637 | 14425.051 | 1.0097x | 0.9961x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 976 | 110844.614 | 14480.992 | 1.0000x | 1.0000x |
+| quadrant composite | mixed SOTA-style | 976 | 110844.614 | 14480.992 | 1.0000x | 1.0000x |
+
+Full five-taskset suite, including `hybrid_research_portfolio`:
+
+| Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
+|---|---|---:|---:|---:|---:|---:|
+| Scheduleurm candidate | this work | 1376 | 170851.072 | 17238.807 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 1376 | 170823.774 | 17285.309 | 0.9998x | 1.0027x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 1376 | 171924.095 | 17199.128 | 1.0063x | 0.9977x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 1376 | 170851.072 | 17281.675 | 1.0000x | 1.0025x |
+| quadrant composite | mixed SOTA-style | 1376 | 170851.072 | 17281.675 | 1.0000x | 1.0025x |
+
+Winner-transfer view:
+
+| Source taskset | Winner objective | Best fixed SOTA-style policy on source | Candidate vs that policy on full five-taskset makespan | Candidate vs that policy on full five-taskset flow |
+|---|---|---|---:|---:|
+| q00 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 0.9998x | 1.0027x |
+| q01 | makespan | throughput table | 0.9998x | 1.0027x |
+| q01 | mean-flow | delay oracle | 1.0063x | 0.9977x |
+| q10 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 0.9998x | 1.0027x |
+| q11 | makespan | throughput/interference/composite tie; first-listed throughput table shown | 0.9998x | 1.0027x |
+| q11 | mean-flow | delay oracle | 1.0063x | 0.9977x |
 
 q01 SOTA endpoint check on the same 48-job task list:
 

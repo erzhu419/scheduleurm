@@ -162,12 +162,13 @@ portfolio guarded statewise: makespan 1.285x, mean-flow 1.354x
 ## Reviewer-Facing Status
 
 This module validates an algorithmic improvement over Scheduleurm legacy in the
-trace-driven replay layer. It does not yet establish superiority over SOTA
-schedulers. A SOTA comparison still needs one of:
+trace-driven replay layer. Module27 adds SOTA-style policy-semantics replay
+baselines on the same measured service cache. Direct external-scheduler
+superiority still needs one of:
 
 ```text
 external scheduler implementation run on the same traces and measured service cache
 or a faithful replay baseline reproducing a paper's policy semantics
 ```
 
-Do not call this a SOTA result until that layer exists.
+Do not call this a direct external-SOTA result until that layer exists.

@@ -53,9 +53,10 @@ the two empirical GPU/hybrid classes separately.
 ## Policies Compared
 
 Current note: module26 upgrades the default calibrated policy from a pure
-makespan selector to `calibrated_guarded_statewise`. The early replay method
-below remains valid, but reviewer-facing performance numbers should use module26
-unless explicitly discussing the makespan-only ablation.
+makespan selector to `calibrated_guarded_statewise`, and module27 adds a
+multi-workload `calibrated_global_guarded` selector plus SOTA-style baselines.
+The early replay method below remains valid, but reviewer-facing performance
+numbers should use module27 unless explicitly discussing an ablation.
 
 Legacy baseline:
 
@@ -71,10 +72,10 @@ Calibrated replay in the early module20 close-out:
 select profile minimizing cached makespan proxy for each workload class
 ```
 
-The current default calibrated replay after module26 is:
+The current default calibrated replay after module27 is:
 
 ```text
-hybrid_rl_resac_ant: profile 10/GPU
+hybrid_rl_resac_ant: profile 1/GPU in the mixed portfolio, 10/GPU standalone
 gpu_heavy_jax_matmul: profile 1/GPU
 cpu_heavy_protocol: profile 16 workers
 ```
@@ -98,13 +99,13 @@ Validation status: pass.
 | Metric | Legacy | Calibrated | Improvement |
 |---|---:|---:|---:|
 | Portfolio makespan | 76472.987 s | 59534.263 s | 1.285x |
-| Weighted mean flow | 32431.821 s | 23960.208 s | 1.354x |
+| Weighted mean flow | 32431.821 s | 23778.165 s | 1.364x |
 
 Per workload:
 
 | Workload | Legacy profile | Calibrated profile | Makespan improvement | Mean-flow improvement |
 |---|---:|---:|---:|---:|
-| `hybrid_rl_resac_ant` | 5 | 10 | 1.227x | 1.190x |
+| `hybrid_rl_resac_ant` | 5 | 1 | 1.194x | 1.242x |
 | `gpu_heavy_jax_matmul` | 3 | 1 | 1.064x | 1.225x |
 | `cpu_heavy_protocol` | 32 | 16 | 1.285x | 1.390x |
 

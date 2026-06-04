@@ -1,10 +1,18 @@
 """Default trace-cache assembly for Scheduleurm replay experiments."""
 from __future__ import annotations
 
+from itertools import product
 from pathlib import Path
 
 from .fast_forward import ReplayPolicy, WorkloadSpec
-from .service_cache import ServiceRateCache, add_protocol_cpu_curve, records_from_summary_file
+from .service_cache import (
+    ProfileRecord,
+    ServiceRateCache,
+    add_protocol_cpu_curve,
+    deterministic_makespan_s,
+    deterministic_mean_flow_s,
+    records_from_summary_file,
+)
 from .tasksets import empirical_replay_specs
 
 
@@ -122,6 +130,83 @@ def calibrated_makespan_policy() -> ReplayPolicy:
         calibrated=True,
         calibrated_objective="makespan",
     )
+
+
+def calibrated_candidate_policy(cache: ServiceRateCache, specs: list[WorkloadSpec]) -> ReplayPolicy:
+    if len(specs) <= 1:
+        return calibrated_policy()
+    return calibrated_global_guarded_policy(cache, specs)
+
+
+def calibrated_global_guarded_policy(
+    cache: ServiceRateCache,
+    specs: list[WorkloadSpec],
+    *,
+    max_global_makespan_regret: float = 0.02,
+) -> ReplayPolicy:
+    """Choose fixed profiles by global makespan guard plus weighted flow.
+
+    This is the multi-workload replay analogue of the robust MaxWeight guard:
+    first preserve the portfolio support/makespan objective, then spend the
+    available slack on finite-batch delay.
+    """
+
+    rows_by_key = [_profile_rows(cache, spec) for spec in specs]
+    if not rows_by_key:
+        return calibrated_policy()
+    best_global = min(max(row["makespan_s"] for row in combo) for combo in product(*rows_by_key))
+    guard = best_global * (1.0 + max(0.0, float(max_global_makespan_regret)))
+    admissible = [
+        combo for combo in product(*rows_by_key)
+        if max(row["makespan_s"] for row in combo) <= guard
+    ]
+    if not admissible:
+        admissible = list(product(*rows_by_key))
+    total_tasks = max(1, sum(max(0, int(spec.task_count)) for spec in specs))
+
+    def combo_key(combo: tuple[dict, ...]) -> tuple[float, float, tuple[int, ...]]:
+        weighted_flow = sum(
+            row["mean_flow_s"] * max(0, int(row["task_count"]))
+            for row in combo
+        ) / float(total_tasks)
+        global_makespan = max(row["makespan_s"] for row in combo)
+        profiles = tuple(int(row["profile"]) for row in combo)
+        return (weighted_flow, global_makespan, profiles)
+
+    chosen = min(admissible, key=combo_key)
+    return ReplayPolicy(
+        name="calibrated_global_guarded",
+        fixed_profiles={str(row["workload_key"]): int(row["profile"]) for row in chosen},
+    )
+
+
+def _profile_rows(cache: ServiceRateCache, spec: WorkloadSpec) -> list[dict]:
+    records = cache.profiles(spec.workload_key)
+    if not records:
+        raise KeyError(f"no service cache entries for workload {spec.workload_key!r}")
+    return [_profile_row(record, spec) for record in records]
+
+
+def _profile_row(record: ProfileRecord, spec: WorkloadSpec) -> dict:
+    return {
+        "workload_key": spec.workload_key,
+        "task_count": spec.task_count,
+        "profile": record.profile,
+        "makespan_s": deterministic_makespan_s(
+            task_count=spec.task_count,
+            total_units=spec.total_units,
+            resource_count=spec.resource_count,
+            profile=record.profile,
+            aggregate_rate=record.aggregate_rate,
+        ),
+        "mean_flow_s": deterministic_mean_flow_s(
+            task_count=spec.task_count,
+            total_units=spec.total_units,
+            resource_count=spec.resource_count,
+            profile=record.profile,
+            aggregate_rate=record.aggregate_rate,
+        ),
+    }
 
 
 def _add_summary_dir(

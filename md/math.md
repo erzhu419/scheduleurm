@@ -828,7 +828,7 @@ M_k(n)\leq (1+\varepsilon_{guard}(n))\min_j M_j(n)
 
 其中 \(n\) 是当前 resource-local remaining queue count。hybrid RL、CPU protocol、light-control bucket 默认保留 service/makespan support objective。这个区别是 finite resource-regime bucket 的实现，不是按 workload name 偷换结论。
 
-数学口径是：\(M_k\) guard 对应 \(\alpha_0+\alpha_1\|Q\|_1\) 形式的 approximate support loss；\(F_k\) tie-break 是 bounded/queue-scaled penalty，只在 guard 内作用。它可以改善 finite-batch mean-flow，但不能被写成新的 throughput theorem。稳定性主张仍然使用上面的
+数学口径是：\(M_k\) guard 对应 \(\alpha_0+\alpha_1\|Q\|_1\) 形式的 approximate support loss；\(F_k\) tie-break 是 bounded/queue-scaled penalty，只在 guard 内作用。这不是弱化理论；相反，它把实现层的 finite-batch delay objective 放进已经证明的 support-plus-penalty 框架里。稳定性主张仍然使用更强的 statewise approximate-oracle theorem，而不是把实验用 mean-flow tie-break 误写成一个独立的新 throughput theorem：
 
 ```text
 main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
@@ -839,6 +839,8 @@ main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_b
 [
 \delta>\epsilon_{cand}+\epsilon_{est}+\beta+\alpha_1.
 ]
+
+module27 的 multi-workload global guarded selector 是同一思想的 portfolio 版本：先保持全局 support/makespan guard，再在 guard 内最小化 weighted mean-flow。它不改变 Theorem C/D 的 slack accounting，只改变实现中如何估计和消耗 bounded penalty。
 
 ---
 

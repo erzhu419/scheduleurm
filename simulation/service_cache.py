@@ -8,7 +8,7 @@ import re
 from typing import Any, Iterable
 
 
-_PROFILE_RE = re.compile(r"profile_(\d+)_per_gpu")
+_PROFILE_RE = re.compile(r"profile_(\d+)_(?:per_gpu|per_resource)")
 
 
 @dataclass(frozen=True)

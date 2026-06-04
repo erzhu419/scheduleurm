@@ -15,6 +15,9 @@ def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
     check("simulation cache includes CPU-heavy workload",
           "cpu_heavy_protocol" in workloads,
           diag=str(workloads))
+    check("simulation cache includes light-control workload",
+          "light_control_local" in workloads,
+          diag=str(workloads))
 
 
 def test_simulation_cache_reuses_existing_eta_profile(check, sch):

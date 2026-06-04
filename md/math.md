@@ -806,6 +806,40 @@ B+P_0+\alpha_0
 
 如果用 Theorem B 的 fabric cover，则 \(\epsilon_{cand}=L\rho\)。这条是主 theorem 的核心：切换、风险、candidate approximation、服务估计误差都不能藏起来，必须逐项消耗 slack。
 
+### Implementation selector used by the replay layer
+
+当前 `simulation/` 里的默认 candidate policy 不是无惩罚的纯 makespan argmin。为了和上面的 approximate-oracle theorem 对齐，module26 使用两层 selector：
+
+1. 先守 support/service 目标：对每个 measured co-location profile \(k\)，计算 deterministic all-task makespan proxy \(M_k(n)\)，只允许
+
+[
+M_k(n)\leq (1+\varepsilon_{guard}(n))\min_j M_j(n)
+]
+
+的 profile 进入 tie-break set。
+
+2. 再消耗 bounded delay/interference penalty：在 tie-break set 里最小化 deterministic mean-flow proxy \(F_k(n)\)，再按 \(M_k(n)\) 和 profile id 打破平局。
+
+纯 GPU-heavy bucket 使用 statewise queue-scaled guard：
+
+[
+\varepsilon_{guard}(n)=0.02+\frac{0.6}{n},
+]
+
+其中 \(n\) 是当前 resource-local remaining queue count。hybrid RL、CPU protocol、light-control bucket 默认保留 service/makespan support objective。这个区别是 finite resource-regime bucket 的实现，不是按 workload name 偷换结论。
+
+数学口径是：\(M_k\) guard 对应 \(\alpha_0+\alpha_1\|Q\|_1\) 形式的 approximate support loss；\(F_k\) tie-break 是 bounded/queue-scaled penalty，只在 guard 内作用。它可以改善 finite-batch mean-flow，但不能被写成新的 throughput theorem。稳定性主张仍然使用上面的
+
+```text
+main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
+```
+
+并且必须继续满足
+
+[
+\delta>\epsilon_{cand}+\epsilon_{est}+\beta+\alpha_1.
+]
+
 ---
 
 ## Theorem D：concrete finite-support stochastic stability

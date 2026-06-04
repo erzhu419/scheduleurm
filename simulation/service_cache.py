@@ -118,6 +118,54 @@ class ServiceRateCache:
             ),
         )
 
+    def best_profile_for_guarded_mean_flow(
+        self,
+        workload_key: str,
+        *,
+        task_count: int,
+        total_units: float,
+        resource_count: int = 1,
+        max_makespan_regret: float = 0.02,
+    ) -> ProfileRecord:
+        """Choose a delay-friendly profile inside a makespan-regret guard.
+
+        The guard keeps the policy close to the support/max-throughput action,
+        while the mean-flow tie-break is the bounded scheduling penalty used by
+        the robust MaxWeight route. Missing profiles are never interpolated.
+        """
+
+        candidates = self.profiles(workload_key)
+        if not candidates:
+            raise KeyError(f"no service cache entries for workload {workload_key!r}")
+        rows = []
+        for record in candidates:
+            makespan = deterministic_makespan_s(
+                task_count=task_count,
+                total_units=total_units,
+                resource_count=resource_count,
+                profile=record.profile,
+                aggregate_rate=record.aggregate_rate,
+            )
+            rows.append(
+                (
+                    record,
+                    makespan,
+                    deterministic_mean_flow_s(
+                        task_count=task_count,
+                        total_units=total_units,
+                        resource_count=resource_count,
+                        profile=record.profile,
+                        aggregate_rate=record.aggregate_rate,
+                    ),
+                )
+            )
+        best_makespan = min(row[1] for row in rows)
+        guard = best_makespan * (1.0 + max(0.0, float(max_makespan_regret)))
+        admissible = [row for row in rows if row[1] <= guard]
+        if not admissible:
+            admissible = rows
+        return min(admissible, key=lambda row: (row[2], row[1], row[0].profile))[0]
+
     def snapshot(self) -> dict[str, Any]:
         return {"records": [record.snapshot() for record in sorted(self._records.values(), key=lambda r: (r.workload_key, r.profile))]}
 
@@ -148,6 +196,33 @@ def deterministic_makespan_s(
     if mean_rate <= 0:
         return float("inf")
     return float(waves) * float(total_units) / mean_rate
+
+
+def deterministic_mean_flow_s(
+    *,
+    task_count: int,
+    total_units: float,
+    resource_count: int,
+    profile: int,
+    aggregate_rate: float,
+) -> float:
+    n = max(0, int(task_count))
+    if n <= 0:
+        return 0.0
+    slots = max(1, int(resource_count)) * max(1, int(profile))
+    mean_rate = float(aggregate_rate) / float(max(1, int(profile)))
+    if mean_rate <= 0:
+        return float("inf")
+    wave_seconds = float(total_units) / mean_rate
+    remaining = n
+    wave = 0
+    total_completion = 0.0
+    while remaining > 0:
+        wave += 1
+        done = min(slots, remaining)
+        total_completion += float(done) * float(wave) * wave_seconds
+        remaining -= done
+    return total_completion / float(n)
 
 
 def cache_needs_probe(cache: ServiceRateCache, workload_key: str, profile: int) -> bool:

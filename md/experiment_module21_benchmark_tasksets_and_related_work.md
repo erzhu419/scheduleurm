@@ -100,10 +100,12 @@ python3 -m simulation.cli \
   --min-class-improvement 1.03
 ```
 
-For `q01_gpu_bound_compute`, the calibrated replay objective is all-task
-makespan. With profiles 1-8 measured, the q01 standalone replay selects 8/GPU
-against the legacy 3/GPU cap and improves makespan, while mean flow is worse.
-Report that as a makespan result, not a generic latency result.
+For `q01_gpu_bound_compute`, the makespan-only replay objective selects 8/GPU
+against the legacy 3/GPU cap. That improves all-task makespan but worsens mean
+flow. Module26 fixes this with a resource-class guarded statewise selector:
+pure GPU-heavy profiles first stay inside a measured makespan-regret guard, then
+use the bounded delay/congestion penalty to select lower co-location. The
+validated q01 result now reports both makespan and mean-flow improvement.
 
 The CLI refuses incomplete tasksets by default. For example, `q01_gpu_bound_compute`
 will not run as a full benchmark until profiles 4-8 are measured. Exploratory

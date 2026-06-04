@@ -25,6 +25,17 @@ main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_se
 
 其中 `α0` 不消耗线性 slack，但进入 drift 常数；`α1` 消耗 slack。实验架子必须围绕这个不等式组织，不能只做“看起来调度效果不错”的吞吐图。
 
+当前 active performance baseline 是 Scheduleurm legacy fixed caps。SOTA 论文和开源实现只作为 reference/future baseline，除非某个实验明确做到：
+
+```text
+同一批 trace；
+同一份 measured service cache 或同等真实 profiling；
+同一 all-task completion / mean-flow 指标；
+外部 policy 语义被复现或直接运行。
+```
+
+在这些条件满足前，报告只能写“beats Scheduleurm legacy”，不能写“beats SOTA”。
+
 ---
 
 ## 1. 不可混淆的对象定义

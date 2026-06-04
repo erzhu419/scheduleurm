@@ -49,6 +49,33 @@ def build_default_cache() -> ServiceRateCache:
         total_units=2400,
         node_bucket="jtl110gpu2:12gb",
     )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module23_q00_light_control_local_profiles1_16_20260604_001" / "reports",
+        workload_key="light_control_local",
+        command_fingerprint="cpu_light_sleep_20ms_v1",
+        resource_kind="light_control",
+        total_units=10000,
+        node_bucket="local:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module23_q00_light_control_local_profile16_boundary_20260604_001" / "reports",
+        workload_key="light_control_local",
+        command_fingerprint="cpu_light_sleep_20ms_v1",
+        resource_kind="light_control",
+        total_units=10000,
+        node_bucket="local:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module24_q00_light_control_local_profiles3_7_20260604_001" / "reports",
+        workload_key="light_control_local",
+        command_fingerprint="cpu_light_sleep_20ms_v1",
+        resource_kind="light_control",
+        total_units=10000,
+        node_bucket="local:cpu",
+    )
     add_protocol_cpu_curve(
         cache,
         workload_key="cpu_heavy_protocol",
@@ -70,6 +97,7 @@ def legacy_policy() -> ReplayPolicy:
         fixed_profiles={
             "hybrid_rl_resac_ant": 5,
             "gpu_heavy_jax_matmul": 3,
+            "light_control_local": 1,
             "cpu_heavy_protocol": 32,
         },
     )
@@ -89,7 +117,9 @@ def _add_summary_dir(
     total_units: float,
     node_bucket: str,
 ) -> None:
-    for path in sorted(reports_dir.glob("profile_*_per_gpu_summary.json")):
+    paths = sorted(reports_dir.glob("profile_*_per_gpu_summary.json"))
+    paths += sorted(reports_dir.glob("profile_*_per_resource_summary.json"))
+    for path in paths:
         for record in records_from_summary_file(
             path,
             workload_key=workload_key,

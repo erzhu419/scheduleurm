@@ -46,7 +46,7 @@ surface rather than ad hoc names.
 
 | Taskset | Quadrant | Purpose | Current measurement status |
 |---|---|---|---|
-| `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Probe required. |
+| `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Local CPU-only profiles 1-8 are clean real measurements; profile 16 is a measured local scheduling-capacity boundary. |
 | `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-8 are clean real measurements on `jtl110gpu2`. |
 | `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Protocol replay curve only; needs a real CPU/data-loader benchmark before theorem-grade claims. |
 | `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/invalid placement and closes the higher-profile measurement obligation for this node bucket. |
@@ -116,7 +116,8 @@ The next real probes should fill:
 - `q11_cpu_gpu_coupled`: profile 13 is already a measured capacity boundary on
   this node bucket; do not spend GPU time on 14-16 unless we intentionally
   change memory settings, task template, or node bucket;
-- `q00_light_control`: one tiny real command family;
+- `q00_light_control`: local control curve is measured; repeat only if we need a
+  remote CPU-node bucket rather than local control-plane behavior;
 - `q10_cpu_host_bound`: a real CPU-heavy or data-loader-heavy command family.
 
 ## Source Links

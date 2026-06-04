@@ -49,8 +49,8 @@ def test_hybrid_research_portfolio_has_no_missing_empirical_gpu_profiles(check, 
 def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     cache = build_default_cache()
     missing = all_missing_measurements(cache)
-    check("light control remains a real-probe obligation",
-          missing.get("q00_light_control", {}).get("light_control_protocol") == [1, 2, 4, 8, 16],
+    check("light control has measured local curve closed by profile 16 boundary",
+          "q00_light_control" not in missing,
           diag=str(missing))
     check("GPU-bound full saturation set has measured profiles 1-8",
           "q01_gpu_bound_compute" not in missing,
@@ -64,8 +64,8 @@ def test_replayable_only_filters_unmeasured_members(check, sch):
     cache = build_default_cache()
     light_specs = taskset_by_name("q00_light_control").workload_specs(replayable_only=True, cache=cache)
     hybrid_specs = taskset_by_name("hybrid_research_portfolio").workload_specs(replayable_only=True, cache=cache)
-    check("unmeasured control taskset is not replayable yet",
-          light_specs == [],
+    check("measured light-control taskset is replayable",
+          len(light_specs) == 1 and light_specs[0].workload_key == "light_control_local",
           diag=str(light_specs))
     check("validated hybrid portfolio remains replayable",
           len(hybrid_specs) == 3
@@ -84,3 +84,8 @@ def test_capacity_boundary_closes_higher_required_profiles(check, sch):
     check("q11 missing-measurement list stops at the measured boundary",
           snapshot["missing_measurements"] == {},
           diag=str(snapshot))
+
+    q00 = taskset_by_name("q00_light_control").snapshot(cache)
+    check("q00 snapshot records profile 16 as the local light-control boundary",
+          q00["members"][0]["closed_by_capacity_boundary_profile"] == 16,
+          diag=str(q00))

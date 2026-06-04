@@ -1,0 +1,273 @@
+"""Benchmark task-set registry for Scheduleurm replay experiments."""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Iterable
+
+from .fast_forward import WorkloadSpec
+from .service_cache import ServiceRateCache, missing_exact_profiles
+
+
+@dataclass(frozen=True)
+class TaskSetMember:
+    workload_key: str
+    resource_kind: str
+    task_count: int
+    total_units: float
+    resource_count: int
+    variation_cv: float
+    quadrant: str
+    role: str
+    benchmark_source: str
+    required_profiles: tuple[int, ...]
+    empirical_status: str = "real"
+    note: str = ""
+
+    def to_workload_spec(self) -> WorkloadSpec:
+        return WorkloadSpec(
+            workload_key=self.workload_key,
+            resource_kind=self.resource_kind,
+            task_count=self.task_count,
+            total_units=self.total_units,
+            resource_count=self.resource_count,
+            variation_cv=self.variation_cv,
+        )
+
+    def missing_profiles(self, cache: ServiceRateCache) -> list[int]:
+        if self.empirical_status == "probe_required":
+            return list(self.required_profiles)
+        return missing_exact_profiles(cache, self.workload_key, self.required_profiles)
+
+    def snapshot(self, cache: ServiceRateCache | None = None) -> dict[str, Any]:
+        out: dict[str, Any] = {
+            "workload_key": self.workload_key,
+            "resource_kind": self.resource_kind,
+            "task_count": self.task_count,
+            "total_units": self.total_units,
+            "resource_count": self.resource_count,
+            "variation_cv": self.variation_cv,
+            "quadrant": self.quadrant,
+            "role": self.role,
+            "benchmark_source": self.benchmark_source,
+            "required_profiles": list(self.required_profiles),
+            "empirical_status": self.empirical_status,
+            "note": self.note,
+        }
+        if cache is not None:
+            out["missing_profiles"] = self.missing_profiles(cache)
+        return out
+
+
+@dataclass(frozen=True)
+class TaskSet:
+    name: str
+    purpose: str
+    arrival_model: str
+    members: tuple[TaskSetMember, ...]
+
+    def workload_specs(self, *, replayable_only: bool = False, cache: ServiceRateCache | None = None) -> list[WorkloadSpec]:
+        specs: list[WorkloadSpec] = []
+        for member in self.members:
+            if replayable_only:
+                if cache is None:
+                    raise ValueError("cache is required when replayable_only=True")
+                if member.empirical_status == "probe_required" or member.missing_profiles(cache):
+                    continue
+            specs.append(member.to_workload_spec())
+        return specs
+
+    def missing_measurements(self, cache: ServiceRateCache) -> dict[str, list[int]]:
+        missing: dict[str, list[int]] = {}
+        for member in self.members:
+            profiles = member.missing_profiles(cache)
+            if profiles:
+                missing[member.workload_key] = profiles
+        return missing
+
+    def snapshot(self, cache: ServiceRateCache | None = None) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "purpose": self.purpose,
+            "arrival_model": self.arrival_model,
+            "members": [member.snapshot(cache) for member in self.members],
+            "missing_measurements": self.missing_measurements(cache) if cache is not None else {},
+        }
+
+
+def benchmark_tasksets() -> dict[str, TaskSet]:
+    tasksets = [
+        TaskSet(
+            name="q00_light_control",
+            purpose=(
+                "Low-CPU, low-GPU control surface. This catches scheduler overhead, queue churn, "
+                "and short-task fragmentation before the resource-pressure modules are enabled."
+            ),
+            arrival_model="static batch first; later Poisson arrivals at subcritical load",
+            members=(
+                TaskSetMember(
+                    workload_key="light_control_protocol",
+                    resource_kind="light_control",
+                    task_count=512,
+                    total_units=60,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="low_cpu_low_gpu",
+                    role="control",
+                    benchmark_source="Themis short-app and Gavel static-trace style control workload",
+                    required_profiles=(1, 2, 4, 8, 16),
+                    empirical_status="probe_required",
+                    note="Needs a tiny real command before it can be used as a throughput claim.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="q01_gpu_bound_compute",
+            purpose=(
+                "Low-host, high-GPU compute pressure. This is the pure GPU curve that should "
+                "prefer fewer co-located jobs once aggregate service saturates."
+            ),
+            arrival_model="static batch plus Gavel-style Poisson seeds after module validation",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_heavy_jax_matmul",
+                    resource_kind="gpu_heavy",
+                    task_count=48,
+                    total_units=2400,
+                    resource_count=2,
+                    variation_cv=0.04,
+                    quadrant="low_cpu_high_gpu",
+                    role="single-bottleneck validation",
+                    benchmark_source="Scheduleurm module6; analogous to Gavel/Pollux DNN throughput-table replay",
+                    required_profiles=(1, 2, 3, 4, 5, 6, 7, 8),
+                    empirical_status="partial_real",
+                    note="Profiles 1-3 are real on jtl110gpu2; higher co-location profiles still need real probes.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="q10_cpu_host_bound",
+            purpose=(
+                "High-CPU/host pressure with low GPU pressure. This separates scheduler CPU/RAM "
+                "packing from GPU-placement decisions."
+            ),
+            arrival_model="static batch first; then Poisson rate sweep for host saturation",
+            members=(
+                TaskSetMember(
+                    workload_key="cpu_heavy_protocol",
+                    resource_kind="cpu_heavy",
+                    task_count=256,
+                    total_units=3600,
+                    resource_count=1,
+                    variation_cv=0.10,
+                    quadrant="high_cpu_low_gpu",
+                    role="single-bottleneck validation",
+                    benchmark_source="Protocol curve until a real CPU/data-loader benchmark is profiled",
+                    required_profiles=tuple(range(1, 33)),
+                    empirical_status="protocol",
+                    note="Replay-capable protocol curve, but not yet a theorem-grade empirical CPU trace.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="q11_cpu_gpu_coupled",
+            purpose=(
+                "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like "
+                "RL jobs where several jobs per GPU can retain near-solo ETA."
+            ),
+            arrival_model="dense static batch; later long trace with bursty arrivals",
+            members=(
+                TaskSetMember(
+                    workload_key="hybrid_rl_resac_ant",
+                    resource_kind="hybrid_rl",
+                    task_count=160,
+                    total_units=80,
+                    resource_count=1,
+                    variation_cv=0.08,
+                    quadrant="high_cpu_high_gpu",
+                    role="coupled interference validation",
+                    benchmark_source="Scheduleurm module12 real RE-SAC Ant dense co-location profile",
+                    required_profiles=tuple(range(1, 17)),
+                    empirical_status="partial_real",
+                    note="Profiles 1-13 are currently real; 14-16 remain saturation probes if memory permits.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="hybrid_research_portfolio",
+            purpose=(
+                "Mixed workload portfolio used after individual modules pass. This is the closest "
+                "Scheduleurm analogue of Gavel/Pollux/Sia trace replay."
+            ),
+            arrival_model="static portfolio now; Poisson and production-like bursts after service cache expansion",
+            members=(
+                TaskSetMember(
+                    workload_key="hybrid_rl_resac_ant",
+                    resource_kind="hybrid_rl",
+                    task_count=120,
+                    total_units=80,
+                    resource_count=1,
+                    variation_cv=0.08,
+                    quadrant="high_cpu_high_gpu",
+                    role="dominant Scheduleurm research workload",
+                    benchmark_source="Scheduleurm module12 real RE-SAC Ant service curve",
+                    required_profiles=tuple(range(1, 11)),
+                    empirical_status="real",
+                ),
+                TaskSetMember(
+                    workload_key="gpu_heavy_jax_matmul",
+                    resource_kind="gpu_heavy",
+                    task_count=24,
+                    total_units=2400,
+                    resource_count=2,
+                    variation_cv=0.04,
+                    quadrant="low_cpu_high_gpu",
+                    role="pure GPU counterexample class",
+                    benchmark_source="Scheduleurm module6 real JAX matmul service curve",
+                    required_profiles=(1, 2, 3),
+                    empirical_status="real",
+                ),
+                TaskSetMember(
+                    workload_key="cpu_heavy_protocol",
+                    resource_kind="cpu_heavy",
+                    task_count=256,
+                    total_units=3600,
+                    resource_count=1,
+                    variation_cv=0.10,
+                    quadrant="high_cpu_low_gpu",
+                    role="host saturation placeholder",
+                    benchmark_source="Protocol curve; replace with real CPU-heavy command when profiled",
+                    required_profiles=tuple(range(1, 33)),
+                    empirical_status="protocol",
+                ),
+            ),
+        ),
+    ]
+    return {taskset.name: taskset for taskset in tasksets}
+
+
+def taskset_by_name(name: str) -> TaskSet:
+    tasksets = benchmark_tasksets()
+    try:
+        return tasksets[name]
+    except KeyError as exc:
+        known = ", ".join(sorted(tasksets))
+        raise KeyError(f"unknown taskset {name!r}; known tasksets: {known}") from exc
+
+
+def empirical_replay_taskset() -> TaskSet:
+    return taskset_by_name("hybrid_research_portfolio")
+
+
+def empirical_replay_specs() -> list[WorkloadSpec]:
+    return empirical_replay_taskset().workload_specs()
+
+
+def all_missing_measurements(cache: ServiceRateCache, names: Iterable[str] | None = None) -> dict[str, dict[str, list[int]]]:
+    selected = benchmark_tasksets()
+    if names is not None:
+        selected = {name: taskset_by_name(name) for name in names}
+    return {
+        name: taskset.missing_measurements(cache)
+        for name, taskset in selected.items()
+        if taskset.missing_measurements(cache)
+    }

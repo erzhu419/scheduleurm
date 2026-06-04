@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .fast_forward import ReplayPolicy, WorkloadSpec
 from .service_cache import ServiceRateCache, add_protocol_cpu_curve, records_from_summary_file
+from .tasksets import empirical_replay_specs
 
 
 RUN_ROOT = Path("/home/erzhu419/.claude/scheduler/experiments/runs")
@@ -51,32 +52,7 @@ def build_default_cache() -> ServiceRateCache:
 
 
 def default_workload_specs() -> list[WorkloadSpec]:
-    return [
-        WorkloadSpec(
-            workload_key="hybrid_rl_resac_ant",
-            resource_kind="hybrid_rl",
-            task_count=120,
-            total_units=80,
-            resource_count=1,
-            variation_cv=0.08,
-        ),
-        WorkloadSpec(
-            workload_key="gpu_heavy_jax_matmul",
-            resource_kind="gpu_heavy",
-            task_count=24,
-            total_units=2400,
-            resource_count=2,
-            variation_cv=0.04,
-        ),
-        WorkloadSpec(
-            workload_key="cpu_heavy_protocol",
-            resource_kind="cpu_heavy",
-            task_count=256,
-            total_units=3600,
-            resource_count=1,
-            variation_cv=0.10,
-        ),
-    ]
+    return empirical_replay_specs()
 
 
 def legacy_policy() -> ReplayPolicy:

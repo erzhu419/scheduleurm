@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .defaults import build_default_cache, calibrated_policy, default_workload_specs, legacy_policy
 from .fast_forward import compare_policies
+from .tasksets import benchmark_tasksets, taskset_by_name
 
 
 def main() -> int:
@@ -17,12 +18,32 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--min-makespan-improvement", type=float, default=1.05)
     parser.add_argument("--min-class-improvement", type=float, default=1.03)
+    parser.add_argument("--taskset", default="hybrid_research_portfolio")
+    parser.add_argument("--list-tasksets", action="store_true")
+    parser.add_argument("--allow-partial-taskset", action="store_true")
     args = parser.parse_args()
 
+    if args.list_tasksets:
+        print(json.dumps({"tasksets": sorted(benchmark_tasksets())}, indent=2, sort_keys=True))
+        return 0
+
     cache = build_default_cache()
+    taskset = taskset_by_name(args.taskset)
+    missing = taskset.missing_measurements(cache)
+    if missing and not args.allow_partial_taskset:
+        report = {
+            "pass": False,
+            "error": "taskset has missing measurement obligations; run real probes first or pass --allow-partial-taskset for exploratory replay",
+            "taskset": taskset.snapshot(cache),
+        }
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 2
+    specs = taskset.workload_specs()
+    if args.taskset == "hybrid_research_portfolio":
+        specs = default_workload_specs()
     comparison = compare_policies(
         cache,
-        default_workload_specs(),
+        specs,
         baseline=legacy_policy(),
         candidate=calibrated_policy(),
         trials=args.trials,
@@ -43,6 +64,7 @@ def main() -> int:
     report["min_class_improvement"] = float(args.min_class_improvement)
     report["empirical_classes_checked"] = list(empirical_classes)
     report["cache_workloads"] = cache.available_workloads()
+    report["taskset"] = taskset.snapshot(cache)
 
     if args.cache_out:
         cache.save(Path(args.cache_out))

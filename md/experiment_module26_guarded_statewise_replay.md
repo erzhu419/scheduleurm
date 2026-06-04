@@ -9,6 +9,10 @@ such as Gavel, Pollux, Sia, Tiresias, THEMIS, IADeep, Decima, and Salus are
 currently reference material and future baselines, not active competitors in the
 reported pass/fail numbers.
 
+Current note: module28 changes the reviewer-facing standalone q01 default from
+this module's extreme delay endpoint, `1/GPU`, to the guarded Pareto knee,
+`4/GPU`. The module26 result remains useful as the delay-endpoint ablation.
+
 ## Problem
 
 The makespan-only calibrated policy selected:

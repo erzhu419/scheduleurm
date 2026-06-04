@@ -43,10 +43,11 @@ preserve portfolio total makespan within a global guard;
 inside that guard, minimize weighted mean flow.
 ```
 
-For a single-workload taskset, the candidate remains the module26 selector:
+For a single-workload taskset, module28 changes q01 from the module26 delay
+endpoint to the guarded knee:
 
 ```text
-q01 GPU-heavy: guarded statewise profile 1
+q01 GPU-heavy: guarded knee profile 4
 q11 hybrid RL: throughput/support profile 10
 ```
 
@@ -92,7 +93,7 @@ Standalone quadrants:
 | Taskset | Candidate profile | SOTA-style Pareto status |
 |---|---|---|
 | `q00_light_control` | `light_control_local=8` | not dominated |
-| `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=1` | not dominated |
+| `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | not dominated |
 | `q10_cpu_host_bound` | `cpu_heavy_protocol=16` | not dominated |
 | `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | not dominated |
 
@@ -100,13 +101,15 @@ q01 details:
 
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
-| throughput-table goodput | 0.971x | 1.221x |
-| delay oracle | 1.000x | 1.000x |
-| interference guard | 1.000x | 1.000x |
+| throughput-table goodput | 0.985x | 1.111x |
+| delay oracle | 1.015x | 0.910x |
+| interference guard | 1.015x | 0.910x |
 | quadrant composite | 1.000x | 1.000x |
 
-q01 therefore loses about 3% makespan to a pure throughput-table objective, but
-wins about 22% mean-flow. That is a Pareto tradeoff, not a module failure.
+q01 therefore loses about 1.5% makespan to a pure throughput-table objective,
+but wins about 11% mean-flow. Against the delay oracle it wins makespan and
+loses mean-flow. This is the Pareto-knee version of the tradeoff, not a module
+failure.
 
 q11 details:
 
@@ -145,7 +148,7 @@ The SOTA suite did not expose a broken algorithm module. It exposed objective
 boundaries:
 
 ```text
-q01: throughput-only makespan beats delay-aware policy, but loses mean-flow.
+q01: throughput-only makespan beats the guarded knee, but loses mean-flow.
 q11: delay-only mean-flow beats throughput policy, but loses makespan.
 portfolio: global guarded selection removes the previous delay gap.
 ```

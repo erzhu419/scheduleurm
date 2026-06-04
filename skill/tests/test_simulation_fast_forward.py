@@ -162,6 +162,29 @@ def test_sota_style_baselines_do_not_pareto_dominate_candidate(check, sch):
           diag=str(portfolio))
 
 
+def test_q01_default_candidate_uses_pareto_knee(check, sch):
+    cache = build_default_cache()
+    report = compare_against_sota_suite(
+        cache,
+        taskset_by_name("q01_gpu_bound_compute").workload_specs(),
+        trials=31,
+        seed=42,
+    )
+    throughput = next(row for row in report["baselines"] if row["baseline"]["name"] == "throughput_table_goodput")
+    delay = next(row for row in report["baselines"] if row["baseline"]["name"] == "delay_oracle")
+    check("q01 default candidate selects the guarded Pareto knee",
+          throughput["candidate_profiles"] == {"gpu_heavy_jax_matmul": 4},
+          diag=str(report))
+    check("q01 knee trades less than 2% makespan for more than 10% mean-flow vs throughput SOTA",
+          throughput["candidate_vs_baseline_makespan"] > 0.98
+          and throughput["candidate_vs_baseline_mean_flow"] > 1.10,
+          diag=str(report))
+    check("q01 knee is a real tradeoff against the delay oracle",
+          delay["candidate_vs_baseline_makespan"] > 1.0
+          and delay["candidate_vs_baseline_mean_flow"] < 1.0,
+          diag=str(report))
+
+
 def test_fast_forward_refuses_unmeasured_colocation_profile(check, sch):
     cache = ServiceRateCache([build_default_cache().get("hybrid_rl_resac_ant", 1)])
     comparison_error = ""

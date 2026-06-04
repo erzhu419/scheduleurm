@@ -842,6 +842,14 @@ main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_b
 
 module27 的 multi-workload global guarded selector 是同一思想的 portfolio 版本：先保持全局 support/makespan guard，再在 guard 内最小化 weighted mean-flow。它不改变 Theorem C/D 的 slack accounting，只改变实现中如何估计和消耗 bounded penalty。
 
+module28 的 q01 standalone 默认点使用同一个 guard 原理：在 measured q01 service curve 上先要求
+
+[
+M_k\leq 1.02\min_j M_j,
+]
+
+再最小化 \(F_k\)。这会选择 4/GPU 的 Pareto knee，而不是 1/GPU 的 extreme delay endpoint 或 8/GPU 的 extreme throughput endpoint。
+
 ---
 
 ## Theorem D：concrete finite-support stochastic stability

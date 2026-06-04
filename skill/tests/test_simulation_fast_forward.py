@@ -1,6 +1,18 @@
-from simulation.defaults import build_default_cache, calibrated_policy, default_workload_specs, legacy_policy
+from simulation.defaults import (
+    build_default_cache,
+    calibrated_makespan_policy,
+    calibrated_policy,
+    default_workload_specs,
+    legacy_policy,
+)
 from simulation.fast_forward import compare_policies
-from simulation.service_cache import ServiceRateCache, cache_needs_probe, deterministic_makespan_s, missing_exact_profiles
+from simulation.service_cache import (
+    ServiceRateCache,
+    cache_needs_probe,
+    deterministic_makespan_s,
+    deterministic_mean_flow_s,
+    missing_exact_profiles,
+)
 
 
 def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
@@ -35,19 +47,26 @@ def test_simulation_cache_reuses_existing_eta_profile(check, sch):
 
 def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
     cache = build_default_cache()
-    record = cache.best_profile_for_makespan(
+    makespan_record = cache.best_profile_for_makespan(
         "hybrid_rl_resac_ant",
         task_count=120,
         total_units=80,
         resource_count=1,
+    )
+    guarded_record = cache.best_profile_for_guarded_mean_flow(
+        "gpu_heavy_jax_matmul",
+        task_count=48,
+        total_units=2400,
+        resource_count=2,
+        max_makespan_regret=0.05,
     )
     legacy = cache.get("hybrid_rl_resac_ant", 5)
     calibrated_ms = deterministic_makespan_s(
         task_count=120,
         total_units=80,
         resource_count=1,
-        profile=record.profile,
-        aggregate_rate=record.aggregate_rate,
+        profile=makespan_record.profile,
+        aggregate_rate=makespan_record.aggregate_rate,
     )
     legacy_ms = deterministic_makespan_s(
         task_count=120,
@@ -57,11 +76,23 @@ def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
         aggregate_rate=legacy.aggregate_rate,
     )
     check("calibrated RE-SAC profile is high co-location from real curve",
-          record.profile == 10,
-          diag=str(record.snapshot()))
+          makespan_record.profile == 10,
+          diag=str(makespan_record.snapshot()))
     check("calibrated RE-SAC deterministic makespan beats legacy cap",
           legacy_ms / calibrated_ms > 1.20,
           diag=f"legacy={legacy_ms}, calibrated={calibrated_ms}")
+    check("guarded GPU-heavy selector can prefer lower congestion within makespan slack",
+          guarded_record.profile == 1,
+          diag=str(guarded_record.snapshot()))
+    check("deterministic mean-flow proxy is finite for measured GPU profiles",
+          deterministic_mean_flow_s(
+              task_count=48,
+              total_units=2400,
+              resource_count=2,
+              profile=guarded_record.profile,
+              aggregate_rate=guarded_record.aggregate_rate,
+          ) > 0.0,
+          diag=str(guarded_record.snapshot()))
 
 
 def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
@@ -81,16 +112,30 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
           comparison.per_workload_improvements["hybrid_rl_resac_ant"]["makespan_improvement"] > 1.05
           and comparison.per_workload_improvements["gpu_heavy_jax_matmul"]["makespan_improvement"] > 1.03,
           diag=str(comparison.snapshot()))
+    check("guarded statewise replay fixes GPU-heavy mean-flow regression",
+          comparison.per_workload_improvements["gpu_heavy_jax_matmul"]["mean_flow_improvement"] > 1.03,
+          diag=str(comparison.snapshot()))
     check("trace-driven replay keeps workload class decisions explicit",
           {
               row.workload_key: row.selected_profile
               for row in comparison.candidate.workloads
           } == {
               "hybrid_rl_resac_ant": 10,
-              "gpu_heavy_jax_matmul": 6,
+              "gpu_heavy_jax_matmul": 1,
               "cpu_heavy_protocol": 16,
           },
           diag=str(comparison.snapshot()))
+    makespan_only = compare_policies(
+        cache,
+        default_workload_specs(),
+        baseline=legacy_policy(),
+        candidate=calibrated_makespan_policy(),
+        trials=31,
+        seed=42,
+    )
+    check("guarded statewise replay keeps portfolio mean-flow at least makespan-only",
+          comparison.mean_flow_improvement >= makespan_only.mean_flow_improvement,
+          diag=f"guarded={comparison.snapshot()} makespan_only={makespan_only.snapshot()}")
 
 
 def test_fast_forward_refuses_unmeasured_colocation_profile(check, sch):

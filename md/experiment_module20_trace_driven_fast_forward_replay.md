@@ -52,6 +52,11 @@ the two empirical GPU/hybrid classes separately.
 
 ## Policies Compared
 
+Current note: module26 upgrades the default calibrated policy from a pure
+makespan selector to `calibrated_guarded_statewise`. The early replay method
+below remains valid, but reviewer-facing performance numbers should use module26
+unless explicitly discussing the makespan-only ablation.
+
 Legacy baseline:
 
 ```text
@@ -60,13 +65,13 @@ gpu_heavy_jax_matmul: profile 3/GPU
 cpu_heavy_protocol: profile 32 workers
 ```
 
-Calibrated replay:
+Calibrated replay in the early module20 close-out:
 
 ```text
 select profile minimizing cached makespan proxy for each workload class
 ```
 
-The calibrated selections were:
+The current default calibrated replay after module26 is:
 
 ```text
 hybrid_rl_resac_ant: profile 10/GPU
@@ -92,16 +97,16 @@ Validation status: pass.
 
 | Metric | Legacy | Calibrated | Improvement |
 |---|---:|---:|---:|
-| Portfolio makespan | 76379.767 s | 59485.685 s | 1.284x |
-| Weighted mean flow | 32310.522 s | 23898.363 s | 1.352x |
+| Portfolio makespan | 76472.987 s | 59534.263 s | 1.285x |
+| Weighted mean flow | 32431.821 s | 23960.208 s | 1.354x |
 
 Per workload:
 
 | Workload | Legacy profile | Calibrated profile | Makespan improvement | Mean-flow improvement |
 |---|---:|---:|---:|---:|
-| `hybrid_rl_resac_ant` | 5 | 10 | 1.226x | 1.197x |
-| `gpu_heavy_jax_matmul` | 3 | 1 | 1.063x | 1.223x |
-| `cpu_heavy_protocol` | 32 | 16 | 1.284x | 1.387x |
+| `hybrid_rl_resac_ant` | 5 | 10 | 1.227x | 1.190x |
+| `gpu_heavy_jax_matmul` | 3 | 1 | 1.064x | 1.225x |
+| `cpu_heavy_protocol` | 32 | 16 | 1.285x | 1.390x |
 
 The pass condition requires:
 
@@ -116,7 +121,7 @@ All passed.
 ## Validation
 
 - `python3 -m py_compile simulation/... skill/tests/test_simulation_fast_forward.py`
-- Targeted simulation test loader: `checks=10 failed=0`
+- Targeted simulation test loader after module26: `checks=18 failed=0`
 - CLI replay: `pass=true`
 
 ## Interpretation

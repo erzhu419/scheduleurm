@@ -104,7 +104,24 @@ def legacy_policy() -> ReplayPolicy:
 
 
 def calibrated_policy() -> ReplayPolicy:
-    return ReplayPolicy(name="calibrated_fast_forward", calibrated=True)
+    return ReplayPolicy(
+        name="calibrated_guarded_statewise",
+        calibrated=True,
+        calibrated_objective="makespan",
+        max_makespan_regret=0.02,
+        statewise_regret_slack=0.6,
+        statewise=True,
+        guarded_resource_kinds=("gpu_heavy",),
+        statewise_resource_kinds=("gpu_heavy",),
+    )
+
+
+def calibrated_makespan_policy() -> ReplayPolicy:
+    return ReplayPolicy(
+        name="calibrated_fast_forward_makespan",
+        calibrated=True,
+        calibrated_objective="makespan",
+    )
 
 
 def _add_summary_dir(

@@ -72,6 +72,15 @@ The exported trace contains every job id, workload key, resource kind, arrival
 time, total work units, and resource-pool count. The report contains each
 policy's selected profile and completion metrics.
 
+The pass condition is not legacy-only:
+
+```text
+pass =
+  candidate improves both all-job makespan and mean flow over Scheduleurm legacy;
+  candidate is not Pareto-dominated by any SOTA-style baseline
+  on all-job makespan and mean flow.
+```
+
 ## Static Task-List Results
 
 Scheduleurm candidate vs legacy:
@@ -83,6 +92,19 @@ Scheduleurm candidate vs legacy:
 | `q10_cpu_host_bound` | `cpu_heavy_protocol=16` | 1.281x | 1.387x | 1.380x |
 | `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | 1.229x | 1.203x | 1.205x |
 | `hybrid_research_portfolio` | `cpu=16, gpu=1, hybrid=1` | 1.284x | 1.360x | 1.358x |
+
+Scheduleurm candidate vs SOTA-style baselines on the same explicit task lists:
+
+| Taskset | Strongest SOTA-style comparison | Candidate vs SOTA makespan | Candidate vs SOTA mean flow | Pareto status |
+|---|---|---:|---:|---|
+| `q00_light_control` | all SOTA-style policies tie candidate | 1.000x | 1.000x | not dominated |
+| `q01_gpu_bound_compute` | throughput table endpoint | 0.984x | 1.116x | tradeoff, not dominated |
+| `q01_gpu_bound_compute` | delay oracle endpoint | 1.014x | 0.911x | tradeoff, not dominated |
+| `q10_cpu_host_bound` | all SOTA-style policies tie candidate | 1.000x | 1.000x | not dominated |
+| `q11_cpu_gpu_coupled` | delay oracle endpoint | 1.029x | 0.983x | tradeoff, not dominated |
+| `hybrid_research_portfolio` | throughput table endpoint | 1.000x | 1.006x | candidate better mean-flow |
+| `hybrid_research_portfolio` | interference/composite endpoint | 1.000x | 1.006x | candidate better mean-flow |
+| `hybrid_research_portfolio` | delay oracle endpoint | 1.000x | 1.000x | tie |
 
 q01 SOTA endpoint check on the same 48-job task list:
 
@@ -99,7 +121,7 @@ This confirms the intended Pareto geometry rather than hiding it:
 ```text
 candidate beats legacy on all-job time and flow;
 candidate gives up about 1.7% all-job time to the throughput endpoint;
-candidate gains about 11.0% mean-flow over the throughput endpoint;
+candidate gains about 11.6% mean-flow over the throughput endpoint;
 candidate beats the delay endpoint on all-job time but loses mean-flow.
 ```
 

@@ -180,11 +180,13 @@ def replay_trace_suite(
 ) -> dict[str, Any]:
     selected = tuple(policies or benchmark_policies(cache, trace))
     results = [replay_trace(cache, trace, policy, seed=seed) for policy in selected]
+    sota_comparison = _sota_tasklist_comparison(results)
     return {
         "trace": trace.snapshot(),
         "results": [result.snapshot() for result in results],
         "relative_to_legacy": _relative(results, baseline_name="legacy_fixed_caps"),
         "relative_to_candidate": _relative(results, baseline_name=_candidate_name(results)),
+        "sota_tasklist_comparison": sota_comparison,
     }
 
 
@@ -379,6 +381,82 @@ def _candidate_name(results: list[TracePolicyResult]) -> str:
         if row.policy.startswith("calibrated_"):
             return row.policy
     return results[0].policy if results else ""
+
+
+def _sota_tasklist_comparison(results: list[TracePolicyResult]) -> dict[str, Any]:
+    candidate = next((row for row in results if row.policy.startswith("calibrated_")), None)
+    if candidate is None:
+        return {
+            "candidate_policy": "",
+            "rows": [],
+            "candidate_pareto_dominated_by": [],
+            "candidate_not_pareto_dominated": False,
+        }
+    metadata = {spec.policy.name: spec for spec in sota_baseline_specs()}
+    rows = []
+    for result in results:
+        spec = metadata.get(result.policy)
+        if spec is None:
+            continue
+        makespan_ratio = _improvement(result.makespan_s, candidate.makespan_s)
+        mean_flow_ratio = _improvement(result.mean_flow_s, candidate.mean_flow_s)
+        p90_ratio = _improvement(result.p90_flow_s, candidate.p90_flow_s)
+        rows.append(
+            {
+                "baseline": spec.snapshot(),
+                "baseline_policy": result.policy,
+                "candidate_policy": candidate.policy,
+                "baseline_profiles": result.profiles,
+                "candidate_profiles": candidate.profiles,
+                "baseline_makespan_s": result.makespan_s,
+                "candidate_makespan_s": candidate.makespan_s,
+                "candidate_vs_baseline_makespan": makespan_ratio,
+                "baseline_mean_flow_s": result.mean_flow_s,
+                "candidate_mean_flow_s": candidate.mean_flow_s,
+                "candidate_vs_baseline_mean_flow": mean_flow_ratio,
+                "baseline_p90_flow_s": result.p90_flow_s,
+                "candidate_p90_flow_s": candidate.p90_flow_s,
+                "candidate_vs_baseline_p90_flow": p90_ratio,
+            }
+        )
+    dominators = _sota_pareto_dominators(rows)
+    return {
+        "candidate_policy": candidate.policy,
+        "candidate_profiles": candidate.profiles,
+        "rows": rows,
+        "candidate_pareto_dominated_by": dominators,
+        "candidate_not_pareto_dominated": not dominators,
+    }
+
+
+def _sota_pareto_dominators(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    dominators = []
+    eps = 1e-12
+    for row in rows:
+        makespan = float(row["candidate_vs_baseline_makespan"])
+        mean_flow = float(row["candidate_vs_baseline_mean_flow"])
+        baseline = row["baseline"]
+        if (
+            makespan <= 1.0 + eps
+            and mean_flow <= 1.0 + eps
+            and (makespan < 1.0 - eps or mean_flow < 1.0 - eps)
+        ):
+            dominators.append(
+                {
+                    "name": baseline["name"],
+                    "policy": row["baseline_policy"],
+                    "representative_systems": baseline["representative_systems"],
+                    "candidate_vs_baseline_makespan": makespan,
+                    "candidate_vs_baseline_mean_flow": mean_flow,
+                    "baseline_profiles": row["baseline_profiles"],
+                    "candidate_profiles": row["candidate_profiles"],
+                }
+            )
+    return dominators
+
+
+def _improvement(baseline_value: float, candidate_value: float) -> float:
+    return baseline_value / candidate_value if candidate_value > 0 else 0.0
 
 
 def _positive_lognormal(rng: random.Random, mean_value: float, cv: float) -> float:

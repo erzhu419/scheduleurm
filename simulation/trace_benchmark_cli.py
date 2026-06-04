@@ -71,7 +71,17 @@ def _passes(report: dict) -> bool:
     if candidate is None or candidate["policy"] not in legacy_rel:
         return False
     rel = legacy_rel[candidate["policy"]]
-    return rel["makespan_improvement"] >= 1.0 and rel["mean_flow_improvement"] >= 1.0
+    sota_ok = bool(
+        report.get("sota_tasklist_comparison", {}).get(
+            "candidate_not_pareto_dominated",
+            False,
+        )
+    )
+    return (
+        rel["makespan_improvement"] >= 1.0
+        and rel["mean_flow_improvement"] >= 1.0
+        and sota_ok
+    )
 
 
 if __name__ == "__main__":

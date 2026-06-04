@@ -54,6 +54,15 @@ def test_q01_task_list_replay_compares_legacy_candidate_and_sota(check, sch):
     legacy_rel = report["relative_to_legacy"][candidate["policy"]]
     throughput = _row(report, "sota_gavel_pollux_sia_table_goodput")
     delay = _row(report, "sota_srpt_gittins_mean_flow_oracle")
+    sota = report["sota_tasklist_comparison"]
+    throughput_cmp = next(
+        row for row in sota["rows"]
+        if row["baseline"]["name"] == "throughput_table_goodput"
+    )
+    delay_cmp = next(
+        row for row in sota["rows"]
+        if row["baseline"]["name"] == "delay_oracle"
+    )
 
     check("q01 task-list replay includes legacy, candidate, and SOTA-style policies",
           {
@@ -81,6 +90,16 @@ def test_q01_task_list_replay_compares_legacy_candidate_and_sota(check, sch):
           and candidate["makespan_s"] < delay["makespan_s"]
           and candidate["mean_flow_s"] > delay["mean_flow_s"],
           diag=str(report["results"]))
+    check("q01 task-list replay candidate is not Pareto-dominated by SOTA-style baselines",
+          sota["candidate_not_pareto_dominated"]
+          and sota["candidate_pareto_dominated_by"] == [],
+          diag=str(sota))
+    check("q01 SOTA comparison reports throughput and delay tradeoffs explicitly",
+          throughput_cmp["candidate_vs_baseline_makespan"] < 1.0
+          and throughput_cmp["candidate_vs_baseline_mean_flow"] > 1.10
+          and delay_cmp["candidate_vs_baseline_makespan"] > 1.0
+          and delay_cmp["candidate_vs_baseline_mean_flow"] < 1.0,
+          diag=str(sota))
 
 
 def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
@@ -101,6 +120,7 @@ def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
         report = replay_trace_suite(cache, trace, seed=7)
         candidate = _candidate_row(report)
         rel = report["relative_to_legacy"][candidate["policy"]]
+        sota = report["sota_tasklist_comparison"]
         completed = all(row["completed_jobs"] == len(trace.jobs) for row in report["results"])
         check(f"{taskset_name} trace replay completes every listed job",
               completed,
@@ -111,3 +131,7 @@ def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
         check(f"{taskset_name} candidate beats legacy on all-job time and mean flow",
               rel["makespan_improvement"] >= 1.0 and rel["mean_flow_improvement"] >= 1.0,
               diag=str(report["relative_to_legacy"]))
+        check(f"{taskset_name} candidate is not Pareto-dominated by SOTA-style baselines",
+              sota["candidate_not_pareto_dominated"]
+              and sota["candidate_pareto_dominated_by"] == [],
+              diag=str(sota))

@@ -39,6 +39,10 @@ Local reference repos already cloned under `reference/repos/`:
 - `reference/repos/decima_sim`
 - `reference/repos/salus`
 
+Module27 now turns these references into SOTA-style replay baselines on the
+Scheduleurm measured service cache. They are policy-semantics baselines, not
+direct executions of the external scheduler binaries.
+
 ## Scheduleurm Tasksets
 
 The tasksets now live in `simulation/tasksets.py`. They use a CPU/GPU pressure

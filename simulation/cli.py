@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .defaults import build_default_cache, calibrated_policy, default_workload_specs, legacy_policy
+from .defaults import build_default_cache, calibrated_candidate_policy, default_workload_specs, legacy_policy
 from .fast_forward import compare_policies
 from .tasksets import benchmark_tasksets, taskset_by_name
 
@@ -45,7 +45,7 @@ def main() -> int:
         cache,
         specs,
         baseline=legacy_policy(),
-        candidate=calibrated_policy(),
+        candidate=calibrated_candidate_policy(cache, specs),
         trials=args.trials,
         seed=args.seed,
     )

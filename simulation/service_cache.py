@@ -166,6 +166,40 @@ class ServiceRateCache:
             admissible = rows
         return min(admissible, key=lambda row: (row[2], row[1], row[0].profile))[0]
 
+    def best_profile_for_mean_flow(
+        self,
+        workload_key: str,
+        *,
+        task_count: int,
+        total_units: float,
+        resource_count: int = 1,
+    ) -> ProfileRecord:
+        """Choose the profile minimizing deterministic mean completion time."""
+
+        candidates = self.profiles(workload_key)
+        if not candidates:
+            raise KeyError(f"no service cache entries for workload {workload_key!r}")
+        return min(
+            candidates,
+            key=lambda record: (
+                deterministic_mean_flow_s(
+                    task_count=task_count,
+                    total_units=total_units,
+                    resource_count=resource_count,
+                    profile=record.profile,
+                    aggregate_rate=record.aggregate_rate,
+                ),
+                deterministic_makespan_s(
+                    task_count=task_count,
+                    total_units=total_units,
+                    resource_count=resource_count,
+                    profile=record.profile,
+                    aggregate_rate=record.aggregate_rate,
+                ),
+                record.profile,
+            ),
+        )
+
     def snapshot(self) -> dict[str, Any]:
         return {"records": [record.snapshot() for record in sorted(self._records.values(), key=lambda r: (r.workload_key, r.profile))]}
 

@@ -41,6 +41,13 @@ class ReplayPolicy:
                     resource_count=spec.resource_count,
                     max_makespan_regret=self.max_makespan_regret,
                 )
+            if self.calibrated_objective == "mean_flow":
+                return cache.best_profile_for_mean_flow(
+                    spec.workload_key,
+                    task_count=spec.task_count,
+                    total_units=spec.total_units,
+                    resource_count=spec.resource_count,
+                )
             return cache.best_profile_for_makespan(
                 spec.workload_key,
                 task_count=spec.task_count,

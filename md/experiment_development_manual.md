@@ -25,7 +25,16 @@ main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_se
 
 其中 `α0` 不消耗线性 slack，但进入 drift 常数；`α1` 消耗 slack。实验架子必须围绕这个不等式组织，不能只做“看起来调度效果不错”的吞吐图。
 
-当前 active performance baseline 是 Scheduleurm legacy fixed caps。SOTA 论文和开源实现只作为 reference/future baseline，除非某个实验明确做到：
+当前 active performance baseline 分两层：
+
+```text
+工程回归 baseline: Scheduleurm legacy fixed caps
+论文 replay baseline: module27 SOTA-style policy suite
+```
+
+SOTA-style suite 使用同一份 measured service cache 复现 Gavel/Pollux/Sia、
+IADeep/Salus、SRPT/Gittins/SERPT 等 policy semantics。直接外部 SOTA 仍然
+只是 reference/future baseline，除非某个实验明确做到：
 
 ```text
 同一批 trace；
@@ -34,7 +43,8 @@ main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_se
 外部 policy 语义被复现或直接运行。
 ```
 
-在这些条件满足前，报告只能写“beats Scheduleurm legacy”，不能写“beats SOTA”。
+在这些条件满足前，报告可以写“not Pareto-dominated by SOTA-style replay
+baselines”，但不能写“directly beats external SOTA implementation”。
 
 ---
 

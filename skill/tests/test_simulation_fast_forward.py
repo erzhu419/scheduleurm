@@ -1,5 +1,6 @@
 from simulation.defaults import (
     build_default_cache,
+    calibrated_candidate_policy,
     calibrated_makespan_policy,
     calibrated_policy,
     default_workload_specs,
@@ -13,6 +14,8 @@ from simulation.service_cache import (
     deterministic_mean_flow_s,
     missing_exact_profiles,
 )
+from simulation.sota_baselines import compare_against_sota_suite
+from simulation.tasksets import taskset_by_name
 
 
 def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
@@ -101,7 +104,7 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
         cache,
         default_workload_specs(),
         baseline=legacy_policy(),
-        candidate=calibrated_policy(),
+        candidate=calibrated_candidate_policy(cache, default_workload_specs()),
         trials=31,
         seed=42,
     )
@@ -120,7 +123,7 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
               row.workload_key: row.selected_profile
               for row in comparison.candidate.workloads
           } == {
-              "hybrid_rl_resac_ant": 10,
+              "hybrid_rl_resac_ant": 1,
               "gpu_heavy_jax_matmul": 1,
               "cpu_heavy_protocol": 16,
           },
@@ -136,6 +139,27 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
     check("guarded statewise replay keeps portfolio mean-flow at least makespan-only",
           comparison.mean_flow_improvement >= makespan_only.mean_flow_improvement,
           diag=f"guarded={comparison.snapshot()} makespan_only={makespan_only.snapshot()}")
+
+
+def test_sota_style_baselines_do_not_pareto_dominate_candidate(check, sch):
+    cache = build_default_cache()
+    for taskset_name, specs in (
+        ("q00", taskset_by_name("q00_light_control").workload_specs()),
+        ("q01", taskset_by_name("q01_gpu_bound_compute").workload_specs()),
+        ("q10", taskset_by_name("q10_cpu_host_bound").workload_specs()),
+        ("q11", taskset_by_name("q11_cpu_gpu_coupled").workload_specs()),
+        ("portfolio", default_workload_specs()),
+    ):
+        report = compare_against_sota_suite(cache, specs, trials=31, seed=42)
+        check(f"{taskset_name} candidate is not Pareto-dominated by SOTA-style suite",
+              report["candidate_not_pareto_dominated"],
+              diag=str(report))
+    portfolio = compare_against_sota_suite(cache, default_workload_specs(), trials=31, seed=42)
+    delay = next(row for row in portfolio["baselines"] if row["baseline"]["name"] == "delay_oracle")
+    check("global guarded portfolio matches delay oracle without losing makespan",
+          delay["candidate_vs_baseline_makespan"] == 1.0
+          and delay["candidate_vs_baseline_mean_flow"] == 1.0,
+          diag=str(portfolio))
 
 
 def test_fast_forward_refuses_unmeasured_colocation_profile(check, sch):

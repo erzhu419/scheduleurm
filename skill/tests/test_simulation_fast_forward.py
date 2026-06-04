@@ -1,0 +1,107 @@
+from simulation.defaults import build_default_cache, calibrated_policy, default_workload_specs, legacy_policy
+from simulation.fast_forward import compare_policies
+from simulation.service_cache import ServiceRateCache, cache_needs_probe, deterministic_makespan_s, missing_exact_profiles
+
+
+def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
+    cache = build_default_cache()
+    workloads = set(cache.available_workloads())
+    check("simulation cache includes hybrid RL workload",
+          "hybrid_rl_resac_ant" in workloads,
+          diag=str(workloads))
+    check("simulation cache includes GPU-heavy workload",
+          "gpu_heavy_jax_matmul" in workloads,
+          diag=str(workloads))
+    check("simulation cache includes CPU-heavy workload",
+          "cpu_heavy_protocol" in workloads,
+          diag=str(workloads))
+
+
+def test_simulation_cache_reuses_existing_eta_profile(check, sch):
+    cache = build_default_cache()
+    check("known RE-SAC profile does not need a new scheduler probe",
+          not cache_needs_probe(cache, "hybrid_rl_resac_ant", 10))
+    check("known colocated RE-SAC profiles have exact real measurements",
+          missing_exact_profiles(cache, "hybrid_rl_resac_ant", range(1, 11)) == [])
+    check("unknown RE-SAC profile still needs measurement",
+          cache_needs_probe(cache, "hybrid_rl_resac_ant", 99))
+
+
+def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
+    cache = build_default_cache()
+    record = cache.best_profile_for_makespan(
+        "hybrid_rl_resac_ant",
+        task_count=120,
+        total_units=80,
+        resource_count=1,
+    )
+    legacy = cache.get("hybrid_rl_resac_ant", 5)
+    calibrated_ms = deterministic_makespan_s(
+        task_count=120,
+        total_units=80,
+        resource_count=1,
+        profile=record.profile,
+        aggregate_rate=record.aggregate_rate,
+    )
+    legacy_ms = deterministic_makespan_s(
+        task_count=120,
+        total_units=80,
+        resource_count=1,
+        profile=legacy.profile,
+        aggregate_rate=legacy.aggregate_rate,
+    )
+    check("calibrated RE-SAC profile is high co-location from real curve",
+          record.profile == 10,
+          diag=str(record.snapshot()))
+    check("calibrated RE-SAC deterministic makespan beats legacy cap",
+          legacy_ms / calibrated_ms > 1.20,
+          diag=f"legacy={legacy_ms}, calibrated={calibrated_ms}")
+
+
+def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
+    cache = build_default_cache()
+    comparison = compare_policies(
+        cache,
+        default_workload_specs(),
+        baseline=legacy_policy(),
+        candidate=calibrated_policy(),
+        trials=31,
+        seed=42,
+    )
+    check("trace-driven replay improves total makespan over legacy caps",
+          comparison.makespan_improvement > 1.05,
+          diag=str(comparison.snapshot()))
+    check("trace-driven replay improves empirical GPU and hybrid classes",
+          comparison.per_workload_improvements["hybrid_rl_resac_ant"]["makespan_improvement"] > 1.05
+          and comparison.per_workload_improvements["gpu_heavy_jax_matmul"]["makespan_improvement"] > 1.03,
+          diag=str(comparison.snapshot()))
+    check("trace-driven replay keeps workload class decisions explicit",
+          {
+              row.workload_key: row.selected_profile
+              for row in comparison.candidate.workloads
+          } == {
+              "hybrid_rl_resac_ant": 10,
+              "gpu_heavy_jax_matmul": 1,
+              "cpu_heavy_protocol": 16,
+          },
+          diag=str(comparison.snapshot()))
+
+
+def test_fast_forward_refuses_unmeasured_colocation_profile(check, sch):
+    cache = ServiceRateCache([build_default_cache().get("hybrid_rl_resac_ant", 1)])
+    comparison_error = ""
+    try:
+        compare_policies(
+            cache,
+            default_workload_specs()[:1],
+            baseline=legacy_policy(),
+            candidate=calibrated_policy(),
+            trials=1,
+            seed=1,
+        )
+    except KeyError as exc:
+        comparison_error = str(exc)
+    check("fast-forward refuses to interpolate missing multi-task colocated ETA",
+          "missing exact service profile" in comparison_error
+          or "no service cache entries" in comparison_error,
+          diag=comparison_error)

@@ -46,6 +46,7 @@ _UNIT_ALIASES = {
 
 _LABELED_CURRENT_RE = re.compile(
     r"(?:^|[^\w])"
+    r"(?<!/)"
     r"(Iter|Iteration|Epoch|Step|Episode|Update|Sample)"
     r"[:\s#]+(\d+)"
     r"(?:\s*(?:/|of)\s*(\d+))?",
@@ -166,6 +167,8 @@ def parse_progress_line(line: str, *, cmd: str | None = None) -> ProgressObserva
         return None
     if total is None:
         total = _extract_total_from_cmd(cmd)
+    if current is not None and total is not None and current > total:
+        return None
     unit = canonical_unit(rate_unit or current_unit)
     source = rate_source or ("current_total" if total is not None else "current_only")
     return ProgressObservation(

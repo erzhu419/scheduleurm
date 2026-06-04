@@ -172,6 +172,27 @@ def test_service_curve_summary_uses_median_rate_against_eval_noise(check, sch):
           diag=str(selected))
 
 
+def test_service_curve_verdict_uses_measurement_median_rate(check, sch):
+    noisy_two = _summary(2, 0.10, aggregate_rate=0.20)
+    noisy_two["measurement_aggregate_rate_unit_s_median"] = 0.30
+    verdict = build_service_curve_verdict(
+        run_id="median",
+        node="node",
+        steps=100,
+        total_jobs_for_proxy=20,
+        expected_sweetspot_count=0,
+        min_two_vs_three_gain=0.0,
+        summaries={
+            1: _summary(1, 0.05, aggregate_rate=0.10),
+            2: noisy_two,
+        },
+    )
+    check("service curve verdict uses measurement median aggregate rate",
+          verdict["best_makespan_count_per_gpu"] == 2
+          and verdict["rows"][1]["aggregate_active_rate_unit_s"] == 0.30,
+          diag=str(verdict))
+
+
 def test_service_curve_warmup_can_require_min_progress_unit(check, sch):
     summary = {
         "running_with_rate_count": 4,

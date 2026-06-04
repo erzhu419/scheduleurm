@@ -182,6 +182,7 @@ def records_from_summary_file(
     aggregate_per_resource = aggregate / float(gpu_count)
     rates_per_resource = tuple(float(x) for x in rates)
     unit = _unit(summary)
+    unusable = _summary_is_unusable_for_exact_replay(summary)
     return [
         ProfileRecord(
             workload_key=workload_key,
@@ -194,7 +195,7 @@ def records_from_summary_file(
             aggregate_rate=float(aggregate_per_resource),
             per_task_rates=rates_per_resource,
             source=str(path),
-            capacity_boundary=bool(summary.get("capacity_boundary")),
+            capacity_boundary=unusable,
             gpu_count_observed=gpu_count,
         )
     ]
@@ -302,3 +303,20 @@ def _unit(summary: dict[str, Any]) -> str:
     if units:
         return sorted(set(units))[0]
     return "unit"
+
+
+def _summary_is_unusable_for_exact_replay(summary: dict[str, Any]) -> bool:
+    """True when a measured profile should not be used as a valid service curve."""
+
+    if bool(summary.get("capacity_boundary")):
+        return True
+    if summary.get("placement_valid") is False:
+        return True
+    if int(summary.get("blocked_count") or 0) > 0:
+        return True
+    statuses = summary.get("status_counts") or {}
+    if isinstance(statuses, dict):
+        for key in ("failed", "cancelled", "killed"):
+            if int(statuses.get(key) or 0) > 0:
+                return True
+    return False

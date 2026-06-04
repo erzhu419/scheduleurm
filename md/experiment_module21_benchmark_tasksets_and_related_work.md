@@ -47,9 +47,9 @@ surface rather than ad hoc names.
 | Taskset | Quadrant | Purpose | Current measurement status |
 |---|---|---|---|
 | `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Probe required. |
-| `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-3 are real; 4-8 still need real probes. |
+| `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-8 are clean real measurements on `jtl110gpu2`. |
 | `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Protocol replay curve only; needs a real CPU/data-loader benchmark before theorem-grade claims. |
-| `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-13 are real; 14-16 remain saturation probes if memory permits. |
+| `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/invalid placement and closes the higher-profile measurement obligation for this node bucket. |
 | `hybrid_research_portfolio` | mixed | Post-module portfolio similar to Gavel/Pollux/Sia trace replay. | Replay-ready for current validation: RE-SAC hybrid, JAX GPU-heavy, CPU protocol. |
 
 This is deliberately stricter than a pure simulator. GPU and hybrid co-location
@@ -100,6 +100,11 @@ python3 -m simulation.cli \
   --min-class-improvement 1.03
 ```
 
+For `q01_gpu_bound_compute`, the calibrated replay objective is all-task
+makespan. With profiles 1-8 measured, the q01 standalone replay selects 8/GPU
+against the legacy 3/GPU cap and improves makespan, while mean flow is worse.
+Report that as a makespan result, not a generic latency result.
+
 The CLI refuses incomplete tasksets by default. For example, `q01_gpu_bound_compute`
 will not run as a full benchmark until profiles 4-8 are measured. Exploratory
 partial replay requires `--allow-partial-taskset`, and should not be reported as
@@ -107,9 +112,10 @@ the quadrant result.
 
 The next real probes should fill:
 
-- `q01_gpu_bound_compute`: profiles 4-8;
-- `q11_cpu_gpu_coupled`: profiles 14-16, stopping at the real memory or stability
-  boundary;
+- `q01_gpu_bound_compute`: profiles 1-8 are now measured; next only repeat on a second node/GPU if fabric calibration needs replication;
+- `q11_cpu_gpu_coupled`: profile 13 is already a measured capacity boundary on
+  this node bucket; do not spend GPU time on 14-16 unless we intentionally
+  change memory settings, task template, or node bucket;
 - `q00_light_control`: one tiny real command family;
 - `q10_cpu_host_bound`: a real CPU-heavy or data-loader-heavy command family.
 

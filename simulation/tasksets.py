@@ -36,7 +36,10 @@ class TaskSetMember:
     def missing_profiles(self, cache: ServiceRateCache) -> list[int]:
         if self.empirical_status == "probe_required":
             return list(self.required_profiles)
-        return missing_exact_profiles(cache, self.workload_key, self.required_profiles)
+        required = tuple(sorted({int(x) for x in self.required_profiles}))
+        boundary = _first_capacity_boundary(cache, self.workload_key, required)
+        profiles = [profile for profile in required if boundary is None or profile < boundary]
+        return missing_exact_profiles(cache, self.workload_key, profiles)
 
     def snapshot(self, cache: ServiceRateCache | None = None) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -55,6 +58,11 @@ class TaskSetMember:
         }
         if cache is not None:
             out["missing_profiles"] = self.missing_profiles(cache)
+            out["closed_by_capacity_boundary_profile"] = _first_capacity_boundary(
+                cache,
+                self.workload_key,
+                self.required_profiles,
+            )
         return out
 
 
@@ -139,8 +147,8 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     role="single-bottleneck validation",
                     benchmark_source="Scheduleurm module6; analogous to Gavel/Pollux DNN throughput-table replay",
                     required_profiles=(1, 2, 3, 4, 5, 6, 7, 8),
-                    empirical_status="partial_real",
-                    note="Profiles 1-3 are real on jtl110gpu2; higher co-location profiles still need real probes.",
+                    empirical_status="real",
+                    note="Profiles 1-8 are clean real measurements on jtl110gpu2.",
                 ),
             ),
         ),
@@ -188,7 +196,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     benchmark_source="Scheduleurm module12 real RE-SAC Ant dense co-location profile",
                     required_profiles=tuple(range(1, 17)),
                     empirical_status="partial_real",
-                    note="Profiles 1-13 are currently real; 14-16 remain saturation probes if memory permits.",
+                    note="Profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/placement invalid and closes higher-profile measurement obligations for this node bucket.",
                 ),
             ),
         ),
@@ -271,3 +279,11 @@ def all_missing_measurements(cache: ServiceRateCache, names: Iterable[str] | Non
         for name, taskset in selected.items()
         if taskset.missing_measurements(cache)
     }
+
+
+def _first_capacity_boundary(cache: ServiceRateCache, workload_key: str, profiles: Iterable[int]) -> int | None:
+    for profile in sorted({int(x) for x in profiles}):
+        record = cache.get(workload_key, profile)
+        if record is not None and record.capacity_boundary:
+            return profile
+    return None

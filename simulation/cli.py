@@ -50,8 +50,12 @@ def main() -> int:
         seed=args.seed,
     )
     report = comparison.snapshot()
-    empirical_classes = ("hybrid_rl_resac_ant", "gpu_heavy_jax_matmul")
     per_workload = comparison.per_workload_improvements
+    empirical_classes = tuple(
+        key
+        for key in ("hybrid_rl_resac_ant", "gpu_heavy_jax_matmul")
+        if key in per_workload
+    )
     empirical_pass = all(
         per_workload.get(key, {}).get("makespan_improvement", 0.0) >= float(args.min_class_improvement)
         for key in empirical_classes

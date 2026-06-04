@@ -40,6 +40,15 @@ def build_default_cache() -> ServiceRateCache:
         total_units=2400,
         node_bucket="jtl110gpu2:12gb",
     )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module22_q01_gpu_heavy_jax8192_profiles4_8_20260604_001" / "reports",
+        workload_key="gpu_heavy_jax_matmul",
+        command_fingerprint="jax_matmul_size8192_v1",
+        resource_kind="gpu_heavy",
+        total_units=2400,
+        node_bucket="jtl110gpu2:12gb",
+    )
     add_protocol_cpu_curve(
         cache,
         workload_key="cpu_heavy_protocol",

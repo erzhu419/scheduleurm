@@ -5,6 +5,7 @@ from simulation.defaults import build_default_cache
 from simulation.trace_benchmark import (
     build_task_trace,
     load_trace,
+    replay_trace_matrix,
     replay_trace_suite,
     save_trace,
 )
@@ -16,6 +17,10 @@ def _candidate_row(report):
 
 def _row(report, policy_name):
     return next(row for row in report["results"] if row["policy"] == policy_name)
+
+
+def _aggregate_row(matrix, policy_key):
+    return next(row for row in matrix["aggregate_by_policy"] if row["policy"] == policy_key)
 
 
 def test_trace_builder_produces_explicit_q01_task_list(check, sch):
@@ -135,3 +140,73 @@ def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
               sota["candidate_not_pareto_dominated"]
               and sota["candidate_pareto_dominated_by"] == [],
               diag=str(sota))
+
+
+def test_fixed_sota_policy_matrix_runs_each_algorithm_on_all_tasksets(check, sch):
+    cache = build_default_cache()
+    tasksets = [
+        "q00_light_control",
+        "q01_gpu_bound_compute",
+        "q10_cpu_host_bound",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio",
+    ]
+    matrix = replay_trace_matrix(cache, tasksets, arrival_mode="static", trace_seed=42, replay_seed=7)
+    candidate = _aggregate_row(matrix, "scheduleurm_candidate")
+    throughput = _aggregate_row(matrix, "sota_gavel_pollux_sia_table_goodput")
+    delay = _aggregate_row(matrix, "sota_srpt_gittins_mean_flow_oracle")
+    interference = _aggregate_row(matrix, "sota_iadeep_salus_interference_guard")
+    composite = _aggregate_row(matrix, "sota_quadrant_composite")
+
+    check("fixed-policy matrix aggregates the candidate as one method across all tasksets",
+          candidate["completed_jobs"] == 1376
+          and candidate["policies"] == ["calibrated_global_guarded", "calibrated_guarded_knee"],
+          diag=str(candidate))
+    check("every individual SOTA-style algorithm completes the same full task-list suite",
+          all(row["completed_jobs"] == 1376 for row in (throughput, delay, interference, composite)),
+          diag=str(matrix["aggregate_by_policy"]))
+    check("throughput-table SOTA is a fixed-policy aggregate tradeoff",
+          throughput["candidate_vs_policy_sum_makespan"] < 1.0
+          and throughput["candidate_vs_policy_job_weighted_mean_flow"] > 1.0,
+          diag=str(throughput))
+    check("delay-oracle SOTA is a fixed-policy aggregate tradeoff",
+          delay["candidate_vs_policy_sum_makespan"] > 1.0
+          and delay["candidate_vs_policy_job_weighted_mean_flow"] < 1.0,
+          diag=str(delay))
+    check("interference and composite SOTA policies do not beat candidate mean-flow in aggregate",
+          interference["candidate_vs_policy_job_weighted_mean_flow"] > 1.0
+          and composite["candidate_vs_policy_job_weighted_mean_flow"] > 1.0,
+          diag=str(matrix["aggregate_by_policy"]))
+
+    dominators = []
+    for row in matrix["aggregate_by_policy"]:
+        if row["policy_family"] != "sota_style":
+            continue
+        ms = row["candidate_vs_policy_sum_makespan"]
+        flow = row["candidate_vs_policy_job_weighted_mean_flow"]
+        if ms <= 1.0 and flow <= 1.0 and (ms < 1.0 or flow < 1.0):
+            dominators.append(row["policy"])
+    check("no individual fixed SOTA policy Pareto-dominates candidate in aggregate",
+          dominators == []
+          and matrix["aggregate_candidate_not_pareto_dominated"]
+          and matrix["aggregate_candidate_pareto_dominated_by"] == [],
+          diag=f"manual={dominators} report={matrix['aggregate_candidate_pareto_dominated_by']}")
+
+    q01_makespan = next(
+        row for row in matrix["winner_transfer"]
+        if row["source_taskset"] == "q01_gpu_bound_compute"
+        and row["objective"] == "best_all_job_makespan"
+    )
+    q01_flow = next(
+        row for row in matrix["winner_transfer"]
+        if row["source_taskset"] == "q01_gpu_bound_compute"
+        and row["objective"] == "best_mean_flow"
+    )
+    check("q01's best-throughput SOTA winner is run on the full suite, not just q01",
+          q01_makespan["winner_policy"] == "sota_gavel_pollux_sia_table_goodput"
+          and q01_makespan["aggregate_completed_jobs"] == 1376,
+          diag=str(q01_makespan))
+    check("q01's best-delay SOTA winner is run on the full suite, not just q01",
+          q01_flow["winner_policy"] == "sota_srpt_gittins_mean_flow_oracle"
+          and q01_flow["aggregate_completed_jobs"] == 1376,
+          diag=str(q01_flow))

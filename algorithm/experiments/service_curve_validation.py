@@ -190,7 +190,12 @@ def profile_progress_count(summary: dict[str, Any], *, min_runtime_unit: int = 1
 
 
 def _aggregate_rate(summary: dict[str, Any]) -> float:
-    for key in ("aggregate_active_rate_unit_s", "aggregate_active_rate_step_s"):
+    for key in (
+        "measurement_aggregate_rate_unit_s_median",
+        "measurement_aggregate_rate_step_s_median",
+        "aggregate_active_rate_unit_s",
+        "aggregate_active_rate_step_s",
+    ):
         if summary.get(key) is not None:
             return float(summary.get(key) or 0.0)
     return 0.0
@@ -418,16 +423,11 @@ def build_service_curve_verdict(
                 placement_issues.append(
                     f"actual per-GPU running {actual_per_gpu} != expected {expected_per_gpu}"
                 )
-        mean_rate = float(
-            summary.get("mean_active_rate_unit_s")
-            if summary.get("mean_active_rate_unit_s") is not None
-            else summary.get("mean_active_rate_step_s") or 0.0
-        )
-        aggregate_rate = float(
-            summary.get("aggregate_active_rate_unit_s")
-            if summary.get("aggregate_active_rate_unit_s") is not None
-            else summary.get("aggregate_active_rate_step_s") or 0.0
-        )
+        aggregate_rate = _aggregate_rate(summary)
+        if summary.get("measurement_aggregate_rate_unit_s_median") is not None and running > 0:
+            mean_rate = aggregate_rate / float(running)
+        else:
+            mean_rate = _mean_rate(summary)
         rate_units = sorted(str(x) for x in (summary.get("rate_units") or []) if str(x))
         active_slots = max(1, running)
         flow_proxy = _mean_completion_time_proxy_s(
@@ -458,6 +458,9 @@ def build_service_curve_verdict(
             "aggregate_active_rate_unit_s": aggregate_rate,
             "mean_active_rate_step_s": mean_rate,
             "aggregate_active_rate_step_s": aggregate_rate,
+            "measurement_aggregate_rate_unit_s_median": summary.get("measurement_aggregate_rate_unit_s_median"),
+            "measurement_aggregate_rate_unit_s_min": summary.get("measurement_aggregate_rate_unit_s_min"),
+            "measurement_aggregate_rate_unit_s_max": summary.get("measurement_aggregate_rate_unit_s_max"),
             "legacy_six_job_flow_time_proxy_s": flow_proxy,
             "legacy_six_job_makespan_proxy_s": makespan_proxy,
             "eviction_count": int(summary.get("eviction_count") or 0),

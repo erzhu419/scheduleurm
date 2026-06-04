@@ -163,6 +163,12 @@ def _task_row(task: dict[str, Any], *, phase: str, stage: str, sample_idx: int |
     progress = task_progress_observation(task)
     rate = float(progress.rate_per_s or 0.0) if progress else 0.0
     unit = progress.unit if progress else None
+    runtime_current = task.get("runtime_current_unit")
+    if (runtime_current is None or int(runtime_current or 0) <= 0) and progress and progress.current is not None:
+        runtime_current = progress.current
+    runtime_total = task.get("runtime_total_units")
+    if (runtime_total is None or int(runtime_total or 0) <= 0) and progress and progress.total is not None:
+        runtime_total = progress.total
     return {
         "ts": time.time(),
         "phase": phase,
@@ -184,8 +190,8 @@ def _task_row(task: dict[str, Any], *, phase: str, stage: str, sample_idx: int |
         "parsed_progress_current": progress.current if progress else None,
         "parsed_progress_total": progress.total if progress else None,
         "rate_step_s": rate,
-        "runtime_current_unit": task.get("runtime_current_unit"),
-        "runtime_total_units": task.get("runtime_total_units"),
+        "runtime_current_unit": runtime_current,
+        "runtime_total_units": runtime_total,
         "eta_seconds": task.get("eta_seconds"),
         "eta_source": task.get("eta_source"),
         "progress_ratio": task.get("progress_ratio"),
@@ -441,8 +447,11 @@ def _summarize_phase(phase: str, tasks: list[dict[str, Any]]) -> dict[str, Any]:
         if rate > 0:
             rates.append(rate)
             rate_units.append(progress.unit if progress else "unit")
-        if int(t.get("runtime_current_unit") or 0) > 0:
-            progress_units.append(int(t.get("runtime_current_unit") or 0))
+        runtime_current = int(t.get("runtime_current_unit") or 0)
+        if runtime_current <= 0 and progress and progress.current is not None:
+            runtime_current = int(progress.current)
+        if runtime_current > 0:
+            progress_units.append(runtime_current)
     for t in tasks:
         if t.get("last_resource_eviction") or t.get("last_eviction_kind") or t.get("last_kill_action"):
             evictions.append({

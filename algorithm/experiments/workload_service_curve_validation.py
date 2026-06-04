@@ -40,6 +40,12 @@ from .sweetspot_ab_validation import (
 from .trace_export import init_run
 
 
+REMOTE_PROGRESS_WRAPPER_ROOT = "/tmp/scheduleurm_progress_wrapper_pkg"
+REMOTE_PROGRESS_WRAPPER = (
+    f"{REMOTE_PROGRESS_WRAPPER_ROOT}/algorithm/experiments/progress_wrapper.py"
+)
+
+
 def _template_fields(template: str) -> set[str]:
     return {
         str(field)
@@ -192,6 +198,43 @@ def _read_template(args: argparse.Namespace) -> str:
     return str(args.cmd_template or "").strip()
 
 
+def _deploy_progress_wrapper(node: str, raw_dir: Path) -> None:
+    """Install the line-oriented progress wrapper on the target node.
+
+    Workload commands execute on scheduler nodes, which may not have the local
+    scheduleurm checkout mounted.  The experiment owns this wrapper, so deploy a
+    tiny package into /tmp before submitting real tasks.
+    """
+
+    local_dir = _repo_root() / "algorithm" / "experiments"
+    remote_dir = f"{REMOTE_PROGRESS_WRAPPER_ROOT}/algorithm/experiments"
+    _run_cmd(
+        [
+            "ssh",
+            node,
+            (
+                f"mkdir -p {remote_dir} "
+                f"&& touch {REMOTE_PROGRESS_WRAPPER_ROOT}/algorithm/__init__.py "
+                f"{REMOTE_PROGRESS_WRAPPER_ROOT}/algorithm/experiments/__init__.py"
+            ),
+        ],
+        cwd=_repo_root(),
+        raw_dir=raw_dir,
+        label="deploy_progress_wrapper_mkdir",
+    )
+    _run_cmd(
+        [
+            "scp",
+            str(local_dir / "progress_wrapper.py"),
+            str(local_dir / "progress_units.py"),
+            f"{node}:{remote_dir}/",
+        ],
+        cwd=_repo_root(),
+        raw_dir=raw_dir,
+        label="deploy_progress_wrapper_scp",
+    )
+
+
 _RUNTIME_CAPACITY_PATTERNS = (
     "out of memory",
     "cuda out of memory",
@@ -307,6 +350,7 @@ def main() -> int:
 
     _run_cmd(["mkdir", "-p", args.cwd], cwd=_repo_root(), raw_dir=raw_dir, label="local_mkdir_cwd")
     _run_cmd(["ssh", args.node, "mkdir", "-p", args.cwd], cwd=_repo_root(), raw_dir=raw_dir, label="remote_mkdir_cwd")
+    _deploy_progress_wrapper(args.node, raw_dir)
 
     summaries: dict[int, dict[str, Any]] = {}
     all_ids: list[str] = []

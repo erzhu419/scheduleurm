@@ -6,6 +6,7 @@ from algorithm.experiments.workload_service_curve_validation import (
     render_workload_command,
     runtime_capacity_boundary_reasons,
 )
+from algorithm.experiments.sweetspot_ab_validation import _summarize_phase
 
 
 def test_workload_command_template_renders_unique_identity(check, sch):
@@ -204,3 +205,28 @@ def test_workload_service_curve_detects_runtime_oom_boundary(check, sch):
     check("runtime OOM boundary is excluded from best-count selection",
           verdict["best_flow_time_count_per_gpu"] != 13,
           diag=str(verdict))
+
+
+def test_workload_summary_uses_parsed_progress_current_for_warmup(check, sch):
+    summary = _summarize_phase(
+        "profile_7_per_gpu",
+        [
+            {
+                "id": "tA",
+                "status": "running",
+                "gpu_idx": 1,
+                "last_progress_line": "Iter   14 | Reward: 1.0 | 21.1s/iter",
+            },
+            {
+                "id": "tB",
+                "status": "running",
+                "gpu_idx": 1,
+                "runtime_current_unit": 5,
+                "last_progress_line": "Iter    5 | Reward: 1.0 | 21.0s/iter",
+            },
+        ],
+    )
+    check("workload summary falls back to parsed current unit for warmup",
+          summary["runtime_current_units"] == [14, 5]
+          and summary["running_with_rate_count"] == 2,
+          diag=str(summary))

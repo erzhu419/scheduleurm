@@ -3,6 +3,7 @@ from algorithm.experiments.progress_units import (
     parse_progress_observation,
     task_progress_observation,
 )
+from algorithm.experiments.progress_wrapper import build_progress_line
 from algorithm.experiments.sweetspot_ab_validation import _summarize_phase
 
 
@@ -37,6 +38,36 @@ def test_progress_units_parse_rl_seconds_per_iter(check, sch):
           and abs(float(obs.rate_per_s) - (1.0 / 10.6)) < 1e-12
           and abs(float(obs.seconds_per_unit) - 10.6) < 1e-12,
           diag=str(obs))
+
+
+def test_progress_wrapper_emits_scheduler_stable_iter_line(check, sch):
+    child_obs = parse_progress_line(
+        "Iter    14 | Reward: 123.0 | Time: 456s | 21.0s/iter",
+        cmd="python train.py --max_iters 1500",
+    )
+    line = build_progress_line(child_obs, total_override=1500, unit_override="iter")
+    obs = parse_progress_line(line)
+    check("progress wrapper emits line with current total and rate",
+          line is not None
+          and "ScheduleurmProgress Iter 14/1500" in line
+          and "ETA " in line
+          and obs is not None
+          and obs.current == 14
+          and obs.total == 1500
+          and abs(float(obs.rate_per_s) - (1.0 / 21.0)) < 1e-9,
+          diag=f"line={line}, obs={obs}")
+
+
+def test_progress_parser_ignores_units_per_iter_banner(check, sch):
+    obs = parse_progress_line(
+        "  Updates/iter: 250  Samples/iter: 4000",
+        cmd="python train.py --max_iters 1500",
+    )
+    child_obs = parse_progress_line("Iter 4000 | bogus | 1.0s/iter", cmd="python train.py --max_iters 1500")
+    line = build_progress_line(child_obs, total_override=1500, unit_override="iter") if child_obs else None
+    check("progress parser ignores banner unit metadata and impossible current totals",
+          obs is None and child_obs is None and line is None,
+          diag=f"obs={obs}, child_obs={child_obs}, line={line}")
 
 
 def test_progress_units_latest_line_wins_and_task_fallbacks(check, sch):

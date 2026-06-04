@@ -91,3 +91,17 @@ def test_eta_warmup_keeps_tqdm_eta_priority(check, sch):
           and projection.get("total_s") == 3801,
           diag=f"eta={eta}, projection={projection}")
 
+
+def test_eta_tracker_trusts_scheduleurm_progress_inline_eta(check, sch):
+    et = _load_eta_tracker(sch)
+    text = "ScheduleurmProgress Iter 14/1500 rate=0.0476190476 iter/s ETA 31206.0s source=seconds_per_unit"
+    eta = et.compute_eta_seconds(text, elapsed_s=3600, fallback_ewma_s=99999)
+    projection = et.runtime_projection(text, elapsed_s=3600)
+
+    check("ETA tracker uses task-native inline ETA from progress wrapper",
+          eta == 31206
+          and projection
+          and projection.get("source") == "inline_eta"
+          and projection.get("current") == 14
+          and projection.get("total_units") == 1500,
+          diag=f"eta={eta}, projection={projection}")

@@ -1,6 +1,6 @@
 # Module27 SOTA-Style Baseline Suite
 
-Date: 2026-06-04
+Date: 2026-06-05
 
 This module adds a SOTA-style replay baseline suite. It is stronger than
 Scheduleurm legacy comparison, but still not a direct binary-to-binary execution
@@ -51,14 +51,14 @@ q01 GPU-heavy: guarded knee profile 4
 q11 hybrid RL: throughput/support profile 10
 ```
 
-For the mixed portfolio, CPU protocol is the global bottleneck. The selector can
-therefore spend slack on the hybrid RL job without increasing portfolio
-makespan:
+For the mixed portfolio after q10 promotion, the real local CPU bucket remains
+the host-pressure member. The selector spends slack on the hybrid RL job while
+using the same measured local q10 curve as the standalone q10 taskset:
 
 ```text
-hybrid_rl_resac_ant: 1/GPU
+hybrid_rl_resac_ant: 10/GPU
 gpu_heavy_jax_matmul: 1/GPU
-cpu_heavy_protocol: 16 workers
+cpu_heavy_local_bench: 8 local CPU workers
 ```
 
 This is not a weakening of the math route. It is a better implementation of the
@@ -94,7 +94,7 @@ Standalone quadrants:
 |---|---|---|
 | `q00_light_control` | `light_control_local=8` | not dominated |
 | `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | not dominated |
-| `q10_cpu_host_bound` | `cpu_heavy_protocol=16` | not dominated |
+| `q10_cpu_host_bound` | `cpu_heavy_local_bench=8` | not dominated |
 | `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | not dominated |
 
 q01 details:
@@ -127,10 +127,10 @@ Portfolio details:
 
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
-| throughput-table goodput | 1.000x | 1.008x |
-| delay oracle | 1.000x | 1.000x |
-| interference guard | 1.000x | 1.014x |
-| quadrant composite | 1.000x | 1.008x |
+| throughput-table goodput | 1.001x | 0.999x |
+| delay oracle | 1.028x | 0.977x |
+| interference guard | 1.000x | 1.000x |
+| quadrant composite | 1.000x | 1.000x |
 
 The global guarded selector is not Pareto-dominated by any SOTA-style baseline
 on the mixed portfolio.
@@ -139,8 +139,8 @@ Against Scheduleurm legacy on the same portfolio:
 
 | Metric | Legacy | Candidate | Improvement |
 |---|---:|---:|---:|
-| Total makespan | 76472.987 s | 59534.263 s | 1.285x |
-| Weighted mean flow | 32431.821 s | 23778.165 s | 1.364x |
+| Total makespan | 33043.785 s | 26911.926 s | 1.228x |
+| Weighted mean flow | 7599.635 s | 5924.731 s | 1.283x |
 
 ## Module-Correctness Check
 
@@ -150,14 +150,16 @@ boundaries:
 ```text
 q01: throughput-only makespan beats the guarded knee, but loses mean-flow.
 q11: delay-only mean-flow beats throughput policy, but loses makespan.
-portfolio: global guarded selection removes the previous delay gap.
+portfolio: after real q10 promotion, throughput and delay endpoints are
+           explicit tradeoffs rather than Pareto dominators.
 ```
 
 Targeted tests:
 
 ```text
-checks=22 failed=0
+q10-promotion targeted suite: checks=81 failed=0
 ```
 
 The next unresolved baseline step is direct external-policy reproduction, not
-fixing a failing Scheduleurm module.
+fixing a failing Scheduleurm module. The reviewer-facing exact task-list matrix
+is recorded in `md/experiment_module29_task_list_benchmark.md`.

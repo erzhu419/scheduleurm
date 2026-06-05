@@ -112,12 +112,12 @@ def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
     expected_profiles = {
         "q00_light_control": {"light_control_local": 8},
         "q01_gpu_bound_compute": {"gpu_heavy_jax_matmul": 4},
-        "q10_cpu_host_bound": {"cpu_heavy_protocol": 16},
+        "q10_cpu_host_bound": {"cpu_heavy_local_bench": 8},
         "q11_cpu_gpu_coupled": {"hybrid_rl_resac_ant": 10},
         "hybrid_research_portfolio": {
-            "cpu_heavy_protocol": 16,
+            "cpu_heavy_local_bench": 8,
             "gpu_heavy_jax_matmul": 1,
-            "hybrid_rl_resac_ant": 1,
+            "hybrid_rl_resac_ant": 10,
         },
     }
     for taskset_name, profiles in expected_profiles.items():
@@ -165,17 +165,17 @@ def test_fixed_sota_policy_matrix_runs_each_algorithm_on_all_tasksets(check, sch
     check("every individual SOTA-style algorithm completes the same full task-list suite",
           all(row["completed_jobs"] == 1376 for row in (throughput, delay, interference, composite)),
           diag=str(matrix["aggregate_by_policy"]))
-    check("throughput-table SOTA is a fixed-policy aggregate tradeoff",
-          throughput["candidate_vs_policy_sum_makespan"] < 1.0
-          and throughput["candidate_vs_policy_job_weighted_mean_flow"] > 1.0,
+    check("throughput-table SOTA no longer dominates after real q10 promotion",
+          throughput["candidate_vs_policy_sum_makespan"] >= 1.0
+          and throughput["candidate_vs_policy_job_weighted_mean_flow"] >= 1.0,
           diag=str(throughput))
     check("delay-oracle SOTA is a fixed-policy aggregate tradeoff",
           delay["candidate_vs_policy_sum_makespan"] > 1.0
           and delay["candidate_vs_policy_job_weighted_mean_flow"] < 1.0,
           diag=str(delay))
     check("interference and composite SOTA policies do not beat candidate mean-flow in aggregate",
-          interference["candidate_vs_policy_job_weighted_mean_flow"] > 1.0
-          and composite["candidate_vs_policy_job_weighted_mean_flow"] > 1.0,
+          interference["candidate_vs_policy_job_weighted_mean_flow"] >= 1.0
+          and composite["candidate_vs_policy_job_weighted_mean_flow"] >= 1.0,
           diag=str(matrix["aggregate_by_policy"]))
 
     dominators = []

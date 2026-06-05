@@ -1,6 +1,6 @@
 # Benchmark Tasksets And Related Scheduler Experiments
 
-Date: 2026-06-04
+Date: 2026-06-05
 
 This note fixes the next experiment shape before more scheduler modules are
 enabled. The goal is to keep Scheduleurm's implementation, replay validation,
@@ -52,9 +52,9 @@ surface rather than ad hoc names.
 |---|---|---|---|
 | `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Local CPU-only profiles 1-8 are clean real measurements; profile 16 is a measured local scheduling-capacity boundary. |
 | `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-8 are clean real measurements on `jtl110gpu2`. |
-| `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Protocol replay curve in the active taskset; module25 has a local CPU-heavy measured curve for profiles 1-8, but it is not yet promoted because remote CPU-node deployment and legacy-comparable caps remain open. |
+| `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Real local CPU-heavy curve: profiles 1-9 are measured, and profile 10 is a measured local capacity boundary. The active taskset now uses this declared local CPU bucket rather than `cpu_heavy_protocol`. |
 | `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/invalid placement and closes the higher-profile measurement obligation for this node bucket. |
-| `hybrid_research_portfolio` | mixed | Post-module portfolio similar to Gavel/Pollux/Sia trace replay. | Replay-ready for current validation: RE-SAC hybrid, JAX GPU-heavy, CPU protocol. |
+| `hybrid_research_portfolio` | mixed | Post-module portfolio similar to Gavel/Pollux/Sia trace replay. | Replay-ready for current validation: RE-SAC hybrid, JAX GPU-heavy, and real local CPU-heavy q10 bucket. |
 
 This is deliberately stricter than a pure simulator. GPU and hybrid co-location
 profiles are exact-cache only: `5/GPU` is not inferred from `1/GPU`, and missing
@@ -124,12 +124,14 @@ The next real probes should fill:
   change memory settings, task template, or node bucket;
 - `q00_light_control`: local control curve is measured; repeat only if we need a
   remote CPU-node bucket rather than local control-plane behavior;
-- `q10_cpu_host_bound`: a real CPU-heavy or data-loader-heavy command family.
+- `q10_cpu_host_bound`: local CPU bucket is now closed; repeat only for a remote
+  CPU-node or data-loader-heavy replication bucket.
 
-Module25 measured a local CPU-heavy command for profiles 1-8. Treat it as a
-local bucket calibration artifact, not as the final q10 scheduler comparison,
-until either the CPU-node deployment path is available or the legacy CPU cap is
-measured on the same bucket.
+Modules25+33 measured the local CPU-heavy command for profiles 1-9 and closed
+profile 10 as a capacity boundary. That is now the active q10 benchmark bucket:
+legacy is the highest measured feasible same-bucket cap, profile 9, and the
+calibrated candidate selects profile 8. Do not generalize this result to remote
+CPU-node or data-loader-heavy q10 without a replication run on that bucket.
 
 ## Source Links
 

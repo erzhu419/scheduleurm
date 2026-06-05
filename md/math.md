@@ -826,7 +826,7 @@ M_k(n)\leq (1+\varepsilon_{guard}(n))\min_j M_j(n)
 \varepsilon_{guard}(n)=0.02+\frac{0.6}{n},
 ]
 
-其中 \(n\) 是当前 resource-local remaining queue count。hybrid RL、CPU protocol、light-control bucket 默认保留 service/makespan support objective。这个区别是 finite resource-regime bucket 的实现，不是按 workload name 偷换结论。
+其中 \(n\) 是当前 resource-local remaining queue count。hybrid RL、real local CPU bucket、light-control bucket 默认保留 service/makespan support objective。这个区别是 finite resource-regime bucket 的实现，不是按 workload name 偷换结论。
 
 数学口径是：\(M_k\) guard 对应 \(\alpha_0+\alpha_1\|Q\|_1\) 形式的 approximate support loss；\(F_k\) tie-break 是 bounded/queue-scaled penalty，只在 guard 内作用。这不是弱化理论；相反，它把实现层的 finite-batch delay objective 放进已经证明的 support-plus-penalty 框架里。稳定性主张仍然使用更强的 statewise approximate-oracle theorem，而不是把实验用 mean-flow tie-break 误写成一个独立的新 throughput theorem：
 

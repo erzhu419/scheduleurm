@@ -3,10 +3,10 @@
 Date: 2026-06-04
 
 This module measures a real CPU-heavy, GPU-free command on the local node. It is
-not yet promoted into the active `q10_cpu_host_bound` taskset because the current
-q10 baseline still uses a protocol 32-worker curve, while this run only measures
-local profiles 1-8. Comparing calibrated 8-way local execution against an
-unmeasured legacy 32-worker cap would be misleading.
+the preliminary half of the q10 closure. At the time of this module, q10 was
+not promoted because only local profiles 1-8 had been measured. Module33 later
+measured profile 9 and closed profile 10 as a capacity boundary; Module31 then
+promoted the real local CPU bucket into the active `q10_cpu_host_bound` taskset.
 
 ## Command
 
@@ -60,9 +60,10 @@ background state.
 ## Interpretation
 
 This replaces speculation about whether a CPU-heavy command can be measured, but
-it does not close q10 as a theorem-grade or scheduler-comparison taskset.
+by itself it did not close q10 as a scheduler-comparison taskset. The closure
+now lives in `md/experiment_module31_q10_real_cpu_trace.md`.
 
-Promotion requirements:
+Historical promotion requirements from this preliminary step:
 
 - measure the same command on a stable CPU-node bucket, or make local the
   declared q10 bucket;
@@ -70,3 +71,13 @@ Promotion requirements:
   32-worker curve;
 - repeat at least one run or extend the measurement window to reduce local
   frequency/scheduling noise.
+
+Current status after Module33/Module31:
+
+```text
+declared q10 bucket: local CPU-heavy progress-bearing command;
+profiles 1-9: measured;
+profile 10: measured capacity boundary;
+legacy cap: profile 9;
+candidate: profile 8.
+```

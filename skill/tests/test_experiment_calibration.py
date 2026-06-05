@@ -14,10 +14,15 @@ from algorithm.experiments.fabric_metric import (
 )
 from algorithm.experiments.oracle_audit import audit_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
+from algorithm.experiments.live_validation import compare_replay_to_live
 from algorithm.experiments.report import summarize_certificate
 from algorithm.experiments.service_model import (
     calibrate_service_lower_bounds,
     estimate_epsilon_est,
+)
+from algorithm.experiments.slack_accounting import (
+    build_slack_certificate,
+    markdown_slack_table,
 )
 from algorithm.experiments.slot_builder import progress_service_units, queue_step
 
@@ -217,6 +222,99 @@ def test_penalty_and_oracle_envelopes(check, sch):
           and math.isclose(audit["alpha1"], 0.3)
           and audit["usable_for_theorem"],
           diag=str(audit))
+
+
+def test_slack_accounting_certificate_combines_theorem_constants(check, sch):
+    cert = build_slack_certificate(
+        fabric={"L": 0.5, "rho": 0.2, "usable_for_theorem": True},
+        service={"epsilon_est": 0.05, "usable_for_theorem": True},
+        penalty={"P0": 2.0, "beta": 0.10, "usable_for_theorem": True},
+        oracle={"alpha0": 1.0, "alpha1": 0.05, "usable_for_theorem": True},
+        capacity={"delta": 0.40, "usable_for_theorem": True},
+        moment={"B": 3.0, "usable_for_theorem": True},
+        alpha=1.0,
+        N=25,
+    )
+    check("slack accounting computes positive eta and finite-set threshold",
+          math.isclose(cert["Lrho"], 0.10)
+          and math.isclose(cert["slack_consumed"], 0.30)
+          and math.isclose(cert["eta"], 0.10)
+          and cert["finite_set_threshold_N"] == 70
+          and not cert["usable_for_theorem"],
+          diag=str(cert))
+    cert_pass = build_slack_certificate(
+        fabric={"L": 0.5, "rho": 0.2, "usable_for_theorem": True},
+        service={"epsilon_est": 0.05, "usable_for_theorem": True},
+        penalty={"P0": 2.0, "beta": 0.10, "usable_for_theorem": True},
+        oracle={"alpha0": 1.0, "alpha1": 0.05, "usable_for_theorem": True},
+        capacity={"delta": 0.40, "usable_for_theorem": True},
+        moment={"B": 3.0, "usable_for_theorem": True},
+        alpha=1.0,
+        N=70,
+    )
+    check("slack accounting passes only when N covers additive drift constant",
+          cert_pass["usable_for_theorem"] and cert_pass["all_components_theorem_usable"],
+          diag=str(cert_pass))
+    table = markdown_slack_table(cert_pass)
+    check("slack accounting emits reviewer-facing markdown table",
+          "| `eta` | 0.100000000 |" in table
+          and "| `fabric` | true |" in table,
+          diag=table)
+
+    neg = build_slack_certificate(
+        fabric={"L": 1.0, "rho": 0.4, "usable_for_theorem": True},
+        service={"epsilon_est": 0.1, "usable_for_theorem": True},
+        penalty={"beta": 0.1, "usable_for_theorem": True},
+        oracle={"alpha1": 0.1, "usable_for_theorem": True},
+        capacity={"delta": 0.3, "usable_for_theorem": True},
+        moment={"B": 1.0, "usable_for_theorem": True},
+    )
+    check("slack accounting refuses nonpositive drift margin",
+          neg["eta"] < 0.0 and not neg["usable_for_theorem"],
+          diag=str(neg))
+
+
+def test_live_validation_compares_replay_and_observed_jct(check, sch):
+    replay = {
+        "results": [
+            {
+                "policy": "calibrated_guarded_knee",
+                "profiles": {"w": 2},
+                "makespan_s": 100.0,
+                "mean_flow_s": 80.0,
+                "p90_flow_s": 102.0,
+                "completed_jobs": 2,
+            }
+        ]
+    }
+    live = {
+        "run_id": "unit_live",
+        "jobs": [
+            {"job_id": "j0", "arrival_s": 0.0, "completion_s": 58.0},
+            {"job_id": "j1", "arrival_s": 0.0, "completion_s": 102.0},
+        ],
+    }
+    report = compare_replay_to_live(replay, live, max_relative_error=0.10)
+    check("live validation accepts small replay-to-live JCT error",
+          report["usable_for_live_sanity"]
+          and report["completed_jobs_match"]
+          and report["observed"]["completed_jobs"] == 2,
+          diag=str(report))
+
+    censored = compare_replay_to_live(
+        replay,
+        {
+            "run_id": "unit_censored",
+            "jobs": [
+                {"job_id": "j0", "flow_s": 60.0},
+                {"job_id": "j1", "flow_s": 100.0, "censored": True},
+            ],
+        },
+    )
+    check("live validation refuses censored completion rows for theorem-facing sanity",
+          censored["observed"]["censored_jobs"] == 1
+          and not censored["usable_for_live_sanity"],
+          diag=str(censored))
 
 
 def test_capacity_lp_and_drift_margin(check, sch):

@@ -59,7 +59,7 @@ def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     check("coupled RL set is closed by measured profile 13 capacity boundary",
           "q11_cpu_gpu_coupled" not in missing,
           diag=str(missing))
-    check("local real q10 probe has measured profiles 1-8",
+    check("local real q10 probe has measured profiles 1-9 and capacity boundary 10",
           "q10_cpu_host_bound_local_real_probe" not in missing,
           diag=str(missing))
 
@@ -75,7 +75,7 @@ def test_replayable_only_filters_unmeasured_members(check, sch):
     check("validated hybrid portfolio remains replayable",
           len(hybrid_specs) == 3
           and {spec.workload_key for spec in hybrid_specs}
-          == {"hybrid_rl_resac_ant", "gpu_heavy_jax_matmul", "cpu_heavy_protocol"},
+          == {"hybrid_rl_resac_ant", "gpu_heavy_jax_matmul", "cpu_heavy_local_bench"},
           diag=str(hybrid_specs))
     check("local real q10 probe is replayable without protocol curve",
           len(q10_local_specs) == 1
@@ -98,3 +98,8 @@ def test_capacity_boundary_closes_higher_required_profiles(check, sch):
     check("q00 snapshot records profile 16 as the local light-control boundary",
           q00["members"][0]["closed_by_capacity_boundary_profile"] == 16,
           diag=str(q00))
+
+    q10 = taskset_by_name("q10_cpu_host_bound").snapshot(cache)
+    check("q10 real local snapshot records profile 10 as the CPU capacity boundary",
+          q10["members"][0]["closed_by_capacity_boundary_profile"] == 10,
+          diag=str(q10))

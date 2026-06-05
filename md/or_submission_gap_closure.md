@@ -81,8 +81,8 @@ Missing before this note:
 Reviewer question:
 
 ```text
-Why is q10_cpu_host_bound based on a protocol curve rather than a real
-CPU/data-loader workload measured under the same benchmark discipline?
+Why is q10_cpu_host_bound based on a real workload measured under the same
+benchmark discipline, and what bucket does that claim cover?
 ```
 
 Required output:
@@ -98,14 +98,25 @@ q10 taskset promoted only after those conditions hold.
 Current status:
 
 ```text
-module25 has a real local CPU-heavy profiles 1-8 curve;
-active q10 taskset still uses cpu_heavy_protocol, not theorem-grade q10.
+modules25+33 have a real local CPU-heavy curve;
+profiles 1-9 are measured;
+profile 10 is a measured local capacity boundary;
+active q10 taskset uses cpu_heavy_local_bench;
+legacy cap is profile 9 on the same local bucket;
+candidate profile is profile 8.
 ```
 
 Required artifact:
 
 ```text
 md/experiment_module31_q10_real_cpu_trace.md
+```
+
+Remaining breadth item:
+
+```text
+Remote CPU-node or data-loader-heavy q10 replication is still useful, but it is
+not required for the declared local CPU-bucket q10 comparison.
 ```
 
 ## Gap 3: SOTA Wording
@@ -225,7 +236,7 @@ The paper can move from "research prototype" to "submission draft" only after:
 ```text
 1. slack accounting table has eta > 0 or clearly explains why the current
    workload/load point is outside certified stability;
-2. q10 is real or explicitly removed from theorem-grade claims;
+2. q10 is real for a declared bucket, or explicitly removed from theorem-grade claims;
 3. SOTA claims use the honest SOTA-style replay wording;
 4. at least one small live validation connects replay to real completion/JCT;
 5. Lean artifact is freshly repackaged and theorem names match the paper;

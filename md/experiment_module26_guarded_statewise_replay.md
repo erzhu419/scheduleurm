@@ -60,7 +60,7 @@ then lower profile id. For pure GPU-heavy statewise replay:
 eps_guard(n) = 0.02 + 0.6 / n
 ```
 
-For hybrid RL, CPU protocol, and light control the default candidate keeps the
+For hybrid RL, the real local CPU bucket, and light control the default candidate keeps the
 service/makespan support objective. This is a regime-bucket decision, not a
 workload-key shortcut: `resource_kind="gpu_heavy"` is the only class using the
 queue-scaled guarded statewise drain in this module.

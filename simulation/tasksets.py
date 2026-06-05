@@ -156,33 +156,35 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             name="q10_cpu_host_bound",
             purpose=(
                 "High-CPU/host pressure with low GPU pressure. This separates scheduler CPU/RAM "
-                "packing from GPU-placement decisions."
+                "packing from GPU-placement decisions on a real local CPU-heavy bucket."
             ),
-            arrival_model="static batch first; then Poisson rate sweep for host saturation",
+            arrival_model="static local CPU-heavy batch; then Poisson rate sweep for host saturation",
             members=(
                 TaskSetMember(
-                    workload_key="cpu_heavy_protocol",
+                    workload_key="cpu_heavy_local_bench",
                     resource_kind="cpu_heavy",
                     task_count=256,
-                    total_units=3600,
+                    total_units=1000,
                     resource_count=1,
                     variation_cv=0.10,
                     quadrant="high_cpu_low_gpu",
                     role="single-bottleneck validation",
-                    benchmark_source="Protocol curve until a real CPU/data-loader benchmark is profiled",
-                    required_profiles=tuple(range(1, 33)),
-                    empirical_status="protocol",
-                    note="Replay-capable protocol curve, but not yet a theorem-grade empirical CPU trace.",
+                    benchmark_source="Scheduleurm modules25+33 local CPU-heavy progress-bearing curve",
+                    required_profiles=tuple(range(1, 11)),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1-9 are real local measurements; profile 10 is a clean "
+                        "local capacity boundary. This closes q10 for the declared local "
+                        "CPU bucket, not for a remote CPU-node bucket."
+                    ),
                 ),
             ),
         ),
         TaskSet(
             name="q10_cpu_host_bound_local_real_probe",
             purpose=(
-                "Real local CPU-heavy progress-bearing probe for q10 calibration. This is a "
-                "real service curve, but it is not the active theorem-grade q10 comparison "
-                "until a same-bucket legacy-comparable cap is measured or local is declared "
-                "as the q10 bucket."
+                "Explicit alias for the real local CPU-heavy q10 calibration curve. "
+                "The active q10 benchmark uses the same declared local CPU bucket."
             ),
             arrival_model="static local CPU-heavy calibration batch",
             members=(
@@ -195,13 +197,13 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     variation_cv=0.10,
                     quadrant="high_cpu_low_gpu",
                     role="real local q10 calibration probe",
-                    benchmark_source="Scheduleurm module25 local CPU-heavy progress-bearing curve",
-                    required_profiles=tuple(range(1, 9)),
+                    benchmark_source="Scheduleurm modules25+33 local CPU-heavy progress-bearing curve",
+                    required_profiles=tuple(range(1, 11)),
                     empirical_status="real",
                     note=(
-                        "Profiles 1-8 are real local measurements. Do not use as final q10 "
-                        "legacy comparison until the legacy-comparable cap is measured on "
-                        "the same local bucket or local is declared as the benchmark bucket."
+                        "Profiles 1-9 are real local measurements and profile 10 is the "
+                        "capacity boundary. This taskset is retained as an explicit alias "
+                        "for the local q10 probe."
                     ),
                 ),
             ),
@@ -265,17 +267,17 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     empirical_status="real",
                 ),
                 TaskSetMember(
-                    workload_key="cpu_heavy_protocol",
+                    workload_key="cpu_heavy_local_bench",
                     resource_kind="cpu_heavy",
                     task_count=256,
-                    total_units=3600,
+                    total_units=1000,
                     resource_count=1,
                     variation_cv=0.10,
                     quadrant="high_cpu_low_gpu",
-                    role="host saturation placeholder",
-                    benchmark_source="Protocol curve; replace with real CPU-heavy command when profiled",
-                    required_profiles=tuple(range(1, 33)),
-                    empirical_status="protocol",
+                    role="host saturation validation",
+                    benchmark_source="Scheduleurm modules25+33 local CPU-heavy service curve",
+                    required_profiles=tuple(range(1, 11)),
+                    empirical_status="real",
                 ),
             ),
         ),

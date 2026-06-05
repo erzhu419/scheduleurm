@@ -76,9 +76,10 @@ choice.
 
 ## Scope
 
-The mixed portfolio policy remains `calibrated_global_guarded`. In the portfolio,
-CPU protocol is the bottleneck, so the global selector can still choose
-`gpu_heavy_jax_matmul=1/GPU` without increasing portfolio makespan.
+The mixed portfolio policy remains `calibrated_global_guarded`. In the current
+portfolio, the real local CPU bucket is the host-pressure member, so the global
+selector can still choose `gpu_heavy_jax_matmul=1/GPU` without increasing
+portfolio makespan.
 
 This module does not weaken the proof route. It is still support first, bounded
 delay penalty second:

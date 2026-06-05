@@ -84,6 +84,15 @@ def build_default_cache() -> ServiceRateCache:
         total_units=10000,
         node_bucket="local:cpu",
     )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module25_q10_cpu_heavy_local_profiles1_8_20260604_001" / "reports",
+        workload_key="cpu_heavy_local_bench",
+        command_fingerprint="cpu_heavy_local_progress_v1",
+        resource_kind="cpu_heavy",
+        total_units=1000,
+        node_bucket="local:cpu",
+    )
     add_protocol_cpu_curve(
         cache,
         workload_key="cpu_heavy_protocol",
@@ -107,6 +116,7 @@ def legacy_policy() -> ReplayPolicy:
             "gpu_heavy_jax_matmul": 3,
             "light_control_local": 1,
             "cpu_heavy_protocol": 32,
+            "cpu_heavy_local_bench": 1,
         },
     )
 

@@ -177,6 +177,36 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="q10_cpu_host_bound_local_real_probe",
+            purpose=(
+                "Real local CPU-heavy progress-bearing probe for q10 calibration. This is a "
+                "real service curve, but it is not the active theorem-grade q10 comparison "
+                "until a same-bucket legacy-comparable cap is measured or local is declared "
+                "as the q10 bucket."
+            ),
+            arrival_model="static local CPU-heavy calibration batch",
+            members=(
+                TaskSetMember(
+                    workload_key="cpu_heavy_local_bench",
+                    resource_kind="cpu_heavy",
+                    task_count=256,
+                    total_units=1000,
+                    resource_count=1,
+                    variation_cv=0.10,
+                    quadrant="high_cpu_low_gpu",
+                    role="real local q10 calibration probe",
+                    benchmark_source="Scheduleurm module25 local CPU-heavy progress-bearing curve",
+                    required_profiles=tuple(range(1, 9)),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1-8 are real local measurements. Do not use as final q10 "
+                        "legacy comparison until the legacy-comparable cap is measured on "
+                        "the same local bucket or local is declared as the benchmark bucket."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="q11_cpu_gpu_coupled",
             purpose=(
                 "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like "

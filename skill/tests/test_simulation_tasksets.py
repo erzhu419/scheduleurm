@@ -8,6 +8,7 @@ def test_taskset_registry_has_four_quadrants_and_hybrid(check, sch):
         "q00_light_control",
         "q01_gpu_bound_compute",
         "q10_cpu_host_bound",
+        "q10_cpu_host_bound_local_real_probe",
         "q11_cpu_gpu_coupled",
         "hybrid_research_portfolio",
     }
@@ -58,11 +59,15 @@ def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     check("coupled RL set is closed by measured profile 13 capacity boundary",
           "q11_cpu_gpu_coupled" not in missing,
           diag=str(missing))
+    check("local real q10 probe has measured profiles 1-8",
+          "q10_cpu_host_bound_local_real_probe" not in missing,
+          diag=str(missing))
 
 
 def test_replayable_only_filters_unmeasured_members(check, sch):
     cache = build_default_cache()
     light_specs = taskset_by_name("q00_light_control").workload_specs(replayable_only=True, cache=cache)
+    q10_local_specs = taskset_by_name("q10_cpu_host_bound_local_real_probe").workload_specs(replayable_only=True, cache=cache)
     hybrid_specs = taskset_by_name("hybrid_research_portfolio").workload_specs(replayable_only=True, cache=cache)
     check("measured light-control taskset is replayable",
           len(light_specs) == 1 and light_specs[0].workload_key == "light_control_local",
@@ -72,6 +77,10 @@ def test_replayable_only_filters_unmeasured_members(check, sch):
           and {spec.workload_key for spec in hybrid_specs}
           == {"hybrid_rl_resac_ant", "gpu_heavy_jax_matmul", "cpu_heavy_protocol"},
           diag=str(hybrid_specs))
+    check("local real q10 probe is replayable without protocol curve",
+          len(q10_local_specs) == 1
+          and q10_local_specs[0].workload_key == "cpu_heavy_local_bench",
+          diag=str(q10_local_specs))
 
 
 def test_capacity_boundary_closes_higher_required_profiles(check, sch):

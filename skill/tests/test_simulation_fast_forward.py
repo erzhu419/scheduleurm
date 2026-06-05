@@ -30,6 +30,9 @@ def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
     check("simulation cache includes CPU-heavy workload",
           "cpu_heavy_protocol" in workloads,
           diag=str(workloads))
+    check("simulation cache includes real local CPU-heavy q10 probe",
+          "cpu_heavy_local_bench" in workloads,
+          diag=str(workloads))
     check("simulation cache includes light-control workload",
           "light_control_local" in workloads,
           diag=str(workloads))

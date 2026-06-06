@@ -76,7 +76,7 @@ Missing before this note:
   one consolidated slack-accounting table and pass/fail certificate.
 ```
 
-## Gap 2: q10 Real CPU/Data-Loader Trace
+## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure
 
 Reviewer question:
 
@@ -106,17 +106,31 @@ legacy cap is profile 9 on the same local bucket;
 candidate profile is profile 8.
 ```
 
+q00 status:
+
+```text
+modules23+24+38 have the exact local light-control curve;
+profiles 1-13 are measured;
+profile 14 is a measured local scheduling-capacity boundary;
+active q00 taskset uses light_control_local;
+legacy cap is profile 1 on the same local bucket;
+candidate profile is profile 13.
+```
+
 Required artifact:
 
 ```text
 md/experiment_module31_q10_real_cpu_trace.md
+md/experiment_module38_q00_light_control_extended_curve.md
 ```
 
 Remaining breadth item:
 
 ```text
 Remote CPU-node or data-loader-heavy q10 replication is still useful, but it is
-not required for the declared local CPU-bucket q10 comparison.
+not required for the declared local CPU-bucket q10 comparison. Remote/light
+control-plane replication is likewise useful for q00 generalization but not
+required for the declared local q00 comparison.
 ```
 
 ## Gap 3: SOTA Wording
@@ -236,7 +250,7 @@ The paper can move from "research prototype" to "submission draft" only after:
 ```text
 1. slack accounting table has eta > 0 or clearly explains why the current
    workload/load point is outside certified stability;
-2. q10 is real for a declared bucket, or explicitly removed from theorem-grade claims;
+2. q10 and q00 are real for declared buckets, or explicitly removed from theorem-grade claims;
 3. SOTA claims use the honest SOTA-style replay wording;
 4. at least one small live validation connects replay to real completion/JCT;
 5. Lean artifact is freshly repackaged and theorem names match the paper;

@@ -121,10 +121,13 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     variation_cv=0.20,
                     quadrant="low_cpu_low_gpu",
                     role="control",
-                    benchmark_source="Scheduleurm module23 local CPU-only light-control curve",
-                    required_profiles=(1, 2, 3, 4, 5, 6, 7, 8, 16),
+                    benchmark_source="Scheduleurm modules23+24+38 local CPU-only light-control curve",
+                    required_profiles=tuple(range(1, 15)),
                     empirical_status="real",
-                    note="Profiles 1-8 are clean local measurements; profile 16 is a measured local scheduling-capacity boundary.",
+                    note=(
+                        "Profiles 1-13 are clean local measurements; profile 14 is a measured "
+                        "local scheduling-capacity boundary under the exact light-control workload."
+                    ),
                 ),
             ),
         ),

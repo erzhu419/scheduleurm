@@ -35,7 +35,7 @@ The task lists are generated from `simulation/tasksets.py`.
 
 | Taskset | Quadrant | Jobs | Resource pool | Status |
 |---|---|---:|---:|---|
-| `q00_light_control` | low CPU, low GPU | 512 | 1 local control pool | real local curve |
+| `q00_light_control` | low CPU, low GPU | 512 | 1 local control pool | real profiles 1-13, closed at 14 |
 | `q01_gpu_bound_compute` | low CPU, high GPU | 48 | 2 GPUs | real profiles 1-8 |
 | `q10_cpu_host_bound` | high CPU, low GPU | 256 | 1 local CPU bucket | real profiles 1-9, closed at 10 |
 | `q11_cpu_gpu_coupled` | high CPU, high GPU | 160 | 1 GPU | real profiles 1-12, closed at 13 |
@@ -98,7 +98,7 @@ Scheduleurm candidate vs legacy:
 
 | Taskset | Candidate profile | All-job makespan improvement | Mean-flow improvement | p90-flow improvement |
 |---|---|---:|---:|---:|
-| `q00_light_control` | `light_control_local=8` | 7.887x | 7.887x | 7.905x |
+| `q00_light_control` | `light_control_local=13` | 11.825x | 11.758x | 11.814x |
 | `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | 1.079x | 1.045x | 1.085x |
 | `q10_cpu_host_bound` | `cpu_heavy_local_bench=8` | 1.510x | 1.534x | 1.534x |
 | `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | 1.229x | 1.203x | 1.205x |
@@ -139,32 +139,32 @@ portfolio jobs:
 
 | Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
 |---|---|---:|---:|---:|---:|---:|
-| Scheduleurm candidate | this work | 976 | 55185.440 | 7112.521 | 1.0000x | 1.0000x |
-| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 976 | 55158.142 | 7118.035 | 0.9995x | 1.0008x |
-| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 976 | 56258.463 | 7056.580 | 1.0194x | 0.9921x |
-| IADeep/Salus-style interference guard | IADeep, Salus | 976 | 55185.440 | 7112.521 | 1.0000x | 1.0000x |
-| quadrant composite | mixed SOTA-style | 976 | 55185.440 | 7112.521 | 1.0000x | 1.0000x |
+| Scheduleurm candidate | this work | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 976 | 50910.238 | 6021.953 | 0.9995x | 1.0009x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 976 | 52010.559 | 5960.498 | 1.0211x | 0.9907x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
+| quadrant composite | mixed SOTA-style | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
 
 Full five-taskset suite, including `hybrid_research_portfolio`:
 
 | Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
 |---|---|---:|---:|---:|---:|---:|
-| Scheduleurm candidate | this work | 1376 | 82097.366 | 6767.233 | 1.0000x | 1.0000x |
-| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 1376 | 82106.245 | 6769.548 | 1.0001x | 1.0003x |
-| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 1376 | 83921.038 | 6688.490 | 1.0222x | 0.9884x |
-| IADeep/Salus-style interference guard | IADeep, Salus | 1376 | 82097.366 | 6767.233 | 1.0000x | 1.0000x |
-| quadrant composite | mixed SOTA-style | 1376 | 82097.366 | 6767.233 | 1.0000x | 1.0000x |
+| Scheduleurm candidate | this work | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 1376 | 77858.340 | 5992.094 | 1.0001x | 1.0004x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 1376 | 79673.134 | 5911.037 | 1.0234x | 0.9869x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
+| quadrant composite | mixed SOTA-style | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
 
 Winner-transfer view:
 
 | Source taskset | Winner objective | Best fixed SOTA-style policy on source | Candidate vs that policy on full five-taskset makespan | Candidate vs that policy on full five-taskset flow |
 |---|---|---|---:|---:|
-| q00 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 1.0001x | 1.0003x |
-| q01 | makespan | throughput table | 1.0001x | 1.0003x |
-| q01 | mean-flow | delay oracle | 1.0222x | 0.9884x |
-| q10 | makespan or mean-flow | throughput table | 1.0001x | 1.0003x |
-| q11 | makespan | throughput/interference/composite tie; first-listed throughput table shown | 1.0001x | 1.0003x |
-| q11 | mean-flow | delay oracle | 1.0222x | 0.9884x |
+| q00 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 1.0001x | 1.0004x |
+| q01 | makespan | throughput table | 1.0001x | 1.0004x |
+| q01 | mean-flow | delay oracle | 1.0234x | 0.9869x |
+| q10 | makespan or mean-flow | throughput table | 1.0001x | 1.0004x |
+| q11 | makespan | throughput/interference/composite tie; first-listed throughput table shown | 1.0001x | 1.0004x |
+| q11 | mean-flow | delay oracle | 1.0234x | 0.9869x |
 
 q01 SOTA endpoint check on the same 48-job task list:
 

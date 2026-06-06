@@ -50,7 +50,7 @@ def test_hybrid_research_portfolio_has_no_missing_empirical_gpu_profiles(check, 
 def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     cache = build_default_cache()
     missing = all_missing_measurements(cache)
-    check("light control has measured local curve closed by profile 16 boundary",
+    check("light control has measured local curve closed by profile 14 boundary",
           "q00_light_control" not in missing,
           diag=str(missing))
     check("GPU-bound full saturation set has measured profiles 1-8",
@@ -95,8 +95,8 @@ def test_capacity_boundary_closes_higher_required_profiles(check, sch):
           diag=str(snapshot))
 
     q00 = taskset_by_name("q00_light_control").snapshot(cache)
-    check("q00 snapshot records profile 16 as the local light-control boundary",
-          q00["members"][0]["closed_by_capacity_boundary_profile"] == 16,
+    check("q00 snapshot records profile 14 as the local light-control boundary",
+          q00["members"][0]["closed_by_capacity_boundary_profile"] == 14,
           diag=str(q00))
 
     q10 = taskset_by_name("q10_cpu_host_bound").snapshot(cache)

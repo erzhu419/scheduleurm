@@ -86,6 +86,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        RUN_ROOT / "module38_q00_light_control_local_profiles9_15_exact_20260605_001" / "reports",
+        workload_key="light_control_local",
+        command_fingerprint="cpu_light_sleep_20ms_v1",
+        resource_kind="light_control",
+        total_units=10000,
+        node_bucket="local:cpu",
+    )
+    _add_summary_dir(
+        cache,
         RUN_ROOT / "module25_q10_cpu_heavy_local_profiles1_8_20260604_001" / "reports",
         workload_key="cpu_heavy_local_bench",
         command_fingerprint="cpu_heavy_local_progress_v1",

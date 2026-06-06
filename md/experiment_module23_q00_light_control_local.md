@@ -2,6 +2,11 @@
 
 Date: 2026-06-04
 
+Current status: this module is the historical seed curve for profiles 1-8.
+Module38 extends the same exact workload through profiles 9-13 and records
+profile 14 as the active local scheduling-capacity boundary. Do not treat the
+profile 16 boundary below as the current q00 closure.
+
 This module fills the `q00_light_control` taskset with a real CPU-only local
 control curve. It measures a tiny progress-bearing command with very light work
 and a short sleep per step. The goal is to validate scheduler overhead,
@@ -115,9 +120,9 @@ and 5 remained queued until warmup timeout.
 ## Interpretation
 
 For local light-control work, profiles 1-8 scale almost linearly.
-Profile 16 is not currently feasible on the local node bucket under scheduler
-resource accounting and concurrent system state, so q00 is closed by a measured
-capacity boundary at 16.
+Profile 16 was not feasible in this historical run. Module38 subsequently
+filled the missing tail with the same command parameters and closed q00 more
+tightly at profile 14.
 
 This should be reported as a local control-plane bucket result. It should not be
 generalized to remote CPU nodes until a remote CPU node hostname/probe is

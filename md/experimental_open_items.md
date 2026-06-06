@@ -30,6 +30,18 @@ Amax_i, Smax_i                 bounded finite-support proof 的常数
 B                              second-order drift constant
 ```
 
+当前已闭合的本地 bucket service slices：
+
+```text
+q00 light_control_local: profiles 1-13 measured; profile 14 measured capacity boundary.
+q10 cpu_heavy_local_bench: profiles 1-9 measured; profile 10 measured capacity boundary.
+```
+
+这些结果已经足够支持 reviewer-facing q00/q10 replay comparison：candidate、
+legacy 和 SOTA-style policies 都使用同一个 measured service cache。它们仍然
+不是完整 stability theorem certificate；还需要把这些 measured slices 接到
+`epsilon_est`, `B`, `delta` 和负载点的 slack accounting 表。
+
 ## 2. Fabric metric 的 \(L\) 和 \(\rho\)
 
 Lean 已经证明：如果 candidate set 是 full action space 在 finite-feature fabric metric 下的 \(\rho\)-cover，且服务率对该 metric 是 \(L\)-Lipschitz，则 support loss 和 coordinate capacity-set loss 都至多是 \(L\rho\)。

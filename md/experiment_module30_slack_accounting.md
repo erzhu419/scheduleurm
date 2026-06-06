@@ -72,6 +72,16 @@ numeric table is still calibration-limited: the system must produce real
 component JSONs for `L`, `rho`, `epsilon_est`, `beta`, `alpha0`, `alpha1`, `B`,
 and `delta`.
 
+Modules31 and 38 improve the inputs to that table. q10 now has a declared local
+CPU bucket with profiles 1-9 measured and profile 10 closed by a measured
+capacity boundary. q00 now has a declared local light-control bucket with
+profiles 1-13 measured and profile 14 closed by a measured capacity boundary.
+These two promotions supply theorem-relevant service-map slices
+`\widehat{\mu}_b(k)` and infeasible-boundary evidence for exact replay. They do
+not by themselves certify `eta > 0`; the remaining calibration work is to turn
+the measured slices into lower-service error, moment, capacity-slack, and
+oracle/penalty constants.
+
 This is an improvement over the previous state because the missing quantities
 are now operationally precise. A future experiment cannot merely report
 "candidate improves replay"; it must either produce a positive `eta` certificate

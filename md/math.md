@@ -850,6 +850,58 @@ M_k\leq 1.02\min_j M_j,
 
 再最小化 \(F_k\)。这会选择 4/GPU 的 Pareto knee，而不是 1/GPU 的 extreme delay endpoint 或 8/GPU 的 extreme throughput endpoint。
 
+### Empirical bucket instantiation after q10/q00 promotion
+
+modules31+38 没有改变上面的 theorem schema；它们改变的是把两个
+previously-weak empirical buckets 从“待测/稀疏测量”推进到可写进
+support/slack accounting 的 finite action slices。数学上应写成：
+
+[
+\mathcal A^{meas}_b
+=
+\{a_{b,k}: k\in K_b^{valid}\},
+\qquad
+\widehat\mu_b(k)
+=
+\text{measured progress rate for bucket }b\text{ at profile }k.
+]
+
+对 q00/q10 当前可报告的 bucket：
+
+| Bucket | Valid measured profiles \(K_b^{valid}\) | Measured boundary | Support action used by candidate | Legacy-comparable action |
+|---|---:|---:|---:|---:|
+| q00 `light_control_local` | 1-13 | 14 | 13 | 1 |
+| q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 | 9 |
+
+这些曲线进入数学路线的方式不是“证明 sweet spot 恒成立”，而是：
+
+1. finite bucket action family 变得可枚举，\(\widehat\mu_b(k)\) 不再靠插值；
+2. boundary profile 作为 infeasible / capacity-boundary certificate，从 exact replay action set 中剔除；
+3. candidate/legacy/SOTA-style baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) 的实证对象一致；
+4. q00/q10 的 support objective 仍是 service/makespan support，不引入额外 queue-scaled guard，所以它们不新增 \(\beta\) 或 \(\alpha_1\) 的理论项；
+5. 这些 measured slices 可以作为 \(\mu,\underline\mu,\epsilon_{est},\delta\) 的输入，但仍不能替代完整 \(L,\rho,\epsilon_{est},\beta,\alpha_1,\delta\) slack certificate。
+
+因此 q00/q10 攻下来以后，正文数学部分应该更强地说：
+
+```text
+For the q00 and q10 local buckets, the empirical action slices are now closed by
+measured capacity boundaries. The theorem still ranges over the full finite
+configuration-action family; the experiments instantiate two bucket-level
+service maps and remove previously missing profile obligations.
+```
+
+不能写成：
+
+```text
+q00/q10 throughput improvement alone proves operational stability.
+```
+
+真正的 stability claim 仍要落在：
+
+[
+\delta > L\rho+\epsilon_{est}+\beta+\alpha_1.
+]
+
 ---
 
 ## Theorem D：concrete finite-support stochastic stability

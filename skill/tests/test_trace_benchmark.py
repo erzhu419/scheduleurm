@@ -110,7 +110,7 @@ def test_q01_task_list_replay_compares_legacy_candidate_and_sota(check, sch):
 def test_static_trace_replay_passes_four_quadrants_and_portfolio(check, sch):
     cache = build_default_cache()
     expected_profiles = {
-        "q00_light_control": {"light_control_local": 8},
+        "q00_light_control": {"light_control_local": 13},
         "q01_gpu_bound_compute": {"gpu_heavy_jax_matmul": 4},
         "q10_cpu_host_bound": {"cpu_heavy_local_bench": 8},
         "q11_cpu_gpu_coupled": {"hybrid_rl_resac_ant": 10},

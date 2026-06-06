@@ -50,7 +50,7 @@ surface rather than ad hoc names.
 
 | Taskset | Quadrant | Purpose | Current measurement status |
 |---|---|---|---|
-| `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Local CPU-only profiles 1-8 are clean real measurements; profile 16 is a measured local scheduling-capacity boundary. |
+| `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Local CPU-only profiles 1-13 are clean real measurements; profile 14 is a measured local scheduling-capacity boundary under the exact light-control workload. |
 | `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-8 are clean real measurements on `jtl110gpu2`. |
 | `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Real local CPU-heavy curve: profiles 1-9 are measured, and profile 10 is a measured local capacity boundary. The active taskset now uses this declared local CPU bucket rather than `cpu_heavy_protocol`. |
 | `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/invalid placement and closes the higher-profile measurement obligation for this node bucket. |
@@ -122,7 +122,8 @@ The next real probes should fill:
 - `q11_cpu_gpu_coupled`: profile 13 is already a measured capacity boundary on
   this node bucket; do not spend GPU time on 14-16 unless we intentionally
   change memory settings, task template, or node bucket;
-- `q00_light_control`: local control curve is measured; repeat only if we need a
+- `q00_light_control`: local control curve is measured through profile 13 and
+  closed by a measured profile 14 capacity boundary; repeat only if we need a
   remote CPU-node bucket rather than local control-plane behavior;
 - `q10_cpu_host_bound`: local CPU bucket is now closed; repeat only for a remote
   CPU-node or data-loader-heavy replication bucket.

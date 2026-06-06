@@ -92,7 +92,7 @@ Standalone quadrants:
 
 | Taskset | Candidate profile | SOTA-style Pareto status |
 |---|---|---|
-| `q00_light_control` | `light_control_local=8` | not dominated |
+| `q00_light_control` | `light_control_local=13` | not dominated |
 | `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | not dominated |
 | `q10_cpu_host_bound` | `cpu_heavy_local_bench=8` | not dominated |
 | `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | not dominated |
@@ -101,12 +101,12 @@ q01 details:
 
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
-| throughput-table goodput | 0.985x | 1.111x |
-| delay oracle | 1.015x | 0.910x |
-| interference guard | 1.015x | 0.910x |
+| throughput-table goodput | 0.984x | 1.116x |
+| delay oracle | 1.014x | 0.911x |
+| interference guard | 1.000x | 1.000x |
 | quadrant composite | 1.000x | 1.000x |
 
-q01 therefore loses about 1.5% makespan to a pure throughput-table objective,
+q01 therefore loses about 1.7% makespan to a pure throughput-table objective,
 but wins about 11% mean-flow. Against the delay oracle it wins makespan and
 loses mean-flow. This is the Pareto-knee version of the tradeoff, not a module
 failure.
@@ -116,8 +116,8 @@ q11 details:
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
 | throughput-table goodput | 1.000x | 1.000x |
-| delay oracle | 1.028x | 0.983x |
-| interference guard | 1.063x | 1.044x |
+| delay oracle | 1.029x | 0.983x |
+| interference guard | 1.000x | 1.000x |
 | quadrant composite | 1.000x | 1.000x |
 
 q11 wins makespan against the delay oracle but gives up about 1.7% mean-flow.

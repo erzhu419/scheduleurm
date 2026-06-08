@@ -2,7 +2,7 @@
 
 Date: 2026-06-08
 
-This note records the current gap after Module60.  It should be read together
+This note records the current gap after Module61.  It should be read together
 with:
 
 ```text
@@ -12,6 +12,7 @@ md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
 md/experiment_module58_freqduet_ablation_c9_16_curve.md
 md/experiment_module59_simple_sac_sumo_eval_cle2_completed_history.md
 md/experiment_module60_freqduet_ablation_c3_8_completed_history.md
+md/experiment_module61_freqduet_ablation_c33_64_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -50,16 +51,22 @@ workload_key = freqduet_cpu_ablation_c3_8_completed_history
 completed-active strict mapped count = 40
 feasible profiles = 1
 unit rule = parsed jobs times episodes
+
+completed-history slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_33_64
+workload_key = freqduet_cpu_ablation_c33_64_completed_history
+completed-active strict mapped count = 63
+feasible profiles = 1
+unit rule = parsed jobs times episodes
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2465
-strict completed-active mapped count = 330
-representative completed-active mapped count = 1120
-measurement_required = 1345
-cpu_sumo_transit_eval_or_control remaining = 1009 / 2465
+completed_active_production records = 2469
+strict completed-active mapped count = 393
+representative completed-active mapped count = 1183
+measurement_required = 1286
+cpu_sumo_transit_eval_or_control remaining = 946 / 2469
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -81,6 +88,11 @@ Module60 certifies only parseable `run_freqduet_ablation.py` records using a
 completed-history profile-1 lower-service point.  The remaining 96 c3_8
 records are mostly direct `runner_v3.py` or native/control command shapes and
 stay in the regenerated Module53 manifest.
+
+The current `freqduet_cpu_ablation|c_33_64` group is not fully closed either.
+Module61 certifies only parseable `run_freqduet_ablation.py` records using a
+completed-history profile-1 lower-service point.  The remaining 62 c33_64
+records are native validation or direct-runner command shapes.
 
 ## Interpretation
 
@@ -113,12 +125,12 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_33_64
 freqduet_cpu_ablation|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual command shapes
 bamor_cpu_training|c_3_8
+freqduet_cpu_ablation|c_33_64 residual command shapes
 freqduet_cpu_ablation|c_65p
 ```
 

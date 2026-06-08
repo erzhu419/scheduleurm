@@ -326,6 +326,45 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_cpu_ablation_c33_64_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the largest remaining "
+                "FreqDuet c_33_64 sub-bucket after Module60. It covers only "
+                "run_freqduet_ablation.py records whose CPU request is 33-64 cores, "
+                "GPU request is zero, and job-shard episode units are parseable."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed jobs times episodes. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; no live co-location profile is "
+                "claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_cpu_ablation_c33_64_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=63,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module61 completed-history wall-clock audit for "
+                        "parseable c_33_64 run_freqduet_ablation.py production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "episode rate as a conservative profile-1 lower-service point. "
+                        "Runner_v3 and native validation commands in the same c_33_64 "
+                        "bucket remain unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_cpu_ablation_c9_16",
             purpose=(
                 "The second high-impact production CPU/SUMO/transit closure slice "

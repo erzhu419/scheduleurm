@@ -38,6 +38,7 @@ DEFAULT_TASKSETS = (
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
     "production_freqduet_cpu_ablation_c3_8_completed_history",
+    "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_sumo_eval_simple_sac_c_le2",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -187,6 +188,15 @@ def classify_record(
             "module56_freqduet_cpu_ablation_c17_32",
         )
 
+    c33_64_units = _freqduet_ablation_c33_64_units(row=row, est_vram=est_vram, cpu=cpu)
+    if c33_64_units is not None:
+        return _mapped(
+            "freqduet_cpu_ablation_c33_64_completed_history",
+            "strict_measured",
+            "module61_freqduet_cpu_ablation_c33_64_completed_history",
+            units=c33_64_units,
+        )
+
     c3_8_units = _freqduet_ablation_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
     if c3_8_units is not None:
         return _mapped(
@@ -307,6 +317,23 @@ def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float,
     ):
         return False
     return "run_freqduet_ablation.py" in cmd
+
+
+def _freqduet_ablation_c33_64_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (32.0 < float(cpu) <= 64.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    units = _parse_freqduet_ablation_units(cmd)
+    return units if units is not None and units > 0 else None
 
 
 def _freqduet_ablation_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:

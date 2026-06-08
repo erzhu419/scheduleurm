@@ -11,6 +11,11 @@
       8,
       9
     ],
+    "freqduet_cpu_ablation_c17_32": [
+      1,
+      2,
+      4
+    ],
     "gpu_heavy_jax_matmul": [
       1,
       2,
@@ -51,13 +56,14 @@
   "capacity": {
     "classes": [
       "cpu_heavy_local_bench",
+      "freqduet_cpu_ablation_c17_32",
       "gpu_heavy_jax_matmul",
       "hybrid_rl_resac_ant",
       "light_control_local"
     ],
-    "delta": 0.31991785298901404,
+    "delta": 0.3199178529890162,
     "mix": {
-      "profile_combo:cpu_heavy_local_bench=6,gpu_heavy_jax_matmul=5,hybrid_rl_resac_ant=3,light_control_local=3": 1.0
+      "profile_combo:cpu_heavy_local_bench=3,freqduet_cpu_ablation_c17_32=4,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3,light_control_local=5": 1.0000000000000024
     },
     "status": "optimal",
     "usable_for_theorem": true
@@ -69,515 +75,11 @@
         "reason": "unmapped_cpu",
         "workload_key": null
       },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p3659740",
-      "status": "done",
-      "submitted_at": 1778298999.7564304,
-      "task_id": "t2631"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "SimpleSAC",
-      "signature": "H2Oplus/r3_wsrl_nosnap_s42_v2",
-      "status": "cancelled",
-      "submitted_at": 1778298967.1199405,
-      "task_id": "t2629"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "SimpleSAC",
-      "signature": "H2Oplus/r3_wsrl_nosnap_s123_v2",
-      "status": "cancelled",
-      "submitted_at": 1778298969.0519783,
-      "task_id": "t2630"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_cpu",
-        "workload_key": null
-      },
-      "project": "tmp",
-      "signature": "TEST/cpu-training-justification",
-      "status": "cancelled",
-      "submitted_at": 1778301206.5981276,
-      "task_id": "t2637"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p18781",
-      "status": "done",
-      "submitted_at": 1778299201.5367546,
-      "task_id": "t2632"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p19039",
-      "status": "done",
-      "submitted_at": 1778299201.5372696,
-      "task_id": "t2633"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p1642565",
-      "status": "done",
-      "submitted_at": 1778299614.2085392,
-      "task_id": "t2634"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p1643258",
-      "status": "done",
-      "submitted_at": 1778299614.2089236,
-      "task_id": "t2635"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p9298",
-      "status": "done",
-      "submitted_at": 1778312519.4952192,
-      "task_id": "t2638"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p9566",
-      "status": "done",
-      "submitted_at": 1778312519.4955595,
-      "task_id": "t2639"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p18098",
-      "status": "done",
-      "submitted_at": 1778312918.2756083,
-      "task_id": "t2640"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/auto-adopted/p20125",
-      "status": "done",
-      "submitted_at": 1778312984.4815373,
-      "task_id": "t2641"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Hopper-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317398.1528666,
-      "task_id": "t2642"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Walker2d-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317398.4250722,
-      "task_id": "t2643"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Hopper-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317399.1337287,
-      "task_id": "t2646"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Walker2d-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317399.3679943,
-      "task_id": "t2647"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Hopper-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317400.0749197,
-      "task_id": "t2650"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317398.8990028,
-      "task_id": "t2645"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317398.656397,
-      "task_id": "t2644"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Walker2d-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317399.3679943,
-      "task_id": "t2809"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Walker2d-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317399.3679943,
-      "task_id": "t2811"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317399.8386753,
-      "task_id": "t2649"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317401.4143705,
-      "task_id": "t2654"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317399.1337287,
-      "task_id": "t2808"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317398.1528666,
-      "task_id": "t2806"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317398.4250722,
-      "task_id": "t2807"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317401.1697936,
-      "task_id": "t2653"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317399.6067297,
-      "task_id": "t2648"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Walker2d-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317399.3679943,
-      "task_id": "t2812"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_cpu",
-        "workload_key": null
-      },
       "project": "tmp",
       "signature": "TEST/cpu-training-justification",
       "status": "cancelled",
       "submitted_at": 1778338309.0886664,
       "task_id": "t2814"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317400.3055744,
-      "task_id": "t2651"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317401.648743,
-      "task_id": "t2655"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317403.323181,
-      "task_id": "t2662"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317402.1320767,
-      "task_id": "t2657"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317403.5690997,
-      "task_id": "t2663"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317402.363691,
-      "task_id": "t2658"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317402.6005018,
-      "task_id": "t2659"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317403.077682,
-      "task_id": "t2661"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317404.0538752,
-      "task_id": "t2665"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317402.8375914,
-      "task_id": "t2660"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317405.2641125,
-      "task_id": "t2670"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317406.3383358,
-      "task_id": "t2673"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Hopper-v2_16",
-      "status": "done",
-      "submitted_at": 1778317404.2981503,
-      "task_id": "t2666"
     },
     {
       "classification": {
@@ -594,762 +96,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317405.5009944,
-      "task_id": "t2671"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Walker2d-v2_16",
-      "status": "done",
-      "submitted_at": 1778317404.5349185,
-      "task_id": "t2667"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317401.8966901,
-      "task_id": "t2656"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317403.8152556,
-      "task_id": "t2664"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317408.8027503,
-      "task_id": "t2683"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317406.6050282,
-      "task_id": "t2674"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317406.84569,
-      "task_id": "t2675"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317400.540833,
-      "task_id": "t2652"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317405.029429,
-      "task_id": "t2669"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317408.0676875,
-      "task_id": "t2680"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317407.3298395,
-      "task_id": "t2677"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317409.3103862,
-      "task_id": "t2685"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317407.5789564,
-      "task_id": "t2678"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317410.2904317,
-      "task_id": "t2689"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317404.7958674,
-      "task_id": "t2668"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317409.5463173,
-      "task_id": "t2686"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317409.789078,
-      "task_id": "t2687"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317407.8237648,
-      "task_id": "t2679"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317408.5526443,
-      "task_id": "t2682"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317412.7452588,
-      "task_id": "t2697"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sac_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317408.3087735,
-      "task_id": "t2681"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317412.2480876,
-      "task_id": "t2695"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317410.5462337,
-      "task_id": "t2690"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317411.2282195,
-      "task_id": "t2691"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/abl_B0_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317407.087553,
-      "task_id": "t2676"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/td3_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317410.036712,
-      "task_id": "t2688"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/dsac_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317409.0697687,
-      "task_id": "t2684"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317413.2273338,
-      "task_id": "t2699"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.001_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317416.0193346,
-      "task_id": "t2709"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317413.474645,
-      "task_id": "t2700"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317412.0055294,
-      "task_id": "t2694"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317414.8929372,
-      "task_id": "t2706"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317412.9878688,
-      "task_id": "t2698"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317411.7667284,
-      "task_id": "t2693"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Hopper-v2_24",
-      "status": "done",
-      "submitted_at": 1778317413.9499264,
-      "task_id": "t2702"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Walker2d-v2_24",
-      "status": "done",
-      "submitted_at": 1778317414.1866894,
-      "task_id": "t2703"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317406.0855734,
-      "task_id": "t2672"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317416.5010984,
-      "task_id": "t2711"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.01_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317416.263825,
-      "task_id": "t2710"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/sacn_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317412.5008562,
-      "task_id": "t2696"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317414.6503944,
-      "task_id": "t2705"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/redq_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317411.512601,
-      "task_id": "t2692"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/tqc_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317413.7146468,
-      "task_id": "t2701"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.5_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317417.4700615,
-      "task_id": "t2715"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b3/bac_HalfCheetah-v2_24",
-      "status": "done",
-      "submitted_at": 1778317414.4143698,
-      "task_id": "t2704"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.001_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317415.3844888,
-      "task_id": "t2708"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_1.0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317417.714338,
-      "task_id": "t2716"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-2.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317418.4338002,
-      "task_id": "t2719"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.1_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317416.744314,
-      "task_id": "t2712"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.5_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317417.229354,
-      "task_id": "t2714"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.1_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317416.985925,
-      "task_id": "t2713"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-1.5_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317418.9239657,
-      "task_id": "t2721"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-1.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.4215634,
-      "task_id": "t2723"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.061728,
-      "task_id": "t2729"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-2.0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317418.1883235,
-      "task_id": "t2718"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_1.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317417.9538412,
-      "task_id": "t2717"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.25_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.311368,
-      "task_id": "t2730"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-0.5_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.899738,
-      "task_id": "t2725"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.25_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.57271,
-      "task_id": "t2731"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.5_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317420.058017,
-      "task_id": "t2733"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.75_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317420.5466967,
-      "task_id": "t2735"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-1.5_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317418.6798577,
-      "task_id": "t2720"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.5_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.817433,
-      "task_id": "t2732"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -1358,18 +104,6 @@
       "status": "done",
       "submitted_at": 1778481317.2707863,
       "task_id": "t2816"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_0.0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317420.14292,
-      "task_id": "t2726"
     },
     {
       "classification": {
@@ -1442,150 +176,6 @@
       "status": "cancelled",
       "submitted_at": 1778484713.4301553,
       "task_id": "t2865"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-1.0_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.1699276,
-      "task_id": "t2722"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-0.5_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317419.6577356,
-      "task_id": "t2724"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317415.135359,
-      "task_id": "t2707"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_1.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317421.0347445,
-      "task_id": "t2737"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_0.0_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317420.3948114,
-      "task_id": "t2727"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_2_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317421.284003,
-      "task_id": "t2738"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_5_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317422.0192819,
-      "task_id": "t2741"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_10_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317422.4953766,
-      "task_id": "t2743"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_2_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317421.5290437,
-      "task_id": "t2739"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.0_HalfCheetah-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317421.0044158,
-      "task_id": "t2728"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_1.0_HalfCheetah-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317420.7830617,
-      "task_id": "t2736"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ema_0.001_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317424.3127193,
-      "task_id": "t2749"
     },
     {
       "classification": {
@@ -1698,18 +288,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ratio_0.75_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317420.3046398,
-      "task_id": "t2734"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -1778,18 +356,6 @@
       "status": "done",
       "submitted_at": 1778483887.5456142,
       "task_id": "t2836"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_5_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317421.7731938,
-      "task_id": "t2740"
     },
     {
       "classification": {
@@ -1866,18 +432,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ema_0.005_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317424.5722315,
-      "task_id": "t2750"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -1922,66 +476,6 @@
       "status": "done",
       "submitted_at": 1778516025.9821723,
       "task_id": "t2909"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ema_0.01_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317425.358647,
-      "task_id": "t2753"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_10_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317422.2585275,
-      "task_id": "t2742"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_20_Ant-v2_16",
-      "status": "done",
-      "submitted_at": 1778317422.9644005,
-      "task_id": "t2745"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_K_20_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317422.7313297,
-      "task_id": "t2744"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317426.3541498,
-      "task_id": "t2757"
     },
     {
       "classification": {
@@ -2130,18 +624,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.1_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317427.8299596,
-      "task_id": "t2763"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -2202,18 +684,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_anchor_0.5_Ant-v2_24",
-      "status": "done",
-      "submitted_at": 1778317428.3342628,
-      "task_id": "t2765"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -2222,18 +692,6 @@
       "status": "done",
       "submitted_at": 1778483891.5482411,
       "task_id": "t2852"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_16",
-      "status": "failed",
-      "submitted_at": 1778317425.857881,
-      "task_id": "t2755"
     },
     {
       "classification": {
@@ -2262,18 +720,6 @@
     {
       "classification": {
         "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_0.0_Ant-v2_24",
-      "status": "failed",
-      "submitted_at": 1778317431.6985278,
-      "task_id": "t2777"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
         "reason": "unmapped_cpu",
         "workload_key": null
       },
@@ -2282,18 +728,6 @@
       "status": "done",
       "submitted_at": 1778483892.3133724,
       "task_id": "t2855"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_betaend_-1.0_Ant-v2_24",
-      "status": "failed",
-      "submitted_at": 1778317430.6860602,
-      "task_id": "t2773"
     },
     {
       "classification": {
@@ -2330,18 +764,6 @@
       "status": "done",
       "submitted_at": 1778483893.0358787,
       "task_id": "t2858"
-    },
-    {
-      "classification": {
-        "mapping_mode": "unmapped",
-        "reason": "unmapped_gpu",
-        "workload_key": null
-      },
-      "project": "RE-SAC",
-      "signature": "RE-SAC/b4/sens_ema_0.001_HalfCheetah-v2_16",
-      "status": "done",
-      "submitted_at": 1778317424.0733023,
-      "task_id": "t2748"
     },
     {
       "classification": {
@@ -2462,14 +884,1599 @@
       "status": "done",
       "submitted_at": 1778509091.5662544,
       "task_id": "t2878"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778537668.2567413,
+      "task_id": "t2914"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.6",
+      "status": "done",
+      "submitted_at": 1778509091.7669175,
+      "task_id": "t2879"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778537813.4665208,
+      "task_id": "t2916"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.8",
+      "status": "done",
+      "submitted_at": 1778509091.9614258,
+      "task_id": "t2880"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od1.0",
+      "status": "done",
+      "submitted_at": 1778509092.1587617,
+      "task_id": "t2881"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778538525.1362612,
+      "task_id": "t2918"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778538705.9505222,
+      "task_id": "t2920"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od0.6",
+      "status": "done",
+      "submitted_at": 1778509092.35462,
+      "task_id": "t2882"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od0.8",
+      "status": "done",
+      "submitted_at": 1778509092.5473673,
+      "task_id": "t2883"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778538857.9699152,
+      "task_id": "t2922"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778538880.30992,
+      "task_id": "t2924"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778539090.5928748,
+      "task_id": "t2926"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778539153.6978996,
+      "task_id": "t2928"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778539371.1585512,
+      "task_id": "t2930"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od1.0",
+      "status": "done",
+      "submitted_at": 1778509092.7557328,
+      "task_id": "t2884"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778539588.1945033,
+      "task_id": "t2932"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od0.6",
+      "status": "done",
+      "submitted_at": 1778509092.9934762,
+      "task_id": "t2885"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od0.8",
+      "status": "done",
+      "submitted_at": 1778509093.202417,
+      "task_id": "t2886"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od1.0",
+      "status": "done",
+      "submitted_at": 1778509093.4253373,
+      "task_id": "t2887"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1003_od0.6",
+      "status": "done",
+      "submitted_at": 1778509093.6318471,
+      "task_id": "t2888"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542054.2927358,
+      "task_id": "t2934"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542081.640025,
+      "task_id": "t2936"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1003_od0.8",
+      "status": "done",
+      "submitted_at": 1778509093.83075,
+      "task_id": "t2889"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542105.119759,
+      "task_id": "t2938"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542140.0289602,
+      "task_id": "t2940"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542169.2838292,
+      "task_id": "t2942"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542315.64184,
+      "task_id": "t2944"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778542494.6668823,
+      "task_id": "t2946"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542713.924276,
+      "task_id": "t2947"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542714.569056,
+      "task_id": "t2948"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od1.0",
+      "status": "cancelled",
+      "submitted_at": 1778542714.8474095,
+      "task_id": "t2949"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542715.0925245,
+      "task_id": "t2950"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542715.3313594,
+      "task_id": "t2951"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od1.0",
+      "status": "cancelled",
+      "submitted_at": 1778542715.564138,
+      "task_id": "t2952"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542715.7974017,
+      "task_id": "t2953"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542716.0333877,
+      "task_id": "t2954"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od1.0",
+      "status": "cancelled",
+      "submitted_at": 1778542716.291775,
+      "task_id": "t2955"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542716.5195684,
+      "task_id": "t2956"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542716.7556756,
+      "task_id": "t2957"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1001_od1.0",
+      "status": "cancelled",
+      "submitted_at": 1778542716.9960027,
+      "task_id": "t2958"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542717.238919,
+      "task_id": "t2959"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542717.4716873,
+      "task_id": "t2960"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1002_od1.0",
+      "status": "cancelled",
+      "submitted_at": 1778542717.73523,
+      "task_id": "t2961"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1003_od0.6",
+      "status": "cancelled",
+      "submitted_at": 1778542717.9779959,
+      "task_id": "t2962"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1003_od0.8",
+      "status": "cancelled",
+      "submitted_at": 1778542718.2188108,
+      "task_id": "t2963"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s123_s1003_od1.0",
+      "status": "done",
+      "submitted_at": 1778509094.0294068,
+      "task_id": "t2890"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_base_s42",
+      "status": "cancelled",
+      "submitted_at": 1778545021.4748878,
+      "task_id": "t2964"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_base_s42",
+      "status": "cancelled",
+      "submitted_at": 1778545062.7262056,
+      "task_id": "t2965"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778546294.4980843,
+      "task_id": "t2973"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778546977.2454598,
+      "task_id": "t2975"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778547389.6898222,
+      "task_id": "t2977"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778547522.5897708,
+      "task_id": "t2979"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/auto-adopted/p640083",
+      "status": "done",
+      "submitted_at": 1778549768.4776788,
+      "task_id": "t2980"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778550860.4913802,
+      "task_id": "t2982"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778553405.6474643,
+      "task_id": "t2984"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778553545.5222538,
+      "task_id": "t2986"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/auto-adopted/p758235",
+      "status": "done",
+      "submitted_at": 1778556344.925961,
+      "task_id": "t2987"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/E10",
+      "status": "done",
+      "submitted_at": 1778481460.7744849,
+      "task_id": "t2871"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_betaend_-1.0_Ant-v2_24",
+      "status": "failed",
+      "submitted_at": 1778533904.967077,
+      "task_id": "t2912"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778557859.3866894,
+      "task_id": "t2989"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778558004.679776,
+      "task_id": "t2991"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778559142.9421957,
+      "task_id": "t2995"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778559183.1759338,
+      "task_id": "t2997"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778559323.0262551,
+      "task_id": "t2999"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_base_s42",
+      "status": "done",
+      "submitted_at": 1778545093.9295664,
+      "task_id": "t2966"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_p0_guard_s42",
+      "status": "done",
+      "submitted_at": 1778545103.8009162,
+      "task_id": "t2967"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_p1_ratio_s42",
+      "status": "done",
+      "submitted_at": 1778545113.8168976,
+      "task_id": "t2968"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778559795.9932003,
+      "task_id": "t3001"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_p2_adaptive_s42",
+      "status": "done",
+      "submitted_at": 1778545127.7152922,
+      "task_id": "t2969"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778561191.5611787,
+      "task_id": "t3003"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_p3_jtt_s42",
+      "status": "done",
+      "submitted_at": 1778545138.8861637,
+      "task_id": "t2970"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/proxy_p4_floor_ess_s42",
+      "status": "done",
+      "submitted_at": 1778545149.5296354,
+      "task_id": "t2971"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/rebuild_lazy_snapshot_index_v2",
+      "status": "failed",
+      "submitted_at": 1778567374.1547492,
+      "task_id": "t3004"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/rebuild_lazy_snapshot_index_v2",
+      "status": "failed",
+      "submitted_at": 1778567374.1547492,
+      "task_id": "t3005"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/rebuild_lazy_snapshot_index_v2",
+      "status": "failed",
+      "submitted_at": 1778567374.1547492,
+      "task_id": "t3006"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/rebuild_lazy_snapshot_index_v2",
+      "status": "failed",
+      "submitted_at": 1778567374.1547492,
+      "task_id": "t3007"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778568916.0425315,
+      "task_id": "t3013"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p2_uniform_s42",
+      "status": "done",
+      "submitted_at": 1778567888.6931899,
+      "task_id": "t3008"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778569014.7896147,
+      "task_id": "t3015"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p4_nojtt_s42",
+      "status": "done",
+      "submitted_at": 1778567889.4463685,
+      "task_id": "t3010"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p3_jtt_s42",
+      "status": "done",
+      "submitted_at": 1778567889.0675046,
+      "task_id": "t3009"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p4_jtt_s42",
+      "status": "done",
+      "submitted_at": 1778567889.8222528,
+      "task_id": "t3011"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778570117.8667521,
+      "task_id": "t3018"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/noBC",
+      "status": "done",
+      "submitted_at": 1778481317.8063278,
+      "task_id": "t2869"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p4_jtt_cons_ema_mix_s42",
+      "status": "failed",
+      "submitted_at": 1778572420.0334032,
+      "task_id": "t3019"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p4_jtt_cons_ema_mix_s42",
+      "status": "done",
+      "submitted_at": 1778572561.7615633,
+      "task_id": "t3020"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/eval_p4_nojtt_s42_grid",
+      "status": "cancelled",
+      "submitted_at": 1778576248.6948102,
+      "task_id": "t3022"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/snap_p4_nojtt_s42_clean",
+      "status": "done",
+      "submitted_at": 1778576177.6835775,
+      "task_id": "t3021"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/eval_p4_nojtt_s42_grid_epoch80_gated",
+      "status": "done",
+      "submitted_at": 1778577016.3605425,
+      "task_id": "t3023"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/p2_rescale5_nojtt_s42",
+      "status": "done",
+      "submitted_at": 1778585735.3253398,
+      "task_id": "t3036"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/p3_jtt_late_soft_s42",
+      "status": "done",
+      "submitted_at": 1778585755.343048,
+      "task_id": "t3037"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/passenger",
+      "status": "done",
+      "submitted_at": 1778481318.0183501,
+      "task_id": "t2870"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/p2-p3_default_eval_s42",
+      "status": "done",
+      "submitted_at": 1778585874.5092828,
+      "task_id": "t3038"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/auto-adopted/p191302",
+      "status": "done",
+      "submitted_at": 1778593915.9271789,
+      "task_id": "t3039"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "SimpleSAC",
+      "signature": "H2Oplus/p0-p1_default_eval_s42",
+      "status": "done",
+      "submitted_at": 1778585709.3606548,
+      "task_id": "t3035"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/main",
+      "status": "cancelled",
+      "submitted_at": 1778481693.9717968,
+      "task_id": "t2872"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "H2Oplus",
+      "signature": "H2Oplus/p4_hold_calib_val2001_then_test",
+      "status": "done",
+      "submitted_at": 1778604625.5758536,
+      "task_id": "t3040"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/operational",
+      "status": "failed",
+      "submitted_at": 1778481317.4758623,
+      "task_id": "t2868"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_16",
+      "status": "done",
+      "submitted_at": 1778533261.7254782,
+      "task_id": "t2910"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+      "status": "failed",
+      "submitted_at": 1778569794.194995,
+      "task_id": "t3016"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+      "status": "failed",
+      "submitted_at": 1778636390.690528,
+      "task_id": "t3048"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778642590.5136123,
+      "task_id": "t3050"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+      "status": "failed",
+      "submitted_at": 1778636390.690528,
+      "task_id": "t3051"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+      "status": "cancelled",
+      "submitted_at": 1778636390.690528,
+      "task_id": "t3052"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778642889.3820603,
+      "task_id": "t3055"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_betaend_0.0_Ant-v2_24",
+      "status": "done",
+      "submitted_at": 1778533720.9548743,
+      "task_id": "t2911"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778606387.9502153,
+      "task_id": "t3042"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778645876.3774765,
+      "task_id": "t3057"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778606387.9502153,
+      "task_id": "t3058"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778606387.9502153,
+      "task_id": "t3059"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778606387.9502153,
+      "task_id": "t3060"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_24",
+      "status": "done",
+      "submitted_at": 1778615725.6054826,
+      "task_id": "t3043"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_ratio_0.0_HalfCheetah-v2_24",
+      "status": "done",
+      "submitted_at": 1778605474.0395038,
+      "task_id": "t3041"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.001_HalfCheetah-v2_24",
+      "status": "done",
+      "submitted_at": 1778558317.053246,
+      "task_id": "t2992"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+      "status": "done",
+      "submitted_at": 1778642677.30527,
+      "task_id": "t3053"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/operational",
+      "status": "cancelled",
+      "submitted_at": 1778481317.4758623,
+      "task_id": "t3047"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/operational",
+      "status": "cancelled",
+      "submitted_at": 1778651054.6458359,
+      "task_id": "t3061"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "offline-sumo",
+      "signature": "offline-sumo/eval-v2/operational",
+      "status": "cancelled",
+      "submitted_at": 1778651591.915112,
+      "task_id": "t3062"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4/sens_betaend_-1.0_Ant-v2_24",
+      "status": "done",
+      "submitted_at": 1778558689.6383328,
+      "task_id": "t2993"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778657188.674223,
+      "task_id": "t3071"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778657854.386281,
+      "task_id": "t3072"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778657854.386281,
+      "task_id": "t3073"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778657854.386281,
+      "task_id": "t3074"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_0.5_HalfCheetah-v2_24",
+      "status": "failed",
+      "submitted_at": 1778657854.386281,
+      "task_id": "t3075"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_cpu",
+        "workload_key": null
+      },
+      "project": "tmp",
+      "signature": "TEST/cpu-training-justification",
+      "status": "cancelled",
+      "submitted_at": 1778658656.5956862,
+      "task_id": "t3077"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_K_2_Ant-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657183.711618,
+      "task_id": "t3064"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ema_0.01_HalfCheetah-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657186.3110507,
+      "task_id": "t3067"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_1.0_Ant-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657187.4449403,
+      "task_id": "t3069"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_K_2_Ant-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657183.711618,
+      "task_id": "t3078"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ema_0.01_HalfCheetah-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657186.3110507,
+      "task_id": "t3079"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_ratio_1.0_Ant-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657187.4449403,
+      "task_id": "t3080"
+    },
+    {
+      "classification": {
+        "mapping_mode": "unmapped",
+        "reason": "unmapped_gpu",
+        "workload_key": null
+      },
+      "project": "RE-SAC",
+      "signature": "RE-SAC/b4-fillin/sens_K_2_Ant-v2_8",
+      "status": "failed",
+      "submitted_at": 1778657183.711618,
+      "task_id": "t3081"
     }
   ],
-  "full_action_count": 8424,
+  "full_action_count": 25272,
   "global_coverage_usable_for_theorem": false,
   "include_representative": false,
   "interpretation": "Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.",
   "lambda": {
     "cpu_heavy_local_bench": 0.021219135802469136,
+    "freqduet_cpu_ablation_c17_32": 0.004333333333333333,
     "gpu_heavy_jax_matmul": 0.06481481481481481,
     "hybrid_rl_resac_ant": 0.014691358024691358,
     "light_control_local": 0.7947530864197531
@@ -2477,73 +2484,74 @@
   "mapped_capacity_usable_for_theorem": true,
   "mapped_counts": {
     "cpu_heavy_local_bench": 55,
+    "freqduet_cpu_ablation_c17_32": 156,
     "gpu_heavy_jax_matmul": 70,
     "hybrid_rl_resac_ant": 476,
     "light_control_local": 206
   },
-  "mapped_fraction": 0.15642566388835047,
-  "mapped_task_count": 807,
+  "mapped_fraction": 0.18684516880093133,
+  "mapped_task_count": 963,
   "mapped_units": {
     "cpu_heavy_local_bench": 55000.0,
+    "freqduet_cpu_ablation_c17_32": 11232.0,
     "gpu_heavy_jax_matmul": 168000.0,
     "hybrid_rl_resac_ant": 38080.0,
     "light_control_local": 2060000.0
   },
   "moment": {
-    "B": 195402.96925178415,
+    "B": 195403.35503118983,
     "status": "finite_support_bound_from_measured_action_slice_and_empirical_load",
     "usable_for_theorem": true
   },
-  "record_count_total": 7490,
-  "record_count_window": 5159,
+  "record_count_total": 7684,
+  "record_count_window": 5154,
   "representative_mapped_task_count": 0,
   "status_counts": {
-    "cancelled": 1304,
-    "done": 2510,
-    "failed": 1263,
-    "forgotten": 49,
-    "queued": 11,
-    "running": 22
+    "cancelled": 1329,
+    "done": 2505,
+    "failed": 1271,
+    "forgotten": 49
   },
-  "strict_mapped_fraction": 0.15642566388835047,
+  "strict_mapped_fraction": 0.18684516880093133,
   "taskset_names": [
     "q00_light_control",
     "q01_gpu_bound_compute",
     "q10_cpu_host_bound",
+    "production_freqduet_cpu_c17_32",
     "q11_cpu_gpu_coupled"
   ],
   "top_projects": {
-    "Asumption Agent": 53,
-    "BAMOR": 130,
+    "Asumption Agent": 62,
+    "BAMOR": 198,
     "BAPR": 122,
     "CFCMT": 119,
-    "FreqDuet": 309,
+    "FreqDuet": 326,
     "FreqHRL": 56,
     "FreqHRLNative": 62,
     "H2Oplus": 24,
-    "RE-SAC": 1153,
+    "RE-SAC": 957,
     "RE-SAC-JMLR": 484,
-    "ScheduleurmBench": 913,
-    "SimpleSAC": 78,
-    "TransitDuet": 618,
+    "ScheduleurmBench": 930,
+    "SimpleSAC": 76,
+    "TransitDuet": 697,
     "ZSW_platform": 42,
     "bapr_v15": 413,
-    "freqduet": 382,
+    "freqduet": 383,
     "offline-sumo": 53,
     "sensing-compressibility-pems": 18,
-    "tmp": 77,
+    "tmp": 76,
     "zsw_tsp_m0_gpu1": 15
   },
   "unmapped_reasons": {
-    "scheduleurmbench_unknown": 106,
-    "unmapped_cpu": 2505,
-    "unmapped_gpu": 1741
+    "scheduleurmbench_unknown": 123,
+    "unmapped_cpu": 2524,
+    "unmapped_gpu": 1544
   },
-  "unmapped_task_count": 4352,
+  "unmapped_task_count": 4191,
   "usable_for_global_theorem": false,
   "window": {
-    "end_ts": 1780888427.786221,
-    "start_ts": 1778296427.786221,
+    "end_ts": 1780925803.8387797,
+    "start_ts": 1778333803.8387797,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

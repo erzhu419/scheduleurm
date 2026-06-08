@@ -36,6 +36,7 @@ DEFAULT_TASKSETS = (
     "q00_light_control",
     "q01_gpu_bound_compute",
     "q10_cpu_host_bound",
+    "production_freqduet_cpu_c17_32",
     "q11_cpu_gpu_coupled",
 )
 
@@ -175,6 +176,13 @@ def classify_record(
             return _mapped("hybrid_rl_resac_ant", "strict_measured", "scheduleurmbench_q11")
         return {"workload_key": None, "mapping_mode": "unmapped", "reason": "scheduleurmbench_unknown"}
 
+    if _is_freqduet_cpu_ablation_c17_32(row=row, est_vram=est_vram, cpu=cpu):
+        return _mapped(
+            "freqduet_cpu_ablation_c17_32",
+            "strict_measured",
+            "module56_freqduet_cpu_ablation_c17_32",
+        )
+
     if include_representative:
         if est_vram > 0 and any(
             token in text for token in (
@@ -230,6 +238,24 @@ def _members_for_tasksets(taskset_names: Iterable[str]) -> tuple[TaskSetMember, 
 
 def _mapped(workload_key: str, mode: str, reason: str) -> dict[str, Any]:
     return {"workload_key": workload_key, "mapping_mode": mode, "reason": reason}
+
+
+def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:
+    if est_vram > 0:
+        return False
+    if not (16.0 < float(cpu) <= 32.0):
+        return False
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "").lower()
+    if (
+        project == "bamor"
+        or "/bamor" in cwd
+        or "run_bamor_diagnostic_shard.py" in cmd
+        or "train_compare_baselines.py" in cmd
+    ):
+        return False
+    return "run_freqduet_ablation.py" in cmd
 
 
 def _dedupe_records(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:

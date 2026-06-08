@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 5211
-mapped_task_count = 2857
+record_count_window = 5212
+mapped_task_count = 2941
 representative_mapped_task_count = 1588
-unmapped_task_count = 2354
-mapped_fraction = 0.5482632891959317
+unmapped_task_count = 2271
+mapped_fraction = 0.5642747505755947
 ```
 
 | Workload | Count | Lambda |
@@ -18,6 +18,7 @@ mapped_fraction = 0.5482632891959317
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
 | `light_control_local` | 206 | 0.794753086 |
@@ -35,7 +36,7 @@ mapped_fraction = 0.5482632891959317
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 2180 |
+| `unmapped_cpu` | 2097 |
 | `unmapped_gpu` | 19 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

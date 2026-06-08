@@ -32,12 +32,14 @@ Module60 adds a conservative profile-1 completed-history certificate for
 parseable `run_freqduet_ablation.py` records inside `freqduet_cpu_ablation|c_3_8`.
 Module61 adds the analogous completed-history certificate for parseable
 `run_freqduet_ablation.py` records inside `freqduet_cpu_ablation|c_33_64`.
+Module62 adds a completed-history portfolio lower-service certificate for
+direct `runner_v3.py` records inside `freqduet_cpu_ablation|c_le2`.
 
 ```text
-record_count_window = 5210
-mapped_task_count = 1269
-mapped_fraction = 0.243570
-unmapped_task_count = 3941
+record_count_window = 5212
+mapped_task_count = 1353
+mapped_fraction = 0.259593
+unmapped_task_count = 3859
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -56,6 +58,7 @@ Estimated load:
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
 
 Capacity LP:
@@ -74,12 +77,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5211
-mapped_task_count = 2857
+record_count_window = 5212
+mapped_task_count = 2941
 representative_mapped_task_count = 1588
-mapped_fraction = 0.548263
-strict_mapped_fraction = 0.243570
-unmapped_task_count = 2354
+mapped_fraction = 0.564275
+strict_mapped_fraction = 0.259593
+unmapped_task_count = 2271
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -98,6 +101,7 @@ Estimated load:
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
 
 Capacity LP:
@@ -116,15 +120,16 @@ Module57 exact direct-runner config is theorem-grade, Module58 adds a
 theorem-grade c9_16 ablation command-shape slice with parsed production units,
 Module59 adds a conservative completed-history SimpleSAC c_le2 eval slice, and
 Modules60 and 61 add conservative completed-history c3_8 and c33_64 FreqDuet
-ablation slices.  The mapped LP is still positive but tight because the
+ablation slices.  Module62 adds the c_le2 direct-runner completed-history
+portfolio slice.  The mapped LP is still positive but tight because the
 completed-history slices use minimum completed profile-1 lower-service points.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3941 / 5210 tasks
-representative unmapped: 2354 / 5211 tasks
+strict unmapped: 3859 / 5212 tasks
+representative unmapped: 2271 / 5212 tasks
 representative-mapped but not theorem-grade: 1588 tasks
 ```
 

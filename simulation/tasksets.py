@@ -404,6 +404,46 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_runner_v3_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the dominant direct "
+                "runner_v3 portion of the FreqDuet c_le2 bucket. It covers no-GPU "
+                "runner_v3.py records requesting at most 2 CPU cores and having an "
+                "explicit --episodes value."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed episode units. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; no live co-location profile is "
+                "claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=84,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history runner sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module62 completed-history wall-clock audit for "
+                        "c_le2 direct runner_v3.py production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This is a conservative portfolio lower-service point over "
+                        "multiple runner_v3 configs. The service cache uses the "
+                        "minimum realized completed-task episode rate; ablation, "
+                        "baseline-rule, scheduler wait, and native validation records "
+                        "in c_le2 remain unmeasured unless covered by other modules."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

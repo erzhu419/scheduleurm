@@ -40,6 +40,7 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
+    "production_freqduet_runner_v3_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
@@ -213,6 +214,15 @@ def classify_record(
             "strict_measured",
             "module58_freqduet_cpu_ablation_c9_16",
             units=c9_16_units,
+        )
+
+    runner_c_le2_units = _freqduet_runner_v3_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if runner_c_le2_units is not None:
+        return _mapped(
+            "freqduet_runner_v3_c_le2_completed_history",
+            "strict_measured",
+            "module62_freqduet_runner_v3_c_le2_completed_history",
+            units=runner_c_le2_units,
         )
 
     if _is_simple_sac_sumo_eval_c_le2(row=row, est_vram=est_vram, cpu=cpu):
@@ -413,6 +423,43 @@ def _parse_freqduet_ablation_units(cmd: str) -> float | None:
     seeds = [part for part in seeds_raw.split(",") if part.strip()]
     jobs = len(configs) * len(seeds)
     return float(jobs * episodes) if jobs > 0 else None
+
+
+def _freqduet_runner_v3_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "runner_v3.py" not in cmd_lower:
+        return None
+    return _parse_runner_v3_episode_units(cmd)
+
+
+def _parse_runner_v3_episode_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    if not any(str(token).endswith("runner_v3.py") for token in tokens):
+        return None
+    if "--episodes" not in tokens:
+        return None
+    idx = tokens.index("--episodes")
+    if idx + 1 >= len(tokens):
+        return None
+    try:
+        episodes = float(tokens[idx + 1])
+    except ValueError:
+        return None
+    return episodes if math.isfinite(episodes) and episodes > 0 else None
 
 
 def _is_simple_sac_sumo_eval_c_le2(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:

@@ -39,10 +39,10 @@ and adopted compiler helper processes.
 For the 30-day window:
 
 ```text
-completed_active_production records = 2495
+completed_active_production records = 2504
 representative mapped = 948
-unmapped / measurement-required = 1547
-mapped_fraction = 0.379960
+unmapped / measurement-required = 1556
+mapped_fraction = 0.378594
 capacity slack on mapped representative load delta = 0.306553655
 global theorem closed = false
 ```
@@ -54,18 +54,18 @@ not close the global theorem because coverage is far from complete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 1227 | 0.491784 |
-| `generic_cpu_python` | measurement required | 136 | 0.054509 |
-| `cpu_eval_generic` | measurement required | 89 | 0.035671 |
-| `artifact_io_control` | measurement required | 77 | 0.030862 |
-| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.006413 |
-| `scheduler_control_plane` | measurement required | 2 | 0.000802 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 1245 | 0.497204 |
+| `generic_cpu_python` | measurement required | 136 | 0.054313 |
+| `cpu_eval_generic` | measurement required | 80 | 0.031949 |
+| `artifact_io_control` | measurement required | 77 | 0.030751 |
+| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.006390 |
+| `scheduler_control_plane` | measurement required | 2 | 0.000799 |
 
 The dominant production-coverage blocker is therefore not q01/q11 GPU RL.  It
 is the CPU/SUMO/transit evaluation/control family:
 
 ```text
-cpu_sumo_transit_eval_or_control = 1227 / 2495 completed-active production records
+cpu_sumo_transit_eval_or_control = 1245 / 2504 completed-active production records
 ```
 
 ## Interpretation

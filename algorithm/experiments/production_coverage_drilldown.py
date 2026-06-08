@@ -128,7 +128,10 @@ def bucket_obligation(row: Mapping[str, Any]) -> dict[str, Any]:
             bucket = "gpu_rl_unmeasured_variant"
         else:
             bucket = "gpu_unmeasured_production"
-    elif any(tok in text for tok in ("sumo", "transit", "freqduet", "freqhrl", "h2oplus", "simplesac", "offline-sumo")):
+    elif any(tok in text for tok in (
+        "sumo", "transit", "freqduet", "freqhrl", "h2oplus", "simplesac",
+        "offline-sumo", "bamor",
+    )):
         bucket = "cpu_sumo_transit_eval_or_control"
     elif any(tok in text for tok in ("eval", "evaluate", "rollout")):
         bucket = "cpu_eval_generic"

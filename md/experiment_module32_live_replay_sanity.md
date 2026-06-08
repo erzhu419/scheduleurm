@@ -112,3 +112,28 @@ Still required before closing the full replay-to-live item:
 ```text
 hybrid portfolio small live sanity
 ```
+
+## Status After Module47
+
+Completed:
+
+```text
+hybrid portfolio small live sanity: module47, usable_for_live_sanity = true
+```
+
+The portfolio validation uses `algorithm/experiments/portfolio_live_proxy.py` to
+compose fresh live service slices into the exact `hybrid_research_portfolio`
+task-list replay semantics.  It does not wait for all long production jobs to
+finish naturally.
+
+| Metric | Replay predicted | Composed live | Relative error |
+|---|---:|---:|---:|
+| makespan_s | 28508.245 | 28298.731 | 0.007349 |
+| mean_flow_s | 5989.897 | 5957.450 | 0.005417 |
+| p90_flow_s | 19206.782 | 19053.817 | 0.007964 |
+
+See:
+
+```text
+md/experiment_module47_portfolio_live_sanity.md
+```

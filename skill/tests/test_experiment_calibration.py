@@ -15,6 +15,7 @@ from algorithm.experiments.fabric_metric import (
 from algorithm.experiments.oracle_audit import audit_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
 from algorithm.experiments.live_validation import compare_replay_to_live
+from algorithm.experiments.portfolio_live_proxy import build_composed_live_report
 from algorithm.experiments.report import summarize_certificate
 from algorithm.experiments.service_model import (
     calibrate_service_lower_bounds,
@@ -315,6 +316,53 @@ def test_live_validation_compares_replay_and_observed_jct(check, sch):
           censored["observed"]["censored_jobs"] == 1
           and not censored["usable_for_live_sanity"],
           diag=str(censored))
+
+
+def test_composed_live_proxy_reuses_trace_replay_semantics(check, sch):
+    source = sch.tmp / "profile_1_per_resource_summary.json"
+    source.write_text(
+        """{
+  "phase": "profile_1_per_resource",
+  "aggregate_active_rate_unit_s": 10.0,
+  "placement_valid": true,
+  "rate_units": ["unit"],
+  "rates_unit_s": [10.0],
+  "running_count": 1,
+  "status_counts": {"running": 1}
+}
+""",
+        encoding="utf-8",
+    )
+    replay = {
+        "results": [
+            {
+                "policy": "calibrated_guarded_knee",
+                "profiles": {"cpu_heavy_local_bench": 1},
+                "makespan_s": 25600.0,
+                "mean_flow_s": 12850.0,
+                "p90_flow_s": 23000.0,
+                "completed_jobs": 256,
+            }
+        ]
+    }
+    live = build_composed_live_report(
+        replay,
+        taskset_name="q10_cpu_host_bound",
+        source_paths={"cpu_heavy_local_bench": [source]},
+        policy="calibrated_guarded_knee",
+        run_id="unit_composed_live",
+    )
+    comparison = compare_replay_to_live(
+        replay,
+        live,
+        policy="calibrated_guarded_knee",
+        max_relative_error=0.01,
+    )
+    check("composed live proxy emits uncensored job completions on the replay trace",
+          comparison["usable_for_live_sanity"]
+          and live["profiles"] == {"cpu_heavy_local_bench": 1}
+          and len(live["jobs"]) == 256,
+          diag=str(comparison))
 
 
 def test_capacity_lp_and_drift_margin(check, sch):

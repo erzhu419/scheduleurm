@@ -61,9 +61,12 @@ Required artifact:
 ```text
 algorithm/experiments/slack_accounting.py
 algorithm/experiments/empirical_slack_certificate.py
+algorithm/experiments/production_load_certificate.py
 md/experiment_module30_slack_accounting.md
 md/experiment_module48_theorem_condition_calibration.md
+md/experiment_module49_production_load_capacity.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
+md/experiment_artifacts/module49_production_load_representative.json
 ```
 
 Status:
@@ -84,8 +87,14 @@ measured hybrid_research_portfolio finite service-action slice:
   Lrho = epsilon_est = beta = alpha1 = 0 for the exact finite-slice certificate.
 
 Remaining scope limitation:
-  this is not yet a production-arrival certificate and does not claim
-  unmeasured bucket generalization or a live greedy scheduler oracle audit.
+  Module49 estimates production load from a 30-day Scheduleurm history window.
+  The mapped measured-bucket capacity LP is positive:
+    strict measured mapping delta = 0.319917853
+    representative mapping delta = 0.266831433
+  Full global theorem coverage is still open because the representative run
+  leaves 2569 / 5159 tasks unmapped and maps 1783 tasks only by representative
+  bucket equivalence rather than theorem-grade service measurement.
+  Live greedy scheduler oracle audit also remains open.
 ```
 
 ## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure

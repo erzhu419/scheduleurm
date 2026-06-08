@@ -1,6 +1,6 @@
 # Lean Verification Log For Submission Packaging
 
-Date: 2026-06-05, Asia/Shanghai.
+Date: 2026-06-08, Asia/Shanghai.
 
 Run directory:
 
@@ -12,13 +12,13 @@ Artifact identity:
 
 ```text
 $ sha256sum ScheduleurmUpload.lean
-08b661a71a10ceffcb8df719319e1a6f80801821e226e6c54036624a65fac777  ScheduleurmUpload.lean
+af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b  ScheduleurmUpload.lean
 
 $ git rev-parse HEAD
-59bda6ab1b4f20fc1b6f67b151704cc300892ba7
+23b101432067cc005512f7667810ec03b8cffb77
 
 $ date -Is
-2026-06-05T12:27:02+08:00
+2026-06-08T10:13:32+08:00
 ```
 
 Commands and results:
@@ -43,6 +43,8 @@ main_high_probability_stability_from_certificate_event: 1
 main_operational_capacity_sandwich: 1
 main_robust_candidate_maxweight_drift_approx_oracle: 1
 QueueScaledApproxRobustScoreMaximizer: 9
+main_candidate_restricted_capacity_coordinate_hausdorff_from_calibration: 1
+main_active_bucket_lcb_learning_regret_high_probability: 1
 ```
 
 Interpretation:

@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
 from .production_load_certificate import (
-    build_production_load_certificate,
     classify_record,
     load_scheduler_records,
     _dedupe_records,
@@ -43,19 +42,10 @@ def build_coverage_drilldown(
     views = {}
     for name, predicate in _population_views().items():
         selected = [row for row in rows if predicate(row, population_label(row))]
-        strict = build_production_load_certificate(
-            records=selected,
-            window_days=window_days,
-            include_representative=False,
-            now_ts=now_ts,
+        views[name] = _view_summary(
+            _classification_summary(selected, include_representative=False),
+            _classification_summary(selected, include_representative=True),
         )
-        representative = build_production_load_certificate(
-            records=selected,
-            window_days=window_days,
-            include_representative=True,
-            now_ts=now_ts,
-        )
-        views[name] = _view_summary(strict, representative)
     production_predicate = _population_views()["completed_active_production"]
     production_rows = [
         row for row in rows if production_predicate(row, population_label(row))
@@ -77,7 +67,9 @@ def build_coverage_drilldown(
         "interpretation": (
             "Global production stability is not closed until the reviewer-facing "
             "production population has full strict measured-bucket coverage, or "
-            "each remaining bucket has its own theorem-grade service certificate."
+            "each remaining bucket has its own theorem-grade service certificate. "
+            "This coverage drilldown intentionally does not solve the capacity LP; "
+            "use Module49 for mapped-slice capacity delta."
         ),
     }
 
@@ -168,6 +160,43 @@ def _view_summary(strict: Mapping[str, Any], representative: Mapping[str, Any]) 
     }
 
 
+def _classification_summary(rows: Iterable[Mapping[str, Any]], *, include_representative: bool) -> dict[str, Any]:
+    materialized = list(rows)
+    mapped = 0
+    representative = 0
+    unmapped_reasons: Counter[str] = Counter()
+    lambda_keys: Counter[str] = Counter()
+    for row in materialized:
+        cls = classify_record(row, include_representative=include_representative)
+        key = cls.get("workload_key")
+        if key:
+            mapped += 1
+            lambda_keys[str(key)] += 1
+            if cls.get("mapping_mode") != "strict_measured":
+                representative += 1
+        else:
+            unmapped_reasons[str(cls.get("reason") or "unmapped")] += 1
+    unmapped = len(materialized) - mapped
+    full_strict_coverage = unmapped == 0 and representative == 0
+    return {
+        "record_count_window": len(materialized),
+        "mapped_task_count": mapped,
+        "representative_mapped_task_count": representative,
+        "unmapped_task_count": unmapped,
+        "mapped_fraction": mapped / len(materialized) if materialized else 0.0,
+        "strict_mapped_fraction": (
+            (mapped - representative) / len(materialized) if materialized else 0.0
+        ),
+        "mapped_key_counts": dict(lambda_keys),
+        "delta": None,
+        "mapped_capacity_usable_for_theorem": None,
+        "global_coverage_usable_for_theorem": full_strict_coverage,
+        "usable_for_global_theorem": False,
+        "unmapped_reasons": dict(unmapped_reasons),
+        "capacity_evaluated_in_this_report": False,
+    }
+
+
 def _one_summary(report: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "record_count_window": report.get("record_count_window"),
@@ -177,7 +206,8 @@ def _one_summary(report: Mapping[str, Any]) -> dict[str, Any]:
         "mapped_fraction": report.get("mapped_fraction"),
         "strict_mapped_fraction": report.get("strict_mapped_fraction"),
         "lambda": report.get("lambda"),
-        "delta": (report.get("capacity") or {}).get("delta"),
+        "mapped_key_counts": report.get("mapped_key_counts"),
+        "delta": report.get("delta", (report.get("capacity") or {}).get("delta")),
         "mapped_capacity_usable_for_theorem": report.get("mapped_capacity_usable_for_theorem"),
         "global_coverage_usable_for_theorem": report.get("global_coverage_usable_for_theorem"),
         "usable_for_global_theorem": report.get("usable_for_global_theorem"),
@@ -285,14 +315,14 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         for mode in ("strict", "representative"):
             row = view.get(mode) or {}
             lines.append(
-                "| `{view}` | `{mode}` | {records} | {mapped} | {unmapped} | {fraction:.6f} | {delta:.9f} | {usable} |".format(
+                "| `{view}` | `{mode}` | {records} | {mapped} | {unmapped} | {fraction:.6f} | {delta} | {usable} |".format(
                     view=view_name,
                     mode=mode,
                     records=int(row.get("record_count_window") or 0),
                     mapped=int(row.get("mapped_task_count") or 0),
                     unmapped=int(row.get("unmapped_task_count") or 0),
                     fraction=float(row.get("mapped_fraction") or 0.0),
-                    delta=float(row.get("delta") or 0.0),
+                    delta=_fmt_delta(row.get("delta")),
                     usable=str(bool(row.get("usable_for_global_theorem"))).lower(),
                 )
             )
@@ -334,6 +364,15 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
     ])
     return "\n".join(lines)
+
+
+def _fmt_delta(value: Any) -> str:
+    if value is None:
+        return "NA"
+    try:
+        return f"{float(value):.9f}"
+    except (TypeError, ValueError):
+        return "NA"
 
 
 def _cmd_build(args: argparse.Namespace) -> int:

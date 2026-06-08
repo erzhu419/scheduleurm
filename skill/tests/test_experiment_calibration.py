@@ -624,6 +624,72 @@ def test_module58_freqduet_c9_ablation_uses_parsed_production_units(check, sch):
           diag=str(report))
 
 
+def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
+    row = {
+        "id": "freq-c3",
+        "project": "freqduet",
+        "signature": "freqduet/c3_8_ablation_shard",
+        "description": "FreqDuet c3_8 ablation shard",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 5,
+        "ram_mb": 8192,
+        "cmd": (
+            "python -u scripts/run_freqduet_ablation.py "
+            "--configs F_freqduet_gen_highnoise_main_hiro,F_freqduet_gen_odshift_main_hiro "
+            "--seeds 42,123,456,789,2026 "
+            "--episodes 40 --last-k 20 --workers 5 --worker-threads 1 "
+            "--job-start 5 --job-end 10 --clean"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet c3_8 ablation shard maps after module60 completed-history certificate",
+          cls["workload_key"] == "freqduet_cpu_ablation_c3_8_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 200.0),
+          diag=str(cls))
+
+    direct_runner = dict(row)
+    direct_runner["id"] = "freq-c3-runner"
+    direct_runner["cmd"] = (
+        "python3 runner_v3.py --config configs_freqduet/F_freqduet_haar_hiro.yaml "
+        "--episodes 20 --seed 123"
+    )
+    direct_cls = classify_record(direct_runner, include_representative=False)
+    check("module60 classifier does not map direct runner_v3 records",
+          direct_cls["workload_key"] is None and direct_cls["reason"] == "unmapped_cpu",
+          diag=str(direct_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_cpu_ablation_c3_8_completed_history")
+    check("module60 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_cpu_ablation_c3_8_completed_history", 1).aggregate_rate,
+              0.011071600978054631,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_cpu_ablation_c3_8_completed_history",),
+    )
+    check("production load certificate sums parsed c3_8 ablation units",
+          report["mapped_counts"] == {"freqduet_cpu_ablation_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["freqduet_cpu_ablation_c3_8_completed_history"], 200.0)
+          and math.isclose(
+              report["lambda"]["freqduet_cpu_ablation_c3_8_completed_history"],
+              200.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

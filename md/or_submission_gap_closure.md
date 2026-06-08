@@ -126,17 +126,18 @@ Remaining scope limitation:
     strict measured mapping delta = 0.001497772
     representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 2271 / 5212 tasks unmapped and maps 1588 tasks only by representative
+  leaves 2157 / 5228 tasks unmapped and maps 1590 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2471
-    mapped = 1267
-    measurement_required = 1204
-    mapped_fraction = 0.512748
+    records = 2487
+    mapped = 1340
+    strict mapped = 548
+    measurement_required = 1147
+    mapped_fraction = 0.538802
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 862 / 2471 records
+    cpu_sumo_transit_eval_or_control = 803 / 2487 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -147,7 +148,7 @@ Remaining scope limitation:
     feasible profiles = 1,2,4
     capacity boundary = 8
     completed-active strict mapped count = 125
-    residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+    residual freqduet_cpu_ablation|c_17_32 needing measurement after Module63 = 46
 
   Module57 closes one exact direct-runner config inside c9_16:
     runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml
@@ -205,14 +206,26 @@ Remaining scope limitation:
   This improves coverage but leaves c_le2 ablation, baseline-rule, scheduler
   wait, native-validation, and shell-loop residuals.
 
+  Module63 closes the seed-range Transit native-promotion c17_32 sub-slice:
+    native_promotion_replan_validation with explicit seed-index range
+      -> transit_native_promotion_c17_32_seedrange_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 71
+    parsed completed-active work = 17760 seed-episode units
+    min completed wall-clock rate = 0.075456 seed-episode/s
+  This improves coverage but leaves direct-runner and non-seed-range native
+  c17_32 command shapes.
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_17_32
+    bamor_cpu_training|c_3_8
     sumo_eval_cpu|c_le2
     freqduet_cpu_ablation|c_3_8 residual command shapes
-    bamor_cpu_training|c_3_8
     freqduet_cpu_ablation|c_33_64 residual command shapes
     freqduet_cpu_ablation|c_65p
-    freqduet_cpu_ablation|c_le2 residual command shapes
+    transit_freqhrl_cpu_validation|c_le2
+    freqduet_cpu_ablation|c_9_16 residual command shapes
+    transit_misc_cpu|c_le2
+    freqduet_cpu_ablation|c_17_32 residual command shapes
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

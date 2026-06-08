@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2471
-representative mapped = 1267
-strict mapped = 477
-measurement_required = 1204
-mapped_fraction = 0.512748
+records = 2487
+representative mapped = 1340
+strict mapped = 548
+measurement_required = 1147
+mapped_fraction = 0.538802
 ```
 
 最大未闭合 bucket 是：
@@ -237,6 +237,7 @@ after Module59:  cpu_sumo_transit_eval_or_control = 1049 / 2458 completed-active
 after Module60:  cpu_sumo_transit_eval_or_control = 1009 / 2465 completed-active records
 after Module61:  cpu_sumo_transit_eval_or_control = 946 / 2469 completed-active records
 after Module62:  cpu_sumo_transit_eval_or_control = 862 / 2471 completed-active records
+after Module63:  cpu_sumo_transit_eval_or_control = 803 / 2487 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -261,7 +262,7 @@ workload_key = freqduet_cpu_ablation_c17_32
 feasible profiles = 1,2,4
 capacity boundary = 8
 completed-active mapped count = 125
-residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+residual freqduet_cpu_ablation|c_17_32 needing measurement after Module63 = 46
 
 closed exact slice = runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml within c_9_16
 workload_key = freqduet_runner_v3_allfreq_alllayers_c9_16
@@ -297,18 +298,26 @@ workload_key = freqduet_runner_v3_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 84
 unit rule = parsed episodes
+
+closed completed-history slice = Transit native_promotion_replan_validation within c_17_32
+workload_key = transit_native_promotion_c17_32_seedrange_completed_history
+feasible profiles = 1
+completed-active mapped count = 71
+unit rule = parsed seed-count times episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_17_32
+bamor_cpu_training|c_3_8
 sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8 residual command shapes
-bamor_cpu_training|c_3_8
 freqduet_cpu_ablation|c_33_64 residual command shapes
 freqduet_cpu_ablation|c_65p
-freqduet_cpu_ablation|c_le2 residual command shapes
+transit_freqhrl_cpu_validation|c_le2
+freqduet_cpu_ablation|c_9_16 residual command shapes
+transit_misc_cpu|c_le2
+freqduet_cpu_ablation|c_17_32 residual command shapes
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

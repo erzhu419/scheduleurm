@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 5212
-mapped_task_count = 1353
+record_count_window = 5228
+mapped_task_count = 1481
 representative_mapped_task_count = 0
-unmapped_task_count = 3859
-mapped_fraction = 0.2595932463545664
+unmapped_task_count = 3747
+mapped_fraction = 0.2832823259372609
 ```
 
 | Workload | Count | Lambda |
@@ -23,6 +23,7 @@ mapped_fraction = 0.2595932463545664
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `light_control_local` | 206 | 0.794753086 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
 
 | Quantity | Value |
 |---|---:|
@@ -36,7 +37,7 @@ mapped_fraction = 0.2595932463545664
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 2160 |
+| `unmapped_cpu` | 2048 |
 | `unmapped_gpu` | 1544 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

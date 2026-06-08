@@ -34,12 +34,14 @@ Module61 adds the analogous completed-history certificate for parseable
 `run_freqduet_ablation.py` records inside `freqduet_cpu_ablation|c_33_64`.
 Module62 adds a completed-history portfolio lower-service certificate for
 direct `runner_v3.py` records inside `freqduet_cpu_ablation|c_le2`.
+Module63 adds a seed-range completed-history lower-service certificate for
+Transit/FreqHRL native promotion validation records inside the c17_32 residual.
 
 ```text
-record_count_window = 5212
-mapped_task_count = 1353
-mapped_fraction = 0.259593
-unmapped_task_count = 3859
+record_count_window = 5228
+mapped_task_count = 1481
+mapped_fraction = 0.283282
+unmapped_task_count = 3747
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -54,6 +56,7 @@ Estimated load:
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `freqduet_cpu_ablation_c17_32` | 156 | 0.004333333 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
@@ -77,12 +80,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5212
-mapped_task_count = 2941
-representative_mapped_task_count = 1588
-mapped_fraction = 0.564275
-strict_mapped_fraction = 0.259593
-unmapped_task_count = 2271
+record_count_window = 5228
+mapped_task_count = 3071
+representative_mapped_task_count = 1590
+mapped_fraction = 0.587414
+strict_mapped_fraction = 0.283282
+unmapped_task_count = 2157
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -95,8 +98,9 @@ Estimated load:
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
-| `cpu_heavy_local_bench` | 118 | 0.045524691 |
+| `cpu_heavy_local_bench` | 120 | 0.046296296 |
 | `freqduet_cpu_ablation_c17_32` | 156 | 0.004333333 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
@@ -121,16 +125,17 @@ theorem-grade c9_16 ablation command-shape slice with parsed production units,
 Module59 adds a conservative completed-history SimpleSAC c_le2 eval slice, and
 Modules60 and 61 add conservative completed-history c3_8 and c33_64 FreqDuet
 ablation slices.  Module62 adds the c_le2 direct-runner completed-history
-portfolio slice.  The mapped LP is still positive but tight because the
+portfolio slice.  Module63 adds the native-promotion seed-range completed-history
+slice.  The mapped LP is still positive but tight because the
 completed-history slices use minimum completed profile-1 lower-service points.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3859 / 5212 tasks
-representative unmapped: 2271 / 5212 tasks
-representative-mapped but not theorem-grade: 1588 tasks
+strict unmapped: 3747 / 5228 tasks
+representative unmapped: 2157 / 5228 tasks
+representative-mapped but not theorem-grade: 1590 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

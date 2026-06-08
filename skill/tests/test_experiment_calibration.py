@@ -819,6 +819,76 @@ def test_module62_freqduet_runner_cle2_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
+    row = {
+        "id": "native-c17",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/native-promotion-v25/node001-0-64",
+        "description": "Transit native promotion c17_32 seed range",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 32,
+        "ram_mb": 8192,
+        "cmd": (
+            "PYTHONPATH=transit_hrl python3 -m "
+            "freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--preset persistent_stress --stress-profile reward_floor_throughput_v25 "
+            "--seed-index-start 0 --seed-index-end 64 --seed-base 31 "
+            "--seed-step 10 --episodes 2 --workers 32 --output-dir out"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Transit native promotion c17_32 seed range maps after module63 certificate",
+          cls["workload_key"] == "transit_native_promotion_c17_32_seedrange_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 128.0),
+          diag=str(cls))
+
+    no_range = dict(row)
+    no_range["id"] = "native-c17-no-range"
+    no_range["cmd"] = (
+        "PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--preset persistent_stress --episodes 1 --workers 32 --output-dir out"
+    )
+    no_range_cls = classify_record(no_range, include_representative=False)
+    check("module63 classifier leaves native commands without seed-index range unmeasured",
+          no_range_cls["workload_key"] is None and no_range_cls["reason"] == "unmapped_cpu",
+          diag=str(no_range_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("transit_native_promotion_c17_32_seedrange_completed_history")
+    check("module63 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("transit_native_promotion_c17_32_seedrange_completed_history", 1).aggregate_rate,
+              0.07545606639567005,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_transit_native_promotion_c17_32_seedrange_completed_history",),
+    )
+    check("production load certificate sums native seed-range episode units",
+          report["mapped_counts"] == {"transit_native_promotion_c17_32_seedrange_completed_history": 1}
+          and math.isclose(
+              report["mapped_units"]["transit_native_promotion_c17_32_seedrange_completed_history"],
+              128.0,
+          )
+          and math.isclose(
+              report["lambda"]["transit_native_promotion_c17_32_seedrange_completed_history"],
+              128.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

@@ -75,6 +75,9 @@
     ],
     "sumo_eval_simple_sac_c_le2": [
       1
+    ],
+    "transit_native_promotion_c17_32_seedrange_completed_history": [
+      1
     ]
   },
   "capacity": {
@@ -89,11 +92,12 @@
       "gpu_heavy_jax_matmul",
       "hybrid_rl_resac_ant",
       "light_control_local",
-      "sumo_eval_simple_sac_c_le2"
+      "sumo_eval_simple_sac_c_le2",
+      "transit_native_promotion_c17_32_seedrange_completed_history"
     ],
     "delta": 0.001497771906963224,
     "mix": {
-      "profile_combo:cpu_heavy_local_bench=5,freqduet_cpu_ablation_c17_32=2,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=4,freqduet_runner_v3_allfreq_alllayers_c9_16=4,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=7,hybrid_rl_resac_ant=9,light_control_local=3,sumo_eval_simple_sac_c_le2=1": 1.0
+      "profile_combo:cpu_heavy_local_bench=2,freqduet_cpu_ablation_c17_32=4,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=2,freqduet_runner_v3_allfreq_alllayers_c9_16=4,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=5,hybrid_rl_resac_ant=2,light_control_local=3,sumo_eval_simple_sac_c_le2=1,transit_native_promotion_c17_32_seedrange_completed_history=1": 1.0
     },
     "status": "optimal",
     "usable_for_theorem": true
@@ -2576,7 +2580,7 @@
   "include_representative": true,
   "interpretation": "Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.",
   "lambda": {
-    "cpu_heavy_local_bench": 0.04552469135802469,
+    "cpu_heavy_local_bench": 0.046296296296296294,
     "freqduet_cpu_ablation_c17_32": 0.004333333333333333,
     "freqduet_cpu_ablation_c33_64_completed_history": 0.060239197530864194,
     "freqduet_cpu_ablation_c3_8_completed_history": 0.006945601851851852,
@@ -2586,11 +2590,12 @@
     "gpu_heavy_jax_matmul": 0.06481481481481481,
     "hybrid_rl_resac_ant": 0.06175925925925926,
     "light_control_local": 0.7947530864197531,
-    "sumo_eval_simple_sac_c_le2": 2.7391975308641977e-05
+    "sumo_eval_simple_sac_c_le2": 2.7391975308641977e-05,
+    "transit_native_promotion_c17_32_seedrange_completed_history": 0.014145833333333333
   },
   "mapped_capacity_usable_for_theorem": true,
   "mapped_counts": {
-    "cpu_heavy_local_bench": 118,
+    "cpu_heavy_local_bench": 120,
     "freqduet_cpu_ablation_c17_32": 156,
     "freqduet_cpu_ablation_c33_64_completed_history": 63,
     "freqduet_cpu_ablation_c3_8_completed_history": 42,
@@ -2600,12 +2605,13 @@
     "gpu_heavy_jax_matmul": 70,
     "hybrid_rl_resac_ant": 2001,
     "light_control_local": 206,
-    "sumo_eval_simple_sac_c_le2": 71
+    "sumo_eval_simple_sac_c_le2": 71,
+    "transit_native_promotion_c17_32_seedrange_completed_history": 128
   },
-  "mapped_fraction": 0.5642747505755947,
-  "mapped_task_count": 2941,
+  "mapped_fraction": 0.5874139250191278,
+  "mapped_task_count": 3071,
   "mapped_units": {
-    "cpu_heavy_local_bench": 118000.0,
+    "cpu_heavy_local_bench": 120000.0,
     "freqduet_cpu_ablation_c17_32": 11232.0,
     "freqduet_cpu_ablation_c33_64_completed_history": 156140.0,
     "freqduet_cpu_ablation_c3_8_completed_history": 18003.0,
@@ -2615,23 +2621,26 @@
     "gpu_heavy_jax_matmul": 168000.0,
     "hybrid_rl_resac_ant": 160080.0,
     "light_control_local": 2060000.0,
-    "sumo_eval_simple_sac_c_le2": 71.0
+    "sumo_eval_simple_sac_c_le2": 71.0,
+    "transit_native_promotion_c17_32_seedrange_completed_history": 36666.0
   },
   "moment": {
-    "B": 195404.27398244062,
+    "B": 195404.27696472665,
     "status": "finite_support_bound_from_measured_action_slice_and_empirical_load",
     "usable_for_theorem": true
   },
-  "record_count_total": 7744,
-  "record_count_window": 5212,
-  "representative_mapped_task_count": 1588,
+  "record_count_total": 7760,
+  "record_count_window": 5228,
+  "representative_mapped_task_count": 1590,
   "status_counts": {
     "cancelled": 1336,
-    "done": 2556,
+    "done": 2561,
     "failed": 1271,
-    "forgotten": 49
+    "forgotten": 49,
+    "queued": 2,
+    "running": 9
   },
-  "strict_mapped_fraction": 0.2595932463545664,
+  "strict_mapped_fraction": 0.2832823259372609,
   "taskset_names": [
     "q00_light_control",
     "q01_gpu_bound_compute",
@@ -2642,13 +2651,14 @@
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
+    "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled"
   ],
   "top_projects": {
     "Asumption Agent": 67,
-    "BAMOR": 204,
-    "BAPR": 122,
+    "BAMOR": 210,
+    "BAPR": 124,
     "CFCMT": 119,
     "FreqDuet": 326,
     "FreqHRL": 56,
@@ -2658,25 +2668,25 @@
     "RE-SAC-JMLR": 484,
     "ScheduleurmBench": 962,
     "SimpleSAC": 76,
-    "TransitDuet": 697,
+    "TransitDuet": 703,
     "ZSW_platform": 42,
     "bapr_v15": 413,
     "freqduet": 383,
     "offline-sumo": 53,
-    "scheduleurm": 18,
+    "scheduleurm": 20,
     "sensing-compressibility-pems": 18,
     "tmp": 75
   },
   "unmapped_reasons": {
     "scheduleurmbench_unknown": 155,
-    "unmapped_cpu": 2097,
+    "unmapped_cpu": 1983,
     "unmapped_gpu": 19
   },
-  "unmapped_task_count": 2271,
+  "unmapped_task_count": 2157,
   "usable_for_global_theorem": false,
   "window": {
-    "end_ts": 1780953710.5936327,
-    "start_ts": 1778361710.5936327,
+    "end_ts": 1780957880.9779322,
+    "start_ts": 1778365880.9779322,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

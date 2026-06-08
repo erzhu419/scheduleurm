@@ -80,6 +80,7 @@ md/experiment_module54_production_cpu_workload_curve_runner.md
 md/experiment_module55_oracle_trace_lower_service_enrichment.md
 md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
 md/experiment_module58_freqduet_ablation_c9_16_curve.md
+md/experiment_module59_simple_sac_sumo_eval_cle2_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -93,6 +94,7 @@ md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8.json
 md/experiment_artifacts/module57_freqduet_runner_v3_c9_16_jtl110cpu2_curve_p1248.json
 md/experiment_artifacts/module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248.json
 md/experiment_artifacts/module58_freqduet_ablation_c9_16_completed_wallclock_audit.json
+md/experiment_artifacts/module59_simple_sac_sumo_eval_cle2_completed_history.json
 ```
 
 Status:
@@ -118,17 +120,17 @@ Remaining scope limitation:
     strict measured mapping delta = 0.319917853
     representative mapping delta = 0.272849952
   Full global theorem coverage is still open because the representative run
-  leaves 2515 / 5196 tasks unmapped and maps 1588 tasks only by representative
+  leaves 2449 / 5201 tasks unmapped and maps 1588 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2453
-    mapped = 1026
-    measurement_required = 1427
-    mapped_fraction = 0.418263
+    records = 2458
+    mapped = 1080
+    measurement_required = 1378
+    mapped_fraction = 0.439382
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 1103 / 2453 records
+    cpu_sumo_transit_eval_or_control = 1049 / 2458 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -158,6 +160,16 @@ Remaining scope limitation:
     min completed wall-clock rate = 0.289775 episode/s
   The remaining c9_16 records are still visible in Module53 because they have
   other command shapes.
+
+  Module59 closes the clean SimpleSAC c_le2 SUMO eval sub-slice:
+    clean run_multiseed_eval.sh within sumo_eval_cpu|c_le2
+      -> sumo_eval_simple_sac_c_le2
+    feasible profiles = 1
+    completed-active strict mapped count = 54
+    min completed wall-clock rate = 0.001525164 eval/s
+  This improves coverage but makes mapped-capacity slack tight:
+    strict mapped delta = 0.001497772
+    completed-active representative delta = 0.001504331
 
   The current remaining top probe order is:
     freqduet_cpu_ablation|c_9_16

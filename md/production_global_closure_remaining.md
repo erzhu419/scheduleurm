@@ -2,7 +2,7 @@
 
 Date: 2026-06-08
 
-This note records the current gap after Module58.  It should be read together
+This note records the current gap after Module59.  It should be read together
 with:
 
 ```text
@@ -10,6 +10,7 @@ md/experiment_module53_cpu_sumo_transit_probe_manifest.md
 md/experiment_module56_freqduet_cpu_production_curve.md
 md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
 md/experiment_module58_freqduet_ablation_c9_16_curve.md
+md/experiment_module59_simple_sac_sumo_eval_cle2_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -36,16 +37,22 @@ workload_key = freqduet_cpu_ablation_c9_16
 completed-active strict mapped count = 110
 feasible profiles = 1,2,4,8
 unit rule = parsed jobs times episodes
+
+completed-history slice = clean SimpleSAC run_multiseed_eval.sh within sumo_eval_cpu|c_le2
+workload_key = sumo_eval_simple_sac_c_le2
+completed-active strict mapped count = 54
+feasible profiles = 1
+unit = eval_json
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2453
-strict completed-active mapped count = 236
-representative completed-active mapped count = 1026
-measurement_required = 1427
-cpu_sumo_transit_eval_or_control remaining = 1103 / 2453
+completed_active_production records = 2458
+strict completed-active mapped count = 290
+representative completed-active mapped count = 1080
+measurement_required = 1378
+cpu_sumo_transit_eval_or_control remaining = 1049 / 2458
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -68,6 +75,18 @@ The mapped capacity slack is positive, but that proves only that the already
 measured and mapped production slice lies inside the measured capacity region.
 It does not prove that the full production load is stabilizable.
 
+The mapped-capacity slack is now much tighter than before Module59 because the
+SimpleSAC slice uses a minimum completed profile-1 lower-service rate:
+
+```text
+strict mapped delta = 0.001497772
+completed-active representative delta = 0.001504331
+```
+
+This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
+Either future work measures higher SimpleSAC co-location profiles, or this slice
+stays as a conservative low-throughput service class.
+
 Representative mappings are diagnostic.  They are not theorem-grade unless the
 bucket has either a measured service curve or a separate equivalence certificate.
 
@@ -80,11 +99,11 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8
 freqduet_cpu_ablation|c_33_64
 freqduet_cpu_ablation|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
+sumo_eval_cpu|c_le2 residual command shapes
 bamor_cpu_training|c_3_8
 freqduet_cpu_ablation|c_65p
 ```

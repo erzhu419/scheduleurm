@@ -624,6 +624,64 @@ def test_module58_freqduet_c9_ablation_uses_parsed_production_units(check, sch):
           diag=str(report))
 
 
+def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
+    row = {
+        "id": "simple-sumo",
+        "project": "SimpleSAC",
+        "signature": "H2Oplus/r3_eval_nosnap_wsrl_nosnap_s42_s1001_od0.6",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 2,
+        "ram_mb": 581,
+        "cmd": (
+            "bash /home/erzhu419/mine_code/sumo-rl/H2Oplus/SimpleSAC/"
+            "run_multiseed_eval.sh wsrl_nosnap_s42 1001 0.6"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("SimpleSAC clean SUMO eval command maps after module59 completed-history certificate",
+          cls["workload_key"] == "sumo_eval_simple_sac_c_le2"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    complex_batch = dict(row)
+    complex_batch["id"] = "simple-sumo-complex"
+    complex_batch["cmd"] = (
+        "bash -lc 'for method in wsrl_nosnap_s42 rlpd_nosnap_s42; do "
+        "bash run_multiseed_eval.sh \"$method\" 1001 0.6; done'"
+    )
+    complex_cls = classify_record(complex_batch, include_representative=False)
+    check("module59 classifier does not map complex SimpleSAC bash batches",
+          complex_cls["workload_key"] is None and complex_cls["reason"] == "unmapped_cpu",
+          diag=str(complex_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("sumo_eval_simple_sac_c_le2")
+    check("module59 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("sumo_eval_simple_sac_c_le2", 1).aggregate_rate,
+              0.001525163882271866,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_sumo_eval_simple_sac_c_le2",),
+    )
+    check("production load certificate can certify the SimpleSAC eval slice with profile1",
+          report["mapped_counts"] == {"sumo_eval_simple_sac_c_le2": 1}
+          and math.isclose(report["mapped_units"]["sumo_eval_simple_sac_c_le2"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_production_coverage_drilldown_separates_population_and_obligations(check, sch):
     rows = [
         {

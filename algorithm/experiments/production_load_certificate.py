@@ -38,6 +38,7 @@ DEFAULT_TASKSETS = (
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
     "production_freqduet_cpu_ablation_c9_16",
+    "production_sumo_eval_simple_sac_c_le2",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
 )
@@ -192,6 +193,14 @@ def classify_record(
             "strict_measured",
             "module58_freqduet_cpu_ablation_c9_16",
             units=c9_16_units,
+        )
+
+    if _is_simple_sac_sumo_eval_c_le2(row=row, est_vram=est_vram, cpu=cpu):
+        return _mapped(
+            "sumo_eval_simple_sac_c_le2",
+            "strict_measured",
+            "module59_simple_sac_sumo_eval_c_le2_completed_history",
+            units=1.0,
         )
 
     if _is_freqduet_runner_v3_allfreq_alllayers_c9_16(row=row, est_vram=est_vram, cpu=cpu):
@@ -350,6 +359,44 @@ def _parse_freqduet_ablation_units(cmd: str) -> float | None:
     seeds = [part for part in seeds_raw.split(",") if part.strip()]
     jobs = len(configs) * len(seeds)
     return float(jobs * episodes) if jobs > 0 else None
+
+
+def _is_simple_sac_sumo_eval_c_le2(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:
+    if est_vram > 0:
+        return False
+    if float(cpu) > 2.0:
+        return False
+    project = str(row.get("project") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project != "simplesac":
+        return False
+    if "run_multiseed_eval.sh" not in cmd_lower:
+        return False
+    if "bash -lc" in cmd_lower or "$" in cmd:
+        return False
+    return _parse_simple_sac_multiseed_eval_identity(cmd) is not None
+
+
+def _parse_simple_sac_multiseed_eval_identity(cmd: str) -> tuple[str, int, float] | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    idx = next((i for i, token in enumerate(tokens) if token.endswith("run_multiseed_eval.sh")), None)
+    if idx is None or idx + 3 >= len(tokens):
+        return None
+    method = str(tokens[idx + 1])
+    if not method or method.startswith("-"):
+        return None
+    try:
+        seed = int(tokens[idx + 2])
+        od_scale = float(tokens[idx + 3])
+    except ValueError:
+        return None
+    return (method, seed, od_scale)
 
 
 def _is_freqduet_runner_v3_allfreq_alllayers_c9_16(

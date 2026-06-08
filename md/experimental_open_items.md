@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2449
-representative mapped = 916
-strict mapped = 126
-measurement_required = 1533
-mapped_fraction = 0.374030
+records = 2453
+representative mapped = 1026
+strict mapped = 236
+measurement_required = 1427
+mapped_fraction = 0.418263
 ```
 
 最大未闭合 bucket 是：
@@ -232,6 +232,7 @@ mapped_fraction = 0.374030
 before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504 completed-active records
 after Module56:  cpu_sumo_transit_eval_or_control = 1208 / 2442 completed-active records
 after Module57:  cpu_sumo_transit_eval_or_control = 1211 / 2449 completed-active records
+after Module58:  cpu_sumo_transit_eval_or_control = 1103 / 2453 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -262,12 +263,17 @@ closed exact slice = runner_v3.py --config configs_freqduet/F_allfreq_alllayers_
 workload_key = freqduet_runner_v3_allfreq_alllayers_c9_16
 feasible profiles = 1,2,4,8
 completed-active mapped count = 1
+
+closed command-shape slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_9_16
+workload_key = freqduet_cpu_ablation_c9_16
+feasible profiles = 1,2,4,8
+completed-active mapped count = 110
+unit rule = parsed jobs times episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8
 freqduet_cpu_ablation|c_33_64

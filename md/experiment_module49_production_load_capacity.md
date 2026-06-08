@@ -22,15 +22,16 @@ md/experiment_artifacts/module49_production_load_representative.md
 
 Strict mapping now includes the Module56 production sub-bucket
 `freqduet_cpu_ablation_c17_32` and the Module57 exact-config direct-runner
-sub-slice `freqduet_runner_v3_allfreq_alllayers_c9_16`.  It still only counts
-records backed by a measured service curve or a ScheduleurmBench measured
-bucket.
+sub-slice `freqduet_runner_v3_allfreq_alllayers_c9_16`.  Module58 adds
+`freqduet_cpu_ablation_c9_16`, with per-record units parsed from production
+commands.  It still only counts records backed by a measured service curve or a
+ScheduleurmBench measured bucket.
 
 ```text
-record_count_window = 5176
-mapped_task_count = 964
-mapped_fraction = 0.186244
-unmapped_task_count = 4212
+record_count_window = 5196
+mapped_task_count = 1093
+mapped_fraction = 0.210354
+unmapped_task_count = 4103
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -45,6 +46,7 @@ Estimated load:
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `freqduet_cpu_ablation_c17_32` | 156 | 0.004333333 |
+| `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
 
 Capacity LP:
@@ -63,12 +65,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5176
-mapped_task_count = 2552
+record_count_window = 5196
+mapped_task_count = 2681
 representative_mapped_task_count = 1588
-mapped_fraction = 0.493045
-strict_mapped_fraction = 0.186244
-unmapped_task_count = 2624
+mapped_fraction = 0.515974
+strict_mapped_fraction = 0.210354
+unmapped_task_count = 2515
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -83,6 +85,7 @@ Estimated load:
 | `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
 | `cpu_heavy_local_bench` | 118 | 0.045524691 |
 | `freqduet_cpu_ablation_c17_32` | 156 | 0.004333333 |
+| `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
 
 Capacity LP:
@@ -96,15 +99,16 @@ status = optimal
 
 This closes a narrower but important question: the observed mapped production
 load is comfortably inside the currently measured service-action slice, the
-Module56 FreqDuet c17_32 sub-bucket is theorem-grade in strict mapping, and the
-Module57 exact direct-runner config is also theorem-grade.
+Module56 FreqDuet c17_32 sub-bucket is theorem-grade in strict mapping, the
+Module57 exact direct-runner config is theorem-grade, and Module58 adds a
+theorem-grade c9_16 ablation command-shape slice with parsed production units.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 4212 / 5176 tasks
-representative unmapped: 2624 / 5176 tasks
+strict unmapped: 4103 / 5196 tasks
+representative unmapped: 2515 / 5196 tasks
 representative-mapped but not theorem-grade: 1588 tasks
 ```
 

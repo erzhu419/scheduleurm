@@ -3,20 +3,44 @@
 Date: 2026-06-08
 
 Module53 identified `cpu_sumo_transit_eval_or_control` as the dominant
-production coverage blocker.  Module54 adds the concrete runner for that
-blocker: a CPU-only service-curve probe that submits real production workload
-commands through Scheduleurm, wraps them with a progress counter, waits only
-until stable progress is observed, and then cancels the profile batch.
+production coverage blocker.  Module54 adds the concrete CPU-only service-curve
+runner for that blocker: it submits real production workload commands through
+Scheduleurm, wraps them with progress extraction, waits only until stable
+progress is observed, writes profile summaries, and cancels the profile batch.
 
 ## Artifacts
 
 ```text
 algorithm/experiments/production_cpu_workload_curve.py
+algorithm/experiments/csv_progress_wrapper.py
 md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json
 md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.md
+md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124.json
+md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8.json
 ```
 
-## Current Dry-Run Plan
+## Runner Features
+
+The runner supports both Linux CPU nodes and the Windows CPU nodes
+`jtl110cpu`/`jtl110cpu2`.  For Windows nodes it deploys a small progress-wrapper
+package over SSH and runs the child workload in argv mode rather than through
+`bash -lc`.
+
+For FreqDuet ablation commands, line-level stdout is not reliable because
+`run_freqduet_ablation.py` captures child runner output.  Module54 therefore
+adds `csv_progress_wrapper.py`, which polls diagnostics CSV files and emits
+standard Scheduleurm progress lines:
+
+```text
+ScheduleurmProgress Episode 42/72 rate=... episode/s source=csv_poll
+```
+
+The runner also expands each submitted Scheduleurm task into multiple work
+items.  For the first production sub-bucket, each task runs 24 seeds/workers;
+this avoids the earlier single-seed dry-run mistake and matches the real
+`c_17_32` CPU request shape.
+
+## Original Dry-Run Plan
 
 ```text
 run_id = module54_freqduet_cpu_c17_32_plan
@@ -30,63 +54,54 @@ total_units/task = 20 episodes
 theorem_status = plan_only_not_measured
 ```
 
-The rendered workload is the FreqDuet ablation command:
+That plan was retained as a reviewable command manifest.  The measured
+production run was executed on `jtl110cpu2` with Windows CSV polling and
+24 work items per submitted task.  The theorem-grade strict classifier only
+maps records that actually invoke `run_freqduet_ablation.py`; other c17_32
+records remain in the open manifest.
+
+## Validated Production Run
 
 ```text
-python scripts/run_freqduet_ablation.py
-  --configs F_freqduet_terminal_main_hiro
-  --seeds <seed>
-  --episodes <total_units>
-  --workers 24
-  --worker-threads 1
-  --logs-dir <output_root>/<run_name>
+run_id = module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124
+node = jtl110cpu2
+sub_bucket = freqduet_cpu_ablation|c_17_32
+profiles = 1,2,4
+work_items/task = 24
+total_units/task = 72 episode rows
+verdict = pass
+best feasible aggregate profile = 4
 ```
 
-Each submitted task requests:
+Measured feasible service curve:
+
+| Profile | Aggregate episode/s | Mean episode/s | Blocks | Evictions |
+|---:|---:|---:|---:|---:|
+| 1 | 0.447090 | 0.447090 | 0 | 0 |
+| 2 | 0.539602 | 0.269801 | 0 | 0 |
+| 4 | 0.878374 | 0.219593 | 0 | 0 |
+
+Capacity-boundary run:
 
 ```text
-vram_mb = 0
-require_node = local
-hard_rule_mode = clean_bench
-allow_duplicate = true
-allow_no_ckpt = true
-allow_no_resume = true
+run_id = module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8
+profile = 8
+running/progressing = 5
+queued/blocked = 3
+capacity_boundary = true
 ```
 
-## Command Surface
-
-Dry-run review:
-
-```bash
-PYTHONPATH=. python3 -m algorithm.experiments.production_cpu_workload_curve \
-  --dry-run \
-  --run-id module54_freqduet_cpu_c17_32_plan \
-  --sub-bucket 'freqduet_cpu_ablation|c_17_32' \
-  --node local \
-  --profiles 1,2,4,8 \
-  --cwd /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet \
-  --cmd-template 'set -euo pipefail; python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro --seeds {seed} --episodes {total_units} --workers {cpu_cores} --worker-threads 1 --logs-dir {output_root}/{run_name}' \
-  --output-root scheduleurm_production_cpu_curve_runs \
-  --seed-base 700000 \
-  --total-units 20 \
-  --progress-unit episode \
-  --cpu 24 \
-  --ram-mb 65536 \
-  --project ScheduleurmBench \
-  --signature-prefix ScheduleurmBench/production_cpu_workload_curve \
-  --plan-output md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json \
-  --plan-markdown-output md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.md
-```
-
-Actual measurement uses the same command without `--dry-run`.  The runner
-copies the progress wrapper to the target node, submits one profile at a time,
-measures a stable progress window, writes `service_curve_verdict.json`, and
-cancels all submitted tasks after measurement.
+Profile 8 is not used as a feasible service point.  It is loaded into
+`ServiceRateCache` only as a boundary, so `missing_profiles` and replay policies
+do not silently extrapolate to 8-way placement.
 
 ## Interpretation
 
-This attacks the production coverage blocker without changing the theorem or
-weakening the claim.  It is not yet a service certificate: the current artifact
-is a reviewed submission plan only.  The theorem condition becomes eligible for
-recomputation only after this runner produces measured profile summaries and
-those summaries are loaded into the measured service cache.
+Module54 is no longer dry-run-only.  It now provides the production CPU curve
+runner, Windows CSV progress extraction, worker-heavy seed expansion, and
+capacity-boundary detection used by Module56.  Module56 closes the first exact
+production slice, `run_freqduet_ablation.py` within
+`freqduet_cpu_ablation|c_17_32`; the remaining `cpu_sumo_transit_eval_or_control`
+sub-buckets, including residual c17_32 command shapes, still need the same style
+of progress-bearing measurement before global production stability can be
+claimed.

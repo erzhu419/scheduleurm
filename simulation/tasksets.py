@@ -212,6 +212,43 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_cpu_c17_32",
+            purpose=(
+                "The first production CPU/SUMO/transit closure sub-bucket from Module53. "
+                "It covers FreqDuet ablation/control records requesting 17-32 CPU cores "
+                "and no GPU on the Windows jtl110cpu2 CPU node."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped only "
+                "when the record text matches the FreqDuet ablation family and the "
+                "CPU request is in c_17_32."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_cpu_ablation_c17_32",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=125,
+                    total_units=72,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker sub-bucket",
+                    benchmark_source=(
+                        "Scheduleurm module56 real FreqDuet CPU ablation curve on "
+                        "jtl110cpu2; each task ran 24 seeds/workers with CSV progress."
+                    ),
+                    required_profiles=(1, 2, 4, 8),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1, 2, and 4 are real feasible measurements. Profile 8 "
+                        "is a real capacity-boundary probe with 5 running/progressing "
+                        "tasks and 3 CPU-fit blocked tasks, so it closes the feasible "
+                        "domain above profile 4 for this node bucket."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="q11_cpu_gpu_coupled",
             purpose=(
                 "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like "

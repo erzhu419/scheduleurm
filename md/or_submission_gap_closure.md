@@ -86,6 +86,8 @@ md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json
 md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json
 md/experiment_artifacts/module55_oracle_trace_enrichment_status.json
+md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124.json
+md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8.json
 ```
 
 Status:
@@ -109,45 +111,54 @@ Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
     strict measured mapping delta = 0.319917853
-    representative mapping delta = 0.266831433
+    representative mapping delta = 0.272849952
   Full global theorem coverage is still open because the representative run
-  leaves 2569 / 5159 tasks unmapped and maps 1783 tasks only by representative
+  leaves 2603 / 5154 tasks unmapped and maps 1588 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2504
-    mapped = 948
-    measurement_required = 1556
-    mapped_fraction = 0.378594
+    records = 2442
+    mapped = 915
+    measurement_required = 1527
+    mapped_fraction = 0.374693
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 1245 / 2504 records
+    cpu_sumo_transit_eval_or_control = 1208 / 2442 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
 
-  Module53 turns that target into concrete sub-buckets.  The current top probe
-  order is:
-    freqduet_cpu_ablation|c_17_32
-    sumo_eval_cpu|c_le2
+  Module53 turns that target into concrete sub-buckets.  Module56 closed the
+  exact run_freqduet_ablation.py slice inside the previous top sub-bucket:
+    run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_32 -> freqduet_cpu_ablation_c17_32
+    feasible profiles = 1,2,4
+    capacity boundary = 8
+    completed-active strict mapped count = 125
+    residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+
+  The current remaining top probe order is:
     freqduet_cpu_ablation|c_9_16
+    sumo_eval_cpu|c_le2
     freqduet_cpu_ablation|c_3_8
     freqduet_cpu_ablation|c_33_64
     freqduet_cpu_ablation|c_le2
+    freqduet_cpu_ablation|c_17_32
     bamor_cpu_training|c_3_8
     freqduet_cpu_ablation|c_65p
 
-  Module54 adds the actual progress-bearing CPU-only runner for the first
-  production sub-bucket:
+  Module54 adds the actual progress-bearing CPU-only runner used for the first
+  theorem-grade production slice.  Module56 validates it on jtl110cpu2:
     freqduet_cpu_ablation|c_17_32
-  The current artifact is a dry-run plan, not a measured certificate:
-    profiles = 1,2,4,8
-    tasks = 15
+    profile 1 aggregate = 0.447090 episode/s
+    profile 2 aggregate = 0.539602 episode/s
+    profile 4 aggregate = 0.878374 episode/s
+    profile 8 = capacity boundary
     cpu/task = 24
     ram/task = 65536
-    theorem_status = plan_only_not_measured
-  The remaining empirical step is to run the plan, ingest the profile summaries
-  into the service cache, and rerun Modules49/51/slack accounting.
+    work_items/task = 24
+    theorem_status = measured_sub_bucket_loaded_into_service_cache
+  The remaining empirical step is to repeat this for the next sub-buckets and
+  rerun Modules49/51/slack accounting after each new measured slice.
 
   Module50 adds the missing live scheduler candidate-set trace hook.  It is
   disabled by default and records the actual candidate family used by

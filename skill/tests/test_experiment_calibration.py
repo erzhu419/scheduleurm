@@ -26,6 +26,7 @@ from algorithm.experiments.production_cpu_workload_curve import (
 )
 from algorithm.experiments.production_load_certificate import (
     build_production_load_certificate,
+    classify_record,
 )
 from algorithm.experiments.production_coverage_drilldown import (
     build_coverage_drilldown,
@@ -46,6 +47,7 @@ from algorithm.experiments.slot_builder import progress_service_units, queue_ste
 from algorithm.experiments.theorem_oracle_trace_bridge import (
     build_theorem_oracle_audit_from_trace,
 )
+from simulation.defaults import build_default_cache
 
 
 def _features(bucket="b0", count="n1", mem="pm2", util="u1"):
@@ -442,6 +444,65 @@ def test_production_load_certificate_separates_capacity_from_global_coverage(che
           diag=str(all_mapped))
 
 
+def test_module56_freqduet_cpu_subbucket_is_strictly_measured(check, sch):
+    row = {
+        "id": "freq-c17",
+        "project": "FreqDuet",
+        "signature": "FreqDuet/ablation/c17_32",
+        "description": "FreqDuet terminal ablation control",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 24,
+        "cmd": "python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro --seeds 1,2",
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet c17_32 CPU records map only after module56 strict measurement",
+          cls["workload_key"] == "freqduet_cpu_ablation_c17_32"
+          and cls["mapping_mode"] == "strict_measured",
+          diag=str(cls))
+    bamor = classify_record(
+        {
+            "id": "bamor-c17",
+            "project": "BAMOR",
+            "signature": "BAMOR/diagnostic-shard/node001",
+            "description": "BAMOR diagnostic shard",
+            "submitted_at": 901.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 24,
+            "cwd": "/home/erzhu419/mine_code/BAMOR",
+            "cmd": "/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --workers 24",
+        },
+        include_representative=False,
+    )
+    check("FreqDuet c17_32 classifier ignores freqduet only in environment paths",
+          bamor["workload_key"] is None and bamor["reason"] == "unmapped_cpu",
+          diag=str(bamor))
+
+    cache = build_default_cache()
+    feasible = cache.profiles("freqduet_cpu_ablation_c17_32")
+    boundary = cache.get("freqduet_cpu_ablation_c17_32", 8)
+    check("module56 service cache exposes feasible profiles and capacity boundary",
+          [record.profile for record in feasible] == [1, 2, 4]
+          and boundary is not None
+          and boundary.capacity_boundary
+          and math.isclose(cache.get("freqduet_cpu_ablation_c17_32", 4).aggregate_rate, 0.878373516, rel_tol=1e-9),
+          diag=str([record.snapshot() for record in cache.profiles("freqduet_cpu_ablation_c17_32", include_boundaries=True)]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_cpu_c17_32",),
+    )
+    check("production load certificate can certify the measured FreqDuet sub-bucket alone",
+          report["mapped_counts"] == {"freqduet_cpu_ablation_c17_32": 1}
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_production_coverage_drilldown_separates_population_and_obligations(check, sch):
     rows = [
         {
@@ -559,9 +620,30 @@ def test_production_cpu_workload_curve_plan_renders_cpu_only_wrapped_tasks(check
     )
     check("production CPU workload template renders deterministic identity",
           rendered["seed"] == 11
+          and rendered["values"]["seed_csv"] == "11"
+          and rendered["values"]["progress_total_units"] == 50
           and "freqduet_cpu_ablation_c_17_32" in rendered["run_name"]
           and "--episodes 50" in rendered["cmd"],
           diag=str(rendered))
+    rendered_many = render_cpu_workload_command(
+        "python run_eval.py --seeds {seed_csv} --episodes {total_units}",
+        run_id="r1",
+        sub_bucket="freqduet_cpu_ablation|c_17_32",
+        phase="profile_2_per_resource",
+        profile=2,
+        index=1,
+        seed_base=100,
+        total_units=5,
+        output_root="out",
+        node="local",
+        cpu_cores=16,
+        work_items_per_task=4,
+    )
+    check("production CPU workload template expands seed CSV for worker-heavy tasks",
+          rendered_many["seed"] == 104
+          and rendered_many["values"]["seed_csv"] == "104,105,106,107"
+          and rendered_many["values"]["progress_total_units"] == 20,
+          diag=str(rendered_many))
     plan = build_submission_plan(
         run_id="r1",
         sub_bucket="freqduet_cpu_ablation|c_17_32",
@@ -572,6 +654,7 @@ def test_production_cpu_workload_curve_plan_renders_cpu_only_wrapped_tasks(check
         output_root="out",
         seed_base=20,
         total_units=40,
+        work_items_per_task=1,
         cpu_cores=16,
         ram_mb=32000,
         project="ScheduleurmBench",
@@ -586,6 +669,38 @@ def test_production_cpu_workload_curve_plan_renders_cpu_only_wrapped_tasks(check
           and "progress_wrapper.py" not in tasks[0]["cmd"]
           and "/tmp/wrapper.py" in tasks[0]["cmd"],
           diag=str(plan))
+
+    win_plan = build_submission_plan(
+        run_id="r2",
+        sub_bucket="freqduet_cpu_ablation|c_17_32",
+        profiles=[1],
+        cmd_template="python scripts/run_freqduet_ablation.py --seeds {seed_csv} --episodes {total_units} --logs-dir {output_root}/{run_name}",
+        node="jtl110cpu2",
+        cwd="/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        output_root="out",
+        seed_base=30,
+        total_units=5,
+        work_items_per_task=24,
+        cpu_cores=24,
+        ram_mb=65536,
+        project="ScheduleurmBench",
+        signature_prefix="ScheduleurmBench/prod_cpu",
+        progress_unit="episode",
+        progress_wrapper=r"F:\pkg\algorithm\experiments\csv_progress_wrapper.py",
+        progress_wrapper_kind="csv",
+        progress_csv_glob="{output_root}/{run_name}/*/diagnostics.csv",
+        progress_poll_s=2.0,
+        child_shell="argv",
+    )
+    win_cmd = win_plan["profiles"][0]["tasks"][0]["cmd"]
+    check("production CPU workload plan supports Windows CSV progress wrapper",
+          "csv_progress_wrapper.py" in win_cmd
+          and "--total 120" in win_cmd
+          and "--csv-glob" in win_cmd
+          and "diagnostics.csv" in win_cmd
+          and "--seeds 30,31,32" in win_cmd
+          and "bash -lc" not in win_cmd,
+          diag=win_cmd)
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

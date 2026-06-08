@@ -17,6 +17,8 @@ from .tasksets import empirical_replay_specs
 
 
 RUN_ROOT = Path("/home/erzhu419/.claude/scheduler/experiments/runs")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 
 
 def build_default_cache() -> ServiceRateCache:
@@ -156,6 +158,24 @@ def build_default_cache() -> ServiceRateCache:
         total_units=1000,
         node_bucket="local:cpu",
     )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124_reports",
+        workload_key="freqduet_cpu_ablation_c17_32",
+        command_fingerprint="freqduet_cpu_ablation_terminal_hiro_c17_32_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=72,
+        node_bucket="jtl110cpu2:cpu128",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8_reports",
+        workload_key="freqduet_cpu_ablation_c17_32",
+        command_fingerprint="freqduet_cpu_ablation_terminal_hiro_c17_32_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=72,
+        node_bucket="jtl110cpu2:cpu128",
+    )
     add_protocol_cpu_curve(
         cache,
         workload_key="cpu_heavy_protocol",
@@ -180,6 +200,7 @@ def legacy_policy() -> ReplayPolicy:
             "light_control_local": 1,
             "cpu_heavy_protocol": 32,
             "cpu_heavy_local_bench": 9,
+            "freqduet_cpu_ablation_c17_32": 1,
         },
     )
 

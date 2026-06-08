@@ -1,13 +1,13 @@
 {
   "completed_active_production_obligations": {
-    "mapped_count": 948,
-    "mapped_fraction": 0.37859424920127793,
-    "measurement_required_count": 1556,
-    "record_count": 2504,
+    "mapped_count": 915,
+    "mapped_fraction": 0.3746928746928747,
+    "measurement_required_count": 1527,
+    "record_count": 2442,
     "top_buckets": [
       {
         "bucket": "cpu_sumo_transit_eval_or_control",
-        "count": 1245,
+        "count": 1208,
         "examples": [
           {
             "bucket": "cpu_sumo_transit_eval_or_control",
@@ -65,23 +65,23 @@
             "task_id": "t2830"
           }
         ],
-        "fraction_of_completed_active_production": 0.4972044728434505,
+        "fraction_of_completed_active_production": 0.49467649467649466,
         "status": "measurement_required",
         "top_projects": {
-          "BAMOR": 132,
+          "BAMOR": 177,
           "CFCMT": 36,
-          "FreqDuet": 237,
+          "FreqDuet": 172,
           "FreqHRL": 40,
           "SimpleSAC": 56,
-          "TransitDuet": 325,
+          "TransitDuet": 342,
           "ZSW_platform": 42,
-          "freqduet": 300
+          "freqduet": 265
         },
         "top_signature_prefixes": {
           "BAMOR/diagnostic/bamor_ns": 7,
           "BAMOR/diagnostic/bamor_oracle_cone": 7,
           "BAMOR/diagnostic/uniform": 8,
-          "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-v8-fixed-interval-cli": 6,
+          "BAMOR/mujoco/mo-halfcheetah-v5": 12,
           "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5": 6,
           "FreqHRLNative/native-promotion-persistent-stress-tightgapcap-512seed-py310-v6": 6,
           "freq_hrl_native_learned_wait_same070_082_cap2_512seed_w16": 6,
@@ -90,69 +90,69 @@
       },
       {
         "bucket": "hybrid_rl_resac_ant",
-        "count": 909,
+        "count": 750,
         "examples": [
           {
             "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 1,
-            "description": "auto-adopted: RE-SAC on jtl110gpu:GPU0 (1 procs)",
-            "est_vram_mb": 276,
+            "cpu_cores": 4,
+            "description": "scheduler-heal resubmit after misclassified OOM (was CUDA init failure)",
+            "est_vram_mb": 1200,
             "project": "RE-SAC",
             "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/auto-adopted/p9298",
+            "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_16",
             "status": "done",
-            "task_id": "t2638"
-          },
-          {
-            "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 1,
-            "description": "auto-adopted: RE-SAC on jtl110gpu:GPU1 (1 procs)",
-            "est_vram_mb": 248,
-            "project": "RE-SAC",
-            "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/auto-adopted/p9566",
-            "status": "done",
-            "task_id": "t2639"
-          },
-          {
-            "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 1,
-            "description": "auto-adopted: RE-SAC on jtl110gpu:GPU1 (1 procs)",
-            "est_vram_mb": 544,
-            "project": "RE-SAC",
-            "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/auto-adopted/p18098",
-            "status": "done",
-            "task_id": "t2640"
-          },
-          {
-            "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 1,
-            "description": "auto-adopted: RE-SAC on jtl110gpu:GPU0 (1 procs)",
-            "est_vram_mb": 812,
-            "project": "RE-SAC",
-            "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/auto-adopted/p20125",
-            "status": "done",
-            "task_id": "t2641"
+            "task_id": "t2910"
           },
           {
             "bucket": "hybrid_rl_resac_ant",
             "cpu_cores": 2,
-            "description": "b3 abl_B0_Ant-v2_16 (scheduler-skill resubmit after multi_gpu_scheduler kill)",
-            "est_vram_mb": 1036,
+            "description": "b4 sens_betaend_0.0_Ant-v2_24 (heal reroute from local OOM)",
+            "est_vram_mb": 1200,
             "project": "RE-SAC",
             "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/b3/abl_B0_Ant-v2_16",
+            "signature": "RE-SAC/b4/sens_betaend_0.0_Ant-v2_24",
             "status": "done",
-            "task_id": "t2645"
+            "task_id": "t2911"
+          },
+          {
+            "bucket": "hybrid_rl_resac_ant",
+            "cpu_cores": 1,
+            "description": "OOM reroute: sens_ema_0.05 Ant-v2 s24 (contention OOM on jtl110gpu2, resubmit with no node pin)",
+            "est_vram_mb": 542,
+            "project": "RE-SAC",
+            "reason": "gpu_rl_representative",
+            "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_24",
+            "status": "done",
+            "task_id": "t3043"
+          },
+          {
+            "bucket": "hybrid_rl_resac_ant",
+            "cpu_cores": 2,
+            "description": "b4 sens_ratio reroute from local (JAX CUDA init fail)",
+            "est_vram_mb": 1100,
+            "project": "RE-SAC",
+            "reason": "gpu_rl_representative",
+            "signature": "RE-SAC/b4/sens_ratio_0.0_HalfCheetah-v2_24",
+            "status": "done",
+            "task_id": "t3041"
+          },
+          {
+            "bucket": "hybrid_rl_resac_ant",
+            "cpu_cores": 2,
+            "description": "OOM reroute from local to remote (heal Phase C)",
+            "est_vram_mb": 1346,
+            "project": "RE-SAC",
+            "reason": "gpu_rl_representative",
+            "signature": "RE-SAC/b4/sens_anchor_0.001_HalfCheetah-v2_24",
+            "status": "done",
+            "task_id": "t2992"
           }
         ],
-        "fraction_of_completed_active_production": 0.36301916932907347,
+        "fraction_of_completed_active_production": 0.3071253071253071,
         "status": "mapped",
         "top_projects": {
           "BAPR": 97,
-          "RE-SAC": 369,
+          "RE-SAC": 210,
           "RE-SAC-JMLR": 340,
           "bapr_v15": 103
         },
@@ -169,7 +169,7 @@
       },
       {
         "bucket": "generic_cpu_python",
-        "count": 136,
+        "count": 144,
         "examples": [
           {
             "bucket": "generic_cpu_python",
@@ -227,11 +227,12 @@
             "task_id": "t3442"
           }
         ],
-        "fraction_of_completed_active_production": 0.054313099041533544,
+        "fraction_of_completed_active_production": 0.05896805896805897,
         "status": "measurement_required",
         "top_projects": {
-          "Asumption Agent": 36,
+          "Asumption Agent": 43,
           "CFCMT": 12,
+          "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1,
           "RE-SAC": 82,
           "sensing-compressibility-v10k": 5,
           "sensing-compressibility-v2k": 1
@@ -245,6 +246,84 @@
           "RE-SAC/review5/tqc_Hopper-v2_32": 1,
           "sensing-compressibility-v10k/auto-adopted/p1824577": 1,
           "sensing-compressibility-v2k/auto-adopted/p28886": 1
+        }
+      },
+      {
+        "bucket": "freqduet_cpu_ablation_c17_32",
+        "count": 125,
+        "examples": [
+          {
+            "bucket": "freqduet_cpu_ablation_c17_32",
+            "cpu_cores": 20,
+            "description": "FreqDuet generalization remote matrix jtl110cpu jobs 0-20",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module56_freqduet_cpu_ablation_c17_32",
+            "signature": "FreqDuet/generalization_remote_20260531/jtl110cpu",
+            "status": "done",
+            "task_id": "t4975"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c17_32",
+            "cpu_cores": 20,
+            "description": "FreqDuet generalization remote matrix jtl110cpu2 jobs 20-40",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module56_freqduet_cpu_ablation_c17_32",
+            "signature": "FreqDuet/generalization_remote_20260531/jtl110cpu2",
+            "status": "done",
+            "task_id": "t4976"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c17_32",
+            "cpu_cores": 32,
+            "description": "FreqDuet final matrix cooldown parallel shard 0-23",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module56_freqduet_cpu_ablation_c17_32",
+            "signature": "FreqDuet/final_matrix_cooldown_parallel_20260531/jtl110cpu",
+            "status": "done",
+            "task_id": "t5124"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c17_32",
+            "cpu_cores": 32,
+            "description": "FreqDuet final matrix cooldown parallel shard 23-45",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module56_freqduet_cpu_ablation_c17_32",
+            "signature": "FreqDuet/final_matrix_cooldown_parallel_20260531/jtl110cpu2",
+            "status": "done",
+            "task_id": "t5125"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c17_32",
+            "cpu_cores": 32,
+            "description": "FreqDuet candidate screen shard 28-55",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module56_freqduet_cpu_ablation_c17_32",
+            "signature": "FreqDuet/candidate_screen_20260531/jtl110cpu2_high2",
+            "status": "done",
+            "task_id": "t5140"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.05118755118755119,
+        "status": "mapped",
+        "top_projects": {
+          "FreqDuet": 82,
+          "TransitDuet": 7,
+          "freqduet": 36
+        },
+        "top_signature_prefixes": {
+          "FreqDuet/final_matrix_cooldown_parallel_20260531/jtl110cpu": 1,
+          "FreqDuet/final_matrix_cooldown_parallel_20260531/jtl110cpu2": 1,
+          "FreqDuet/generalization_remote_20260531/jtl110cpu": 1,
+          "FreqDuet/generalization_remote_20260531/jtl110cpu2": 1,
+          "FreqDuet/valueguard-main-ep100-wu10": 3,
+          "TransitDuet/freqduet-termfb30-screen-ep40-wu10": 3,
+          "TransitDuet/freqduet-termrelief20-screen-ep40-wu10": 2,
+          "TransitDuet/freqduet-termvalue20-screen-ep40-wu10": 2
         }
       },
       {
@@ -307,7 +386,7 @@
             "task_id": "t3700"
           }
         ],
-        "fraction_of_completed_active_production": 0.03194888178913738,
+        "fraction_of_completed_active_production": 0.03276003276003276,
         "status": "measurement_required",
         "top_projects": {
           "Asumption Agent": 19,
@@ -385,7 +464,7 @@
             "task_id": "t3489"
           }
         ],
-        "fraction_of_completed_active_production": 0.03075079872204473,
+        "fraction_of_completed_active_production": 0.03153153153153153,
         "status": "measurement_required",
         "top_projects": {
           "RE-SAC": 72,
@@ -404,7 +483,7 @@
       },
       {
         "bucket": "cpu_heavy_local_bench",
-        "count": 39,
+        "count": 40,
         "examples": [
           {
             "bucket": "cpu_heavy_local_bench",
@@ -462,7 +541,7 @@
             "task_id": "t5051"
           }
         ],
-        "fraction_of_completed_active_production": 0.015575079872204472,
+        "fraction_of_completed_active_production": 0.01638001638001638,
         "status": "mapped",
         "top_projects": {
           "BAPR": 3,
@@ -471,7 +550,7 @@
           "bapr_v15": 2,
           "freqduet": 1,
           "sensing-compressibility-pems": 13,
-          "sensing-compressibility-v10k": 3
+          "sensing-compressibility-v10k": 4
         },
         "top_signature_prefixes": {
           "CFCMT/auto-adopted/p647817": 1,
@@ -544,7 +623,7 @@
             "task_id": "t2968"
           }
         ],
-        "fraction_of_completed_active_production": 0.006389776357827476,
+        "fraction_of_completed_active_production": 0.006552006552006552,
         "status": "measurement_required",
         "top_projects": {
           "H2Oplus": 14,
@@ -588,7 +667,7 @@
             "task_id": "t7789"
           }
         ],
-        "fraction_of_completed_active_production": 0.0007987220447284345,
+        "fraction_of_completed_active_production": 0.000819000819000819,
         "status": "measurement_required",
         "top_projects": {
           "sched-hpc-e2e-20260522-214808-175687": 1,
@@ -607,134 +686,142 @@
   "views": {
     "attempted_production": {
       "representative": {
-        "delta": 0.2853499517544461,
+        "delta": 0.29124501348283893,
         "global_coverage_usable_for_theorem": false,
         "lambda": {
-          "cpu_heavy_local_bench": 0.020061728395061727,
-          "hybrid_rl_resac_ant": 0.04925925925925926
+          "cpu_heavy_local_bench": 0.02044753086419753,
+          "freqduet_cpu_ablation_c17_32": 0.003638888888888889,
+          "hybrid_rl_resac_ant": 0.0433641975308642
         },
         "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.44017094017094016,
-        "mapped_task_count": 1648,
-        "record_count_window": 3744,
-        "representative_mapped_task_count": 1648,
-        "strict_mapped_fraction": 0.0,
+        "mapped_fraction": 0.43062330623306233,
+        "mapped_task_count": 1589,
+        "record_count_window": 3690,
+        "representative_mapped_task_count": 1458,
+        "strict_mapped_fraction": 0.03550135501355014,
         "unmapped_reasons": {
-          "unmapped_cpu": 2079,
+          "unmapped_cpu": 2084,
           "unmapped_gpu": 17
         },
-        "unmapped_task_count": 2096,
+        "unmapped_task_count": 2101,
         "usable_for_global_theorem": false
       },
       "strict": {
-        "delta": 0.3346092110137054,
+        "delta": 0.33460921101370755,
         "global_coverage_usable_for_theorem": false,
-        "lambda": {},
-        "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.0,
-        "mapped_task_count": 0,
-        "record_count_window": 3744,
-        "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.0,
-        "unmapped_reasons": {
-          "unmapped_cpu": 2131,
-          "unmapped_gpu": 1613
+        "lambda": {
+          "freqduet_cpu_ablation_c17_32": 0.003638888888888889
         },
-        "unmapped_task_count": 3744,
+        "mapped_capacity_usable_for_theorem": true,
+        "mapped_fraction": 0.03550135501355014,
+        "mapped_task_count": 131,
+        "record_count_window": 3690,
+        "representative_mapped_task_count": 0,
+        "strict_mapped_fraction": 0.03550135501355014,
+        "unmapped_reasons": {
+          "unmapped_cpu": 2137,
+          "unmapped_gpu": 1422
+        },
+        "unmapped_task_count": 3559,
         "usable_for_global_theorem": false
       }
     },
     "completed_active_production": {
       "representative": {
-        "delta": 0.30655365545814983,
+        "delta": 0.3114610628655594,
         "global_coverage_usable_for_theorem": false,
         "lambda": {
-          "cpu_heavy_local_bench": 0.015046296296296295,
-          "hybrid_rl_resac_ant": 0.028055555555555556
+          "cpu_heavy_local_bench": 0.015432098765432098,
+          "freqduet_cpu_ablation_c17_32": 0.003472222222222222,
+          "hybrid_rl_resac_ant": 0.023148148148148147
         },
         "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.37859424920127793,
-        "mapped_task_count": 948,
-        "record_count_window": 2504,
-        "representative_mapped_task_count": 948,
-        "strict_mapped_fraction": 0.0,
+        "mapped_fraction": 0.3746928746928747,
+        "mapped_task_count": 915,
+        "record_count_window": 2442,
+        "representative_mapped_task_count": 790,
+        "strict_mapped_fraction": 0.05118755118755119,
         "unmapped_reasons": {
-          "unmapped_cpu": 1540,
+          "unmapped_cpu": 1511,
           "unmapped_gpu": 16
         },
-        "unmapped_task_count": 1556,
+        "unmapped_task_count": 1527,
         "usable_for_global_theorem": false
       },
       "strict": {
-        "delta": 0.3346092110137054,
+        "delta": 0.33460921101370755,
         "global_coverage_usable_for_theorem": false,
-        "lambda": {},
-        "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.0,
-        "mapped_task_count": 0,
-        "record_count_window": 2504,
-        "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.0,
-        "unmapped_reasons": {
-          "unmapped_cpu": 1579,
-          "unmapped_gpu": 925
+        "lambda": {
+          "freqduet_cpu_ablation_c17_32": 0.003472222222222222
         },
-        "unmapped_task_count": 2504,
+        "mapped_capacity_usable_for_theorem": true,
+        "mapped_fraction": 0.05118755118755119,
+        "mapped_task_count": 125,
+        "record_count_window": 2442,
+        "representative_mapped_task_count": 0,
+        "strict_mapped_fraction": 0.05118755118755119,
+        "unmapped_reasons": {
+          "unmapped_cpu": 1551,
+          "unmapped_gpu": 766
+        },
+        "unmapped_task_count": 2317,
         "usable_for_global_theorem": false
       }
     },
     "raw_history_all": {
       "representative": {
-        "delta": 0.26695489002605105,
+        "delta": 0.27284995175444826,
         "global_coverage_usable_for_theorem": false,
         "lambda": {
-          "cpu_heavy_local_bench": 0.04513888888888889,
+          "cpu_heavy_local_bench": 0.04552469135802469,
+          "freqduet_cpu_ablation_c17_32": 0.004333333333333333,
           "gpu_heavy_jax_matmul": 0.06481481481481481,
-          "hybrid_rl_resac_ant": 0.06765432098765432,
+          "hybrid_rl_resac_ant": 0.06175925925925926,
           "light_control_local": 0.7947530864197531
         },
         "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.4993239327796021,
-        "mapped_task_count": 2585,
-        "record_count_window": 5177,
-        "representative_mapped_task_count": 1778,
-        "strict_mapped_fraction": 0.15588178481746184,
+        "mapped_fraction": 0.49495537446643384,
+        "mapped_task_count": 2551,
+        "record_count_window": 5154,
+        "representative_mapped_task_count": 1588,
+        "strict_mapped_fraction": 0.18684516880093133,
         "unmapped_reasons": {
-          "scheduleurmbench_unknown": 106,
-          "unmapped_cpu": 2467,
+          "scheduleurmbench_unknown": 123,
+          "unmapped_cpu": 2461,
           "unmapped_gpu": 19
         },
-        "unmapped_task_count": 2592,
+        "unmapped_task_count": 2603,
         "usable_for_global_theorem": false
       },
       "strict": {
-        "delta": 0.31991785298901404,
+        "delta": 0.3199178529890162,
         "global_coverage_usable_for_theorem": false,
         "lambda": {
           "cpu_heavy_local_bench": 0.021219135802469136,
+          "freqduet_cpu_ablation_c17_32": 0.004333333333333333,
           "gpu_heavy_jax_matmul": 0.06481481481481481,
           "hybrid_rl_resac_ant": 0.014691358024691358,
           "light_control_local": 0.7947530864197531
         },
         "mapped_capacity_usable_for_theorem": true,
-        "mapped_fraction": 0.15588178481746184,
-        "mapped_task_count": 807,
-        "record_count_window": 5177,
+        "mapped_fraction": 0.18684516880093133,
+        "mapped_task_count": 963,
+        "record_count_window": 5154,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.15588178481746184,
+        "strict_mapped_fraction": 0.18684516880093133,
         "unmapped_reasons": {
-          "scheduleurmbench_unknown": 106,
-          "unmapped_cpu": 2529,
-          "unmapped_gpu": 1735
+          "scheduleurmbench_unknown": 123,
+          "unmapped_cpu": 2524,
+          "unmapped_gpu": 1544
         },
-        "unmapped_task_count": 4370,
+        "unmapped_task_count": 4191,
         "usable_for_global_theorem": false
       }
     }
   },
   "window": {
-    "end_ts": 1780897285.4422536,
-    "start_ts": 1778305285.4422536,
+    "end_ts": 1780925803.8387797,
+    "start_ts": 1778333803.8387797,
     "window_s": 2592000.0
   },
   "window_days": 30.0

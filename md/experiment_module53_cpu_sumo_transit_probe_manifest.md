@@ -15,49 +15,71 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Current Bucket
+## Status After Module56
+
+The original top sub-bucket was:
+
+```text
+freqduet_cpu_ablation|c_17_32
+```
+
+Module56 measured the exact `run_freqduet_ablation.py` slice inside that
+sub-bucket on `jtl110cpu2`, loaded feasible profiles `1,2,4` into the service
+cache, and loaded profile `8` as a capacity boundary.  That exact command slice
+is now mapped strictly as:
+
+```text
+workload_key = freqduet_cpu_ablation_c17_32
+completed_active_production mapped count = 125
+raw_history_all mapped count = 156
+```
+
+The current Module53 manifest has therefore been regenerated over the remaining
+unmeasured `cpu_sumo_transit_eval_or_control` records.
+
+## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 1245
+record_count = 1208
 cpu_cores median = 8
 cpu_cores p90 = 48
 cpu_cores max = 128
-ram_mb median = 8192
+ram_mb median = 7110
 ram_mb p90 = 65536
 ram_mb max = 256000
 theorem_status = measurement_required
 ```
 
-## Top Sub-Buckets
+## Top Remaining Sub-Buckets
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_17_32` | 212 | 0.170281 |
-| `freqduet_cpu_ablation|c_9_16` | 153 | 0.122892 |
-| `sumo_eval_cpu|c_le2` | 153 | 0.122892 |
-| `freqduet_cpu_ablation|c_3_8` | 134 | 0.107631 |
-| `freqduet_cpu_ablation|c_33_64` | 124 | 0.099598 |
-| `freqduet_cpu_ablation|c_le2` | 122 | 0.097992 |
-| `bamor_cpu_training|c_3_8` | 80 | 0.064257 |
-| `freqduet_cpu_ablation|c_65p` | 60 | 0.048193 |
+| `freqduet_cpu_ablation|c_9_16` | 161 | 0.133278 |
+| `sumo_eval_cpu|c_le2` | 154 | 0.127483 |
+| `freqduet_cpu_ablation|c_3_8` | 136 | 0.112583 |
+| `freqduet_cpu_ablation|c_33_64` | 125 | 0.103477 |
+| `freqduet_cpu_ablation|c_le2` | 123 | 0.101821 |
+| `freqduet_cpu_ablation|c_17_32` | 116 | 0.096026 |
+| `bamor_cpu_training|c_3_8` | 95 | 0.078642 |
+| `freqduet_cpu_ablation|c_65p` | 60 | 0.049669 |
 
-## First Probe Order
+## Next Probe Order
 
-The manifest recommends this first pass:
+The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_17_32
-sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_9_16
+sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8
 freqduet_cpu_ablation|c_33_64
 freqduet_cpu_ablation|c_le2
+freqduet_cpu_ablation|c_17_32
 bamor_cpu_training|c_3_8
 freqduet_cpu_ablation|c_65p
 ```
 
-Each sub-bucket still needs progress-bearing service curves over:
+Each remaining sub-bucket still needs progress-bearing service curves over:
 
 ```text
 task_concurrency_profiles = [1, 2, 4, 8]
@@ -66,14 +88,9 @@ node_targets = local_cpu, direct_hpc_cpu_node
 
 ## Interpretation
 
-This closes the ambiguity in the production coverage blocker.  It does not yet
-close the theorem condition, because no service curves have been measured for
-these sub-buckets.  The next empirical closure module should implement a
-runner/summary format for these CPU/SUMO/transit probes and then add the
-measured profiles into the service cache and production capacity certificate.
-
-Module54 now implements that runner for the first sub-bucket,
-`freqduet_cpu_ablation|c_17_32`, and writes a dry-run plan for profiles
-`1,2,4,8`.  The Module54 artifact is still `plan_only_not_measured`; it becomes
-theorem-relevant only after the plan is run and the measured summaries are
-loaded into the service cache.
+Module53 no longer says the first production CPU/SUMO measurement is merely a
+plan.  The exact `run_freqduet_ablation.py` c17_32 slice is measured and
+strictly mapped.  The global theorem remains open because 1208 completed/active
+production records in the CPU/SUMO/transit family still require measured curves
+or equivalence certificates, including 116 residual `freqduet_cpu_ablation|c_17_32`
+records with different command shapes.

@@ -1,0 +1,45 @@
+{
+  "best_aggregate_count_per_resource": null,
+  "capacity_boundaries": [
+    {
+      "blocked_count": 3,
+      "boundary_reasons": [
+        "profile_8_per_resource capacity boundary: blocked=[{'id': 't8020', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8021', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8022', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}], progressed=5, required=8"
+      ],
+      "count_per_resource": 8,
+      "placement_issues": [
+        "running_count 5 != expected 8"
+      ],
+      "running_count": 5,
+      "running_with_rate_count": 5
+    }
+  ],
+  "failure_reasons": [],
+  "mode": "freqduet_cpu_ablation|c_17_32",
+  "node": "jtl110cpu2",
+  "pass": true,
+  "rows": [
+    {
+      "aggregate_active_rate_unit_s": 1.369099081,
+      "blocked_count": 3,
+      "boundary_reasons": [
+        "profile_8_per_resource capacity boundary: blocked=[{'id': 't8020', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8021', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8022', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}], progressed=5, required=8"
+      ],
+      "capacity_boundary": true,
+      "count_per_resource": 8,
+      "eviction_count": 0,
+      "mean_active_rate_unit_s": 0.2738198162,
+      "placement_issues": [
+        "running_count 5 != expected 8"
+      ],
+      "placement_valid": false,
+      "rate_units": [
+        "episode"
+      ],
+      "running_count": 5,
+      "running_with_rate_count": 5
+    }
+  ],
+  "run_id": "module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8",
+  "steps": 3
+}

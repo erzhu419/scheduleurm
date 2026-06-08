@@ -219,16 +219,18 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2504
-representative mapped = 948
-measurement_required = 1556
-mapped_fraction = 0.378594
+records = 2442
+representative mapped = 915
+strict mapped = 125
+measurement_required = 1527
+mapped_fraction = 0.374693
 ```
 
 最大未闭合 bucket 是：
 
 ```text
-cpu_sumo_transit_eval_or_control = 1245 records
+before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504 completed-active records
+after Module56:  cpu_sumo_transit_eval_or_control = 1208 / 2442 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -243,34 +245,49 @@ cpu_sumo_transit_eval_or_control = 1245 records
 
 在这之前，production-global stability 只能写成 open empirical-theorem bridge。
 
-Module53 已经完成第 1 步，并给出 first probe order：
+Module53 已经完成第 1 步。Module56 又完成了第一个 production
+sub-bucket 的真实曲线测量：
 
 ```text
-freqduet_cpu_ablation|c_17_32
-sumo_eval_cpu|c_le2
+closed exact slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_32
+workload_key = freqduet_cpu_ablation_c17_32
+feasible profiles = 1,2,4
+capacity boundary = 8
+completed-active mapped count = 125
+residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+```
+
+当前剩余 first probe order 是：
+
+```text
 freqduet_cpu_ablation|c_9_16
+sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8
 freqduet_cpu_ablation|c_33_64
 freqduet_cpu_ablation|c_le2
+freqduet_cpu_ablation|c_17_32
 bamor_cpu_training|c_3_8
 freqduet_cpu_ablation|c_65p
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
 
-Module54 已经完成第 2 步的第一个可执行入口：
+Module54/56 已经完成第 2-5 步的第一个闭合实例：
 
 ```text
 runner = algorithm/experiments/production_cpu_workload_curve.py
 first sub_bucket = freqduet_cpu_ablation|c_17_32
 profiles = 1,2,4,8
-task_count = 15
 cpu/task = 24
 ram/task = 65536
-current artifact = dry-run plan only
-theorem_status = plan_only_not_measured
+work_items/task = 24
+profile 1 aggregate = 0.447090 episode/s
+profile 2 aggregate = 0.539602 episode/s
+profile 4 aggregate = 0.878374 episode/s
+profile 8 = capacity boundary, 5 progressed and 3 blocked
+theorem_status = measured_sub_bucket_loaded_into_service_cache
 ```
 
-剩余实验工作不是再定义 benchmark，而是实际运行该 plan，得到稳定 progress
-窗口，写出 service_curve_verdict，并把结果加入 service cache 后重跑 production
-coverage / capacity / slack certificate。
+剩余实验工作不是再定义 benchmark，而是沿用该 runner 继续攻击剩余
+sub-bucket，得到稳定 progress 窗口，写出 service_curve_verdict，并把结果加入
+service cache 后重跑 production coverage / capacity / slack certificate。

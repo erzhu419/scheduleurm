@@ -1,0 +1,86 @@
+{
+  "aggregate_active_rate_step_s": 1.369099081,
+  "aggregate_active_rate_unit_s": 1.369099081,
+  "blocked": [
+    {
+      "id": "t8020",
+      "last_block_reason": "no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)",
+      "status": "queued"
+    },
+    {
+      "id": "t8021",
+      "last_block_reason": "no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)",
+      "status": "queued"
+    },
+    {
+      "id": "t8022",
+      "last_block_reason": "no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)",
+      "status": "queued"
+    }
+  ],
+  "blocked_count": 3,
+  "boundary_reasons": [
+    "profile_8_per_resource capacity boundary: blocked=[{'id': 't8020', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8021', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}, {'id': 't8022', 'status': 'queued', 'last_block_reason': 'no fit (require=jtl110cpu2 prio=high): local=cpu: need 24, free 11/16 | jtl110gpu=cpu: need 24, free 12/12 | jtl110gpu2=cpu: need 24, free 12/12 | zhengliang-hpc=slurm(require!=jtl110cpu2)'}], progressed=5, required=8"
+  ],
+  "capacity_boundary": true,
+  "completed_log_progress_count_fallback": true,
+  "completed_log_progress_rate_fallback": true,
+  "eviction_count": 0,
+  "evictions": [],
+  "expected_parallel_running": 8,
+  "ids": [
+    "t8015",
+    "t8016",
+    "t8017",
+    "t8018",
+    "t8019",
+    "t8020",
+    "t8021",
+    "t8022"
+  ],
+  "log_progress_count": 5,
+  "max_active_rate_step_s": 0.397097821,
+  "max_active_rate_unit_s": 0.397097821,
+  "mean_active_rate_step_s": 0.2738198162,
+  "mean_active_rate_unit_s": 0.2738198162,
+  "min_active_rate_step_s": 0.204892447,
+  "min_active_rate_unit_s": 0.204892447,
+  "per_gpu_running": {
+    "None": 4
+  },
+  "phase": "profile_8_per_resource",
+  "placement_issues": [
+    "running_count 5 != expected 8"
+  ],
+  "placement_valid": false,
+  "queued_count": 3,
+  "rate_units": [
+    "episode"
+  ],
+  "rates_step_s": [
+    0.210632741,
+    0.204892447,
+    0.217328557,
+    0.339147515,
+    0.397097821
+  ],
+  "rates_unit_s": [
+    0.210632741,
+    0.204892447,
+    0.217328557,
+    0.339147515,
+    0.397097821
+  ],
+  "running_count": 5,
+  "running_with_rate_count": 5,
+  "runtime_current_units": [
+    59,
+    64,
+    72
+  ],
+  "status_counts": {
+    "done": 1,
+    "queued": 3,
+    "running": 4
+  }
+}

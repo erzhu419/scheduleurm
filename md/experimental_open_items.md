@@ -178,4 +178,20 @@ P0                             固定切换/rollback/风险成本
 η = δ-(Lρ+ε_est+β+α1)          最终 drift margin
 ```
 
+当前状态（2026-06-08）：
+
+```text
+Module50 已补 scheduler candidate-family trace hook；
+SCHEDULEURM_ORACLE_AUDIT_LOG 打开后，pick_placement 会记录真实候选全集、
+chosen action、scheduler sort key、finite bucket/class/regime audit。
+
+这可以验证 selected action 是否为 scheduler-score best。
+但 theorem-grade α0/α1 仍需要每个 candidate 的 lower_service vector、
+queue_vector 和 penalty_units，或者从同一决策状态的 measured service cache
+严格重建这些量。
+
+当前 production trace 状态是 NO_TRACE；历史 selected-only placement_algorithm_audit
+不能冒充 full candidate-set oracle certificate。
+```
+
 如果估计后 \(\eta\le0\)，理论不是错，而是说明 candidate cover、估计误差、penalty 或 solver error 已经吞掉全部 capacity slack，需要改 candidate generator、降低 penalty、改善 oracle 或加 admission control。

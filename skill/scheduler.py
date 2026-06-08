@@ -76,6 +76,21 @@ except Exception:
     _algorithm_should_bypass_hard_rule = None
     _algorithm_hard_rule_snapshot = None
 
+try:
+    from algorithm.oracle_trace import (
+        build_candidate_row as _algorithm_trace_candidate_row,
+        build_decision_slot as _algorithm_trace_decision_slot,
+        log_decision_slot as _algorithm_log_decision_slot,
+        make_slot_id as _algorithm_trace_slot_id,
+        trace_enabled as _algorithm_trace_enabled,
+    )
+except Exception:
+    _algorithm_trace_candidate_row = None
+    _algorithm_trace_decision_slot = None
+    _algorithm_log_decision_slot = None
+    _algorithm_trace_slot_id = None
+    _algorithm_trace_enabled = None
+
 # ---------- node inventory ----------
 JTL110GPU_RE_SAC_JAX_ENV = "/home/erzhu419/.venvs/resac-jax-gpu1-0438"
 JTL110GPU_RE_SAC_JAX_SITE = f"{JTL110GPU_RE_SAC_JAX_ENV}/lib/python3.11/site-packages"
@@ -6510,6 +6525,73 @@ def pick_placement(task, nodes):
     if blocked:
         nodes = [n for n in nodes if n["name"] not in blocked]
 
+    trace_this_decision = bool(
+        _algorithm_trace_enabled is not None and _algorithm_trace_enabled()
+    )
+    trace_slot_id = (
+        _algorithm_trace_slot_id(task) if trace_this_decision and _algorithm_trace_slot_id else ""
+    )
+
+    def _node_state_by_name(name, search_nodes):
+        return next((n for n in search_nodes if n.get("name") == name), None)
+
+    def _gpu_state_by_idx(node_state, gpu_idx):
+        if node_state is None or gpu_idx is None:
+            return None
+        for gpu in node_state.get("gpus") or []:
+            try:
+                if int(gpu.get("idx")) == int(gpu_idx):
+                    return gpu
+            except Exception:
+                continue
+        return None
+
+    def _trace_candidate_slot(phase, search_nodes, cands, selected):
+        if not trace_this_decision:
+            return
+        if (
+            _algorithm_trace_candidate_row is None
+            or _algorithm_trace_decision_slot is None
+            or _algorithm_log_decision_slot is None
+        ):
+            return
+        selected_node, selected_gpu_idx = selected
+        rows = []
+        for score, node_name, gpu_idx in cands:
+            node_state = _node_state_by_name(node_name, search_nodes)
+            gpu_state = _gpu_state_by_idx(node_state, gpu_idx)
+            audit = {}
+            if gpu_state is not None:
+                audit = _algorithm_selected_gpu_audit(task, node_state, gpu_state)
+            rows.append(_algorithm_trace_candidate_row(
+                node=node_name,
+                gpu_idx=gpu_idx,
+                score=score,
+                selected=(
+                    str(node_name) == str(selected_node)
+                    and (gpu_idx is selected_gpu_idx or str(gpu_idx) == str(selected_gpu_idx))
+                ),
+                algorithm_audit=audit,
+            ))
+        slot = _algorithm_trace_decision_slot(
+            slot_id=trace_slot_id,
+            task=task,
+            algorithm=_algorithm_name(),
+            phase=phase,
+            candidates=rows,
+            hard_constraints={
+                "require_node": require,
+                "preferred_node": preferred,
+                "require_gpu_idx": require_gpu_idx,
+                "allowed_nodes": allowed_nodes,
+                "resume_preferred_nodes": resume_preferred,
+            },
+        )
+        try:
+            _algorithm_log_decision_slot(slot)
+        except Exception:
+            pass
+
     def _candidates_for_node(n):
         """Return list of (score, name, gpu_idx) candidates this node can offer (may be empty)."""
         if not n["alive"]: return []
@@ -6633,7 +6715,9 @@ def pick_placement(task, nodes):
                     cands = _candidates_for_node(n)
                     if cands:
                         cands.sort()
-                        return cands[0][1], cands[0][2]
+                        chosen = (cands[0][1], cands[0][2])
+                        _trace_candidate_slot("require_node", search_nodes, cands, chosen)
+                        return chosen
                     return None  # required node not ready — wait, do not fall back
             return None
 
@@ -6649,7 +6733,9 @@ def pick_placement(task, nodes):
                 cands = _candidates_for_node(n)
                 if cands:
                     cands.sort()
-                    return cands[0][1], cands[0][2]
+                    chosen = (cands[0][1], cands[0][2])
+                    _trace_candidate_slot("resume_preferred", search_nodes, cands, chosen)
+                    return chosen
 
         # 2) Try preferred node next (if specified and alive).
         if preferred:
@@ -6659,7 +6745,9 @@ def pick_placement(task, nodes):
                     cands = _candidates_for_node(n)
                     if cands:
                         cands.sort()
-                        return cands[0][1], cands[0][2]
+                        chosen = (cands[0][1], cands[0][2])
+                        _trace_candidate_slot("preferred_node", search_nodes, cands, chosen)
+                        return chosen
                     # preferred is alive but full — fall through to fallback search
 
         # 3) Fallback: scan all nodes (excluding nodes already tried above).
@@ -6670,7 +6758,9 @@ def pick_placement(task, nodes):
             cands.extend(_candidates_for_node(n))
         if not cands: return None
         cands.sort()
-        return cands[0][1], cands[0][2]
+        chosen = (cands[0][1], cands[0][2])
+        _trace_candidate_slot("fallback", search_nodes, cands, chosen)
+        return chosen
 
     # Launch-failed nodes are a soft block for unpinned tasks: prefer fresh nodes, but fall
     # back to retrying failed nodes if every viable node has already failed.

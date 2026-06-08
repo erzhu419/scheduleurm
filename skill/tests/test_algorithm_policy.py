@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from algorithm.experiments.scheduler_oracle_trace_audit import audit_trace_file
+from algorithm.oracle_trace import audit_scheduler_score_trace, load_trace_slots
 
 
 def test_algorithm_directory_is_scheduler_sibling(check, sch):
@@ -44,6 +48,83 @@ def test_algorithm_gpu_score_is_optional(check, sch):
           "score_weights" in snap,
           diag=str(snap))
     sch._configure_algorithm("legacy")
+
+
+def test_scheduler_oracle_trace_records_candidate_family(check, sch):
+    old_trace = os.environ.get("SCHEDULEURM_ORACLE_AUDIT_LOG")
+    old_sweet = os.environ.get("SCHEDULEURM_ALGO_GPU_SWEET_SPOT_TASKS")
+    try:
+        with TemporaryDirectory() as tmp:
+            trace_file = str(Path(tmp) / "oracle_trace.jsonl")
+            os.environ["SCHEDULEURM_ORACLE_AUDIT_LOG"] = trace_file
+            os.environ["SCHEDULEURM_ALGO_GPU_SWEET_SPOT_TASKS"] = "1"
+            sch._configure_algorithm("sweetspot_v1")
+            task = {
+                "id": "t-oracle-trace",
+                "project": "ScheduleurmBench",
+                "signature": "ScheduleurmBench/q01_gpu_heavy_jax_matmul/unit",
+                "cmd": "python train.py --steps 10",
+                "priority": "normal",
+                "submitted_at": 1000.0,
+                "est_vram_mb": 500,
+                "ram_mb": 1024,
+                "cpu_cores": 1,
+            }
+            nodes = [{
+                "name": "jtl110gpu",
+                "alive": True,
+                "free_cpu": 10,
+                "free_ram_mb": 200000,
+                "gpus": [
+                    {
+                        "idx": 0,
+                        "used_mb": 0,
+                        "free_mb": 12288,
+                        "total_mb": 12288,
+                        "util_pct": 0,
+                        "running_task_count": 0,
+                    },
+                    {
+                        "idx": 1,
+                        "used_mb": 2000,
+                        "free_mb": 10288,
+                        "total_mb": 12288,
+                        "util_pct": 10,
+                        "running_task_count": 1,
+                    },
+                ],
+            }]
+            placement = sch.pick_placement(task, nodes)
+            slots = load_trace_slots(trace_file)
+            report = audit_scheduler_score_trace(slots)
+            check("oracle trace preserves scheduler placement decision",
+                  placement == ("jtl110gpu", 0),
+                  diag=str(placement))
+            check("oracle trace records full candidate family for the chosen phase",
+                  len(slots) == 1
+                  and slots[0]["candidate_count"] == 2
+                  and slots[0]["selected_action_id"] == "node=jtl110gpu|gpu=0",
+                  diag=str(slots))
+            check("oracle trace proves selected candidate is scheduler-score best",
+                  report["usable_for_scheduler_score_audit"]
+                  and not report["usable_for_theorem"]
+                  and report["rows"][0]["scheduler_score_gap"] == 0.0,
+                  diag=str(report))
+            cli_report = audit_trace_file(trace_file)
+            check("oracle trace audit CLI keeps theorem and scheduler-score status separate",
+                  cli_report["status"] == "SCHEDULER_SCORE_PASS"
+                  and not cli_report["usable_for_theorem"],
+                  diag=str(cli_report))
+    finally:
+        if old_trace is None:
+            os.environ.pop("SCHEDULEURM_ORACLE_AUDIT_LOG", None)
+        else:
+            os.environ["SCHEDULEURM_ORACLE_AUDIT_LOG"] = old_trace
+        if old_sweet is None:
+            os.environ.pop("SCHEDULEURM_ALGO_GPU_SWEET_SPOT_TASKS", None)
+        else:
+            os.environ["SCHEDULEURM_ALGO_GPU_SWEET_SPOT_TASKS"] = old_sweet
+        sch._configure_algorithm("legacy")
 
 
 def test_algorithm_gpu_admission_params(check, sch):

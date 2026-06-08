@@ -72,9 +72,11 @@ def build_candidate_row(
     score: Any,
     selected: bool,
     algorithm_audit: Mapping[str, Any] | None = None,
+    lower_service: Mapping[str, Any] | None = None,
+    penalty_units: float | None = None,
 ) -> dict[str, Any]:
     audit = dict(algorithm_audit or {})
-    return {
+    row = {
         "action_id": action_id(node, gpu_idx),
         "node": node,
         "gpu_idx": gpu_idx,
@@ -86,6 +88,11 @@ def build_candidate_row(
         "class_key": audit.get("class_key"),
         "regime_key": audit.get("regime_key"),
     }
+    if lower_service is not None:
+        row["lower_service"] = _jsonable(dict(lower_service))
+    if penalty_units is not None:
+        row["penalty_units"] = _jsonable(float(penalty_units))
+    return row
 
 
 def build_decision_slot(
@@ -97,6 +104,7 @@ def build_decision_slot(
     candidates: Iterable[Mapping[str, Any]],
     score_semantics: str = "scheduler_sort_key_minimization",
     hard_constraints: Mapping[str, Any] | None = None,
+    queue_vector: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     rows = [dict(row) for row in candidates]
     selected = [row for row in rows if row.get("selected")]
@@ -110,6 +118,7 @@ def build_decision_slot(
         "algorithm": algorithm,
         "phase": phase,
         "score_semantics": score_semantics,
+        "queue_vector": _jsonable(dict(queue_vector or {})),
         "candidate_count": len(rows),
         "selected_action_id": selected[0].get("action_id") if selected else None,
         "hard_constraints": dict(hard_constraints or {}),

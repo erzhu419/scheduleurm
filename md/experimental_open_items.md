@@ -195,3 +195,33 @@ queue_vector 和 penalty_units，或者从同一决策状态的 measured service
 ```
 
 如果估计后 \(\eta\le0\)，理论不是错，而是说明 candidate cover、估计误差、penalty 或 solver error 已经吞掉全部 capacity slack，需要改 candidate generator、降低 penalty、改善 oracle 或加 admission control。
+
+## 7. Production coverage 闭合顺序
+
+Module51 已经把 raw queue history 和 reviewer-facing production population
+拆开。当前 30 天 `completed_active_production` 视角为：
+
+```text
+records = 2495
+representative mapped = 948
+measurement_required = 1547
+mapped_fraction = 0.379960
+```
+
+最大未闭合 bucket 是：
+
+```text
+cpu_sumo_transit_eval_or_control = 1227 records
+```
+
+所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
+
+```text
+1. 抽取 TransitDuet / FreqDuet / BAMOR / SimpleSAC / offline-sumo 的 CPU/SUMO/eval/control 任务模板；
+2. 建立 progress-bearing service unit；
+3. 测 profile 1..K 的 service curve 和 capacity boundary；
+4. 加入 service cache 与 taskset/action slice；
+5. 重跑 production coverage + capacity + slack certificate。
+```
+
+在这之前，production-global stability 只能写成 open empirical-theorem bridge。

@@ -19,6 +19,9 @@ from algorithm.experiments.oracle_audit import audit_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
 from algorithm.experiments.live_validation import compare_replay_to_live
 from algorithm.experiments.portfolio_live_proxy import build_composed_live_report
+from algorithm.experiments.production_load_certificate import (
+    build_production_load_certificate,
+)
 from algorithm.experiments.report import summarize_certificate
 from algorithm.experiments.service_model import (
     calibrate_service_lower_bounds,
@@ -294,6 +297,49 @@ def test_measured_finite_slice_slack_certificate_is_positive(check, sch):
               "selected_profiles": cert.get("selected_profiles"),
               "component_status": cert.get("component_status"),
           }))
+
+
+def test_production_load_certificate_separates_capacity_from_global_coverage(check, sch):
+    records = [
+        {
+            "id": "m0",
+            "project": "ScheduleurmBench",
+            "signature": "ScheduleurmBench/q01_gpu_heavy_jax_matmul/profile_1",
+            "submitted_at": 900.0,
+            "status": "done",
+            "est_vram_mb": 1000,
+        },
+        {
+            "id": "u0",
+            "project": "UnknownProject",
+            "signature": "UnknownProject/gpu",
+            "submitted_at": 950.0,
+            "status": "done",
+            "est_vram_mb": 1000,
+        },
+    ]
+    report = build_production_load_certificate(
+        records=records,
+        window_days=1.0,
+        now_ts=1000.0,
+    )
+    check("production load certificate can pass mapped capacity while refusing global coverage",
+          report["mapped_capacity_usable_for_theorem"]
+          and not report["global_coverage_usable_for_theorem"]
+          and not report["usable_for_global_theorem"]
+          and report["unmapped_task_count"] == 1,
+          diag=str(report))
+
+    all_mapped = build_production_load_certificate(
+        records=[records[0]],
+        window_days=1.0,
+        now_ts=1000.0,
+    )
+    check("production load certificate permits global theorem only with full strict coverage",
+          all_mapped["mapped_capacity_usable_for_theorem"]
+          and all_mapped["global_coverage_usable_for_theorem"]
+          and all_mapped["usable_for_global_theorem"],
+          diag=str(all_mapped))
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

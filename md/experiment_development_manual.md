@@ -735,6 +735,32 @@ whether best_candidate_score is exact over A_cand or approximate
 max residual violation
 ```
 
+Implementation status:
+
+```text
+algorithm/oracle_trace.py
+algorithm/experiments/scheduler_oracle_trace_audit.py
+```
+
+`SCHEDULEURM_ORACLE_AUDIT_LOG=/path/to/oracle_trace.jsonl` enables live
+candidate-family tracing inside `pick_placement`.  The resulting trace can
+prove that the implementation selected the best candidate under the recorded
+scheduler sort key.
+
+For theorem-grade `α0, α1`, do not stop at scheduler sort-key audit.  Each
+traced slot must also carry or reconstruct:
+
+```text
+queue_vector Q(k)
+candidate lower_service vectors
+penalty_units
+chosen_action_id
+exact best candidate score over the same finite A_cand(k)
+```
+
+Only then should `oracle_audit.py` be used as the robust MaxWeight
+approximate-oracle certificate.
+
 If the best score is itself approximate, the result is not theorem-grade unless the approximation error is also bounded and added to `α0, α1`.
 
 ### 7.7 \(\delta\): capacity slack

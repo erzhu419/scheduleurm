@@ -62,11 +62,15 @@ Required artifact:
 algorithm/experiments/slack_accounting.py
 algorithm/experiments/empirical_slack_certificate.py
 algorithm/experiments/production_load_certificate.py
+algorithm/oracle_trace.py
+algorithm/experiments/scheduler_oracle_trace_audit.py
 md/experiment_module30_slack_accounting.md
 md/experiment_module48_theorem_condition_calibration.md
 md/experiment_module49_production_load_capacity.md
+md/experiment_module50_scheduler_oracle_trace.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
+md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 ```
 
 Status:
@@ -94,7 +98,14 @@ Remaining scope limitation:
   Full global theorem coverage is still open because the representative run
   leaves 2569 / 5159 tasks unmapped and maps 1783 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
-  Live greedy scheduler oracle audit also remains open.
+
+  Module50 adds the missing live scheduler candidate-set trace hook.  It is
+  disabled by default and records the actual candidate family used by
+  pick_placement when SCHEDULEURM_ORACLE_AUDIT_LOG is set.  Unit validation
+  proves the selected action is scheduler-score best on a synthetic two-GPU
+  decision.  Current production status is NO_TRACE, so the live alpha0/alpha1
+  theorem certificate remains open until real candidate-family traces with
+  robust lower-service semantics are collected.
 ```
 
 ## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure

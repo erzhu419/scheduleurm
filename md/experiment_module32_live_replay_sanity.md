@@ -89,3 +89,26 @@ hybrid portfolio small live sanity
 The purpose is not to rerun every large replay trace to completion. The purpose
 is to show that measured service curves and explicit task-list replay predict
 small real end-to-end completion/JCT within a stated error tolerance.
+
+## Status After Modules39-46
+
+Completed:
+
+```text
+q01 small live sanity: module39, usable_for_live_sanity = true
+q11 small live sanity: module46 candidate profile2, usable_for_live_sanity = true
+```
+
+The q11 run also found a stricter feasible-family boundary: profile 10/GPU
+produced runtime OOM in module41/module42 and is now treated as a robust
+capacity boundary. See:
+
+```text
+md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md
+```
+
+Still required before closing the full replay-to-live item:
+
+```text
+hybrid portfolio small live sanity
+```

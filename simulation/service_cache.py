@@ -71,27 +71,49 @@ class ServiceRateCache:
 
     def __init__(self, records: Iterable[ProfileRecord] = ()):
         self._records: dict[tuple[str, int], ProfileRecord] = {}
+        self._capacity_boundaries: dict[tuple[str, int], ProfileRecord] = {}
+        self._capacity_caps: dict[str, int] = {}
         for record in records:
             self.add(record)
 
     def add(self, record: ProfileRecord) -> None:
         key = (record.workload_key, int(record.profile))
+        if record.capacity_boundary:
+            old_boundary = self._capacity_boundaries.get(key)
+            if old_boundary is None or _record_quality(record) >= _record_quality(old_boundary):
+                self._capacity_boundaries[key] = record
+            old_cap = self._capacity_caps.get(record.workload_key)
+            if old_cap is None or int(record.profile) < old_cap:
+                self._capacity_caps[record.workload_key] = int(record.profile)
+            return
         old = self._records.get(key)
         if old is None or _record_quality(record) >= _record_quality(old):
             self._records[key] = record
 
     def get(self, workload_key: str, profile: int) -> ProfileRecord | None:
-        return self._records.get((workload_key, int(profile)))
+        key = (workload_key, int(profile))
+        cap = self._capacity_caps.get(workload_key)
+        if cap is not None and int(profile) >= cap:
+            return self._capacity_boundaries.get(key)
+        return self._records.get(key)
 
     def profiles(self, workload_key: str, *, include_boundaries: bool = False) -> list[ProfileRecord]:
         records = [
             record for (key, _), record in self._records.items()
-            if key == workload_key and (include_boundaries or not record.capacity_boundary)
+            if key == workload_key and not self._blocked_by_capacity_cap(record)
         ]
+        if include_boundaries:
+            records.extend(
+                record for (key, _), record in self._capacity_boundaries.items()
+                if key == workload_key
+            )
         return sorted(records, key=lambda record: record.profile)
 
     def available_workloads(self) -> list[str]:
-        return sorted({key for key, _ in self._records})
+        return sorted(
+            {key for key, _ in self._records}
+            | {key for key, _ in self._capacity_boundaries}
+        )
 
     def best_profile_for_makespan(
         self,
@@ -201,7 +223,11 @@ class ServiceRateCache:
         )
 
     def snapshot(self) -> dict[str, Any]:
-        return {"records": [record.snapshot() for record in sorted(self._records.values(), key=lambda r: (r.workload_key, r.profile))]}
+        records = [
+            record for record in self._records.values()
+            if not self._blocked_by_capacity_cap(record)
+        ] + list(self._capacity_boundaries.values())
+        return {"records": [record.snapshot() for record in sorted(records, key=lambda r: (r.workload_key, r.profile, r.capacity_boundary))]}
 
     @staticmethod
     def from_snapshot(data: dict[str, Any]) -> "ServiceRateCache":
@@ -214,6 +240,10 @@ class ServiceRateCache:
     @staticmethod
     def load(path: Path) -> "ServiceRateCache":
         return ServiceRateCache.from_snapshot(json.loads(path.read_text(encoding="utf-8")))
+
+    def _blocked_by_capacity_cap(self, record: ProfileRecord) -> bool:
+        cap = self._capacity_caps.get(record.workload_key)
+        return cap is not None and int(record.profile) >= cap
 
 
 def deterministic_makespan_s(
@@ -366,7 +396,7 @@ def _record_quality(record: ProfileRecord) -> tuple[int, int, float]:
     return (
         0 if record.capacity_boundary else 1,
         len(record.per_task_rates),
-        float(record.aggregate_rate),
+        -float(record.aggregate_rate),
     )
 
 

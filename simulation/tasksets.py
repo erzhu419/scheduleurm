@@ -231,7 +231,11 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     benchmark_source="Scheduleurm module12 real RE-SAC Ant dense co-location profile",
                     required_profiles=tuple(range(1, 17)),
                     empirical_status="partial_real",
-                    note="Profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/placement invalid and closes higher-profile measurement obligations for this node bucket.",
+                    note=(
+                        "Profiles below 10 have exact real measurements used for robust replay; "
+                        "a fresh profile-10 live sanity run hit runtime OOM, so 10/GPU and above "
+                        "are excluded for the current robust node bucket."
+                    ),
                 ),
             ),
         ),
@@ -253,7 +257,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     quadrant="high_cpu_high_gpu",
                     role="dominant Scheduleurm research workload",
                     benchmark_source="Scheduleurm module12 real RE-SAC Ant service curve",
-                    required_profiles=tuple(range(1, 11)),
+                    required_profiles=tuple(range(1, 10)),
                     empirical_status="real",
                 ),
                 TaskSetMember(

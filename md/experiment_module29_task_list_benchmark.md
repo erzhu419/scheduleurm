@@ -2,6 +2,11 @@
 
 Date: 2026-06-05
 
+Update on 2026-06-08: modules39-46 replace the old q11 profile-10 candidate
+with a live-robust q11 feasible family. Standalone q11 now selects profile 2
+and the mixed portfolio selects profile 3. The profile-10 rows below are kept
+as historical module29 output, not as the current robust claim.
+
 This module converts the replay benchmark into the reviewer-facing form:
 
 ```text

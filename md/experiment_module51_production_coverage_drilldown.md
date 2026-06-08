@@ -34,27 +34,28 @@ defensible view is `completed_active_production`: completed plus currently
 active production-like tasks, excluding benchmark/test/cancel/forgotten records
 and adopted compiler helper processes.
 
-## Current Result After Module58
+## Current Result After Module59
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 2453
-representative mapped = 1026
-strict mapped = 236
-unmapped / measurement-required = 1427
-mapped_fraction = 0.418263
-capacity slack on mapped representative load delta = 0.311461063
+completed_active_production records = 2458
+representative mapped = 1080
+strict mapped = 290
+unmapped / measurement-required = 1378
+mapped_fraction = 0.439382
+capacity slack on mapped representative load delta = 0.001504331
 global theorem closed = false
 ```
 
-The newly measured Module56, Module57, and Module58 sub-buckets appear as
+The newly measured Module56, Module57, Module58, and Module59 sub-buckets appear as
 strict mapped coverage:
 
 ```text
-freqduet_cpu_ablation_c17_32 = 125 / 2453 completed-active production records
-freqduet_cpu_ablation_c9_16 = 110 / 2453 completed-active production records
-freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2453 completed-active production records
+freqduet_cpu_ablation_c17_32 = 125 / 2458 completed-active production records
+freqduet_cpu_ablation_c9_16 = 110 / 2458 completed-active production records
+sumo_eval_simple_sac_c_le2 = 54 / 2458 completed-active production records
+freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2458 completed-active production records
 ```
 
 The mapped representative load still has positive capacity slack.  That does
@@ -64,12 +65,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 1103 | 0.449653 |
-| `generic_cpu_python` | measurement required | 147 | 0.059927 |
-| `cpu_eval_generic` | measurement required | 80 | 0.032613 |
-| `artifact_io_control` | measurement required | 77 | 0.031390 |
-| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.006523 |
-| `scheduler_control_plane` | measurement required | 4 | 0.001631 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 1049 | 0.426770 |
+| `generic_cpu_python` | measurement required | 149 | 0.060618 |
+| `cpu_eval_generic` | measurement required | 80 | 0.032547 |
+| `artifact_io_control` | measurement required | 77 | 0.031326 |
+| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.006509 |
+| `scheduler_control_plane` | measurement required | 7 | 0.002848 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -80,6 +81,7 @@ before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504
 after Module56:  cpu_sumo_transit_eval_or_control = 1208 / 2442
 after Module57:  cpu_sumo_transit_eval_or_control = 1211 / 2449
 after Module58:  cpu_sumo_transit_eval_or_control = 1103 / 2453
+after Module59:  cpu_sumo_transit_eval_or_control = 1049 / 2458
 ```
 
 ## Interpretation
@@ -99,6 +101,7 @@ current measured service slice, the exact `run_freqduet_ablation.py` c17_32
 production sub-slice is strictly measured, and the exact
 `runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml` c9_16
 sub-slice is strictly measured.  Module58 additionally maps 110 completed-active
-c9_16 `run_freqduet_ablation.py` records with parsed per-record units.  The next
-closure target is `sumo_eval_cpu|c_le2`, followed by the remaining FreqDuet CPU
-buckets.
+c9_16 `run_freqduet_ablation.py` records with parsed per-record units.  Module59
+maps 54 clean SimpleSAC c_le2 eval records using a profile-1 completed-history
+lower-service certificate.  The next closure targets are the remaining FreqDuet
+CPU buckets, with `freqduet_cpu_ablation|c_3_8` now at the top of Module53.

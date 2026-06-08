@@ -176,6 +176,15 @@ def build_default_cache() -> ServiceRateCache:
         total_units=72,
         node_bucket="jtl110cpu2:cpu128",
     )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module57_freqduet_runner_v3_c9_16_jtl110cpu2_curve_p1248_reports",
+        workload_key="freqduet_runner_v3_allfreq_alllayers_c9_16",
+        command_fingerprint="freqduet_runner_v3_allfreq_alllayers_c9_16_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=3,
+        node_bucket="jtl110cpu2:cpu128",
+    )
     add_protocol_cpu_curve(
         cache,
         workload_key="cpu_heavy_protocol",
@@ -201,6 +210,7 @@ def legacy_policy() -> ReplayPolicy:
             "cpu_heavy_protocol": 32,
             "cpu_heavy_local_bench": 9,
             "freqduet_cpu_ablation_c17_32": 1,
+            "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
         },
     )
 

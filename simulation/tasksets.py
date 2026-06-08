@@ -249,6 +249,44 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_runner_v3_allfreq_alllayers_c9_16",
+            purpose=(
+                "A narrow production CPU/SUMO/transit closure slice from Module57. "
+                "It covers only direct FreqDuet runner_v3 records using "
+                "configs_freqduet/F_allfreq_alllayers_hiro.yaml with 9-16 requested "
+                "CPU cores and no GPU."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped only "
+                "when the command exactly matches the measured direct runner_v3 config."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_allfreq_alllayers_c9_16",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=20,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker exact-config sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module57 real FreqDuet runner_v3 curve on "
+                        "jtl110cpu2; each task ran runner_v3 with diagnostics CSV "
+                        "progress for configs_freqduet/F_allfreq_alllayers_hiro.yaml."
+                    ),
+                    required_profiles=(1, 2, 4, 8),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1, 2, 4, and 8 are feasible real measurements. "
+                        "This is intentionally an exact-config certificate; other "
+                        "runner_v3 c9_16 configs remain unmeasured until Module58+ "
+                        "adds lower-service or per-config curves."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="q11_cpu_gpu_coupled",
             purpose=(
                 "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like "

@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2442
-representative mapped = 915
-strict mapped = 125
-measurement_required = 1527
-mapped_fraction = 0.374693
+records = 2449
+representative mapped = 916
+strict mapped = 126
+measurement_required = 1533
+mapped_fraction = 0.374030
 ```
 
 最大未闭合 bucket 是：
@@ -231,6 +231,7 @@ mapped_fraction = 0.374693
 ```text
 before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504 completed-active records
 after Module56:  cpu_sumo_transit_eval_or_control = 1208 / 2442 completed-active records
+after Module57:  cpu_sumo_transit_eval_or_control = 1211 / 2449 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -246,7 +247,8 @@ after Module56:  cpu_sumo_transit_eval_or_control = 1208 / 2442 completed-active
 在这之前，production-global stability 只能写成 open empirical-theorem bridge。
 
 Module53 已经完成第 1 步。Module56 又完成了第一个 production
-sub-bucket 的真实曲线测量：
+sub-bucket 的真实曲线测量。Module57 进一步闭合了一个很窄的 c9_16
+direct-runner exact-config slice：
 
 ```text
 closed exact slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_32
@@ -255,6 +257,11 @@ feasible profiles = 1,2,4
 capacity boundary = 8
 completed-active mapped count = 125
 residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+
+closed exact slice = runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml within c_9_16
+workload_key = freqduet_runner_v3_allfreq_alllayers_c9_16
+feasible profiles = 1,2,4,8
+completed-active mapped count = 1
 ```
 
 当前剩余 first probe order 是：

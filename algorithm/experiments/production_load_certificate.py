@@ -37,6 +37,7 @@ DEFAULT_TASKSETS = (
     "q01_gpu_bound_compute",
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
+    "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
 )
 
@@ -183,6 +184,13 @@ def classify_record(
             "module56_freqduet_cpu_ablation_c17_32",
         )
 
+    if _is_freqduet_runner_v3_allfreq_alllayers_c9_16(row=row, est_vram=est_vram, cpu=cpu):
+        return _mapped(
+            "freqduet_runner_v3_allfreq_alllayers_c9_16",
+            "strict_measured",
+            "module57_freqduet_runner_v3_allfreq_alllayers_c9_16",
+        )
+
     if include_representative:
         if est_vram > 0 and any(
             token in text for token in (
@@ -256,6 +264,29 @@ def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float,
     ):
         return False
     return "run_freqduet_ablation.py" in cmd
+
+
+def _is_freqduet_runner_v3_allfreq_alllayers_c9_16(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> bool:
+    if est_vram > 0:
+        return False
+    if not (8.0 < float(cpu) <= 16.0):
+        return False
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "").lower()
+    text = " ".join(str(row.get(key) or "") for key in ("project", "signature", "description", "cmd", "cwd")).lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return False
+    if "runner_v3.py" not in cmd:
+        return False
+    if "configs_freqduet/f_allfreq_alllayers_hiro.yaml" not in cmd:
+        return False
+    return "freqduet" in text or "/transitduet/freqduet/" in cwd
 
 
 def _dedupe_records(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:

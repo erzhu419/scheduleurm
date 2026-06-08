@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module56
+## Status After Module57
 
 The original top sub-bucket was:
 
@@ -34,6 +34,15 @@ completed_active_production mapped count = 125
 raw_history_all mapped count = 156
 ```
 
+Module57 additionally measured one exact direct-runner config inside c9_16:
+
+```text
+workload_key = freqduet_runner_v3_allfreq_alllayers_c9_16
+completed_active_production mapped count = 1
+raw_history_all mapped count = 1
+feasible profiles = 1,2,4,8
+```
+
 The current Module53 manifest has therefore been regenerated over the remaining
 unmeasured `cpu_sumo_transit_eval_or_control` records.
 
@@ -41,11 +50,11 @@ unmeasured `cpu_sumo_transit_eval_or_control` records.
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 1208
+record_count = 1211
 cpu_cores median = 8
 cpu_cores p90 = 48
 cpu_cores max = 128
-ram_mb median = 7110
+ram_mb median = 8192
 ram_mb p90 = 65536
 ram_mb max = 256000
 theorem_status = measurement_required
@@ -55,14 +64,14 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_9_16` | 161 | 0.133278 |
-| `sumo_eval_cpu|c_le2` | 154 | 0.127483 |
-| `freqduet_cpu_ablation|c_3_8` | 136 | 0.112583 |
-| `freqduet_cpu_ablation|c_33_64` | 125 | 0.103477 |
-| `freqduet_cpu_ablation|c_le2` | 123 | 0.101821 |
-| `freqduet_cpu_ablation|c_17_32` | 116 | 0.096026 |
-| `bamor_cpu_training|c_3_8` | 95 | 0.078642 |
-| `freqduet_cpu_ablation|c_65p` | 60 | 0.049669 |
+| `freqduet_cpu_ablation|c_9_16` | 160 | 0.132122 |
+| `sumo_eval_cpu|c_le2` | 154 | 0.127168 |
+| `freqduet_cpu_ablation|c_3_8` | 136 | 0.112304 |
+| `freqduet_cpu_ablation|c_33_64` | 125 | 0.103220 |
+| `freqduet_cpu_ablation|c_le2` | 123 | 0.101569 |
+| `freqduet_cpu_ablation|c_17_32` | 116 | 0.095789 |
+| `bamor_cpu_training|c_3_8` | 95 | 0.078448 |
+| `freqduet_cpu_ablation|c_65p` | 60 | 0.049546 |
 
 ## Next Probe Order
 
@@ -90,7 +99,9 @@ node_targets = local_cpu, direct_hpc_cpu_node
 
 Module53 no longer says the first production CPU/SUMO measurement is merely a
 plan.  The exact `run_freqduet_ablation.py` c17_32 slice is measured and
-strictly mapped.  The global theorem remains open because 1208 completed/active
+strictly mapped, and one exact c9_16 direct-runner config is measured and
+strictly mapped.  The global theorem remains open because 1211 completed/active
 production records in the CPU/SUMO/transit family still require measured curves
 or equivalence certificates, including 116 residual `freqduet_cpu_ablation|c_17_32`
-records with different command shapes.
+records with different command shapes and the broader `run_freqduet_ablation.py`
+c9_16 family.

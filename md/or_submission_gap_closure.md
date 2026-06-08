@@ -78,6 +78,7 @@ md/experiment_module50_scheduler_oracle_trace.md
 md/experiment_module52_theorem_oracle_trace_bridge.md
 md/experiment_module54_production_cpu_workload_curve_runner.md
 md/experiment_module55_oracle_trace_lower_service_enrichment.md
+md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -88,6 +89,7 @@ md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json
 md/experiment_artifacts/module55_oracle_trace_enrichment_status.json
 md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124.json
 md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8.json
+md/experiment_artifacts/module57_freqduet_runner_v3_c9_16_jtl110cpu2_curve_p1248.json
 ```
 
 Status:
@@ -113,17 +115,17 @@ Remaining scope limitation:
     strict measured mapping delta = 0.319917853
     representative mapping delta = 0.272849952
   Full global theorem coverage is still open because the representative run
-  leaves 2603 / 5154 tasks unmapped and maps 1588 tasks only by representative
+  leaves 2624 / 5176 tasks unmapped and maps 1588 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2442
-    mapped = 915
-    measurement_required = 1527
-    mapped_fraction = 0.374693
+    records = 2449
+    mapped = 916
+    measurement_required = 1533
+    mapped_fraction = 0.374030
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 1208 / 2442 records
+    cpu_sumo_transit_eval_or_control = 1211 / 2449 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -135,6 +137,14 @@ Remaining scope limitation:
     capacity boundary = 8
     completed-active strict mapped count = 125
     residual freqduet_cpu_ablation|c_17_32 needing measurement = 116
+
+  Module57 closes one exact direct-runner config inside c9_16:
+    runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml
+      -> freqduet_runner_v3_allfreq_alllayers_c9_16
+    feasible profiles = 1,2,4,8
+    completed-active strict mapped count = 1
+  This is deliberately narrow; it does not close the broader c9_16 ablation
+  family.
 
   The current remaining top probe order is:
     freqduet_cpu_ablation|c_9_16

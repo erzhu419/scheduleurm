@@ -503,6 +503,64 @@ def test_module56_freqduet_cpu_subbucket_is_strictly_measured(check, sch):
           diag=str(report))
 
 
+def test_module57_freqduet_runner_exact_config_is_strictly_measured(check, sch):
+    row = {
+        "id": "freq-runner-c9",
+        "project": "freqduet",
+        "signature": "freqduet/auto-adopted/p2000161",
+        "description": "FreqDuet direct runner exact config",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 10,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "/usr/bin/python3 runner_v3.py --config "
+            "configs_freqduet/F_allfreq_alllayers_hiro.yaml "
+            "--episodes 20 --seed 123 --no-resume"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet runner_v3 c9_16 exact config maps after module57 strict measurement",
+          cls["workload_key"] == "freqduet_runner_v3_allfreq_alllayers_c9_16"
+          and cls["mapping_mode"] == "strict_measured",
+          diag=str(cls))
+
+    other_config = dict(row)
+    other_config["id"] = "freq-runner-other-config"
+    other_config["cmd"] = other_config["cmd"].replace(
+        "F_allfreq_alllayers_hiro.yaml",
+        "F_freqduet_timetable_hiro.yaml",
+    )
+    other_cls = classify_record(other_config, include_representative=False)
+    check("module57 classifier does not generalize runner_v3 to other configs",
+          other_cls["workload_key"] is None and other_cls["reason"] == "unmapped_cpu",
+          diag=str(other_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_runner_v3_allfreq_alllayers_c9_16")
+    check("module57 service cache exposes the full measured runner_v3 c9_16 curve",
+          [record.profile for record in profiles] == [1, 2, 4, 8]
+          and math.isclose(
+              cache.get("freqduet_runner_v3_allfreq_alllayers_c9_16", 8).aggregate_rate,
+              0.3627567171,
+              rel_tol=1e-9,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_runner_v3_allfreq_alllayers_c9_16",),
+    )
+    check("production load certificate can certify the measured runner_v3 exact-config slice alone",
+          report["mapped_counts"] == {"freqduet_runner_v3_allfreq_alllayers_c9_16": 1}
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_production_coverage_drilldown_separates_population_and_obligations(check, sch):
     rows = [
         {

@@ -740,6 +740,7 @@ Implementation status:
 ```text
 algorithm/oracle_trace.py
 algorithm/experiments/scheduler_oracle_trace_audit.py
+algorithm/experiments/theorem_oracle_trace_bridge.py
 ```
 
 `SCHEDULEURM_ORACLE_AUDIT_LOG=/path/to/oracle_trace.jsonl` enables live
@@ -760,6 +761,18 @@ exact best candidate score over the same finite A_cand(k)
 
 Only then should `oracle_audit.py` be used as the robust MaxWeight
 approximate-oracle certificate.
+
+The direct theorem bridge command is:
+
+```text
+PYTHONPATH=. python3 -m algorithm.experiments.theorem_oracle_trace_bridge audit \
+  --input ~/.claude/scheduler/oracle_trace.jsonl \
+  --output md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json \
+  --markdown-output md/experiment_artifacts/module52_theorem_oracle_trace_bridge.md
+```
+
+If this reports `NOT_THEOREM_TRACE`, the trace is still only an implementation
+audit and must not be used for `α0, α1`.
 
 If the best score is itself approximate, the result is not theorem-grade unless the approximation error is also bounded and added to `α0, α1`.
 

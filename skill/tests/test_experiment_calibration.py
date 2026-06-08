@@ -22,6 +22,11 @@ from algorithm.experiments.portfolio_live_proxy import build_composed_live_repor
 from algorithm.experiments.production_load_certificate import (
     build_production_load_certificate,
 )
+from algorithm.experiments.production_coverage_drilldown import (
+    build_coverage_drilldown,
+    bucket_obligation,
+    population_label,
+)
 from algorithm.experiments.report import summarize_certificate
 from algorithm.experiments.service_model import (
     calibrate_service_lower_bounds,
@@ -32,6 +37,9 @@ from algorithm.experiments.slack_accounting import (
     markdown_slack_table,
 )
 from algorithm.experiments.slot_builder import progress_service_units, queue_step
+from algorithm.experiments.theorem_oracle_trace_bridge import (
+    build_theorem_oracle_audit_from_trace,
+)
 
 
 def _features(bucket="b0", count="n1", mem="pm2", util="u1"):
@@ -231,6 +239,43 @@ def test_penalty_and_oracle_envelopes(check, sch):
           diag=str(audit))
 
 
+def test_theorem_oracle_trace_bridge_refuses_sort_key_and_accepts_lower_service(check, sch):
+    rejected = build_theorem_oracle_audit_from_trace([
+        {
+            "slot_id": "sort-only",
+            "score_semantics": "scheduler_sort_key_minimization",
+            "queue_vector": {"i": 10.0},
+            "candidates": [
+                {"action_id": "a", "selected": True, "primary_numeric_score": 1.0},
+                {"action_id": "b", "selected": False, "primary_numeric_score": 2.0},
+            ],
+        }
+    ])
+    check("theorem oracle bridge refuses scheduler-sort-key-only trace",
+          rejected["status"] == "NOT_THEOREM_TRACE"
+          and not rejected["usable_for_theorem"]
+          and rejected["blockers"][0]["reason"] == "score_semantics_not_robust_maxweight_lower_service",
+          diag=str(rejected))
+
+    accepted = build_theorem_oracle_audit_from_trace([
+        {
+            "slot_id": "mw",
+            "score_semantics": "robust_maxweight_lower_service",
+            "queue_vector": {"i": 10.0},
+            "candidates": [
+                {"action_id": "a", "selected": True, "lower_service": {"i": 0.5}, "penalty_units": 0.0},
+                {"action_id": "b", "selected": False, "lower_service": {"i": 0.8}, "penalty_units": 0.0},
+            ],
+        }
+    ])
+    check("theorem oracle bridge computes alpha envelope from lower-service trace",
+          accepted["status"] == "THEOREM_ORACLE_PASS"
+          and math.isclose(accepted["rows"][0]["oracle_gap"], 3.0)
+          and math.isclose(accepted["alpha1"], 0.3)
+          and accepted["usable_for_theorem"],
+          diag=str(accepted))
+
+
 def test_slack_accounting_certificate_combines_theorem_constants(check, sch):
     cert = build_slack_certificate(
         fabric={"L": 0.5, "rho": 0.2, "usable_for_theorem": True},
@@ -340,6 +385,68 @@ def test_production_load_certificate_separates_capacity_from_global_coverage(che
           and all_mapped["global_coverage_usable_for_theorem"]
           and all_mapped["usable_for_global_theorem"],
           diag=str(all_mapped))
+
+
+def test_production_coverage_drilldown_separates_population_and_obligations(check, sch):
+    rows = [
+        {
+            "id": "bench",
+            "project": "ScheduleurmBench",
+            "signature": "ScheduleurmBench/q01_gpu_heavy_jax_matmul/profile_1",
+            "submitted_at": 900.0,
+            "status": "done",
+            "est_vram_mb": 1000,
+        },
+        {
+            "id": "cancel",
+            "project": "tmp",
+            "signature": "TEST/cpu-training-justification",
+            "submitted_at": 901.0,
+            "status": "cancelled",
+            "est_vram_mb": 0,
+            "cmd": "python train.py --device cpu",
+        },
+        {
+            "id": "rl",
+            "project": "RE-SAC",
+            "signature": "RE-SAC/review/sac_Ant-v2_1",
+            "submitted_at": 902.0,
+            "status": "done",
+            "est_vram_mb": 1000,
+            "cmd": "python -m jax_experiments.train --algo sac --env Ant-v2",
+        },
+        {
+            "id": "sumo",
+            "project": "TransitDuet",
+            "signature": "TransitDuet/eval/main",
+            "submitted_at": 903.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 2,
+            "cmd": "python eval_operational.py --sumo",
+        },
+    ]
+    report = build_coverage_drilldown(records=rows, window_days=1.0, now_ts=1000.0)
+    completed = report["views"]["completed_active_production"]["representative"]
+    obligations = report["completed_active_production_obligations"]
+    check("production coverage drilldown excludes benchmark/test from production view",
+          completed["record_count_window"] == 2
+          and completed["mapped_task_count"] == 1
+          and completed["unmapped_task_count"] == 1,
+          diag=str(report))
+    check("production coverage drilldown emits SUMO/transit measurement obligation",
+          any(row["bucket"] == "cpu_sumo_transit_eval_or_control"
+              and row["status"] == "measurement_required"
+              for row in obligations["top_buckets"]),
+          diag=str(obligations))
+    check("population label excludes benchmark and cancellation",
+          population_label(rows[0])["label"] == "excluded_benchmark"
+          and population_label(rows[1])["label"] == "excluded_cancelled",
+          diag=str([population_label(row) for row in rows]))
+    check("bucket obligation maps representative RL but not unmeasured transit CPU",
+          bucket_obligation(rows[2])["status"] == "mapped"
+          and bucket_obligation(rows[3])["bucket"] == "cpu_sumo_transit_eval_or_control",
+          diag=str([bucket_obligation(row) for row in rows]))
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

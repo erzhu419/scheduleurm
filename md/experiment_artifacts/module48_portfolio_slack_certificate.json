@@ -1,0 +1,161 @@
+{
+  "B": 6361.354514021871,
+  "L": 47.897951500000005,
+  "Lrho": 0.0,
+  "N_claimed": 95072,
+  "P0": 0.0,
+  "action_profile_domains": {
+    "cpu_heavy_local_bench": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "gpu_heavy_jax_matmul": [
+      1,
+      2,
+      3
+    ],
+    "hybrid_rl_resac_ant": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "all_components_theorem_usable": true,
+  "alpha": 1.0,
+  "alpha0": 0.0,
+  "alpha1": 0.0,
+  "beta": 0.0,
+  "candidate_action_count": 243,
+  "certificate_scope": "measured finite service-action slice; not a production-arrival or unmeasured-global-action certificate",
+  "component_inputs": {
+    "capacity": {
+      "classes": [
+        "cpu_heavy_local_bench",
+        "gpu_heavy_jax_matmul",
+        "hybrid_rl_resac_ant"
+      ],
+      "delta": 0.06692184220274106,
+      "mix": {
+        "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3": 0.42536284454565887,
+        "profile_combo:cpu_heavy_local_bench=9,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=3": 0.5746371554543411
+      },
+      "status": "optimal",
+      "usable_for_theorem": true
+    },
+    "fabric": {
+      "L": 47.897951500000005,
+      "Lrho": 0.0,
+      "candidate_count": 243,
+      "cover_domain": "measured_finite_slice_exact",
+      "full_count": 243,
+      "rho": 0.0,
+      "status": "candidate_action_family_equals_measured_full_slice",
+      "usable_for_theorem": true
+    },
+    "moment": {
+      "B": 6361.354514021871,
+      "status": "finite_support_bound_from_measured_action_slice_and_declared_load",
+      "usable_for_theorem": true
+    },
+    "oracle": {
+      "alpha0": 0.0,
+      "alpha1": 0.0,
+      "live_greedy_scheduler_audit_claimed": false,
+      "status": "exact_candidate_maxweight_oracle_by_construction",
+      "usable_for_theorem": true
+    },
+    "penalty": {
+      "P0": 0.0,
+      "beta": 0.0,
+      "fit_method": "finite_max_envelope",
+      "max_residual_violation": 0.0,
+      "penalty_key": "penalty_units",
+      "point_count": 2,
+      "q_key": "q_norm",
+      "usable_for_theorem": true,
+      "worst_violation": null
+    },
+    "service": {
+      "epsilon_est": 0.0,
+      "statistical_generalization_claimed": false,
+      "status": "measured_service_map_used_as_lower_service_for_this_finite_slice",
+      "usable_for_theorem": true
+    }
+  },
+  "component_status": [
+    {
+      "name": "fabric",
+      "status": "candidate_action_family_equals_measured_full_slice",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "service",
+      "status": "measured_service_map_used_as_lower_service_for_this_finite_slice",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "penalty",
+      "status": "finite_max_envelope",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "oracle",
+      "status": "exact_candidate_maxweight_oracle_by_construction",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "capacity",
+      "status": "optimal",
+      "usable_for_theorem": true
+    },
+    {
+      "name": "moment",
+      "status": "finite_support_bound_from_measured_action_slice_and_declared_load",
+      "usable_for_theorem": true
+    }
+  ],
+  "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+  "delta": 0.06692184220274106,
+  "drift_additive_constant": 6361.354514021871,
+  "epsilon_est": 0.0,
+  "eta": 0.06692184220274106,
+  "finite_set_threshold_N": 95072,
+  "full_action_count": 243,
+  "lambda": {
+    "cpu_heavy_local_bench": 43.82368280000001,
+    "gpu_heavy_jax_matmul": 55.17583520000001,
+    "hybrid_rl_resac_ant": 0.26768736881096433
+  },
+  "load_fraction": 0.8,
+  "paper_condition": "delta > Lrho + epsilon_est + beta + alpha1",
+  "policy": "calibrated_global_guarded",
+  "rho": 0.0,
+  "selected_action_id": "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3",
+  "selected_profiles": {
+    "cpu_heavy_local_bench": 8,
+    "gpu_heavy_jax_matmul": 1,
+    "hybrid_rl_resac_ant": 3
+  },
+  "selected_service_vector": {
+    "cpu_heavy_local_bench": 54.77960350000001,
+    "gpu_heavy_jax_matmul": 68.96979400000001,
+    "hybrid_rl_resac_ant": 0.3346092110137054
+  },
+  "slack_consumed": 0.0,
+  "slack_ratio": 0.0,
+  "taskset": "hybrid_research_portfolio",
+  "usable_for_theorem": true
+}

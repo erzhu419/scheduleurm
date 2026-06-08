@@ -83,6 +83,7 @@ md/experiment_module58_freqduet_ablation_c9_16_curve.md
 md/experiment_module59_simple_sac_sumo_eval_cle2_completed_history.md
 md/experiment_module60_freqduet_ablation_c3_8_completed_history.md
 md/experiment_module61_freqduet_ablation_c33_64_completed_history.md
+md/experiment_module62_freqduet_runner_v3_c_le2_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -99,6 +100,7 @@ md/experiment_artifacts/module58_freqduet_ablation_c9_16_completed_wallclock_aud
 md/experiment_artifacts/module59_simple_sac_sumo_eval_cle2_completed_history.json
 md/experiment_artifacts/module60_freqduet_ablation_c3_8_completed_history.json
 md/experiment_artifacts/module61_freqduet_ablation_c33_64_completed_history.json
+md/experiment_artifacts/module62_freqduet_runner_v3_c_le2_completed_history.json
 ```
 
 Status:
@@ -121,20 +123,20 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.319917853
-    representative mapping delta = 0.272849952
+    strict measured mapping delta = 0.001497772
+    representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 2354 / 5211 tasks unmapped and maps 1588 tasks only by representative
+  leaves 2271 / 5212 tasks unmapped and maps 1588 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2469
-    mapped = 1183
-    measurement_required = 1286
-    mapped_fraction = 0.479141
+    records = 2471
+    mapped = 1267
+    measurement_required = 1204
+    mapped_fraction = 0.512748
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 946 / 2469 records
+    cpu_sumo_transit_eval_or_control = 862 / 2471 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -193,14 +195,24 @@ Remaining scope limitation:
     min completed wall-clock rate = 0.391511591 episode/s
   This improves coverage but leaves native/direct-runner c33_64 residuals.
 
+  Module62 closes the direct runner_v3 c_le2 FreqDuet sub-slice:
+    runner_v3.py within freqduet_cpu_ablation|c_le2
+      -> freqduet_runner_v3_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 84
+    parsed completed-active work = 4661 episode units
+    min completed wall-clock rate = 0.010924045 episode/s
+  This improves coverage but leaves c_le2 ablation, baseline-rule, scheduler
+  wait, native-validation, and shell-loop residuals.
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_le2
     freqduet_cpu_ablation|c_17_32
     sumo_eval_cpu|c_le2
     freqduet_cpu_ablation|c_3_8 residual command shapes
     bamor_cpu_training|c_3_8
     freqduet_cpu_ablation|c_33_64 residual command shapes
     freqduet_cpu_ablation|c_65p
+    freqduet_cpu_ablation|c_le2 residual command shapes
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

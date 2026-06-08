@@ -1,0 +1,215 @@
+{
+  "cpu_counts": {
+    "1": 55,
+    "2": 29
+  },
+  "duration_s": {
+    "max": 3265.2160618305206,
+    "median": 621.8257021903992,
+    "min": 27.943857431411743,
+    "p10": 72.87229871749878,
+    "p90": 3064.0385048389435
+  },
+  "interpretation": "Strict completed-history lower-service certificate for direct c_le2 runner_v3.py production records with explicit episode counts. Only profile 1 is loaded; ablation, baseline-rule, scheduler-wait, native validation, and higher co-location profiles are not claimed.",
+  "parsed_units_episode": {
+    "max": 200.0,
+    "median": 40.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 200.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "freq_transitduet": 3,
+    "freqduet": 81
+  },
+  "realized_episode_s": {
+    "max": 0.27859335669557445,
+    "median": 0.04545442220836396,
+    "min": 0.010924044632484135,
+    "p10": 0.014003016693554415,
+    "p90": 0.0808485948162634
+  },
+  "record_count": 84,
+  "run_id": "module62_freqduet_runner_v3_c_le2_completed_history",
+  "slowest_12": [
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/F_freqduet_gen_highnoise_spline2dir_denoise10_hold45_hiro.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet/results_freqduet/smoke_spline2dir_ood_screen_20260531/logs --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 91.54118585586548,
+      "finished_at": 1780213208.4036582,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 731,
+      "realized_episode_s": 0.010924044632484135,
+      "signature": "freqduet/auto-adopted/p3818291",
+      "started_at": 1780213116.8624723,
+      "status": "done",
+      "task_id": "t5056"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/paper_generalization/F_freqduet_broad_noise40_promenergy08_hiro.yaml --episodes 1 --seed 7 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet/logs_promenergy08_smoke --upper-warmup-eps 1",
+      "cpu_cores": 2,
+      "duration_s": 77.62654113769531,
+      "finished_at": 1780905528.7496843,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 833,
+      "realized_episode_s": 0.012882191906839988,
+      "signature": "freqduet/auto-adopted/p3951994",
+      "started_at": 1780905451.1231432,
+      "status": "done",
+      "task_id": "t7921"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/F_freqduet_gen_highnoise_denoise05_noprom_hiro.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet/results_freqduet/smoke_highnoise_denoise_20260531/logs --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 77.02346110343933,
+      "finished_at": 1780197981.956879,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 737,
+      "realized_episode_s": 0.01298305718379808,
+      "signature": "freqduet/auto-adopted/p3492137",
+      "started_at": 1780197904.9334178,
+      "status": "done",
+      "task_id": "t4994"
+    },
+    {
+      "cmd_prefix": "python3 -m cProfile -o results_freqduet/profiles/main_cap45_ep1_after_freq_opt.prof runner_v3.py --config configs_freqduet/F_freqduet_timetable_hiro.yaml --episodes 1 --seed 96 --no-resume --upper-warmup-eps 0 --logs-dir logs_profile_main_cap45_after_freq_opt",
+      "cpu_cores": 2,
+      "duration_s": 73.99243354797363,
+      "finished_at": 1780115723.0236616,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 796,
+      "realized_episode_s": 0.013514895402806848,
+      "signature": "freqduet/auto-adopted/p2646612",
+      "started_at": 1780115649.031228,
+      "status": "done",
+      "task_id": "t4871"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/T_freqhrl_terminal.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/transit_hrl/freq_transitduet/logs_freqhrl_validation --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 73.95768785476685,
+      "finished_at": 1780201775.6953108,
+      "parsed_units_episode": 1.0,
+      "project": "freq_transitduet",
+      "ram_mb": 730,
+      "realized_episode_s": 0.013521244768545672,
+      "signature": "freq_transitduet/auto-adopted/p3535024",
+      "started_at": 1780201701.737623,
+      "status": "done",
+      "task_id": "t5011"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/T_lf_upper_terminal.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/transit_hrl/freq_transitduet/logs_freqhrl_validation --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 72.87229871749878,
+      "finished_at": 1780201655.6078238,
+      "parsed_units_episode": 1.0,
+      "project": "freq_transitduet",
+      "ram_mb": 575,
+      "realized_episode_s": 0.013722635591291847,
+      "signature": "freq_transitduet/auto-adopted/p3534055",
+      "started_at": 1780201582.7355251,
+      "status": "done",
+      "task_id": "t5010"
+    },
+    {
+      "cmd_prefix": "python3 -m cProfile -o results_freqduet/profile_20260531/main_ep1.prof runner_v3.py --config configs_freqduet/F_freqduet_terminal_main_hiro.yaml --episodes 1 --seed 777 --no-resume --logs-dir results_freqduet/profile_20260531/logs --upper-warmup-eps 0",
+      "cpu_cores": 2,
+      "duration_s": 72.80930924415588,
+      "finished_at": 1780199746.0579648,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 762,
+      "realized_episode_s": 0.013734507446659591,
+      "signature": "freqduet/auto-adopted/p3509858",
+      "started_at": 1780199673.2486556,
+      "status": "done",
+      "task_id": "t5005"
+    },
+    {
+      "cmd_prefix": "python3 runner_v3.py --config configs_freqduet/F_freqduet_terminal_hiro.yaml --episodes 1 --seed 42 --no-resume --logs-dir logs_freqhrl_smoke --upper-warmup-eps 0",
+      "cpu_cores": 2,
+      "duration_s": 72.31771969795227,
+      "finished_at": 1780196642.649691,
+      "parsed_units_episode": 1.0,
+      "project": "freq_transitduet",
+      "ram_mb": 771,
+      "realized_episode_s": 0.013827869631076265,
+      "signature": "freq_transitduet/auto-adopted/p3479906",
+      "started_at": 1780196570.3319714,
+      "status": "done",
+      "task_id": "t4990"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/F_freqduet_gen_highnoise_nopromotion_hiro.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet/results_freqduet/smoke_highnoise_diag_20260531/logs --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 71.41318345069885,
+      "finished_at": 1780192885.1403632,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 737,
+      "realized_episode_s": 0.014003016693554415,
+      "signature": "freqduet/auto-adopted/p3439935",
+      "started_at": 1780192813.7271798,
+      "status": "done",
+      "task_id": "t4985"
+    },
+    {
+      "cmd_prefix": "python3 -m cProfile -o results_freqduet/profiles/terminal_rebase_ep1_after_harmonic_opt.prof runner_v3.py --config configs_freqduet/F_freqduet_terminal_hiro.yaml --episodes 1 --seed 9105 --no-resume --upper-warmup-eps 0",
+      "cpu_cores": 2,
+      "duration_s": 71.25550293922424,
+      "finished_at": 1780100587.3234107,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 751,
+      "realized_episode_s": 0.014034003813753545,
+      "signature": "freqduet/auto-adopted/p2422100",
+      "started_at": 1780100516.0679078,
+      "status": "done",
+      "task_id": "t4855"
+    },
+    {
+      "cmd_prefix": "/usr/bin/python3 runner_v3.py --config configs_freqduet/F_freqduet_terminal_final_promotion_hiro.yaml --episodes 1 --seed 42 --no-resume --logs-dir /home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet/results_freqduet/smoke_final_current_names_20260531/logs --upper-warmup-eps 0",
+      "cpu_cores": 1,
+      "duration_s": 65.20836281776428,
+      "finished_at": 1780229047.4624276,
+      "parsed_units_episode": 1.0,
+      "project": "freqduet",
+      "ram_mb": 741,
+      "realized_episode_s": 0.015335456324745768,
+      "signature": "freqduet/auto-adopted/p4088815",
+      "started_at": 1780228982.2540648,
+      "status": "done",
+      "task_id": "t5092"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python runner_v3.py --config configs_freqduet/F_freqduet_gen_rushshift_main_abs20_hiro.yaml --episodes 40 --seed 2026 --no-resume --logs-dir /home/zhengliang01/scheduleurm_work/TransitDuet/FreqDuet/freqduet/results_freqduet/reliability_gate_screen_di",
+      "cpu_cores": 2,
+      "duration_s": 1405.1231536865234,
+      "finished_at": 1780322952.1976848,
+      "parsed_units_episode": 40.0,
+      "project": "freqduet",
+      "ram_mb": 1075,
+      "realized_episode_s": 0.02846725562457269,
+      "signature": "freqduet/auto-adopted/p417980",
+      "started_at": 1780321547.074531,
+      "status": "done",
+      "task_id": "t5606"
+    }
+  ],
+  "source_sub_bucket": "freqduet_cpu_ablation|c_le2",
+  "total_units_episode": 4661.0,
+  "window": {
+    "end_ts": 1780950920.787871,
+    "start_ts": 1778358920.787871,
+    "window_days": 30.0
+  },
+  "workload_key": "freqduet_runner_v3_c_le2_completed_history"
+}

@@ -756,6 +756,69 @@ def test_module61_freqduet_c33_ablation_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module62_freqduet_runner_cle2_completed_history_profile1(check, sch):
+    row = {
+        "id": "freq-runner-cle2",
+        "project": "freqduet",
+        "signature": "freqduet/c_le2_runner_v3",
+        "description": "FreqDuet c_le2 runner_v3 task",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 1024,
+        "cmd": (
+            "python3 runner_v3.py --config configs_freqduet/F_freqduet_terminal_hiro.yaml "
+            "--episodes 40 --seed 123 --no-resume"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet c_le2 runner_v3 maps after module62 completed-history certificate",
+          cls["workload_key"] == "freqduet_runner_v3_c_le2_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 40.0),
+          diag=str(cls))
+
+    ablation = dict(row)
+    ablation["id"] = "freq-cle2-ablation"
+    ablation["cmd"] = (
+        "python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro "
+        "--seeds 42 --episodes 20 --workers 1 --worker-threads 1"
+    )
+    ablation_cls = classify_record(ablation, include_representative=False)
+    check("module62 classifier does not map c_le2 ablation records",
+          ablation_cls["workload_key"] is None and ablation_cls["reason"] == "unmapped_cpu",
+          diag=str(ablation_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_runner_v3_c_le2_completed_history")
+    check("module62 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_runner_v3_c_le2_completed_history", 1).aggregate_rate,
+              0.010924044632484135,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_runner_v3_c_le2_completed_history",),
+    )
+    check("production load certificate sums parsed c_le2 runner_v3 episode units",
+          report["mapped_counts"] == {"freqduet_runner_v3_c_le2_completed_history": 1}
+          and math.isclose(report["mapped_units"]["freqduet_runner_v3_c_le2_completed_history"], 40.0)
+          and math.isclose(
+              report["lambda"]["freqduet_runner_v3_c_le2_completed_history"],
+              40.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

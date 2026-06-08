@@ -444,6 +444,47 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_native_promotion_c17_32_seedrange_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for Transit/FreqHRL native "
+                "promotion validation records in the c_17_32 residual bucket. It "
+                "covers no-GPU native_promotion_replan_validation commands with "
+                "explicit --seed-index-start/--seed-index-end and parsed episode "
+                "work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed seed-count times episodes. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history; no live co-location "
+                "profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c17_32_seedrange_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=71,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module63 completed-history wall-clock audit for "
+                        "c_17_32 native_promotion_replan_validation production records "
+                        "with explicit seed-index ranges."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "seed-episode rate as a conservative profile-1 lower-service "
+                        "point. Native commands without seed-index ranges remain "
+                        "unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

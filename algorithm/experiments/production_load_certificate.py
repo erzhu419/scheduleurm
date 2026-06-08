@@ -42,6 +42,7 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
+    "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
 )
@@ -198,6 +199,19 @@ def classify_record(
             units=c33_64_units,
         )
 
+    native_c17_32_units = _native_promotion_c17_32_seedrange_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if native_c17_32_units is not None:
+        return _mapped(
+            "transit_native_promotion_c17_32_seedrange_completed_history",
+            "strict_measured",
+            "module63_transit_native_promotion_c17_32_seedrange_completed_history",
+            units=native_c17_32_units,
+        )
+
     c3_8_units = _freqduet_ablation_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
     if c3_8_units is not None:
         return _mapped(
@@ -344,6 +358,61 @@ def _freqduet_ablation_c33_64_units(*, row: Mapping[str, Any], est_vram: float, 
         return None
     units = _parse_freqduet_ablation_units(cmd)
     return units if units is not None and units > 0 else None
+
+
+def _native_promotion_c17_32_seedrange_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (16.0 < float(cpu) <= 32.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "native_promotion_replan_validation" not in cmd_lower:
+        return None
+    units = _parse_native_promotion_seedrange_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    if not any("native_promotion_replan_validation" in str(token) for token in tokens):
+        return None
+
+    def opt(name: str) -> str | None:
+        if name not in tokens:
+            return None
+        idx = tokens.index(name)
+        return tokens[idx + 1] if idx + 1 < len(tokens) else None
+
+    start_raw = opt("--seed-index-start")
+    end_raw = opt("--seed-index-end")
+    if start_raw is None or end_raw is None:
+        return None
+    episodes_raw = opt("--episodes") or "1"
+    try:
+        seed_start = int(start_raw)
+        seed_end = int(end_raw)
+        episodes = float(episodes_raw)
+    except ValueError:
+        return None
+    seed_count = max(0, seed_end - seed_start)
+    if seed_count <= 0 or not math.isfinite(episodes) or episodes <= 0:
+        return None
+    return float(seed_count) * float(episodes)
 
 
 def _freqduet_ablation_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:

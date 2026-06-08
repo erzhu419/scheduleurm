@@ -214,6 +214,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module63_transit_native_promotion_c17_32_seedrange_completed_history_reports",
+        workload_key="transit_native_promotion_c17_32_seedrange_completed_history",
+        command_fingerprint="transit_native_promotion_c17_32_seedrange_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module59_simple_sac_sumo_eval_cle2_completed_history_reports",
         workload_key="sumo_eval_simple_sac_c_le2",
         command_fingerprint="simple_sac_run_multiseed_eval_c_le2_completed_history_v1",
@@ -260,6 +269,7 @@ def legacy_policy() -> ReplayPolicy:
             "freqduet_cpu_ablation_c9_16": 1,
             "freqduet_runner_v3_c_le2_completed_history": 1,
             "sumo_eval_simple_sac_c_le2": 1,
+            "transit_native_promotion_c17_32_seedrange_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
         },
     )

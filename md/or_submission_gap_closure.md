@@ -79,6 +79,7 @@ md/experiment_module52_theorem_oracle_trace_bridge.md
 md/experiment_module54_production_cpu_workload_curve_runner.md
 md/experiment_module55_oracle_trace_lower_service_enrichment.md
 md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
+md/experiment_module58_freqduet_ablation_c9_16_curve.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -90,6 +91,8 @@ md/experiment_artifacts/module55_oracle_trace_enrichment_status.json
 md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124.json
 md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_boundary_p8.json
 md/experiment_artifacts/module57_freqduet_runner_v3_c9_16_jtl110cpu2_curve_p1248.json
+md/experiment_artifacts/module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248.json
+md/experiment_artifacts/module58_freqduet_ablation_c9_16_completed_wallclock_audit.json
 ```
 
 Status:
@@ -115,17 +118,17 @@ Remaining scope limitation:
     strict measured mapping delta = 0.319917853
     representative mapping delta = 0.272849952
   Full global theorem coverage is still open because the representative run
-  leaves 2624 / 5176 tasks unmapped and maps 1588 tasks only by representative
+  leaves 2515 / 5196 tasks unmapped and maps 1588 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2449
-    mapped = 916
-    measurement_required = 1533
-    mapped_fraction = 0.374030
+    records = 2453
+    mapped = 1026
+    measurement_required = 1427
+    mapped_fraction = 0.418263
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 1211 / 2449 records
+    cpu_sumo_transit_eval_or_control = 1103 / 2453 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -145,6 +148,16 @@ Remaining scope limitation:
     completed-active strict mapped count = 1
   This is deliberately narrow; it does not close the broader c9_16 ablation
   family.
+
+  Module58 closes the broader c9_16 run_freqduet_ablation.py command-shape slice:
+    run_freqduet_ablation.py within freqduet_cpu_ablation|c_9_16
+      -> freqduet_cpu_ablation_c9_16
+    feasible profiles = 1,2,4,8
+    completed-active strict mapped count = 110
+    parsed completed-active work = 138900 episode units
+    min completed wall-clock rate = 0.289775 episode/s
+  The remaining c9_16 records are still visible in Module53 because they have
+  other command shapes.
 
   The current remaining top probe order is:
     freqduet_cpu_ablation|c_9_16

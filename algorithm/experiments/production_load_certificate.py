@@ -37,6 +37,7 @@ DEFAULT_TASKSETS = (
     "q01_gpu_bound_compute",
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
+    "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
 )
@@ -83,7 +84,7 @@ def build_production_load_certificate(
         classification_rows.append(out)
         key = cls.get("workload_key")
         if key in member_by_key:
-            units = float(member_by_key[key].total_units)
+            units = _classified_units(cls, fallback=member_by_key[key].total_units)
             mapped_counts[key] += 1
             mapped_units[key] += units
             if cls.get("mapping_mode") != "strict_measured":
@@ -184,6 +185,15 @@ def classify_record(
             "module56_freqduet_cpu_ablation_c17_32",
         )
 
+    c9_16_units = _freqduet_ablation_c9_16_units(row=row, est_vram=est_vram, cpu=cpu)
+    if c9_16_units is not None:
+        return _mapped(
+            "freqduet_cpu_ablation_c9_16",
+            "strict_measured",
+            "module58_freqduet_cpu_ablation_c9_16",
+            units=c9_16_units,
+        )
+
     if _is_freqduet_runner_v3_allfreq_alllayers_c9_16(row=row, est_vram=est_vram, cpu=cpu):
         return _mapped(
             "freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -244,8 +254,22 @@ def _members_for_tasksets(taskset_names: Iterable[str]) -> tuple[TaskSetMember, 
     return tuple(members)
 
 
-def _mapped(workload_key: str, mode: str, reason: str) -> dict[str, Any]:
-    return {"workload_key": workload_key, "mapping_mode": mode, "reason": reason}
+def _mapped(workload_key: str, mode: str, reason: str, *, units: float | None = None) -> dict[str, Any]:
+    out: dict[str, Any] = {"workload_key": workload_key, "mapping_mode": mode, "reason": reason}
+    if units is not None and math.isfinite(float(units)) and float(units) > 0:
+        out["units"] = float(units)
+    return out
+
+
+def _classified_units(cls: Mapping[str, Any], *, fallback: float) -> float:
+    raw = cls.get("units")
+    try:
+        units = float(raw)
+        if math.isfinite(units) and units > 0:
+            return units
+    except (TypeError, ValueError):
+        pass
+    return float(fallback)
 
 
 def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:
@@ -264,6 +288,68 @@ def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float,
     ):
         return False
     return "run_freqduet_ablation.py" in cmd
+
+
+def _freqduet_ablation_c9_16_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (8.0 < float(cpu) <= 16.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    if "--worker-threads" in cmd_lower and "--worker-threads 1" not in cmd_lower:
+        return None
+    units = _parse_freqduet_ablation_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_freqduet_ablation_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+
+    def opt(name: str) -> str | None:
+        if name not in tokens:
+            return None
+        idx = tokens.index(name)
+        return tokens[idx + 1] if idx + 1 < len(tokens) else None
+
+    episodes_raw = opt("--episodes")
+    try:
+        episodes = int(episodes_raw) if episodes_raw is not None else 0
+    except ValueError:
+        episodes = 0
+    if episodes <= 0:
+        return None
+
+    job_start_raw = opt("--job-start")
+    job_end_raw = opt("--job-end")
+    if job_start_raw is not None or job_end_raw is not None:
+        try:
+            job_start = int(job_start_raw) if job_start_raw is not None else 0
+            job_end = int(job_end_raw) if job_end_raw is not None else 0
+        except ValueError:
+            return None
+        jobs = max(0, job_end - job_start)
+        return float(jobs * episodes) if jobs > 0 else None
+
+    configs_raw = opt("--configs") or ""
+    seeds_raw = opt("--seeds") or ""
+    if "$" in configs_raw or "$" in seeds_raw:
+        return None
+    configs = [part for part in configs_raw.split(",") if part.strip()]
+    seeds = [part for part in seeds_raw.split(",") if part.strip()]
+    jobs = len(configs) * len(seeds)
+    return float(jobs * episodes) if jobs > 0 else None
 
 
 def _is_freqduet_runner_v3_allfreq_alllayers_c9_16(

@@ -2,13 +2,14 @@
 
 Date: 2026-06-08
 
-This note records the current gap after Module57.  It should be read together
+This note records the current gap after Module58.  It should be read together
 with:
 
 ```text
 md/experiment_module53_cpu_sumo_transit_probe_manifest.md
 md/experiment_module56_freqduet_cpu_production_curve.md
 md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
+md/experiment_module58_freqduet_ablation_c9_16_curve.md
 md/or_submission_gap_closure.md
 ```
 
@@ -29,16 +30,22 @@ exact slice = runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.ya
 workload_key = freqduet_runner_v3_allfreq_alllayers_c9_16
 completed-active strict mapped count = 1
 feasible profiles = 1,2,4,8
+
+command-shape slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_9_16
+workload_key = freqduet_cpu_ablation_c9_16
+completed-active strict mapped count = 110
+feasible profiles = 1,2,4,8
+unit rule = parsed jobs times episodes
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2449
-strict completed-active mapped count = 126
-representative completed-active mapped count = 916
-measurement_required = 1533
-cpu_sumo_transit_eval_or_control remaining = 1211 / 2449
+completed_active_production records = 2453
+strict completed-active mapped count = 236
+representative completed-active mapped count = 1026
+measurement_required = 1427
+cpu_sumo_transit_eval_or_control remaining = 1103 / 2453
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -48,12 +55,12 @@ tasks with different command shapes, such as native validation or direct
 `runner_v3.py` invocations, so the Module56 curve must not be used to certify
 them.
 
-The current `freqduet_cpu_ablation|c_9_16` group is also not closed.  Module57
-certifies only the direct `runner_v3.py` exact config
+The current `freqduet_cpu_ablation|c_9_16` group is still not fully closed.
+Module57 certifies only the direct `runner_v3.py` exact config
 `configs_freqduet/F_allfreq_alllayers_hiro.yaml`, which accounts for one
-completed/active production record.  The larger `run_freqduet_ablation.py`
-c9_16 family accounts for roughly one hundred completed/active records and is
-the next high-impact probe target.
+completed/active production record.  Module58 certifies 110 c9_16
+`run_freqduet_ablation.py` records with parseable units.  The remaining c9_16
+records have different command shapes and stay in the Module53 manifest.
 
 ## Interpretation
 
@@ -73,7 +80,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8
 freqduet_cpu_ablation|c_33_64

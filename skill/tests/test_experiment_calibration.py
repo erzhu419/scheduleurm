@@ -561,6 +561,69 @@ def test_module57_freqduet_runner_exact_config_is_strictly_measured(check, sch):
           diag=str(report))
 
 
+def test_module58_freqduet_c9_ablation_uses_parsed_production_units(check, sch):
+    row = {
+        "id": "freq-c9",
+        "project": "FreqDuet",
+        "signature": "FreqDuet/noharm_screen_20260601/node001_s0",
+        "description": "FreqDuet c9 ablation shard",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 13,
+        "ram_mb": 32768,
+        "cmd": (
+            "python scripts/run_freqduet_ablation.py "
+            "--configs F_freqduet_terminal_main_hiro,F_freqduet_gen_highnoise_main_hiro,"
+            "F_freqduet_gen_odshift_main_hiro,F_freqduet_gen_rushshift_main_hiro "
+            "--seeds 7,11,17,23,31,37,42,43,53,61,71,83,97,109,123,127,149,456,789,2026 "
+            "--episodes 100 --workers 13 --worker-threads 1 --job-start 0 --job-end 13"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet c9_16 ablation shard maps after module58 strict measurement",
+          cls["workload_key"] == "freqduet_cpu_ablation_c9_16"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1300.0),
+          diag=str(cls))
+
+    unknown_units = dict(row)
+    unknown_units["id"] = "freq-c9-unknown-units"
+    unknown_units["cmd"] = (
+        "python scripts/run_freqduet_ablation.py --configs $CONFIGS --seeds $SEEDS "
+        "--episodes 100 --workers 13 --worker-threads 1"
+    )
+    unknown_cls = classify_record(unknown_units, include_representative=False)
+    check("module58 classifier keeps unknown-size ablation commands unmeasured",
+          unknown_cls["workload_key"] is None and unknown_cls["reason"] == "unmapped_cpu",
+          diag=str(unknown_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_cpu_ablation_c9_16")
+    check("module58 service cache exposes the measured c9_16 ablation curve",
+          [record.profile for record in profiles] == [1, 2, 4, 8]
+          and math.isclose(
+              cache.get("freqduet_cpu_ablation_c9_16", 8).aggregate_rate,
+              1.240651142,
+              rel_tol=1e-9,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_cpu_ablation_c9_16",),
+    )
+    check("production load certificate sums parsed c9_16 ablation units",
+          report["mapped_counts"] == {"freqduet_cpu_ablation_c9_16": 1}
+          and math.isclose(report["mapped_units"]["freqduet_cpu_ablation_c9_16"], 1300.0)
+          and math.isclose(report["lambda"]["freqduet_cpu_ablation_c9_16"], 1300.0 / 86400.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_production_coverage_drilldown_separates_population_and_obligations(check, sch):
     rows = [
         {

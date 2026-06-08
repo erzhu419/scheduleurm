@@ -27,6 +27,7 @@ from algorithm.experiments.production_coverage_drilldown import (
     bucket_obligation,
     population_label,
 )
+from algorithm.experiments.production_bucket_probe_manifest import build_probe_manifest
 from algorithm.experiments.report import summarize_certificate
 from algorithm.experiments.service_model import (
     calibrate_service_lower_bounds,
@@ -447,6 +448,45 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
           bucket_obligation(rows[2])["status"] == "mapped"
           and bucket_obligation(rows[3])["bucket"] == "cpu_sumo_transit_eval_or_control",
           diag=str([bucket_obligation(row) for row in rows]))
+
+
+def test_production_bucket_probe_manifest_splits_cpu_sumo_sub_buckets(check, sch):
+    rows = [
+        {
+            "id": "bamor",
+            "project": "BAMOR",
+            "signature": "BAMOR/diagnostic/uniform/steps100000",
+            "description": "BAMOR diagnostic uniform seed 0",
+            "submitted_at": 900.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 8,
+            "ram_mb": 8192,
+            "cmd": "python train_compare_baselines.py --method uniform --device cpu --total_steps 100000",
+        },
+        {
+            "id": "freq",
+            "project": "FreqHRLNative",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress",
+            "description": "Freq-HRL native Transit validation",
+            "submitted_at": 901.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 72,
+            "ram_mb": 120000,
+            "cmd": "python -m freq_hrl.experiments.transit.native_promotion_replan_validation --workers 72",
+        },
+    ]
+    report = build_probe_manifest(records=rows, window_days=1.0, now_ts=1000.0)
+    sub = {row["sub_bucket"]: row for row in report["sub_buckets"]}
+    check("production bucket probe manifest keeps distinct CPU/SUMO sub-buckets",
+          "bamor_cpu_training|c_3_8" in sub
+          and "transit_freqhrl_cpu_validation|c_65p" in sub,
+          diag=str(report))
+    check("production bucket probe manifest proposes concurrency profiles",
+          report["probe_grid"]["task_concurrency_profiles"] == [1, 2, 4, 8]
+          and report["theorem_status"] == "measurement_required",
+          diag=str(report))
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

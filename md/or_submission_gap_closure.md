@@ -63,6 +63,7 @@ algorithm/experiments/slack_accounting.py
 algorithm/experiments/empirical_slack_certificate.py
 algorithm/experiments/production_load_certificate.py
 algorithm/experiments/production_coverage_drilldown.py
+algorithm/experiments/production_bucket_probe_manifest.py
 algorithm/oracle_trace.py
 algorithm/experiments/scheduler_oracle_trace_audit.py
 algorithm/experiments/theorem_oracle_trace_bridge.py
@@ -70,11 +71,13 @@ md/experiment_module30_slack_accounting.md
 md/experiment_module48_theorem_condition_calibration.md
 md/experiment_module49_production_load_capacity.md
 md/experiment_module51_production_coverage_drilldown.md
+md/experiment_module53_cpu_sumo_transit_probe_manifest.md
 md/experiment_module50_scheduler_oracle_trace.md
 md/experiment_module52_theorem_oracle_trace_bridge.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
+md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json
 ```
@@ -107,15 +110,26 @@ Remaining scope limitation:
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2495
+    records = 2504
     mapped = 948
-    measurement_required = 1547
-    mapped_fraction = 0.379960
+    measurement_required = 1556
+    mapped_fraction = 0.378594
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 1227 / 2495 records
+    cpu_sumo_transit_eval_or_control = 1245 / 2504 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
+
+  Module53 turns that target into concrete sub-buckets.  The current top probe
+  order is:
+    freqduet_cpu_ablation|c_17_32
+    sumo_eval_cpu|c_le2
+    freqduet_cpu_ablation|c_9_16
+    freqduet_cpu_ablation|c_3_8
+    freqduet_cpu_ablation|c_33_64
+    freqduet_cpu_ablation|c_le2
+    bamor_cpu_training|c_3_8
+    freqduet_cpu_ablation|c_65p
 
   Module50 adds the missing live scheduler candidate-set trace hook.  It is
   disabled by default and records the actual candidate family used by

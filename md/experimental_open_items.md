@@ -202,16 +202,16 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2495
+records = 2504
 representative mapped = 948
-measurement_required = 1547
-mapped_fraction = 0.379960
+measurement_required = 1556
+mapped_fraction = 0.378594
 ```
 
 最大未闭合 bucket 是：
 
 ```text
-cpu_sumo_transit_eval_or_control = 1227 records
+cpu_sumo_transit_eval_or_control = 1245 records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -225,3 +225,18 @@ cpu_sumo_transit_eval_or_control = 1227 records
 ```
 
 在这之前，production-global stability 只能写成 open empirical-theorem bridge。
+
+Module53 已经完成第 1 步，并给出 first probe order：
+
+```text
+freqduet_cpu_ablation|c_17_32
+sumo_eval_cpu|c_le2
+freqduet_cpu_ablation|c_9_16
+freqduet_cpu_ablation|c_3_8
+freqduet_cpu_ablation|c_33_64
+freqduet_cpu_ablation|c_le2
+bamor_cpu_training|c_3_8
+freqduet_cpu_ablation|c_65p
+```
+
+后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

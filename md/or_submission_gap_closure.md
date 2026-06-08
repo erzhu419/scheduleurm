@@ -171,7 +171,7 @@ Required output:
 ```text
 small q01 live run; completed by module39;
 small q11 live run; completed by module46 after profile-10 robust boundary correction;
-small portfolio live sanity run;
+small portfolio live sanity run; completed by module47;
 predicted all-job completion / mean-flow from replay;
 observed live completion / progress-window JCT;
 relative error and confidence interval;
@@ -183,8 +183,22 @@ Required artifact:
 
 ```text
 algorithm/experiments/live_validation.py
+algorithm/experiments/portfolio_live_proxy.py
 md/experiment_module32_live_replay_sanity.md
 md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md
+md/experiment_module47_portfolio_live_sanity.md
+```
+
+Current status:
+
+```text
+q01 module39: usable_for_live_sanity = true
+q11 module46: usable_for_live_sanity = true
+portfolio module47: usable_for_live_sanity = true
+portfolio replay-to-live relative errors:
+  makespan  = 0.007349
+  mean-flow = 0.005417
+  p90-flow  = 0.007964
 ```
 
 ## Gap 5: Lean Artifact Repackaging

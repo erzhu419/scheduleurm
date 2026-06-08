@@ -169,8 +169,8 @@ Your replay result is plausible, but does it agree with small real live runs?
 Required output:
 
 ```text
-small q01 live run;
-small q11 live run;
+small q01 live run; completed by module39;
+small q11 live run; completed by module46 after profile-10 robust boundary correction;
 small portfolio live sanity run;
 predicted all-job completion / mean-flow from replay;
 observed live completion / progress-window JCT;
@@ -184,6 +184,7 @@ Required artifact:
 ```text
 algorithm/experiments/live_validation.py
 md/experiment_module32_live_replay_sanity.md
+md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md
 ```
 
 ## Gap 5: Lean Artifact Repackaging

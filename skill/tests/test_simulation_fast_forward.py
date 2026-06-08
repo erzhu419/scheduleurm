@@ -40,10 +40,10 @@ def test_simulation_cache_has_cpu_gpu_hybrid_workloads(check, sch):
 
 def test_simulation_cache_reuses_existing_eta_profile(check, sch):
     cache = build_default_cache()
-    check("known RE-SAC profile does not need a new scheduler probe",
-          not cache_needs_probe(cache, "hybrid_rl_resac_ant", 10))
-    check("known colocated RE-SAC profiles have exact real measurements",
-          missing_exact_profiles(cache, "hybrid_rl_resac_ant", range(1, 11)) == [])
+    check("new live RE-SAC profile-10 boundary forces a new scheduler probe",
+          cache_needs_probe(cache, "hybrid_rl_resac_ant", 10))
+    check("robust colocated RE-SAC profiles below the live boundary have exact measurements",
+          missing_exact_profiles(cache, "hybrid_rl_resac_ant", range(1, 10)) == [])
     check("unknown RE-SAC profile still needs measurement",
           cache_needs_probe(cache, "hybrid_rl_resac_ant", 99))
     check("RE-SAC profile 13 is treated as unusable after runtime OOM",
@@ -81,11 +81,11 @@ def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
         profile=legacy.profile,
         aggregate_rate=legacy.aggregate_rate,
     )
-    check("calibrated RE-SAC profile is high co-location from real curve",
-          makespan_record.profile == 10,
+    check("calibrated RE-SAC profile stays below the live capacity boundary",
+          makespan_record.profile == 3,
           diag=str(makespan_record.snapshot()))
     check("calibrated RE-SAC deterministic makespan beats legacy cap",
-          legacy_ms / calibrated_ms > 1.20,
+          legacy_ms / calibrated_ms > 1.15,
           diag=f"legacy={legacy_ms}, calibrated={calibrated_ms}")
     check("guarded GPU-heavy selector can prefer lower congestion within makespan slack",
           guarded_record.profile == 1,
@@ -126,7 +126,7 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
               row.workload_key: row.selected_profile
               for row in comparison.candidate.workloads
           } == {
-              "hybrid_rl_resac_ant": 10,
+              "hybrid_rl_resac_ant": 3,
               "gpu_heavy_jax_matmul": 1,
               "cpu_heavy_local_bench": 8,
           },

@@ -56,7 +56,7 @@ def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     check("GPU-bound full saturation set has measured profiles 1-8",
           "q01_gpu_bound_compute" not in missing,
           diag=str(missing))
-    check("coupled RL set is closed by measured profile 13 capacity boundary",
+    check("coupled RL set is closed by the fresh profile-10 capacity boundary",
           "q11_cpu_gpu_coupled" not in missing,
           diag=str(missing))
     check("local real q10 probe has measured profiles 1-9 and capacity boundary 10",
@@ -87,8 +87,8 @@ def test_capacity_boundary_closes_higher_required_profiles(check, sch):
     cache = build_default_cache()
     snapshot = taskset_by_name("q11_cpu_gpu_coupled").snapshot(cache)
     member = snapshot["members"][0]
-    check("q11 snapshot records profile 13 as the closing boundary",
-          member["closed_by_capacity_boundary_profile"] == 13,
+    check("q11 snapshot records profile 10 as the live robust boundary",
+          member["closed_by_capacity_boundary_profile"] == 10,
           diag=str(snapshot))
     check("q11 missing-measurement list stops at the measured boundary",
           snapshot["missing_measurements"] == {},

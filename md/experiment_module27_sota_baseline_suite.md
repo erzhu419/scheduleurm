@@ -2,6 +2,12 @@
 
 Date: 2026-06-05
 
+Update on 2026-06-08: modules39-46 add fresh live replay sanity and a stricter
+q11 robust capacity boundary. The old q11 profile-10 replay point below is now
+historical. Current robust replay excludes q11 profile 10 and above, selects
+profile 2 for standalone q11, and selects profile 3 inside the mixed portfolio;
+see `md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md`.
+
 This module adds a SOTA-style replay baseline suite. It is stronger than
 Scheduleurm legacy comparison, but still not a direct binary-to-binary execution
 of external schedulers. Every baseline uses the same Scheduleurm measured

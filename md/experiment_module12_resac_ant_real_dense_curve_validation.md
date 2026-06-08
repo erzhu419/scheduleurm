@@ -2,6 +2,11 @@
 
 Date: 2026-06-03
 
+Update on 2026-06-08: modules41-42 found runtime OOM at profile 10/GPU in fresh
+live sanity runs. This module12 curve remains historical service-map evidence,
+but profile 10 is no longer used as a robust feasible action in the current
+replay cache. Current q11 robust replay uses the modules39-46 update.
+
 Primary runs:
 
 - `module12_resac_ant_real_dense_jtl110gpu2_gpu1_20260603_002`

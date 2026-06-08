@@ -41,6 +41,51 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        RUN_ROOT / "module42_q11_live_sanity_jtl110gpu2_gpu1_profile10_20260608_001" / "reports",
+        workload_key="hybrid_rl_resac_ant",
+        command_fingerprint="resac_ant_real_v1",
+        resource_kind="hybrid_rl",
+        total_units=80,
+        node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module43_q11_live_sanity_jtl110gpu2_gpu1_profile9_20260608_001" / "reports",
+        workload_key="hybrid_rl_resac_ant",
+        command_fingerprint="resac_ant_real_v1",
+        resource_kind="hybrid_rl",
+        total_units=80,
+        node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module44_q11_live_sanity_jtl110gpu2_gpu1_profile1_20260608_001" / "reports",
+        workload_key="hybrid_rl_resac_ant",
+        command_fingerprint="resac_ant_real_v1",
+        resource_kind="hybrid_rl",
+        total_units=80,
+        node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module45_q11_live_sanity_jtl110gpu2_gpu1_profile8_20260608_001" / "reports",
+        workload_key="hybrid_rl_resac_ant",
+        command_fingerprint="resac_ant_real_v1",
+        resource_kind="hybrid_rl",
+        total_units=80,
+        node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "module46_q11_live_sanity_jtl110gpu2_gpu1_profiles2_3_20260608_001" / "reports",
+        workload_key="hybrid_rl_resac_ant",
+        command_fingerprint="resac_ant_real_v1",
+        resource_kind="hybrid_rl",
+        total_units=80,
+        node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_dir(
+        cache,
         RUN_ROOT / "module6_service_curve_jtl110gpu2_size8192_20260603_001" / "reports",
         workload_key="gpu_heavy_jax_matmul",
         command_fingerprint="jax_matmul_size8192_v1",
@@ -208,7 +253,7 @@ def calibrated_global_guarded_policy(
         ) / float(total_tasks)
         global_makespan = max(row["makespan_s"] for row in combo)
         profiles = tuple(int(row["profile"]) for row in combo)
-        return (weighted_flow, global_makespan, profiles)
+        return (global_makespan, weighted_flow, profiles)
 
     chosen = min(admissible, key=combo_key)
     return ReplayPolicy(

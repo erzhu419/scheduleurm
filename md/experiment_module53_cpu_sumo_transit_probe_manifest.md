@@ -71,3 +71,9 @@ close the theorem condition, because no service curves have been measured for
 these sub-buckets.  The next empirical closure module should implement a
 runner/summary format for these CPU/SUMO/transit probes and then add the
 measured profiles into the service cache and production capacity certificate.
+
+Module54 now implements that runner for the first sub-bucket,
+`freqduet_cpu_ablation|c_17_32`, and writes a dry-run plan for profiles
+`1,2,4,8`.  The Module54 artifact is still `plan_only_not_measured`; it becomes
+theorem-relevant only after the plan is run and the measured summaries are
+loaded into the service cache.

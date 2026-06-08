@@ -1201,6 +1201,50 @@ python3 -m algorithm.experiments.throughput_curves build --run-id <id>
 python3 -m algorithm.experiments.report build --run-id <id>
 ```
 
+Production-coverage closure commands added after Modules50-55:
+
+```bash
+PYTHONPATH=. python3 -m algorithm.experiments.production_bucket_probe_manifest \
+  --output md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json \
+  --markdown-output md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
+
+PYTHONPATH=. python3 -m algorithm.experiments.production_cpu_workload_curve \
+  --dry-run \
+  --sub-bucket '<sub_bucket_from_module53>' \
+  --node <node> \
+  --profiles 1,2,4,8 \
+  --cwd <production_workload_cwd> \
+  --cmd-template '<progress-bearing production workload command>' \
+  --output-root scheduleurm_production_cpu_curve_runs \
+  --total-units <short_probe_units> \
+  --progress-unit <episode_or_step_or_eval> \
+  --cpu <cpu_cores_per_task> \
+  --ram-mb <ram_mb_per_task> \
+  --plan-output md/experiment_artifacts/<run_id>_plan.json \
+  --plan-markdown-output md/experiment_artifacts/<run_id>_plan.md
+
+SCHEDULEURM_ORACLE_AUDIT_LOG=/home/erzhu419/.claude/scheduler/oracle_trace.jsonl \
+  python3 skill/scheduler.py dispatch --algorithm <algorithm> --hard-rule-mode clean_bench
+
+PYTHONPATH=. python3 -m algorithm.experiments.scheduler_oracle_trace_audit audit \
+  --input /home/erzhu419/.claude/scheduler/oracle_trace.jsonl \
+  --output md/experiment_artifacts/module50_scheduler_oracle_trace_status.json \
+  --markdown-output md/experiment_artifacts/module50_scheduler_oracle_trace_status.md
+
+PYTHONPATH=. python3 -m algorithm.experiments.oracle_trace_enrichment enrich \
+  --input /home/erzhu419/.claude/scheduler/oracle_trace.jsonl \
+  --service-lookup <measured_lower_service_lookup.json> \
+  --queue-vector <decision_queue_vector.json> \
+  --output md/experiment_artifacts/module55_oracle_trace_enrichment_status.json \
+  --markdown-output md/experiment_artifacts/module55_oracle_trace_enrichment_status.md
+```
+
+The CPU workload curve command is theorem-grade only after the dry-run flag is
+removed, stable progress summaries are produced, and the resulting measured
+service rows are loaded into the service cache.  The oracle enrichment command
+is theorem-grade only when every traced candidate is covered by a lower-service
+row and the supplied queue vector is the decision-state queue vector.
+
 Each command must:
 
 ```text

@@ -138,3 +138,17 @@ Until those lower-service vectors are logged or reconstructed from the measured
 service cache for each live decision, the live scheduler oracle term remains an
 open empirical-theorem bridge.  The important correction is that selected-only
 history can no longer be mistaken for a full candidate-set certificate.
+
+Module55 now implements the reconstruction path:
+
+```text
+scheduler candidate-family trace
++ measured lower-service lookup
++ decision queue vector
+-> robust_maxweight_lower_service trace
+-> Module52 alpha0/alpha1 audit
+```
+
+The remaining blocker is empirical coverage, not missing software plumbing:
+real production traces and lower-service rows must exist for every candidate in
+each traced slot.

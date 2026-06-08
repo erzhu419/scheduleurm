@@ -192,6 +192,23 @@ queue_vector 和 penalty_units，或者从同一决策状态的 measured service
 
 当前 production trace 状态是 NO_TRACE；历史 selected-only placement_algorithm_audit
 不能冒充 full candidate-set oracle certificate。
+
+Module55 已补 lower-service enrichment bridge：
+  scheduler candidate-family trace
+  + measured lower-service lookup
+  + nonempty queue_vector
+  -> robust_maxweight_lower_service trace
+  -> Module52 alpha0/alpha1 audit。
+
+它会拒绝：
+  missing queue_vector；
+  任意 candidate 缺 lower_service；
+  production trace file 不存在。
+
+当前 artifact 仍是 NO_TRACE，因为
+  /home/erzhu419/.claude/scheduler/oracle_trace.jsonl
+不存在。剩余工作是采集真实 production candidate trace，并为每个候选
+candidate_bucket / class_key / regime_key 提供 measured lower-service row。
 ```
 
 如果估计后 \(\eta\le0\)，理论不是错，而是说明 candidate cover、估计误差、penalty 或 solver error 已经吞掉全部 capacity slack，需要改 candidate generator、降低 penalty、改善 oracle 或加 admission control。
@@ -240,3 +257,20 @@ freqduet_cpu_ablation|c_65p
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
+
+Module54 已经完成第 2 步的第一个可执行入口：
+
+```text
+runner = algorithm/experiments/production_cpu_workload_curve.py
+first sub_bucket = freqduet_cpu_ablation|c_17_32
+profiles = 1,2,4,8
+task_count = 15
+cpu/task = 24
+ram/task = 65536
+current artifact = dry-run plan only
+theorem_status = plan_only_not_measured
+```
+
+剩余实验工作不是再定义 benchmark，而是实际运行该 plan，得到稳定 progress
+窗口，写出 service_curve_verdict，并把结果加入 service cache 后重跑 production
+coverage / capacity / slack certificate。

@@ -1,6 +1,6 @@
 # OR Submission Gap Closure Plan
 
-Date: 2026-06-05
+Date: 2026-06-08
 
 This note records the remaining gaps before the Scheduleurm line can be written
 as an OR/Stochastic Systems paper. It is intentionally stricter than an
@@ -238,6 +238,18 @@ Required artifact:
 
 ```text
 md/lean_verification_submission.md
+```
+
+Current status:
+
+```text
+completed on 2026-06-08;
+proof commit = 23b101432067cc005512f7667810ec03b8cffb77;
+ScheduleurmUpload.lean sha256 = af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b;
+lake build Scheduleurm = PASS;
+lake env lean ScheduleurmUpload.lean = PASS;
+sorry/admit/axiom grep = clean;
+submission theorem-name grep = all present.
 ```
 
 ## Gap 6: OR Related Work Framing

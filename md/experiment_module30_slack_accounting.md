@@ -65,22 +65,45 @@ N is large enough for B + P0 + alpha0 + alpha;
 all component inputs are marked theorem-usable.
 ```
 
-## Current Status
+## Current Status After Module48
 
-The accounting layer is now implemented and tested. The final paper-facing
-numeric table is still calibration-limited: the system must produce real
-component JSONs for `L`, `rho`, `epsilon_est`, `beta`, `alpha0`, `alpha1`, `B`,
-and `delta`.
+The accounting layer is implemented and tested. Module48 now produces the first
+positive numeric table for the measured `hybrid_research_portfolio` finite
+service-action slice:
 
-Modules31 and 38 improve the inputs to that table. q10 now has a declared local
-CPU bucket with profiles 1-9 measured and profile 10 closed by a measured
-capacity boundary. q00 now has a declared local light-control bucket with
-profiles 1-13 measured and profile 14 closed by a measured capacity boundary.
-These two promotions supply theorem-relevant service-map slices
+```text
+md/experiment_module48_theorem_condition_calibration.md
+md/experiment_artifacts/module48_portfolio_slack_certificate.json
+md/experiment_artifacts/module48_portfolio_slack_certificate.md
+```
+
+The module48 certificate has:
+
+```text
+delta = 0.066921842
+Lrho = 0
+epsilon_est = 0
+beta = 0
+alpha1 = 0
+eta = 0.066921842
+B = 6361.354514
+finite_set_threshold_N = 95072
+```
+
+This closes the arithmetic slack-accounting gap for a declared finite-support
+load model on the measured service cache. It still does not claim a production
+arrival process or unmeasured bucket generalization.
+
+Modules31 and 38 improve the inputs beyond the portfolio certificate. q10 now
+has a declared local CPU bucket with profiles 1-9 measured and profile 10
+closed by a measured capacity boundary. q00 now has a declared local
+light-control bucket with profiles 1-13 measured and profile 14 closed by a
+measured capacity boundary. These promotions supply theorem-relevant
+service-map slices
 `\widehat{\mu}_b(k)` and infeasible-boundary evidence for exact replay. They do
-not by themselves certify `eta > 0`; the remaining calibration work is to turn
-the measured slices into lower-service error, moment, capacity-slack, and
-oracle/penalty constants.
+not by themselves certify production stability; that still requires a
+load-certified arrival model and live oracle-error audit for the scheduler mode
+being claimed.
 
 This is an improvement over the previous state because the missing quantities
 are now operationally precise. A future experiment cannot merely report

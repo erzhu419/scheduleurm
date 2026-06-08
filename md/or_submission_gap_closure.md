@@ -60,7 +60,10 @@ Required artifact:
 
 ```text
 algorithm/experiments/slack_accounting.py
+algorithm/experiments/empirical_slack_certificate.py
 md/experiment_module30_slack_accounting.md
+md/experiment_module48_theorem_condition_calibration.md
+md/experiment_artifacts/module48_portfolio_slack_certificate.json
 ```
 
 Status:
@@ -72,8 +75,17 @@ Infrastructure exists for separate components:
   oracle_audit.py         -> alpha0, alpha1
   capacity_lp.py          -> delta, eta
 
-Missing before this note:
-  one consolidated slack-accounting table and pass/fail certificate.
+Module48 now provides one consolidated positive pass/fail certificate for the
+measured hybrid_research_portfolio finite service-action slice:
+  delta = 0.066921842
+  eta   = 0.066921842
+  B     = 6361.354514
+  N     = 95072
+  Lrho = epsilon_est = beta = alpha1 = 0 for the exact finite-slice certificate.
+
+Remaining scope limitation:
+  this is not yet a production-arrival certificate and does not claim
+  unmeasured bucket generalization or a live greedy scheduler oracle audit.
 ```
 
 ## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure

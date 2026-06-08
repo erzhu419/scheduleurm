@@ -12,6 +12,9 @@ from algorithm.experiments.fabric_metric import (
     calibrate_cover_and_lipschitz,
     calibrate_lipschitz,
 )
+from algorithm.experiments.empirical_slack_certificate import (
+    build_measured_finite_slice_certificate,
+)
 from algorithm.experiments.oracle_audit import audit_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
 from algorithm.experiments.live_validation import compare_replay_to_live
@@ -273,6 +276,24 @@ def test_slack_accounting_certificate_combines_theorem_constants(check, sch):
     check("slack accounting refuses nonpositive drift margin",
           neg["eta"] < 0.0 and not neg["usable_for_theorem"],
           diag=str(neg))
+
+
+def test_measured_finite_slice_slack_certificate_is_positive(check, sch):
+    cert = build_measured_finite_slice_certificate(
+        taskset_name="hybrid_research_portfolio",
+        load_fraction=0.80,
+    )
+    check("measured portfolio finite-slice certificate closes positive eta condition",
+          cert["usable_for_theorem"]
+          and cert["eta"] > 0.0
+          and cert["delta"] > cert["slack_consumed"]
+          and cert["selected_profiles"]["hybrid_rl_resac_ant"] == 3,
+          diag=str({
+              "delta": cert.get("delta"),
+              "eta": cert.get("eta"),
+              "selected_profiles": cert.get("selected_profiles"),
+              "component_status": cert.get("component_status"),
+          }))
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

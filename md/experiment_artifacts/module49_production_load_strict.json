@@ -16,6 +16,9 @@
       2,
       4
     ],
+    "freqduet_cpu_ablation_c33_64_completed_history": [
+      1
+    ],
     "freqduet_cpu_ablation_c3_8_completed_history": [
       1
     ],
@@ -75,6 +78,7 @@
     "classes": [
       "cpu_heavy_local_bench",
       "freqduet_cpu_ablation_c17_32",
+      "freqduet_cpu_ablation_c33_64_completed_history",
       "freqduet_cpu_ablation_c3_8_completed_history",
       "freqduet_cpu_ablation_c9_16",
       "freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -85,7 +89,7 @@
     ],
     "delta": 0.001497771906963224,
     "mix": {
-      "profile_combo:cpu_heavy_local_bench=7,freqduet_cpu_ablation_c17_32=4,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=4,freqduet_runner_v3_allfreq_alllayers_c9_16=2,gpu_heavy_jax_matmul=7,hybrid_rl_resac_ant=1,light_control_local=1,sumo_eval_simple_sac_c_le2=1": 1.0
+      "profile_combo:cpu_heavy_local_bench=9,freqduet_cpu_ablation_c17_32=1,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=4,freqduet_runner_v3_allfreq_alllayers_c9_16=2,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1,light_control_local=4,sumo_eval_simple_sac_c_le2=1": 1.0
     },
     "status": "optimal",
     "usable_for_theorem": true
@@ -2570,6 +2574,7 @@
   "lambda": {
     "cpu_heavy_local_bench": 0.021219135802469136,
     "freqduet_cpu_ablation_c17_32": 0.004333333333333333,
+    "freqduet_cpu_ablation_c33_64_completed_history": 0.060239197530864194,
     "freqduet_cpu_ablation_c3_8_completed_history": 0.006945601851851852,
     "freqduet_cpu_ablation_c9_16": 0.06832561728395062,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 7.71604938271605e-06,
@@ -2582,6 +2587,7 @@
   "mapped_counts": {
     "cpu_heavy_local_bench": 55,
     "freqduet_cpu_ablation_c17_32": 156,
+    "freqduet_cpu_ablation_c33_64_completed_history": 63,
     "freqduet_cpu_ablation_c3_8_completed_history": 42,
     "freqduet_cpu_ablation_c9_16": 129,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
@@ -2590,11 +2596,12 @@
     "light_control_local": 206,
     "sumo_eval_simple_sac_c_le2": 71
   },
-  "mapped_fraction": 0.2315668202764977,
-  "mapped_task_count": 1206,
+  "mapped_fraction": 0.2435700575815739,
+  "mapped_task_count": 1269,
   "mapped_units": {
     "cpu_heavy_local_bench": 55000.0,
     "freqduet_cpu_ablation_c17_32": 11232.0,
+    "freqduet_cpu_ablation_c33_64_completed_history": 156140.0,
     "freqduet_cpu_ablation_c3_8_completed_history": 18003.0,
     "freqduet_cpu_ablation_c9_16": 177100.0,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 20.0,
@@ -2604,26 +2611,27 @@
     "sumo_eval_simple_sac_c_le2": 71.0
   },
   "moment": {
-    "B": 195404.1928558051,
+    "B": 195404.27131084847,
     "status": "finite_support_bound_from_measured_action_slice_and_empirical_load",
     "usable_for_theorem": true
   },
-  "record_count_total": 7739,
-  "record_count_window": 5208,
+  "record_count_total": 7741,
+  "record_count_window": 5210,
   "representative_mapped_task_count": 0,
   "status_counts": {
     "cancelled": 1336,
-    "done": 2552,
+    "done": 2554,
     "failed": 1271,
     "forgotten": 49
   },
-  "strict_mapped_fraction": 0.2315668202764977,
+  "strict_mapped_fraction": 0.2435700575815739,
   "taskset_names": [
     "q00_light_control",
     "q01_gpu_bound_compute",
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
     "production_freqduet_cpu_ablation_c3_8_completed_history",
+    "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_sumo_eval_simple_sac_c_le2",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -2653,14 +2661,14 @@
   },
   "unmapped_reasons": {
     "scheduleurmbench_unknown": 155,
-    "unmapped_cpu": 2303,
+    "unmapped_cpu": 2242,
     "unmapped_gpu": 1544
   },
-  "unmapped_task_count": 4002,
+  "unmapped_task_count": 3941,
   "usable_for_global_theorem": false,
   "window": {
-    "end_ts": 1780945786.9828153,
-    "start_ts": 1778353786.9828153,
+    "end_ts": 1780947269.1928127,
+    "start_ts": 1778355269.1928127,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

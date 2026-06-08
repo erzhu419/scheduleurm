@@ -1,0 +1,223 @@
+{
+  "cpu_counts": {
+    "33": 1,
+    "34": 1,
+    "36": 1,
+    "40": 19,
+    "41": 1,
+    "42": 1,
+    "48": 30,
+    "50": 1,
+    "64": 8
+  },
+  "duration_s": {
+    "max": 4291.060696840286,
+    "median": 1847.1597583293915,
+    "min": 1229.0042431354523,
+    "p10": 1280.6172077655792,
+    "p90": 2620.0135374069214
+  },
+  "interpretation": "Strict completed-history lower-service certificate for parseable c_33_64 run_freqduet_ablation.py production records. Only profile 1 is loaded; runner_v3, native validation, and higher co-location profiles are not claimed.",
+  "parsed_units_episode": {
+    "max": 4100.0,
+    "median": 2680.0,
+    "min": 1320.0,
+    "p10": 1600.0,
+    "p90": 3200.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "FreqDuet": 54,
+    "TransitDuet": 2,
+    "freqduet": 7
+  },
+  "realized_episode_s": {
+    "max": 1.9575043815759003,
+    "median": 1.2605878677149391,
+    "min": 0.3915115908840592,
+    "p10": 0.9975537471100008,
+    "p90": 1.7229704411916658
+  },
+  "record_count": 63,
+  "run_id": "module61_freqduet_ablation_c33_64_completed_history",
+  "slowest_12": [
+    {
+      "cmd_prefix": "set -e\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\necho START_TERMFB30_SCREEN task_node=node006 shard=5/6 range=118:160 worker",
+      "cpu_cores": 42,
+      "duration_s": 4291.060696840286,
+      "finished_at": 1780855655.8309038,
+      "parsed_units_episode": 1680.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "realized_episode_s": 0.3915115908840592,
+      "signature": "TransitDuet/freqduet-termfb30-screen-ep40-wu10",
+      "started_at": 1780851364.770207,
+      "status": "done",
+      "task_id": "t7615"
+    },
+    {
+      "cmd_prefix": "python3 scripts/run_freqduet_ablation.py --configs F_freqduet_gen_highnoise_main_hiro,F_freqduet_gen_highnoise_nofreq_hiro,F_freqduet_gen_highnoise_rawhistory_hiro,F_freqduet_gen_highnoise_allfreq_hiro,F_freqduet_gen_highnoise_nopromotion_hiro,F_freqduet_gen_odshift_main_hiro,F_freqduet_gen_odshift_nofreq_hiro,F_freqdu",
+      "cpu_cores": 64,
+      "duration_s": 2643.559357404709,
+      "finished_at": 1780260940.348942,
+      "parsed_units_episode": 1520.0,
+      "project": "freqduet",
+      "ram_mb": 48000,
+      "realized_episode_s": 0.5749823607109191,
+      "signature": "FreqDuet/heldout_current_20260531/jtl110cpu",
+      "started_at": 1780258296.7895846,
+      "status": "done",
+      "task_id": "t5149"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_noraw_hiro,F_freqduet_gen_highnoise_main_noraw_hiro,F_freqduet_gen_odshift_main_noraw_hiro,F_freqduet_gen_rushshift_main_noraw_hiro,F_freqduet_terminal_main_abs20_hiro,F_freqd",
+      "cpu_cores": 48,
+      "duration_s": 3347.4586610794067,
+      "finished_at": 1780324758.0275862,
+      "parsed_units_episode": 2680.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304,
+      "realized_episode_s": 0.8006073476455775,
+      "signature": "FreqDuet/reliability_gate_screen_discrete_20260601/node001_s0",
+      "started_at": 1780321410.5689251,
+      "status": "done",
+      "task_id": "t5598"
+    },
+    {
+      "cmd_prefix": "set -e\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\necho START_TERMFB30_SCREEN task_node=node005 shard=4/6 range=85:118 workers",
+      "cpu_cores": 33,
+      "duration_s": 1491.186366558075,
+      "finished_at": 1780852849.9695036,
+      "parsed_units_episode": 1320.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "realized_episode_s": 0.8852012260860433,
+      "signature": "TransitDuet/freqduet-termfb30-screen-ep40-wu10",
+      "started_at": 1780851358.783137,
+      "status": "done",
+      "task_id": "t7614"
+    },
+    {
+      "cmd_prefix": "set -euo pipefail\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\necho HOST=$(hostname) SHARD=1/5 RANGE=27:63 WORKERS=36\n\"$PY\" scr",
+      "cpu_cores": 36,
+      "duration_s": 1592.63694190979,
+      "finished_at": 1780846739.4322445,
+      "parsed_units_episode": 1440.0,
+      "project": "freqduet",
+      "ram_mb": 8192,
+      "realized_episode_s": 0.9041608681217972,
+      "signature": "FreqDuet/termhold45-main-ep40-wu10",
+      "started_at": 1780845146.7953026,
+      "status": "done",
+      "task_id": "t7504"
+    },
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_driftfb_hiro,F_freqduet_gen_highnoise_main_driftfb_hiro,F_freqduet_gen_odshift_main_driftfb_hiro,F_freqduet_gen_rush",
+      "cpu_cores": 40,
+      "duration_s": 1746.0005340576172,
+      "finished_at": 1780361570.578365,
+      "parsed_units_episode": 1600.0,
+      "project": "FreqDuet",
+      "ram_mb": 65536,
+      "realized_episode_s": 0.9163800175259287,
+      "signature": "FreqDuet/driftfb-screen/node001/s0",
+      "started_at": 1780359824.577831,
+      "status": "done",
+      "task_id": "t5627"
+    },
+    {
+      "cmd_prefix": "python3 scripts/run_freqduet_ablation.py --configs F_freqduet_gen_highnoise_main_hiro,F_freqduet_gen_highnoise_nofreq_hiro,F_freqduet_gen_highnoise_rawhistory_hiro,F_freqduet_gen_highnoise_allfreq_hiro,F_freqduet_gen_highnoise_nopromotion_hiro,F_freqduet_gen_odshift_main_hiro,F_freqduet_gen_odshift_nofreq_hiro,F_freqdu",
+      "cpu_cores": 64,
+      "duration_s": 1483.6293325424194,
+      "finished_at": 1780259789.3513458,
+      "parsed_units_episode": 1480.0,
+      "project": "freqduet",
+      "ram_mb": 48000,
+      "realized_episode_s": 0.9975537471100008,
+      "signature": "FreqDuet/heldout_current_20260531/jtl110cpu2",
+      "started_at": 1780258305.7220132,
+      "status": "done",
+      "task_id": "t5150"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nopromotion_hiro,F_freqdu",
+      "cpu_cores": 48,
+      "duration_s": 3162.849485874176,
+      "finished_at": 1780320972.6874003,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304,
+      "realized_episode_s": 1.011745900110563,
+      "signature": "FreqDuet/final_matrix_discrete_lower_20260601/node001_s0",
+      "started_at": 1780317809.8379145,
+      "status": "done",
+      "task_id": "t5565"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_noraw_hiro,F_freqduet_gen_highnoise_main_noraw_hiro,F_freqduet_gen_odshift_main_noraw_hiro,F_freqduet_gen_rushshift_main_noraw_hiro,F_freqduet_terminal_main_abs20_hiro,F_freqd",
+      "cpu_cores": 48,
+      "duration_s": 2609.1529502868652,
+      "finished_at": 1780324032.2884657,
+      "parsed_units_episode": 2680.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304,
+      "realized_episode_s": 1.0271532758190145,
+      "signature": "FreqDuet/reliability_gate_screen_discrete_20260601/node003_s2",
+      "started_at": 1780321423.1355155,
+      "status": "done",
+      "task_id": "t5600"
+    },
+    {
+      "cmd_prefix": "set -euo pipefail\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\necho HOST=$(hostname) SHARD=4/6 RANGE=85:119 WORKERS=34\n\"$PY\" sc",
+      "cpu_cores": 34,
+      "duration_s": 3275.4826362133026,
+      "finished_at": 1780840869.392739,
+      "parsed_units_episode": 3400.0,
+      "project": "freqduet",
+      "ram_mb": 8192,
+      "realized_episode_s": 1.038014966835742,
+      "signature": "FreqDuet/valueguard-main-ep100-wu10",
+      "started_at": 1780837593.9101028,
+      "status": "done",
+      "task_id": "t7462"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_noraw_hiro,F_freqduet_gen_highnoise_main_noraw_hiro,F_freqduet_gen_odshift_main_noraw_hiro,F_freqduet_gen_rushshift_main_noraw_hiro,F_freqduet_terminal_main_abs20_hiro,F_freqd",
+      "cpu_cores": 48,
+      "duration_s": 2442.2014474868774,
+      "finished_at": 1780323858.9577315,
+      "parsed_units_episode": 2640.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304,
+      "realized_episode_s": 1.0809919070012284,
+      "signature": "FreqDuet/reliability_gate_screen_discrete_20260601/node002_s1",
+      "started_at": 1780321416.756284,
+      "status": "done",
+      "task_id": "t5599"
+    },
+    {
+      "cmd_prefix": "export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONUNBUFFERED=1; /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_replanonly_hiro,F_freqduet_gen_highnoise_main_replanonly_hiro,F_",
+      "cpu_cores": 40,
+      "duration_s": 1463.1064167022705,
+      "finished_at": 1780375078.9539793,
+      "parsed_units_episode": 1600.0,
+      "project": "FreqDuet",
+      "ram_mb": 120000,
+      "realized_episode_s": 1.093563654519592,
+      "signature": "FreqDuet/promotion-guard-repair/node001_s0",
+      "started_at": 1780373615.8475626,
+      "status": "done",
+      "task_id": "t5770"
+    }
+  ],
+  "source_sub_bucket": "freqduet_cpu_ablation|c_33_64",
+  "total_units_episode": 156140.0,
+  "window": {
+    "end_ts": 1780947269.1928127,
+    "start_ts": 1778355269.1928127,
+    "window_days": 30.0
+  },
+  "workload_key": "freqduet_cpu_ablation_c33_64_completed_history"
+}

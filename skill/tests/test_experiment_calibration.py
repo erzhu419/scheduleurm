@@ -16,9 +16,14 @@ from algorithm.experiments.empirical_slack_certificate import (
     build_measured_finite_slice_certificate,
 )
 from algorithm.experiments.oracle_audit import audit_slots
+from algorithm.experiments.oracle_trace_enrichment import enrich_trace_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
 from algorithm.experiments.live_validation import compare_replay_to_live
 from algorithm.experiments.portfolio_live_proxy import build_composed_live_report
+from algorithm.experiments.production_cpu_workload_curve import (
+    build_submission_plan,
+    render_cpu_workload_command,
+)
 from algorithm.experiments.production_load_certificate import (
     build_production_load_certificate,
 )
@@ -277,6 +282,55 @@ def test_theorem_oracle_trace_bridge_refuses_sort_key_and_accepts_lower_service(
           diag=str(accepted))
 
 
+def test_oracle_trace_enrichment_attaches_lower_service_before_theorem_bridge(check, sch):
+    slots = [
+        {
+            "slot_id": "live-slot",
+            "score_semantics": "scheduler_sort_key_minimization",
+            "queue_vector": {},
+            "candidates": [
+                {"action_id": "a", "candidate_bucket": "b0", "selected": True, "primary_numeric_score": 0.0},
+                {"action_id": "b", "candidate_bucket": "b1", "selected": False, "primary_numeric_score": 1.0},
+            ],
+        }
+    ]
+    no_queue = enrich_trace_slots(
+        slots,
+        service_rows=[{"candidate_bucket": "b0", "lower_service": {"i": 0.5}}],
+        queue_vector={},
+    )
+    check("oracle trace enrichment refuses missing queue vector before theorem bridge",
+          no_queue["status"] == "ENRICHMENT_BLOCKED"
+          and no_queue["blockers"][0]["reason"] == "missing_queue_vector",
+          diag=str(no_queue))
+
+    blocked = enrich_trace_slots(
+        slots,
+        service_rows=[{"candidate_bucket": "b0", "lower_service": {"i": 0.5}}],
+        queue_vector={"i": 10.0},
+    )
+    check("oracle trace enrichment refuses partially covered candidate families",
+          blocked["status"] == "ENRICHMENT_BLOCKED"
+          and blocked["blockers"][0]["reason"] == "candidate_lower_service_not_found",
+          diag=str(blocked))
+
+    enriched = enrich_trace_slots(
+        slots,
+        service_rows=[
+            {"candidate_bucket": "b0", "lower_service": {"i": 0.5}, "penalty_units": 0.0},
+            {"candidate_bucket": "b1", "lower_service": {"i": 0.8}, "penalty_units": 0.0},
+        ],
+        queue_vector={"i": 10.0},
+    )
+    audit = enriched["oracle_audit"]
+    check("oracle trace enrichment produces theorem oracle audit from bucket lookup",
+          enriched["status"] == "ENRICHED_THEOREM_PASS"
+          and audit["status"] == "THEOREM_ORACLE_PASS"
+          and math.isclose(audit["rows"][0]["oracle_gap"], 3.0)
+          and math.isclose(audit["alpha1"], 0.3),
+          diag=str(enriched))
+
+
 def test_slack_accounting_certificate_combines_theorem_constants(check, sch):
     cert = build_slack_certificate(
         fabric={"L": 0.5, "rho": 0.2, "usable_for_theorem": True},
@@ -487,6 +541,51 @@ def test_production_bucket_probe_manifest_splits_cpu_sumo_sub_buckets(check, sch
           report["probe_grid"]["task_concurrency_profiles"] == [1, 2, 4, 8]
           and report["theorem_status"] == "measurement_required",
           diag=str(report))
+
+
+def test_production_cpu_workload_curve_plan_renders_cpu_only_wrapped_tasks(check, sch):
+    rendered = render_cpu_workload_command(
+        "python run_eval.py --seed {seed} --episodes {total_units} --out {output_root}/{run_name}",
+        run_id="r1",
+        sub_bucket="freqduet_cpu_ablation|c_17_32",
+        phase="profile_2_per_resource",
+        profile=2,
+        index=1,
+        seed_base=10,
+        total_units=50,
+        output_root="out",
+        node="local",
+        cpu_cores=16,
+    )
+    check("production CPU workload template renders deterministic identity",
+          rendered["seed"] == 11
+          and "freqduet_cpu_ablation_c_17_32" in rendered["run_name"]
+          and "--episodes 50" in rendered["cmd"],
+          diag=str(rendered))
+    plan = build_submission_plan(
+        run_id="r1",
+        sub_bucket="freqduet_cpu_ablation|c_17_32",
+        profiles=[1, 2],
+        cmd_template="python run_eval.py --seed {seed} --episodes {total_units}",
+        node="local",
+        cwd="/tmp/scheduleurm-prod-cpu",
+        output_root="out",
+        seed_base=20,
+        total_units=40,
+        cpu_cores=16,
+        ram_mb=32000,
+        project="ScheduleurmBench",
+        signature_prefix="ScheduleurmBench/prod_cpu",
+        progress_unit="episode",
+        progress_wrapper="/tmp/wrapper.py",
+    )
+    tasks = [task for row in plan["profiles"] for task in row["tasks"]]
+    check("production CPU workload plan creates CPU-only profile tasks",
+          plan["task_count"] == 3
+          and all(task["vram_mb"] == 0 and task["require_node"] == "local" for task in tasks)
+          and "progress_wrapper.py" not in tasks[0]["cmd"]
+          and "/tmp/wrapper.py" in tasks[0]["cmd"],
+          diag=str(plan))
 
 
 def test_live_validation_compares_replay_and_observed_jct(check, sch):

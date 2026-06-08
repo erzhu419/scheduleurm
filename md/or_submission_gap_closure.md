@@ -67,6 +67,8 @@ algorithm/experiments/production_bucket_probe_manifest.py
 algorithm/oracle_trace.py
 algorithm/experiments/scheduler_oracle_trace_audit.py
 algorithm/experiments/theorem_oracle_trace_bridge.py
+algorithm/experiments/production_cpu_workload_curve.py
+algorithm/experiments/oracle_trace_enrichment.py
 md/experiment_module30_slack_accounting.md
 md/experiment_module48_theorem_condition_calibration.md
 md/experiment_module49_production_load_capacity.md
@@ -74,12 +76,16 @@ md/experiment_module51_production_coverage_drilldown.md
 md/experiment_module53_cpu_sumo_transit_probe_manifest.md
 md/experiment_module50_scheduler_oracle_trace.md
 md/experiment_module52_theorem_oracle_trace_bridge.md
+md/experiment_module54_production_cpu_workload_curve_runner.md
+md/experiment_module55_oracle_trace_lower_service_enrichment.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json
+md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json
+md/experiment_artifacts/module55_oracle_trace_enrichment_status.json
 ```
 
 Status:
@@ -131,6 +137,18 @@ Remaining scope limitation:
     bamor_cpu_training|c_3_8
     freqduet_cpu_ablation|c_65p
 
+  Module54 adds the actual progress-bearing CPU-only runner for the first
+  production sub-bucket:
+    freqduet_cpu_ablation|c_17_32
+  The current artifact is a dry-run plan, not a measured certificate:
+    profiles = 1,2,4,8
+    tasks = 15
+    cpu/task = 24
+    ram/task = 65536
+    theorem_status = plan_only_not_measured
+  The remaining empirical step is to run the plan, ingest the profile summaries
+  into the service cache, and rerun Modules49/51/slack accounting.
+
   Module50 adds the missing live scheduler candidate-set trace hook.  It is
   disabled by default and records the actual candidate family used by
   pick_placement when SCHEDULEURM_ORACLE_AUDIT_LOG is set.  Unit validation
@@ -147,6 +165,16 @@ Remaining scope limitation:
     penalty_units
   Current status is NO_TRACE, but the conversion path to oracle_audit.py is now
   implemented and unit-tested.
+
+  Module55 adds the missing enrichment bridge from scheduler-sort-key trace to
+  Module52 theorem trace:
+    trace + measured lower-service lookup + queue_vector
+      -> robust_maxweight_lower_service slots
+      -> alpha0/alpha1 audit
+  The current production status is still NO_TRACE because
+  ~/.claude/scheduler/oracle_trace.jsonl does not exist.  The software path is
+  closed; the remaining blocker is real trace collection plus complete measured
+  lower-service coverage for every candidate in each traced slot.
 ```
 
 ## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure

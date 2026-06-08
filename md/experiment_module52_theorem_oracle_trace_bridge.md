@@ -55,6 +55,18 @@ This is an honest blocker, not a theorem failure.  The implementation path is
 now closed: once real decisions are traced with lower-service vectors, the
 bridge can directly produce `alpha0, alpha1`.
 
+Module55 now implements the enrichment feeder for this strict gate:
+
+```text
+scheduler candidate-family trace
++ measured lower-service lookup
++ decision queue vector
+-> robust_maxweight_lower_service trace
+```
+
+This does not relax Module52.  If any candidate lacks lower-service semantics,
+or if the queue vector is missing, the oracle certificate remains blocked.
+
 ## Why This Matters
 
 A scheduler-sort-key trace can pass Module50 while still failing Module52.

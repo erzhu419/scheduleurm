@@ -240,14 +240,16 @@ candidate_bucket / class_key / regime_key 提供 measured lower-service row。
 ## 7. Production coverage 闭合顺序
 
 Module51 已经把 raw queue history 和 reviewer-facing production population
-拆开。当前 30 天 `completed_active_production` 视角为：
+拆开。Module73 进一步把无 scheduler id、无 log、无可复现 progress unit 的
+external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
+population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2840
+records = 2766
 representative mapped = 2150
 strict mapped = 1242
-measurement_required = 690
-mapped_fraction = 0.757042
+measurement_required = 616
+mapped_fraction = 0.777296
 ```
 
 最大未闭合 bucket 是：
@@ -271,6 +273,7 @@ after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781 completed-active 
 after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797 completed-active records
 after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805 completed-active records
 after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840 completed-active records
+after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -488,12 +491,16 @@ workload_key = cfcmt_traffic_signal_phase2_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 1
 unit rule = phase2_run
+
+closed operational-semantics boundary = unobservable external auto-adopted stdin/wait-for
+label = excluded_external_auto_adopted_unobservable
+excluded completed-active count = 74
+reason = no scheduler id, no scheduler log, no reproducible command/progress unit
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes

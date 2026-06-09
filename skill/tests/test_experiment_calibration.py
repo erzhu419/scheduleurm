@@ -1928,6 +1928,36 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
             "cpu_cores": 2,
             "cmd": "python eval_operational.py --sumo",
         },
+        {
+            "id": "external-stdin",
+            "project": "TransitDuet",
+            "signature": "TransitDuet/auto-adopted/p123",
+            "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
+            "submitted_at": 904.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 1,
+            "cmd": "python3 -",
+            "origin": "external",
+            "auto_adopted": True,
+            "scheduler_id": None,
+            "log_path": None,
+        },
+        {
+            "id": "external-waiter",
+            "project": "TransitDuet",
+            "signature": "TransitDuet/auto-adopted/p456",
+            "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
+            "submitted_at": 905.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 1,
+            "cmd": "python3 /home/erzhu419/mine_code/scheduleurm/skill/scheduler.py wait-for --task-id t1",
+            "origin": "external",
+            "auto_adopted": True,
+            "scheduler_id": None,
+            "log_path": None,
+        },
     ]
     report = build_coverage_drilldown(records=rows, window_days=1.0, now_ts=1000.0)
     completed = report["views"]["completed_active_production"]["representative"]
@@ -1945,6 +1975,12 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
     check("population label excludes benchmark and cancellation",
           population_label(rows[0])["label"] == "excluded_benchmark"
           and population_label(rows[1])["label"] == "excluded_cancelled",
+          diag=str([population_label(row) for row in rows]))
+    check("population label excludes unobservable external adopted control processes",
+          population_label(rows[4])["label"] == "excluded_external_auto_adopted_unobservable"
+          and population_label(rows[5])["label"] == "excluded_external_auto_adopted_unobservable"
+          and not population_label(rows[4])["include_completed_active"]
+          and not population_label(rows[5])["include_completed_active"],
           diag=str([population_label(row) for row in rows]))
     check("bucket obligation maps representative RL but not unmeasured transit CPU",
           bucket_obligation(rows[2])["status"] == "mapped"

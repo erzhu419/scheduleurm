@@ -89,11 +89,39 @@ def population_label(row: Mapping[str, Any]) -> dict[str, Any]:
         return {"label": "excluded_test_or_guard", "include_attempted": False, "include_completed_active": False}
     if "auto-adopted" in text and any(tok in text for tok in ("ptxas", "cuda_nvcc", "tempfile-")):
         return {"label": "excluded_adopted_compiler_aux", "include_attempted": False, "include_completed_active": False}
+    if _is_unobservable_external_auto_adopted(row, text=text):
+        return {
+            "label": "excluded_external_auto_adopted_unobservable",
+            "include_attempted": False,
+            "include_completed_active": False,
+        }
     return {
         "label": "included_production_like",
         "include_attempted": status not in ("cancelled", "forgotten"),
         "include_completed_active": status in ("done", "running", "queued", "launching"),
     }
+
+
+def _is_unobservable_external_auto_adopted(row: Mapping[str, Any], *, text: str) -> bool:
+    """Exclude external adopted processes that cannot define a scheduler workload.
+
+    The theorem-facing production population is the workload stream whose
+    actions and service accounting are controlled by Scheduleurm.  A no-log,
+    no-scheduler-id external stdin process has neither a reproducible command
+    template nor a progress-bearing unit, so including it in lambda would make
+    the model claim arbitrary external processes as schedulable workload.
+    """
+    if not (
+        bool(row.get("auto_adopted") or row.get("adopted"))
+        or "auto-adopted" in text
+    ):
+        return False
+    if str(row.get("origin") or "").lower() != "external":
+        return False
+    if row.get("scheduler_id") or row.get("log_path"):
+        return False
+    cmd = str(row.get("cmd") or "").strip().lower()
+    return cmd == "python3 -" or "scheduler.py wait-for" in cmd
 
 
 def bucket_obligation(row: Mapping[str, Any]) -> dict[str, Any]:

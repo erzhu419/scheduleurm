@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module72.  It should be read together
+This note records the current gap after Module73.  It should be read together
 with:
 
 ```text
@@ -41,6 +41,7 @@ md/experiment_module72_cfcmt_sumo_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_snapshot_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_policy_rollout_c_le2_completed_history.md
 md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
+md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
 
@@ -253,12 +254,19 @@ unit rule = phase2_run
 Not yet closed:
 
 ```text
-completed_active_production records = 2840
+completed_active_production records = 2766
 strict completed-active mapped count = 1242
 representative completed-active mapped count = 2150
-measurement_required = 690
-cpu_sumo_transit_eval_or_control remaining = 320 / 2840
+measurement_required = 616
+cpu_sumo_transit_eval_or_control remaining = 258 / 2766
 ```
+
+Module73 changes the production-population boundary, not the service map:
+external `auto-adopted` stdin/wait-for processes with no scheduler id, no
+scheduler log, and no reproducible progress unit are excluded from the
+controlled-arrival theorem population.  They remain operational telemetry, but
+including them in lambda would make the theorem claim arbitrary external
+processes as schedulable workload.
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
 only certifies records that actually invoke `run_freqduet_ablation.py`.  The
@@ -309,10 +317,11 @@ validation or non-ep100 shell batches to the c65p rates.
 The remaining list can look larger after a module because broad residual
 buckets are being split into theorem-facing command shapes.  The total
 CPU/SUMO/transit measurement-required count is still lower after the latest
-slices: 862 / 2471 after Module62, 803 / 2487 after Module63, 704 / 2553 after
-Module64, 659 / 2589 after Module65, 576 / 2679 after Module66/67,
-532 / 2755 after Module68, 471 / 2781 after Module69, 409 / 2797 after
-Module70, 350 / 2805 after Module71, and 320 / 2840 after Module72.
+slices and population-boundary correction: 862 / 2471 after Module62, 803 /
+2487 after Module63, 704 / 2553 after Module64, 659 / 2589 after Module65,
+576 / 2679 after Module66/67, 532 / 2755 after Module68, 471 / 2781 after
+Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
+320 / 2840 after Module72, and 258 / 2766 after Module73.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -350,6 +359,10 @@ script-semantics certificates.  It does not authorize mapping offline-sumo,
 H2Oplus, RESCO/config, ZSW metrics-parser, or Nature-emissions SUMO records to
 the CFCMT service classes.
 
+Module73 removes the former `transit_misc_cpu|c_le2` first-probe bucket by
+tightening the theorem population rather than by pretending those external
+stdin/wait-for processes have a measured Transit service curve.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -381,7 +394,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes

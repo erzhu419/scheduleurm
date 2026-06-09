@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "transit_misc_cpu|c_le2",
       "freqduet_cpu_ablation|c_17_32",
       "bamor_cpu_training|c_9_16",
       "freqduet_cpu_ablation|c_le2",
       "bamor_cpu_training|c_le2",
       "sumo_eval_cpu|c_le2",
       "freqduet_cpu_ablation|c_3_8",
-      "bamor_cpu_training|c_17_32"
+      "bamor_cpu_training|c_17_32",
+      "freqduet_cpu_ablation|c_33_64"
     ],
     "node_targets": [
       "local_cpu",
@@ -31,7 +31,7 @@
     ]
   },
   "project_counts": {
-    "BAMOR": 90,
+    "BAMOR": 86,
     "CFCMT": 6,
     "FreqDuet": 16,
     "FreqHRL": 9,
@@ -39,7 +39,7 @@
     "H2Oplus": 2,
     "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
     "SimpleSAC": 2,
-    "TransitDuet": 116,
+    "TransitDuet": 58,
     "ZSW_platform": 6,
     "config": 5,
     "freq_transitduet": 1,
@@ -49,144 +49,26 @@
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 320,
+  "record_count": 258,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 4.0,
+      "median": 9.5,
       "min": 1.0,
       "p90": 32.0
     },
     "ram_mb": {
       "max": 131072.0,
-      "median": 4096.0,
+      "median": 8192.0,
       "min": 5.0,
       "p90": 65536.0
     }
   },
   "status_counts": {
-    "done": 320
+    "done": 258
   },
-  "sub_bucket_count": 18,
+  "sub_bucket_count": 14,
   "sub_buckets": [
-    {
-      "count": 48,
-      "examples": [
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 224,
-          "signature": "TransitDuet/auto-adopted/p3754645",
-          "status": "done",
-          "task_id": "t5037"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 36,
-          "signature": "TransitDuet/auto-adopted/p3920810",
-          "status": "done",
-          "task_id": "t5063"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": 0,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 37,
-          "signature": "TransitDuet/auto-adopted/p3934482",
-          "status": "done",
-          "task_id": "t5064"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": 28,
-          "eta_source": "runtime_history_fallback",
-          "project": "TransitDuet",
-          "ram_mb": 37,
-          "signature": "TransitDuet/auto-adopted/p3935893",
-          "status": "done",
-          "task_id": "t5065"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 37,
-          "signature": "TransitDuet/auto-adopted/p3944466",
-          "status": "done",
-          "task_id": "t5066"
-        }
-      ],
-      "fraction": 0.15,
-      "project_counts": {
-        "TransitDuet": 48
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1,
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 1.0,
-          "min": 1.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 785.0,
-          "median": 303.5,
-          "min": 34.0,
-          "p90": 772.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/auto-adopted/p3754645": 1,
-        "TransitDuet/auto-adopted/p3920810": 1,
-        "TransitDuet/auto-adopted/p3934482": 1,
-        "TransitDuet/auto-adopted/p3935893": 1,
-        "TransitDuet/auto-adopted/p3944466": 1,
-        "TransitDuet/auto-adopted/p3945312": 1,
-        "TransitDuet/auto-adopted/p3951409": 1,
-        "TransitDuet/auto-adopted/p3956933": 1
-      },
-      "sub_bucket": "transit_misc_cpu|c_le2"
-    },
     {
       "count": 46,
       "examples": [
@@ -256,7 +138,7 @@
           "task_id": "t5392"
         }
       ],
-      "fraction": 0.14375,
+      "fraction": 0.17829457364341086,
       "project_counts": {
         "FreqDuet": 16,
         "FreqHRL": 9,
@@ -378,7 +260,7 @@
           "task_id": "t7643"
         }
       ],
-      "fraction": 0.134375,
+      "fraction": 0.16666666666666666,
       "project_counts": {
         "BAMOR": 43
       },
@@ -429,7 +311,7 @@
       "sub_bucket": "bamor_cpu_training|c_9_16"
     },
     {
-      "count": 36,
+      "count": 32,
       "examples": [
         {
           "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 789 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
@@ -497,9 +379,9 @@
           "task_id": "t4883"
         }
       ],
-      "fraction": 0.1125,
+      "fraction": 0.12403100775193798,
       "project_counts": {
-        "TransitDuet": 21,
+        "TransitDuet": 17,
         "freq_transitduet": 1,
         "freqduet": 11,
         "md": 1,
@@ -551,7 +433,7 @@
       "sub_bucket": "freqduet_cpu_ablation|c_le2"
     },
     {
-      "count": 28,
+      "count": 26,
       "examples": [
         {
           "cmd": "python3 train_compare_baselines.py --method uniform --total_steps 20000 --switch_interval 300 --seed 0 --seeds 3 --save_dir results/diagnostic_quick_20k_s3 --device cuda",
@@ -619,9 +501,9 @@
           "task_id": "t7480"
         }
       ],
-      "fraction": 0.0875,
+      "fraction": 0.10077519379844961,
       "project_counts": {
-        "BAMOR": 28
+        "BAMOR": 26
       },
       "recommended_probe_profiles": {
         "representative_cpu_cores_per_task": [
@@ -651,8 +533,8 @@
         },
         "ram_mb": {
           "max": 65536.0,
-          "median": 1606.5,
-          "min": 679.0,
+          "median": 1607.0,
+          "min": 1412.0,
           "p90": 2841.0
         }
       },
@@ -737,7 +619,7 @@
           "task_id": "t2871"
         }
       ],
-      "fraction": 0.065625,
+      "fraction": 0.08139534883720931,
       "project_counts": {
         "H2Oplus": 2,
         "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
@@ -860,7 +742,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.05625,
+      "fraction": 0.06976744186046512,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -980,7 +862,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.053125,
+      "fraction": 0.06589147286821706,
       "project_counts": {
         "BAMOR": 17
       },
@@ -1099,7 +981,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.046875,
+      "fraction": 0.05813953488372093,
       "project_counts": {
         "freqduet": 15
       },
@@ -1218,7 +1100,7 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.040625,
+      "fraction": 0.050387596899224806,
       "project_counts": {
         "TransitDuet": 13
       },
@@ -1337,7 +1219,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.0375,
+      "fraction": 0.046511627906976744,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -1458,7 +1340,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.01875,
+      "fraction": 0.023255813953488372,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -1573,7 +1455,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.015625,
+      "fraction": 0.01937984496124031,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1619,253 +1501,6 @@
       "sub_bucket": "sumo_eval_cpu|c_33_64"
     },
     {
-      "count": 3,
-      "examples": [
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 23,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (24 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 696,
-          "signature": "TransitDuet/auto-adopted/p4139240",
-          "status": "done",
-          "task_id": "t5105"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 23,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (24 procs)",
-          "eta_seconds": 43,
-          "eta_source": "runtime_history_fallback",
-          "project": "TransitDuet",
-          "ram_mb": 697,
-          "signature": "TransitDuet/auto-adopted/p4143216",
-          "status": "done",
-          "task_id": "t5106"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 24,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (25 procs)",
-          "eta_seconds": 219,
-          "eta_source": "runtime_history_fallback",
-          "project": "TransitDuet",
-          "ram_mb": 685,
-          "signature": "TransitDuet/auto-adopted/p4148638",
-          "status": "done",
-          "task_id": "t5109"
-        }
-      ],
-      "fraction": 0.009375,
-      "project_counts": {
-        "TransitDuet": 3
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          23,
-          24
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 24.0,
-          "median": 23.0,
-          "min": 23.0,
-          "p90": 23.0
-        },
-        "ram_mb": {
-          "max": 697.0,
-          "median": 696.0,
-          "min": 685.0,
-          "p90": 696.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/auto-adopted/p4139240": 1,
-        "TransitDuet/auto-adopted/p4143216": 1,
-        "TransitDuet/auto-adopted/p4148638": 1
-      },
-      "sub_bucket": "transit_misc_cpu|c_17_32"
-    },
-    {
-      "count": 3,
-      "examples": [
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 585,
-          "signature": "TransitDuet/auto-adopted/p80999",
-          "status": "done",
-          "task_id": "t5132"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 428,
-          "signature": "TransitDuet/auto-adopted/p499076",
-          "status": "done",
-          "task_id": "t5259"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 582,
-          "signature": "TransitDuet/auto-adopted/p751102",
-          "status": "done",
-          "task_id": "t5351"
-        }
-      ],
-      "fraction": 0.009375,
-      "project_counts": {
-        "TransitDuet": 3
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          3,
-          4
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 4.0,
-          "median": 3.0,
-          "min": 3.0,
-          "p90": 3.0
-        },
-        "ram_mb": {
-          "max": 585.0,
-          "median": 582.0,
-          "min": 428.0,
-          "p90": 582.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/auto-adopted/p499076": 1,
-        "TransitDuet/auto-adopted/p751102": 1,
-        "TransitDuet/auto-adopted/p80999": 1
-      },
-      "sub_bucket": "transit_misc_cpu|c_3_8"
-    },
-    {
-      "count": 2,
-      "examples": [
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 5,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 495,
-          "signature": "BAMOR/auto-adopted/p797133",
-          "status": "done",
-          "task_id": "t8433"
-        },
-        {
-          "cmd": "python3 -",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 33,
-          "signature": "BAMOR/auto-adopted/p1060263",
-          "status": "done",
-          "task_id": "t8810"
-        }
-      ],
-      "fraction": 0.00625,
-      "project_counts": {
-        "BAMOR": 2
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          4,
-          5
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 5.0,
-          "median": 4.5,
-          "min": 4.0,
-          "p90": 4.0
-        },
-        "ram_mb": {
-          "max": 495.0,
-          "median": 264.0,
-          "min": 33.0,
-          "p90": 33.0
-        }
-      },
-      "signature_prefixes": {
-        "BAMOR/auto-adopted/p1060263": 1,
-        "BAMOR/auto-adopted/p797133": 1
-      },
-      "sub_bucket": "bamor_cpu_training|c_3_8"
-    },
-    {
       "count": 2,
       "examples": [
         {
@@ -1895,7 +1530,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.00625,
+      "fraction": 0.007751937984496124,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1968,7 +1603,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.00625,
+      "fraction": 0.007751937984496124,
       "project_counts": {
         "TransitDuet": 2
       },

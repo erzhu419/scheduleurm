@@ -1,6 +1,6 @@
 # Module49 Production-Load Capacity Attempt
 
-Date: 2026-06-09
+Date: 2026-06-10
 
 This module attempts to move from a declared finite-slice load model to a
 production-history load certificate.  It reads Scheduleurm task records from
@@ -122,6 +122,9 @@ Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
 Module71 and Module72 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
+Module73 does not alter this raw-window LP.  It tightens the separate Module51
+controlled-production population by excluding unobservable external
+auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
 
 Capacity LP:
 

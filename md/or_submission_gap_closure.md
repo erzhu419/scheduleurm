@@ -181,15 +181,18 @@ Remaining scope limitation:
   leaves 1669 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
-  Module51 tightens the population definition.  In the reviewer-facing
+  Module51 tightens the population definition.  Module73 further excludes
+  unobservable external auto-adopted stdin/wait-for processes from the
+  controlled-arrival theorem population when they have no scheduler id, no
+  scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2840
+    records = 2766
     mapped = 2150
     strict mapped = 1242
-    measurement_required = 690
-    mapped_fraction = 0.757042
+    measurement_required = 616
+    mapped_fraction = 0.777296
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 320 / 2840 records
+    cpu_sumo_transit_eval_or_control = 258 / 2766 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -249,7 +252,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module72 = 0.000674792
+    strict mapped delta after Module72/73 raw-window LP = 0.000674792
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -485,12 +488,16 @@ Remaining scope limitation:
   lower-service class.
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2`, but not the
-  remaining offline-sumo/H2Oplus/RESCO/ZSW/Nature SUMO rows.  This moves
-  `transit_misc_cpu|c_le2` to the top of the regenerated Module53 first-probe
-  order.
+  remaining offline-sumo/H2Oplus/RESCO/ZSW/Nature SUMO rows.
+
+  Module73 removes the former `transit_misc_cpu|c_le2` first-probe blocker from
+  the controlled-arrival theorem population.  Those records are external
+  auto-adopted stdin/wait-for processes with no scheduler id, no scheduler log,
+  and no reproducible progress unit.  They remain operational telemetry, but
+  they cannot be charged to a Scheduleurm service curve without making the
+  theorem claim arbitrary external processes.
 
   The current remaining top probe order is:
-    transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes
     bamor_cpu_training|c_9_16
     freqduet_cpu_ablation|c_le2 residual command shapes

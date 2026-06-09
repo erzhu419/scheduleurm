@@ -246,10 +246,10 @@ population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
 records = 2766
-representative mapped = 2150
-strict mapped = 1242
-measurement_required = 616
-mapped_fraction = 0.777296
+representative mapped = 2196
+strict mapped = 1288
+measurement_required = 570
+mapped_fraction = 0.793926
 ```
 
 最大未闭合 bucket 是：
@@ -274,6 +274,7 @@ after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797 completed-active 
 after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805 completed-active records
 after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840 completed-active records
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766 completed-active records
+after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -496,18 +497,35 @@ closed operational-semantics boundary = unobservable external auto-adopted stdin
 label = excluded_external_auto_adopted_unobservable
 excluded completed-active count = 74
 reason = no scheduler id, no scheduler log, no reproducible command/progress unit
+
+closed completed-history slice = FreqDuet c17_32 direct runner_v3.py
+workload_key = freqduet_runner_v3_c17_32_completed_history
+feasible profiles = 1
+completed-active mapped count = 16
+unit rule = parsed episodes
+
+closed completed-history slice = FreqDuet c17_32 paper longtrain shell shards
+workload_key = freqduet_paper_longtrain_c17_32_completed_history
+feasible profiles = 1
+completed-active mapped count = 16
+unit rule = one completed shard, not job-count times episodes because --skip-existing is present
+
+closed completed-history slice = Transit native_promotion_replan_validation c17_32 residual
+workload_key = transit_native_promotion_c17_32_residual_completed_history
+feasible profiles = 1
+completed-active mapped count = 14
+unit rule = statically parsed seed-count times episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
-bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
+bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 ```
 

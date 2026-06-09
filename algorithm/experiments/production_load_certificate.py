@@ -68,6 +68,9 @@ DEFAULT_TASKSETS = (
     "production_zsw_tsp_sumo_eval_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
+    "production_freqduet_runner_v3_c17_32_completed_history",
+    "production_freqduet_paper_longtrain_c17_32_completed_history",
+    "production_transit_native_promotion_c17_32_residual_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled",
 )
@@ -290,6 +293,41 @@ def classify_record(
             "strict_measured",
             "module63_transit_native_promotion_c17_32_seedrange_completed_history",
             units=native_c17_32_units,
+        )
+
+    runner_c17_32_units = _freqduet_runner_v3_c17_32_units(row=row, est_vram=est_vram, cpu=cpu)
+    if runner_c17_32_units is not None:
+        return _mapped(
+            "freqduet_runner_v3_c17_32_completed_history",
+            "strict_measured",
+            "module74_freqduet_runner_v3_c17_32_completed_history",
+            units=runner_c17_32_units,
+        )
+
+    longtrain_c17_32_units = _freqduet_paper_longtrain_c17_32_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if longtrain_c17_32_units is not None:
+        return _mapped(
+            "freqduet_paper_longtrain_c17_32_completed_history",
+            "strict_measured",
+            "module74_freqduet_paper_longtrain_c17_32_completed_history",
+            units=longtrain_c17_32_units,
+        )
+
+    native_c17_32_residual_units = _native_promotion_c17_32_residual_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if native_c17_32_residual_units is not None:
+        return _mapped(
+            "transit_native_promotion_c17_32_residual_completed_history",
+            "strict_measured",
+            "module74_transit_native_promotion_c17_32_residual_completed_history",
+            units=native_c17_32_residual_units,
         )
 
     native_c9_16 = _native_promotion_c9_16_seed_units(
@@ -622,6 +660,30 @@ def _native_promotion_c17_32_seedrange_units(
     if "native_promotion_replan_validation" not in cmd_lower:
         return None
     units = _parse_native_promotion_seedrange_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _native_promotion_c17_32_residual_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (16.0 < float(cpu) <= 32.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "native_promotion_replan_validation" not in cmd_lower:
+        return None
+    if _parse_native_promotion_seedrange_units(cmd) is not None:
+        return None
+    units = _parse_native_promotion_seed_units(cmd)
     return units if units is not None and units > 0 else None
 
 
@@ -1284,10 +1346,69 @@ def _freqduet_runner_v3_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
         return None
     if "runner_v3.py" not in cmd_lower:
         return None
+    if "run_freqduet_ablation.py" in cmd_lower:
+        return None
     if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
         return None
     units = _parse_runner_v3_episode_units(cmd)
     return units if units is not None and units > 0 else None
+
+
+def _freqduet_runner_v3_c17_32_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (16.0 < float(cpu) <= 32.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "runner_v3.py" not in cmd_lower:
+        return None
+    if "run_freqduet_ablation.py" in cmd_lower:
+        return None
+    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+        return None
+    units = _parse_runner_v3_episode_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_paper_longtrain_c17_32_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (16.0 < float(cpu) <= 32.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_paper_longtrain_matrix.sh" not in cmd_lower:
+        return None
+    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+        return None
+    # The production command used --skip-existing, so job-count times episodes
+    # would overstate completed work when prior results are reused.
+    return 1.0
 
 
 def _freqduet_runner_v3_c9_16_residual_units(

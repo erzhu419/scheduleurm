@@ -1,0 +1,222 @@
+{
+  "cpu_counts": {
+    "24": 1,
+    "32": 13
+  },
+  "duration_s": {
+    "max": 1639.1678440570831,
+    "median": 529.6248811483383,
+    "min": 225.61151266098022,
+    "p10": 335.29546880722046,
+    "p90": 1564.4637174606323
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_17_32 native_promotion_replan_validation records without explicit seed-index ranges but with parseable CLI seed lists or Python-AST seed comprehensions. Only profile 1 is loaded; Module63 keeps seed-index range records separate.",
+  "parsed_units_seed_episode": {
+    "max": 170.0,
+    "median": 32.0,
+    "min": 32.0,
+    "p10": 32.0,
+    "p90": 128.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "FreqHRL": 9,
+    "TransitDuet": 5
+  },
+  "ram_counts": {
+    "131072": 1,
+    "64000": 5,
+    "65536": 4,
+    "96000": 4
+  },
+  "realized_seed_episode_s": {
+    "max": 0.14183673351849493,
+    "median": 0.08528944940813996,
+    "min": 0.05909746405816389,
+    "p10": 0.05992162692658664,
+    "p90": 0.09543821189661986
+  },
+  "record_count": 14,
+  "run_id": "module74_transit_native_promotion_c17_32_residual_completed_history",
+  "scope": "Transit/FreqHRL native_promotion_replan_validation, no GPU, 17-32 CPU cores, parseable residual seed work without seed-index ranges",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_gapguard998_w16_shard_0'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(0, 32)], e",
+      "cpu_cores": 32.0,
+      "duration_s": 541.4783952236176,
+      "finished_at": 1780441431.884316,
+      "parsed_units_seed_episode": 32.0,
+      "project": "TransitDuet",
+      "ram_mb": 65536.0,
+      "realized_seed_episode_s": 0.05909746405816389,
+      "signature": "freq_hrl_native_learned_wait_replan_gapguard998_128seed_w16",
+      "started_at": 1780440890.4059207,
+      "status": "done",
+      "task_id": "t6089"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_gapguard998_w16_shard_1'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(32, 64)], ",
+      "cpu_cores": 32.0,
+      "duration_s": 534.0308940410614,
+      "finished_at": 1780441435.442296,
+      "parsed_units_seed_episode": 32.0,
+      "project": "TransitDuet",
+      "ram_mb": 65536.0,
+      "realized_seed_episode_s": 0.05992162692658664,
+      "signature": "freq_hrl_native_learned_wait_replan_gapguard998_128seed_w16",
+      "started_at": 1780440901.411402,
+      "status": "done",
+      "task_id": "t6090"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_gapguard998_w16_shard_2'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(64, 96)], ",
+      "cpu_cores": 32.0,
+      "duration_s": 525.2188682556152,
+      "finished_at": 1780441438.960149,
+      "parsed_units_seed_episode": 32.0,
+      "project": "TransitDuet",
+      "ram_mb": 65536.0,
+      "realized_seed_episode_s": 0.06092698098657441,
+      "signature": "freq_hrl_native_learned_wait_replan_gapguard998_128seed_w16",
+      "started_at": 1780440913.7412808,
+      "status": "done",
+      "task_id": "t6091"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_gapguard998_w16_shard_3'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(96, 128)],",
+      "cpu_cores": 32.0,
+      "duration_s": 516.2072722911835,
+      "finished_at": 1780441440.3818479,
+      "parsed_units_seed_episode": 32.0,
+      "project": "TransitDuet",
+      "ram_mb": 65536.0,
+      "realized_seed_episode_s": 0.06199060284053759,
+      "signature": "freq_hrl_native_learned_wait_replan_gapguard998_128seed_w16",
+      "started_at": 1780440924.1745756,
+      "status": "done",
+      "task_id": "t6092"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_promotion_replan_same_wait_max']=0.82; cfg['_promotion_replan_max_shift_s']=2.0; cfg['_promotion_replan_terminal_early_cap_s']=0.0; cfg['_promoti",
+      "cpu_cores": 32.0,
+      "duration_s": 1573.819009065628,
+      "finished_at": 1780498550.3705273,
+      "parsed_units_seed_episode": 128.0,
+      "project": "FreqHRL",
+      "ram_mb": 96000.0,
+      "realized_seed_episode_s": 0.0813308260115585,
+      "signature": "freq_hrl_native_learned_wait_gap106_512seed_w16",
+      "started_at": 1780496976.5515182,
+      "status": "done",
+      "task_id": "t6521"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_same070_cap2_w16_shard_3'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(96, 128)]",
+      "cpu_cores": 32.0,
+      "duration_s": 391.93953490257263,
+      "finished_at": 1780452586.145519,
+      "parsed_units_seed_episode": 32.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.081645246652534,
+      "signature": "freq_hrl_native_learned_wait_same070_cap2_128seed_w16",
+      "started_at": 1780452194.205984,
+      "status": "done",
+      "task_id": "t6138"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_promotion_replan_same_wait_max']=0.82; cfg['_promotion_replan_max_shift_s']=2.0; cfg['_promotion_replan_terminal_early_cap_s']=0.0; cfg['_promoti",
+      "cpu_cores": 32.0,
+      "duration_s": 1564.4637174606323,
+      "finished_at": 1780498553.8484228,
+      "parsed_units_seed_episode": 128.0,
+      "project": "FreqHRL",
+      "ram_mb": 96000.0,
+      "realized_seed_episode_s": 0.08181717387972659,
+      "signature": "freq_hrl_native_learned_wait_gap106_512seed_w16",
+      "started_at": 1780496989.3847053,
+      "status": "done",
+      "task_id": "t6522"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_promotion_replan_same_wait_max']=0.82; cfg['_promotion_replan_max_shift_s']=2.0; cfg['_promotion_replan_terminal_early_cap_s']=0.0; cfg['_promoti",
+      "cpu_cores": 32.0,
+      "duration_s": 1442.0630073547363,
+      "finished_at": 1780498405.3581703,
+      "parsed_units_seed_episode": 128.0,
+      "project": "FreqHRL",
+      "ram_mb": 96000.0,
+      "realized_seed_episode_s": 0.08876172493655334,
+      "signature": "freq_hrl_native_learned_wait_gap106_512seed_w16",
+      "started_at": 1780496963.295163,
+      "status": "done",
+      "task_id": "t6520"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_same070_cap2_w16_shard_0'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(0, 32)], ",
+      "cpu_cores": 32.0,
+      "duration_s": 352.17560052871704,
+      "finished_at": 1780452511.2540326,
+      "parsed_units_seed_episode": 32.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.09086376214581243,
+      "signature": "freq_hrl_native_learned_wait_same070_cap2_128seed_w16",
+      "started_at": 1780452159.078432,
+      "status": "done",
+      "task_id": "t6135"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_same070_cap2_w16_shard_1'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(32, 64)],",
+      "cpu_cores": 32.0,
+      "duration_s": 342.8966705799103,
+      "finished_at": 1780452514.7571073,
+      "parsed_units_seed_episode": 32.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.09332257424920831,
+      "signature": "freq_hrl_native_learned_wait_same070_cap2_128seed_w16",
+      "started_at": 1780452171.8604367,
+      "status": "done",
+      "task_id": "t6136"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_promotion_replan_same_wait_max']=0.82; cfg['_promotion_replan_max_shift_s']=2.0; cfg['_promotion_replan_terminal_early_cap_s']=0.0; cfg['_promoti",
+      "cpu_cores": 32.0,
+      "duration_s": 1348.4594593048096,
+      "finished_at": 1780498299.4305818,
+      "parsed_units_seed_episode": 128.0,
+      "project": "FreqHRL",
+      "ram_mb": 96000.0,
+      "realized_seed_episode_s": 0.09492313552087776,
+      "signature": "freq_hrl_native_learned_wait_gap106_512seed_w16",
+      "started_at": 1780496950.9711225,
+      "status": "done",
+      "task_id": "t6519"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; v.run_validation(output_dir=Path(r'transit_hrl/results/scheduler_native_learned_wait_same070_cap2_w16_shard_2'), config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T_freqhrl_native_full.yaml', seeds=[201 + 10*i for i in range(64, 96)],",
+      "cpu_cores": 32.0,
+      "duration_s": 335.29546880722046,
+      "finished_at": 1780452518.0992734,
+      "parsed_units_seed_episode": 32.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.09543821189661986,
+      "signature": "freq_hrl_native_learned_wait_same070_cap2_128seed_w16",
+      "started_at": 1780452182.8038046,
+      "status": "done",
+      "task_id": "t6137"
+    }
+  ],
+  "source_scope": "classifier: Transit/FreqHRL native_promotion_replan_validation, no GPU, 17-32 CPU cores, parseable residual seed work without seed-index ranges",
+  "total_units_seed_episode": 970.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_native_promotion_c17_32_residual_completed_history"
+}

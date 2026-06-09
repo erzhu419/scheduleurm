@@ -41,6 +41,9 @@ md/experiment_module72_cfcmt_sumo_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_snapshot_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_policy_rollout_c_le2_completed_history.md
 md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
+md/experiment_module74_freqduet_runner_v3_c17_32_completed_history.md
+md/experiment_module74_freqduet_paper_longtrain_c17_32_completed_history.md
+md/experiment_module74_transit_native_promotion_c17_32_residual_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -255,10 +258,10 @@ Not yet closed:
 
 ```text
 completed_active_production records = 2766
-strict completed-active mapped count = 1242
-representative completed-active mapped count = 2150
-measurement_required = 616
-cpu_sumo_transit_eval_or_control remaining = 258 / 2766
+strict completed-active mapped count = 1288
+representative completed-active mapped count = 2196
+measurement_required = 570
+cpu_sumo_transit_eval_or_control remaining = 212 / 2766
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -268,14 +271,12 @@ controlled-arrival theorem population.  They remain operational telemetry, but
 including them in lambda would make the theorem claim arbitrary external
 processes as schedulable workload.
 
-The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
-only certifies records that actually invoke `run_freqduet_ablation.py`.  The
-Module63 seed-range certificate additionally closes a Transit native-promotion
-validation sub-slice.  The remaining `freqduet_cpu_ablation|c_17_32` records
-include 46 completed/active tasks with different command shapes, such as direct
-`runner_v3.py` invocations or native commands without parseable seed-index
-ranges, so neither the Module56 curve nor the Module63 lower-service point may
-be used to certify them.
+The previous `freqduet_cpu_ablation|c_17_32` residual is now closed at the
+command-shape level.  Module56 certifies records that actually invoke
+`run_freqduet_ablation.py`; Module63 certifies explicit seed-index native
+promotion validation records; Module74 certifies the remaining direct
+`runner_v3.py`, paper-longtrain shell-wrapper, and parseable native residual
+records separately.
 
 The previous `freqduet_cpu_ablation|c_9_16` residual is now closed at the
 command-shape level.  Module57 certifies only the direct `runner_v3.py` exact
@@ -321,7 +322,8 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 2487 after Module63, 704 / 2553 after Module64, 659 / 2589 after Module65,
 576 / 2679 after Module66/67, 532 / 2755 after Module68, 471 / 2781 after
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
-320 / 2840 after Module72, and 258 / 2766 after Module73.
+320 / 2840 after Module72, 258 / 2766 after Module73, and
+212 / 2766 after Module74.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -363,6 +365,12 @@ Module73 removes the former `transit_misc_cpu|c_le2` first-probe bucket by
 tightening the theorem population rather than by pretending those external
 stdin/wait-for processes have a measured Transit service curve.
 
+Module74 closes the former `freqduet_cpu_ablation|c_17_32` first-probe bucket
+with three explicit completed-history service classes: direct runner_v3
+episodes, paper-longtrain completed shards, and residual native seed-episodes.
+The longtrain class is intentionally shard-based because its production command
+uses `--skip-existing`.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -370,12 +378,12 @@ measured and mapped production slice lies inside the measured capacity region.
 It does not prove that the full production load is stabilizable.
 
 The mapped-capacity slack is now much tighter than before Module59 because the
-SimpleSAC slice uses a minimum completed profile-1 lower-service rate.  Module60
-adds another conservative completed-history profile-1 lower-service point but
-does not further reduce the mapped delta below the SimpleSAC bottleneck:
+SimpleSAC and Module74 paper-longtrain slices use conservative completed-history
+profile-1 lower-service rates.  This tightening is part of the theorem
+condition audit, not a reason to relabel slow tasks:
 
 ```text
-strict mapped delta = 0.000674792
+strict mapped delta = 0.000050804
 ```
 
 This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
@@ -394,13 +402,12 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
-bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
+bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 ```
 

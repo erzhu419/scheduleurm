@@ -45,6 +45,12 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c33_64_batch_completed_history",
     "production_transit_native_promotion_c33_64_single_seed_completed_history",
     "production_transit_native_promotion_c65p_completed_history",
+    "production_transit_trading_sweep_c_le2_completed_history",
+    "production_transit_trading_policy_c_le2_completed_history",
+    "production_transit_surrogate_validation_c_le2_completed_history",
+    "production_transit_native_promotion_c_le2_completed_history",
+    "production_transit_native_control_c_le2_completed_history",
+    "production_transit_freqhrl_import_smoke_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -355,6 +361,11 @@ def classify_record(
             "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
             units=zsw_sumo_c_le2_units,
         )
+
+    transit_c_le2 = _transit_freqhrl_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if transit_c_le2 is not None:
+        workload_key, units, reason = transit_c_le2
+        return _mapped(workload_key, "strict_measured", reason, units=units)
 
     if _is_simple_sac_sumo_eval_c_le2(row=row, est_vram=est_vram, cpu=cpu):
         return _mapped(
@@ -791,7 +802,7 @@ def _parse_native_promotion_python_seed_units(snippet: str) -> float | None:
         seed_node = keywords.get("seeds")
         if seed_node is None:
             return None
-        seed_count = _ast_seed_count(seed_node)
+        seed_count = _ast_seed_count(seed_node, seed_counts)
         if seed_count is None and isinstance(seed_node, ast.Name):
             seed_count = seed_counts.get(str(seed_node.id))
         episodes = 1.0
@@ -814,8 +825,27 @@ def _parse_native_promotion_python_seed_count(snippet: str) -> int | None:
     tree = _parse_python_ast_relaxed(snippet)
     if tree is None:
         return None
+    seed_counts: dict[str, int] = {}
     for node in ast.walk(tree):
-        count = _ast_seed_count(node)
+        if not isinstance(node, ast.Assign):
+            continue
+        if len(node.targets) != 1 or not isinstance(node.targets[0], ast.Name):
+            continue
+        count = _ast_seed_count(node.value)
+        if count is not None and count > 0:
+            seed_counts[str(node.targets[0].id)] = count
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "print"
+        ):
+            continue
+        count = _ast_seed_count(node, seed_counts)
+        if count is not None and count > 0:
+            return count
+    for node in ast.walk(tree):
+        count = _ast_seed_count(node, seed_counts)
         if count is not None and count > 0:
             return count
     return None
@@ -837,11 +867,21 @@ def _parse_python_ast_relaxed(snippet: str) -> Any | None:
     return None
 
 
-def _ast_seed_count(node: Any) -> int | None:
+def _ast_seed_count(node: Any, sequence_counts: Mapping[str, int] | None = None) -> int | None:
     import ast
 
+    counts = dict(sequence_counts or {})
+    if isinstance(node, ast.Name):
+        return counts.get(str(node.id))
     if isinstance(node, (ast.List, ast.Tuple)):
         return len(node.elts)
+    if isinstance(node, ast.Subscript):
+        total = None
+        if isinstance(node.value, ast.Name):
+            total = counts.get(str(node.value.id))
+        if isinstance(node.slice, ast.Slice):
+            return _ast_slice_length(node.slice, total=total)
+        return 1 if total is not None else None
     if isinstance(node, (ast.ListComp, ast.GeneratorExp)) and len(node.generators) == 1:
         return _ast_range_length(node.generators[0].iter)
     if (
@@ -850,14 +890,45 @@ def _ast_seed_count(node: Any) -> int | None:
         and node.func.id == "list"
         and len(node.args) == 1
     ):
-        return _ast_range_length(node.args[0])
+        return _ast_range_length(node.args[0]) or _ast_seed_count(node.args[0], counts)
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "map"
+        and len(node.args) >= 2
+    ):
+        return _ast_seed_count(node.args[1], counts)
     if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "join":
         if len(node.args) == 1:
-            return _ast_seed_count(node.args[0])
+            return _ast_seed_count(node.args[0], counts)
     if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print":
         if len(node.args) == 1:
-            return _ast_seed_count(node.args[0])
+            return _ast_seed_count(node.args[0], counts)
     return None
+
+
+def _ast_slice_length(node: Any, *, total: int | None) -> int | None:
+    import ast
+
+    if not isinstance(node, ast.Slice):
+        return None
+
+    def bound(value: Any, default: int | None) -> int | None:
+        if value is None:
+            return default
+        if isinstance(value, ast.Constant) and isinstance(value.value, (int, float)):
+            return int(value.value)
+        if isinstance(value, ast.UnaryOp) and isinstance(value.op, ast.USub):
+            inner = bound(value.operand, None)
+            return -inner if inner is not None else None
+        return None
+
+    start = bound(node.lower, 0)
+    stop = bound(node.upper, total)
+    step = bound(node.step, 1)
+    if start is None or stop is None or step is None or step == 0:
+        return None
+    return max(0, len(range(start, stop, step)))
 
 
 def _ast_range_length(node: Any) -> int | None:
@@ -1285,6 +1356,223 @@ def _is_freqduet_runner_v3_allfreq_alllayers_c9_16(
     if "configs_freqduet/f_allfreq_alllayers_hiro.yaml" not in cmd:
         return False
     return "freqduet" in text or "/transitduet/freqduet/" in cwd
+
+
+def _transit_freqhrl_c_le2_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if "bamor" in text:
+        return None
+    if not any(token in text for token in ("transitduet", "freq_hrl", "transit_hrl")):
+        return None
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if "native_promotion_replan_validation" in cmd_lower and "print('import_ok')" in cmd_lower:
+        return (
+            "transit_freqhrl_import_smoke_c_le2_completed_history",
+            1.0,
+            "module70_transit_freqhrl_import_smoke_c_le2_completed_history",
+        )
+
+    tokens = _shlex_tokens(cmd)
+    module = _python_module_from_tokens(tokens)
+    if not module:
+        return None
+
+    units: float | None = None
+    workload_key = ""
+    reason = ""
+    if module.endswith("trading.promotion_sweep"):
+        units = _transit_trading_promotion_sweep_units(tokens)
+        workload_key = "transit_trading_sweep_c_le2_completed_history"
+        reason = "module70_transit_trading_sweep_c_le2_completed_history"
+    elif module.endswith("trading.performance_validation"):
+        units = _transit_seed_step_asset_units(tokens) * 11.0
+        workload_key = "transit_trading_sweep_c_le2_completed_history"
+        reason = "module70_transit_trading_sweep_c_le2_completed_history"
+    elif module.endswith("trading.pressure_test_matrix"):
+        scenario_count = _transit_count_option(tokens, "--scenarios", 6)
+        baseline_count = _transit_count_option(tokens, "--baselines", 12)
+        units = _transit_seed_step_asset_units(tokens) * scenario_count * baseline_count
+        workload_key = "transit_trading_sweep_c_le2_completed_history"
+        reason = "module70_transit_trading_sweep_c_le2_completed_history"
+    elif module.endswith("trading.encoder_ablation"):
+        method_count = _transit_count_option(tokens, "--methods", 6)
+        units = _transit_seed_step_asset_units(tokens) * method_count
+        workload_key = "transit_trading_sweep_c_le2_completed_history"
+        reason = "module70_transit_trading_sweep_c_le2_completed_history"
+    elif module.endswith("trading.policy_entry"):
+        units = _transit_trading_policy_entry_units(tokens)
+        workload_key = "transit_trading_policy_c_le2_completed_history"
+        reason = "module70_transit_trading_policy_c_le2_completed_history"
+    elif module.endswith("trading.ppo_actor_critic"):
+        units = _transit_policy_train_eval_units(tokens, default_iterations=8)
+        workload_key = "transit_trading_policy_c_le2_completed_history"
+        reason = "module70_transit_trading_policy_c_le2_completed_history"
+    elif module.endswith("transit.gap_closure_validation"):
+        units = 4.0 * _transit_surrogate_train_eval_units(tokens, default_iterations=5)
+        workload_key = "transit_surrogate_validation_c_le2_completed_history"
+        reason = "module70_transit_surrogate_validation_c_le2_completed_history"
+    elif module.endswith("transit.ppo_surrogate"):
+        units = _transit_surrogate_train_eval_units(tokens, default_iterations=8)
+        workload_key = "transit_surrogate_validation_c_le2_completed_history"
+        reason = "module70_transit_surrogate_validation_c_le2_completed_history"
+    elif module.endswith("transit.native_promotion_replan_validation"):
+        variants = _transit_count_option(tokens, "--variants", 4)
+        seed_episode_units = _parse_native_promotion_seed_units(cmd)
+        if seed_episode_units is None:
+            seed_episode_units = _transit_seed_episode_units(tokens, seed_default=8)
+        units = variants * seed_episode_units
+        workload_key = "transit_native_promotion_c_le2_completed_history"
+        reason = "module70_transit_native_promotion_c_le2_completed_history"
+    elif module.endswith("transit.native_wait_credit_validation"):
+        units = 2.0 * _transit_seed_episode_units(tokens, seed_default=5)
+        workload_key = "transit_native_control_c_le2_completed_history"
+        reason = "module70_transit_native_control_c_le2_completed_history"
+    elif module.endswith("transit.native_real_demand_control_validation"):
+        source_count = _transit_count_option(tokens, "--sources", 2)
+        units = 2.0 * source_count * _transit_seed_episode_units(tokens, seed_default=3)
+        workload_key = "transit_native_control_c_le2_completed_history"
+        reason = "module70_transit_native_control_c_le2_completed_history"
+
+    if units is None or not math.isfinite(float(units)) or float(units) <= 0:
+        return None
+    return workload_key, float(units), reason
+
+
+def _shlex_tokens(cmd: str) -> list[str]:
+    import shlex
+
+    try:
+        return shlex.split(str(cmd))
+    except ValueError:
+        return str(cmd).split()
+
+
+def _python_module_from_tokens(tokens: list[str]) -> str:
+    for idx, token in enumerate(tokens):
+        if token == "-m" and idx + 1 < len(tokens):
+            return str(tokens[idx + 1])
+    return ""
+
+
+def _transit_option(tokens: list[str], name: str, default: str = "") -> str:
+    value = _shell_option_from_tokens(tokens, name)
+    return str(value) if value is not None else str(default)
+
+
+def _transit_int_option(tokens: list[str], name: str, default: int) -> int:
+    try:
+        value = int(float(_transit_option(tokens, name, str(default))))
+    except ValueError:
+        return int(default)
+    return value if value > 0 else int(default)
+
+
+def _transit_values(tokens: list[str], name: str) -> list[str]:
+    if name not in tokens:
+        return []
+    idx = tokens.index(name) + 1
+    values: list[str] = []
+    while idx < len(tokens) and not str(tokens[idx]).startswith("--"):
+        for part in str(tokens[idx]).split(","):
+            if part.strip():
+                values.append(part.strip())
+        idx += 1
+    return values
+
+
+def _transit_count_option(tokens: list[str], name: str, default_count: int) -> int:
+    values = _transit_values(tokens, name)
+    if values:
+        return len(values)
+    return max(1, int(default_count))
+
+
+def _transit_seed_count(tokens: list[str], name: str, default_count: int) -> int:
+    return _transit_count_option(tokens, name, default_count)
+
+
+def _transit_seed_step_asset_units(tokens: list[str]) -> float:
+    seeds = _transit_seed_count(tokens, "--seeds", 5)
+    steps = _transit_int_option(tokens, "--steps", 720)
+    assets = _transit_int_option(tokens, "--assets", 3)
+    return float(seeds * steps * assets)
+
+
+def _transit_trading_promotion_sweep_units(tokens: list[str]) -> float:
+    grid = (
+        _transit_count_option(tokens, "--thresholds", 4)
+        * _transit_count_option(tokens, "--ratios", 4)
+        * _transit_count_option(tokens, "--regime-thresholds", 4)
+        * _transit_count_option(tokens, "--min-age-s", 1)
+        * _transit_count_option(tokens, "--activation-strength-thresholds", 1)
+        * _transit_count_option(tokens, "--startup-strength-age-s", 1)
+        * _transit_count_option(tokens, "--startup-strength-thresholds", 1)
+        * _transit_count_option(tokens, "--mid-gains", 3)
+        * _transit_count_option(tokens, "--adapt-gains", 5)
+        * 2
+    )
+    return _transit_seed_step_asset_units(tokens) * float(grid)
+
+
+def _transit_trading_policy_entry_units(tokens: list[str]) -> float:
+    mode = _transit_option(tokens, "--mode", "eval")
+    policy = _transit_option(tokens, "--policy", "heuristic")
+    if mode != "train":
+        eval_seeds = _transit_seed_count(tokens, "--eval-seeds", _transit_seed_count(tokens, "--seeds", 1))
+        steps = _transit_int_option(tokens, "--steps", 360)
+        assets = _transit_int_option(tokens, "--assets", 3)
+        return float(eval_seeds * steps * assets)
+    if policy == "pg_linear":
+        iterations = _transit_int_option(tokens, "--pg-iterations", 12)
+    elif policy == "ac_linear":
+        iterations = _transit_int_option(tokens, "--ac-iterations", 20)
+    elif policy == "linear":
+        iterations = (
+            _transit_int_option(tokens, "--generations", 8)
+            * _transit_int_option(tokens, "--population", 12)
+        )
+    else:
+        iterations = 1
+    return _transit_policy_train_eval_units(tokens, default_iterations=iterations)
+
+
+def _transit_policy_train_eval_units(tokens: list[str], *, default_iterations: int) -> float:
+    train = _transit_seed_count(tokens, "--train-seeds", 3)
+    fallback_eval = train if not _transit_values(tokens, "--eval-seeds") else 3
+    evals = _transit_seed_count(tokens, "--eval-seeds", fallback_eval)
+    steps = _transit_int_option(tokens, "--steps", 360)
+    assets = _transit_int_option(tokens, "--assets", 3)
+    iterations = _transit_int_option(tokens, "--iterations", int(default_iterations))
+    return float(train * steps * assets * iterations + evals * steps * assets)
+
+
+def _transit_surrogate_train_eval_units(tokens: list[str], *, default_iterations: int) -> float:
+    train = _transit_seed_count(tokens, "--train-seeds", 3)
+    fallback_eval = train if not _transit_values(tokens, "--eval-seeds") else 3
+    evals = _transit_seed_count(tokens, "--eval-seeds", fallback_eval)
+    steps = _transit_int_option(tokens, "--steps", 240)
+    corridors = _transit_int_option(tokens, "--corridors", 2)
+    iterations = _transit_int_option(tokens, "--iterations", int(default_iterations))
+    return float(train * steps * corridors * iterations + evals * steps * corridors)
+
+
+def _transit_seed_episode_units(tokens: list[str], *, seed_default: int) -> float:
+    seeds = _transit_seed_count(tokens, "--seeds", seed_default)
+    episodes = _transit_int_option(tokens, "--episodes", 1)
+    return float(seeds * episodes)
 
 
 def _dedupe_records(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:

@@ -34,50 +34,56 @@ defensible view is `completed_active_production`: completed plus currently
 active production-like tasks, excluding benchmark/test/cancel/forgotten records
 and adopted compiler helper processes.
 
-## Current Result After Module71
+## Current Result After Module72
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 2805
-representative mapped = 2091
-strict mapped = 1180
-unmapped / measurement-required = 714
-representative mapped_fraction = 0.745455
-capacity slack on mapped raw-window representative load from Module49 delta = 0.001497772
+completed_active_production records = 2840
+representative mapped = 2150
+strict mapped = 1242
+unmapped / measurement-required = 690
+representative mapped_fraction = 0.757042
+capacity slack on mapped raw-window representative load from Module49 delta = 0.000674792
 global theorem closed = false
 ```
 
-The newly measured Module56 through Module71 sub-buckets appear as
+The newly measured Module56 through Module72 sub-buckets appear as
 strict mapped coverage:
 
 ```text
-freqduet_cpu_ablation_c17_32 = 153 / 2805 completed-active production records
-bamor_mujoco_c3_8_completed_history = 127 / 2805 completed-active production records
-freqduet_cpu_ablation_c9_16 = 110 / 2805 completed-active production records
-transit_native_promotion_c17_32_seedrange_completed_history = 91 / 2805 completed-active production records
-freqduet_runner_v3_c3_8_completed_history = 86 / 2805 completed-active production records
-freqduet_runner_v3_c_le2_completed_history = 84 / 2805 completed-active production records
-freqduet_cpu_ablation_c33_64_completed_history = 63 / 2805 completed-active production records
-bamor_train_compare_c3_8_completed_history = 58 / 2805 completed-active production records
-transit_native_promotion_c33_64_batch_completed_history = 55 / 2805 completed-active production records
-sumo_eval_simple_sac_c_le2 = 54 / 2805 completed-active production records
-zsw_tsp_sumo_eval_c_le2_completed_history = 50 / 2805 completed-active production records
-transit_native_promotion_c65p_completed_history = 49 / 2805 completed-active production records
-freqduet_cpu_ablation_c3_8_completed_history = 40 / 2805 completed-active production records
-transit_native_promotion_c9_16_residual_completed_history = 40 / 2805 completed-active production records
-bamor_diagnostic_shard_c3_8_completed_history = 25 / 2805 completed-active production records
-transit_native_promotion_c_le2_completed_history = 19 / 2805 completed-active production records
-transit_trading_policy_c_le2_completed_history = 18 / 2805 completed-active production records
-transit_trading_sweep_c_le2_completed_history = 14 / 2805 completed-active production records
-freqduet_runner_v3_c9_16_residual_completed_history = 12 / 2805 completed-active production records
-transit_native_promotion_c9_16_bounded_wait_completed_history = 7 / 2805 completed-active production records
-transit_native_control_c_le2_completed_history = 7 / 2805 completed-active production records
-freqduet_cpu_ablation_c65p_completed_history = 7 / 2805 completed-active production records
-freqduet_promoted_ep100_c65p_completed_history = 6 / 2805 completed-active production records
-transit_surrogate_validation_c_le2_completed_history = 3 / 2805 completed-active production records
-transit_freqhrl_import_smoke_c_le2_completed_history = 1 / 2805 completed-active production records
-freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2805 completed-active production records
+freqduet_cpu_ablation_c17_32 = 153 / 2840 completed-active production records
+bamor_mujoco_c3_8_completed_history = 152 / 2840 completed-active production records
+freqduet_cpu_ablation_c9_16 = 116 / 2840 completed-active production records
+transit_native_promotion_c17_32_seedrange_completed_history = 91 / 2840 completed-active production records
+freqduet_runner_v3_c3_8_completed_history = 86 / 2840 completed-active production records
+freqduet_runner_v3_c_le2_completed_history = 85 / 2840 completed-active production records
+freqduet_cpu_ablation_c33_64_completed_history = 63 / 2840 completed-active production records
+bamor_train_compare_c3_8_completed_history = 58 / 2840 completed-active production records
+transit_native_promotion_c33_64_batch_completed_history = 55 / 2840 completed-active production records
+sumo_eval_simple_sac_c_le2 = 54 / 2840 completed-active production records
+zsw_tsp_sumo_eval_c_le2_completed_history = 50 / 2840 completed-active production records
+transit_native_promotion_c65p_completed_history = 49 / 2840 completed-active production records
+freqduet_cpu_ablation_c3_8_completed_history = 40 / 2840 completed-active production records
+transit_native_promotion_c9_16_residual_completed_history = 40 / 2840 completed-active production records
+bamor_diagnostic_shard_c3_8_completed_history = 25 / 2840 completed-active production records
+transit_native_promotion_c_le2_completed_history = 19 / 2840 completed-active production records
+transit_trading_policy_c_le2_completed_history = 18 / 2840 completed-active production records
+transit_trading_sweep_c_le2_completed_history = 14 / 2840 completed-active production records
+freqduet_runner_v3_c9_16_residual_completed_history = 12 / 2840 completed-active production records
+cfcmt_policy_rollout_c_le2_completed_history = 10 / 2840 completed-active production records
+transit_native_promotion_c9_16_bounded_wait_completed_history = 7 / 2840 completed-active production records
+transit_native_control_c_le2_completed_history = 7 / 2840 completed-active production records
+freqduet_cpu_ablation_c65p_completed_history = 7 / 2840 completed-active production records
+freqduet_promoted_ep100_c65p_completed_history = 6 / 2840 completed-active production records
+cfcmt_feed_conversion_c_le2_completed_history = 5 / 2840 completed-active production records
+cfcmt_env_validation_c_le2_completed_history = 5 / 2840 completed-active production records
+cfcmt_snapshot_generation_c_le2_completed_history = 5 / 2840 completed-active production records
+cfcmt_sumo_generation_c_le2_completed_history = 4 / 2840 completed-active production records
+transit_surrogate_validation_c_le2_completed_history = 3 / 2840 completed-active production records
+cfcmt_traffic_signal_phase2_c_le2_completed_history = 1 / 2840 completed-active production records
+transit_freqhrl_import_smoke_c_le2_completed_history = 1 / 2840 completed-active production records
+freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2840 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -88,12 +94,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 350 | 0.124777 |
-| `generic_cpu_python` | measurement required | 153 | 0.054545 |
-| `cpu_eval_generic` | measurement required | 82 | 0.029234 |
-| `artifact_io_control` | measurement required | 77 | 0.027451 |
-| `scheduler_control_plane` | measurement required | 36 | 0.012834 |
-| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005704 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 320 | 0.112676 |
+| `generic_cpu_python` | measurement required | 153 | 0.053873 |
+| `cpu_eval_generic` | measurement required | 82 | 0.028873 |
+| `artifact_io_control` | measurement required | 77 | 0.027113 |
+| `scheduler_control_plane` | measurement required | 36 | 0.012676 |
+| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005634 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -117,6 +123,7 @@ after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755
 after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781
 after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797
 after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805
+after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -137,6 +144,11 @@ by splitting it into residual runner_v3, bounded_wait_nofinal_v14 native, and
 residual native completed-history service classes.  The bounded split is
 necessary: the coarse native c9_16 class is not theorem-usable because its
 slowest lower-service point does not dominate the aggregate class load.
+Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six script-level
+completed-history service classes: feed conversion, environment validation,
+SUMO generation, snapshot generation, policy rollout, and traffic-signal
+phase2.  It intentionally leaves offline-sumo, H2Oplus, RESCO/config,
+ZSW metrics-parser, and Nature-emissions SUMO rows unclaimed.
 
 ## Interpretation
 
@@ -174,7 +186,9 @@ native-promotion records, 7 native-control records, 18 trading-policy records,
 14 trading-sweep records, 3 surrogate-validation records, and 1 import-smoke
 singleton.  Module71 maps 40 residual c9_16 native-promotion records, 7
 bounded-wait c9_16 native-promotion records, and 12 residual c9_16 runner_v3
-records.  The next closure targets
-are now the remaining CPU/SUMO/transit residual buckets, led by
-`sumo_eval_cpu|c_le2`, `transit_misc_cpu|c_le2`, and
-`freqduet_cpu_ablation|c_17_32` in the regenerated Module53 manifest.
+records.  Module72 maps 10 CFCMT policy-rollout records, 5 feed-conversion
+records, 5 environment-validation records, 5 snapshot-generation records, 4
+SUMO-generation records, and 1 traffic-signal phase2 singleton.  The next
+closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
+`transit_misc_cpu|c_le2`, `freqduet_cpu_ablation|c_17_32`, and
+`bamor_cpu_training|c_9_16` in the regenerated Module53 manifest.

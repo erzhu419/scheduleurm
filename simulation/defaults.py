@@ -322,6 +322,60 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module72_cfcmt_feed_conversion_c_le2_completed_history_reports",
+        workload_key="cfcmt_feed_conversion_c_le2_completed_history",
+        command_fingerprint="cfcmt_feed_conversion_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module72_cfcmt_env_validation_c_le2_completed_history_reports",
+        workload_key="cfcmt_env_validation_c_le2_completed_history",
+        command_fingerprint="cfcmt_env_validation_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module72_cfcmt_sumo_generation_c_le2_completed_history_reports",
+        workload_key="cfcmt_sumo_generation_c_le2_completed_history",
+        command_fingerprint="cfcmt_sumo_generation_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module72_cfcmt_snapshot_generation_c_le2_completed_history_reports",
+        workload_key="cfcmt_snapshot_generation_c_le2_completed_history",
+        command_fingerprint="cfcmt_snapshot_generation_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module72_cfcmt_policy_rollout_c_le2_completed_history_reports",
+        workload_key="cfcmt_policy_rollout_c_le2_completed_history",
+        command_fingerprint="cfcmt_policy_rollout_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module72_cfcmt_traffic_signal_phase2_c_le2_completed_history_reports",
+        workload_key="cfcmt_traffic_signal_phase2_c_le2_completed_history",
+        command_fingerprint="cfcmt_traffic_signal_phase2_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module66_freqduet_runner_v3_c3_8_completed_history_reports",
         workload_key="freqduet_runner_v3_c3_8_completed_history",
         command_fingerprint="freqduet_runner_v3_c3_8_completed_history_v1",
@@ -465,6 +519,12 @@ def legacy_policy() -> ReplayPolicy:
             "transit_native_promotion_c9_16_bounded_wait_completed_history": 1,
             "transit_native_promotion_c9_16_residual_completed_history": 1,
             "freqduet_runner_v3_c9_16_residual_completed_history": 1,
+            "cfcmt_feed_conversion_c_le2_completed_history": 1,
+            "cfcmt_env_validation_c_le2_completed_history": 1,
+            "cfcmt_sumo_generation_c_le2_completed_history": 1,
+            "cfcmt_snapshot_generation_c_le2_completed_history": 1,
+            "cfcmt_policy_rollout_c_le2_completed_history": 1,
+            "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

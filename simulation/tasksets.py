@@ -648,6 +648,218 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_cfcmt_feed_conversion_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU CFCMT "
+                "GTFS/LTA feed conversion commands. It covers CFCMT no-GPU "
+                "gtfs_to_h2o_xlsx.py and lta_to_h2o_xlsx.py records requesting "
+                "at most 2 CPU cores."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as feed-conversion jobs. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; no live co-location profile "
+                "is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_feed_conversion_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT feed conversion c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for CFCMT feed conversion scripts."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Feed conversion is separated from simulation, snapshot, "
+                        "policy-rollout, and traffic-signal scripts because the "
+                        "progress unit is a completed conversion job."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_env_validation_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU CFCMT "
+                "H2O city-environment validation commands with explicit "
+                "--max-steps."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed validation-step units. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_env_validation_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT env validation c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for validate_h2o_city_env.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is the command's parsed --max-steps value.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_sumo_generation_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU CFCMT "
+                "SUMO/APC/AVL generation commands with explicit --duration-sec."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed simulated-second units. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_sumo_generation_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=4,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT SUMO generation c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for cf_h2o.eval.sumo_apc_avl_sumo_generation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Policy rollout and snapshot-generation records are parsed "
+                        "before this class because their stage2-report paths contain "
+                        "sumo_generation filenames."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_snapshot_generation_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU CFCMT "
+                "SUMO/APC/AVL snapshot-generation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with snapshot-window units inferred from --snapshot-period and "
+                "the stage2-report duration family. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_snapshot_generation_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT snapshot generation c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for cf_h2o.eval.sumo_apc_avl_snapshot_generation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Duration is inferred conservatively from the stage2-report "
+                        "family: full_day -> 86400 s, 4h -> 14400 s, otherwise "
+                        "1800 s."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_policy_rollout_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU CFCMT "
+                "SUMO policy-rollout validation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with policy-event-budget units equal to parsed policy count times "
+                "--max-events-per-city-policy, falling back to --max-steps. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_policy_rollout_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=10,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT policy rollout c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for cf_h2o/eval/sumo_policy_rollout_validation.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is intentionally separated from SUMO generation "
+                        "and snapshot generation because rollout commands contain "
+                        "their inputs only as stage2-report paths."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the low-CPU CFCMT "
+                "traffic_signal_sumo_phase2.py singleton."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one phase2 run. Only profile 1 is loaded from the realized "
+                "completed-task wall-clock record."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_traffic_signal_phase2_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT traffic signal phase2 singleton",
+                    benchmark_source=(
+                        "Scheduleurm module72 completed-history wall-clock audit "
+                        "for traffic_signal_sumo_phase2.py."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This singleton is kept separate so a generic phase2 run "
+                        "does not depress the progress units of simulation or "
+                        "rollout classes."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_runner_v3_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for the dominant direct "

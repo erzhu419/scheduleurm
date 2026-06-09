@@ -1,0 +1,107 @@
+{
+  "cpu_counts": {
+    "1": 2,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 194.31005597114563,
+    "median": 62.48972296714783,
+    "min": 59.163774490356445,
+    "p10": 59.163774490356445,
+    "p90": 62.61485838890076
+  },
+  "interpretation": "Only profile 1 is loaded. Policy rollout and snapshot-generation commands are matched before this class so stage2-report filenames cannot pull them into SUMO generation.",
+  "mapped_completed_active_count": 4,
+  "mapped_completed_active_units_sim_second": 106200.0,
+  "parsed_units_sim_second": {
+    "max": 86400.0,
+    "median": 9000.0,
+    "min": 1800.0,
+    "p10": 1800.0,
+    "p90": 14400.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 4
+  },
+  "ram_counts": {
+    "232": 1,
+    "244": 1,
+    "694": 1,
+    "770": 1
+  },
+  "realized_sim_second_s": {
+    "max": 1385.4016101222483,
+    "median": 136.06967474608078,
+    "min": 18.52709054097842,
+    "p10": 18.52709054097842,
+    "p90": 243.3921791508952
+  },
+  "record_count": 4,
+  "run_id": "module72_cfcmt_sumo_generation_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for CFCMT SUMO/APC/AVL generation records. It maps only no-GPU c_le2 sumo_apc_avl_sumo_generation commands with explicit --duration-sec simulated-second units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_apc_avl_sumo_generation.py --line-manifest H2Oplus/downloads/sumo_apc_avl_benchmark/inputs/sumo_apc_avl_line_inputs_full.jsonl --out-root H2Oplus/downloads/sumo_apc_avl_benchmark/sumo_control_...",
+      "cpu_cores": 1.0,
+      "duration_s": 194.31005597114563,
+      "finished_at": 1780300605.686509,
+      "parsed_units_sim_second": 3600.0,
+      "project": "CFCMT",
+      "ram_mb": 232.0,
+      "realized_sim_second_s": 18.52709054097842,
+      "signature": "CFCMT/auto-adopted/p675836",
+      "started_at": 1780300411.376453,
+      "status": "done",
+      "task_id": "t5322"
+    },
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_sumo_generation --run-sumo --max-lines-per-city 0 --max-departures-per-line 0 --duration-sec 1800 --out cf_h2o/results/sumo_apc_avl_sumo_generation_full.json --md-out cf_h2o/results...",
+      "cpu_cores": 2.0,
+      "duration_s": 62.61485838890076,
+      "finished_at": 1779192525.0825336,
+      "parsed_units_sim_second": 1800.0,
+      "project": "CFCMT",
+      "ram_mb": 770.0,
+      "realized_sim_second_s": 28.747170341266344,
+      "signature": "CFCMT/auto-adopted/p529125",
+      "started_at": 1779192462.4676752,
+      "status": "done",
+      "task_id": "t3752"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_apc_avl_sumo_generation.py --line-manifest H2Oplus/downloads/sumo_apc_avl_benchmark/inputs/sumo_apc_avl_line_inputs_full.jsonl --out-root H2Oplus/downloads/sumo_apc_avl_benchmark/sumo_control_...",
+      "cpu_cores": 1.0,
+      "duration_s": 59.163774490356445,
+      "finished_at": 1780301933.0928595,
+      "parsed_units_sim_second": 14400.0,
+      "project": "CFCMT",
+      "ram_mb": 244.0,
+      "realized_sim_second_s": 243.3921791508952,
+      "signature": "CFCMT/auto-adopted/p701176",
+      "started_at": 1780301873.929085,
+      "status": "done",
+      "task_id": "t5333"
+    },
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_sumo_generation --max-lines-per-city 0 --max-departures-per-line 0 --duration-sec 86400 --out-root H2Oplus/downloads/sumo_apc_avl_benchmark/sumo_full_day --out cf_h2o/results/sumo_a...",
+      "cpu_cores": 2.0,
+      "duration_s": 62.3645875453949,
+      "finished_at": 1779193820.6619778,
+      "parsed_units_sim_second": 86400.0,
+      "project": "CFCMT",
+      "ram_mb": 694.0,
+      "realized_sim_second_s": 1385.4016101222483,
+      "signature": "CFCMT/auto-adopted/p536951",
+      "started_at": 1779193758.2973902,
+      "status": "done",
+      "task_id": "t3755"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module72 CFCMT SUMO Generation c_le2 Completed-History Certificate",
+  "total_units_sim_second": 106200.0,
+  "workload_key": "cfcmt_sumo_generation_c_le2_completed_history"
+}

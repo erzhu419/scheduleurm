@@ -968,6 +968,117 @@ def test_module63_native_promotion_c17_seedrange_completed_history_profile1(chec
           diag=str(report))
 
 
+def test_module68_native_promotion_c33_seed_units_completed_history_profile1(check, sch):
+    batch = {
+        "id": "native-c33-batch",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/freq-hrl-native-wait-aware-guarded",
+        "description": "Transit native promotion c33_64 guarded batch",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 60,
+        "ram_mb": 131072,
+        "cmd": (
+            "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+            "freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--config transit_hrl/freq_transitduet/configs_freqduet/T_freqhrl_native_full.yaml "
+            "--seeds 201 211 221 231 --episodes 2 --min-pairs 4 "
+            "--offpolicy-replay-updates 3 --workers 60 --output-dir out"
+        ),
+    }
+    batch_cls = classify_record(batch, include_representative=False)
+    check("Transit native promotion c33_64 CLI seed-list maps to module68 batch class",
+          batch_cls["workload_key"] == "transit_native_promotion_c33_64_batch_completed_history"
+          and batch_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(batch_cls["units"]), 8.0),
+          diag=str(batch_cls))
+
+    pyc = dict(batch)
+    pyc["id"] = "native-c33-pyc"
+    pyc["project"] = "FreqHRL"
+    pyc["signature"] = "freq_hrl_native_learned_wait_same070_cap2_512seed_w16"
+    pyc["cmd"] = (
+        "bash -lc \"set -e; python3 -c \\\"from pathlib import Path; "
+        "from freq_hrl.experiments.transit import native_promotion_replan_validation as v; "
+        "seeds=[201 + 10*i for i in range(0,86)]; "
+        "v.run_validation(output_dir=Path('out'), config_path=v.PERSISTENT_STRESS_CONFIG, "
+        "seeds=seeds, episodes=1, device='cpu', min_pairs=86, workers=16)\\\"\""
+    )
+    pyc_cls = classify_record(pyc, include_representative=False)
+    check("module68 parser proves bash-wrapped python-c seed comprehension by AST",
+          pyc_cls["workload_key"] == "transit_native_promotion_c33_64_batch_completed_history"
+          and math.isclose(float(pyc_cls["units"]), 86.0),
+          diag=str(pyc_cls))
+
+    single = dict(batch)
+    single["id"] = "native-c33-single"
+    single["project"] = "FreqHRLNative"
+    single["signature"] = "FreqHRLNative/native-promotion-persistent-stress-single"
+    single["cpu_cores"] = 38
+    single["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--seeds 31 --episodes 1 --workers 38 --output-dir out"
+    )
+    single_cls = classify_record(single, include_representative=False)
+    check("module68 isolates c33_64 single-seed smoke records from batch class",
+          single_cls["workload_key"] == "transit_native_promotion_c33_64_single_seed_completed_history"
+          and math.isclose(float(single_cls["units"]), 1.0),
+          diag=str(single_cls))
+
+    unparseable = dict(batch)
+    unparseable["id"] = "native-c33-unparseable"
+    unparseable["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--seeds $SEEDS --episodes 1 --workers 60 --output-dir out"
+    )
+    unparseable_cls = classify_record(unparseable, include_representative=False)
+    check("module68 leaves unparseable shell-expanded seed lists unmeasured",
+          unparseable_cls["workload_key"] is None and unparseable_cls["reason"] == "unmapped_cpu",
+          diag=str(unparseable_cls))
+
+    cache = build_default_cache()
+    batch_profiles = cache.profiles("transit_native_promotion_c33_64_batch_completed_history")
+    single_profiles = cache.profiles("transit_native_promotion_c33_64_single_seed_completed_history")
+    check("module68 service cache exposes separated c33_64 native lower services",
+          [record.profile for record in batch_profiles] == [1]
+          and [record.profile for record in single_profiles] == [1]
+          and math.isclose(
+              cache.get("transit_native_promotion_c33_64_batch_completed_history", 1).aggregate_rate,
+              0.06020432113562225,
+              rel_tol=1e-12,
+          )
+          and math.isclose(
+              cache.get("transit_native_promotion_c33_64_single_seed_completed_history", 1).aggregate_rate,
+              0.003367969313750444,
+              rel_tol=1e-12,
+          ),
+          diag=str({
+              "batch": [record.snapshot() for record in batch_profiles],
+              "single": [record.snapshot() for record in single_profiles],
+          }))
+
+    report = build_production_load_certificate(
+        records=[pyc],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_transit_native_promotion_c33_64_batch_completed_history",),
+    )
+    check("production load certificate sums module68 parsed c33_64 seed-episode units",
+          report["mapped_counts"] == {"transit_native_promotion_c33_64_batch_completed_history": 1}
+          and math.isclose(
+              report["mapped_units"]["transit_native_promotion_c33_64_batch_completed_history"],
+              86.0,
+          )
+          and math.isclose(
+              report["lambda"]["transit_native_promotion_c33_64_batch_completed_history"],
+              86.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-compare",

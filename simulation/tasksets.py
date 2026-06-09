@@ -525,6 +525,83 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_native_promotion_c33_64_batch_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for Transit/FreqHRL native "
+                "promotion validation records in the c_33_64 residual bucket. It "
+                "covers no-GPU native_promotion_replan_validation commands with "
+                "parseable seed-list, seed-range, or Python-AST seed-comprehension "
+                "work units, excluding single-seed smoke/fix records."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed seed-count times episodes. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history; no live co-location "
+                "profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c33_64_batch_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=45,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation c33 batch sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module68 completed-history wall-clock audit for "
+                        "c_33_64 native_promotion_replan_validation batch records "
+                        "with parseable seed work units."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "seed-episode rate for the batch class. Two single-seed "
+                        "smoke/fix records are isolated into their own class so they "
+                        "do not dominate the lower-service bound for large batches."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c33_64_single_seed_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for two single-seed "
+                "FreqHRLNative c_33_64 smoke/fix native-promotion records."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "only when the parsed native-promotion work unit is exactly one "
+                "seed-episode. Only profile 1 is loaded from realized wall-clock "
+                "history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c33_64_single_seed_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation c33 single-seed sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module68 completed-history wall-clock audit for "
+                        "single-seed c_33_64 native_promotion_replan_validation "
+                        "production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This intentionally separate class keeps smoke/fix overhead "
+                        "from being applied to batch native-promotion workloads."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_bamor_cpu_training_c3_8_completed_history",
             purpose=(
                 "A strict completed-history closure slice for BAMOR c_3_8 CPU "

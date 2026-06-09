@@ -131,13 +131,13 @@ Remaining scope limitation:
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2679
-    mapped = 1749
-    strict mapped = 878
-    measurement_required = 930
-    mapped_fraction = 0.652856
+    records = 2755
+    mapped = 1867
+    strict mapped = 956
+    measurement_required = 888
+    mapped_fraction = 0.677677
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 576 / 2679 records
+    cpu_sumo_transit_eval_or_control = 532 / 2755 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -261,8 +261,25 @@ Remaining scope limitation:
     min completed wall-clock rate = 0.006679 episode/s
   This improves coverage but leaves native/control c3_8 residuals.
 
+  Module68 closes the c33_64 Transit native-promotion seed-unit sub-slices:
+    native_promotion_replan_validation batch records with parseable seed work
+      -> transit_native_promotion_c33_64_batch_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 45
+    parsed completed-history work = 5922 seed-episode units
+    min completed wall-clock rate = 0.060204 seed-episode/s
+
+    native_promotion_replan_validation single-seed smoke/fix records
+      -> transit_native_promotion_c33_64_single_seed_completed_history
+    feasible profiles = 1
+    certificate record count = 2
+    parsed completed-history work = 2 seed-episode units
+    min completed wall-clock rate = 0.003368 seed-episode/s
+  This improves coverage and prevents single-seed smoke/fix records from
+  depressing the batch lower-service class.  It leaves direct-runner,
+  single-command-shape, and unparseable c33_64 residuals in Module53.
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_33_64 residual command shapes
     freqduet_cpu_ablation|c_65p
     transit_freqhrl_cpu_validation|c_le2
     freqduet_cpu_ablation|c_9_16 residual command shapes
@@ -273,6 +290,7 @@ Remaining scope limitation:
     bamor_cpu_training|c_le2
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
+    freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

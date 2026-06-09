@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2679
-representative mapped = 1749
-strict mapped = 878
-measurement_required = 930
-mapped_fraction = 0.652856
+records = 2755
+representative mapped = 1867
+strict mapped = 956
+measurement_required = 888
+mapped_fraction = 0.677677
 ```
 
 最大未闭合 bucket 是：
@@ -242,6 +242,7 @@ after Module64:  cpu_sumo_transit_eval_or_control = 704 / 2553 completed-active 
 after Module65:  cpu_sumo_transit_eval_or_control = 659 / 2589 completed-active records
 after Module66:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
 after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
+after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -338,12 +339,23 @@ workload_key = zsw_tsp_sumo_eval_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 50
 unit rule = parsed simulated SUMO seconds from --duration
+
+closed completed-history slice = Transit native_promotion_replan_validation batch within c_33_64
+workload_key = transit_native_promotion_c33_64_batch_completed_history
+feasible profiles = 1
+completed-active mapped count = 45
+unit rule = parsed seed-count times episodes
+
+closed completed-history slice = Transit native_promotion_replan_validation single-seed smoke/fix within c_33_64
+workload_key = transit_native_promotion_c33_64_single_seed_completed_history
+feasible profiles = 1
+certificate record count = 2
+unit rule = parsed seed-count times episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_33_64 residual command shapes
 freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
@@ -354,6 +366,7 @@ bamor_cpu_training|c_9_16
 bamor_cpu_training|c_le2
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
+freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

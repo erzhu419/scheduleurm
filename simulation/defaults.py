@@ -232,6 +232,24 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module68_transit_native_promotion_c33_64_batch_completed_history_reports",
+        workload_key="transit_native_promotion_c33_64_batch_completed_history",
+        command_fingerprint="transit_native_promotion_c33_64_batch_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module68_transit_native_promotion_c33_64_single_seed_completed_history_reports",
+        workload_key="transit_native_promotion_c33_64_single_seed_completed_history",
+        command_fingerprint="transit_native_promotion_c33_64_single_seed_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module64_bamor_cpu_training_c3_8_completed_history_reports",
         workload_key="bamor_cpu_training_c3_8_completed_history",
         command_fingerprint="bamor_cpu_training_c3_8_completed_history_v1",
@@ -325,6 +343,8 @@ def legacy_policy() -> ReplayPolicy:
             "freqduet_runner_v3_c3_8_completed_history": 1,
             "sumo_eval_simple_sac_c_le2": 1,
             "transit_native_promotion_c17_32_seedrange_completed_history": 1,
+            "transit_native_promotion_c33_64_batch_completed_history": 1,
+            "transit_native_promotion_c33_64_single_seed_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

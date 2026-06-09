@@ -38,10 +38,13 @@ DEFAULT_TASKSETS = (
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
     "production_freqduet_cpu_ablation_c3_8_completed_history",
+    "production_freqduet_runner_v3_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
-    "production_bamor_cpu_training_c3_8_completed_history",
+    "production_bamor_train_compare_c3_8_completed_history",
+    "production_bamor_mujoco_c3_8_completed_history",
+    "production_bamor_diagnostic_shard_c3_8_completed_history",
     "production_zsw_tsp_sumo_eval_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
@@ -214,6 +217,31 @@ def classify_record(
             units=native_c17_32_units,
         )
 
+    bamor_script_units = _bamor_cpu_training_c3_8_script_units(row=row, est_vram=est_vram, cpu=cpu)
+    if bamor_script_units is not None:
+        script, units = bamor_script_units
+        if script == "train_compare_baselines.py":
+            return _mapped(
+                "bamor_train_compare_c3_8_completed_history",
+                "strict_measured",
+                "module67_bamor_train_compare_c3_8_completed_history",
+                units=units,
+            )
+        if script == "train_bamor_mujoco.py":
+            return _mapped(
+                "bamor_mujoco_c3_8_completed_history",
+                "strict_measured",
+                "module67_bamor_mujoco_c3_8_completed_history",
+                units=units,
+            )
+        if script == "run_bamor_diagnostic_shard.py":
+            return _mapped(
+                "bamor_diagnostic_shard_c3_8_completed_history",
+                "strict_measured",
+                "module67_bamor_diagnostic_shard_c3_8_completed_history",
+                units=units,
+            )
+
     bamor_c3_8_units = _bamor_cpu_training_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
     if bamor_c3_8_units is not None:
         return _mapped(
@@ -230,6 +258,15 @@ def classify_record(
             "strict_measured",
             "module60_freqduet_cpu_ablation_c3_8_completed_history",
             units=c3_8_units,
+        )
+
+    runner_c3_8_units = _freqduet_runner_v3_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
+    if runner_c3_8_units is not None:
+        return _mapped(
+            "freqduet_runner_v3_c3_8_completed_history",
+            "strict_measured",
+            "module66_freqduet_runner_v3_c3_8_completed_history",
+            units=runner_c3_8_units,
         )
 
     c9_16_units = _freqduet_ablation_c9_16_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -436,6 +473,19 @@ def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
 
 
 def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    parsed = _bamor_cpu_training_c3_8_script_units(row=row, est_vram=est_vram, cpu=cpu)
+    if parsed is None:
+        return None
+    _script, units = parsed
+    return units if units > 0 else None
+
+
+def _bamor_cpu_training_c3_8_script_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float] | None:
     if est_vram > 0:
         return None
     if not (2.0 < float(cpu) <= 8.0):
@@ -446,8 +496,31 @@ def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
     cmd = str(row.get("cmd") or "")
     if project != "bamor" and "/bamor" not in cwd and not signature.startswith("bamor/"):
         return None
+    script = _python_script_basename(cmd)
+    if script not in {
+        "train_compare_baselines.py",
+        "train_bamor_mujoco.py",
+        "run_bamor_diagnostic_shard.py",
+    }:
+        return None
     units = _parse_bamor_training_step_units(cmd)
-    return units if units is not None and units > 0 else None
+    if units is None or units <= 0:
+        return None
+    return script, float(units)
+
+
+def _python_script_basename(cmd: str) -> str:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    for token in tokens:
+        value = str(token)
+        if value.endswith(".py"):
+            return value.rsplit("/", 1)[-1]
+    return ""
 
 
 def _parse_bamor_training_step_units(cmd: str) -> float | None:
@@ -619,6 +692,28 @@ def _freqduet_runner_v3_c_le2_units(*, row: Mapping[str, Any], est_vram: float, 
     if "runner_v3.py" not in cmd_lower:
         return None
     return _parse_runner_v3_episode_units(cmd)
+
+
+def _freqduet_runner_v3_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "runner_v3.py" not in cmd_lower:
+        return None
+    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+        return None
+    units = _parse_runner_v3_episode_units(cmd)
+    return units if units is not None and units > 0 else None
 
 
 def _parse_runner_v3_episode_units(cmd: str) -> float | None:

@@ -1,6 +1,6 @@
 # Module49 Production-Load Capacity Attempt
 
-Date: 2026-06-08
+Date: 2026-06-09
 
 This module attempts to move from a declared finite-slice load model to a
 production-history load certificate.  It reads Scheduleurm task records from
@@ -40,12 +40,17 @@ Module64 adds a training-step completed-history lower-service certificate for
 BAMOR c3_8 CPU training records with parseable work units.
 Module65 adds a simulated-second completed-history lower-service certificate
 for ZSW TSP/SUMO c_le2 runner records with explicit `--duration`.
+Module66 adds a c3_8 direct `runner_v3.py` completed-history certificate.
+Module67 refines the broad BAMOR c3_8 class into script-level lower-service
+classes so the production load certificate does not apply the slowest
+`train_compare_baselines.py` lower bound to faster Mujoco and diagnostic-shard
+tasks.
 
 ```text
-record_count_window = 5527
-mapped_task_count = 1711
-mapped_fraction = 0.309571
-unmapped_task_count = 3816
+record_count_window = 5617
+mapped_task_count = 1838
+mapped_fraction = 0.327221
+unmapped_task_count = 3779
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -55,18 +60,21 @@ Estimated load:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `bamor_cpu_training_c3_8_completed_history` | 163 | 9.958333333 |
+| `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
+| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
-| `freqduet_cpu_ablation_c17_32` | 173 | 0.004805556 |
+| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
 | `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
 | `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
 
@@ -86,12 +94,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5527
-mapped_task_count = 3523
-representative_mapped_task_count = 1812
-mapped_fraction = 0.637416
-strict_mapped_fraction = 0.309571
-unmapped_task_count = 2004
+record_count_window = 5617
+mapped_task_count = 3689
+representative_mapped_task_count = 1851
+mapped_fraction = 0.656756
+strict_mapped_fraction = 0.327221
+unmapped_task_count = 1928
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -101,18 +109,21 @@ Estimated load:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `bamor_cpu_training_c3_8_completed_history` | 163 | 9.958333333 |
+| `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
+| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
-| `cpu_heavy_local_bench` | 342 | 0.131944444 |
-| `freqduet_cpu_ablation_c17_32` | 173 | 0.004805556 |
+| `cpu_heavy_local_bench` | 381 | 0.146990741 |
+| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
 | `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
 | `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
 
@@ -135,17 +146,20 @@ Modules60 and 61 add conservative completed-history c3_8 and c33_64 FreqDuet
 ablation slices.  Module62 adds the c_le2 direct-runner completed-history
 portfolio slice.  Module63 adds the native-promotion seed-range completed-history
 slice.  Module64 adds the BAMOR c3_8 CPU-training completed-history slice.
-Module65 adds the ZSW TSP/SUMO c_le2 completed-history slice.  The mapped LP is
-still positive but tight because the
+Module65 adds the ZSW TSP/SUMO c_le2 completed-history slice.  Module66 adds
+the c3_8 direct FreqDuet runner completed-history slice.  Module67 then splits
+the broad BAMOR c3_8 class into script-level service classes; without this
+split, the latest raw-window BAMOR load would exceed the broad class's slowest
+profile-1 lower-service point.  The mapped LP is still positive but tight because the
 completed-history slices use minimum completed profile-1 lower-service points.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3816 / 5527 tasks
-representative unmapped: 2004 / 5527 tasks
-representative-mapped but not theorem-grade: 1812 tasks
+strict unmapped: 3779 / 5617 tasks
+representative unmapped: 1928 / 5617 tasks
+representative-mapped but not theorem-grade: 1851 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

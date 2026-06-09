@@ -1,6 +1,6 @@
 # Module53 CPU/SUMO/Transit Probe Manifest
 
-Date: 2026-06-08
+Date: 2026-06-09
 
 Module51 identified `cpu_sumo_transit_eval_or_control` as the dominant
 production-coverage blocker.  Module53 breaks that bucket into concrete
@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module65
+## Status After Module67
 
 The original top sub-bucket was:
 
@@ -30,7 +30,7 @@ is now mapped strictly as:
 
 ```text
 workload_key = freqduet_cpu_ablation_c17_32
-completed_active_production mapped count = 136
+completed_active_production mapped count = 147
 raw_history_all mapped count = 173
 ```
 
@@ -111,12 +111,13 @@ unit = seed_episode
 ```
 
 Module64 measured a completed-history profile-1 lower-service point for BAMOR
-c3_8 CPU training records with parseable training-step units:
+c3_8 CPU training records with parseable training-step units.  Module67 then
+refined this broad class into three script-level certificates:
 
 ```text
-workload_key = bamor_cpu_training_c3_8_completed_history
-completed_active_production mapped count = 142
-raw_history_all mapped count = 163
+bamor_train_compare_c3_8_completed_history: completed_active = 58, raw_history_all = 68
+bamor_mujoco_c3_8_completed_history: completed_active = 89, raw_history_all = 100
+bamor_diagnostic_shard_c3_8_completed_history: completed_active = 25, raw_history_all = 25
 feasible profiles = 1
 unit = training_step
 ```
@@ -132,6 +133,17 @@ feasible profiles = 1
 unit = sim_second
 ```
 
+Module66 measured a completed-history profile-1 lower-service point for direct
+c3_8 FreqDuet runner tasks:
+
+```text
+workload_key = freqduet_runner_v3_c3_8_completed_history
+completed_active_production mapped count = 86
+raw_history_all mapped count = 86
+feasible profiles = 1
+unit = episode
+```
+
 The current Module53 manifest has therefore been regenerated over the remaining
 unmeasured `cpu_sumo_transit_eval_or_control` records.
 
@@ -139,12 +151,12 @@ unmeasured `cpu_sumo_transit_eval_or_control` records.
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 659
-cpu_cores median = 7
-cpu_cores p90 = 64
+record_count = 576
+cpu_cores median = 10
+cpu_cores p90 = 71
 cpu_cores max = 128
-ram_mb median = 4722
-ram_mb p90 = 65536
+ram_mb median = 7683
+ram_mb p90 = 98304
 ram_mb max = 256000
 theorem_status = measurement_required
 ```
@@ -153,28 +165,31 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_3_8` | 102 | 0.154780 |
-| `freqduet_cpu_ablation|c_33_64` | 62 | 0.094082 |
-| `freqduet_cpu_ablation|c_65p` | 60 | 0.091047 |
-| `transit_freqhrl_cpu_validation|c_le2` | 59 | 0.089530 |
-| `freqduet_cpu_ablation|c_9_16` | 56 | 0.084977 |
-| `sumo_eval_cpu|c_le2` | 51 | 0.077390 |
-| `transit_misc_cpu|c_le2` | 47 | 0.071320 |
-| `freqduet_cpu_ablation|c_17_32` | 46 | 0.069803 |
-| `bamor_cpu_training|c_9_16` | 43 | 0.065250 |
+| `freqduet_cpu_ablation|c_33_64` | 62 | 0.107639 |
+| `freqduet_cpu_ablation|c_65p` | 60 | 0.104167 |
+| `transit_freqhrl_cpu_validation|c_le2` | 59 | 0.102431 |
+| `freqduet_cpu_ablation|c_9_16` | 56 | 0.097222 |
+| `sumo_eval_cpu|c_le2` | 51 | 0.088542 |
+| `transit_misc_cpu|c_le2` | 47 | 0.081597 |
+| `freqduet_cpu_ablation|c_17_32` | 46 | 0.079861 |
+| `bamor_cpu_training|c_9_16` | 43 | 0.074653 |
+| `freqduet_cpu_ablation|c_le2` | 39 | 0.067708 |
+| `bamor_cpu_training|c_le2` | 28 | 0.048611 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.031250 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_3_8 residual command shapes
 freqduet_cpu_ablation|c_33_64 residual command shapes
 freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
+freqduet_cpu_ablation|c_17_32 residual command shapes
+bamor_cpu_training|c_9_16
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -198,18 +213,19 @@ records with a profile-1 completed-history lower-service point.  Module62 maps
 84 c_le2 direct `runner_v3.py` records with a profile-1 completed-history
 lower-service point.  Module63 maps 71 completed-active Transit
 native-promotion c17_32 seed-range records with a profile-1 completed-history
-lower-service point.  Module64 maps 142 completed-active BAMOR c3_8 CPU-training
-records with a profile-1 completed-history lower-service point.  Module65 maps
-50 completed-active ZSW TSP/SUMO c_le2 runner records with a profile-1
-completed-history lower-service point.  The global theorem remains open because
-659
+lower-service point.  Module64 introduced the broad BAMOR c3_8 CPU-training
+completed-history point; Module67 refines it into 58 train-compare, 89 Mujoco,
+and 25 diagnostic-shard completed-active records.  Module65 maps 50
+completed-active ZSW TSP/SUMO c_le2 runner records with a profile-1
+completed-history lower-service point.  Module66 maps 86 c3_8 direct
+`runner_v3.py` records with a profile-1 completed-history lower-service point.
+The global theorem remains open because 576
 completed/active production records in the CPU/SUMO/transit family still
-require measured curves or equivalence certificates, including 102 residual
-`freqduet_cpu_ablation|c_3_8` records, 62 residual
+require measured curves or equivalence certificates, including 62 residual
 `freqduet_cpu_ablation|c_33_64` records, 60
 `freqduet_cpu_ablation|c_65p` records, 59
 `transit_freqhrl_cpu_validation|c_le2` records, 56 residual
 `freqduet_cpu_ablation|c_9_16` records, 51 residual
-`sumo_eval_cpu|c_le2` records, and 46 residual
+`sumo_eval_cpu|c_le2` records, 47 `transit_misc_cpu|c_le2` records, and 46 residual
 `freqduet_cpu_ablation|c_17_32` records with command shapes not covered by
 Module56 or Module63.

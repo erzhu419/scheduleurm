@@ -365,6 +365,46 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_runner_v3_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the dominant direct "
+                "runner_v3 portion of the remaining FreqDuet c_3_8 residual bucket. "
+                "It covers no-GPU runner_v3.py records requesting 3-8 CPU cores "
+                "when an explicit --episodes work unit is present."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed episode units. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; native validation, shell-loop, "
+                "and higher co-location profiles are not claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=86,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history runner sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module66 completed-history wall-clock audit for "
+                        "c_3_8 direct runner_v3.py production records with explicit "
+                        "episode counts."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "episode rate as a conservative profile-1 lower-service point. "
+                        "This does not close native validation, shell-expanded, or "
+                        "other non-runner command shapes in the same c_3_8 residual."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_cpu_ablation_c9_16",
             purpose=(
                 "The second high-impact production CPU/SUMO/transit closure slice "
@@ -521,6 +561,113 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                         "training-step rate as a conservative profile-1 lower-service "
                         "point. BAMOR CPU buckets outside c_3_8 and commands without "
                         "parseable training steps remain unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_bamor_train_compare_c3_8_completed_history",
+            purpose=(
+                "A script-level refinement of the Module64 BAMOR c_3_8 slice. "
+                "It covers no-GPU train_compare_baselines.py records requesting "
+                "3-8 CPU cores with parseable training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed method-count times seed-count times total_steps. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_train_compare_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=58,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR train-compare sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module67 completed-history wall-clock audit for "
+                        "BAMOR c_3_8 train_compare_baselines.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This split prevents the slowest train_compare lower-service "
+                        "point from being incorrectly applied to faster BAMOR Mujoco "
+                        "or diagnostic-shard work units."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_bamor_mujoco_c3_8_completed_history",
+            purpose=(
+                "A script-level refinement of the Module64 BAMOR c_3_8 slice. "
+                "It covers no-GPU train_bamor_mujoco.py records requesting 3-8 CPU "
+                "cores with parseable training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed method-count times num_seeds times total_steps. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_mujoco_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=89,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR Mujoco sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module67 completed-history wall-clock audit for "
+                        "BAMOR c_3_8 train_bamor_mujoco.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "training-step rate for this script family only."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_bamor_diagnostic_shard_c3_8_completed_history",
+            purpose=(
+                "A script-level refinement of the Module64 BAMOR c_3_8 slice. "
+                "It covers no-GPU run_bamor_diagnostic_shard.py records requesting "
+                "3-8 CPU cores with parseable shard training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed shard-item count times total_steps. Only profile 1 is "
+                "loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_diagnostic_shard_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=25,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR diagnostic-shard sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module67 completed-history wall-clock audit for "
+                        "BAMOR c_3_8 run_bamor_diagnostic_shard.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "training-step rate for parseable diagnostic shards. BAMOR "
+                        "CPU buckets outside c_3_8 remain separate obligations."
                     ),
                 ),
             ),

@@ -690,6 +690,85 @@ def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module66_freqduet_runner_c3_completed_history_profile1(check, sch):
+    row = {
+        "id": "freq-runner-c3",
+        "project": "freqduet",
+        "signature": "freqduet/auto-adopted/p1975560",
+        "description": "FreqDuet c3_8 direct runner task",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 5,
+        "ram_mb": 4096,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "/usr/bin/python3 runner_v3.py --config "
+            "configs_freqduet/F_freqduet_haar_hiro.yaml "
+            "--episodes 20 --seed 123 --no-resume --upper-warmup-eps 10"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("FreqDuet c3_8 direct runner_v3 maps after module66 completed-history certificate",
+          cls["workload_key"] == "freqduet_runner_v3_c3_8_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 20.0),
+          diag=str(cls))
+
+    ablation = dict(row)
+    ablation["id"] = "freq-c3-ablation-still-module60"
+    ablation["cmd"] = (
+        "python -u scripts/run_freqduet_ablation.py "
+        "--configs F_freqduet_gen_highnoise_main_hiro,F_freqduet_gen_odshift_main_hiro "
+        "--seeds 42,123 --episodes 40 --last-k 20 --workers 5 --worker-threads 1 "
+        "--job-start 0 --job-end 2 --clean"
+    )
+    ablation_cls = classify_record(ablation, include_representative=False)
+    check("module66 classifier does not steal c3_8 ablation records from module60",
+          ablation_cls["workload_key"] == "freqduet_cpu_ablation_c3_8_completed_history"
+          and math.isclose(float(ablation_cls["units"]), 80.0),
+          diag=str(ablation_cls))
+
+    non_freqduet = dict(row)
+    non_freqduet["id"] = "not-freqduet-runner"
+    non_freqduet["project"] = "other"
+    non_freqduet["signature"] = "other/runner"
+    non_freqduet["cwd"] = "/tmp/other"
+    non_freqduet_cls = classify_record(non_freqduet, include_representative=False)
+    check("module66 classifier requires FreqDuet project/path/signature evidence",
+          non_freqduet_cls["workload_key"] is None
+          and non_freqduet_cls["reason"] == "unmapped_cpu",
+          diag=str(non_freqduet_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_runner_v3_c3_8_completed_history")
+    check("module66 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_runner_v3_c3_8_completed_history", 1).aggregate_rate,
+              0.006679260715538253,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_runner_v3_c3_8_completed_history",),
+    )
+    check("production load certificate sums c3_8 runner_v3 episode units",
+          report["mapped_counts"] == {"freqduet_runner_v3_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["freqduet_runner_v3_c3_8_completed_history"], 20.0)
+          and math.isclose(
+              report["lambda"]["freqduet_runner_v3_c3_8_completed_history"],
+              20.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module61_freqduet_c33_ablation_completed_history_profile1(check, sch):
     row = {
         "id": "freq-c33",
@@ -908,8 +987,8 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
         ),
     }
     cls = classify_record(compare, include_representative=False)
-    check("BAMOR c3_8 train_compare_baselines maps after module64 certificate",
-          cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+    check("BAMOR c3_8 train_compare_baselines maps to module67 script-level certificate",
+          cls["workload_key"] == "bamor_train_compare_c3_8_completed_history"
           and cls["mapping_mode"] == "strict_measured"
           and math.isclose(float(cls["units"]), 100000.0),
           diag=str(cls))
@@ -924,7 +1003,7 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
     )
     mujoco_cls = classify_record(mujoco, include_representative=False)
     check("BAMOR c3_8 train_bamor_mujoco maps parsed num_seeds times total_steps",
-          mujoco_cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+          mujoco_cls["workload_key"] == "bamor_mujoco_c3_8_completed_history"
           and math.isclose(float(mujoco_cls["units"]), 100000.0),
           diag=str(mujoco_cls))
 
@@ -940,7 +1019,7 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
     )
     shard_cls = classify_record(shard, include_representative=False)
     check("BAMOR c3_8 diagnostic shard maps parsed shard items times total_steps",
-          shard_cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+          shard_cls["workload_key"] == "bamor_diagnostic_shard_c3_8_completed_history"
           and math.isclose(float(shard_cls["units"]), 800000.0),
           diag=str(shard_cls))
 
@@ -956,27 +1035,45 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
           diag=str(all_cls))
 
     cache = build_default_cache()
-    profiles = cache.profiles("bamor_cpu_training_c3_8_completed_history")
-    check("module64 service cache exposes only profile1 completed-history lower service",
-          [record.profile for record in profiles] == [1]
+    compare_profiles = cache.profiles("bamor_train_compare_c3_8_completed_history")
+    mujoco_profiles = cache.profiles("bamor_mujoco_c3_8_completed_history")
+    shard_profiles = cache.profiles("bamor_diagnostic_shard_c3_8_completed_history")
+    check("module67 service cache exposes script-level BAMOR profile1 lower services",
+          [record.profile for record in compare_profiles] == [1]
+          and [record.profile for record in mujoco_profiles] == [1]
+          and [record.profile for record in shard_profiles] == [1]
           and math.isclose(
-              cache.get("bamor_cpu_training_c3_8_completed_history", 1).aggregate_rate,
+              cache.get("bamor_train_compare_c3_8_completed_history", 1).aggregate_rate,
               10.055276060265134,
               rel_tol=1e-12,
+          )
+          and math.isclose(
+              cache.get("bamor_mujoco_c3_8_completed_history", 1).aggregate_rate,
+              37.51019245700603,
+              rel_tol=1e-12,
+          )
+          and math.isclose(
+              cache.get("bamor_diagnostic_shard_c3_8_completed_history", 1).aggregate_rate,
+              412.6128023797939,
+              rel_tol=1e-12,
           ),
-          diag=str([record.snapshot() for record in profiles]))
+          diag=str({
+              "compare": [record.snapshot() for record in compare_profiles],
+              "mujoco": [record.snapshot() for record in mujoco_profiles],
+              "shard": [record.snapshot() for record in shard_profiles],
+          }))
 
     report = build_production_load_certificate(
         records=[shard],
         window_days=1.0,
         now_ts=1000.0,
-        taskset_names=("production_bamor_cpu_training_c3_8_completed_history",),
+        taskset_names=("production_bamor_diagnostic_shard_c3_8_completed_history",),
     )
     check("production load certificate sums BAMOR c3_8 training-step units",
-          report["mapped_counts"] == {"bamor_cpu_training_c3_8_completed_history": 1}
-          and math.isclose(report["mapped_units"]["bamor_cpu_training_c3_8_completed_history"], 800000.0)
+          report["mapped_counts"] == {"bamor_diagnostic_shard_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["bamor_diagnostic_shard_c3_8_completed_history"], 800000.0)
           and math.isclose(
-              report["lambda"]["bamor_cpu_training_c3_8_completed_history"],
+              report["lambda"]["bamor_diagnostic_shard_c3_8_completed_history"],
               800000.0 / 86400.0,
           )
           and report["global_coverage_usable_for_theorem"]

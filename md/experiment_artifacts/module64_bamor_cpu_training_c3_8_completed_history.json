@@ -3,14 +3,14 @@
     "4": 6,
     "5": 2,
     "7": 3,
-    "8": 111
+    "8": 131
   },
   "duration_s": {
     "max": 1332.971033334732,
-    "median": 462.99696350097656,
+    "median": 477.0315957069397,
     "min": 97.1640636920929,
-    "p10": 370.64482522010803,
-    "p90": 878.0666823387146
+    "p10": 375.0061745643616,
+    "p90": 850.3096199035645
   },
   "interpretation": "Strict completed-history lower-service certificate for BAMOR c_3_8 CPU training records. The parser accepts train_compare_baselines.py, train_bamor_mujoco.py, and run_bamor_diagnostic_shard.py only when training-step units are explicit. Only profile 1 is loaded; BAMOR c_le2/c9_16/c17_32 buckets and unparseable commands are not claimed.",
   "parsed_units_training_step": {
@@ -18,33 +18,35 @@
     "median": 100000.0,
     "min": 1000.0,
     "p10": 50000.0,
-    "p90": 800000.0
+    "p90": 700000.0
   },
   "profile_domain": [
     1
   ],
   "project_counts": {
-    "BAMOR": 122
+    "BAMOR": 142
   },
   "ram_counts": {
     "65536": 25,
-    "8192": 97
+    "8192": 117
   },
   "realized_training_step_s": {
     "max": 3821.5206420480204,
-    "median": 220.8999897465614,
+    "median": 215.355053987056,
     "min": 10.055276060265134,
-    "p10": 57.8172210356414,
-    "p90": 1120.9170271098653
+    "p10": 61.67910012789542,
+    "p90": 1039.0119254227675
   },
-  "record_count": 122,
+  "record_count": 142,
   "run_id": "module64_bamor_cpu_training_c3_8_completed_history",
   "scope": "BAMOR no-GPU CPU training, 3-8 requested CPU cores, parseable training-step work units",
   "script_counts": {
     "run_bamor_diagnostic_shard.py": 25,
-    "train_bamor_mujoco.py": 39,
+    "train_bamor_mujoco.py": 59,
     "train_compare_baselines.py": 58
   },
+  "skipped_nonpositive_duration": [],
+  "skipped_nonpositive_duration_count": 0,
   "slowest_12": [
     {
       "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python train_compare_baselines.py --method uniform --total_steps 1000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_hpc_smoke3_1k_s1/uniform_seed0 --device cpu --eval_freq 0 && echo DON",
@@ -229,10 +231,10 @@
   ],
   "source_bucket": "bamor_cpu_training|c_3_8",
   "theorem_status": "strict_completed_history_lower_service",
-  "total_units_training_step": 24252000.0,
+  "total_units_training_step": 25252000.0,
   "window": {
-    "end_ts": 1780963825.037102,
-    "start_ts": 1778371825.037102,
+    "end_ts": 1780968338.4866033,
+    "start_ts": 1778376338.4866033,
     "window_days": 30.0
   },
   "workload_key": "bamor_cpu_training_c3_8_completed_history"

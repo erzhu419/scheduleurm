@@ -503,7 +503,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                 TaskSetMember(
                     workload_key="bamor_cpu_training_c3_8_completed_history",
                     resource_kind="cpu_sumo_transit",
-                    task_count=122,
+                    task_count=142,
                     total_units=1,
                     resource_count=1,
                     variation_cv=0.35,
@@ -521,6 +521,45 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                         "training-step rate as a conservative profile-1 lower-service "
                         "point. BAMOR CPU buckets outside c_3_8 and commands without "
                         "parseable training steps remain unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_zsw_tsp_sumo_eval_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for ZSW TSP/SUMO CPU eval "
+                "records in the c_le2 bucket. It covers no-GPU baseline/oracle/TSP "
+                "runner commands requesting at most 2 CPU cores when simulated SUMO "
+                "duration is explicit in the command."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed simulated SUMO seconds from --duration. Only profile 1 is "
+                "loaded from realized completed-task wall-clock history; no live "
+                "co-location profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="zsw_tsp_sumo_eval_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=50,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history ZSW SUMO eval sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module65 completed-history wall-clock audit for "
+                        "ZSW TSP/SUMO c_le2 runner records with explicit --duration."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "simulated-second rate as a conservative profile-1 lower-service "
+                        "point. CFCMT, offline-sumo, H2Oplus, and direct SUMO binary "
+                        "records remain unmeasured unless covered by other modules."
                     ),
                 ),
             ),

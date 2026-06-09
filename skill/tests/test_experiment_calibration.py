@@ -984,6 +984,93 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module65_zsw_tsp_sumo_cle2_completed_history_profile1(check, sch):
+    baseline = {
+        "id": "zsw-baseline",
+        "project": "ZSW_platform",
+        "signature": "ZSW_platform/auto-adopted/p24710",
+        "description": "ZSW TSP baseline SUMO runner",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 512,
+        "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform",
+        "cmd": (
+            "python TSP_only/src/oracle/baseline_runner.py --config cfg.sumocfg "
+            "--duration 18000 --backend libsumo --seed 1 --tls-program 120s "
+            "--output out.json"
+        ),
+    }
+    cls = classify_record(baseline, include_representative=False)
+    check("ZSW c_le2 baseline_runner maps after module65 certificate",
+          cls["workload_key"] == "zsw_tsp_sumo_eval_c_le2_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 18000.0),
+          diag=str(cls))
+
+    m21 = dict(baseline)
+    m21["id"] = "zsw-m21"
+    m21["project"] = "zsw_tsp_m0_gpu1"
+    m21["signature"] = "zsw_tsp_m0_gpu1/auto-adopted/p11407"
+    m21["cmd"] = (
+        "python /home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform/TSP_only/src/oracle/"
+        "m21_cycle_conserving_tsp_runner.py --duration 18000 --seed 1 "
+        "--backend libsumo --tls-program 120s --output out.json"
+    )
+    m21_cls = classify_record(m21, include_representative=False)
+    check("ZSW c_le2 m21 runner maps parsed duration units",
+          m21_cls["workload_key"] == "zsw_tsp_sumo_eval_c_le2_completed_history"
+          and math.isclose(float(m21_cls["units"]), 18000.0),
+          diag=str(m21_cls))
+
+    missing_duration = dict(baseline)
+    missing_duration["id"] = "zsw-no-duration"
+    missing_duration["cmd"] = "python TSP_only/src/oracle/baseline_runner.py --output out.json"
+    missing_cls = classify_record(missing_duration, include_representative=False)
+    check("module65 classifier leaves ZSW runner without duration unmeasured",
+          missing_cls["workload_key"] is None and missing_cls["reason"] == "unmapped_cpu",
+          diag=str(missing_cls))
+
+    non_zsw = dict(baseline)
+    non_zsw["id"] = "not-zsw"
+    non_zsw["project"] = "other"
+    non_zsw["signature"] = "other/runner"
+    non_zsw["cwd"] = "/tmp/other"
+    non_zsw_cls = classify_record(non_zsw, include_representative=False)
+    check("module65 classifier requires ZSW project/path/signature evidence",
+          non_zsw_cls["workload_key"] is None and non_zsw_cls["reason"] == "unmapped_cpu",
+          diag=str(non_zsw_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("zsw_tsp_sumo_eval_c_le2_completed_history")
+    check("module65 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("zsw_tsp_sumo_eval_c_le2_completed_history", 1).aggregate_rate,
+              5.896139229545579,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[m21],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_zsw_tsp_sumo_eval_c_le2_completed_history",),
+    )
+    check("production load certificate sums ZSW c_le2 simulated-second units",
+          report["mapped_counts"] == {"zsw_tsp_sumo_eval_c_le2_completed_history": 1}
+          and math.isclose(report["mapped_units"]["zsw_tsp_sumo_eval_c_le2_completed_history"], 18000.0)
+          and math.isclose(
+              report["lambda"]["zsw_tsp_sumo_eval_c_le2_completed_history"],
+              18000.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

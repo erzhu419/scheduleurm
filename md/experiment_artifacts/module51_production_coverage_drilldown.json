@@ -1,9 +1,9 @@
 {
   "completed_active_production_obligations": {
-    "mapped_count": 1503,
-    "mapped_fraction": 0.5887191539365453,
-    "measurement_required_count": 1050,
-    "record_count": 2553,
+    "mapped_count": 1583,
+    "mapped_fraction": 0.6114329857087679,
+    "measurement_required_count": 1006,
+    "record_count": 2589,
     "top_buckets": [
       {
         "bucket": "hybrid_rl_resac_ant",
@@ -65,7 +65,7 @@
             "task_id": "t2992"
           }
         ],
-        "fraction_of_completed_active_production": 0.2937720329024677,
+        "fraction_of_completed_active_production": 0.28968713789107764,
         "status": "mapped",
         "top_projects": {
           "BAPR": 97,
@@ -86,7 +86,7 @@
       },
       {
         "bucket": "cpu_sumo_transit_eval_or_control",
-        "count": 704,
+        "count": 659,
         "examples": [
           {
             "bucket": "cpu_sumo_transit_eval_or_control",
@@ -144,7 +144,7 @@
             "task_id": "t2871"
           }
         ],
-        "fraction_of_completed_active_production": 0.27575401488444967,
+        "fraction_of_completed_active_production": 0.25453843182696023,
         "status": "measurement_required",
         "top_projects": {
           "BAMOR": 88,
@@ -152,9 +152,9 @@
           "FreqDuet": 27,
           "FreqHRL": 40,
           "FreqHRLNative": 29,
-          "TransitDuet": 256,
-          "ZSW_platform": 42,
-          "freqduet": 139
+          "TransitDuet": 260,
+          "freqduet": 139,
+          "offline-sumo": 14
         },
         "top_signature_prefixes": {
           "BAMOR/diagnostic-shard/diagnostic_v2_proto_vs_best_ext_20260608_150149": 6,
@@ -169,7 +169,7 @@
       },
       {
         "bucket": "generic_cpu_python",
-        "count": 150,
+        "count": 151,
         "examples": [
           {
             "bucket": "generic_cpu_python",
@@ -227,10 +227,10 @@
             "task_id": "t3442"
           }
         ],
-        "fraction_of_completed_active_production": 0.05875440658049354,
+        "fraction_of_completed_active_production": 0.058323677095403634,
         "status": "measurement_required",
         "top_projects": {
-          "Asumption Agent": 49,
+          "Asumption Agent": 50,
           "CFCMT": 12,
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1,
           "RE-SAC": 82,
@@ -246,6 +246,82 @@
           "RE-SAC/review5/tqc_Hopper-v2_32": 1,
           "sensing-compressibility-v10k/auto-adopted/p1824577": 1,
           "sensing-compressibility-v2k/auto-adopted/p28886": 1
+        }
+      },
+      {
+        "bucket": "bamor_cpu_training_c3_8_completed_history",
+        "count": 142,
+        "examples": [
+          {
+            "bucket": "bamor_cpu_training_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "BAMOR diagnostic uniform seed 0",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
+            "signature": "BAMOR/diagnostic/uniform/steps1000/switch300/eval0",
+            "status": "done",
+            "task_id": "t7538"
+          },
+          {
+            "bucket": "bamor_cpu_training_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "BAMOR diagnostic bamor_ns seed 0",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
+            "signature": "BAMOR/diagnostic/bamor_ns/steps1000/switch300/eval0",
+            "status": "done",
+            "task_id": "t7539"
+          },
+          {
+            "bucket": "bamor_cpu_training_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "BAMOR diagnostic uniform seed 0",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
+            "signature": "BAMOR/diagnostic/uniform/steps100000/switch300/eval0",
+            "status": "done",
+            "task_id": "t7544"
+          },
+          {
+            "bucket": "bamor_cpu_training_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "BAMOR diagnostic bamor_oracle_cone seed 0",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
+            "signature": "BAMOR/diagnostic/bamor_oracle_cone/steps100000/switch300/eval0",
+            "status": "done",
+            "task_id": "t7545"
+          },
+          {
+            "bucket": "bamor_cpu_training_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "BAMOR diagnostic bamor_oracle seed 0",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
+            "signature": "BAMOR/diagnostic/bamor_oracle/steps100000/switch300/eval0",
+            "status": "done",
+            "task_id": "t7546"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0548474314407107,
+        "status": "mapped",
+        "top_projects": {
+          "BAMOR": 142
+        },
+        "top_signature_prefixes": {
+          "BAMOR/diagnostic/bamor": 6,
+          "BAMOR/diagnostic/bamor_fixed_cone": 6,
+          "BAMOR/diagnostic/bamor_ns": 7,
+          "BAMOR/diagnostic/bamor_oracle": 6,
+          "BAMOR/diagnostic/bamor_oracle_cone": 7,
+          "BAMOR/diagnostic/uniform": 8,
+          "BAMOR/mujoco/mo-halfcheetah-v5": 39,
+          "BAMOR/mujoco/mo-hopper-v5": 20
         }
       },
       {
@@ -308,7 +384,7 @@
             "task_id": "t5140"
           }
         ],
-        "fraction_of_completed_active_production": 0.053270661966314144,
+        "fraction_of_completed_active_production": 0.05252993433758208,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 93,
@@ -324,82 +400,6 @@
           "TransitDuet/freqduet-termfb30-screen-ep40-wu10": 3,
           "TransitDuet/freqduet-termrelief20-screen-ep40-wu10": 2,
           "TransitDuet/freqduet-termvalue20-screen-ep40-wu10": 2
-        }
-      },
-      {
-        "bucket": "bamor_cpu_training_c3_8_completed_history",
-        "count": 122,
-        "examples": [
-          {
-            "bucket": "bamor_cpu_training_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "BAMOR diagnostic uniform seed 0",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
-            "signature": "BAMOR/diagnostic/uniform/steps1000/switch300/eval0",
-            "status": "done",
-            "task_id": "t7538"
-          },
-          {
-            "bucket": "bamor_cpu_training_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "BAMOR diagnostic bamor_ns seed 0",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
-            "signature": "BAMOR/diagnostic/bamor_ns/steps1000/switch300/eval0",
-            "status": "done",
-            "task_id": "t7539"
-          },
-          {
-            "bucket": "bamor_cpu_training_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "BAMOR diagnostic uniform seed 0",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
-            "signature": "BAMOR/diagnostic/uniform/steps100000/switch300/eval0",
-            "status": "done",
-            "task_id": "t7544"
-          },
-          {
-            "bucket": "bamor_cpu_training_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "BAMOR diagnostic bamor_oracle_cone seed 0",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
-            "signature": "BAMOR/diagnostic/bamor_oracle_cone/steps100000/switch300/eval0",
-            "status": "done",
-            "task_id": "t7545"
-          },
-          {
-            "bucket": "bamor_cpu_training_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "BAMOR diagnostic bamor_oracle seed 0",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module64_bamor_cpu_training_c3_8_completed_history",
-            "signature": "BAMOR/diagnostic/bamor_oracle/steps100000/switch300/eval0",
-            "status": "done",
-            "task_id": "t7546"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.04778691735213474,
-        "status": "mapped",
-        "top_projects": {
-          "BAMOR": 122
-        },
-        "top_signature_prefixes": {
-          "BAMOR/diagnostic/bamor": 6,
-          "BAMOR/diagnostic/bamor_fixed_cone": 6,
-          "BAMOR/diagnostic/bamor_ns": 7,
-          "BAMOR/diagnostic/bamor_ns_eps": 6,
-          "BAMOR/diagnostic/bamor_oracle": 6,
-          "BAMOR/diagnostic/bamor_oracle_cone": 7,
-          "BAMOR/diagnostic/uniform": 8,
-          "BAMOR/mujoco/mo-halfcheetah-v5": 39
         }
       },
       {
@@ -462,7 +462,7 @@
             "task_id": "t5297"
           }
         ],
-        "fraction_of_completed_active_production": 0.04308656482569526,
+        "fraction_of_completed_active_production": 0.04248744689069139,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 90,
@@ -540,7 +540,7 @@
             "task_id": "t4859"
           }
         ],
-        "fraction_of_completed_active_production": 0.03290246768507638,
+        "fraction_of_completed_active_production": 0.03244495944380069,
         "status": "mapped",
         "top_projects": {
           "freq_transitduet": 3,
@@ -555,6 +555,88 @@
           "freqduet/auto-adopted/p2616443": 1,
           "freqduet/auto-adopted/p2646612": 1,
           "freqduet/auto-adopted/p2653774": 1
+        }
+      },
+      {
+        "bucket": "cpu_heavy_local_bench",
+        "count": 82,
+        "examples": [
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 4,
+            "description": "auto-adopted: CFCMT on local:CPU-only (4 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "cpu_heavy_representative",
+            "signature": "CFCMT/auto-adopted/p647817",
+            "status": "done",
+            "task_id": "t3767"
+          },
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 13,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "cpu_heavy_representative",
+            "signature": "sensing-compressibility-pems/auto-adopted/p4014",
+            "status": "done",
+            "task_id": "t4035"
+          },
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 13,
+            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v10k",
+            "reason": "cpu_heavy_representative",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p192697",
+            "status": "done",
+            "task_id": "t4052"
+          },
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 4,
+            "description": "auto-adopted: freqduet on local:CPU-only (8 procs)",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "cpu_heavy_representative",
+            "signature": "freqduet/auto-adopted/p2621558",
+            "status": "done",
+            "task_id": "t4870"
+          },
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 56,
+            "description": "Freq-HRL promotion recovery sweep part0, 56 workers on jtl110cpu2",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "cpu_heavy_representative",
+            "signature": "TransitDuet/FreqHRL-trading-promotion-recovery-part0-w56",
+            "status": "done",
+            "task_id": "t5051"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.03167246040942449,
+        "status": "mapped",
+        "top_projects": {
+          "BAPR": 45,
+          "CFCMT": 12,
+          "TransitDuet": 5,
+          "bapr_v15": 2,
+          "freqduet": 1,
+          "sensing-compressibility-pems": 13,
+          "sensing-compressibility-v10k": 4
+        },
+        "top_signature_prefixes": {
+          "BAPR/cpu_eval/id_ood_full_v2_direct2_20260609": 2,
+          "BAPR/cpu_eval/id_ood_full_v2_item_direct5_20260609": 40,
+          "CFCMT/auto-adopted/p647817": 1,
+          "TransitDuet/FreqHRL-trading-promotion-recovery-part0-w56": 1,
+          "TransitDuet/FreqHRL-trading-promotion-recovery-part1-w56": 1,
+          "freqduet/auto-adopted/p2621558": 1,
+          "sensing-compressibility-pems/auto-adopted/p4014": 1,
+          "sensing-compressibility-v10k/auto-adopted/p192697": 1
         }
       },
       {
@@ -617,7 +699,7 @@
             "task_id": "t3700"
           }
         ],
-        "fraction_of_completed_active_production": 0.03172737955346651,
+        "fraction_of_completed_active_production": 0.031286210892236384,
         "status": "measurement_required",
         "top_projects": {
           "Asumption Agent": 19,
@@ -696,7 +778,7 @@
             "task_id": "t3489"
           }
         ],
-        "fraction_of_completed_active_production": 0.030160595377986682,
+        "fraction_of_completed_active_production": 0.02974121282348397,
         "status": "measurement_required",
         "top_projects": {
           "RE-SAC": 72,
@@ -711,88 +793,6 @@
           "RE-SAC/review5/sens_anchor_0_HalfCheetah-v2_32": 1,
           "RE-SAC/review5/sens_betaend_-1.5_HalfCheetah-v2_40": 1,
           "RE-SAC/review5/sens_ratio_0.75_HalfCheetah-v2_40": 1
-        }
-      },
-      {
-        "bucket": "cpu_heavy_local_bench",
-        "count": 72,
-        "examples": [
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 4,
-            "description": "auto-adopted: CFCMT on local:CPU-only (4 procs)",
-            "est_vram_mb": 0,
-            "project": "CFCMT",
-            "reason": "cpu_heavy_representative",
-            "signature": "CFCMT/auto-adopted/p647817",
-            "status": "done",
-            "task_id": "t3767"
-          },
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 13,
-            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "sensing-compressibility-pems",
-            "reason": "cpu_heavy_representative",
-            "signature": "sensing-compressibility-pems/auto-adopted/p4014",
-            "status": "done",
-            "task_id": "t4035"
-          },
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 13,
-            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "sensing-compressibility-v10k",
-            "reason": "cpu_heavy_representative",
-            "signature": "sensing-compressibility-v10k/auto-adopted/p192697",
-            "status": "done",
-            "task_id": "t4052"
-          },
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 4,
-            "description": "auto-adopted: freqduet on local:CPU-only (8 procs)",
-            "est_vram_mb": 0,
-            "project": "freqduet",
-            "reason": "cpu_heavy_representative",
-            "signature": "freqduet/auto-adopted/p2621558",
-            "status": "done",
-            "task_id": "t4870"
-          },
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 56,
-            "description": "Freq-HRL promotion recovery sweep part0, 56 workers on jtl110cpu2",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "cpu_heavy_representative",
-            "signature": "TransitDuet/FreqHRL-trading-promotion-recovery-part0-w56",
-            "status": "done",
-            "task_id": "t5051"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.0282021151586369,
-        "status": "mapped",
-        "top_projects": {
-          "BAPR": 35,
-          "CFCMT": 12,
-          "TransitDuet": 5,
-          "bapr_v15": 2,
-          "freqduet": 1,
-          "sensing-compressibility-pems": 13,
-          "sensing-compressibility-v10k": 4
-        },
-        "top_signature_prefixes": {
-          "BAPR/cpu_eval/id_ood_full_v2_direct2_20260609": 2,
-          "BAPR/cpu_eval/id_ood_full_v2_item_direct4_20260609": 30,
-          "CFCMT/auto-adopted/p647817": 1,
-          "TransitDuet/FreqHRL-trading-promotion-recovery-part0-w56": 1,
-          "TransitDuet/FreqHRL-trading-promotion-recovery-part1-w56": 1,
-          "freqduet/auto-adopted/p2621558": 1,
-          "sensing-compressibility-pems/auto-adopted/p4014": 1,
-          "sensing-compressibility-v10k/auto-adopted/p192697": 1
         }
       },
       {
@@ -855,7 +855,7 @@
             "task_id": "t7277"
           }
         ],
-        "fraction_of_completed_active_production": 0.027810419114766942,
+        "fraction_of_completed_active_production": 0.02742371572035535,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 71
@@ -931,7 +931,7 @@
             "task_id": "t5355"
           }
         ],
-        "fraction_of_completed_active_production": 0.024676850763807285,
+        "fraction_of_completed_active_production": 0.02433371958285052,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 54,
@@ -1009,7 +1009,7 @@
             "task_id": "t2831"
           }
         ],
-        "fraction_of_completed_active_production": 0.021151586368977675,
+        "fraction_of_completed_active_production": 0.02085747392815759,
         "status": "mapped",
         "top_projects": {
           "SimpleSAC": 54
@@ -1023,6 +1023,83 @@
           "H2Oplus/r3_eval_nosnap_wsrl_nosnap_s42_s1002_od1.0": 1,
           "H2Oplus/r3_eval_nosnap_wsrl_nosnap_s42_s1003_od0.6": 1,
           "H2Oplus/r3_eval_nosnap_wsrl_nosnap_s42_s1003_od0.8": 1
+        }
+      },
+      {
+        "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+        "count": 50,
+        "examples": [
+          {
+            "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p3882",
+            "status": "done",
+            "task_id": "t3888"
+          },
+          {
+            "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p29722",
+            "status": "done",
+            "task_id": "t3889"
+          },
+          {
+            "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p27191",
+            "status": "done",
+            "task_id": "t3893"
+          },
+          {
+            "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p30379",
+            "status": "done",
+            "task_id": "t3894"
+          },
+          {
+            "bucket": "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p1918",
+            "status": "done",
+            "task_id": "t3895"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.019312475859405175,
+        "status": "mapped",
+        "top_projects": {
+          "ZSW_platform": 36,
+          "zsw_tsp_m0_gpu1": 14
+        },
+        "top_signature_prefixes": {
+          "zsw_tsp_m0_gpu1/auto-adopted/p1918": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p21476": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p27191": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p29722": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p30379": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p3882": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p5332": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p8617": 1
         }
       },
       {
@@ -1085,7 +1162,7 @@
             "task_id": "t4983"
           }
         ],
-        "fraction_of_completed_active_production": 0.015667841754798278,
+        "fraction_of_completed_active_production": 0.01544998068752414,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 1,
@@ -1164,7 +1241,7 @@
             "task_id": "t8098"
           }
         ],
-        "fraction_of_completed_active_production": 0.008617312965139052,
+        "fraction_of_completed_active_production": 0.008497489378138278,
         "status": "measurement_required",
         "top_projects": {
           "sched-hpc-e2e-20260522-214808-175687": 1,
@@ -1241,7 +1318,7 @@
             "task_id": "t2968"
           }
         ],
-        "fraction_of_completed_active_production": 0.00626713670191931,
+        "fraction_of_completed_active_production": 0.006179992275009656,
         "status": "measurement_required",
         "top_projects": {
           "H2Oplus": 14,
@@ -1274,7 +1351,7 @@
             "task_id": "t4843"
           }
         ],
-        "fraction_of_completed_active_production": 0.0003916960438699569,
+        "fraction_of_completed_active_production": 0.0003862495171881035,
         "status": "mapped",
         "top_projects": {
           "freqduet": 1
@@ -1295,10 +1372,10 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.6030163599182005,
+        "mapped_fraction": 0.6247207743857036,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 141,
-          "cpu_heavy_local_bench": 187,
+          "bamor_cpu_training_c3_8_completed_history": 161,
+          "cpu_heavy_local_bench": 275,
           "freqduet_cpu_ablation_c17_32": 148,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
@@ -1307,17 +1384,18 @@
           "freqduet_runner_v3_c_le2_completed_history": 84,
           "hybrid_rl_resac_ant": 1405,
           "sumo_eval_simple_sac_c_le2": 54,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 114
+          "transit_native_promotion_c17_32_seedrange_completed_history": 114,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 2359,
-        "record_count_window": 3912,
-        "representative_mapped_task_count": 1592,
-        "strict_mapped_fraction": 0.19606339468302658,
+        "mapped_task_count": 2517,
+        "record_count_window": 4029,
+        "representative_mapped_task_count": 1680,
+        "strict_mapped_fraction": 0.20774385703648549,
         "unmapped_reasons": {
-          "unmapped_cpu": 1536,
+          "unmapped_cpu": 1495,
           "unmapped_gpu": 17
         },
-        "unmapped_task_count": 1553,
+        "unmapped_task_count": 1512,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -1325,9 +1403,9 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.19606339468302658,
+        "mapped_fraction": 0.20774385703648549,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 141,
+          "bamor_cpu_training_c3_8_completed_history": 161,
           "freqduet_cpu_ablation_c17_32": 148,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
@@ -1335,17 +1413,18 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c_le2_completed_history": 84,
           "sumo_eval_simple_sac_c_le2": 54,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 114
+          "transit_native_promotion_c17_32_seedrange_completed_history": 114,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 767,
-        "record_count_window": 3912,
+        "mapped_task_count": 837,
+        "record_count_window": 4029,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.19606339468302658,
+        "strict_mapped_fraction": 0.20774385703648549,
         "unmapped_reasons": {
-          "unmapped_cpu": 1723,
+          "unmapped_cpu": 1770,
           "unmapped_gpu": 1422
         },
-        "unmapped_task_count": 3145,
+        "unmapped_task_count": 3192,
         "usable_for_global_theorem": false
       }
     },
@@ -1355,10 +1434,10 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.5887191539365453,
+        "mapped_fraction": 0.6114329857087679,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 122,
-          "cpu_heavy_local_bench": 72,
+          "bamor_cpu_training_c3_8_completed_history": 142,
+          "cpu_heavy_local_bench": 82,
           "freqduet_cpu_ablation_c17_32": 136,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
@@ -1367,17 +1446,18 @@
           "freqduet_runner_v3_c_le2_completed_history": 84,
           "hybrid_rl_resac_ant": 750,
           "sumo_eval_simple_sac_c_le2": 54,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 71
+          "transit_native_promotion_c17_32_seedrange_completed_history": 71,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 1503,
-        "record_count_window": 2553,
-        "representative_mapped_task_count": 822,
-        "strict_mapped_fraction": 0.26674500587544064,
+        "mapped_task_count": 1583,
+        "record_count_window": 2589,
+        "representative_mapped_task_count": 832,
+        "strict_mapped_fraction": 0.2900733874082657,
         "unmapped_reasons": {
-          "unmapped_cpu": 1034,
+          "unmapped_cpu": 990,
           "unmapped_gpu": 16
         },
-        "unmapped_task_count": 1050,
+        "unmapped_task_count": 1006,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -1385,9 +1465,9 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.26674500587544064,
+        "mapped_fraction": 0.2900733874082657,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 122,
+          "bamor_cpu_training_c3_8_completed_history": 142,
           "freqduet_cpu_ablation_c17_32": 136,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
@@ -1395,17 +1475,18 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c_le2_completed_history": 84,
           "sumo_eval_simple_sac_c_le2": 54,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 71
+          "transit_native_promotion_c17_32_seedrange_completed_history": 71,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 681,
-        "record_count_window": 2553,
+        "mapped_task_count": 751,
+        "record_count_window": 2589,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.26674500587544064,
+        "strict_mapped_fraction": 0.2900733874082657,
         "unmapped_reasons": {
-          "unmapped_cpu": 1106,
+          "unmapped_cpu": 1072,
           "unmapped_gpu": 766
         },
-        "unmapped_task_count": 1872,
+        "unmapped_task_count": 1838,
         "usable_for_global_theorem": false
       }
     },
@@ -1415,10 +1496,10 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.6222263313609467,
+        "mapped_fraction": 0.6374163198842048,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 143,
-          "cpu_heavy_local_bench": 254,
+          "bamor_cpu_training_c3_8_completed_history": 163,
+          "cpu_heavy_local_bench": 342,
           "freqduet_cpu_ablation_c17_32": 173,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 42,
@@ -1429,18 +1510,19 @@
           "hybrid_rl_resac_ant": 2001,
           "light_control_local": 206,
           "sumo_eval_simple_sac_c_le2": 71,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 128
+          "transit_native_promotion_c17_32_seedrange_completed_history": 128,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 3365,
-        "record_count_window": 5408,
-        "representative_mapped_task_count": 1724,
-        "strict_mapped_fraction": 0.30343934911242604,
+        "mapped_task_count": 3523,
+        "record_count_window": 5527,
+        "representative_mapped_task_count": 1812,
+        "strict_mapped_fraction": 0.3095711959471684,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 1869,
+          "unmapped_cpu": 1830,
           "unmapped_gpu": 19
         },
-        "unmapped_task_count": 2043,
+        "unmapped_task_count": 2004,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -1448,9 +1530,9 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.30343934911242604,
+        "mapped_fraction": 0.3095711959471684,
         "mapped_key_counts": {
-          "bamor_cpu_training_c3_8_completed_history": 143,
+          "bamor_cpu_training_c3_8_completed_history": 163,
           "cpu_heavy_local_bench": 55,
           "freqduet_cpu_ablation_c17_32": 173,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
@@ -1462,25 +1544,26 @@
           "hybrid_rl_resac_ant": 476,
           "light_control_local": 206,
           "sumo_eval_simple_sac_c_le2": 71,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 128
+          "transit_native_promotion_c17_32_seedrange_completed_history": 128,
+          "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 1641,
-        "record_count_window": 5408,
+        "mapped_task_count": 1711,
+        "record_count_window": 5527,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.30343934911242604,
+        "strict_mapped_fraction": 0.3095711959471684,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 2068,
+          "unmapped_cpu": 2117,
           "unmapped_gpu": 1544
         },
-        "unmapped_task_count": 3767,
+        "unmapped_task_count": 3816,
         "usable_for_global_theorem": false
       }
     }
   },
   "window": {
-    "end_ts": 1780964168.2722957,
-    "start_ts": 1778372168.2722957,
+    "end_ts": 1780967690.309519,
+    "start_ts": 1778375690.309519,
     "window_s": 2592000.0
   },
   "window_days": 30.0

@@ -42,6 +42,7 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_cpu_training_c3_8_completed_history",
+    "production_zsw_tsp_sumo_eval_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -247,6 +248,15 @@ def classify_record(
             "strict_measured",
             "module62_freqduet_runner_v3_c_le2_completed_history",
             units=runner_c_le2_units,
+        )
+
+    zsw_sumo_c_le2_units = _zsw_tsp_sumo_eval_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if zsw_sumo_c_le2_units is not None:
+        return _mapped(
+            "zsw_tsp_sumo_eval_c_le2_completed_history",
+            "strict_measured",
+            "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
+            units=zsw_sumo_c_le2_units,
         )
 
     if _is_simple_sac_sumo_eval_c_le2(row=row, est_vram=est_vram, cpu=cpu):
@@ -630,6 +640,63 @@ def _parse_runner_v3_episode_units(cmd: str) -> float | None:
     except ValueError:
         return None
     return episodes if math.isfinite(episodes) and episodes > 0 else None
+
+
+def _zsw_tsp_sumo_eval_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    if (
+        project not in {"zsw_platform", "zsw_tsp_m0_gpu1"}
+        and "zsw_platform" not in cwd
+        and "zsw_tsp_m0_gpu1" not in cwd
+        and not signature.startswith(("zsw_platform/", "zsw_tsp_m0_gpu1/"))
+    ):
+        return None
+    units = _parse_zsw_tsp_sumo_duration_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_zsw_tsp_sumo_duration_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    accepted_scripts = {
+        "baseline_runner.py",
+        "m21_cycle_conserving_tsp_runner.py",
+        "oracle_tsp_runner.py",
+        "m2_scored_oracle_tsp_runner.py",
+    }
+    script = next(
+        (
+            str(token).rsplit("/", 1)[-1]
+            for token in tokens
+            if str(token).rsplit("/", 1)[-1] in accepted_scripts
+        ),
+        "",
+    )
+    if not script:
+        return None
+    if "--duration" not in tokens:
+        return None
+    idx = tokens.index("--duration")
+    if idx + 1 >= len(tokens):
+        return None
+    try:
+        duration = float(tokens[idx + 1])
+    except ValueError:
+        return None
+    if not math.isfinite(duration) or duration <= 0:
+        return None
+    return duration
 
 
 def _is_simple_sac_sumo_eval_c_le2(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:

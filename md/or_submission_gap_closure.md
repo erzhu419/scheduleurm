@@ -126,18 +126,18 @@ Remaining scope limitation:
     strict measured mapping delta = 0.001497772
     representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 2043 / 5408 tasks unmapped and maps 1724 tasks only by representative
+  leaves 2004 / 5527 tasks unmapped and maps 1812 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2553
-    mapped = 1503
-    strict mapped = 681
-    measurement_required = 1050
-    mapped_fraction = 0.588719
+    records = 2589
+    mapped = 1583
+    strict mapped = 751
+    measurement_required = 1006
+    mapped_fraction = 0.611433
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 704 / 2553 records
+    cpu_sumo_transit_eval_or_control = 659 / 2589 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -220,19 +220,30 @@ Remaining scope limitation:
     train_compare_baselines.py / train_bamor_mujoco.py / run_bamor_diagnostic_shard.py
       with parseable training-step units -> bamor_cpu_training_c3_8_completed_history
     feasible profiles = 1
-    completed-active strict mapped count = 122
-    parsed completed-active work = 24252000 training-step units
+    completed-active strict mapped count = 142
+    parsed completed-history work = 25252000 training-step units
     min completed wall-clock rate = 10.055276 training-step/s
   This improves coverage but leaves BAMOR c_le2/c9_16/c17_32 records as separate
   obligations.
 
+  Module65 closes the ZSW TSP/SUMO c_le2 runner sub-slice:
+    baseline_runner.py / m21_cycle_conserving_tsp_runner.py /
+      oracle_tsp_runner.py / m2_scored_oracle_tsp_runner.py with explicit --duration
+      -> zsw_tsp_sumo_eval_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 50
+    parsed completed-history work = 900000 simulated-second units
+    min completed wall-clock rate = 5.896139 simulated-second/s
+  This improves coverage but leaves CFCMT/offline-sumo/H2Oplus/direct-SUMO
+  c_le2 records as separate obligations.
+
   The current remaining top probe order is:
-    sumo_eval_cpu|c_le2
     freqduet_cpu_ablation|c_3_8 residual command shapes
     freqduet_cpu_ablation|c_33_64 residual command shapes
     freqduet_cpu_ablation|c_65p
     transit_freqhrl_cpu_validation|c_le2
     freqduet_cpu_ablation|c_9_16 residual command shapes
+    sumo_eval_cpu|c_le2 residual command shapes
     transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes
     bamor_cpu_training|c_9_16

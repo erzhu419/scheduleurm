@@ -4,11 +4,11 @@
 run_id = module64_bamor_cpu_training_c3_8_completed_history
 scope = BAMOR no-GPU CPU training, 3-8 CPU cores, parseable training-step units
 workload_key = bamor_cpu_training_c3_8_completed_history
-record_count = 122
-total_units_training_step = 24252000.000000
+record_count = 142
+total_units_training_step = 25252000.000000
 profile_domain = [1]
 min_realized_training_step_s = 10.055276060265
-median_realized_training_step_s = 220.899989746561
+median_realized_training_step_s = 215.355053987056
 theorem_status = strict_completed_history_lower_service
 ```
 
@@ -20,11 +20,11 @@ This module maps only no-GPU BAMOR production records requesting 3-8 CPU cores w
 
 | Quantity | Value |
 |---|---:|
-| Completed-active records | 122 |
-| Parsed training-step units | 24252000 |
+| Completed-history records | 142 |
+| Parsed training-step units | 25252000 |
 | Minimum realized training-step/s | 10.055276060265 |
-| P10 realized training-step/s | 57.817221035641 |
-| Median realized training-step/s | 220.899989746561 |
+| P10 realized training-step/s | 61.679100127895 |
+| Median realized training-step/s | 215.355053987056 |
 | Maximum duration s | 1332.971033 |
 
 ## Script Breakdown
@@ -32,7 +32,7 @@ This module maps only no-GPU BAMOR production records requesting 3-8 CPU cores w
 | Script | Count |
 |---|---:|
 | `run_bamor_diagnostic_shard.py` | 25 |
-| `train_bamor_mujoco.py` | 39 |
+| `train_bamor_mujoco.py` | 59 |
 | `train_compare_baselines.py` | 58 |
 
 ## Artifacts

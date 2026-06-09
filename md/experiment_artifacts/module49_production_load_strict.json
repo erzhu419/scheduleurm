@@ -81,6 +81,9 @@
     ],
     "transit_native_promotion_c17_32_seedrange_completed_history": [
       1
+    ],
+    "zsw_tsp_sumo_eval_c_le2_completed_history": [
+      1
     ]
   },
   "capacity": {
@@ -97,11 +100,12 @@
       "hybrid_rl_resac_ant",
       "light_control_local",
       "sumo_eval_simple_sac_c_le2",
-      "transit_native_promotion_c17_32_seedrange_completed_history"
+      "transit_native_promotion_c17_32_seedrange_completed_history",
+      "zsw_tsp_sumo_eval_c_le2_completed_history"
     ],
     "delta": 0.001497771906963224,
     "mix": {
-      "profile_combo:bamor_cpu_training_c3_8_completed_history=1,cpu_heavy_local_bench=2,freqduet_cpu_ablation_c17_32=1,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=8,freqduet_runner_v3_allfreq_alllayers_c9_16=4,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=8,hybrid_rl_resac_ant=6,light_control_local=6,sumo_eval_simple_sac_c_le2=1,transit_native_promotion_c17_32_seedrange_completed_history=1": 1.0
+      "profile_combo:bamor_cpu_training_c3_8_completed_history=1,cpu_heavy_local_bench=1,freqduet_cpu_ablation_c17_32=2,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c9_16=1,freqduet_runner_v3_allfreq_alllayers_c9_16=4,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1,light_control_local=3,sumo_eval_simple_sac_c_le2=1,transit_native_promotion_c17_32_seedrange_completed_history=1,zsw_tsp_sumo_eval_c_le2_completed_history=1": 1.0
     },
     "status": "optimal",
     "usable_for_theorem": true
@@ -2584,7 +2588,7 @@
   "include_representative": false,
   "interpretation": "Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.",
   "lambda": {
-    "bamor_cpu_training_c3_8_completed_history": 9.572530864197532,
+    "bamor_cpu_training_c3_8_completed_history": 9.958333333333334,
     "cpu_heavy_local_bench": 0.021219135802469136,
     "freqduet_cpu_ablation_c17_32": 0.004805555555555556,
     "freqduet_cpu_ablation_c33_64_completed_history": 0.060239197530864194,
@@ -2596,11 +2600,12 @@
     "hybrid_rl_resac_ant": 0.014691358024691358,
     "light_control_local": 0.7947530864197531,
     "sumo_eval_simple_sac_c_le2": 2.7391975308641977e-05,
-    "transit_native_promotion_c17_32_seedrange_completed_history": 0.014145833333333333
+    "transit_native_promotion_c17_32_seedrange_completed_history": 0.014145833333333333,
+    "zsw_tsp_sumo_eval_c_le2_completed_history": 0.3472222222222222
   },
   "mapped_capacity_usable_for_theorem": true,
   "mapped_counts": {
-    "bamor_cpu_training_c3_8_completed_history": 143,
+    "bamor_cpu_training_c3_8_completed_history": 163,
     "cpu_heavy_local_bench": 55,
     "freqduet_cpu_ablation_c17_32": 173,
     "freqduet_cpu_ablation_c33_64_completed_history": 63,
@@ -2612,12 +2617,13 @@
     "hybrid_rl_resac_ant": 476,
     "light_control_local": 206,
     "sumo_eval_simple_sac_c_le2": 71,
-    "transit_native_promotion_c17_32_seedrange_completed_history": 128
+    "transit_native_promotion_c17_32_seedrange_completed_history": 128,
+    "zsw_tsp_sumo_eval_c_le2_completed_history": 50
   },
-  "mapped_fraction": 0.30343934911242604,
-  "mapped_task_count": 1641,
+  "mapped_fraction": 0.3095711959471684,
+  "mapped_task_count": 1711,
   "mapped_units": {
-    "bamor_cpu_training_c3_8_completed_history": 24812000.0,
+    "bamor_cpu_training_c3_8_completed_history": 25812000.0,
     "cpu_heavy_local_bench": 55000.0,
     "freqduet_cpu_ablation_c17_32": 12456.0,
     "freqduet_cpu_ablation_c33_64_completed_history": 156140.0,
@@ -2629,25 +2635,26 @@
     "hybrid_rl_resac_ant": 38080.0,
     "light_control_local": 2060000.0,
     "sumo_eval_simple_sac_c_le2": 71.0,
-    "transit_native_promotion_c17_32_seedrange_completed_history": 36666.0
+    "transit_native_promotion_c17_32_seedrange_completed_history": 36666.0,
+    "zsw_tsp_sumo_eval_c_le2_completed_history": 900000.0
   },
   "moment": {
-    "B": 195500.64528304883,
+    "B": 195521.8553214076,
     "status": "finite_support_bound_from_measured_action_slice_and_empirical_load",
     "usable_for_theorem": true
   },
-  "record_count_total": 7940,
-  "record_count_window": 5408,
+  "record_count_total": 8059,
+  "record_count_window": 5527,
   "representative_mapped_task_count": 0,
   "status_counts": {
-    "cancelled": 1338,
-    "done": 2595,
-    "failed": 1382,
+    "cancelled": 1340,
+    "done": 2657,
+    "failed": 1463,
     "forgotten": 49,
-    "queued": 16,
-    "running": 28
+    "queued": 10,
+    "running": 8
   },
-  "strict_mapped_fraction": 0.30343934911242604,
+  "strict_mapped_fraction": 0.3095711959471684,
   "taskset_names": [
     "q00_light_control",
     "q01_gpu_bound_compute",
@@ -2658,15 +2665,16 @@
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_cpu_training_c3_8_completed_history",
+    "production_zsw_tsp_sumo_eval_c_le2_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
     "q11_cpu_gpu_coupled"
   ],
   "top_projects": {
-    "Asumption Agent": 68,
-    "BAMOR": 231,
-    "BAPR": 259,
+    "Asumption Agent": 69,
+    "BAMOR": 251,
+    "BAPR": 348,
     "CFCMT": 119,
     "FreqDuet": 343,
     "FreqHRL": 56,
@@ -2676,7 +2684,7 @@
     "RE-SAC-JMLR": 484,
     "ScheduleurmBench": 962,
     "SimpleSAC": 76,
-    "TransitDuet": 708,
+    "TransitDuet": 716,
     "ZSW_platform": 42,
     "bapr_v15": 413,
     "freqduet": 383,
@@ -2687,14 +2695,14 @@
   },
   "unmapped_reasons": {
     "scheduleurmbench_unknown": 155,
-    "unmapped_cpu": 2068,
+    "unmapped_cpu": 2117,
     "unmapped_gpu": 1544
   },
-  "unmapped_task_count": 3767,
+  "unmapped_task_count": 3816,
   "usable_for_global_theorem": false,
   "window": {
-    "end_ts": 1780964168.2722957,
-    "start_ts": 1778372168.2722957,
+    "end_ts": 1780967690.309519,
+    "start_ts": 1778375690.309519,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

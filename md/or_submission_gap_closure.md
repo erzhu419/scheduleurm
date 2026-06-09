@@ -104,6 +104,12 @@ md/experiment_module70_transit_freqhrl_import_smoke_c_le2_completed_history.md
 md/experiment_module71_transit_native_promotion_c9_16_bounded_wait_completed_history.md
 md/experiment_module71_transit_native_promotion_c9_16_residual_completed_history.md
 md/experiment_module71_freqduet_runner_v3_c9_16_residual_completed_history.md
+md/experiment_module72_cfcmt_feed_conversion_c_le2_completed_history.md
+md/experiment_module72_cfcmt_env_validation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_sumo_generation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_snapshot_generation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_policy_rollout_c_le2_completed_history.md
+md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -141,6 +147,12 @@ md/experiment_artifacts/module70_transit_freqhrl_import_smoke_c_le2_completed_hi
 md/experiment_artifacts/module71_transit_native_promotion_c9_16_bounded_wait_completed_history.json
 md/experiment_artifacts/module71_transit_native_promotion_c9_16_residual_completed_history.json
 md/experiment_artifacts/module71_freqduet_runner_v3_c9_16_residual_completed_history.json
+md/experiment_artifacts/module72_cfcmt_feed_conversion_c_le2_completed_history.json
+md/experiment_artifacts/module72_cfcmt_env_validation_c_le2_completed_history.json
+md/experiment_artifacts/module72_cfcmt_sumo_generation_c_le2_completed_history.json
+md/experiment_artifacts/module72_cfcmt_snapshot_generation_c_le2_completed_history.json
+md/experiment_artifacts/module72_cfcmt_policy_rollout_c_le2_completed_history.json
+md/experiment_artifacts/module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.json
 ```
 
 Status:
@@ -163,21 +175,21 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.001497772
-    representative mapping delta = 0.001497772
+    strict measured mapping delta = 0.000674792
+    representative mapping delta = 0.000674792
   Full global theorem coverage is still open because the representative run
-  leaves 1693 / 5935 tasks unmapped and maps 1889 tasks only by representative
+  leaves 1669 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2805
-    mapped = 2091
-    strict mapped = 1180
-    measurement_required = 714
-    mapped_fraction = 0.745455
+    records = 2840
+    mapped = 2150
+    strict mapped = 1242
+    measurement_required = 690
+    mapped_fraction = 0.757042
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 350 / 2805 records
+    cpu_sumo_transit_eval_or_control = 320 / 2840 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -237,7 +249,56 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta = 0.001497772
+    strict mapped delta after Module72 = 0.000674792
+
+  Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
+  script-level completed-history certificates:
+    gtfs_to_h2o_xlsx.py / lta_to_h2o_xlsx.py
+      -> cfcmt_feed_conversion_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 5 feed-conversion jobs
+    min completed wall-clock rate = 0.000677 feed-conversion/s
+
+    validate_h2o_city_env.py
+      -> cfcmt_env_validation_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 87200 validation-step units
+    min completed wall-clock rate = 11.792971 validation-step/s
+
+    sumo_apc_avl_sumo_generation
+      -> cfcmt_sumo_generation_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 4
+    parsed completed-history work = 106200 simulated-second units
+    min completed wall-clock rate = 18.527091 simulated-second/s
+
+    sumo_apc_avl_snapshot_generation
+      -> cfcmt_snapshot_generation_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 1560 snapshot-window units
+    min completed wall-clock rate = 0.028279 snapshot-window/s
+
+    sumo_policy_rollout_validation.py
+      -> cfcmt_policy_rollout_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 10
+    parsed completed-history work = 140820 policy-event-budget units
+    min completed wall-clock rate = 10.848109 policy-event-budget/s
+
+    traffic_signal_sumo_phase2.py
+      -> cfcmt_traffic_signal_phase2_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 1
+    parsed completed-history work = 1 phase2-run unit
+    min completed wall-clock rate = 0.001202 phase2-run/s
+  Policy-rollout and snapshot-generation commands are matched before
+  SUMO-generation commands because their stage2-report paths contain
+  `sumo_generation`; this prevents path strings from collapsing distinct
+  service units into one class.  Module72 does not claim offline-sumo, H2Oplus,
+  RESCO/config, ZSW metrics-parser, or Nature-emissions SUMO records.
 
   Module60 closes the parseable c3_8 FreqDuet ablation sub-slice:
     run_freqduet_ablation.py within freqduet_cpu_ablation|c_3_8
@@ -423,13 +484,18 @@ Remaining scope limitation:
   order while preserving the slow bounded-wait profile as a separate
   lower-service class.
 
+  Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2`, but not the
+  remaining offline-sumo/H2Oplus/RESCO/ZSW/Nature SUMO rows.  This moves
+  `transit_misc_cpu|c_le2` to the top of the regenerated Module53 first-probe
+  order.
+
   The current remaining top probe order is:
-    sumo_eval_cpu|c_le2 residual command shapes
     transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes
     bamor_cpu_training|c_9_16
     freqduet_cpu_ablation|c_le2 residual command shapes
     bamor_cpu_training|c_le2
+    sumo_eval_cpu|c_le2 residual command shapes
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

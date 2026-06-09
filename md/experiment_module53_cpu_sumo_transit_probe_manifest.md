@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module71
+## Status After Module72
 
 The original top sub-bucket was:
 
@@ -218,6 +218,23 @@ This removes the previous `freqduet_cpu_ablation|c_9_16` first-probe blocker
 without charging the slow bounded-wait stress profile to faster residual native
 or direct-runner work.
 
+Module72 measured completed-history profile-1 lower-service points for the
+CFCMT portion of the low-CPU SUMO/evaluation bucket.  It splits the 30
+completed-active CFCMT records into six script-level classes:
+
+```text
+cfcmt_feed_conversion_c_le2_completed_history: completed_active = 5, unit = feed_conversion, min = 0.000676721 feed_conversion/s
+cfcmt_env_validation_c_le2_completed_history: completed_active = 5, unit = validation_step, min = 11.792971439 validation-step/s
+cfcmt_sumo_generation_c_le2_completed_history: completed_active = 4, unit = sim_second, min = 18.527090541 sim-second/s
+cfcmt_snapshot_generation_c_le2_completed_history: completed_active = 5, unit = snapshot_window, min = 0.028279002 snapshot-window/s
+cfcmt_policy_rollout_c_le2_completed_history: completed_active = 10, unit = policy_event_budget, min = 10.848108919 policy-event-budget/s
+cfcmt_traffic_signal_phase2_c_le2_completed_history: completed_active = 1, unit = phase2_run, min = 0.001201620 phase2-run/s
+```
+
+The split is necessary because policy-rollout and snapshot commands reference
+`sumo_generation` outputs in paths, but their progress units are not
+SUMO-generation simulated seconds.
+
 The current Module53 manifest has therefore been regenerated over the remaining
 unmeasured `cpu_sumo_transit_eval_or_control` records.
 
@@ -225,11 +242,11 @@ unmeasured `cpu_sumo_transit_eval_or_control` records.
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 350
-cpu_cores median = 3
+record_count = 320
+cpu_cores median = 4
 cpu_cores p90 = 32
 cpu_cores max = 61
-ram_mb median = 2512.000
+ram_mb median = 4096.000
 ram_mb p90 = 65536
 ram_mb max = 131072
 theorem_status = measurement_required
@@ -239,28 +256,30 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `sumo_eval_cpu|c_le2` | 51 | 0.145714 |
-| `transit_misc_cpu|c_le2` | 48 | 0.137143 |
-| `freqduet_cpu_ablation|c_17_32` | 46 | 0.131429 |
-| `bamor_cpu_training|c_9_16` | 43 | 0.122857 |
-| `freqduet_cpu_ablation|c_le2` | 36 | 0.102857 |
-| `bamor_cpu_training|c_le2` | 28 | 0.080000 |
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.051429 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.048571 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.042857 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.037143 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.034286 |
+| `transit_misc_cpu|c_le2` | 48 | 0.150000 |
+| `freqduet_cpu_ablation|c_17_32` | 46 | 0.143750 |
+| `bamor_cpu_training|c_9_16` | 43 | 0.134375 |
+| `freqduet_cpu_ablation|c_le2` | 36 | 0.112500 |
+| `bamor_cpu_training|c_le2` | 28 | 0.087500 |
+| `sumo_eval_cpu|c_le2` | 21 | 0.065625 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.056250 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.053125 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.046875 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.040625 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.037500 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.018750 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
+bamor_cpu_training|c_le2
+sumo_eval_cpu|c_le2 residual command shapes
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -302,11 +321,12 @@ Module70 maps the low-CPU Transit/FreqHRL validation/control slice into six
 separate profile-1 completed-history service classes.  Module71 maps 40
 residual c9_16 native-promotion records, 7 bounded-wait c9_16 native-promotion
 records, and 12 residual c9_16 `runner_v3.py` records after rejecting the
-infeasible coarse native c9_16 class.  The global theorem remains open because
-350
+infeasible coarse native c9_16 class.  Module72 maps 30 CFCMT low-CPU SUMO/eval
+records into six script-level completed-history service classes.  The global
+theorem remains open because 320
 completed/active production records in the CPU/SUMO/transit family still
-require measured curves or equivalence certificates, led by 51 residual
-`sumo_eval_cpu|c_le2` records, 48 `transit_misc_cpu|c_le2` records, 46
-residual `freqduet_cpu_ablation|c_17_32` records, 43
-`bamor_cpu_training|c_9_16` records, and 36 residual
-`freqduet_cpu_ablation|c_le2` records.
+require measured curves or equivalence certificates, led by 48
+`transit_misc_cpu|c_le2` records, 46 residual
+`freqduet_cpu_ablation|c_17_32` records, 43 `bamor_cpu_training|c_9_16`
+records, 36 residual `freqduet_cpu_ablation|c_le2` records, and 28
+`bamor_cpu_training|c_le2` records.

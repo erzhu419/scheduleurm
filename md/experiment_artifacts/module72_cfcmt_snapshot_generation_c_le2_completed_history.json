@@ -1,0 +1,122 @@
+{
+  "cpu_counts": {
+    "1": 2,
+    "2": 3
+  },
+  "duration_s": {
+    "max": 2294.56685590744,
+    "median": 572.1486148834229,
+    "min": 128.14510774612427,
+    "p10": 128.14510774612427,
+    "p90": 1060.8577930927277
+  },
+  "interpretation": "Only profile 1 is loaded. Snapshot-window units are separate from simulated-second generation and policy-event rollout units.",
+  "mapped_completed_active_count": 5,
+  "mapped_completed_active_units_snapshot_window": 1560.0,
+  "parsed_units_snapshot_window": {
+    "max": 1440.0,
+    "median": 30.0,
+    "min": 30.0,
+    "p10": 30.0,
+    "p90": 30.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 5
+  },
+  "ram_counts": {
+    "1014": 1,
+    "1149": 1,
+    "1255": 1,
+    "13046": 1,
+    "969": 1
+  },
+  "realized_snapshot_window_s": {
+    "max": 0.6275694239602002,
+    "median": 0.1338344337478528,
+    "min": 0.028279002327485144,
+    "p10": 0.028279002327485144,
+    "p90": 0.23410960065236938
+  },
+  "record_count": 5,
+  "run_id": "module72_cfcmt_snapshot_generation_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for CFCMT SUMO/APC/AVL snapshot-generation records. It maps only no-GPU c_le2 snapshot_generation commands with snapshot-window units inferred from --snapshot-period and the stage2-report duration family.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m cProfile -o cf_h2o/results/profiles/stage3_mbta_full_lines_10min_cache_build.prof -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_profile_mbta10.j...",
+      "cpu_cores": 1.0,
+      "duration_s": 1060.8577930927277,
+      "finished_at": 1779201511.6871939,
+      "parsed_units_snapshot_window": 30.0,
+      "project": "CFCMT",
+      "ram_mb": 1014.0,
+      "realized_snapshot_window_s": 0.028279002327485144,
+      "signature": "CFCMT/auto-adopted/p595475",
+      "started_at": 1779200450.8294008,
+      "status": "done",
+      "task_id": "t3759"
+    },
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full.json --snapshot-period 60 --out cf_h2o/results/sumo_apc_avl_snapshot_generation_full_window.json...",
+      "cpu_cores": 2.0,
+      "duration_s": 572.1486148834229,
+      "finished_at": 1779193125.5105166,
+      "parsed_units_snapshot_window": 30.0,
+      "project": "CFCMT",
+      "ram_mb": 1255.0,
+      "realized_snapshot_window_s": 0.05243392926174015,
+      "signature": "CFCMT/auto-adopted/p530636",
+      "started_at": 1779192553.3619018,
+      "status": "done",
+      "task_id": "t3753"
+    },
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full.json --cities singapore_lta_all --snapshot-period 60 --out cf_h2o/results/sumo_apc_avl_snapshot_...",
+      "cpu_cores": 2.0,
+      "duration_s": 224.15755915641785,
+      "finished_at": 1779193481.277352,
+      "parsed_units_snapshot_window": 30.0,
+      "project": "CFCMT",
+      "ram_mb": 1149.0,
+      "realized_snapshot_window_s": 0.1338344337478528,
+      "signature": "CFCMT/auto-adopted/p534086",
+      "started_at": 1779193257.119793,
+      "status": "done",
+      "task_id": "t3754"
+    },
+    {
+      "cmd_prefix": "python3 -m cProfile -o cf_h2o/results/profiles/stage3_mbta_full_lines_30min.prof -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full.json --cities mbta_all ...",
+      "cpu_cores": 1.0,
+      "duration_s": 128.14510774612427,
+      "finished_at": 1779199965.5747988,
+      "parsed_units_snapshot_window": 30.0,
+      "project": "CFCMT",
+      "ram_mb": 969.0,
+      "realized_snapshot_window_s": 0.23410960065236938,
+      "signature": "CFCMT/auto-adopted/p587850",
+      "started_at": 1779199837.429691,
+      "status": "done",
+      "task_id": "t3758"
+    },
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full_day.json --snapshot-period 60 --vehicle-capacity 90 --workers 4 --rebuild-demand-cache --out cf_...",
+      "cpu_cores": 2.0,
+      "duration_s": 2294.56685590744,
+      "finished_at": 1779204792.27213,
+      "parsed_units_snapshot_window": 1440.0,
+      "project": "CFCMT",
+      "ram_mb": 13046.0,
+      "realized_snapshot_window_s": 0.6275694239602002,
+      "signature": "CFCMT/auto-adopted/p612894",
+      "started_at": 1779202497.705274,
+      "status": "done",
+      "task_id": "t3760"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module72 CFCMT Snapshot Generation c_le2 Completed-History Certificate",
+  "total_units_snapshot_window": 1560.0,
+  "workload_key": "cfcmt_snapshot_generation_c_le2_completed_history"
+}

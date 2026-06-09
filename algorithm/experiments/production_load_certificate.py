@@ -54,6 +54,12 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c9_16_bounded_wait_completed_history",
     "production_transit_native_promotion_c9_16_residual_completed_history",
     "production_freqduet_runner_v3_c9_16_residual_completed_history",
+    "production_cfcmt_feed_conversion_c_le2_completed_history",
+    "production_cfcmt_env_validation_c_le2_completed_history",
+    "production_cfcmt_sumo_generation_c_le2_completed_history",
+    "production_cfcmt_snapshot_generation_c_le2_completed_history",
+    "production_cfcmt_policy_rollout_c_le2_completed_history",
+    "production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -387,6 +393,11 @@ def classify_record(
             "module65_zsw_tsp_sumo_eval_c_le2_completed_history",
             units=zsw_sumo_c_le2_units,
         )
+
+    cfcmt_c_le2 = _cfcmt_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if cfcmt_c_le2 is not None:
+        workload_key, units, reason = cfcmt_c_le2
+        return _mapped(workload_key, "strict_measured", reason, units=units)
 
     transit_c_le2 = _transit_freqhrl_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
     if transit_c_le2 is not None:
@@ -1327,6 +1338,89 @@ def _parse_runner_v3_episode_units(cmd: str) -> float | None:
     except ValueError:
         return None
     return episodes if math.isfinite(episodes) and episodes > 0 else None
+
+
+def _cfcmt_c_le2_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project != "cfcmt" and "/cfcmt" not in cwd and not signature.startswith("cfcmt/"):
+        return None
+    parsed = _parse_cfcmt_c_le2_units(cmd)
+    if parsed is None:
+        return None
+    workload_key, units = parsed
+    return workload_key, units, f"module72_{workload_key}"
+
+
+def _parse_cfcmt_c_le2_units(cmd: str) -> tuple[str, float] | None:
+    tokens = _shlex_tokens(cmd)
+    cmd_lower = str(cmd).lower()
+    if "gtfs_to_h2o_xlsx.py" in cmd_lower or "lta_to_h2o_xlsx.py" in cmd_lower:
+        return "cfcmt_feed_conversion_c_le2_completed_history", 1.0
+    if "validate_h2o_city_env.py" in cmd_lower:
+        max_steps = _positive_float_option(tokens, "--max-steps", default=1.0)
+        return "cfcmt_env_validation_c_le2_completed_history", max_steps
+
+    # These command lines carry stage2-report paths containing
+    # "sumo_generation"; keep rollout and snapshot checks before generation.
+    if "sumo_policy_rollout_validation" in cmd_lower:
+        policies = _csv_value_count(_shell_option_from_tokens(tokens, "--policies"), default_count=1)
+        events = _positive_float_option(tokens, "--max-events-per-city-policy", default=0.0)
+        if events <= 0.0:
+            events = _positive_float_option(tokens, "--max-steps", default=1.0)
+        return "cfcmt_policy_rollout_c_le2_completed_history", float(policies) * events
+    if "sumo_apc_avl_snapshot_generation" in cmd_lower:
+        period = _positive_float_option(tokens, "--snapshot-period", default=60.0)
+        stage2 = str(_shell_option_from_tokens(tokens, "--stage2-report") or "").lower()
+        duration = _cfcmt_stage2_report_duration(stage2)
+        return "cfcmt_snapshot_generation_c_le2_completed_history", max(1.0, duration / period)
+    if "sumo_apc_avl_sumo_generation" in cmd_lower:
+        duration = _positive_float_option(tokens, "--duration-sec", default=0.0)
+        if duration <= 0.0:
+            return None
+        return "cfcmt_sumo_generation_c_le2_completed_history", duration
+    if "traffic_signal_sumo_phase2.py" in cmd_lower:
+        return "cfcmt_traffic_signal_phase2_c_le2_completed_history", 1.0
+    return None
+
+
+def _positive_float_option(tokens: list[str], name: str, *, default: float) -> float:
+    raw = _shell_option_from_tokens(tokens, name)
+    if raw is None:
+        return float(default)
+    try:
+        value = float(raw)
+    except ValueError:
+        return float(default)
+    return value if math.isfinite(value) and value > 0.0 else float(default)
+
+
+def _csv_value_count(value: str | None, *, default_count: int) -> int:
+    if value is None:
+        return max(1, int(default_count))
+    count = len([part for part in str(value).split(",") if part.strip()])
+    return count if count > 0 else max(1, int(default_count))
+
+
+def _cfcmt_stage2_report_duration(stage2_report: str) -> float:
+    value = str(stage2_report).lower()
+    if "full_day" in value:
+        return 86400.0
+    if "4h" in value:
+        return 14400.0
+    return 1800.0
 
 
 def _zsw_tsp_sumo_eval_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:

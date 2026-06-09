@@ -1,0 +1,197 @@
+{
+  "cpu_counts": {
+    "1": 9,
+    "2": 1
+  },
+  "duration_s": {
+    "max": 876.9273619651794,
+    "median": 187.41824293136597,
+    "min": 4.597895622253418,
+    "p10": 4.597895622253418,
+    "p90": 717.3709018230438
+  },
+  "interpretation": "Only profile 1 is loaded. Policy-rollout work is separated from SUMO generation because rollout commands reference generation outputs by path.",
+  "mapped_completed_active_count": 10,
+  "mapped_completed_active_units_policy_event_budget": 140820.0,
+  "parsed_units_policy_event_budget": {
+    "max": 27500.0,
+    "median": 10500.0,
+    "min": 320.0,
+    "p10": 320.0,
+    "p90": 25000.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 10
+  },
+  "ram_counts": {
+    "1046": 1,
+    "1870": 1,
+    "1886": 1,
+    "1888": 1,
+    "4339": 1,
+    "4362": 1,
+    "689": 1,
+    "728": 1,
+    "729": 1,
+    "730": 1
+  },
+  "realized_policy_event_budget_s": {
+    "max": 152.11787819899118,
+    "median": 53.247061775996954,
+    "min": 10.848108919227917,
+    "p10": 10.848108919227917,
+    "p90": 128.829036394091
+  },
+  "record_count": 10,
+  "run_id": "module72_cfcmt_policy_rollout_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for CFCMT SUMO policy-rollout validation records. It maps only no-GPU c_le2 policy_rollout_validation commands with policy-event-budget units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json --transfer-max-lines-per-city 0 --target-adaptation-lines 50 --target-adaptation-m...",
+      "cpu_cores": 1.0,
+      "duration_s": 460.9098265171051,
+      "finished_at": 1780314090.229906,
+      "parsed_units_policy_event_budget": 5000.0,
+      "project": "CFCMT",
+      "ram_mb": 4362.0,
+      "realized_policy_event_budget_s": 10.848108919227917,
+      "signature": "CFCMT/auto-adopted/p885916",
+      "started_at": 1780313629.3200796,
+      "status": "done",
+      "task_id": "t5401"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json --transfer-max-lines-per-city 0 --workers 8 --actions 0,15,30,45,60 --policy-actio...",
+      "cpu_cores": 1.0,
+      "duration_s": 876.9273619651794,
+      "finished_at": 1780307706.5004256,
+      "parsed_units_policy_event_budget": 25000.0,
+      "project": "CFCMT",
+      "ram_mb": 1888.0,
+      "realized_policy_event_budget_s": 28.50863262377333,
+      "signature": "CFCMT/auto-adopted/p772561",
+      "started_at": 1780306829.5730636,
+      "status": "done",
+      "task_id": "t5363"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json --transfer-max-lines-per-city 0 --workers 8 --actions 0,15,30,45,60 --policy-actio...",
+      "cpu_cores": 1.0,
+      "duration_s": 521.5354616641998,
+      "finished_at": 1780308426.0444572,
+      "parsed_units_policy_event_budget": 15000.0,
+      "project": "CFCMT",
+      "ram_mb": 4339.0,
+      "realized_policy_event_budget_s": 28.76122738065705,
+      "signature": "CFCMT/auto-adopted/p792504",
+      "started_at": 1780307904.5089955,
+      "status": "done",
+      "task_id": "t5365"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json --transfer-max-lines-per-city 0 --workers 8 --actions 0,15,30,45,60 --policy-actio...",
+      "cpu_cores": 1.0,
+      "duration_s": 717.3709018230438,
+      "finished_at": 1780303338.9880564,
+      "parsed_units_policy_event_budget": 25000.0,
+      "project": "CFCMT",
+      "ram_mb": 1886.0,
+      "realized_policy_event_budget_s": 34.8494759635049,
+      "signature": "CFCMT/auto-adopted/p715910",
+      "started_at": 1780302621.6171546,
+      "status": "done",
+      "task_id": "t5337"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_max5.json --transfer-max-lines-per-city 20 --workers 4 --max-events-per-city-policy 600 --max-s...",
+      "cpu_cores": 1.0,
+      "duration_s": 162.6145498752594,
+      "finished_at": 1780298985.787268,
+      "parsed_units_policy_event_budget": 6000.0,
+      "project": "CFCMT",
+      "ram_mb": 730.0,
+      "realized_policy_event_budget_s": 36.897067357149545,
+      "signature": "CFCMT/auto-adopted/p655788",
+      "started_at": 1780298823.172718,
+      "status": "done",
+      "task_id": "t5310"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_smoke.json --transfer-max-lines-per-city 2 --target-adaptation-lines 1 --target-adaptation-mass...",
+      "cpu_cores": 2.0,
+      "duration_s": 4.597895622253418,
+      "finished_at": 1780311334.1421292,
+      "parsed_units_policy_event_budget": 320.0,
+      "project": "CFCMT",
+      "ram_mb": 689.0,
+      "realized_policy_event_budget_s": 69.59705619484436,
+      "signature": "CFCMT/auto-adopted/p819924",
+      "started_at": 1780311329.5442336,
+      "status": "done",
+      "task_id": "t5380"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_max5.json --transfer-max-lines-per-city 20 --workers 4 --actions 0,15,30,45,60 --policy-actions...",
+      "cpu_cores": 1.0,
+      "duration_s": 84.11281323432922,
+      "finished_at": 1780299305.774601,
+      "parsed_units_policy_event_budget": 6000.0,
+      "project": "CFCMT",
+      "ram_mb": 728.0,
+      "realized_policy_event_budget_s": 71.33277046963876,
+      "signature": "CFCMT/auto-adopted/p661511",
+      "started_at": 1780299221.6617877,
+      "status": "done",
+      "task_id": "t5317"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_max5.json --transfer-max-lines-per-city 20 --workers 4 --actions 0,15,30,45,60 --policy-actions...",
+      "cpu_cores": 1.0,
+      "duration_s": 66.43831515312195,
+      "finished_at": 1780299634.2890425,
+      "parsed_units_policy_event_budget": 6000.0,
+      "project": "CFCMT",
+      "ram_mb": 729.0,
+      "realized_policy_event_budget_s": 90.30933409692372,
+      "signature": "CFCMT/auto-adopted/p668097",
+      "started_at": 1780299567.8507273,
+      "status": "done",
+      "task_id": "t5318"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full.json --transfer-max-lines-per-city 0 --workers 8 --actions 0,15,30,45,60 --policy-actions ...",
+      "cpu_cores": 1.0,
+      "duration_s": 194.05563139915466,
+      "finished_at": 1780301462.780084,
+      "parsed_units_policy_event_budget": 25000.0,
+      "project": "CFCMT",
+      "ram_mb": 1870.0,
+      "realized_policy_event_budget_s": 128.829036394091,
+      "signature": "CFCMT/auto-adopted/p681418",
+      "started_at": 1780301268.7244525,
+      "status": "done",
+      "task_id": "t5331"
+    },
+    {
+      "cmd_prefix": "python3 cf_h2o/eval/sumo_policy_rollout_validation.py --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json --skip-transfer-policies --actions 0,15,30,45,60 --policy-actions 0,15,30,45,60 --...",
+      "cpu_cores": 1.0,
+      "duration_s": 180.78085446357727,
+      "finished_at": 1780306280.855381,
+      "parsed_units_policy_event_budget": 27500.0,
+      "project": "CFCMT",
+      "ram_mb": 1046.0,
+      "realized_policy_event_budget_s": 152.11787819899118,
+      "signature": "CFCMT/auto-adopted/p771704",
+      "started_at": 1780306100.0745265,
+      "status": "done",
+      "task_id": "t5359"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module72 CFCMT Policy Rollout c_le2 Completed-History Certificate",
+  "total_units_policy_event_budget": 140820.0,
+  "workload_key": "cfcmt_policy_rollout_c_le2_completed_history"
+}

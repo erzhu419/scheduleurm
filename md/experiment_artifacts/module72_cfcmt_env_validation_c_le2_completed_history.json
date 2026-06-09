@@ -1,0 +1,122 @@
+{
+  "cpu_counts": {
+    "1": 1,
+    "2": 4
+  },
+  "duration_s": {
+    "max": 1341.9788918495178,
+    "median": 465.8277597427368,
+    "min": 167.05706071853638,
+    "p10": 167.05706071853638,
+    "p90": 610.5331499576569
+  },
+  "interpretation": "Only profile 1 is loaded. Validation-step service is separated from feed conversion and SUMO simulation work.",
+  "mapped_completed_active_count": 5,
+  "mapped_completed_active_units_validation_step": 87200.0,
+  "parsed_units_validation_step": {
+    "max": 20000.0,
+    "median": 20000.0,
+    "min": 7200.0,
+    "p10": 7200.0,
+    "p90": 20000.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 5
+  },
+  "ram_counts": {
+    "1004": 1,
+    "1109": 1,
+    "1616": 1,
+    "910": 1,
+    "999": 1
+  },
+  "realized_validation_step_s": {
+    "max": 119.71957314451201,
+    "median": 42.93432407515907,
+    "min": 11.792971438978132,
+    "p10": 11.792971438978132,
+    "p90": 65.11925675044395
+  },
+  "record_count": 5,
+  "run_id": "module72_cfcmt_env_validation_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for CFCMT validate_h2o_city_env.py records. It maps only no-GPU c_le2 commands with parsed --max-steps validation-step units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py H2Oplus/downloads/open_transit/mbta/h2o_city_envs/MBTA_weekday_all_routes_v2 --dynamic-line-limit 250 --max-steps 7200 --out H2Oplus/downloads/open_transit/mbta/h2...",
+      "cpu_cores": 1.0,
+      "duration_s": 610.5331499576569,
+      "finished_at": 1779110957.7383473,
+      "parsed_units_validation_step": 7200.0,
+      "project": "CFCMT",
+      "ram_mb": 1109.0,
+      "realized_validation_step_s": 11.792971438978132,
+      "signature": "CFCMT/auto-adopted/p84755",
+      "started_at": 1779110347.2051973,
+      "status": "done",
+      "task_id": "t3697"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py /home/erzhu419/mine_code/CFCMT/H2Oplus/downloads/open_transit/mbta/h2o_city_envs/MBTA_weekday_all_routes --max-steps 20000 --out H2Oplus/downloads/open_transit/mbt...",
+      "cpu_cores": 2.0,
+      "duration_s": 1341.9788918495178,
+      "finished_at": 1779104795.1942446,
+      "parsed_units_validation_step": 20000.0,
+      "project": "CFCMT",
+      "ram_mb": 1616.0,
+      "realized_validation_step_s": 14.903364070381139,
+      "signature": "CFCMT/auto-adopted/p70340",
+      "started_at": 1779103453.2153528,
+      "status": "done",
+      "task_id": "t3637"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py /home/erzhu419/mine_code/CFCMT/H2Oplus/downloads/open_transit/austin_capmetro/h2o_city_envs/AUSTINCAPMETRO_weekday_all_routes --max-steps 20000 --out H2Oplus/downl...",
+      "cpu_cores": 2.0,
+      "duration_s": 465.8277597427368,
+      "finished_at": 1779102952.2935278,
+      "parsed_units_validation_step": 20000.0,
+      "project": "CFCMT",
+      "ram_mb": 999.0,
+      "realized_validation_step_s": 42.93432407515907,
+      "signature": "CFCMT/auto-adopted/p68096",
+      "started_at": 1779102486.465768,
+      "status": "done",
+      "task_id": "t3634"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py /home/erzhu419/mine_code/CFCMT/H2Oplus/downloads/open_transit/austin_capmetro/h2o_city_envs/AUSTINCAPMETRO_weekday_all_routes --max-steps 20000 --out H2Oplus/downl...",
+      "cpu_cores": 2.0,
+      "duration_s": 307.1288125514984,
+      "finished_at": 1779103268.8995128,
+      "parsed_units_validation_step": 20000.0,
+      "project": "CFCMT",
+      "ram_mb": 1004.0,
+      "realized_validation_step_s": 65.11925675044395,
+      "signature": "CFCMT/auto-adopted/p69212",
+      "started_at": 1779102961.7707002,
+      "status": "done",
+      "task_id": "t3635"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py /home/erzhu419/mine_code/CFCMT/H2Oplus/downloads/open_transit/halifax_transit/h2o_city_envs/HALIFAXTRANSIT_weekday_all_routes --max-steps 20000 --out H2Oplus/downl...",
+      "cpu_cores": 2.0,
+      "duration_s": 167.05706071853638,
+      "finished_at": 1779103444.5141227,
+      "parsed_units_validation_step": 20000.0,
+      "project": "CFCMT",
+      "ram_mb": 910.0,
+      "realized_validation_step_s": 119.71957314451201,
+      "signature": "CFCMT/auto-adopted/p69883",
+      "started_at": 1779103277.457062,
+      "status": "done",
+      "task_id": "t3636"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module72 CFCMT Env Validation c_le2 Completed-History Certificate",
+  "total_units_validation_step": 87200.0,
+  "workload_key": "cfcmt_env_validation_c_le2_completed_history"
+}

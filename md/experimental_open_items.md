@@ -243,11 +243,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2805
-representative mapped = 2091
-strict mapped = 1180
-measurement_required = 714
-mapped_fraction = 0.745455
+records = 2840
+representative mapped = 2150
+strict mapped = 1242
+measurement_required = 690
+mapped_fraction = 0.757042
 ```
 
 最大未闭合 bucket 是：
@@ -270,6 +270,7 @@ after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755 completed-active 
 after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781 completed-active records
 after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797 completed-active records
 after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805 completed-active records
+after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -451,17 +452,53 @@ workload_key = freqduet_runner_v3_c9_16_residual_completed_history
 feasible profiles = 1
 completed-active mapped count = 12
 unit rule = parsed episodes
+
+closed completed-history slice = CFCMT GTFS/LTA feed conversion within c_le2
+workload_key = cfcmt_feed_conversion_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = feed-conversion job
+
+closed completed-history slice = CFCMT H2O environment validation within c_le2
+workload_key = cfcmt_env_validation_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = parsed --max-steps validation steps
+
+closed completed-history slice = CFCMT SUMO/APC/AVL generation within c_le2
+workload_key = cfcmt_sumo_generation_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 4
+unit rule = parsed --duration-sec simulated seconds
+
+closed completed-history slice = CFCMT SUMO/APC/AVL snapshot generation within c_le2
+workload_key = cfcmt_snapshot_generation_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = inferred snapshot windows
+
+closed completed-history slice = CFCMT policy rollout validation within c_le2
+workload_key = cfcmt_policy_rollout_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 10
+unit rule = policy count times event budget
+
+closed completed-history singleton = CFCMT traffic_signal_sumo_phase2.py
+workload_key = cfcmt_traffic_signal_phase2_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = phase2_run
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
+sumo_eval_cpu|c_le2 residual command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

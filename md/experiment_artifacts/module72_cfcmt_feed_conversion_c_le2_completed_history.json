@@ -1,0 +1,122 @@
+{
+  "cpu_counts": {
+    "1": 3,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 1477.713619709015,
+    "median": 624.3524112701416,
+    "min": 154.19235754013062,
+    "p10": 154.19235754013062,
+    "p90": 655.2015924453735
+  },
+  "interpretation": "Only profile 1 is loaded. Feed conversion is separated from validation, simulation, snapshot, rollout, and traffic-signal work.",
+  "mapped_completed_active_count": 5,
+  "mapped_completed_active_units_feed_conversion": 5.0,
+  "parsed_units_feed_conversion": {
+    "max": 1.0,
+    "median": 1.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 1.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 5
+  },
+  "ram_counts": {
+    "251": 1,
+    "281": 1,
+    "437": 1,
+    "438": 1,
+    "884": 1
+  },
+  "realized_feed_conversion_s": {
+    "max": 0.006485405735752738,
+    "median": 0.0016016595466743944,
+    "min": 0.0006767211093289617,
+    "p10": 0.0006767211093289617,
+    "p90": 0.003151527254513648
+  },
+  "record_count": 5,
+  "run_id": "module72_cfcmt_feed_conversion_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for CFCMT GTFS/LTA feed conversion records. It maps only no-GPU c_le2 gtfs_to_h2o_xlsx.py and lta_to_h2o_xlsx.py commands.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/lta_to_h2o_xlsx.py --raw-root H2Oplus/downloads/lta_datamall/202604 --all-services --date 202604 --day-type WEEKDAY --hours 0-23",
+      "cpu_cores": 2.0,
+      "duration_s": 1477.713619709015,
+      "finished_at": 1779102480.6426144,
+      "parsed_units_feed_conversion": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 884.0,
+      "realized_feed_conversion_s": 0.0006767211093289617,
+      "signature": "CFCMT/auto-adopted/p64734",
+      "started_at": 1779101002.9289947,
+      "status": "done",
+      "task_id": "t3633"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/gtfs_to_h2o_xlsx.py --city MBTA --gtfs-dir H2Oplus/downloads/open_transit/mbta/gtfs --all-routes --service-scope all-feed --hours 0-23 --min-stops 2 --max-stops 300 --ridership-kind mbta_b...",
+      "cpu_cores": 1.0,
+      "duration_s": 655.2015924453735,
+      "finished_at": 1779100994.8250666,
+      "parsed_units_feed_conversion": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 438.0,
+      "realized_feed_conversion_s": 0.0015262478167486651,
+      "signature": "CFCMT/auto-adopted/p63349",
+      "started_at": 1779100339.6234741,
+      "status": "done",
+      "task_id": "t3632"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/gtfs_to_h2o_xlsx.py --city MBTA --gtfs-dir H2Oplus/downloads/open_transit/mbta/gtfs --all-routes --service-scope all-feed --hours 0-23 --day-type-name Weekday --min-stops 2 --max-stops 120...",
+      "cpu_cores": 1.0,
+      "duration_s": 624.3524112701416,
+      "finished_at": 1779110395.6058278,
+      "parsed_units_feed_conversion": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 437.0,
+      "realized_feed_conversion_s": 0.0016016595466743944,
+      "signature": "CFCMT/auto-adopted/p83538",
+      "started_at": 1779109771.2534165,
+      "status": "done",
+      "task_id": "t3696"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/gtfs_to_h2o_xlsx.py --city AustinCapMetro --gtfs-dir H2Oplus/downloads/open_transit/austin_capmetro/gtfs --all-routes --service-scope all-feed --hours 0-23 --min-stops 2 --max-stops 300 --...",
+      "cpu_cores": 1.0,
+      "duration_s": 317.30647373199463,
+      "finished_at": 1779100332.8874834,
+      "parsed_units_feed_conversion": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 281.0,
+      "realized_feed_conversion_s": 0.003151527254513648,
+      "signature": "CFCMT/auto-adopted/p62674",
+      "started_at": 1779100015.5810096,
+      "status": "done",
+      "task_id": "t3630"
+    },
+    {
+      "cmd_prefix": "python3 H2Oplus/bus_h2o/data/gtfs_to_h2o_xlsx.py --city HalifaxTransit --gtfs-dir H2Oplus/downloads/open_transit/halifax_transit/gtfs --all-routes --service-scope all-feed --hours 0-23 --min-stops 2 --max-stops 300 --...",
+      "cpu_cores": 2.0,
+      "duration_s": 154.19235754013062,
+      "finished_at": 1779100332.9133356,
+      "parsed_units_feed_conversion": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 251.0,
+      "realized_feed_conversion_s": 0.006485405735752738,
+      "signature": "CFCMT/auto-adopted/p63004",
+      "started_at": 1779100178.720978,
+      "status": "done",
+      "task_id": "t3631"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module72 CFCMT Feed Conversion c_le2 Completed-History Certificate",
+  "total_units_feed_conversion": 5.0,
+  "workload_key": "cfcmt_feed_conversion_c_le2_completed_history"
+}

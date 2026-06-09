@@ -3,29 +3,35 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 5935
-mapped_task_count = 2353
+record_count_window = 5980
+mapped_task_count = 2415
 representative_mapped_task_count = 0
-unmapped_task_count = 3582
-mapped_fraction = 0.39646166807076666
+unmapped_task_count = 3565
+mapped_fraction = 0.40384615384615385
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 141 | 2.719907407 |
+| `bamor_mujoco_c3_8_completed_history` | 166 | 3.202160494 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
+| `cfcmt_env_validation_c_le2_completed_history` | 5 | 0.033641975 |
+| `cfcmt_feed_conversion_c_le2_completed_history` | 5 | 0.000001929 |
+| `cfcmt_policy_rollout_c_le2_completed_history` | 10 | 0.054328704 |
+| `cfcmt_snapshot_generation_c_le2_completed_history` | 5 | 0.000601852 |
+| `cfcmt_sumo_generation_c_le2_completed_history` | 4 | 0.040972222 |
+| `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
-| `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
+| `freqduet_cpu_ablation_c9_16` | 135 | 0.074498457 |
 | `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
 | `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
-| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
+| `freqduet_runner_v3_c_le2_completed_history` | 85 | 0.001798611 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `light_control_local` | 206 | 0.794753086 |
@@ -45,7 +51,7 @@ mapped_fraction = 0.39646166807076666
 
 | Quantity | Value |
 |---|---:|
-| `delta` | 0.001497772 |
+| `delta` | 0.000674792 |
 | `mapped_capacity_usable_for_theorem` | true |
 | `global_coverage_usable_for_theorem` | false |
 | `usable_for_global_theorem` | false |
@@ -55,7 +61,7 @@ mapped_fraction = 0.39646166807076666
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1843 |
-| `unmapped_gpu` | 1584 |
+| `unmapped_cpu` | 1819 |
+| `unmapped_gpu` | 1591 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

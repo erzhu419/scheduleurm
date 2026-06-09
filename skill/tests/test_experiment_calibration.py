@@ -749,6 +749,143 @@ def test_module71_c9_native_and_runner_residual_completed_history_profile1(check
           diag=str(report))
 
 
+def test_module72_cfcmt_sumo_cle2_completed_history_profile1(check, sch):
+    base = {
+        "project": "CFCMT",
+        "signature": "CFCMT/auto-adopted/p72",
+        "description": "CFCMT c_le2 production row",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 1024,
+        "cwd": "/home/erzhu419/mine_code/CFCMT",
+    }
+    rows = [
+        {
+            **base,
+            "id": "module72-feed",
+            "cmd": (
+                "python3 H2Oplus/bus_h2o/data/gtfs_to_h2o_xlsx.py "
+                "--city MBTA --gtfs-dir gtfs --all-routes"
+            ),
+            "expected_key": "cfcmt_feed_conversion_c_le2_completed_history",
+            "expected_units": 1.0,
+        },
+        {
+            **base,
+            "id": "module72-env",
+            "cmd": (
+                "python3 H2Oplus/bus_h2o/data/validate_h2o_city_env.py "
+                "env_dir --max-steps 20000 --out validation_smoke.json"
+            ),
+            "expected_key": "cfcmt_env_validation_c_le2_completed_history",
+            "expected_units": 20000.0,
+        },
+        {
+            **base,
+            "id": "module72-generation",
+            "cmd": (
+                "python3 -m cf_h2o.eval.sumo_apc_avl_sumo_generation "
+                "--duration-sec 3600 --run-sumo --out generation.json"
+            ),
+            "expected_key": "cfcmt_sumo_generation_c_le2_completed_history",
+            "expected_units": 3600.0,
+        },
+        {
+            **base,
+            "id": "module72-snapshot",
+            "cmd": (
+                "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation "
+                "--stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json "
+                "--snapshot-period 60 --out snapshot.json"
+            ),
+            "expected_key": "cfcmt_snapshot_generation_c_le2_completed_history",
+            "expected_units": 240.0,
+        },
+        {
+            **base,
+            "id": "module72-rollout",
+            "cmd": (
+                "python3 cf_h2o/eval/sumo_policy_rollout_validation.py "
+                "--stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_control_full_4h.json "
+                "--max-events-per-city-policy 40 --policies no_hold,daganzo_policy "
+                "--out rollout.json"
+            ),
+            "expected_key": "cfcmt_policy_rollout_c_le2_completed_history",
+            "expected_units": 80.0,
+        },
+        {
+            **base,
+            "id": "module72-phase2",
+            "cmd": (
+                "python3 cf_h2o/eval/traffic_signal_sumo_phase2.py "
+                "--out traffic_signal_sumo_phase2.json"
+            ),
+            "expected_key": "cfcmt_traffic_signal_phase2_c_le2_completed_history",
+            "expected_units": 1.0,
+        },
+    ]
+    for row in rows:
+        expected_key = row.pop("expected_key")
+        expected_units = row.pop("expected_units")
+        cls = classify_record(row, include_representative=False)
+        check(f"Module72 maps CFCMT c_le2 row {row['id']} to its script-level certificate",
+              cls["workload_key"] == expected_key
+              and cls["mapping_mode"] == "strict_measured"
+              and math.isclose(float(cls["units"]), expected_units),
+              diag=str(cls))
+        row["expected_key"] = expected_key
+        row["expected_units"] = expected_units
+
+    cache = build_default_cache()
+    expected_rates = {
+        "cfcmt_feed_conversion_c_le2_completed_history": 0.0006767211093289617,
+        "cfcmt_env_validation_c_le2_completed_history": 11.792971438978132,
+        "cfcmt_sumo_generation_c_le2_completed_history": 18.52709054097842,
+        "cfcmt_snapshot_generation_c_le2_completed_history": 0.028279002327485144,
+        "cfcmt_policy_rollout_c_le2_completed_history": 10.848108919227917,
+        "cfcmt_traffic_signal_phase2_c_le2_completed_history": 0.0012016200150934825,
+    }
+    check("Module72 service cache exposes six separated CFCMT c_le2 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)]
+                    for key in expected_rates}))
+
+    report_rows = [
+        {key: value for key, value in row.items() if not key.startswith("expected_")}
+        for row in rows
+    ]
+    report = build_production_load_certificate(
+        records=report_rows,
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_cfcmt_feed_conversion_c_le2_completed_history",
+            "production_cfcmt_env_validation_c_le2_completed_history",
+            "production_cfcmt_sumo_generation_c_le2_completed_history",
+            "production_cfcmt_snapshot_generation_c_le2_completed_history",
+            "production_cfcmt_policy_rollout_c_le2_completed_history",
+            "production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
+        ),
+    )
+    check("Production load certificate sums Module72 CFCMT parsed units",
+          report["mapped_counts"] == {key: 1 for key in expected_rates}
+          and math.isclose(report["mapped_units"]["cfcmt_feed_conversion_c_le2_completed_history"], 1.0)
+          and math.isclose(report["mapped_units"]["cfcmt_env_validation_c_le2_completed_history"], 20000.0)
+          and math.isclose(report["mapped_units"]["cfcmt_sumo_generation_c_le2_completed_history"], 3600.0)
+          and math.isclose(report["mapped_units"]["cfcmt_snapshot_generation_c_le2_completed_history"], 240.0)
+          and math.isclose(report["mapped_units"]["cfcmt_policy_rollout_c_le2_completed_history"], 80.0)
+          and math.isclose(report["mapped_units"]["cfcmt_traffic_signal_phase2_c_le2_completed_history"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
     row = {
         "id": "freq-c3",

@@ -9,6 +9,24 @@
     "bamor_train_compare_c3_8_completed_history": [
       1
     ],
+    "cfcmt_env_validation_c_le2_completed_history": [
+      1
+    ],
+    "cfcmt_feed_conversion_c_le2_completed_history": [
+      1
+    ],
+    "cfcmt_policy_rollout_c_le2_completed_history": [
+      1
+    ],
+    "cfcmt_snapshot_generation_c_le2_completed_history": [
+      1
+    ],
+    "cfcmt_sumo_generation_c_le2_completed_history": [
+      1
+    ],
+    "cfcmt_traffic_signal_phase2_c_le2_completed_history": [
+      1
+    ],
     "cpu_heavy_local_bench": [
       1,
       2,
@@ -142,6 +160,12 @@
       "bamor_diagnostic_shard_c3_8_completed_history",
       "bamor_mujoco_c3_8_completed_history",
       "bamor_train_compare_c3_8_completed_history",
+      "cfcmt_env_validation_c_le2_completed_history",
+      "cfcmt_feed_conversion_c_le2_completed_history",
+      "cfcmt_policy_rollout_c_le2_completed_history",
+      "cfcmt_snapshot_generation_c_le2_completed_history",
+      "cfcmt_sumo_generation_c_le2_completed_history",
+      "cfcmt_traffic_signal_phase2_c_le2_completed_history",
       "cpu_heavy_local_bench",
       "freqduet_cpu_ablation_c17_32",
       "freqduet_cpu_ablation_c33_64_completed_history",
@@ -171,9 +195,9 @@
       "transit_trading_sweep_c_le2_completed_history",
       "zsw_tsp_sumo_eval_c_le2_completed_history"
     ],
-    "delta": 0.001497771906963224,
+    "delta": 0.0006747920969832827,
     "mix": {
-      "profile_combo:bamor_diagnostic_shard_c3_8_completed_history=1,bamor_mujoco_c3_8_completed_history=1,bamor_train_compare_c3_8_completed_history=1,cpu_heavy_local_bench=8,freqduet_cpu_ablation_c17_32=4,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c65p_completed_history=1,freqduet_cpu_ablation_c9_16=1,freqduet_promoted_ep100_c65p_completed_history=1,freqduet_runner_v3_allfreq_alllayers_c9_16=4,freqduet_runner_v3_c3_8_completed_history=1,freqduet_runner_v3_c9_16_residual_completed_history=1,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=8,hybrid_rl_resac_ant=7,light_control_local=13,sumo_eval_simple_sac_c_le2=1,transit_freqhrl_import_smoke_c_le2_completed_history=1,transit_native_control_c_le2_completed_history=1,transit_native_promotion_c17_32_seedrange_completed_history=1,transit_native_promotion_c33_64_batch_completed_history=1,transit_native_promotion_c33_64_single_seed_completed_history=1,transit_native_promotion_c65p_completed_history=1,transit_native_promotion_c9_16_bounded_wait_completed_history=1,transit_native_promotion_c9_16_residual_completed_history=1,transit_native_promotion_c_le2_completed_history=1,transit_surrogate_validation_c_le2_completed_history=1,transit_trading_policy_c_le2_completed_history=1,transit_trading_sweep_c_le2_completed_history=1,zsw_tsp_sumo_eval_c_le2_completed_history=1": 1.0
+      "profile_combo:bamor_diagnostic_shard_c3_8_completed_history=1,bamor_mujoco_c3_8_completed_history=1,bamor_train_compare_c3_8_completed_history=1,cfcmt_env_validation_c_le2_completed_history=1,cfcmt_feed_conversion_c_le2_completed_history=1,cfcmt_policy_rollout_c_le2_completed_history=1,cfcmt_snapshot_generation_c_le2_completed_history=1,cfcmt_sumo_generation_c_le2_completed_history=1,cfcmt_traffic_signal_phase2_c_le2_completed_history=1,cpu_heavy_local_bench=4,freqduet_cpu_ablation_c17_32=1,freqduet_cpu_ablation_c33_64_completed_history=1,freqduet_cpu_ablation_c3_8_completed_history=1,freqduet_cpu_ablation_c65p_completed_history=1,freqduet_cpu_ablation_c9_16=4,freqduet_promoted_ep100_c65p_completed_history=1,freqduet_runner_v3_allfreq_alllayers_c9_16=8,freqduet_runner_v3_c3_8_completed_history=1,freqduet_runner_v3_c9_16_residual_completed_history=1,freqduet_runner_v3_c_le2_completed_history=1,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=7,light_control_local=4,sumo_eval_simple_sac_c_le2=1,transit_freqhrl_import_smoke_c_le2_completed_history=1,transit_native_control_c_le2_completed_history=1,transit_native_promotion_c17_32_seedrange_completed_history=1,transit_native_promotion_c33_64_batch_completed_history=1,transit_native_promotion_c33_64_single_seed_completed_history=1,transit_native_promotion_c65p_completed_history=1,transit_native_promotion_c9_16_bounded_wait_completed_history=1,transit_native_promotion_c9_16_residual_completed_history=1,transit_native_promotion_c_le2_completed_history=1,transit_surrogate_validation_c_le2_completed_history=1,transit_trading_policy_c_le2_completed_history=1,transit_trading_sweep_c_le2_completed_history=1,zsw_tsp_sumo_eval_c_le2_completed_history=1": 1.0
     },
     "status": "optimal",
     "usable_for_theorem": true
@@ -2657,21 +2681,27 @@
   "interpretation": "Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.",
   "lambda": {
     "bamor_diagnostic_shard_c3_8_completed_history": 6.442901234567901,
-    "bamor_mujoco_c3_8_completed_history": 2.7199074074074074,
+    "bamor_mujoco_c3_8_completed_history": 3.2021604938271606,
     "bamor_train_compare_c3_8_completed_history": 2.1651234567901234,
+    "cfcmt_env_validation_c_le2_completed_history": 0.03364197530864198,
+    "cfcmt_feed_conversion_c_le2_completed_history": 1.9290123456790124e-06,
+    "cfcmt_policy_rollout_c_le2_completed_history": 0.054328703703703705,
+    "cfcmt_snapshot_generation_c_le2_completed_history": 0.0006018518518518519,
+    "cfcmt_sumo_generation_c_le2_completed_history": 0.04097222222222222,
+    "cfcmt_traffic_signal_phase2_c_le2_completed_history": 3.8580246913580245e-07,
     "cpu_heavy_local_bench": 0.14621913580246915,
     "freqduet_cpu_ablation_c17_32": 0.005277777777777778,
     "freqduet_cpu_ablation_c33_64_completed_history": 0.060239197530864194,
     "freqduet_cpu_ablation_c3_8_completed_history": 0.006945601851851852,
     "freqduet_cpu_ablation_c65p_completed_history": 0.01204861111111111,
-    "freqduet_cpu_ablation_c9_16": 0.06832561728395062,
+    "freqduet_cpu_ablation_c9_16": 0.07449845679012346,
     "freqduet_promoted_ep100_c65p_completed_history": 0.023148148148148147,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 7.71604938271605e-06,
     "freqduet_runner_v3_c3_8_completed_history": 0.0010451388888888889,
     "freqduet_runner_v3_c9_16_residual_completed_history": 0.00018518518518518518,
-    "freqduet_runner_v3_c_le2_completed_history": 0.0017982253086419753,
+    "freqduet_runner_v3_c_le2_completed_history": 0.001798611111111111,
     "gpu_heavy_jax_matmul": 0.06481481481481481,
-    "hybrid_rl_resac_ant": 0.06299382716049383,
+    "hybrid_rl_resac_ant": 0.06320987654320988,
     "light_control_local": 0.7947530864197531,
     "sumo_eval_simple_sac_c_le2": 2.7391975308641977e-05,
     "transit_freqhrl_import_smoke_c_le2_completed_history": 7.716049382716049e-07,
@@ -2690,21 +2720,27 @@
   "mapped_capacity_usable_for_theorem": true,
   "mapped_counts": {
     "bamor_diagnostic_shard_c3_8_completed_history": 25,
-    "bamor_mujoco_c3_8_completed_history": 141,
+    "bamor_mujoco_c3_8_completed_history": 166,
     "bamor_train_compare_c3_8_completed_history": 68,
+    "cfcmt_env_validation_c_le2_completed_history": 5,
+    "cfcmt_feed_conversion_c_le2_completed_history": 5,
+    "cfcmt_policy_rollout_c_le2_completed_history": 10,
+    "cfcmt_snapshot_generation_c_le2_completed_history": 5,
+    "cfcmt_sumo_generation_c_le2_completed_history": 4,
+    "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
     "cpu_heavy_local_bench": 379,
     "freqduet_cpu_ablation_c17_32": 190,
     "freqduet_cpu_ablation_c33_64_completed_history": 63,
     "freqduet_cpu_ablation_c3_8_completed_history": 42,
     "freqduet_cpu_ablation_c65p_completed_history": 11,
-    "freqduet_cpu_ablation_c9_16": 129,
+    "freqduet_cpu_ablation_c9_16": 135,
     "freqduet_promoted_ep100_c65p_completed_history": 6,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
     "freqduet_runner_v3_c3_8_completed_history": 86,
     "freqduet_runner_v3_c9_16_residual_completed_history": 13,
-    "freqduet_runner_v3_c_le2_completed_history": 84,
+    "freqduet_runner_v3_c_le2_completed_history": 85,
     "gpu_heavy_jax_matmul": 70,
-    "hybrid_rl_resac_ant": 2041,
+    "hybrid_rl_resac_ant": 2048,
     "light_control_local": 206,
     "sumo_eval_simple_sac_c_le2": 71,
     "transit_freqhrl_import_smoke_c_le2_completed_history": 2,
@@ -2720,25 +2756,31 @@
     "transit_trading_sweep_c_le2_completed_history": 14,
     "zsw_tsp_sumo_eval_c_le2_completed_history": 50
   },
-  "mapped_fraction": 0.714743049705139,
-  "mapped_task_count": 4242,
+  "mapped_fraction": 0.7209030100334448,
+  "mapped_task_count": 4311,
   "mapped_units": {
     "bamor_diagnostic_shard_c3_8_completed_history": 16700000.0,
-    "bamor_mujoco_c3_8_completed_history": 7050000.0,
+    "bamor_mujoco_c3_8_completed_history": 8300000.0,
     "bamor_train_compare_c3_8_completed_history": 5612000.0,
+    "cfcmt_env_validation_c_le2_completed_history": 87200.0,
+    "cfcmt_feed_conversion_c_le2_completed_history": 5.0,
+    "cfcmt_policy_rollout_c_le2_completed_history": 140820.0,
+    "cfcmt_snapshot_generation_c_le2_completed_history": 1560.0,
+    "cfcmt_sumo_generation_c_le2_completed_history": 106200.0,
+    "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1.0,
     "cpu_heavy_local_bench": 379000.0,
     "freqduet_cpu_ablation_c17_32": 13680.0,
     "freqduet_cpu_ablation_c33_64_completed_history": 156140.0,
     "freqduet_cpu_ablation_c3_8_completed_history": 18003.0,
     "freqduet_cpu_ablation_c65p_completed_history": 31230.0,
-    "freqduet_cpu_ablation_c9_16": 177100.0,
+    "freqduet_cpu_ablation_c9_16": 193100.0,
     "freqduet_promoted_ep100_c65p_completed_history": 60000.0,
     "freqduet_runner_v3_allfreq_alllayers_c9_16": 20.0,
     "freqduet_runner_v3_c3_8_completed_history": 2709.0,
     "freqduet_runner_v3_c9_16_residual_completed_history": 480.0,
-    "freqduet_runner_v3_c_le2_completed_history": 4661.0,
+    "freqduet_runner_v3_c_le2_completed_history": 4662.0,
     "gpu_heavy_jax_matmul": 168000.0,
-    "hybrid_rl_resac_ant": 163280.0,
+    "hybrid_rl_resac_ant": 163840.0,
     "light_control_local": 2060000.0,
     "sumo_eval_simple_sac_c_le2": 71.0,
     "transit_freqhrl_import_smoke_c_le2_completed_history": 2.0,
@@ -2755,22 +2797,21 @@
     "zsw_tsp_sumo_eval_c_le2_completed_history": 900000.0
   },
   "moment": {
-    "B": 901223.6956367677,
+    "B": 901525.1317042168,
     "status": "finite_support_bound_from_measured_action_slice_and_empirical_load",
     "usable_for_theorem": true
   },
-  "record_count_total": 8467,
-  "record_count_window": 5935,
-  "representative_mapped_task_count": 1889,
+  "record_count_total": 8512,
+  "record_count_window": 5980,
+  "representative_mapped_task_count": 1896,
   "status_counts": {
-    "cancelled": 1343,
-    "done": 2855,
-    "failed": 1468,
+    "cancelled": 1344,
+    "done": 2886,
+    "failed": 1477,
     "forgotten": 233,
-    "queued": 5,
-    "running": 31
+    "running": 40
   },
-  "strict_mapped_fraction": 0.39646166807076666,
+  "strict_mapped_fraction": 0.40384615384615385,
   "taskset_names": [
     "q00_light_control",
     "q01_gpu_bound_compute",
@@ -2793,6 +2834,12 @@
     "production_transit_native_promotion_c9_16_bounded_wait_completed_history",
     "production_transit_native_promotion_c9_16_residual_completed_history",
     "production_freqduet_runner_v3_c9_16_residual_completed_history",
+    "production_cfcmt_feed_conversion_c_le2_completed_history",
+    "production_cfcmt_env_validation_c_le2_completed_history",
+    "production_cfcmt_sumo_generation_c_le2_completed_history",
+    "production_cfcmt_snapshot_generation_c_le2_completed_history",
+    "production_cfcmt_policy_rollout_c_le2_completed_history",
+    "production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -2806,10 +2853,10 @@
   ],
   "top_projects": {
     "Asumption Agent": 70,
-    "BAMOR": 324,
-    "BAPR": 612,
+    "BAMOR": 349,
+    "BAPR": 619,
     "CFCMT": 119,
-    "FreqDuet": 360,
+    "FreqDuet": 366,
     "FreqHRL": 56,
     "FreqHRLNative": 62,
     "H2Oplus": 24,
@@ -2820,22 +2867,22 @@
     "TransitDuet": 753,
     "ZSW_platform": 42,
     "bapr_v15": 413,
-    "freqduet": 383,
+    "freqduet": 384,
     "offline-sumo": 53,
-    "scheduleurm": 35,
+    "scheduleurm": 41,
     "sensing-compressibility-pems": 18,
     "tmp": 75
   },
   "unmapped_reasons": {
     "scheduleurmbench_unknown": 155,
-    "unmapped_cpu": 1519,
+    "unmapped_cpu": 1495,
     "unmapped_gpu": 19
   },
-  "unmapped_task_count": 1693,
+  "unmapped_task_count": 1669,
   "usable_for_global_theorem": false,
   "window": {
-    "end_ts": 1781017395.23907,
-    "start_ts": 1778425395.23907,
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

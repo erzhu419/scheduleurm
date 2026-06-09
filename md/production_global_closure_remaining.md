@@ -1,8 +1,8 @@
 # Production Global Closure Remaining
 
-Date: 2026-06-09
+Date: 2026-06-10
 
-This note records the current gap after Module71.  It should be read together
+This note records the current gap after Module72.  It should be read together
 with:
 
 ```text
@@ -35,6 +35,12 @@ md/experiment_module70_transit_freqhrl_import_smoke_c_le2_completed_history.md
 md/experiment_module71_transit_native_promotion_c9_16_bounded_wait_completed_history.md
 md/experiment_module71_transit_native_promotion_c9_16_residual_completed_history.md
 md/experiment_module71_freqduet_runner_v3_c9_16_residual_completed_history.md
+md/experiment_module72_cfcmt_feed_conversion_c_le2_completed_history.md
+md/experiment_module72_cfcmt_env_validation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_sumo_generation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_snapshot_generation_c_le2_completed_history.md
+md/experiment_module72_cfcmt_policy_rollout_c_le2_completed_history.md
+md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -206,16 +212,52 @@ workload_key = freqduet_runner_v3_c9_16_residual_completed_history
 completed-active strict mapped count = 12
 feasible profiles = 1
 unit rule = parsed episodes
+
+completed-history slice = CFCMT GTFS/LTA feed conversion within c_le2
+workload_key = cfcmt_feed_conversion_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = feed-conversion job
+
+completed-history slice = CFCMT H2O environment validation within c_le2
+workload_key = cfcmt_env_validation_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = parsed validation steps
+
+completed-history slice = CFCMT SUMO/APC/AVL generation within c_le2
+workload_key = cfcmt_sumo_generation_c_le2_completed_history
+completed-active strict mapped count = 4
+feasible profiles = 1
+unit rule = parsed simulated seconds
+
+completed-history slice = CFCMT SUMO/APC/AVL snapshot generation within c_le2
+workload_key = cfcmt_snapshot_generation_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = inferred snapshot windows
+
+completed-history slice = CFCMT policy rollout validation within c_le2
+workload_key = cfcmt_policy_rollout_c_le2_completed_history
+completed-active strict mapped count = 10
+feasible profiles = 1
+unit rule = policy-event budget
+
+completed-history singleton = CFCMT traffic_signal_sumo_phase2.py
+workload_key = cfcmt_traffic_signal_phase2_c_le2_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = phase2_run
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2805
-strict completed-active mapped count = 1180
-representative completed-active mapped count = 2091
-measurement_required = 714
-cpu_sumo_transit_eval_or_control remaining = 350 / 2805
+completed_active_production records = 2840
+strict completed-active mapped count = 1242
+representative completed-active mapped count = 2150
+measurement_required = 690
+cpu_sumo_transit_eval_or_control remaining = 320 / 2840
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -270,7 +312,7 @@ CPU/SUMO/transit measurement-required count is still lower after the latest
 slices: 862 / 2471 after Module62, 803 / 2487 after Module63, 704 / 2553 after
 Module64, 659 / 2589 after Module65, 576 / 2679 after Module66/67,
 532 / 2755 after Module68, 471 / 2781 after Module69, 409 / 2797 after
-Module70, and 350 / 2805 after Module71.
+Module70, 350 / 2805 after Module71, and 320 / 2840 after Module72.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -303,6 +345,11 @@ bounded-wait stress profile has the slowest lower-service rate and cannot be
 used as the service class for all native-promotion c9_16 work without making
 the mapped load infeasible.
 
+Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six explicit
+script-semantics certificates.  It does not authorize mapping offline-sumo,
+H2Oplus, RESCO/config, ZSW metrics-parser, or Nature-emissions SUMO records to
+the CFCMT service classes.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -315,7 +362,7 @@ adds another conservative completed-history profile-1 lower-service point but
 does not further reduce the mapped delta below the SimpleSAC bottleneck:
 
 ```text
-strict mapped delta = 0.001497772
+strict mapped delta = 0.000674792
 ```
 
 This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
@@ -334,12 +381,12 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
+sumo_eval_cpu|c_le2 residual command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

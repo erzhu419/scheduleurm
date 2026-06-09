@@ -58,19 +58,25 @@ completed-history classes: the slow bounded_wait_nofinal_v14 native-promotion
 stress profile, the residual c9_16 native-promotion profiles, and residual
 direct runner_v3 configs.  The bounded/residual split is required because the
 single coarse c9_16 native class makes the mapped capacity LP infeasible.
+Module72 closes the CFCMT portion of the low-CPU SUMO/evaluation bucket by
+splitting 30 completed-active records into six script-level service classes:
+feed conversion, environment validation, SUMO generation, snapshot generation,
+policy rollout, and traffic-signal phase2.  This split is required because
+snapshot and policy-rollout commands contain `sumo_generation` in input paths,
+but their progress units and lower-service rates are not SUMO-generation units.
 
 ```text
-record_count_window = 5935
-mapped_task_count = 2353
-mapped_fraction = 0.396462
-unmapped_task_count = 3582
+record_count_window = 5980
+mapped_task_count = 2415
+mapped_fraction = 0.403846
+unmapped_task_count = 3565
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module71
+`md/experiment_artifacts/module49_production_load_strict.md`.  The latest
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
@@ -78,11 +84,17 @@ strict rows added to the mapped slice are:
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
 | `transit_native_promotion_c9_16_residual_completed_history` | 45 | 0.003028935 |
 | `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
+| `cfcmt_feed_conversion_c_le2_completed_history` | 5 | 0.000001929 |
+| `cfcmt_env_validation_c_le2_completed_history` | 5 | 0.033641975 |
+| `cfcmt_sumo_generation_c_le2_completed_history` | 4 | 0.040972222 |
+| `cfcmt_snapshot_generation_c_le2_completed_history` | 5 | 0.000601852 |
+| `cfcmt_policy_rollout_c_le2_completed_history` | 10 | 0.054328704 |
+| `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
 
 Capacity LP:
 
 ```text
-delta = 0.001497772
+delta = 0.000674792
 status = optimal
 ```
 
@@ -95,26 +107,26 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5935
-mapped_task_count = 4242
-representative_mapped_task_count = 1889
-mapped_fraction = 0.714743
-strict_mapped_fraction = 0.396462
-unmapped_task_count = 1693
+record_count_window = 5980
+mapped_task_count = 4311
+representative_mapped_task_count = 1896
+mapped_fraction = 0.720903
+strict_mapped_fraction = 0.403846
+unmapped_task_count = 1669
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full representative-load tables are generated in
-`md/experiment_artifacts/module49_production_load_representative.md`.  Module71
-adds the same three strict c9_16 residual rows shown above; representative
+`md/experiment_artifacts/module49_production_load_representative.md`.
+Module71 and Module72 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 
 Capacity LP:
 
 ```text
-delta = 0.001497772
+delta = 0.000674792
 status = optimal
 ```
 
@@ -149,14 +161,19 @@ native-promotion records, and 12 residual runner_v3 records in the
 completed-active view.  A coarse single native c9_16 class is explicitly not
 used because its slowest lower-service point does not dominate the aggregate
 class load.
+Module72 maps the CFCMT part of `sumo_eval_cpu|c_le2`: 5 feed-conversion
+records, 5 environment-validation records, 4 SUMO-generation records, 5
+snapshot-generation records, 10 policy-rollout records, and 1 traffic-signal
+phase2 singleton.  It does not close offline-sumo, H2Oplus, RESCO/config, ZSW
+metrics-parser, or Nature-emissions SUMO records.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3582 / 5935 tasks
-representative unmapped: 1693 / 5935 tasks
-representative-mapped but not theorem-grade: 1889 tasks
+strict unmapped: 3565 / 5980 tasks
+representative unmapped: 1669 / 5980 tasks
+representative-mapped but not theorem-grade: 1896 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

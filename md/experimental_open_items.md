@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2589
-representative mapped = 1583
-strict mapped = 751
-measurement_required = 1006
-mapped_fraction = 0.611433
+records = 2679
+representative mapped = 1749
+strict mapped = 878
+measurement_required = 930
+mapped_fraction = 0.652856
 ```
 
 最大未闭合 bucket 是：
@@ -240,6 +240,8 @@ after Module62:  cpu_sumo_transit_eval_or_control = 862 / 2471 completed-active 
 after Module63:  cpu_sumo_transit_eval_or_control = 803 / 2487 completed-active records
 after Module64:  cpu_sumo_transit_eval_or_control = 704 / 2553 completed-active records
 after Module65:  cpu_sumo_transit_eval_or_control = 659 / 2589 completed-active records
+after Module66:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
+after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -263,7 +265,7 @@ closed exact slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_
 workload_key = freqduet_cpu_ablation_c17_32
 feasible profiles = 1,2,4
 capacity boundary = 8
-completed-active mapped count = 136
+completed-active mapped count = 147
 residual freqduet_cpu_ablation|c_17_32 needing measurement after Module63 = 46
 
 closed exact slice = runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml within c_9_16
@@ -289,6 +291,12 @@ feasible profiles = 1
 completed-active mapped count = 40
 unit rule = parsed jobs times episodes
 
+closed completed-history slice = runner_v3.py within freqduet_cpu_ablation|c_3_8
+workload_key = freqduet_runner_v3_c3_8_completed_history
+feasible profiles = 1
+completed-active mapped count = 86
+unit rule = parsed episodes
+
 closed completed-history slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_33_64
 workload_key = freqduet_cpu_ablation_c33_64_completed_history
 feasible profiles = 1
@@ -307,10 +315,22 @@ feasible profiles = 1
 completed-active mapped count = 71
 unit rule = parsed seed-count times episodes
 
-closed completed-history slice = BAMOR c_3_8 CPU training
-workload_key = bamor_cpu_training_c3_8_completed_history
+closed completed-history slice = BAMOR c_3_8 train_compare_baselines.py
+workload_key = bamor_train_compare_c3_8_completed_history
 feasible profiles = 1
-completed-active mapped count = 142
+completed-active mapped count = 58
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_3_8 train_bamor_mujoco.py
+workload_key = bamor_mujoco_c3_8_completed_history
+feasible profiles = 1
+completed-active mapped count = 89
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_3_8 run_bamor_diagnostic_shard.py
+workload_key = bamor_diagnostic_shard_c3_8_completed_history
+feasible profiles = 1
+completed-active mapped count = 25
 unit rule = parsed training steps
 
 closed completed-history slice = ZSW TSP/SUMO c_le2 runners
@@ -323,7 +343,6 @@ unit rule = parsed simulated SUMO seconds from --duration
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_3_8 residual command shapes
 freqduet_cpu_ablation|c_33_64 residual command shapes
 freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
@@ -334,6 +353,7 @@ freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 bamor_cpu_training|c_le2
 bamor_cpu_training|c_17_32
+freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

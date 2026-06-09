@@ -1,6 +1,6 @@
 # Module51 Production Coverage Drilldown
 
-Date: 2026-06-08
+Date: 2026-06-09
 
 Module49 is a raw-history capacity attempt.  Module51 tightens the
 reviewer-facing population definition before making any global production
@@ -34,34 +34,37 @@ defensible view is `completed_active_production`: completed plus currently
 active production-like tasks, excluding benchmark/test/cancel/forgotten records
 and adopted compiler helper processes.
 
-## Current Result After Module65
+## Current Result After Module67
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 2589
-representative mapped = 1583
-strict mapped = 751
-unmapped / measurement-required = 1006
-representative mapped_fraction = 0.611433
+completed_active_production records = 2679
+representative mapped = 1749
+strict mapped = 878
+unmapped / measurement-required = 930
+representative mapped_fraction = 0.652856
 capacity slack on mapped raw-window representative load from Module49 delta = 0.001497772
 global theorem closed = false
 ```
 
-The newly measured Module56 through Module65 sub-buckets appear as
+The newly measured Module56 through Module67 sub-buckets appear as
 strict mapped coverage:
 
 ```text
-bamor_cpu_training_c3_8_completed_history = 142 / 2589 completed-active production records
-freqduet_cpu_ablation_c17_32 = 136 / 2589 completed-active production records
-freqduet_cpu_ablation_c9_16 = 110 / 2589 completed-active production records
-freqduet_runner_v3_c_le2_completed_history = 84 / 2589 completed-active production records
-transit_native_promotion_c17_32_seedrange_completed_history = 71 / 2589 completed-active production records
-freqduet_cpu_ablation_c33_64_completed_history = 63 / 2589 completed-active production records
-sumo_eval_simple_sac_c_le2 = 54 / 2589 completed-active production records
-zsw_tsp_sumo_eval_c_le2_completed_history = 50 / 2589 completed-active production records
-freqduet_cpu_ablation_c3_8_completed_history = 40 / 2589 completed-active production records
-freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2589 completed-active production records
+freqduet_cpu_ablation_c17_32 = 147 / 2679 completed-active production records
+freqduet_cpu_ablation_c9_16 = 110 / 2679 completed-active production records
+bamor_mujoco_c3_8_completed_history = 89 / 2679 completed-active production records
+freqduet_runner_v3_c3_8_completed_history = 86 / 2679 completed-active production records
+freqduet_runner_v3_c_le2_completed_history = 84 / 2679 completed-active production records
+transit_native_promotion_c17_32_seedrange_completed_history = 71 / 2679 completed-active production records
+freqduet_cpu_ablation_c33_64_completed_history = 63 / 2679 completed-active production records
+bamor_train_compare_c3_8_completed_history = 58 / 2679 completed-active production records
+sumo_eval_simple_sac_c_le2 = 54 / 2679 completed-active production records
+zsw_tsp_sumo_eval_c_le2_completed_history = 50 / 2679 completed-active production records
+freqduet_cpu_ablation_c3_8_completed_history = 40 / 2679 completed-active production records
+bamor_diagnostic_shard_c3_8_completed_history = 25 / 2679 completed-active production records
+freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2679 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -72,12 +75,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 659 | 0.254538 |
-| `generic_cpu_python` | measurement required | 151 | 0.058324 |
-| `cpu_eval_generic` | measurement required | 81 | 0.031286 |
-| `artifact_io_control` | measurement required | 77 | 0.029741 |
-| `scheduler_control_plane` | measurement required | 22 | 0.008497 |
-| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.006180 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 576 | 0.215006 |
+| `generic_cpu_python` | measurement required | 153 | 0.057111 |
+| `cpu_eval_generic` | measurement required | 82 | 0.030608 |
+| `artifact_io_control` | measurement required | 77 | 0.028742 |
+| `scheduler_control_plane` | measurement required | 26 | 0.009705 |
+| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005972 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -95,7 +98,13 @@ after Module62:  cpu_sumo_transit_eval_or_control = 862 / 2471
 after Module63:  cpu_sumo_transit_eval_or_control = 803 / 2487
 after Module64:  cpu_sumo_transit_eval_or_control = 704 / 2553
 after Module65:  cpu_sumo_transit_eval_or_control = 659 / 2589
+after Module66:  cpu_sumo_transit_eval_or_control = 576 / 2679
+after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679
 ```
+
+Module67 is a capacity-certification refinement rather than a coverage increase:
+it splits the broad BAMOR c3_8 class into script-level service classes so the
+mapped LP remains theorem-usable under conservative lower-service rates.
 
 ## Interpretation
 
@@ -121,10 +130,11 @@ records using a profile-1 completed-history lower-service certificate.  Module61
 maps 63 c33_64 `run_freqduet_ablation.py` records the same way.  Module62 maps
 84 c_le2 direct `runner_v3.py` records.  Module63 maps 71 completed-active
 Transit native-promotion c17_32 seed-range validation records using parsed
-seed-episode units.  Module64 maps 122 completed-active BAMOR c3_8 CPU-training
-records using parsed training-step units.  The next closure targets are now the
-records using parsed training-step units.  Module65 maps 50 completed-active
-ZSW TSP/SUMO c_le2 runner records using parsed simulated-second units.  The next
-closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`freqduet_cpu_ablation|c_3_8`, `freqduet_cpu_ablation|c_33_64`, and
-`freqduet_cpu_ablation|c_65p` in the regenerated Module53 manifest.
+seed-episode units.  Module64 introduced the broad BAMOR c3_8 CPU-training
+completed-history certificate; Module67 refines it into train-compare, Mujoco,
+and diagnostic-shard script-level classes.  Module65 maps 50 completed-active
+ZSW TSP/SUMO c_le2 runner records using parsed simulated-second units.  Module66
+maps 86 c3_8 direct `runner_v3.py` FreqDuet records.  The next closure targets
+are now the remaining CPU/SUMO/transit residual buckets, led by
+`freqduet_cpu_ablation|c_33_64`, `freqduet_cpu_ablation|c_65p`, and
+`transit_freqhrl_cpu_validation|c_le2` in the regenerated Module53 manifest.

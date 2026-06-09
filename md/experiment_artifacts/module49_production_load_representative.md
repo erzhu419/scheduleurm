@@ -3,22 +3,25 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 5527
-mapped_task_count = 3523
-representative_mapped_task_count = 1812
-unmapped_task_count = 2004
-mapped_fraction = 0.6374163198842048
+record_count_window = 5617
+mapped_task_count = 3689
+representative_mapped_task_count = 1851
+unmapped_task_count = 1928
+mapped_fraction = 0.656756275591953
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `bamor_cpu_training_c3_8_completed_history` | 163 | 9.958333333 |
-| `cpu_heavy_local_bench` | 342 | 0.131944444 |
-| `freqduet_cpu_ablation_c17_32` | 173 | 0.004805556 |
+| `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
+| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
+| `cpu_heavy_local_bench` | 381 | 0.146990741 |
+| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
+| `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
@@ -39,7 +42,7 @@ mapped_fraction = 0.6374163198842048
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1830 |
+| `unmapped_cpu` | 1754 |
 | `unmapped_gpu` | 19 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

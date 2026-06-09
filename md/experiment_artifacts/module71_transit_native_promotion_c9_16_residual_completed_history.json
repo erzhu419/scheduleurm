@@ -1,0 +1,223 @@
+{
+  "cpu_counts": {
+    "16": 37,
+    "9": 3
+  },
+  "duration_s": {
+    "max": 6608.186769247055,
+    "median": 1106.2437052726746,
+    "min": 505.1955485343933,
+    "p10": 591.7790217399597,
+    "p90": 6597.211747646332
+  },
+  "interpretation": "Only profile 1 is loaded. This class is separated from bounded_wait_nofinal_v14, c_le2/c17_32/c33_64/c65p native validation, and c9_16 runner_v3 residuals.",
+  "mapped_completed_active_count": 40,
+  "mapped_completed_active_units_seed_episode": 7723.0,
+  "parsed_units_seed_episode": {
+    "max": 342.0,
+    "median": 86.0,
+    "min": 42.0,
+    "p10": 43.0,
+    "p90": 342.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "FreqHRL": 4,
+    "TransitDuet": 36
+  },
+  "ram_counts": {
+    "16000": 6,
+    "16384": 7,
+    "4831": 1,
+    "4835": 1,
+    "4839": 1,
+    "64000": 4,
+    "8192": 20
+  },
+  "realized_seed_episode_s": {
+    "max": 0.18119760801461085,
+    "median": 0.09454130908173725,
+    "min": 0.03508487702580752,
+    "p10": 0.047572424562724876,
+    "p90": 0.15778593578391736
+  },
+  "record_count": 40,
+  "run_id": "module71_transit_native_promotion_c9_16_residual_completed_history",
+  "scope": "Strict completed-history lower-service certificate for residual c_9_16 Transit/FreqHRL native_promotion_replan_validation records outside bounded_wait_nofinal_v14. It maps only no-GPU native validation commands with statically parsed seed-count times episode units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_pr...",
+      "cpu_cores": 16.0,
+      "duration_s": 1197.0969705581665,
+      "finished_at": 1780493663.5049136,
+      "parsed_units_seed_episode": 42.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.03508487702580752,
+      "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part3_fixed4",
+      "started_at": 1780492466.407943,
+      "status": "done",
+      "task_id": "t6518"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_pr...",
+      "cpu_cores": 16.0,
+      "duration_s": 991.4418222904205,
+      "finished_at": 1780493444.709102,
+      "parsed_units_seed_episode": 43.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.04337117825094544,
+      "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part2_fixed4",
+      "started_at": 1780492453.2672796,
+      "status": "done",
+      "task_id": "t6517"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_pr...",
+      "cpu_cores": 16.0,
+      "duration_s": 913.7675306797028,
+      "finished_at": 1780493339.0682795,
+      "parsed_units_seed_episode": 43.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.04705792070332659,
+      "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part0_fixed4",
+      "started_at": 1780492425.3007488,
+      "status": "done",
+      "task_id": "t6515"
+    },
+    {
+      "cmd_prefix": "python3 -c \"from pathlib import Path; from freq_hrl.experiments.transit import native_promotion_replan_validation as v; cfg=v.VARIANTS['native_wait_aware_replan']; cfg['_promotion_replan_same_wait_min']=0.70; cfg['_pr...",
+      "cpu_cores": 16.0,
+      "duration_s": 903.8849794864655,
+      "finished_at": 1780493343.4376597,
+      "parsed_units_seed_episode": 43.0,
+      "project": "FreqHRL",
+      "ram_mb": 64000.0,
+      "realized_seed_episode_s": 0.047572424562724876,
+      "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part1_fixed4",
+      "started_at": 1780492439.5526803,
+      "status": "done",
+      "task_id": "t6516"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6602.016246557236,
+      "finished_at": 1780780536.4586182,
+      "parsed_units_seed_episode": 341.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.0516508877386998,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node003-684-1025-w16",
+      "started_at": 1780773934.4423716,
+      "status": "done",
+      "task_id": "t7269"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6599.557123661041,
+      "finished_at": 1780780539.7676268,
+      "parsed_units_seed_episode": 341.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.05167013386056329,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node004-1025-1366-w16",
+      "started_at": 1780773940.210503,
+      "status": "done",
+      "task_id": "t7270"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6597.211747646332,
+      "finished_at": 1780780543.6138556,
+      "parsed_units_seed_episode": 341.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.05168850311976989,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node005-1366-1707-w16",
+      "started_at": 1780773946.402108,
+      "status": "done",
+      "task_id": "t7271"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6594.614773273468,
+      "finished_at": 1780780547.2881775,
+      "parsed_units_seed_episode": 341.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.05170885817045727,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node006-1707-2048-w16",
+      "started_at": 1780773952.6734042,
+      "status": "done",
+      "task_id": "t7272"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6608.186769247055,
+      "finished_at": 1780780529.5244057,
+      "parsed_units_seed_episode": 342.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.05175398516149505,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node001-0-342-w16",
+      "started_at": 1780773921.3376365,
+      "status": "done",
+      "task_id": "t7267"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile amplif...",
+      "cpu_cores": 16.0,
+      "duration_s": 6605.220070838928,
+      "finished_at": 1780780533.0641768,
+      "parsed_units_seed_episode": 342.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_episode_s": 0.051777230180396185,
+      "signature": "TransitDuet/native-promotion-amplified-projected-wait-v20-2048-node002-342-684-w16",
+      "started_at": 1780773927.844106,
+      "status": "done",
+      "task_id": "t7268"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile tight_gap_wait_v22 --seed-index-start 0 --seed-index-end 64 --episodes 1 --workers 8 --min-pairs 1...",
+      "cpu_cores": 9.0,
+      "duration_s": 1106.3090288639069,
+      "finished_at": 1780839462.1533294,
+      "parsed_units_seed_episode": 64.0,
+      "project": "TransitDuet",
+      "ram_mb": 4839.0,
+      "realized_seed_episode_s": 0.057850020500802575,
+      "signature": "TransitDuet/auto-adopted/p711006",
+      "started_at": 1780838355.8443005,
+      "status": "done",
+      "task_id": "t7467"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile tight_gap_target345_wait_v23 --seed-index-start 0 --seed-index-end 64 --episodes 1 --workers 8 --m...",
+      "cpu_cores": 9.0,
+      "duration_s": 1106.1783816814423,
+      "finished_at": 1780839462.0086975,
+      "parsed_units_seed_episode": 64.0,
+      "project": "TransitDuet",
+      "ram_mb": 4835.0,
+      "realized_seed_episode_s": 0.05785685298126785,
+      "signature": "TransitDuet/auto-adopted/p711005",
+      "started_at": 1780838355.8303158,
+      "status": "done",
+      "task_id": "t7466"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module71 Transit Native Promotion c9_16 Residual Completed-History Certificate",
+  "total_units_seed_episode": 7723.0,
+  "workload_key": "transit_native_promotion_c9_16_residual_completed_history"
+}

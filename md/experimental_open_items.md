@@ -243,11 +243,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2797
-representative mapped = 2028
-strict mapped = 1117
-measurement_required = 769
-mapped_fraction = 0.725063
+records = 2805
+representative mapped = 2091
+strict mapped = 1180
+measurement_required = 714
+mapped_fraction = 0.745455
 ```
 
 最大未闭合 bucket 是：
@@ -269,6 +269,7 @@ after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active 
 after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755 completed-active records
 after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781 completed-active records
 after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797 completed-active records
+after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -432,12 +433,29 @@ workload_key = transit_freqhrl_import_smoke_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 1
 unit rule = import_check
+
+closed completed-history slice = bounded-wait Transit native_promotion_replan_validation within c_9_16
+workload_key = transit_native_promotion_c9_16_bounded_wait_completed_history
+feasible profiles = 1
+completed-active mapped count = 7
+unit rule = statically parsed seed-count times episodes
+
+closed completed-history slice = residual Transit native_promotion_replan_validation within c_9_16
+workload_key = transit_native_promotion_c9_16_residual_completed_history
+feasible profiles = 1
+completed-active mapped count = 40
+unit rule = statically parsed seed-count times episodes
+
+closed completed-history slice = residual runner_v3.py within freqduet_cpu_ablation|c_9_16
+workload_key = freqduet_runner_v3_c9_16_residual_completed_history
+feasible profiles = 1
+completed-active mapped count = 12
+unit rule = parsed episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes

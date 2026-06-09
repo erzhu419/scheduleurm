@@ -51,6 +51,9 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c_le2_completed_history",
     "production_transit_native_control_c_le2_completed_history",
     "production_transit_freqhrl_import_smoke_c_le2_completed_history",
+    "production_transit_native_promotion_c9_16_bounded_wait_completed_history",
+    "production_transit_native_promotion_c9_16_residual_completed_history",
+    "production_freqduet_runner_v3_c9_16_residual_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -283,6 +286,20 @@ def classify_record(
             units=native_c17_32_units,
         )
 
+    native_c9_16 = _native_promotion_c9_16_seed_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if native_c9_16 is not None:
+        workload_key, units, reason = native_c9_16
+        return _mapped(
+            workload_key,
+            "strict_measured",
+            reason,
+            units=units,
+        )
+
     bamor_script_units = _bamor_cpu_training_c3_8_script_units(row=row, est_vram=est_vram, cpu=cpu)
     if bamor_script_units is not None:
         script, units = bamor_script_units
@@ -342,6 +359,15 @@ def classify_record(
             "strict_measured",
             "module58_freqduet_cpu_ablation_c9_16",
             units=c9_16_units,
+        )
+
+    runner_c9_16_units = _freqduet_runner_v3_c9_16_residual_units(row=row, est_vram=est_vram, cpu=cpu)
+    if runner_c9_16_units is not None:
+        return _mapped(
+            "freqduet_runner_v3_c9_16_residual_completed_history",
+            "strict_measured",
+            "module71_freqduet_runner_v3_c9_16_residual_completed_history",
+            units=runner_c9_16_units,
         )
 
     runner_c_le2_units = _freqduet_runner_v3_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -586,6 +612,40 @@ def _native_promotion_c17_32_seedrange_units(
         return None
     units = _parse_native_promotion_seedrange_units(cmd)
     return units if units is not None and units > 0 else None
+
+
+def _native_promotion_c9_16_seed_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if not (8.0 < float(cpu) <= 16.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "native_promotion_replan_validation" not in cmd_lower:
+        return None
+    units = _parse_native_promotion_seed_units(cmd)
+    if units is None or units <= 0:
+        return None
+    if "bounded_wait_nofinal_v14" in cmd_lower:
+        return (
+            "transit_native_promotion_c9_16_bounded_wait_completed_history",
+            float(units),
+            "module71_transit_native_promotion_c9_16_bounded_wait_completed_history",
+        )
+    return (
+        "transit_native_promotion_c9_16_residual_completed_history",
+        float(units),
+        "module71_transit_native_promotion_c9_16_residual_completed_history",
+    )
 
 
 def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
@@ -1212,6 +1272,35 @@ def _freqduet_runner_v3_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
     if project == "bamor" or "/bamor" in cwd:
         return None
     if "runner_v3.py" not in cmd_lower:
+        return None
+    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+        return None
+    units = _parse_runner_v3_episode_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_runner_v3_c9_16_residual_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (8.0 < float(cpu) <= 16.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "runner_v3.py" not in cmd_lower:
+        return None
+    if "configs_freqduet/f_allfreq_alllayers_hiro.yaml" in cmd_lower:
         return None
     if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
         return None

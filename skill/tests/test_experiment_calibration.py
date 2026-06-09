@@ -624,6 +624,131 @@ def test_module58_freqduet_c9_ablation_uses_parsed_production_units(check, sch):
           diag=str(report))
 
 
+def test_module71_c9_native_and_runner_residual_completed_history_profile1(check, sch):
+    native = {
+        "id": "module71-native-c9",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/native/c9",
+        "description": "Transit native promotion c9_16",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 16,
+        "ram_mb": 8192,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+        "cmd": (
+            "PYTHONPATH=transit_hrl python3 -m "
+            "freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--preset persistent_stress --stress-profile final_delta_floor_reward_wait_v31 "
+            "--seed-index-start 0 --seed-index-end 8 --episodes 1"
+        ),
+    }
+    native_cls = classify_record(native, include_representative=False)
+    check("Module71 maps residual c9_16 native-promotion records with parsed seed-episode units",
+          native_cls["workload_key"] == "transit_native_promotion_c9_16_residual_completed_history"
+          and native_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(native_cls["units"]), 8.0),
+          diag=str(native_cls))
+
+    bounded = dict(native)
+    bounded["id"] = "module71-native-bounded-c9"
+    bounded["cmd"] = bounded["cmd"].replace(
+        "final_delta_floor_reward_wait_v31",
+        "bounded_wait_nofinal_v14",
+    )
+    bounded_cls = classify_record(bounded, include_representative=False)
+    check("Module71 isolates bounded_wait_nofinal_v14 c9_16 native records",
+          bounded_cls["workload_key"] == "transit_native_promotion_c9_16_bounded_wait_completed_history"
+          and math.isclose(float(bounded_cls["units"]), 8.0),
+          diag=str(bounded_cls))
+
+    native_pyc = {
+        **native,
+        "id": "module71-native-python-c",
+        "project": "FreqHRL",
+        "cmd": (
+            "python3 -c \"from freq_hrl.experiments.transit import "
+            "native_promotion_replan_validation as v; "
+            "seeds=list(range(4)); v.run_validation(seeds=seeds, episodes=2)\""
+        ),
+    }
+    native_pyc_cls = classify_record(native_pyc, include_representative=False)
+    check("Module71 accepts python -c native run_validation seed lists by AST",
+          native_pyc_cls["workload_key"] == "transit_native_promotion_c9_16_residual_completed_history"
+          and math.isclose(float(native_pyc_cls["units"]), 8.0),
+          diag=str(native_pyc_cls))
+
+    runner = {
+        "id": "module71-runner-c9",
+        "project": "freqduet",
+        "signature": "freqduet/auto-adopted/p432269",
+        "description": "residual c9_16 runner_v3 config",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 12,
+        "ram_mb": 8192,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "python runner_v3.py --config "
+            "configs_freqduet/F_freqduet_gen_odshift_allfreq_hiro.yaml "
+            "--episodes 40 --seed 2026 --no-resume"
+        ),
+    }
+    runner_cls = classify_record(runner, include_representative=False)
+    check("Module71 maps residual c9_16 runner_v3 records with episode units",
+          runner_cls["workload_key"] == "freqduet_runner_v3_c9_16_residual_completed_history"
+          and runner_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(runner_cls["units"]), 40.0),
+          diag=str(runner_cls))
+
+    exact = dict(runner)
+    exact["id"] = "module71-exact-module57"
+    exact["cmd"] = exact["cmd"].replace(
+        "F_freqduet_gen_odshift_allfreq_hiro.yaml",
+        "F_allfreq_alllayers_hiro.yaml",
+    )
+    exact_cls = classify_record(exact, include_representative=False)
+    check("Module71 runner residual classifier does not steal Module57 exact config",
+          exact_cls["workload_key"] == "freqduet_runner_v3_allfreq_alllayers_c9_16",
+          diag=str(exact_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_native_promotion_c9_16_bounded_wait_completed_history": 0.0037922214849335067,
+        "transit_native_promotion_c9_16_residual_completed_history": 0.03508487702580752,
+        "freqduet_runner_v3_c9_16_residual_completed_history": 0.03045966967156635,
+    }
+    check("Module71 service cache exposes separated c9_16 native and runner lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)]
+                    for key in expected_rates}))
+
+    report = build_production_load_certificate(
+        records=[native, runner],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_transit_native_promotion_c9_16_residual_completed_history",
+            "production_freqduet_runner_v3_c9_16_residual_completed_history",
+        ),
+    )
+    check("Production load certificate sums Module71 c9_16 parsed units",
+          report["mapped_counts"] == {
+              "transit_native_promotion_c9_16_residual_completed_history": 1,
+              "freqduet_runner_v3_c9_16_residual_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_native_promotion_c9_16_residual_completed_history"], 8.0)
+          and math.isclose(report["mapped_units"]["freqduet_runner_v3_c9_16_residual_completed_history"], 40.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
     row = {
         "id": "freq-c3",

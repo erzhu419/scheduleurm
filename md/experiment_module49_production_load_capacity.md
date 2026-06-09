@@ -53,29 +53,31 @@ batches, and native-promotion validation.
 Module70 closes the low-CPU Transit/FreqHRL validation/control slice with six
 strict completed-history classes: trading sweep, trading policy, transit
 surrogate, native promotion, native control, and a singleton import-smoke class.
+Module71 closes the previous c9_16 residual by splitting it into three
+completed-history classes: the slow bounded_wait_nofinal_v14 native-promotion
+stress profile, the residual c9_16 native-promotion profiles, and residual
+direct runner_v3 configs.  The bounded/residual split is required because the
+single coarse c9_16 native class makes the mapped capacity LP infeasible.
 
 ```text
-record_count_window = 5927
-mapped_task_count = 2282
-mapped_fraction = 0.385018
-unmapped_task_count = 3645
+record_count_window = 5935
+mapped_task_count = 2353
+mapped_fraction = 0.396462
+unmapped_task_count = 3582
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module70
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module71
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `transit_trading_sweep_c_le2_completed_history` | 14 | 16.295833333 |
-| `transit_trading_policy_c_le2_completed_history` | 18 | 1.600000000 |
-| `transit_surrogate_validation_c_le2_completed_history` | 3 | 0.019037037 |
-| `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
-| `transit_native_control_c_le2_completed_history` | 9 | 0.000069444 |
-| `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
+| `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 45 | 0.003028935 |
+| `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
 
 Capacity LP:
 
@@ -93,20 +95,20 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5927
-mapped_task_count = 4171
+record_count_window = 5935
+mapped_task_count = 4242
 representative_mapped_task_count = 1889
-mapped_fraction = 0.703729
-strict_mapped_fraction = 0.385018
-unmapped_task_count = 1756
+mapped_fraction = 0.714743
+strict_mapped_fraction = 0.396462
+unmapped_task_count = 1693
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full representative-load tables are generated in
-`md/experiment_artifacts/module49_production_load_representative.md`.  Module70
-adds the same six strict Transit/FreqHRL rows shown above; representative
+`md/experiment_artifacts/module49_production_load_representative.md`.  Module71
+adds the same three strict c9_16 residual rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 
 Capacity LP:
@@ -141,13 +143,19 @@ slices use minimum completed profile-1 lower-service points.
 Module70 adds low-CPU Transit/FreqHRL completed-history lower-service points and
 removes the former `transit_freqhrl_cpu_validation|c_le2` blocker from the
 remaining first-probe order.
+Module71 removes the previous `freqduet_cpu_ablation|c_9_16` first-probe
+blocker by certifying 7 bounded-wait native-promotion records, 40 residual
+native-promotion records, and 12 residual runner_v3 records in the
+completed-active view.  A coarse single native c9_16 class is explicitly not
+used because its slowest lower-service point does not dominate the aggregate
+class load.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3645 / 5927 tasks
-representative unmapped: 1756 / 5927 tasks
+strict unmapped: 3582 / 5935 tasks
+representative unmapped: 1693 / 5935 tasks
 representative-mapped but not theorem-grade: 1889 tasks
 ```
 

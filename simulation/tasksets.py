@@ -525,6 +525,129 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_native_promotion_c9_16_bounded_wait_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the slow c_9_16 "
+                "Transit/FreqHRL native-promotion bounded_wait_nofinal_v14 stress "
+                "profile. It covers no-GPU native_promotion_replan_validation "
+                "commands requesting 9-16 CPU cores with that exact stress profile "
+                "and statically parsed seed-episode work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history; no live "
+                "co-location profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c9_16_bounded_wait_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=7,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation c9_16 bounded-wait sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module71 completed-history wall-clock audit for "
+                        "c_9_16 bounded_wait_nofinal_v14 native_promotion_replan_validation "
+                        "records with statically parsed seed work units."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This slow stress profile is isolated because applying its "
+                        "minimum realized lower-service rate to all c_9_16 native "
+                        "promotion records makes the mapped capacity LP infeasible. "
+                        "Other c_9_16 native records use a separate residual class."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c9_16_residual_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for residual c_9_16 "
+                "Transit/FreqHRL native-promotion validation records outside "
+                "bounded_wait_nofinal_v14. It covers no-GPU "
+                "native_promotion_replan_validation commands requesting 9-16 CPU "
+                "cores when seed work units can be statically parsed."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history; no live "
+                "co-location profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c9_16_residual_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=40,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation c9_16 residual sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module71 completed-history wall-clock audit for "
+                        "residual c_9_16 native_promotion_replan_validation records "
+                        "with statically parsed seed work units."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The parser accepts explicit seed-index ranges, CLI seed "
+                        "lists, Python-AST run_validation calls, and shell "
+                        "command-substitution seed lists without executing the "
+                        "production command. The bounded_wait_nofinal_v14 slow "
+                        "profile and runner_v3 residuals stay separate."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_runner_v3_c9_16_residual_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for residual c_9_16 "
+                "FreqDuet direct runner_v3 records. It covers no-GPU runner_v3.py "
+                "commands requesting 9-16 CPU cores with explicit --episodes, "
+                "excluding the exact allfreq/alllayers Module57 config."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed episode units. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; no live co-location profile is "
+                "claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_c9_16_residual_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=12,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history runner c9_16 residual sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module71 completed-history wall-clock audit for "
+                        "residual c_9_16 runner_v3.py production records with "
+                        "explicit episode counts."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class does not include run_freqduet_ablation.py "
+                        "records or the Module57 allfreq/alllayers exact-config "
+                        "curve. It is a conservative portfolio lower-service point "
+                        "over the remaining runner_v3 c_9_16 configs."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_runner_v3_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for the dominant direct "

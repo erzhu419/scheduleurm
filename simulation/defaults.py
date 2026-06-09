@@ -295,6 +295,33 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module71_transit_native_promotion_c9_16_bounded_wait_completed_history_reports",
+        workload_key="transit_native_promotion_c9_16_bounded_wait_completed_history",
+        command_fingerprint="transit_native_promotion_c9_16_bounded_wait_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module71_transit_native_promotion_c9_16_residual_completed_history_reports",
+        workload_key="transit_native_promotion_c9_16_residual_completed_history",
+        command_fingerprint="transit_native_promotion_c9_16_residual_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module71_freqduet_runner_v3_c9_16_residual_completed_history_reports",
+        workload_key="freqduet_runner_v3_c9_16_residual_completed_history",
+        command_fingerprint="freqduet_runner_v3_c9_16_residual_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module66_freqduet_runner_v3_c3_8_completed_history_reports",
         workload_key="freqduet_runner_v3_c3_8_completed_history",
         command_fingerprint="freqduet_runner_v3_c3_8_completed_history_v1",
@@ -435,6 +462,9 @@ def legacy_policy() -> ReplayPolicy:
             "transit_native_promotion_c_le2_completed_history": 1,
             "transit_native_control_c_le2_completed_history": 1,
             "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
+            "transit_native_promotion_c9_16_bounded_wait_completed_history": 1,
+            "transit_native_promotion_c9_16_residual_completed_history": 1,
+            "freqduet_runner_v3_c9_16_residual_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

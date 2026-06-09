@@ -101,6 +101,9 @@ md/experiment_module70_transit_surrogate_validation_c_le2_completed_history.md
 md/experiment_module70_transit_native_promotion_c_le2_completed_history.md
 md/experiment_module70_transit_native_control_c_le2_completed_history.md
 md/experiment_module70_transit_freqhrl_import_smoke_c_le2_completed_history.md
+md/experiment_module71_transit_native_promotion_c9_16_bounded_wait_completed_history.md
+md/experiment_module71_transit_native_promotion_c9_16_residual_completed_history.md
+md/experiment_module71_freqduet_runner_v3_c9_16_residual_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -135,6 +138,9 @@ md/experiment_artifacts/module70_transit_surrogate_validation_c_le2_completed_hi
 md/experiment_artifacts/module70_transit_native_promotion_c_le2_completed_history.json
 md/experiment_artifacts/module70_transit_native_control_c_le2_completed_history.json
 md/experiment_artifacts/module70_transit_freqhrl_import_smoke_c_le2_completed_history.json
+md/experiment_artifacts/module71_transit_native_promotion_c9_16_bounded_wait_completed_history.json
+md/experiment_artifacts/module71_transit_native_promotion_c9_16_residual_completed_history.json
+md/experiment_artifacts/module71_freqduet_runner_v3_c9_16_residual_completed_history.json
 ```
 
 Status:
@@ -160,18 +166,18 @@ Remaining scope limitation:
     strict measured mapping delta = 0.001497772
     representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 1756 / 5927 tasks unmapped and maps 1889 tasks only by representative
+  leaves 1693 / 5935 tasks unmapped and maps 1889 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2797
-    mapped = 2028
-    strict mapped = 1117
-    measurement_required = 769
-    mapped_fraction = 0.725063
+    records = 2805
+    mapped = 2091
+    strict mapped = 1180
+    measurement_required = 714
+    mapped_fraction = 0.745455
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 409 / 2797 records
+    cpu_sumo_transit_eval_or_control = 350 / 2805 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -199,8 +205,30 @@ Remaining scope limitation:
     completed-active strict mapped count = 110
     parsed completed-active work = 138900 episode units
     min completed wall-clock rate = 0.289775 episode/s
-  The remaining c9_16 records are still visible in Module53 because they have
-  other command shapes.
+  Module71 closes the remaining completed-active c9_16 residual command shapes:
+    bounded-wait native_promotion_replan_validation
+      -> transit_native_promotion_c9_16_bounded_wait_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    parsed completed-history work = 2192 seed-episode units
+    min completed wall-clock rate = 0.003792 seed-episode/s
+
+    residual native_promotion_replan_validation
+      -> transit_native_promotion_c9_16_residual_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 40
+    parsed completed-history work = 7723 seed-episode units
+    min completed wall-clock rate = 0.035085 seed-episode/s
+
+    residual runner_v3.py within freqduet_cpu_ablation|c_9_16
+      -> freqduet_runner_v3_c9_16_residual_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 12
+    parsed completed-history work = 440 episode units
+    min completed wall-clock rate = 0.030460 episode/s
+  The coarse one-class native c9_16 certificate was rejected because it made the
+  mapped production-load LP infeasible; the final split is a theorem-condition
+  correction, not a cosmetic relabeling.
 
   Module59 closes the clean SimpleSAC c_le2 SUMO eval sub-slice:
     clean run_multiseed_eval.sh within sumo_eval_cpu|c_le2
@@ -334,7 +362,7 @@ Remaining scope limitation:
       -> transit_native_promotion_c65p_completed_history
     feasible profiles = 1
     completed-history service records used = 48
-    current completed-active strict mapped count after Module70 = 49
+    current completed-active strict mapped count after Module71 = 49
     parsed completed-history work = 7026 seed-episode units over done records
     min completed wall-clock rate = 0.182131 seed-episode/s
   The native parser proves shell-generated Python seed ranges by AST without
@@ -389,8 +417,13 @@ Remaining scope limitation:
   surrogate, native simulator validation, native control, and import-smoke work
   into one service class.
 
+  Module71 closes the previous c9_16 residual first-probe blocker with the
+  three completed-history certificates listed above.  This removes
+  `freqduet_cpu_ablation|c_9_16` from the regenerated Module53 first-probe
+  order while preserving the slow bounded-wait profile as a separate
+  lower-service class.
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_9_16 residual command shapes
     sumo_eval_cpu|c_le2 residual command shapes
     transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes

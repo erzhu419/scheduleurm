@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 
-This note records the current gap after Module70.  It should be read together
+This note records the current gap after Module71.  It should be read together
 with:
 
 ```text
@@ -32,6 +32,9 @@ md/experiment_module70_transit_surrogate_validation_c_le2_completed_history.md
 md/experiment_module70_transit_native_promotion_c_le2_completed_history.md
 md/experiment_module70_transit_native_control_c_le2_completed_history.md
 md/experiment_module70_transit_freqhrl_import_smoke_c_le2_completed_history.md
+md/experiment_module71_transit_native_promotion_c9_16_bounded_wait_completed_history.md
+md/experiment_module71_transit_native_promotion_c9_16_residual_completed_history.md
+md/experiment_module71_freqduet_runner_v3_c9_16_residual_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -185,16 +188,34 @@ workload_key = transit_freqhrl_import_smoke_c_le2_completed_history
 completed-active strict mapped count = 1
 feasible profiles = 1
 unit rule = import_check
+
+completed-history slice = bounded-wait Transit native_promotion_replan_validation within c_9_16
+workload_key = transit_native_promotion_c9_16_bounded_wait_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = statically parsed seed-count times episodes
+
+completed-history slice = residual Transit native_promotion_replan_validation within c_9_16
+workload_key = transit_native_promotion_c9_16_residual_completed_history
+completed-active strict mapped count = 40
+feasible profiles = 1
+unit rule = statically parsed seed-count times episodes
+
+completed-history slice = residual runner_v3.py within freqduet_cpu_ablation|c_9_16
+workload_key = freqduet_runner_v3_c9_16_residual_completed_history
+completed-active strict mapped count = 12
+feasible profiles = 1
+unit rule = parsed episodes
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2797
-strict completed-active mapped count = 1117
-representative completed-active mapped count = 2028
-measurement_required = 769
-cpu_sumo_transit_eval_or_control remaining = 409 / 2797
+completed_active_production records = 2805
+strict completed-active mapped count = 1180
+representative completed-active mapped count = 2091
+measurement_required = 714
+cpu_sumo_transit_eval_or_control remaining = 350 / 2805
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -206,12 +227,16 @@ include 46 completed/active tasks with different command shapes, such as direct
 ranges, so neither the Module56 curve nor the Module63 lower-service point may
 be used to certify them.
 
-The current `freqduet_cpu_ablation|c_9_16` group is still not fully closed.
-Module57 certifies only the direct `runner_v3.py` exact config
-`configs_freqduet/F_allfreq_alllayers_hiro.yaml`, which accounts for one
-completed/active production record.  Module58 certifies 110 c9_16
-`run_freqduet_ablation.py` records with parseable units.  The remaining c9_16
-records have different command shapes and stay in the Module53 manifest.
+The previous `freqduet_cpu_ablation|c_9_16` residual is now closed at the
+command-shape level.  Module57 certifies only the direct `runner_v3.py` exact
+config `configs_freqduet/F_allfreq_alllayers_hiro.yaml`, which accounts for
+one completed/active production record.  Module58 certifies 110 c9_16
+`run_freqduet_ablation.py` records with parseable units.  Module71 closes the
+remaining completed-active c9_16 residual by splitting native-promotion records
+into the slow bounded-wait stress profile and faster residual profile, and by
+certifying residual `runner_v3.py` records separately.  A single coarse native
+c9_16 class was rejected because its slow lower-service rate made the mapped
+production-load LP infeasible.
 
 The current `freqduet_cpu_ablation|c_3_8` group is also not fully closed.
 Module60 certifies only parseable `run_freqduet_ablation.py` records using a
@@ -224,7 +249,7 @@ The current `freqduet_cpu_ablation|c_33_64` group is not fully closed either.
 Module61 certifies only parseable `run_freqduet_ablation.py` records using a
 completed-history profile-1 lower-service point.  Module68 certifies parseable
 no-GPU native-promotion c33_64 records by splitting batch seed-episode work from
-single-seed smoke/fix work.  The remaining 17 c33_64 records are direct-runner,
+single-seed smoke/fix work.  The remaining 15 c33_64 records are direct-runner,
 single-command-shape, or otherwise unparseable residuals and stay in the
 Module53 manifest.
 
@@ -244,8 +269,8 @@ buckets are being split into theorem-facing command shapes.  The total
 CPU/SUMO/transit measurement-required count is still lower after the latest
 slices: 862 / 2471 after Module62, 803 / 2487 after Module63, 704 / 2553 after
 Module64, 659 / 2589 after Module65, 576 / 2679 after Module66/67,
-532 / 2755 after Module68, 471 / 2781 after Module69, and 409 / 2797 after
-Module70.
+532 / 2755 after Module68, 471 / 2781 after Module69, 409 / 2797 after
+Module70, and 350 / 2805 after Module71.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -271,6 +296,12 @@ low-CPU native Transit records that the broad keyword manifest had grouped under
 `freqduet_cpu_ablation|c_le2`.  This does not authorize merging trading sweep,
 policy training, surrogate validation, native simulator validation, and
 import-smoke work into one service class.
+
+Module71 closes the previous c9_16 residual command-shape blocker with three
+explicit certificates.  The split is required by the capacity theorem: the
+bounded-wait stress profile has the slowest lower-service rate and cannot be
+used as the service class for all native-promotion c9_16 work without making
+the mapped load infeasible.
 
 ## Interpretation
 
@@ -303,7 +334,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes

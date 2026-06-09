@@ -41,6 +41,7 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
+    "production_bamor_cpu_training_c3_8_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_allfreq_alllayers_c9_16",
@@ -210,6 +211,15 @@ def classify_record(
             "strict_measured",
             "module63_transit_native_promotion_c17_32_seedrange_completed_history",
             units=native_c17_32_units,
+        )
+
+    bamor_c3_8_units = _bamor_cpu_training_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
+    if bamor_c3_8_units is not None:
+        return _mapped(
+            "bamor_cpu_training_c3_8_completed_history",
+            "strict_measured",
+            "module64_bamor_cpu_training_c3_8_completed_history",
+            units=bamor_c3_8_units,
         )
 
     c3_8_units = _freqduet_ablation_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -413,6 +423,97 @@ def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
     if seed_count <= 0 or not math.isfinite(episodes) or episodes <= 0:
         return None
     return float(seed_count) * float(episodes)
+
+
+def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    if project != "bamor" and "/bamor" not in cwd and not signature.startswith("bamor/"):
+        return None
+    units = _parse_bamor_training_step_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_bamor_training_step_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    script = next((str(token) for token in tokens if str(token).endswith(".py")), "")
+    if not script:
+        return None
+
+    def opt(*names: str) -> str | None:
+        for name in names:
+            if name in tokens:
+                idx = tokens.index(name)
+                return tokens[idx + 1] if idx + 1 < len(tokens) else None
+        return None
+
+    def int_at_least(raw: str | None, minimum: int) -> int | None:
+        try:
+            value = int(str(raw))
+        except (TypeError, ValueError):
+            return None
+        return value if value >= minimum else None
+
+    def explicit_method_count(raw: str | None) -> int | None:
+        if raw is None:
+            return None
+        methods = [part for part in str(raw).split() if part.strip()]
+        if not methods or any(part == "all" for part in methods):
+            return None
+        return len(methods)
+
+    if script.endswith("train_compare_baselines.py"):
+        method_count = explicit_method_count(opt("--method"))
+        total_steps = int_at_least(opt("--total_steps", "--total-steps"), 1)
+        seeds = int_at_least(opt("--seeds"), 1)
+        if method_count is None or total_steps is None or seeds is None:
+            return None
+        return float(method_count * seeds * total_steps)
+
+    if script.endswith("train_bamor_mujoco.py"):
+        method_count = explicit_method_count(opt("--method"))
+        total_steps = int_at_least(opt("--total_steps", "--total-steps"), 1)
+        num_seeds = int_at_least(opt("--num_seeds", "--num-seeds") or "1", 1)
+        if method_count is None or total_steps is None or num_seeds is None:
+            return None
+        return float(method_count * num_seeds * total_steps)
+
+    if script.endswith("run_bamor_diagnostic_shard.py"):
+        start = int_at_least(opt("--start"), 0)
+        end = int_at_least(opt("--end"), 0)
+        item_offset = int_at_least(opt("--item-offset") or "0", 0)
+        methods_raw = opt("--methods")
+        method_count = explicit_method_count(methods_raw)
+        seeds = int_at_least(opt("--seeds"), 1)
+        total_steps = int_at_least(opt("--total-steps", "--total_steps"), 1)
+        if (
+            start is None
+            or end is None
+            or item_offset is None
+            or method_count is None
+            or seeds is None
+            or total_steps is None
+            or end <= start
+        ):
+            return None
+        global_start = item_offset + start
+        global_end = item_offset + end
+        if global_start < 0 or global_end > method_count * seeds:
+            return None
+        return float((end - start) * total_steps)
+
+    return None
 
 
 def _freqduet_ablation_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:

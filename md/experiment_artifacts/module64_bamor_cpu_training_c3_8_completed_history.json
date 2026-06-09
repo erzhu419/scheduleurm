@@ -1,0 +1,239 @@
+{
+  "cpu_counts": {
+    "4": 6,
+    "5": 2,
+    "7": 3,
+    "8": 111
+  },
+  "duration_s": {
+    "max": 1332.971033334732,
+    "median": 462.99696350097656,
+    "min": 97.1640636920929,
+    "p10": 370.64482522010803,
+    "p90": 878.0666823387146
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c_3_8 CPU training records. The parser accepts train_compare_baselines.py, train_bamor_mujoco.py, and run_bamor_diagnostic_shard.py only when training-step units are explicit. Only profile 1 is loaded; BAMOR c_le2/c9_16/c17_32 buckets and unparseable commands are not claimed.",
+  "parsed_units_training_step": {
+    "max": 800000.0,
+    "median": 100000.0,
+    "min": 1000.0,
+    "p10": 50000.0,
+    "p90": 800000.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 122
+  },
+  "ram_counts": {
+    "65536": 25,
+    "8192": 97
+  },
+  "realized_training_step_s": {
+    "max": 3821.5206420480204,
+    "median": 220.8999897465614,
+    "min": 10.055276060265134,
+    "p10": 57.8172210356414,
+    "p90": 1120.9170271098653
+  },
+  "record_count": 122,
+  "run_id": "module64_bamor_cpu_training_c3_8_completed_history",
+  "scope": "BAMOR no-GPU CPU training, 3-8 requested CPU cores, parseable training-step work units",
+  "script_counts": {
+    "run_bamor_diagnostic_shard.py": 25,
+    "train_bamor_mujoco.py": 39,
+    "train_compare_baselines.py": 58
+  },
+  "slowest_12": [
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python train_compare_baselines.py --method uniform --total_steps 1000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_hpc_smoke3_1k_s1/uniform_seed0 --device cpu --eval_freq 0 && echo DON",
+      "cpu_cores": 8,
+      "duration_s": 99.45027804374695,
+      "finished_at": 1780848625.9377089,
+      "parsed_units_training_step": 1000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 10.055276060265134,
+      "script": "train_compare_baselines.py",
+      "signature": "BAMOR/diagnostic/uniform/steps1000/switch300/eval0",
+      "started_at": 1780848526.4874308,
+      "status": "done",
+      "task_id": "t7538"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python train_compare_baselines.py --method bamor_ns --total_steps 1000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_hpc_smoke3_1k_s1/bamor_ns_seed0 --device cpu --eval_freq 0 && echo D",
+      "cpu_cores": 8,
+      "duration_s": 97.1640636920929,
+      "finished_at": 1780848629.8344157,
+      "parsed_units_training_step": 1000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 10.291870903721566,
+      "script": "train_compare_baselines.py",
+      "signature": "BAMOR/diagnostic/bamor_ns/steps1000/switch300/eval0",
+      "started_at": 1780848532.670352,
+      "status": "done",
+      "task_id": "t7539"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v2_proto_generic --total_steps 50000 --switch_interval 25000 --seed 2 --num_seeds 1 --save_dir results/mujoco_hc_v2_scheduler_20260608_1916",
+      "cpu_cores": 8,
+      "duration_s": 1332.971033334732,
+      "finished_at": 1780922781.122165,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 37.51019245700603,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v2_proto_generic/steps50000/switch25000/hidden64/fix_num_modes",
+      "started_at": 1780921448.1511316,
+      "status": "done",
+      "task_id": "t8052"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v2_proto_generic --total_steps 50000 --switch_interval 25000 --seed 0 --num_seeds 1 --save_dir results/mujoco_hc_v2_scheduler_20260608_1916",
+      "cpu_cores": 8,
+      "duration_s": 1257.0637123584747,
+      "finished_at": 1780922493.0779917,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 39.77523136531491,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v2_proto_generic/steps50000/switch25000/hidden64/fix_num_modes",
+      "started_at": 1780921236.0142794,
+      "status": "done",
+      "task_id": "t8050"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v2_contrast_hybrid --total_steps 50000 --switch_interval 25000 --seed 0 --num_seeds 1 --save_dir results/mujoco_hc_v2_scheduler_20260608_19",
+      "cpu_cores": 8,
+      "duration_s": 1238.9357557296753,
+      "finished_at": 1780918766.8188403,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 40.357217691689215,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v2_contrast_hybrid/steps50000/switch25000/hidden64",
+      "started_at": 1780917527.8830845,
+      "status": "done",
+      "task_id": "t7985"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v2_proto_generic --total_steps 50000 --switch_interval 25000 --seed 1 --num_seeds 1 --save_dir results/mujoco_hc_v2_scheduler_20260608_1916",
+      "cpu_cores": 8,
+      "duration_s": 1228.8181085586548,
+      "finished_at": 1780922563.105639,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 40.68950453427776,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v2_proto_generic/steps50000/switch25000/hidden64/fix_num_modes",
+      "started_at": 1780921334.2875304,
+      "status": "done",
+      "task_id": "t8051"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v2_contrast_hybrid --total_steps 50000 --switch_interval 25000 --seed 2 --num_seeds 1 --save_dir results/mujoco_hc_v2_scheduler_20260608_19",
+      "cpu_cores": 8,
+      "duration_s": 1098.7890162467957,
+      "finished_at": 1780918675.5882454,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 45.5046412556873,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v2_contrast_hybrid/steps50000/switch25000/hidden64",
+      "started_at": 1780917576.7992291,
+      "status": "done",
+      "task_id": "t7993"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v3_contrast_mix --total_steps 50000 --switch_interval 25000 --seed 0 --num_seeds 1 --save_dir results/mujoco_hc_v3_mix_scheduler_20260609_0",
+      "cpu_cores": 8,
+      "duration_s": 1090.3338129520416,
+      "finished_at": 1780958958.6910331,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 45.85751574981125,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v3_contrast_mix/steps50000/switch25000/hidden64",
+      "started_at": 1780957868.3572202,
+      "status": "done",
+      "task_id": "t8128"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v3_contrast_mix --total_steps 50000 --switch_interval 25000 --seed 1 --num_seeds 1 --save_dir results/mujoco_hc_v3_mix_scheduler_20260609_0",
+      "cpu_cores": 8,
+      "duration_s": 1087.6808712482452,
+      "finished_at": 1780958962.5579362,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 45.96936594335704,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v3_contrast_mix/steps50000/switch25000/hidden64",
+      "started_at": 1780957874.877065,
+      "status": "done",
+      "task_id": "t8129"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v3_contrast_mix --total_steps 50000 --switch_interval 25000 --seed 2 --num_seeds 1 --save_dir results/mujoco_hc_v3_mix_scheduler_20260609_0",
+      "cpu_cores": 8,
+      "duration_s": 1085.4056868553162,
+      "finished_at": 1780958966.383619,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 46.06572510676828,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v3_contrast_mix/steps50000/switch25000/hidden64",
+      "started_at": 1780957880.9779322,
+      "status": "done",
+      "task_id": "t8130"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v3_contrast_mix --total_steps 50000 --switch_interval 25000 --seed 3 --num_seeds 1 --save_dir results/mujoco_hc_v3mix_ext_scheduler_2026060",
+      "cpu_cores": 8,
+      "duration_s": 968.3024463653564,
+      "finished_at": 1780961036.8371646,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 51.63675893588952,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v3_contrast_mix/steps50000/switch25000/hidden64",
+      "started_at": 1780960068.5347183,
+      "status": "done",
+      "task_id": "t8160"
+    },
+    {
+      "cmd_prefix": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor_v3_contrast_mix --total_steps 50000 --switch_interval 25000 --seed 4 --num_seeds 1 --save_dir results/mujoco_hc_v3mix_ext_scheduler_2026060",
+      "cpu_cores": 8,
+      "duration_s": 878.0666823387146,
+      "finished_at": 1780961040.7976556,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 8192,
+      "realized_training_step_s": 56.94328347230521,
+      "script": "train_bamor_mujoco.py",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v3_contrast_mix/steps50000/switch25000/hidden64",
+      "started_at": 1780960162.7309732,
+      "status": "done",
+      "task_id": "t8163"
+    }
+  ],
+  "source_bucket": "bamor_cpu_training|c_3_8",
+  "theorem_status": "strict_completed_history_lower_service",
+  "total_units_training_step": 24252000.0,
+  "window": {
+    "end_ts": 1780963825.037102,
+    "start_ts": 1778371825.037102,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_cpu_training_c3_8_completed_history"
+}

@@ -889,6 +889,101 @@ def test_module63_native_promotion_c17_seedrange_completed_history_profile1(chec
           diag=str(report))
 
 
+def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
+    compare = {
+        "id": "bamor-compare",
+        "project": "BAMOR",
+        "signature": "BAMOR/diagnostic/uniform/steps100000/switch300/eval0",
+        "description": "BAMOR diagnostic uniform seed 0",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 8,
+        "ram_mb": 8192,
+        "cwd": "/home/erzhu419/mine_code/BAMOR",
+        "cmd": (
+            "python train_compare_baselines.py --method uniform --total_steps 100000 "
+            "--switch_interval 300 --seed 0 --seeds 1 --save_dir out "
+            "--device cpu --eval_freq 0"
+        ),
+    }
+    cls = classify_record(compare, include_representative=False)
+    check("BAMOR c3_8 train_compare_baselines maps after module64 certificate",
+          cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 100000.0),
+          diag=str(cls))
+
+    mujoco = dict(compare)
+    mujoco["id"] = "bamor-mujoco"
+    mujoco["signature"] = "BAMOR/mujoco/mo-halfcheetah-v5/bamor/steps50000"
+    mujoco["cmd"] = (
+        "python -u train_bamor_mujoco.py --env mo-halfcheetah-v5 --method bamor "
+        "--total_steps 50000 --switch_interval 25000 --seed 0 --num_seeds 2 "
+        "--save_dir out --eval_freq 50000 --device cpu --hidden 64"
+    )
+    mujoco_cls = classify_record(mujoco, include_representative=False)
+    check("BAMOR c3_8 train_bamor_mujoco maps parsed num_seeds times total_steps",
+          mujoco_cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+          and math.isclose(float(mujoco_cls["units"]), 100000.0),
+          diag=str(mujoco_cls))
+
+    shard = dict(compare)
+    shard["id"] = "bamor-shard"
+    shard["signature"] = "BAMOR/diagnostic-shard/offset56/node004"
+    shard["cmd"] = (
+        "python run_bamor_diagnostic_shard.py --start 58 --end 66 --item-offset 56 "
+        "--methods 'uniform bamor_oracle_cone bamor_oracle bamor_fixed_cone bamor "
+        "bamor_ns bamor_ns_eps bamor_nc fixed' --seed-start 0 --seeds 20 "
+        "--total-steps 100000 --switch-interval 300 --save-dir out --device cpu "
+        "--eval-freq 0 --workers 8 --max-workers 12 --threads-per-run 2"
+    )
+    shard_cls = classify_record(shard, include_representative=False)
+    check("BAMOR c3_8 diagnostic shard maps parsed shard items times total_steps",
+          shard_cls["workload_key"] == "bamor_cpu_training_c3_8_completed_history"
+          and math.isclose(float(shard_cls["units"]), 800000.0),
+          diag=str(shard_cls))
+
+    all_method = dict(compare)
+    all_method["id"] = "bamor-all-method"
+    all_method["cmd"] = (
+        "python train_compare_baselines.py --method all --total_steps 100000 "
+        "--seed 0 --seeds 1 --device cpu"
+    )
+    all_cls = classify_record(all_method, include_representative=False)
+    check("module64 classifier leaves method-all BAMOR commands unmeasured",
+          all_cls["workload_key"] is None and all_cls["reason"] == "unmapped_cpu",
+          diag=str(all_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("bamor_cpu_training_c3_8_completed_history")
+    check("module64 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("bamor_cpu_training_c3_8_completed_history", 1).aggregate_rate,
+              10.055276060265134,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[shard],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_bamor_cpu_training_c3_8_completed_history",),
+    )
+    check("production load certificate sums BAMOR c3_8 training-step units",
+          report["mapped_counts"] == {"bamor_cpu_training_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["bamor_cpu_training_c3_8_completed_history"], 800000.0)
+          and math.isclose(
+              report["lambda"]["bamor_cpu_training_c3_8_completed_history"],
+              800000.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

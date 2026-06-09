@@ -126,18 +126,18 @@ Remaining scope limitation:
     strict measured mapping delta = 0.001497772
     representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 2157 / 5228 tasks unmapped and maps 1590 tasks only by representative
+  leaves 2043 / 5408 tasks unmapped and maps 1724 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2487
-    mapped = 1340
-    strict mapped = 548
-    measurement_required = 1147
-    mapped_fraction = 0.538802
+    records = 2553
+    mapped = 1503
+    strict mapped = 681
+    measurement_required = 1050
+    mapped_fraction = 0.588719
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 803 / 2487 records
+    cpu_sumo_transit_eval_or_control = 704 / 2553 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -147,7 +147,7 @@ Remaining scope limitation:
     run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_32 -> freqduet_cpu_ablation_c17_32
     feasible profiles = 1,2,4
     capacity boundary = 8
-    completed-active strict mapped count = 125
+    completed-active strict mapped count = 136
     residual freqduet_cpu_ablation|c_17_32 needing measurement after Module63 = 46
 
   Module57 closes one exact direct-runner config inside c9_16:
@@ -216,8 +216,17 @@ Remaining scope limitation:
   This improves coverage but leaves direct-runner and non-seed-range native
   c17_32 command shapes.
 
+  Module64 closes the BAMOR c3_8 CPU-training sub-slice:
+    train_compare_baselines.py / train_bamor_mujoco.py / run_bamor_diagnostic_shard.py
+      with parseable training-step units -> bamor_cpu_training_c3_8_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 122
+    parsed completed-active work = 24252000 training-step units
+    min completed wall-clock rate = 10.055276 training-step/s
+  This improves coverage but leaves BAMOR c_le2/c9_16/c17_32 records as separate
+  obligations.
+
   The current remaining top probe order is:
-    bamor_cpu_training|c_3_8
     sumo_eval_cpu|c_le2
     freqduet_cpu_ablation|c_3_8 residual command shapes
     freqduet_cpu_ablation|c_33_64 residual command shapes
@@ -226,6 +235,9 @@ Remaining scope limitation:
     freqduet_cpu_ablation|c_9_16 residual command shapes
     transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes
+    bamor_cpu_training|c_9_16
+    bamor_cpu_training|c_le2
+    bamor_cpu_training|c_17_32
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

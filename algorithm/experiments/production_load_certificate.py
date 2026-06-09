@@ -40,6 +40,8 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c3_8_completed_history",
     "production_freqduet_runner_v3_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
+    "production_transit_native_promotion_c33_64_batch_completed_history",
+    "production_transit_native_promotion_c33_64_single_seed_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -202,6 +204,26 @@ def classify_record(
             "strict_measured",
             "module61_freqduet_cpu_ablation_c33_64_completed_history",
             units=c33_64_units,
+        )
+
+    native_c33_64_units = _native_promotion_c33_64_seed_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if native_c33_64_units is not None:
+        if native_c33_64_units <= 1.0:
+            return _mapped(
+                "transit_native_promotion_c33_64_single_seed_completed_history",
+                "strict_measured",
+                "module68_transit_native_promotion_c33_64_single_seed_completed_history",
+                units=native_c33_64_units,
+            )
+        return _mapped(
+            "transit_native_promotion_c33_64_batch_completed_history",
+            "strict_measured",
+            "module68_transit_native_promotion_c33_64_batch_completed_history",
+            units=native_c33_64_units,
         )
 
     native_c17_32_units = _native_promotion_c17_32_seedrange_units(
@@ -470,6 +492,210 @@ def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
     if seed_count <= 0 or not math.isfinite(episodes) or episodes <= 0:
         return None
     return float(seed_count) * float(episodes)
+
+
+def _native_promotion_c33_64_seed_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (32.0 < float(cpu) <= 64.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "native_promotion_replan_validation" not in cmd_lower:
+        return None
+    units = _parse_native_promotion_seed_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_native_promotion_seed_units(cmd: str) -> float | None:
+    units = _parse_native_promotion_seedrange_units(cmd)
+    if units is not None and units > 0:
+        return units
+    units = _parse_native_promotion_cli_seedlist_units(cmd)
+    if units is not None and units > 0:
+        return units
+    for snippet in _python_c_snippets(cmd):
+        units = _parse_native_promotion_python_seed_units(snippet)
+        if units is not None and units > 0:
+            return units
+    return None
+
+
+def _parse_native_promotion_cli_seedlist_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    if not any("native_promotion_replan_validation" in str(token) for token in tokens):
+        return None
+    if "--seeds" not in tokens:
+        return None
+    idx = tokens.index("--seeds") + 1
+    seeds = []
+    while idx < len(tokens) and not str(tokens[idx]).startswith("--"):
+        seeds.append(str(tokens[idx]))
+        idx += 1
+    if not seeds:
+        return None
+    if any("$" in seed for seed in seeds):
+        return None
+    episodes = 1.0
+    if "--episodes" in tokens:
+        ep_idx = tokens.index("--episodes")
+        if ep_idx + 1 >= len(tokens):
+            return None
+        try:
+            episodes = float(tokens[ep_idx + 1])
+        except ValueError:
+            return None
+    if not math.isfinite(episodes) or episodes <= 0:
+        return None
+    return float(len(seeds)) * float(episodes)
+
+
+def _python_c_snippets(cmd: str) -> list[str]:
+    import shlex
+
+    out: list[str] = []
+
+    def visit(text: str, depth: int) -> None:
+        if depth > 2:
+            return
+        try:
+            tokens = shlex.split(str(text))
+        except ValueError:
+            tokens = str(text).split()
+        for idx, token in enumerate(tokens):
+            value = str(token)
+            if value == "-c" and idx + 1 < len(tokens):
+                out.append(str(tokens[idx + 1]))
+            if value in {"-lc", "-ic"} and idx + 1 < len(tokens):
+                visit(str(tokens[idx + 1]), depth + 1)
+
+    visit(str(cmd), 0)
+    return out
+
+
+def _parse_native_promotion_python_seed_units(snippet: str) -> float | None:
+    import ast
+
+    try:
+        tree = ast.parse(str(snippet))
+    except SyntaxError:
+        return None
+    seed_counts: dict[str, int] = {}
+    numeric_values: dict[str, float] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        if len(node.targets) != 1 or not isinstance(node.targets[0], ast.Name):
+            continue
+        name = str(node.targets[0].id)
+        count = _ast_seed_count(node.value)
+        if count is not None:
+            seed_counts[name] = count
+            continue
+        number = _ast_constant_float(node.value)
+        if number is not None:
+            numeric_values[name] = number
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if not isinstance(func, ast.Attribute) or func.attr != "run_validation":
+            continue
+        keywords = {kw.arg: kw.value for kw in node.keywords if kw.arg}
+        seed_node = keywords.get("seeds")
+        if seed_node is None:
+            return None
+        seed_count = _ast_seed_count(seed_node)
+        if seed_count is None and isinstance(seed_node, ast.Name):
+            seed_count = seed_counts.get(str(seed_node.id))
+        episodes = 1.0
+        episode_node = keywords.get("episodes")
+        if episode_node is not None:
+            episodes = _ast_constant_float(episode_node)
+            if episodes is None and isinstance(episode_node, ast.Name):
+                episodes = numeric_values.get(str(episode_node.id))
+        if seed_count is None or episodes is None:
+            return None
+        if seed_count <= 0 or not math.isfinite(float(episodes)) or float(episodes) <= 0:
+            return None
+        return float(seed_count) * float(episodes)
+    return None
+
+
+def _ast_seed_count(node: Any) -> int | None:
+    import ast
+
+    if isinstance(node, (ast.List, ast.Tuple)):
+        return len(node.elts)
+    if isinstance(node, ast.ListComp) and len(node.generators) == 1:
+        return _ast_range_length(node.generators[0].iter)
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "list"
+        and len(node.args) == 1
+    ):
+        return _ast_range_length(node.args[0])
+    return None
+
+
+def _ast_range_length(node: Any) -> int | None:
+    import ast
+
+    if not isinstance(node, ast.Call):
+        return None
+    if not isinstance(node.func, ast.Name) or node.func.id != "range":
+        return None
+    raw = [_ast_constant_int(arg) for arg in node.args]
+    if any(value is None for value in raw) or len(raw) not in (1, 2, 3):
+        return None
+    values = [int(value) for value in raw if value is not None]
+    if len(values) == 1:
+        start, stop, step = 0, values[0], 1
+    elif len(values) == 2:
+        start, stop, step = values[0], values[1], 1
+    else:
+        start, stop, step = values[0], values[1], values[2]
+    if step == 0:
+        return None
+    return len(range(start, stop, step))
+
+
+def _ast_constant_int(node: Any) -> int | None:
+    import ast
+
+    if isinstance(node, ast.Constant) and isinstance(node.value, int):
+        return int(node.value)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        value = _ast_constant_int(node.operand)
+        return -value if value is not None else None
+    return None
+
+
+def _ast_constant_float(node: Any) -> float | None:
+    import ast
+
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return float(node.value)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        value = _ast_constant_float(node.operand)
+        return -value if value is not None else None
+    return None
 
 
 def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:

@@ -45,12 +45,14 @@ Module67 refines the broad BAMOR c3_8 class into script-level lower-service
 classes so the production load certificate does not apply the slowest
 `train_compare_baselines.py` lower bound to faster Mujoco and diagnostic-shard
 tasks.
+Module68 adds script-parseable c33_64 native-promotion seed-unit classes and
+separates the two single-seed smoke/fix records from batch native validation.
 
 ```text
-record_count_window = 5617
-mapped_task_count = 1838
-mapped_fraction = 0.327221
-unmapped_task_count = 3779
+record_count_window = 5877
+mapped_task_count = 2038
+mapped_fraction = 0.346776
+unmapped_task_count = 3839
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -61,15 +63,16 @@ Estimated load:
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_mujoco_c3_8_completed_history` | 115 | 2.218364198 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
-| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
+| `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
 | `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 140 | 0.015726080 |
+| `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
@@ -94,12 +97,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5617
-mapped_task_count = 3689
-representative_mapped_task_count = 1851
-mapped_fraction = 0.656756
-strict_mapped_fraction = 0.327221
-unmapped_task_count = 1928
+record_count_window = 5877
+mapped_task_count = 3927
+representative_mapped_task_count = 1889
+mapped_fraction = 0.668198
+strict_mapped_fraction = 0.346776
+unmapped_task_count = 1950
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -110,15 +113,16 @@ Estimated load:
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_mujoco_c3_8_completed_history` | 115 | 2.218364198 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
-| `hybrid_rl_resac_ant` | 2001 | 0.061759259 |
-| `cpu_heavy_local_bench` | 381 | 0.146990741 |
-| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
+| `hybrid_rl_resac_ant` | 2041 | 0.062993827 |
+| `cpu_heavy_local_bench` | 379 | 0.146219136 |
+| `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
 | `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 140 | 0.015726080 |
+| `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
@@ -150,16 +154,18 @@ Module65 adds the ZSW TSP/SUMO c_le2 completed-history slice.  Module66 adds
 the c3_8 direct FreqDuet runner completed-history slice.  Module67 then splits
 the broad BAMOR c3_8 class into script-level service classes; without this
 split, the latest raw-window BAMOR load would exceed the broad class's slowest
-profile-1 lower-service point.  The mapped LP is still positive but tight because the
+profile-1 lower-service point.  Module68 closes the c33_64 native-promotion
+batch seed-unit class and isolates single-seed smoke/fix measurements into a
+separate service class.  The mapped LP is still positive but tight because the
 completed-history slices use minimum completed profile-1 lower-service points.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3779 / 5617 tasks
-representative unmapped: 1928 / 5617 tasks
-representative-mapped but not theorem-grade: 1851 tasks
+strict unmapped: 3839 / 5877 tasks
+representative unmapped: 1950 / 5877 tasks
+representative-mapped but not theorem-grade: 1889 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

@@ -3,20 +3,20 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 5617
-mapped_task_count = 1838
+record_count_window = 5877
+mapped_task_count = 2038
 representative_mapped_task_count = 0
-unmapped_task_count = 3779
-mapped_fraction = 0.3272209364429411
+unmapped_task_count = 3839
+mapped_fraction = 0.346775565764846
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 100 | 1.929012346 |
+| `bamor_mujoco_c3_8_completed_history` | 115 | 2.218364198 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
-| `freqduet_cpu_ablation_c17_32` | 184 | 0.005111111 |
+| `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
@@ -27,7 +27,8 @@ mapped_fraction = 0.3272209364429411
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `light_control_local` | 206 | 0.794753086 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 128 | 0.014145833 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 140 | 0.015726080 |
+| `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
 | `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
 
 | Quantity | Value |
@@ -42,7 +43,7 @@ mapped_fraction = 0.3272209364429411
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 2080 |
-| `unmapped_gpu` | 1544 |
+| `unmapped_cpu` | 2100 |
+| `unmapped_gpu` | 1584 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

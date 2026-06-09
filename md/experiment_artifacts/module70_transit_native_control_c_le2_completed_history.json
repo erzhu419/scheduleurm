@@ -1,0 +1,151 @@
+{
+  "cpu_counts": {
+    "1": 3,
+    "2": 4
+  },
+  "duration_s": {
+    "max": 709.5346975326538,
+    "median": 418.9714162349701,
+    "min": 94.20856404304504,
+    "p10": 94.20856404304504,
+    "p90": 564.2287056446075
+  },
+  "interpretation": "Only profile 1 is loaded. This class is separated from native promotion-replan because the command semantics and realized lower-service differ.",
+  "mapped_completed_active_count": 7,
+  "mapped_completed_active_units_native_control_episode": 148.0,
+  "parsed_units_native_control_episode": {
+    "max": 50.0,
+    "median": 16.0,
+    "min": 12.0,
+    "p10": 12.0,
+    "p90": 30.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 7
+  },
+  "ram_counts": {
+    "4096": 2,
+    "761": 1,
+    "767": 1,
+    "777": 1,
+    "778": 2
+  },
+  "realized_native_control_episode_s": {
+    "max": 0.12737695475877386,
+    "median": 0.07024893069428909,
+    "min": 0.02835729525976647,
+    "p10": 0.02835729525976647,
+    "p90": 0.0716039300952579
+  },
+  "record_count": 7,
+  "run_id": "module70_transit_native_control_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for low-CPU native_wait_credit_validation and native_real_demand_control_validation records with parsed native control episode units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_real_demand_control_validation --sources afc apc --seeds 31 41 51 61 --episodes 1 --min-pairs 4 --output-dir transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_0 && echo DONE",
+      "cpu_cores": 1.0,
+      "duration_s": 564.2287056446075,
+      "finished_at": 1780849345.2563875,
+      "parsed_units_native_control_episode": 16.0,
+      "project": "TransitDuet",
+      "ram_mb": 4096.0,
+      "realized_native_control_episode_s": 0.02835729525976647,
+      "signature": "TransitDuet/native-real-demand-waitaware-v2-shard0-retry",
+      "started_at": 1780848781.0276818,
+      "status": "done",
+      "task_id": "t7541"
+    },
+    {
+      "cmd_prefix": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.native_real_demand_control_validation --sources afc apc --seeds 231 241 251 261 --episodes 1 --min-pairs 4 --output-dir transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_5 && echo DONE",
+      "cpu_cores": 1.0,
+      "duration_s": 561.5380628108978,
+      "finished_at": 1780849348.8721704,
+      "parsed_units_native_control_episode": 16.0,
+      "project": "TransitDuet",
+      "ram_mb": 4096.0,
+      "realized_native_control_episode_s": 0.028493170916871792,
+      "signature": "TransitDuet/native-real-demand-waitaware-v2-shard5-retry",
+      "started_at": 1780848787.3341076,
+      "status": "done",
+      "task_id": "t7542"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_real_demand_control_validation --sources afc apc --seeds 31 41 51 --episodes 1 --max-series 2 --min-bins 4 --limit 1000 --min-pairs 3 --output-dir transit_hrl/results/transit_native_real_demand_control",
+      "cpu_cores": 2.0,
+      "duration_s": 261.08696937561035,
+      "finished_at": 1780395043.2411356,
+      "parsed_units_native_control_episode": 12.0,
+      "project": "TransitDuet",
+      "ram_mb": 767.0,
+      "realized_native_control_episode_s": 0.04596169632171995,
+      "signature": "TransitDuet/auto-adopted/p1971305",
+      "started_at": 1780394782.1541662,
+      "status": "done",
+      "task_id": "t5873"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_wait_credit_validation --seeds 31 41 --episodes 3 --learning-rate 0.001 --min-pairs 2 --output-dir transit_hrl/results/tmp_native_wait_credit_prior_smoke",
+      "cpu_cores": 2.0,
+      "duration_s": 170.8211054801941,
+      "finished_at": 1780309762.401227,
+      "parsed_units_native_control_episode": 12.0,
+      "project": "TransitDuet",
+      "ram_mb": 778.0,
+      "realized_native_control_episode_s": 0.07024893069428909,
+      "signature": "TransitDuet/auto-adopted/p808442",
+      "started_at": 1780309591.5801215,
+      "status": "done",
+      "task_id": "t5369"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_wait_credit_validation --seeds 31 41 51 61 71 --episodes 5 --learning-rate 0.001 --min-pairs 5 --output-dir transit_hrl/results/transit_native_wait_credit",
+      "cpu_cores": 1.0,
+      "duration_s": 709.5346975326538,
+      "finished_at": 1780307972.6247349,
+      "parsed_units_native_control_episode": 50.0,
+      "project": "TransitDuet",
+      "ram_mb": 761.0,
+      "realized_native_control_episode_s": 0.07046871727890225,
+      "signature": "TransitDuet/auto-adopted/p789499",
+      "started_at": 1780307263.0900373,
+      "status": "done",
+      "task_id": "t5364"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_wait_credit_validation --seeds 31 41 51 61 71 --episodes 3 --learning-rate 0.001 --min-pairs 5 --output-dir transit_hrl/results/transit_native_wait_credit",
+      "cpu_cores": 2.0,
+      "duration_s": 418.9714162349701,
+      "finished_at": 1780310222.7428615,
+      "parsed_units_native_control_episode": 30.0,
+      "project": "TransitDuet",
+      "ram_mb": 777.0,
+      "realized_native_control_episode_s": 0.0716039300952579,
+      "signature": "TransitDuet/auto-adopted/p810060",
+      "started_at": 1780309803.7714453,
+      "status": "done",
+      "task_id": "t5372"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.native_wait_credit_validation --seeds 31 41 --episodes 3 --min-pairs 2 --output-dir transit_hrl/results/tmp_native_wait_credit_smoke",
+      "cpu_cores": 2.0,
+      "duration_s": 94.20856404304504,
+      "finished_at": 1780306280.9939063,
+      "parsed_units_native_control_episode": 12.0,
+      "project": "TransitDuet",
+      "ram_mb": 778.0,
+      "realized_native_control_episode_s": 0.12737695475877386,
+      "signature": "TransitDuet/auto-adopted/p772001",
+      "started_at": 1780306186.7853422,
+      "status": "done",
+      "task_id": "t5360"
+    }
+  ],
+  "sub_bucket": "transit_freqhrl_cpu_validation|c_le2 plus corrected native-control records previously grouped by broad freqduet text",
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module70 Transit Native Control c_le2 Completed-History Certificate",
+  "total_units_native_control_episode": 148.0,
+  "workload_key": "transit_native_control_c_le2_completed_history"
+}

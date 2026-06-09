@@ -1,0 +1,62 @@
+{
+  "cpu_counts": {
+    "1": 1
+  },
+  "duration_s": {
+    "max": 569.4317367076874,
+    "median": 569.4317367076874,
+    "min": 569.4317367076874,
+    "p10": 569.4317367076874,
+    "p90": 569.4317367076874
+  },
+  "interpretation": "Only profile 1 is loaded. This singleton does not authorize charging native validation records to an import-smoke rate.",
+  "mapped_completed_active_count": 1,
+  "mapped_completed_active_units_import_check": 1.0,
+  "parsed_units_import_check": {
+    "max": 1.0,
+    "median": 1.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 1.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "4096": 1
+  },
+  "realized_import_check_s": {
+    "max": 0.001756136750968169,
+    "median": 0.001756136750968169,
+    "min": 0.001756136750968169,
+    "p10": 0.001756136750968169,
+    "p90": 0.001756136750968169
+  },
+  "record_count": 1,
+  "run_id": "module70_transit_freqhrl_import_smoke_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for one Windows python -c IMPORT_OK Transit/FreqHRL import sanity record.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "F:\\v\\Scripts\\python.exe -c \"import sys; sys.path.insert(0, 'transit_hrl'); from freq_hrl.experiments.transit import native_promotion_replan_validation as v; print('IMPORT_OK')\" & exit /b %ERRORLEVEL%",
+      "cpu_cores": 1.0,
+      "duration_s": 569.4317367076874,
+      "finished_at": 1780617383.1029365,
+      "parsed_units_import_check": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 4096.0,
+      "realized_import_check_s": 0.001756136750968169,
+      "signature": "TransitDuet/direct-windows-import-smoke-jtl110cpu-v1",
+      "started_at": 1780616813.6711998,
+      "status": "done",
+      "task_id": "t6925"
+    }
+  ],
+  "sub_bucket": "transit_freqhrl_cpu_validation|c_le2",
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module70 Transit FreqHRL Import-Smoke c_le2 Completed-History Certificate",
+  "total_units_import_check": 1.0,
+  "workload_key": "transit_freqhrl_import_smoke_c_le2_completed_history"
+}

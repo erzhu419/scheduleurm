@@ -1,0 +1,91 @@
+{
+  "cpu_counts": {
+    "2": 3
+  },
+  "duration_s": {
+    "max": 73.04698348045349,
+    "median": 71.63872408866882,
+    "min": 71.53347587585449,
+    "p10": 71.53347587585449,
+    "p90": 71.63872408866882
+  },
+  "interpretation": "Only profile 1 is loaded. This class is not merged with native simulator validation.",
+  "mapped_completed_active_count": 3,
+  "mapped_completed_active_units_surrogate_corridor_step": 49344.0,
+  "parsed_units_surrogate_corridor_step": {
+    "max": 21600.0,
+    "median": 21600.0,
+    "min": 6144.0,
+    "p10": 6144.0,
+    "p90": 21600.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 3
+  },
+  "ram_counts": {
+    "606": 1,
+    "608": 2
+  },
+  "realized_surrogate_corridor_step_s": {
+    "max": 301.95652784280395,
+    "median": 301.5129076456639,
+    "min": 84.11024942110117,
+    "p10": 84.11024942110117,
+    "p90": 301.5129076456639
+  },
+  "record_count": 3,
+  "run_id": "module70_transit_surrogate_validation_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for low-CPU Transit gap_closure_validation and ppo_surrogate records with parsed surrogate corridor-step units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.gap_closure_validation --train-seeds 11 23 --eval-seeds 101 131 --steps 96 --iterations 3 --output-dir transit_hrl/results/transit_gap_closure",
+      "cpu_cores": 2.0,
+      "duration_s": 73.04698348045349,
+      "finished_at": 1780281775.4590557,
+      "parsed_units_surrogate_corridor_step": 6144.0,
+      "project": "TransitDuet",
+      "ram_mb": 606.0,
+      "realized_surrogate_corridor_step_s": 84.11024942110117,
+      "signature": "TransitDuet/auto-adopted/p417997",
+      "started_at": 1780281702.4120722,
+      "status": "done",
+      "task_id": "t5251"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.ppo_surrogate --train-seeds 11 23 37 41 53 --eval-seeds 101 131 151 181 211 --steps 240 --corridors 2 --scenario persistent_shift --iterations 8 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale-s 18 --lower-lf-constraint-coef 0.08 --lower-lf-constraint-tar",
+      "cpu_cores": 2.0,
+      "duration_s": 71.63872408866882,
+      "finished_at": 1780283288.843094,
+      "parsed_units_surrogate_corridor_step": 21600.0,
+      "project": "TransitDuet",
+      "ram_mb": 608.0,
+      "realized_surrogate_corridor_step_s": 301.5129076456639,
+      "signature": "TransitDuet/auto-adopted/p432010",
+      "started_at": 1780283217.20437,
+      "status": "done",
+      "task_id": "t5255"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.ppo_surrogate --train-seeds 11 23 37 41 53 --eval-seeds 101 131 151 181 211 --steps 240 --corridors 2 --scenario persistent_shift --iterations 8 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale-s 18 --output-dir transit_hrl/results/transit_ppo_plan_surroga",
+      "cpu_cores": 2.0,
+      "duration_s": 71.53347587585449,
+      "finished_at": 1780283288.7345912,
+      "parsed_units_surrogate_corridor_step": 21600.0,
+      "project": "TransitDuet",
+      "ram_mb": 608.0,
+      "realized_surrogate_corridor_step_s": 301.95652784280395,
+      "signature": "TransitDuet/auto-adopted/p432008",
+      "started_at": 1780283217.2011154,
+      "status": "done",
+      "task_id": "t5253"
+    }
+  ],
+  "sub_bucket": "transit_freqhrl_cpu_validation|c_le2",
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module70 Transit Surrogate Validation c_le2 Completed-History Certificate",
+  "total_units_surrogate_corridor_step": 49344.0,
+  "workload_key": "transit_surrogate_validation_c_le2_completed_history"
+}

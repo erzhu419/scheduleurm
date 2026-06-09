@@ -1211,6 +1211,165 @@ def test_module69_c65p_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module70_transit_freqhrl_c_le2_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "status": "done",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/auto-adopted/p",
+        "description": "auto-adopted TransitDuet c_le2",
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+        "est_vram_mb": 0,
+        "cpu_cores": 2,
+        "ram_mb": 1024,
+    }
+    sweep = {
+        **base,
+        "id": "module70-sweep",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.trading.promotion_sweep "
+            "--seeds 42 123 456 789 2026 --steps 720 --assets 3 "
+            "--thresholds 0.00035 0.00050 0.00065 0.00080 "
+            "--ratios 0.20 0.30 0.40 "
+            "--mid-gains 0.0 0.5 1.0 --output-dir out"
+        ),
+    }
+    sweep_cls = classify_record(sweep, include_representative=False)
+    check("Module70 maps TransitDuet trading sweep c_le2 with script-default grid units",
+          sweep_cls["workload_key"] == "transit_trading_sweep_c_le2_completed_history"
+          and math.isclose(float(sweep_cls["units"]), 15552000.0),
+          diag=str(sweep_cls))
+
+    policy = {
+        **base,
+        "id": "module70-policy",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.trading.policy_entry "
+            "--mode train --policy pg_linear "
+            "--train-seeds 42 123 456 789 2026 "
+            "--eval-seeds 31415 27182 16180 11235 4242 "
+            "--steps 720 --assets 3 --pg-iterations 32 --output-dir out"
+        ),
+    }
+    policy_cls = classify_record(policy, include_representative=False)
+    check("Module70 maps TransitDuet trading policy c_le2 with train plus eval units",
+          policy_cls["workload_key"] == "transit_trading_policy_c_le2_completed_history"
+          and math.isclose(float(policy_cls["units"]), 356400.0),
+          diag=str(policy_cls))
+
+    surrogate = {
+        **base,
+        "id": "module70-surrogate",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.transit.gap_closure_validation "
+            "--train-seeds 11 23 --eval-seeds 101 131 "
+            "--steps 96 --iterations 3 --output-dir out"
+        ),
+    }
+    surrogate_cls = classify_record(surrogate, include_representative=False)
+    check("Module70 maps Transit surrogate c_le2 with four-variant corridor-step units",
+          surrogate_cls["workload_key"] == "transit_surrogate_validation_c_le2_completed_history"
+          and math.isclose(float(surrogate_cls["units"]), 6144.0),
+          diag=str(surrogate_cls))
+
+    native = {
+        **base,
+        "id": "module70-native",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--seeds 31 41 51 61 71 81 91 101 --episodes 1 "
+            "--min-pairs 64 --output-dir out"
+        ),
+    }
+    native_cls = classify_record(native, include_representative=False)
+    check("Module70 native promotion c_le2 does not multiply work units by min-pairs",
+          native_cls["workload_key"] == "transit_native_promotion_c_le2_completed_history"
+          and math.isclose(float(native_cls["units"]), 32.0),
+          diag=str(native_cls))
+
+    native_control = {
+        **base,
+        "id": "module70-native-control",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.transit.native_real_demand_control_validation "
+            "--sources afc apc --seeds 31 41 51 --episodes 1 "
+            "--max-series 2 --min-bins 4 --limit 1000 --min-pairs 3 --output-dir out"
+        ),
+    }
+    native_control_cls = classify_record(native_control, include_representative=False)
+    check("Module70 maps native real-demand control c_le2 with source variant episode units",
+          native_control_cls["workload_key"] == "transit_native_control_c_le2_completed_history"
+          and math.isclose(float(native_control_cls["units"]), 12.0),
+          diag=str(native_control_cls))
+
+    import_smoke = {
+        **base,
+        "id": "module70-import-smoke",
+        "cpu_cores": 1,
+        "ram_mb": 4096,
+        "cmd": (
+            "F:\\v\\Scripts\\python.exe -c \"import sys; sys.path.insert(0, 'transit_hrl'); "
+            "from freq_hrl.experiments.transit import native_promotion_replan_validation as v; "
+            "print('IMPORT_OK')\" & exit /b %ERRORLEVEL%"
+        ),
+    }
+    import_cls = classify_record(import_smoke, include_representative=False)
+    check("Module70 keeps Windows import smoke as its own singleton class",
+          import_cls["workload_key"] == "transit_freqhrl_import_smoke_c_le2_completed_history"
+          and math.isclose(float(import_cls["units"]), 1.0),
+          diag=str(import_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_trading_sweep_c_le2_completed_history": 899.8910320624362,
+        "transit_trading_policy_c_le2_completed_history": 650.1093258685299,
+        "transit_surrogate_validation_c_le2_completed_history": 84.11024942110117,
+        "transit_native_promotion_c_le2_completed_history": 0.00540690633698809,
+        "transit_native_control_c_le2_completed_history": 0.02835729525976647,
+        "transit_freqhrl_import_smoke_c_le2_completed_history": 0.001756136750968169,
+    }
+    check("Module70 service cache exposes six separated c_le2 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)]
+                    for key in expected_rates}))
+
+    report = build_production_load_certificate(
+        records=[sweep, policy, surrogate, native, native_control, import_smoke],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_transit_trading_sweep_c_le2_completed_history",
+            "production_transit_trading_policy_c_le2_completed_history",
+            "production_transit_surrogate_validation_c_le2_completed_history",
+            "production_transit_native_promotion_c_le2_completed_history",
+            "production_transit_native_control_c_le2_completed_history",
+            "production_transit_freqhrl_import_smoke_c_le2_completed_history",
+        ),
+    )
+    check("Production load certificate sums Module70 c_le2 parsed units",
+          report["mapped_counts"] == {
+              "transit_trading_sweep_c_le2_completed_history": 1,
+              "transit_trading_policy_c_le2_completed_history": 1,
+              "transit_surrogate_validation_c_le2_completed_history": 1,
+              "transit_native_promotion_c_le2_completed_history": 1,
+              "transit_native_control_c_le2_completed_history": 1,
+              "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_trading_sweep_c_le2_completed_history"], 15552000.0)
+          and math.isclose(report["mapped_units"]["transit_trading_policy_c_le2_completed_history"], 356400.0)
+          and math.isclose(report["mapped_units"]["transit_surrogate_validation_c_le2_completed_history"], 6144.0)
+          and math.isclose(report["mapped_units"]["transit_native_promotion_c_le2_completed_history"], 32.0)
+          and math.isclose(report["mapped_units"]["transit_native_control_c_le2_completed_history"], 12.0)
+          and math.isclose(report["mapped_units"]["transit_freqhrl_import_smoke_c_le2_completed_history"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-compare",

@@ -243,11 +243,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2781
-representative mapped = 1952
-strict mapped = 1041
-measurement_required = 829
-mapped_fraction = 0.701906
+records = 2797
+representative mapped = 2028
+strict mapped = 1117
+measurement_required = 769
+mapped_fraction = 0.725063
 ```
 
 最大未闭合 bucket 是：
@@ -268,6 +268,7 @@ after Module66:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active 
 after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
 after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755 completed-active records
 after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781 completed-active records
+after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -350,7 +351,7 @@ unit rule = parsed training steps
 closed completed-history slice = BAMOR c_3_8 train_bamor_mujoco.py
 workload_key = bamor_mujoco_c3_8_completed_history
 feasible profiles = 1
-completed-active mapped count = 109
+completed-active mapped count = 123
 unit rule = parsed training steps
 
 closed completed-history slice = BAMOR c_3_8 run_bamor_diagnostic_shard.py
@@ -368,7 +369,7 @@ unit rule = parsed simulated SUMO seconds from --duration
 closed completed-history slice = Transit native_promotion_replan_validation batch within c_33_64
 workload_key = transit_native_promotion_c33_64_batch_completed_history
 feasible profiles = 1
-completed-active mapped count = 47
+completed-active mapped count = 55
 unit rule = parsed seed-count times episodes
 
 closed completed-history slice = Transit native_promotion_replan_validation single-seed smoke/fix within c_33_64
@@ -392,14 +393,50 @@ unit rule = parsed job-count times 100 episodes
 closed completed-history slice = Transit native_promotion_replan_validation within c_65p
 workload_key = transit_native_promotion_c65p_completed_history
 feasible profiles = 1
-completed-active mapped count = 57
+completed-history service records used = 48
+current completed-active mapped count = 49
 unit rule = statically parsed seed-count times episodes
+
+closed completed-history slice = Transit/FreqHRL trading sweep within c_le2
+workload_key = transit_trading_sweep_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 14
+unit rule = parsed market-step grid units
+
+closed completed-history slice = Transit/FreqHRL trading policy within c_le2
+workload_key = transit_trading_policy_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 18
+unit rule = parsed train/eval policy-market-step units
+
+closed completed-history slice = Transit surrogate validation within c_le2
+workload_key = transit_surrogate_validation_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 3
+unit rule = parsed surrogate corridor-step units
+
+closed completed-history slice = Transit native_promotion_replan_validation within c_le2
+workload_key = transit_native_promotion_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 19
+unit rule = parsed native variant-episode units
+
+closed completed-history slice = Transit native wait-credit / real-demand control within c_le2
+workload_key = transit_native_control_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 7
+unit rule = parsed native control episode units
+
+closed completed-history singleton = Transit/FreqHRL Windows IMPORT_OK check
+workload_key = transit_freqhrl_import_smoke_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = import_check
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2

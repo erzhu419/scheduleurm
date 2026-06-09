@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "transit_freqhrl_cpu_validation|c_le2",
       "freqduet_cpu_ablation|c_9_16",
       "sumo_eval_cpu|c_le2",
       "transit_misc_cpu|c_le2",
       "freqduet_cpu_ablation|c_17_32",
       "bamor_cpu_training|c_9_16",
       "freqduet_cpu_ablation|c_le2",
-      "bamor_cpu_training|c_le2"
+      "bamor_cpu_training|c_le2",
+      "freqduet_cpu_ablation|c_3_8"
     ],
     "node_targets": [
       "local_cpu",
@@ -35,11 +35,11 @@
     "CFCMT": 36,
     "FreqDuet": 16,
     "FreqHRL": 13,
-    "FreqHRLNative": 6,
+    "FreqHRLNative": 5,
     "H2Oplus": 2,
     "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
     "SimpleSAC": 2,
-    "TransitDuet": 220,
+    "TransitDuet": 159,
     "ZSW_platform": 6,
     "config": 5,
     "freq_transitduet": 1,
@@ -49,144 +49,26 @@
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 471,
+  "record_count": 409,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 3.0,
+      "median": 8.0,
       "min": 1.0,
       "p90": 30.0
     },
     "ram_mb": {
       "max": 131072.0,
-      "median": 2541.0,
+      "median": 4362.0,
       "min": 5.0,
       "p90": 65536.0
     }
   },
   "status_counts": {
-    "done": 471
+    "done": 409
   },
-  "sub_bucket_count": 20,
+  "sub_bucket_count": 19,
   "sub_buckets": [
-    {
-      "count": 59,
-      "examples": [
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.promotion_sweep --seeds 42 123 456 789 2026 --steps 720 --assets 3 --thresholds 0.00035 0.00050 0.00065 0.00080 --ratios 0.20 0.30 0.40 --mid-gains 0.0 0.5 1.0 --output-dir transit_hrl/results/trading_promotion_sweep",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 35,
-          "signature": "TransitDuet/auto-adopted/p3485593",
-          "status": "done",
-          "task_id": "t4992"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.promotion_sweep --seeds 42 123 456 789 2026 --steps 720 --assets 3 --thresholds 0.00035 0.00050 0.00065 0.00080 --ratios 0.20 0.30 0.40 --mid-gains 0.0 0.5 1.0 --adapt-gains 0.0 0.10 0.25 0.50 --output-dir transit_hrl/results/trading_promotion_sweep",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 36,
-          "signature": "TransitDuet/auto-adopted/p3489261",
-          "status": "done",
-          "task_id": "t4993"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.promotion_sweep --seeds 42 123 456 789 2026 --steps 720 --assets 3 --thresholds 0.00035 0.00050 0.00065 0.00080 --ratios 0.20 0.30 0.40 --mid-gains 0.0 0.5 1.0 --adapt-gains 0.0 0.10 0.25 0.50 --output-dir transit_hrl/results/trading_promotion_sweep",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": 70,
-          "eta_source": "runtime_history_fallback",
-          "project": "TransitDuet",
-          "ram_mb": 36,
-          "signature": "TransitDuet/auto-adopted/p3494565",
-          "status": "done",
-          "task_id": "t4996"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.performance_validation --seeds 42 123 456 789 2026 --steps 720 --assets 3 --output-dir transit_hrl/results/trading_performance",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 36,
-          "signature": "TransitDuet/auto-adopted/p3507199",
-          "status": "done",
-          "task_id": "t5003"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.performance_validation --seeds 42 123 456 789 2026 --steps 720 --assets 3 --output-dir transit_hrl/results/trading_performance",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 37,
-          "signature": "TransitDuet/auto-adopted/p3518648",
-          "status": "done",
-          "task_id": "t5007"
-        }
-      ],
-      "fraction": 0.12526539278131635,
-      "project_counts": {
-        "TransitDuet": 59
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1,
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 2.0,
-          "min": 1.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 4096.0,
-          "median": 609.0,
-          "min": 35.0,
-          "p90": 778.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/auto-adopted/p3485593": 1,
-        "TransitDuet/auto-adopted/p3489261": 1,
-        "TransitDuet/auto-adopted/p3494565": 1,
-        "TransitDuet/auto-adopted/p3507199": 1,
-        "TransitDuet/auto-adopted/p3518648": 1,
-        "TransitDuet/auto-adopted/p3590840": 1,
-        "TransitDuet/auto-adopted/p3864367": 1,
-        "TransitDuet/auto-adopted/p3966180": 1
-      },
-      "sub_bucket": "transit_freqhrl_cpu_validation|c_le2"
-    },
     {
       "count": 56,
       "examples": [
@@ -256,7 +138,7 @@
           "task_id": "t5421"
         }
       ],
-      "fraction": 0.11889596602972399,
+      "fraction": 0.13691931540342298,
       "project_counts": {
         "FreqHRL": 4,
         "TransitDuet": 40,
@@ -377,7 +259,7 @@
           "task_id": "t2871"
         }
       ],
-      "fraction": 0.10828025477707007,
+      "fraction": 0.12469437652811736,
       "project_counts": {
         "CFCMT": 30,
         "H2Oplus": 2,
@@ -501,7 +383,7 @@
           "task_id": "t5066"
         }
       ],
-      "fraction": 0.10191082802547771,
+      "fraction": 0.11735941320293398,
       "project_counts": {
         "TransitDuet": 48
       },
@@ -619,7 +501,7 @@
           "task_id": "t5392"
         }
       ],
-      "fraction": 0.09766454352441614,
+      "fraction": 0.11246943765281174,
       "project_counts": {
         "FreqDuet": 16,
         "FreqHRL": 9,
@@ -741,7 +623,7 @@
           "task_id": "t7643"
         }
       ],
-      "fraction": 0.09129511677282377,
+      "fraction": 0.10513447432762836,
       "project_counts": {
         "BAMOR": 43
       },
@@ -792,7 +674,7 @@
       "sub_bucket": "bamor_cpu_training|c_9_16"
     },
     {
-      "count": 39,
+      "count": 36,
       "examples": [
         {
           "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 789 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
@@ -860,10 +742,9 @@
           "task_id": "t4883"
         }
       ],
-      "fraction": 0.08280254777070063,
+      "fraction": 0.08801955990220049,
       "project_counts": {
-        "FreqHRLNative": 1,
-        "TransitDuet": 23,
+        "TransitDuet": 21,
         "freq_transitduet": 1,
         "freqduet": 11,
         "md": 1,
@@ -983,7 +864,7 @@
           "task_id": "t7480"
         }
       ],
-      "fraction": 0.059447983014861996,
+      "fraction": 0.06845965770171149,
       "project_counts": {
         "BAMOR": 28
       },
@@ -1101,7 +982,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.03821656050955414,
+      "fraction": 0.044009779951100246,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -1221,7 +1102,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.036093418259023353,
+      "fraction": 0.04156479217603912,
       "project_counts": {
         "BAMOR": 17
       },
@@ -1340,7 +1221,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.03184713375796178,
+      "fraction": 0.03667481662591687,
       "project_counts": {
         "freqduet": 15
       },
@@ -1459,7 +1340,7 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.027600849256900213,
+      "fraction": 0.03178484107579462,
       "project_counts": {
         "TransitDuet": 13
       },
@@ -1578,7 +1459,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.025477707006369428,
+      "fraction": 0.029339853300733496,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -1699,7 +1580,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.012738853503184714,
+      "fraction": 0.014669926650366748,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -1814,7 +1695,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.010615711252653927,
+      "fraction": 0.012224938875305624,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1928,7 +1809,7 @@
           "task_id": "t7467"
         }
       ],
-      "fraction": 0.010615711252653927,
+      "fraction": 0.012224938875305624,
       "project_counts": {
         "TransitDuet": 5
       },
@@ -2017,7 +1898,7 @@
           "task_id": "t5109"
         }
       ],
-      "fraction": 0.006369426751592357,
+      "fraction": 0.007334963325183374,
       "project_counts": {
         "TransitDuet": 3
       },
@@ -2104,7 +1985,7 @@
           "task_id": "t5351"
         }
       ],
-      "fraction": 0.006369426751592357,
+      "fraction": 0.007334963325183374,
       "project_counts": {
         "TransitDuet": 3
       },
@@ -2178,7 +2059,7 @@
           "task_id": "t8810"
         }
       ],
-      "fraction": 0.004246284501061571,
+      "fraction": 0.004889975550122249,
       "project_counts": {
         "BAMOR": 2
       },
@@ -2251,7 +2132,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.004246284501061571,
+      "fraction": 0.004889975550122249,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -2297,8 +2178,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1780988869.3824847,
-    "start_ts": 1778396869.3824847,
+    "end_ts": 1780998937.8448706,
+    "start_ts": 1778406937.8448706,
     "window_days": 30.0
   }
 }

@@ -724,6 +724,234 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_trading_sweep_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU TransitDuet "
+                "trading validation records. It covers c_le2 no-GPU "
+                "freq_hrl.experiments.trading promotion, performance, pressure, "
+                "and encoder-validation entry points with statically parsed "
+                "market-step grid work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with seed-count times steps times assets times the script's "
+                "explicit or default validation grid. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_sweep_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=14,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history TransitDuet trading sweep c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for TransitDuet trading sweep and validation commands."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The parser uses CLI defaults from the local scripts: "
+                        "performance_validation runs 11 baselines, pressure_test_matrix "
+                        "defaults to six scenarios and twelve baselines, "
+                        "encoder_ablation defaults to six encoders, and "
+                        "promotion_sweep includes its default promotion grid."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_trading_policy_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU TransitDuet "
+                "trading policy-training records. It covers c_le2 no-GPU "
+                "policy_entry and ppo_actor_critic commands with statically "
+                "parsed train/eval market-step work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with train seeds times steps times assets times optimizer "
+                "iterations plus one eval pass. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_policy_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=18,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history TransitDuet trading policy c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for TransitDuet policy_entry and ppo_actor_critic commands."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is separated from sweep validation because policy "
+                        "training has optimizer-iteration work units and a different "
+                        "realized lower-service rate."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_surrogate_validation_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU Transit "
+                "surrogate-validation records. It covers c_le2 no-GPU "
+                "gap_closure_validation and ppo_surrogate commands with parsed "
+                "surrogate corridor-step work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with train/eval seeds, steps, corridors, optimizer iterations, "
+                "and the gap-closure variant count when applicable. Only profile "
+                "1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_surrogate_validation_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=3,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit surrogate c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for Transit Freq-HRL surrogate validation commands."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is not merged with native simulator validation; "
+                        "it uses synthetic surrogate corridor-step units."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU native "
+                "Transit promotion-replan validation. It covers c_le2 no-GPU "
+                "native_promotion_replan_validation commands with parsed "
+                "variant-count times seed-count times episode work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with native validation variant-episode units. Only profile 1 "
+                "is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=19,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native promotion c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for low-CPU native_promotion_replan_validation commands."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The min-pairs CLI argument is a statistical claim gate, "
+                        "not an execution-loop multiplier, and is therefore not "
+                        "included in the work-unit definition."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_control_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU native "
+                "Transit control validation records. It covers c_le2 no-GPU "
+                "native_wait_credit_validation and "
+                "native_real_demand_control_validation commands with parsed "
+                "native control episode units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with variant-count times source-count when applicable times "
+                "seed-count times episodes. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_control_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=7,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native control c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for native wait-credit and real-demand control validation."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class stays separate from native promotion-replan "
+                        "because the real-demand source loop and wait-credit variants "
+                        "have different command semantics."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_freqhrl_import_smoke_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for a single low-CPU "
+                "Transit/FreqHRL Windows import-smoke record. It covers only the "
+                "python -c IMPORT_OK command that imports "
+                "native_promotion_replan_validation."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one import-check unit. Only profile 1 is loaded from the "
+                "realized completed-task wall-clock record."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_freqhrl_import_smoke_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.10,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history import-smoke c_le2 singleton",
+                    benchmark_source=(
+                        "Scheduleurm module70 completed-history wall-clock audit "
+                        "for the Windows Transit/FreqHRL import sanity command."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This singleton does not authorize charging real native "
+                        "promotion validation records to an import-smoke rate."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_bamor_cpu_training_c3_8_completed_history",
             purpose=(
                 "A strict completed-history closure slice for BAMOR c_3_8 CPU "

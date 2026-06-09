@@ -50,42 +50,32 @@ separates the two single-seed smoke/fix records from batch native validation.
 Module69 closes the high-CPU c65p residual by splitting it into three strict
 completed-history classes: `run_freqduet_ablation.py`, promoted ep100 shell
 batches, and native-promotion validation.
+Module70 closes the low-CPU Transit/FreqHRL validation/control slice with six
+strict completed-history classes: trading sweep, trading policy, transit
+surrogate, native promotion, native control, and a singleton import-smoke class.
 
 ```text
-record_count_window = 5908
-mapped_task_count = 2200
-mapped_fraction = 0.372376
-unmapped_task_count = 3708
+record_count_window = 5927
+mapped_task_count = 2282
+mapped_fraction = 0.385018
+unmapped_task_count = 3645
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
-Estimated load:
+Full estimated-load tables are generated in
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module70
+strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 120 | 2.314814815 |
-| `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
-| `light_control_local` | 206 | 0.794753086 |
-| `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
-| `cpu_heavy_local_bench` | 55 | 0.021219136 |
-| `hybrid_rl_resac_ant` | 476 | 0.014691358 |
-| `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
-| `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 140 | 0.015726080 |
-| `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
-| `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
-| `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
-| `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
-| `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
-| `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
-| `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
-| `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
-| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
-| `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
-| `transit_native_promotion_c65p_completed_history` | 123 | 0.010318673 |
+| `transit_trading_sweep_c_le2_completed_history` | 14 | 16.295833333 |
+| `transit_trading_policy_c_le2_completed_history` | 18 | 1.600000000 |
+| `transit_surrogate_validation_c_le2_completed_history` | 3 | 0.019037037 |
+| `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
+| `transit_native_control_c_le2_completed_history` | 9 | 0.000069444 |
+| `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
 
 Capacity LP:
 
@@ -103,42 +93,21 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5908
-mapped_task_count = 4089
+record_count_window = 5927
+mapped_task_count = 4171
 representative_mapped_task_count = 1889
-mapped_fraction = 0.692112
-strict_mapped_fraction = 0.372376
-unmapped_task_count = 1819
+mapped_fraction = 0.703729
+strict_mapped_fraction = 0.385018
+unmapped_task_count = 1756
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
-Estimated load:
-
-| Workload | Count | Lambda |
-|---|---:|---:|
-| `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 120 | 2.314814815 |
-| `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
-| `light_control_local` | 206 | 0.794753086 |
-| `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
-| `hybrid_rl_resac_ant` | 2041 | 0.062993827 |
-| `cpu_heavy_local_bench` | 379 | 0.146219136 |
-| `freqduet_cpu_ablation_c17_32` | 190 | 0.005277778 |
-| `zsw_tsp_sumo_eval_c_le2_completed_history` | 50 | 0.347222222 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 140 | 0.015726080 |
-| `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
-| `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
-| `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
-| `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
-| `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
-| `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
-| `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
-| `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
-| `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
-| `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
-| `transit_native_promotion_c65p_completed_history` | 123 | 0.010318673 |
+Full representative-load tables are generated in
+`md/experiment_artifacts/module49_production_load_representative.md`.  Module70
+adds the same six strict Transit/FreqHRL rows shown above; representative
+assignments remain diagnostic, not theorem-grade.
 
 Capacity LP:
 
@@ -169,13 +138,16 @@ separate service class.  Module69 closes c65p ablation, promoted ep100, and
 native-promotion residual classes with separated conservative lower-service
 points.  The mapped LP is still positive but tight because the completed-history
 slices use minimum completed profile-1 lower-service points.
+Module70 adds low-CPU Transit/FreqHRL completed-history lower-service points and
+removes the former `transit_freqhrl_cpu_validation|c_le2` blocker from the
+remaining first-probe order.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3708 / 5908 tasks
-representative unmapped: 1819 / 5908 tasks
+strict unmapped: 3645 / 5927 tasks
+representative unmapped: 1756 / 5927 tasks
 representative-mapped but not theorem-grade: 1889 tasks
 ```
 

@@ -241,6 +241,60 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module70_transit_trading_sweep_c_le2_completed_history_reports",
+        workload_key="transit_trading_sweep_c_le2_completed_history",
+        command_fingerprint="transit_trading_sweep_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module70_transit_trading_policy_c_le2_completed_history_reports",
+        workload_key="transit_trading_policy_c_le2_completed_history",
+        command_fingerprint="transit_trading_policy_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module70_transit_surrogate_validation_c_le2_completed_history_reports",
+        workload_key="transit_surrogate_validation_c_le2_completed_history",
+        command_fingerprint="transit_surrogate_validation_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module70_transit_native_promotion_c_le2_completed_history_reports",
+        workload_key="transit_native_promotion_c_le2_completed_history",
+        command_fingerprint="transit_native_promotion_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module70_transit_native_control_c_le2_completed_history_reports",
+        workload_key="transit_native_control_c_le2_completed_history",
+        command_fingerprint="transit_native_control_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module70_transit_freqhrl_import_smoke_c_le2_completed_history_reports",
+        workload_key="transit_freqhrl_import_smoke_c_le2_completed_history",
+        command_fingerprint="transit_freqhrl_import_smoke_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module66_freqduet_runner_v3_c3_8_completed_history_reports",
         workload_key="freqduet_runner_v3_c3_8_completed_history",
         command_fingerprint="freqduet_runner_v3_c3_8_completed_history_v1",
@@ -375,6 +429,12 @@ def legacy_policy() -> ReplayPolicy:
             "transit_native_promotion_c33_64_batch_completed_history": 1,
             "transit_native_promotion_c33_64_single_seed_completed_history": 1,
             "transit_native_promotion_c65p_completed_history": 1,
+            "transit_trading_sweep_c_le2_completed_history": 1,
+            "transit_trading_policy_c_le2_completed_history": 1,
+            "transit_surrogate_validation_c_le2_completed_history": 1,
+            "transit_native_promotion_c_le2_completed_history": 1,
+            "transit_native_control_c_le2_completed_history": 1,
+            "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

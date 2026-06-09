@@ -1,0 +1,221 @@
+{
+  "cpu_counts": {
+    "1": 4,
+    "2": 14
+  },
+  "duration_s": {
+    "max": 348.8644001483917,
+    "median": 160.03987741470337,
+    "min": 117.35770606994629,
+    "p10": 139.459632396698,
+    "p90": 252.00885224342346
+  },
+  "interpretation": "Only profile 1 is loaded. This class is separated from trading sweep validation because optimizer iterations change the work-unit semantics.",
+  "mapped_completed_active_count": 18,
+  "mapped_completed_active_units_policy_market_step": 4147200.0,
+  "parsed_units_policy_market_step": {
+    "max": 356400.0,
+    "median": 226800.0,
+    "min": 118800.0,
+    "p10": 140400.0,
+    "p90": 356400.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 18
+  },
+  "ram_counts": {
+    "37": 4,
+    "38": 2,
+    "592": 1,
+    "609": 9,
+    "610": 2
+  },
+  "realized_policy_market_step_s": {
+    "max": 3036.86917489323,
+    "median": 913.6736051872085,
+    "min": 650.1093258685299,
+    "p10": 835.119534672775,
+    "p90": 2265.3116175261457
+  },
+  "record_count": 18,
+  "run_id": "module70_transit_trading_policy_c_le2_completed_history",
+  "scope": "Strict completed-history lower-service certificate for low-CPU TransitDuet trading policy_entry and ppo_actor_critic records. It maps only c_le2 no-GPU policy-training commands with parsed train/eval market-step units.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 20 --optimizer-seed 2026 --output-dir transit_hrl/results/trading_ppo_actor_critic",
+      "cpu_cores": 2.0,
+      "duration_s": 348.8644001483917,
+      "finished_at": 1780244885.2063558,
+      "parsed_units_policy_market_step": 226800.0,
+      "project": "TransitDuet",
+      "ram_mb": 592.0,
+      "realized_policy_market_step_s": 650.1093258685299,
+      "signature": "TransitDuet/auto-adopted/p52474",
+      "started_at": 1780244536.3419557,
+      "status": "done",
+      "task_id": "t5128"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --lower-lf-constraint-coef 0.08 --lower-lf",
+      "cpu_cores": 2.0,
+      "duration_s": 168.11964535713196,
+      "finished_at": 1780284624.8790767,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 610.0,
+      "realized_policy_market_step_s": 835.119534672775,
+      "signature": "TransitDuet/auto-adopted/p452052",
+      "started_at": 1780284456.7594314,
+      "status": "done",
+      "task_id": "t5257"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --output-dir transit_hrl/results/trading_p",
+      "cpu_cores": 2.0,
+      "duration_s": 168.00290298461914,
+      "finished_at": 1780284624.7606149,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 835.6998450964492,
+      "signature": "TransitDuet/auto-adopted/p452049",
+      "started_at": 1780284456.757712,
+      "status": "done",
+      "task_id": "t5256"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 20 --optimizer-seed 2026 --output-dir transit_hrl/results/trading_ppo_actor_critic",
+      "cpu_cores": 2.0,
+      "duration_s": 269.9634449481964,
+      "finished_at": 1780247211.9274895,
+      "parsed_units_policy_market_step": 226800.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 840.113742227289,
+      "signature": "TransitDuet/auto-adopted/p74909",
+      "started_at": 1780246941.9640446,
+      "status": "done",
+      "task_id": "t5131"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 10 --optimizer-seed 2026 --output-dir transit_hrl/results/trading_ppo_actor_critic",
+      "cpu_cores": 2.0,
+      "duration_s": 139.459632396698,
+      "finished_at": 1780244543.7454607,
+      "parsed_units_policy_market_step": 118800.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 851.8594087647461,
+      "signature": "TransitDuet/auto-adopted/p50951",
+      "started_at": 1780244404.2858284,
+      "status": "done",
+      "task_id": "t5127"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --lower-lf-constraint-coef 0.08 --lower-lf",
+      "cpu_cores": 2.0,
+      "duration_s": 157.01503801345825,
+      "finished_at": 1780250479.8031785,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 894.1818680320663,
+      "signature": "TransitDuet/auto-adopted/p106998",
+      "started_at": 1780250322.7881405,
+      "status": "done",
+      "task_id": "t5142"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 20 --optimizer-seed 2026 --output-dir transit_hrl/results/trading_ppo_actor_critic",
+      "cpu_cores": 2.0,
+      "duration_s": 252.00885224342346,
+      "finished_at": 1780245417.5419996,
+      "parsed_units_policy_market_step": 226800.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 899.9683859554527,
+      "signature": "TransitDuet/auto-adopted/p57176",
+      "started_at": 1780245165.5331473,
+      "status": "done",
+      "task_id": "t5129"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --lower-lf-constraint-coef 0.08 --lower-lf",
+      "cpu_cores": 2.0,
+      "duration_s": 155.3549234867096,
+      "finished_at": 1780283372.5576713,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 610.0,
+      "realized_policy_market_step_s": 903.7370483595329,
+      "signature": "TransitDuet/auto-adopted/p432009",
+      "started_at": 1780283217.2027478,
+      "status": "done",
+      "task_id": "t5254"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --output-dir transit_hrl/results/trading_p",
+      "cpu_cores": 2.0,
+      "duration_s": 155.23894214630127,
+      "finished_at": 1780283372.4378908,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 904.4122438536289,
+      "signature": "TransitDuet/auto-adopted/p431976",
+      "started_at": 1780283217.1989486,
+      "status": "done",
+      "task_id": "t5252"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --output-dir transit_hrl/results/trading_p",
+      "cpu_cores": 2.0,
+      "duration_s": 152.12339448928833,
+      "finished_at": 1780248065.8199368,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 922.9349665207883,
+      "signature": "TransitDuet/auto-adopted/p85886",
+      "started_at": 1780247913.6965423,
+      "status": "done",
+      "task_id": "t5135"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 20 --optimizer-seed 2026 --output-dir transit_hrl/results/trading_ppo_actor_critic",
+      "cpu_cores": 2.0,
+      "duration_s": 241.96641874313354,
+      "finished_at": 1780245811.2787817,
+      "parsed_units_policy_market_step": 226800.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 937.3201503666759,
+      "signature": "TransitDuet/auto-adopted/p61352",
+      "started_at": 1780245569.312363,
+      "status": "done",
+      "task_id": "t5130"
+    },
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.ppo_actor_critic --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --iterations 12 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale 0.75 --lower-lf-constraint-coef 0.04 --lower-lf",
+      "cpu_cores": 2.0,
+      "duration_s": 149.2333037853241,
+      "finished_at": 1780250210.8830838,
+      "parsed_units_policy_market_step": 140400.0,
+      "project": "TransitDuet",
+      "ram_mb": 609.0,
+      "realized_policy_market_step_s": 940.8087634511461,
+      "signature": "TransitDuet/auto-adopted/p104877",
+      "started_at": 1780250061.64978,
+      "status": "done",
+      "task_id": "t5141"
+    }
+  ],
+  "sub_bucket": "transit_freqhrl_cpu_validation|c_le2",
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module70 Transit Trading Policy c_le2 Completed-History Certificate",
+  "total_units_policy_market_step": 4147200.0,
+  "workload_key": "transit_trading_policy_c_le2_completed_history"
+}

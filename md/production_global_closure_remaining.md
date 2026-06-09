@@ -2,7 +2,7 @@
 
 Date: 2026-06-08
 
-This note records the current gap after Module63.  It should be read together
+This note records the current gap after Module64.  It should be read together
 with:
 
 ```text
@@ -15,6 +15,7 @@ md/experiment_module60_freqduet_ablation_c3_8_completed_history.md
 md/experiment_module61_freqduet_ablation_c33_64_completed_history.md
 md/experiment_module62_freqduet_runner_v3_c_le2_completed_history.md
 md/experiment_module63_transit_native_promotion_c17_32_seedrange_completed_history.md
+md/experiment_module64_bamor_cpu_training_c3_8_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -27,7 +28,7 @@ Already closed:
 ```text
 exact slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_17_32
 workload_key = freqduet_cpu_ablation_c17_32
-completed-active strict mapped count = 125
+completed-active strict mapped count = 136
 feasible profiles = 1,2,4
 capacity boundary = 8
 
@@ -71,16 +72,22 @@ workload_key = transit_native_promotion_c17_32_seedrange_completed_history
 completed-active strict mapped count = 71
 feasible profiles = 1
 unit rule = parsed seed-count times episodes
+
+completed-history slice = BAMOR c_3_8 CPU training
+workload_key = bamor_cpu_training_c3_8_completed_history
+completed-active strict mapped count = 122
+feasible profiles = 1
+unit rule = parsed training steps
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2487
-strict completed-active mapped count = 548
-representative completed-active mapped count = 1340
-measurement_required = 1147
-cpu_sumo_transit_eval_or_control remaining = 803 / 2487
+completed_active_production records = 2553
+strict completed-active mapped count = 681
+representative completed-active mapped count = 1503
+measurement_required = 1050
+cpu_sumo_transit_eval_or_control remaining = 704 / 2553
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -101,7 +108,7 @@ records have different command shapes and stay in the Module53 manifest.
 
 The current `freqduet_cpu_ablation|c_3_8` group is also not fully closed.
 Module60 certifies only parseable `run_freqduet_ablation.py` records using a
-completed-history profile-1 lower-service point.  The remaining 96 c3_8
+completed-history profile-1 lower-service point.  The remaining 98 c3_8
 records are mostly direct `runner_v3.py` or native/control command shapes and
 stay in the regenerated Module53 manifest.
 
@@ -117,8 +124,13 @@ validation, or shell-loop command shapes.
 
 The remaining list can look larger after a module because broad residual
 buckets are being split into theorem-facing command shapes.  The total
-CPU/SUMO/transit measurement-required count is still lower after Module63:
-862 / 2471 before this slice versus 803 / 2487 now.
+CPU/SUMO/transit measurement-required count is still lower after the latest two
+slices: 862 / 2471 after Module62, 803 / 2487 after Module63, and 704 / 2553
+after Module64.
+
+Module64 closes only the BAMOR c_3_8 CPU-training slice.  Remaining BAMOR
+c_le2, c_9_16, and c_17_32 records are still separate CPU/SUMO/transit
+obligations until they receive their own service certificates.
 
 ## Interpretation
 
@@ -151,7 +163,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-bamor_cpu_training|c_3_8
 sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8 residual command shapes
 freqduet_cpu_ablation|c_33_64 residual command shapes
@@ -160,6 +171,9 @@ transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
+bamor_cpu_training|c_9_16
+bamor_cpu_training|c_le2
+bamor_cpu_training|c_17_32
 ```
 
 For every slice, the required closure pattern is:

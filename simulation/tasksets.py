@@ -485,6 +485,47 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_bamor_cpu_training_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for BAMOR c_3_8 CPU "
+                "training records. It covers no-GPU BAMOR commands requesting "
+                "3-8 CPU cores when train_compare_baselines.py, train_bamor_mujoco.py, "
+                "or run_bamor_diagnostic_shard.py exposes parseable training-step "
+                "work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped with "
+                "parsed training-step units. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history; no live co-location profile is "
+                "claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_cpu_training_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=122,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR training sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module64 completed-history wall-clock audit for "
+                        "BAMOR c_3_8 CPU training production records with parseable "
+                        "training-step units."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "training-step rate as a conservative profile-1 lower-service "
+                        "point. BAMOR CPU buckets outside c_3_8 and commands without "
+                        "parseable training steps remain unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

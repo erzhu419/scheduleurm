@@ -219,11 +219,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2487
-representative mapped = 1340
-strict mapped = 548
-measurement_required = 1147
-mapped_fraction = 0.538802
+records = 2553
+representative mapped = 1503
+strict mapped = 681
+measurement_required = 1050
+mapped_fraction = 0.588719
 ```
 
 最大未闭合 bucket 是：
@@ -238,6 +238,7 @@ after Module60:  cpu_sumo_transit_eval_or_control = 1009 / 2465 completed-active
 after Module61:  cpu_sumo_transit_eval_or_control = 946 / 2469 completed-active records
 after Module62:  cpu_sumo_transit_eval_or_control = 862 / 2471 completed-active records
 after Module63:  cpu_sumo_transit_eval_or_control = 803 / 2487 completed-active records
+after Module64:  cpu_sumo_transit_eval_or_control = 704 / 2553 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -304,12 +305,17 @@ workload_key = transit_native_promotion_c17_32_seedrange_completed_history
 feasible profiles = 1
 completed-active mapped count = 71
 unit rule = parsed seed-count times episodes
+
+closed completed-history slice = BAMOR c_3_8 CPU training
+workload_key = bamor_cpu_training_c3_8_completed_history
+feasible profiles = 1
+completed-active mapped count = 122
+unit rule = parsed training steps
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-bamor_cpu_training|c_3_8
 sumo_eval_cpu|c_le2
 freqduet_cpu_ablation|c_3_8 residual command shapes
 freqduet_cpu_ablation|c_33_64 residual command shapes
@@ -318,6 +324,9 @@ transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
+bamor_cpu_training|c_9_16
+bamor_cpu_training|c_le2
+bamor_cpu_training|c_17_32
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

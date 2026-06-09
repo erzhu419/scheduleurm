@@ -100,6 +100,30 @@ admission 阈值是否随 regime z、VRAM、batch size、phase 改变
 
 只有这些曲线成立后，sweet spot / admission threshold 才能作为 experiment-driven theorem 写进论文扩展部分。
 
+2026-06-09 新观测：jtl110gpu / jtl110gpu2 上误把 BAPR/RL 任务塞到约
+83% VRAM 后，短期看速度没有明显弱于 node007 上严格 1/3 VRAM 限制下的
+任务。当前算法已经把 `post_vram_frac`、`post_vram_bucket` 和 co-location
+profile 作为 finite features 记录，也允许通过 clean hard-rule mode 绕过
+1/3 packing rule；但是 `hybrid_rl_resac_ant` 的 production/replay 选择仍主要
+依赖已有 service cache。最新 live-robust replay 只把 q11 profile 1-3 当作
+portfolio sanity 的实测证书，早期 BAPR dense curve 虽显示 2-6/GPU 近似平台，
+但还没有把“83% VRAM 仍不慢”作为正式 production service row 接入。
+
+因此这条现象应转成一个新的 profiling 任务：
+
+```text
+workload = production BAPR / RE-SAC long-run templates, not only short Ant smoke
+nodes = jtl110gpu, jtl110gpu2, node007
+profiles = keep adding tasks until physical OOM / progress degradation boundary
+telemetry = post_vram_frac, task_count, GPU util, per-task progress, aggregate goodput
+claim criterion = profile k at high VRAM is admitted only if lower-service(k)
+                 remains within epsilon_est of the calibrated plateau
+```
+
+在这张表闭合前，论文和算法都不能把 1/3 VRAM 规则当真实 sweet spot，也不能把
+83% VRAM 当无条件安全；正确表述是“VRAM fraction is a calibrated regime
+feature, not a fixed capacity proxy.”
+
 ## 4. Active bucket 的具体采样模型
 
 Lean 已经证明 active-bucket event 下 regret 依赖 \(|B_{active}|\)，并证明了 high-probability input event 可以提升为 high-probability regret bound。
@@ -219,11 +243,11 @@ Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2755
-representative mapped = 1867
-strict mapped = 956
-measurement_required = 888
-mapped_fraction = 0.677677
+records = 2781
+representative mapped = 1952
+strict mapped = 1041
+measurement_required = 829
+mapped_fraction = 0.701906
 ```
 
 最大未闭合 bucket 是：
@@ -243,6 +267,7 @@ after Module65:  cpu_sumo_transit_eval_or_control = 659 / 2589 completed-active 
 after Module66:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
 after Module67:  cpu_sumo_transit_eval_or_control = 576 / 2679 completed-active records
 after Module68:  cpu_sumo_transit_eval_or_control = 532 / 2755 completed-active records
+after Module69:  cpu_sumo_transit_eval_or_control = 471 / 2781 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -313,7 +338,7 @@ unit rule = parsed episodes
 closed completed-history slice = Transit native_promotion_replan_validation within c_17_32
 workload_key = transit_native_promotion_c17_32_seedrange_completed_history
 feasible profiles = 1
-completed-active mapped count = 71
+completed-active mapped count = 91
 unit rule = parsed seed-count times episodes
 
 closed completed-history slice = BAMOR c_3_8 train_compare_baselines.py
@@ -325,7 +350,7 @@ unit rule = parsed training steps
 closed completed-history slice = BAMOR c_3_8 train_bamor_mujoco.py
 workload_key = bamor_mujoco_c3_8_completed_history
 feasible profiles = 1
-completed-active mapped count = 89
+completed-active mapped count = 109
 unit rule = parsed training steps
 
 closed completed-history slice = BAMOR c_3_8 run_bamor_diagnostic_shard.py
@@ -343,7 +368,7 @@ unit rule = parsed simulated SUMO seconds from --duration
 closed completed-history slice = Transit native_promotion_replan_validation batch within c_33_64
 workload_key = transit_native_promotion_c33_64_batch_completed_history
 feasible profiles = 1
-completed-active mapped count = 45
+completed-active mapped count = 47
 unit rule = parsed seed-count times episodes
 
 closed completed-history slice = Transit native_promotion_replan_validation single-seed smoke/fix within c_33_64
@@ -351,18 +376,36 @@ workload_key = transit_native_promotion_c33_64_single_seed_completed_history
 feasible profiles = 1
 certificate record count = 2
 unit rule = parsed seed-count times episodes
+
+closed completed-history slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_65p
+workload_key = freqduet_cpu_ablation_c65p_completed_history
+feasible profiles = 1
+completed-active mapped count = 7
+unit rule = parsed jobs times episodes
+
+closed completed-history slice = run_freqduet_promoted_ep100_hpc_batch.sh within c_65p
+workload_key = freqduet_promoted_ep100_c65p_completed_history
+feasible profiles = 1
+completed-active mapped count = 6
+unit rule = parsed job-count times 100 episodes
+
+closed completed-history slice = Transit native_promotion_replan_validation within c_65p
+workload_key = transit_native_promotion_c65p_completed_history
+feasible profiles = 1
+completed-active mapped count = 57
+unit rule = statically parsed seed-count times episodes
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
+freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes

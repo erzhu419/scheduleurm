@@ -40,8 +40,11 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c3_8_completed_history",
     "production_freqduet_runner_v3_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
+    "production_freqduet_cpu_ablation_c65p_completed_history",
+    "production_freqduet_promoted_ep100_c65p_completed_history",
     "production_transit_native_promotion_c33_64_batch_completed_history",
     "production_transit_native_promotion_c33_64_single_seed_completed_history",
+    "production_transit_native_promotion_c65p_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -195,6 +198,41 @@ def classify_record(
             "freqduet_cpu_ablation_c17_32",
             "strict_measured",
             "module56_freqduet_cpu_ablation_c17_32",
+        )
+
+    c65p_units = _freqduet_ablation_c65p_units(row=row, est_vram=est_vram, cpu=cpu)
+    if c65p_units is not None:
+        return _mapped(
+            "freqduet_cpu_ablation_c65p_completed_history",
+            "strict_measured",
+            "module69_freqduet_ablation_c65p_completed_history",
+            units=c65p_units,
+        )
+
+    promoted_c65p_units = _freqduet_promoted_ep100_c65p_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if promoted_c65p_units is not None:
+        return _mapped(
+            "freqduet_promoted_ep100_c65p_completed_history",
+            "strict_measured",
+            "module69_freqduet_promoted_ep100_c65p_completed_history",
+            units=promoted_c65p_units,
+        )
+
+    native_c65p_units = _native_promotion_c65p_seed_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if native_c65p_units is not None:
+        return _mapped(
+            "transit_native_promotion_c65p_completed_history",
+            "strict_measured",
+            "module69_transit_native_promotion_c65p_completed_history",
+            units=native_c65p_units,
         )
 
     c33_64_units = _freqduet_ablation_c33_64_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -439,6 +477,84 @@ def _freqduet_ablation_c33_64_units(*, row: Mapping[str, Any], est_vram: float, 
     return units if units is not None and units > 0 else None
 
 
+def _freqduet_ablation_c65p_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) <= 64.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    worker_threads = _shell_option(cmd, "--worker-threads")
+    if worker_threads is not None and worker_threads != "1":
+        return None
+    units = _parse_freqduet_ablation_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_promoted_ep100_c65p_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) <= 64.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_promoted_ep100_hpc_batch.sh" not in cmd_lower:
+        return None
+    if "freqduet" not in " ".join((project, cwd, signature, cmd_lower)):
+        return None
+    units = _parse_freqduet_promoted_ep100_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _parse_freqduet_promoted_ep100_units(cmd: str) -> float | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    if not any(str(token).endswith("run_freqduet_promoted_ep100_hpc_batch.sh") for token in tokens):
+        return None
+    episodes = 100
+    for token in tokens:
+        value = str(token)
+        if value.startswith("EPISODES="):
+            try:
+                episodes = int(value.split("=", 1)[1])
+            except ValueError:
+                return None
+    if episodes != 100:
+        return None
+
+    start_raw = _shell_option_from_tokens(tokens, "--job-start")
+    end_raw = _shell_option_from_tokens(tokens, "--job-end")
+    if start_raw is None or end_raw is None:
+        return None
+    try:
+        job_start = int(start_raw)
+        job_end = int(end_raw)
+    except ValueError:
+        return None
+    job_count = max(0, job_end - job_start)
+    return float(job_count * episodes) if job_count > 0 else None
+
+
 def _native_promotion_c17_32_seedrange_units(
     *,
     row: Mapping[str, Any],
@@ -516,6 +632,28 @@ def _native_promotion_c33_64_seed_units(
     return units if units is not None and units > 0 else None
 
 
+def _native_promotion_c65p_seed_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) <= 64.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "native_promotion_replan_validation" not in cmd_lower:
+        return None
+    units = _parse_native_promotion_seed_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
 def _parse_native_promotion_seed_units(cmd: str) -> float | None:
     units = _parse_native_promotion_seedrange_units(cmd)
     if units is not None and units > 0:
@@ -527,6 +665,12 @@ def _parse_native_promotion_seed_units(cmd: str) -> float | None:
         units = _parse_native_promotion_python_seed_units(snippet)
         if units is not None and units > 0:
             return units
+        seed_count = _parse_native_promotion_python_seed_count(snippet)
+        if seed_count is not None and seed_count > 0:
+            episodes = _native_promotion_cli_episodes(cmd)
+            if episodes is None:
+                return None
+            return float(seed_count) * float(episodes)
     return None
 
 
@@ -564,6 +708,34 @@ def _parse_native_promotion_cli_seedlist_units(cmd: str) -> float | None:
     return float(len(seeds)) * float(episodes)
 
 
+def _native_promotion_cli_episodes(cmd: str) -> float | None:
+    raw = _shell_option(cmd, "--episodes")
+    if raw is None:
+        return 1.0
+    try:
+        episodes = float(raw)
+    except ValueError:
+        return None
+    return episodes if math.isfinite(episodes) and episodes > 0 else None
+
+
+def _shell_option(cmd: str, name: str) -> str | None:
+    import shlex
+
+    try:
+        tokens = shlex.split(str(cmd))
+    except ValueError:
+        tokens = str(cmd).split()
+    return _shell_option_from_tokens(tokens, name)
+
+
+def _shell_option_from_tokens(tokens: list[str], name: str) -> str | None:
+    if name not in tokens:
+        return None
+    idx = tokens.index(name)
+    return str(tokens[idx + 1]) if idx + 1 < len(tokens) else None
+
+
 def _python_c_snippets(cmd: str) -> list[str]:
     import shlex
 
@@ -590,9 +762,8 @@ def _python_c_snippets(cmd: str) -> list[str]:
 def _parse_native_promotion_python_seed_units(snippet: str) -> float | None:
     import ast
 
-    try:
-        tree = ast.parse(str(snippet))
-    except SyntaxError:
+    tree = _parse_python_ast_relaxed(snippet)
+    if tree is None:
         return None
     seed_counts: dict[str, int] = {}
     numeric_values: dict[str, float] = {}
@@ -637,12 +808,41 @@ def _parse_native_promotion_python_seed_units(snippet: str) -> float | None:
     return None
 
 
+def _parse_native_promotion_python_seed_count(snippet: str) -> int | None:
+    import ast
+
+    tree = _parse_python_ast_relaxed(snippet)
+    if tree is None:
+        return None
+    for node in ast.walk(tree):
+        count = _ast_seed_count(node)
+        if count is not None and count > 0:
+            return count
+    return None
+
+
+def _parse_python_ast_relaxed(snippet: str) -> Any | None:
+    import ast
+
+    candidate = str(snippet).strip()
+    for _ in range(8):
+        try:
+            return ast.parse(candidate)
+        except SyntaxError:
+            stripped = candidate.rstrip().rstrip(";").rstrip()
+            if stripped.endswith(")") and stripped.count(")") > stripped.count("("):
+                candidate = stripped[:-1].rstrip()
+                continue
+            return None
+    return None
+
+
 def _ast_seed_count(node: Any) -> int | None:
     import ast
 
     if isinstance(node, (ast.List, ast.Tuple)):
         return len(node.elts)
-    if isinstance(node, ast.ListComp) and len(node.generators) == 1:
+    if isinstance(node, (ast.ListComp, ast.GeneratorExp)) and len(node.generators) == 1:
         return _ast_range_length(node.generators[0].iter)
     if (
         isinstance(node, ast.Call)
@@ -651,6 +851,12 @@ def _ast_seed_count(node: Any) -> int | None:
         and len(node.args) == 1
     ):
         return _ast_range_length(node.args[0])
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "join":
+        if len(node.args) == 1:
+            return _ast_seed_count(node.args[0])
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "print":
+        if len(node.args) == 1:
+            return _ast_seed_count(node.args[0])
     return None
 
 

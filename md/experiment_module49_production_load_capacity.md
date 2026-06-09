@@ -47,12 +47,15 @@ classes so the production load certificate does not apply the slowest
 tasks.
 Module68 adds script-parseable c33_64 native-promotion seed-unit classes and
 separates the two single-seed smoke/fix records from batch native validation.
+Module69 closes the high-CPU c65p residual by splitting it into three strict
+completed-history classes: `run_freqduet_ablation.py`, promoted ep100 shell
+batches, and native-promotion validation.
 
 ```text
-record_count_window = 5877
-mapped_task_count = 2038
-mapped_fraction = 0.346776
-unmapped_task_count = 3839
+record_count_window = 5908
+mapped_task_count = 2200
+mapped_fraction = 0.372376
+unmapped_task_count = 3708
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -63,7 +66,7 @@ Estimated load:
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 115 | 2.218364198 |
+| `bamor_mujoco_c3_8_completed_history` | 120 | 2.314814815 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
@@ -75,11 +78,14 @@ Estimated load:
 | `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
+| `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
+| `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
 | `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
+| `transit_native_promotion_c65p_completed_history` | 123 | 0.010318673 |
 
 Capacity LP:
 
@@ -97,12 +103,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5877
-mapped_task_count = 3927
+record_count_window = 5908
+mapped_task_count = 4089
 representative_mapped_task_count = 1889
-mapped_fraction = 0.668198
-strict_mapped_fraction = 0.346776
-unmapped_task_count = 1950
+mapped_fraction = 0.692112
+strict_mapped_fraction = 0.372376
+unmapped_task_count = 1819
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -113,7 +119,7 @@ Estimated load:
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
-| `bamor_mujoco_c3_8_completed_history` | 115 | 2.218364198 |
+| `bamor_mujoco_c3_8_completed_history` | 120 | 2.314814815 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `light_control_local` | 206 | 0.794753086 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
@@ -125,11 +131,14 @@ Estimated load:
 | `transit_native_promotion_c33_64_batch_completed_history` | 167 | 0.018153935 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
+| `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
 | `freqduet_cpu_ablation_c9_16` | 129 | 0.068325617 |
+| `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
 | `freqduet_runner_v3_allfreq_alllayers_c9_16` | 1 | 0.000007716 |
 | `freqduet_runner_v3_c3_8_completed_history` | 86 | 0.001045139 |
 | `freqduet_runner_v3_c_le2_completed_history` | 84 | 0.001798225 |
 | `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
+| `transit_native_promotion_c65p_completed_history` | 123 | 0.010318673 |
 
 Capacity LP:
 
@@ -156,15 +165,17 @@ the broad BAMOR c3_8 class into script-level service classes; without this
 split, the latest raw-window BAMOR load would exceed the broad class's slowest
 profile-1 lower-service point.  Module68 closes the c33_64 native-promotion
 batch seed-unit class and isolates single-seed smoke/fix measurements into a
-separate service class.  The mapped LP is still positive but tight because the
-completed-history slices use minimum completed profile-1 lower-service points.
+separate service class.  Module69 closes c65p ablation, promoted ep100, and
+native-promotion residual classes with separated conservative lower-service
+points.  The mapped LP is still positive but tight because the completed-history
+slices use minimum completed profile-1 lower-service points.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3839 / 5877 tasks
-representative unmapped: 1950 / 5877 tasks
+strict unmapped: 3708 / 5908 tasks
+representative unmapped: 1819 / 5908 tasks
 representative-mapped but not theorem-grade: 1889 tasks
 ```
 

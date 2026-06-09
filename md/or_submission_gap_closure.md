@@ -84,6 +84,17 @@ md/experiment_module59_simple_sac_sumo_eval_cle2_completed_history.md
 md/experiment_module60_freqduet_ablation_c3_8_completed_history.md
 md/experiment_module61_freqduet_ablation_c33_64_completed_history.md
 md/experiment_module62_freqduet_runner_v3_c_le2_completed_history.md
+md/experiment_module63_transit_native_promotion_c17_32_seedrange_completed_history.md
+md/experiment_module65_zsw_tsp_sumo_eval_c_le2_completed_history.md
+md/experiment_module66_freqduet_runner_v3_c3_8_completed_history.md
+md/experiment_module67_bamor_train_compare_c3_8_completed_history.md
+md/experiment_module67_bamor_mujoco_c3_8_completed_history.md
+md/experiment_module67_bamor_diagnostic_shard_c3_8_completed_history.md
+md/experiment_module68_transit_native_promotion_c33_64_batch_completed_history.md
+md/experiment_module68_transit_native_promotion_c33_64_single_seed_completed_history.md
+md/experiment_module69_freqduet_ablation_c65p_completed_history.md
+md/experiment_module69_freqduet_promoted_ep100_c65p_completed_history.md
+md/experiment_module69_transit_native_promotion_c65p_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -101,6 +112,17 @@ md/experiment_artifacts/module59_simple_sac_sumo_eval_cle2_completed_history.jso
 md/experiment_artifacts/module60_freqduet_ablation_c3_8_completed_history.json
 md/experiment_artifacts/module61_freqduet_ablation_c33_64_completed_history.json
 md/experiment_artifacts/module62_freqduet_runner_v3_c_le2_completed_history.json
+md/experiment_artifacts/module63_transit_native_promotion_c17_32_seedrange_completed_history.json
+md/experiment_artifacts/module65_zsw_tsp_sumo_eval_c_le2_completed_history.json
+md/experiment_artifacts/module66_freqduet_runner_v3_c3_8_completed_history.json
+md/experiment_artifacts/module67_bamor_train_compare_c3_8_completed_history.json
+md/experiment_artifacts/module67_bamor_mujoco_c3_8_completed_history.json
+md/experiment_artifacts/module67_bamor_diagnostic_shard_c3_8_completed_history.json
+md/experiment_artifacts/module68_transit_native_promotion_c33_64_batch_completed_history.json
+md/experiment_artifacts/module68_transit_native_promotion_c33_64_single_seed_completed_history.json
+md/experiment_artifacts/module69_freqduet_ablation_c65p_completed_history.json
+md/experiment_artifacts/module69_freqduet_promoted_ep100_c65p_completed_history.json
+md/experiment_artifacts/module69_transit_native_promotion_c65p_completed_history.json
 ```
 
 Status:
@@ -126,18 +148,18 @@ Remaining scope limitation:
     strict measured mapping delta = 0.001497772
     representative mapping delta = 0.001497772
   Full global theorem coverage is still open because the representative run
-  leaves 1928 / 5617 tasks unmapped and maps 1851 tasks only by representative
+  leaves 1819 / 5908 tasks unmapped and maps 1889 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2755
-    mapped = 1867
-    strict mapped = 956
-    measurement_required = 888
-    mapped_fraction = 0.677677
+    records = 2781
+    mapped = 1952
+    strict mapped = 1041
+    measurement_required = 829
+    mapped_fraction = 0.701906
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 532 / 2755 records
+    cpu_sumo_transit_eval_or_control = 471 / 2781 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -210,7 +232,7 @@ Remaining scope limitation:
     native_promotion_replan_validation with explicit seed-index range
       -> transit_native_promotion_c17_32_seedrange_completed_history
     feasible profiles = 1
-    completed-active strict mapped count = 71
+    completed-active strict mapped count = 91
     parsed completed-active work = 17760 seed-episode units
     min completed wall-clock rate = 0.075456 seed-episode/s
   This improves coverage but leaves direct-runner and non-seed-range native
@@ -232,7 +254,7 @@ Remaining scope limitation:
       completed-active strict mapped count = 58
       min completed wall-clock rate = 10.055276 training-step/s
     train_bamor_mujoco.py -> bamor_mujoco_c3_8_completed_history
-      completed-active strict mapped count = 89
+      completed-active strict mapped count = 109
       min completed wall-clock rate = 37.510192 training-step/s
     run_bamor_diagnostic_shard.py -> bamor_diagnostic_shard_c3_8_completed_history
       completed-active strict mapped count = 25
@@ -265,7 +287,7 @@ Remaining scope limitation:
     native_promotion_replan_validation batch records with parseable seed work
       -> transit_native_promotion_c33_64_batch_completed_history
     feasible profiles = 1
-    completed-active strict mapped count = 45
+    completed-active strict mapped count = 47
     parsed completed-history work = 5922 seed-episode units
     min completed wall-clock rate = 0.060204 seed-episode/s
 
@@ -279,14 +301,39 @@ Remaining scope limitation:
   depressing the batch lower-service class.  It leaves direct-runner,
   single-command-shape, and unparseable c33_64 residuals in Module53.
 
+  Module69 closes the c65p high-CPU residual with three command-shape classes:
+    run_freqduet_ablation.py within freqduet_cpu_ablation|c_65p
+      -> freqduet_cpu_ablation_c65p_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    parsed completed-history work = 18430 episode units
+    min completed wall-clock rate = 1.099736 episode/s
+
+    run_freqduet_promoted_ep100_hpc_batch.sh within c_65p
+      -> freqduet_promoted_ep100_c65p_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 6
+    parsed completed-history work = 60000 episode units
+    min completed wall-clock rate = 1.727479 episode/s
+
+    native_promotion_replan_validation within c_65p
+      -> transit_native_promotion_c65p_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 57
+    parsed completed-history work = 7026 seed-episode units over done records
+    min completed wall-clock rate = 0.182131 seed-episode/s
+  The native parser proves shell-generated Python seed ranges by AST without
+  executing the command.  This removes the previous c65p top residual from the
+  regenerated Module53 manifest.
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_65p
     transit_freqhrl_cpu_validation|c_le2
     freqduet_cpu_ablation|c_9_16 residual command shapes
     sumo_eval_cpu|c_le2 residual command shapes
     transit_misc_cpu|c_le2
     freqduet_cpu_ablation|c_17_32 residual command shapes
     bamor_cpu_training|c_9_16
+    freqduet_cpu_ablation|c_le2 residual command shapes
     bamor_cpu_training|c_le2
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes

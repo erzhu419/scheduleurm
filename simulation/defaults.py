@@ -205,9 +205,36 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module69_freqduet_ablation_c65p_completed_history_reports",
+        workload_key="freqduet_cpu_ablation_c65p_completed_history",
+        command_fingerprint="freqduet_cpu_ablation_c65p_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module69_freqduet_promoted_ep100_c65p_completed_history_reports",
+        workload_key="freqduet_promoted_ep100_c65p_completed_history",
+        command_fingerprint="freqduet_promoted_ep100_c65p_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module62_freqduet_runner_v3_c_le2_completed_history_reports",
         workload_key="freqduet_runner_v3_c_le2_completed_history",
         command_fingerprint="freqduet_runner_v3_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module69_transit_native_promotion_c65p_completed_history_reports",
+        workload_key="transit_native_promotion_c65p_completed_history",
+        command_fingerprint="transit_native_promotion_c65p_completed_history_v1",
         resource_kind="cpu_sumo_transit",
         total_units=1,
         node_bucket="production-history:cpu",
@@ -338,13 +365,16 @@ def legacy_policy() -> ReplayPolicy:
             "freqduet_cpu_ablation_c17_32": 1,
             "freqduet_cpu_ablation_c3_8_completed_history": 1,
             "freqduet_cpu_ablation_c33_64_completed_history": 1,
+            "freqduet_cpu_ablation_c65p_completed_history": 1,
             "freqduet_cpu_ablation_c9_16": 1,
+            "freqduet_promoted_ep100_c65p_completed_history": 1,
             "freqduet_runner_v3_c_le2_completed_history": 1,
             "freqduet_runner_v3_c3_8_completed_history": 1,
             "sumo_eval_simple_sac_c_le2": 1,
             "transit_native_promotion_c17_32_seedrange_completed_history": 1,
             "transit_native_promotion_c33_64_batch_completed_history": 1,
             "transit_native_promotion_c33_64_single_seed_completed_history": 1,
+            "transit_native_promotion_c65p_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module68
+## Status After Module69
 
 The original top sub-bucket was:
 
@@ -161,6 +161,29 @@ feasible profiles = 1
 unit = seed_episode
 ```
 
+Module69 measured completed-history profile-1 lower-service points for the
+previous c65p top residual by splitting it into three command-shape classes:
+
+```text
+workload_key = freqduet_cpu_ablation_c65p_completed_history
+completed_active_production mapped count = 7
+raw_history_all mapped count = 11
+feasible profiles = 1
+unit = episode
+
+workload_key = freqduet_promoted_ep100_c65p_completed_history
+completed_active_production mapped count = 6
+raw_history_all mapped count = 6
+feasible profiles = 1
+unit = episode
+
+workload_key = transit_native_promotion_c65p_completed_history
+completed_active_production mapped count = 57
+raw_history_all mapped count = 123
+feasible profiles = 1
+unit = seed_episode
+```
+
 The current Module53 manifest has therefore been regenerated over the remaining
 unmeasured `cpu_sumo_transit_eval_or_control` records.
 
@@ -168,13 +191,13 @@ unmeasured `cpu_sumo_transit_eval_or_control` records.
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 532
-cpu_cores median = 8
-cpu_cores p90 = 80
-cpu_cores max = 128
-ram_mb median = 4655.500
+record_count = 471
+cpu_cores median = 3
+cpu_cores p90 = 30
+cpu_cores max = 61
+ram_mb median = 2541.000
 ram_mb p90 = 65536
-ram_mb max = 256000
+ram_mb max = 131072
 theorem_status = measurement_required
 ```
 
@@ -182,31 +205,31 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_65p` | 60 | 0.112782 |
-| `transit_freqhrl_cpu_validation|c_le2` | 59 | 0.110902 |
-| `freqduet_cpu_ablation|c_9_16` | 56 | 0.105263 |
-| `sumo_eval_cpu|c_le2` | 51 | 0.095865 |
-| `transit_misc_cpu|c_le2` | 48 | 0.090226 |
-| `freqduet_cpu_ablation|c_17_32` | 46 | 0.086466 |
-| `bamor_cpu_training|c_9_16` | 43 | 0.080827 |
-| `freqduet_cpu_ablation|c_le2` | 39 | 0.073308 |
-| `bamor_cpu_training|c_le2` | 28 | 0.052632 |
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.033835 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.031955 |
-| `freqduet_cpu_ablation|c_33_64` | 17 | 0.031955 |
+| `transit_freqhrl_cpu_validation|c_le2` | 59 | 0.125265 |
+| `freqduet_cpu_ablation|c_9_16` | 56 | 0.118896 |
+| `sumo_eval_cpu|c_le2` | 51 | 0.108280 |
+| `transit_misc_cpu|c_le2` | 48 | 0.101911 |
+| `freqduet_cpu_ablation|c_17_32` | 46 | 0.097665 |
+| `bamor_cpu_training|c_9_16` | 43 | 0.091295 |
+| `freqduet_cpu_ablation|c_le2` | 39 | 0.082803 |
+| `bamor_cpu_training|c_le2` | 28 | 0.059448 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.038217 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.036093 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.031847 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.027601 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
+freqduet_cpu_ablation|c_le2 residual command shapes
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -238,12 +261,14 @@ completed-history lower-service point.  Module66 maps 86 c3_8 direct
 `runner_v3.py` records with a profile-1 completed-history lower-service point.
 Module68 maps 45 c33_64 native-promotion batch records with a profile-1
 completed-history lower-service point and keeps single-seed smoke/fix records
-separate. The global theorem remains open because 532
+separate.  Module69 maps 57 c65p native-promotion records, 7 c65p
+`run_freqduet_ablation.py` records, and 6 c65p promoted ep100 shell-batch
+records with separated profile-1 completed-history lower-service points.  The
+global theorem remains open because 471
 completed/active production records in the CPU/SUMO/transit family still
-require measured curves or equivalence certificates, including 60
-`freqduet_cpu_ablation|c_65p` records, 59
+require measured curves or equivalence certificates, including 59
 `transit_freqhrl_cpu_validation|c_le2` records, 56 residual
 `freqduet_cpu_ablation|c_9_16` records, 51 residual
 `sumo_eval_cpu|c_le2` records, 48 `transit_misc_cpu|c_le2` records, 46 residual
-`freqduet_cpu_ablation|c_17_32` records, and 17 residual
+`freqduet_cpu_ablation|c_17_32` records, and 15 residual
 `freqduet_cpu_ablation|c_33_64` direct-runner/single-command-shape records.

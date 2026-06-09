@@ -1,0 +1,149 @@
+{
+  "cpu_counts": {
+    "80": 5,
+    "96": 2
+  },
+  "duration_s": {
+    "max": 2909.789300441742,
+    "median": 1781.9303076267242,
+    "min": 662.119343996048,
+    "p10": 662.119343996048,
+    "p90": 1945.243494272232
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c65p run_freqduet_ablation.py production records. Only profile 1 is loaded; promoted ep100 shell batches and native-promotion validation are separate Module69 service classes.",
+  "mapped_completed_active_count": 7,
+  "mapped_completed_active_units_episode": 18430.0,
+  "parsed_units_episode": {
+    "max": 3200.0,
+    "median": 3200.0,
+    "min": 1210.0,
+    "p10": 1210.0,
+    "p90": 3200.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "FreqDuet": 5,
+    "freq_transitduet": 2
+  },
+  "ram_counts": {
+    "256000": 2,
+    "98304": 5
+  },
+  "realized_episode_s": {
+    "max": 1.9005768341537992,
+    "median": 1.6473914446069795,
+    "min": 1.0997359841532857,
+    "p10": 1.0997359841532857,
+    "p90": 1.8425681277290729
+  },
+  "record_count": 7,
+  "run_id": "module69_freqduet_ablation_c65p_completed_history",
+  "scope": "This module maps only no-GPU c65p run_freqduet_ablation.py records with worker-threads fixed at one when specified and parsed jobs times episodes. It does not map promoted ep100 shell batches, native-promotion validation records, runner_v3 records, or unparseable command shapes.",
+  "slowest_12": [
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nop...",
+      "cpu_cores": 80.0,
+      "duration_s": 2909.789300441742,
+      "finished_at": 1780366040.9177277,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304.0,
+      "realized_episode_s": 1.0997359841532857,
+      "signature": "FreqDuet/final-driftfb/node003/s2",
+      "started_at": 1780363131.1284273,
+      "status": "done",
+      "task_id": "t5645"
+    },
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/erzhu419/mine_code/TransitDuet/transit_hrl FREQDUET_TORCH_THREADS=1 python3 scripts/run_freqduet_ablation.py --configs T_nofreq_terminal,T_rawhistory_terminal,T_lf_upper_terminal,T_hf_lower_terminal,T_freqhrl_terminal,T_allfreq_terminal,T_swapped_terminal,T_nopromotion_terminal,T_noleakage_terminal --seeds 42,123...",
+      "cpu_cores": 96.0,
+      "duration_s": 748.0409069061279,
+      "finished_at": 1780209052.365989,
+      "parsed_units_episode": 1210.0,
+      "project": "freq_transitduet",
+      "ram_mb": 256000.0,
+      "realized_episode_s": 1.6175585971688626,
+      "signature": "TransitDuet/FreqHRL-transit-9cfg-27seed-10ep-shard1-cpu96",
+      "started_at": 1780208304.325082,
+      "status": "done",
+      "task_id": "t5025"
+    },
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nop...",
+      "cpu_cores": 80.0,
+      "duration_s": 1945.243494272232,
+      "finished_at": 1780365090.5954556,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304.0,
+      "realized_episode_s": 1.6450382738317324,
+      "signature": "FreqDuet/final-driftfb/node005/s4",
+      "started_at": 1780363145.3519614,
+      "status": "done",
+      "task_id": "t5647"
+    },
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nop...",
+      "cpu_cores": 80.0,
+      "duration_s": 1942.4648649692535,
+      "finished_at": 1780365094.4874935,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304.0,
+      "realized_episode_s": 1.6473914446069795,
+      "signature": "FreqDuet/final-driftfb/node006/s5",
+      "started_at": 1780363152.0226285,
+      "status": "done",
+      "task_id": "t5648"
+    },
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nop...",
+      "cpu_cores": 80.0,
+      "duration_s": 1781.9303076267242,
+      "finished_at": 1780364899.1767364,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304.0,
+      "realized_episode_s": 1.7958053613566634,
+      "signature": "FreqDuet/final-driftfb/node001/s0",
+      "started_at": 1780363117.2464287,
+      "status": "done",
+      "task_id": "t5643"
+    },
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/home/erzhu419/mine_code/TransitDuet/transit_hrl FREQDUET_TORCH_THREADS=1 python3 scripts/run_freqduet_ablation.py --configs T_nofreq_terminal,T_rawhistory_terminal,T_lf_upper_terminal,T_hf_lower_terminal,T_freqhrl_terminal,T_allfreq_terminal,T_swapped_terminal,T_nopromotion_terminal,T_noleakage_terminal --seeds 42,123...",
+      "cpu_cores": 96.0,
+      "duration_s": 662.119343996048,
+      "finished_at": 1780208956.5243611,
+      "parsed_units_episode": 1220.0,
+      "project": "freq_transitduet",
+      "ram_mb": 256000.0,
+      "realized_episode_s": 1.8425681277290729,
+      "signature": "TransitDuet/FreqHRL-transit-9cfg-27seed-10ep-shard0-cpu96",
+      "started_at": 1780208294.4050171,
+      "status": "done",
+      "task_id": "t5023"
+    },
+    {
+      "cmd_prefix": "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_main_hiro,F_freqduet_terminal_final_nofreq_hiro,F_freqduet_terminal_final_rawhistory_hiro,F_freqduet_terminal_final_allfreq_hiro,F_freqduet_terminal_final_nop...",
+      "cpu_cores": 80.0,
+      "duration_s": 1683.699360370636,
+      "finished_at": 1780364821.9518018,
+      "parsed_units_episode": 3200.0,
+      "project": "FreqDuet",
+      "ram_mb": 98304.0,
+      "realized_episode_s": 1.9005768341537992,
+      "signature": "FreqDuet/final-driftfb/node004/s3",
+      "started_at": 1780363138.2524414,
+      "status": "done",
+      "task_id": "t5646"
+    }
+  ],
+  "sub_bucket": "freqduet_cpu_ablation|c_65p",
+  "theorem_status": "strict_completed_history_lower_service",
+  "title": "Module69 FreqDuet c65p Ablation Completed-History Certificate",
+  "total_units_episode": 18430.0,
+  "workload_key": "freqduet_cpu_ablation_c65p_completed_history"
+}

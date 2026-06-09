@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 
-This note records the current gap after Module68.  It should be read together
+This note records the current gap after Module69.  It should be read together
 with:
 
 ```text
@@ -23,6 +23,9 @@ md/experiment_module67_bamor_mujoco_c3_8_completed_history.md
 md/experiment_module67_bamor_diagnostic_shard_c3_8_completed_history.md
 md/experiment_module68_transit_native_promotion_c33_64_batch_completed_history.md
 md/experiment_module68_transit_native_promotion_c33_64_single_seed_completed_history.md
+md/experiment_module69_freqduet_ablation_c65p_completed_history.md
+md/experiment_module69_freqduet_promoted_ep100_c65p_completed_history.md
+md/experiment_module69_transit_native_promotion_c65p_completed_history.md
 md/or_submission_gap_closure.md
 ```
 
@@ -76,7 +79,7 @@ unit rule = parsed episodes
 
 completed-history slice = Transit native_promotion_replan_validation within c_17_32
 workload_key = transit_native_promotion_c17_32_seedrange_completed_history
-completed-active strict mapped count = 71
+completed-active strict mapped count = 91
 feasible profiles = 1
 unit rule = parsed seed-count times episodes
 
@@ -88,7 +91,7 @@ unit rule = parsed training steps
 
 completed-history slice = BAMOR c_3_8 train_bamor_mujoco.py
 workload_key = bamor_mujoco_c3_8_completed_history
-completed-active strict mapped count = 89
+completed-active strict mapped count = 109
 feasible profiles = 1
 unit rule = parsed training steps
 
@@ -112,7 +115,7 @@ unit rule = parsed episodes
 
 completed-history slice = Transit native_promotion_replan_validation batch within c_33_64
 workload_key = transit_native_promotion_c33_64_batch_completed_history
-completed-active strict mapped count = 45
+completed-active strict mapped count = 47
 feasible profiles = 1
 unit rule = parsed seed-count times episodes
 
@@ -121,16 +124,34 @@ workload_key = transit_native_promotion_c33_64_single_seed_completed_history
 certificate record count = 2
 feasible profiles = 1
 unit rule = parsed seed-count times episodes
+
+completed-history slice = run_freqduet_ablation.py within freqduet_cpu_ablation|c_65p
+workload_key = freqduet_cpu_ablation_c65p_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = parsed jobs times episodes
+
+completed-history slice = run_freqduet_promoted_ep100_hpc_batch.sh within c_65p
+workload_key = freqduet_promoted_ep100_c65p_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = parsed job-count times 100 episodes
+
+completed-history slice = Transit native_promotion_replan_validation within c_65p
+workload_key = transit_native_promotion_c65p_completed_history
+completed-active strict mapped count = 57
+feasible profiles = 1
+unit rule = statically parsed seed-count times episodes
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2755
-strict completed-active mapped count = 956
-representative completed-active mapped count = 1867
-measurement_required = 888
-cpu_sumo_transit_eval_or_control remaining = 532 / 2755
+completed_active_production records = 2781
+strict completed-active mapped count = 1041
+representative completed-active mapped count = 1952
+measurement_required = 829
+cpu_sumo_transit_eval_or_control remaining = 471 / 2781
 ```
 
 The original `freqduet_cpu_ablation|c_17_32` group is not fully closed.  Module56
@@ -169,12 +190,18 @@ certifies the direct `runner_v3.py` part with explicit episode counts.  The
 remaining c_le2 records are ablation, baseline-rule, scheduler wait, native
 validation, or shell-loop command shapes.
 
+The previous `freqduet_cpu_ablation|c_65p` top bucket is now closed at the
+command-shape level.  Module69 splits it into high-CPU
+`run_freqduet_ablation.py`, promoted ep100 shell-batch, and native-promotion
+validation classes.  This does not authorize charging lower-CPU native
+validation or non-ep100 shell batches to the c65p rates.
+
 The remaining list can look larger after a module because broad residual
 buckets are being split into theorem-facing command shapes.  The total
 CPU/SUMO/transit measurement-required count is still lower after the latest
 slices: 862 / 2471 after Module62, 803 / 2487 after Module63, 704 / 2553 after
-Module64, 659 / 2589 after Module65, 576 / 2679 after Module66/67, and
-532 / 2755 after Module68.
+Module64, 659 / 2589 after Module65, 576 / 2679 after Module66/67,
+532 / 2755 after Module68, and 471 / 2781 after Module69.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -189,6 +216,10 @@ Module68 closes only parseable c33_64 native-promotion seed-unit records.  It
 does not authorize charging c65p/c17_32 native-promotion records, direct
 `runner_v3.py` records, or shell-expanded seed lists to the c33_64 batch service
 rate.
+
+Module69 closes the c65p high-CPU residual, but only through three explicit
+parsers.  The shell command-substitution parser proves Python seed ranges by
+AST without executing the production command.
 
 ## Interpretation
 
@@ -221,13 +252,13 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_65p
 transit_freqhrl_cpu_validation|c_le2
 freqduet_cpu_ablation|c_9_16 residual command shapes
 sumo_eval_cpu|c_le2 residual command shapes
 transit_misc_cpu|c_le2
 freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
+freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes

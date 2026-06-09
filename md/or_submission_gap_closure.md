@@ -1,6 +1,6 @@
 # OR Submission Gap Closure Plan
 
-Date: 2026-06-09
+Date: 2026-06-10
 
 This note records the remaining gaps before the Scheduleurm line can be written
 as an OR/Stochastic Systems paper. It is intentionally stricter than an
@@ -175,10 +175,10 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.000674792
-    representative mapping delta = 0.000674792
+    strict measured mapping delta = 0.000050804
+    representative mapping delta = 0.000050804
   Full global theorem coverage is still open because the representative run
-  leaves 1669 / 5980 tasks unmapped and maps 1896 tasks only by representative
+  leaves 1602 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -187,12 +187,12 @@ Remaining scope limitation:
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
     records = 2766
-    mapped = 2150
-    strict mapped = 1242
-    measurement_required = 616
-    mapped_fraction = 0.777296
+    mapped = 2196
+    strict mapped = 1288
+    measurement_required = 570
+    mapped_fraction = 0.793926
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 258 / 2766 records
+    cpu_sumo_transit_eval_or_control = 212 / 2766 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -252,7 +252,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module72/73 raw-window LP = 0.000674792
+    strict mapped delta after Module74 raw-window LP = 0.000050804
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -497,14 +497,37 @@ Remaining scope limitation:
   they cannot be charged to a Scheduleurm service curve without making the
   theorem claim arbitrary external processes.
 
+  Module74 closes the previous `freqduet_cpu_ablation|c_17_32` first-probe
+  blocker with three completed-history certificates:
+    direct runner_v3.py c17_32
+      -> freqduet_runner_v3_c17_32_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 16
+    parsed completed-history work = 560 episode units
+    min completed wall-clock rate = 0.017634 episode/s
+
+    run_freqduet_paper_longtrain_matrix.sh c17_32
+      -> freqduet_paper_longtrain_c17_32_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 16
+    parsed completed-history work = 16 longtrain-shard units
+    min completed wall-clock rate = 0.000064 longtrain-shard/s
+    note = uses shard completion because --skip-existing prevents safe episode-count accounting
+
+    residual native_promotion_replan_validation c17_32
+      -> transit_native_promotion_c17_32_residual_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 14
+    parsed completed-history work = 970 seed-episode units
+    min completed wall-clock rate = 0.059097 seed-episode/s
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_17_32 residual command shapes
     bamor_cpu_training|c_9_16
     freqduet_cpu_ablation|c_le2 residual command shapes
     bamor_cpu_training|c_le2
     sumo_eval_cpu|c_le2 residual command shapes
-    bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
+    bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first

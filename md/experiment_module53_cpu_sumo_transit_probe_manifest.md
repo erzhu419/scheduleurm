@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module73
+## Status After Module74
 
 The original top sub-bucket was:
 
@@ -245,11 +245,24 @@ removes the former `transit_misc_cpu|c_le2` first-probe blocker from the
 controlled-arrival theorem population instead of pretending it has a measured
 Transit service curve.
 
+Module74 measured completed-history profile-1 lower-service points for the
+previous c17_32 residual command shapes:
+
+```text
+freqduet_runner_v3_c17_32_completed_history: completed_active = 16, unit = episode, min = 0.017633513 episode/s
+freqduet_paper_longtrain_c17_32_completed_history: completed_active = 16, unit = longtrain_shard, min = 0.000064307 shard/s
+transit_native_promotion_c17_32_residual_completed_history: completed_active = 14, unit = seed_episode, min = 0.059097464 seed-episode/s
+```
+
+The paper-longtrain class intentionally uses completed shard as its progress
+unit because the production shell commands used `--skip-existing`; counting
+job-count times episodes would overstate service if prior outputs were reused.
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 258
+record_count = 212
 cpu_cores median = 4
 cpu_cores p90 = 32
 cpu_cores max = 61
@@ -263,29 +276,29 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_17_32` | 46 | 0.178295 |
-| `bamor_cpu_training|c_9_16` | 43 | 0.166667 |
-| `freqduet_cpu_ablation|c_le2` | 32 | 0.124031 |
-| `bamor_cpu_training|c_le2` | 26 | 0.100775 |
-| `sumo_eval_cpu|c_le2` | 21 | 0.081395 |
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.069767 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.065891 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.058140 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.050388 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.046512 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.023256 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.019380 |
+| `bamor_cpu_training|c_9_16` | 43 | 0.202830 |
+| `freqduet_cpu_ablation|c_le2` | 32 | 0.150943 |
+| `bamor_cpu_training|c_le2` | 26 | 0.122642 |
+| `sumo_eval_cpu|c_le2` | 21 | 0.099057 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.084906 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.080189 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.070755 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.061321 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.056604 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.028302 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.023585 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.009434 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_17_32 residual command shapes
 bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
+freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -330,9 +343,10 @@ records, and 12 residual c9_16 `runner_v3.py` records after rejecting the
 infeasible coarse native c9_16 class.  Module72 maps 30 CFCMT low-CPU SUMO/eval
 records into six script-level completed-history service classes.  Module73
 removes unobservable external auto-adopted stdin/wait-for processes from the
-controlled-arrival theorem population.  The global theorem remains open because
-258 completed/active production records in the CPU/SUMO/transit family still
-require measured curves or equivalence certificates, led by 46 residual
-`freqduet_cpu_ablation|c_17_32` records, 43 `bamor_cpu_training|c_9_16`
-records, 32 residual `freqduet_cpu_ablation|c_le2` records, and 26
-`bamor_cpu_training|c_le2` records.
+controlled-arrival theorem population.  Module74 closes the previous c17_32
+residual by splitting runner_v3, paper-longtrain, and native residual work.
+The global theorem remains open because 212 completed/active production records
+in the CPU/SUMO/transit family still require measured curves or equivalence
+certificates, led by 43 `bamor_cpu_training|c_9_16` records, 32 residual
+`freqduet_cpu_ablation|c_le2` records, 26 `bamor_cpu_training|c_le2` records,
+and 21 `sumo_eval_cpu|c_le2` records.

@@ -941,6 +941,118 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_runner_v3_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for direct FreqDuet "
+                "runner_v3 records in the c_17_32 residual bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with explicit --episodes units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history; no live co-location "
+                "profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=16,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history runner sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module74 completed-history wall-clock audit for "
+                        "c_17_32 direct runner_v3.py production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is separated from run_freqduet_ablation.py, "
+                        "paper-longtrain shell wrappers, and native validation "
+                        "records. The service cache uses the minimum realized "
+                        "completed-task episode rate."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_paper_longtrain_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for FreqDuet paper "
+                "longtrain shell-wrapper shards in the c_17_32 residual bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as completed longtrain shards. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_paper_longtrain_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=16,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history longtrain shard sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module74 completed-history wall-clock audit for "
+                        "run_freqduet_paper_longtrain_matrix.sh c_17_32 shards."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The production command used --skip-existing, so this class "
+                        "uses one completed shard as the progress unit rather than "
+                        "job-count times episodes; that avoids overstating service "
+                        "when prior outputs are reused."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c17_32_residual_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_17_32 "
+                "native_promotion_replan_validation commands that have parseable "
+                "seed-list or Python-AST seed work units but no explicit "
+                "seed-index range."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c17_32_residual_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=14,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation residual sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module74 completed-history wall-clock audit for "
+                        "c_17_32 native_promotion_replan_validation records without "
+                        "seed-index ranges."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Module63 keeps explicit seed-index ranges in a separate "
+                        "service class. This residual class accepts explicit CLI "
+                        "--seeds and Python AST seed comprehensions without "
+                        "executing production commands."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_transit_native_promotion_c33_64_batch_completed_history",
             purpose=(
                 "A strict completed-history closure slice for Transit/FreqHRL native "

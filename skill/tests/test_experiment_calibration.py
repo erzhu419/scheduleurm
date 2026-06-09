@@ -1230,6 +1230,127 @@ def test_module63_native_promotion_c17_seedrange_completed_history_profile1(chec
           diag=str(report))
 
 
+def test_module74_c17_residual_completed_history_splits_runner_longtrain_native(check, sch):
+    runner = {
+        "id": "runner-c17",
+        "project": "freqduet",
+        "signature": "freqduet/c17-runner",
+        "description": "FreqDuet c17 direct runner",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 24,
+        "ram_mb": 8192,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "python runner_v3.py --config configs_freqduet/F_freqduet_terminal_hiro.yaml "
+            "--episodes 40 --seed 123 --no-resume"
+        ),
+    }
+    runner_cls = classify_record(runner, include_representative=False)
+    check("Module74 maps c17_32 runner_v3 records with episode units",
+          runner_cls["workload_key"] == "freqduet_runner_v3_c17_32_completed_history"
+          and runner_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(runner_cls["units"]), 40.0),
+          diag=str(runner_cls))
+
+    longtrain = {
+        "id": "longtrain-c17",
+        "project": "FreqDuet",
+        "signature": "FreqDuet/paper-longtrain/c17",
+        "description": "FreqDuet paper longtrain shard",
+        "submitted_at": 901.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 30,
+        "ram_mb": 32768,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "PYTHON=/env/bin/python EPISODES=200 WORKERS=30 "
+            "bash scripts/run_freqduet_paper_longtrain_matrix.sh "
+            "--job-start 150 --job-end 180 --skip-existing --no-aggregate"
+        ),
+    }
+    longtrain_cls = classify_record(longtrain, include_representative=False)
+    check("Module74 maps paper longtrain as one conservative shard unit",
+          longtrain_cls["workload_key"] == "freqduet_paper_longtrain_c17_32_completed_history"
+          and math.isclose(float(longtrain_cls["units"]), 1.0),
+          diag=str(longtrain_cls))
+
+    native = {
+        "id": "native-c17-residual",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/native-c17-residual",
+        "description": "Transit native promotion c17 residual",
+        "submitted_at": 902.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 32,
+        "ram_mb": 32768,
+        "cmd": (
+            "python3 -c \"from pathlib import Path; "
+            "from freq_hrl.experiments.transit import native_promotion_replan_validation as v; "
+            "v.run_validation(output_dir=Path('out'), "
+            "config_path=v.TRANSIT_DUET_ROOT / 'configs_freqduet' / 'T.yaml', "
+            "seeds=[201 + 10*i for i in range(0, 32)], episodes=2, "
+            "device='cpu', min_pairs=32, workers=16)\""
+        ),
+    }
+    native_cls = classify_record(native, include_representative=False)
+    check("Module74 maps c17_32 native residual seed comprehensions",
+          native_cls["workload_key"] == "transit_native_promotion_c17_32_residual_completed_history"
+          and math.isclose(float(native_cls["units"]), 64.0),
+          diag=str(native_cls))
+
+    seedrange = dict(native)
+    seedrange["id"] = "native-c17-still-module63"
+    seedrange["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--seed-index-start 0 --seed-index-end 32 --episodes 1 --workers 32"
+    )
+    seedrange_cls = classify_record(seedrange, include_representative=False)
+    check("Module74 residual classifier does not steal Module63 seed-index records",
+          seedrange_cls["workload_key"] == "transit_native_promotion_c17_32_seedrange_completed_history",
+          diag=str(seedrange_cls))
+
+    cache = build_default_cache()
+    checks = {
+        "freqduet_runner_v3_c17_32_completed_history": 0.0176335126709709,
+        "freqduet_paper_longtrain_c17_32_completed_history": 0.00006430664806364469,
+        "transit_native_promotion_c17_32_residual_completed_history": 0.05909746405816389,
+    }
+    check("Module74 service cache exposes three conservative profile1 c17 residual classes",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in checks.items()
+          ),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)] for key in checks}))
+
+    report = build_production_load_certificate(
+        records=[runner, longtrain, native],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_freqduet_runner_v3_c17_32_completed_history",
+            "production_freqduet_paper_longtrain_c17_32_completed_history",
+            "production_transit_native_promotion_c17_32_residual_completed_history",
+        ),
+    )
+    check("production load certificate certifies Module74 c17 residual split",
+          report["mapped_counts"] == {
+              "freqduet_paper_longtrain_c17_32_completed_history": 1,
+              "freqduet_runner_v3_c17_32_completed_history": 1,
+              "transit_native_promotion_c17_32_residual_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["freqduet_runner_v3_c17_32_completed_history"], 40.0)
+          and math.isclose(report["mapped_units"]["freqduet_paper_longtrain_c17_32_completed_history"], 1.0)
+          and math.isclose(report["mapped_units"]["transit_native_promotion_c17_32_residual_completed_history"], 64.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module68_native_promotion_c33_seed_units_completed_history_profile1(check, sch):
     batch = {
         "id": "native-c33-batch",

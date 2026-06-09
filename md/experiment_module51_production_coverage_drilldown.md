@@ -36,17 +36,17 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module73
+## Current Result After Module74
 
 For the 30-day completed/active production window:
 
 ```text
 completed_active_production records = 2766
-representative mapped = 2150
-strict mapped = 1242
-unmapped / measurement-required = 616
-representative mapped_fraction = 0.777296
-capacity slack on mapped raw-window representative load from Module49 delta = 0.000674792
+representative mapped = 2196
+strict mapped = 1288
+unmapped / measurement-required = 570
+representative mapped_fraction = 0.793926
+capacity slack on mapped raw-window representative load from Module49 delta = 0.000050804
 global theorem closed = false
 ```
 
@@ -56,7 +56,7 @@ with no scheduler id and no log are not scheduler-controlled arrivals.  They
 remain operational telemetry/background-load evidence, but they are outside the
 arrival stream that Scheduleurm can assign to service actions.
 
-The newly measured Module56 through Module72 sub-buckets appear as
+The newly measured Module56 through Module74 sub-buckets appear as
 strict mapped coverage:
 
 ```text
@@ -92,6 +92,9 @@ transit_surrogate_validation_c_le2_completed_history = 3 / 2766 completed-active
 cfcmt_traffic_signal_phase2_c_le2_completed_history = 1 / 2766 completed-active production records
 transit_freqhrl_import_smoke_c_le2_completed_history = 1 / 2766 completed-active production records
 freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2766 completed-active production records
+freqduet_runner_v3_c17_32_completed_history = 16 / 2766 completed-active production records
+freqduet_paper_longtrain_c17_32_completed_history = 16 / 2766 completed-active production records
+transit_native_promotion_c17_32_residual_completed_history = 14 / 2766 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -102,7 +105,7 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 258 | 0.093275 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 212 | 0.076645 |
 | `generic_cpu_python` | measurement required | 143 | 0.051699 |
 | `cpu_eval_generic` | measurement required | 82 | 0.029646 |
 | `artifact_io_control` | measurement required | 77 | 0.027838 |
@@ -133,6 +136,7 @@ after Module70:  cpu_sumo_transit_eval_or_control = 409 / 2797
 after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805
 after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766
+after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -163,6 +167,10 @@ processes from the theorem-facing production population.  This is an
 operational-semantics correction, not a service measurement: these records have
 no scheduler id, no scheduler log, and no reproducible progress unit, so they
 cannot be part of the controlled arrival process.
+Module74 closes the previous `freqduet_cpu_ablation|c_17_32` first-probe
+residual by splitting direct runner_v3, paper-longtrain shell-wrapper, and
+native-promotion residual records into separate completed-history service
+classes.
 
 ## Interpretation
 
@@ -202,7 +210,9 @@ singleton.  Module71 maps 40 residual c9_16 native-promotion records, 7
 bounded-wait c9_16 native-promotion records, and 12 residual c9_16 runner_v3
 records.  Module72 maps 10 CFCMT policy-rollout records, 5 feed-conversion
 records, 5 environment-validation records, 5 snapshot-generation records, 4
-SUMO-generation records, and 1 traffic-signal phase2 singleton.  The next
+SUMO-generation records, and 1 traffic-signal phase2 singleton.  Module74 maps
+16 c17_32 runner_v3 records, 16 paper-longtrain shards, and 14 residual
+native-promotion records.  The next
 closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`freqduet_cpu_ablation|c_17_32`, `bamor_cpu_training|c_9_16`, and
-`freqduet_cpu_ablation|c_le2` in the regenerated Module53 manifest.
+`bamor_cpu_training|c_9_16`, `freqduet_cpu_ablation|c_le2`, and
+`bamor_cpu_training|c_le2` in the regenerated Module53 manifest.

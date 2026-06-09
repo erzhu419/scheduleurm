@@ -365,6 +365,87 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_cpu_ablation_c65p_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for high-CPU FreqDuet "
+                "ablation records after Module68. It covers only no-GPU "
+                "run_freqduet_ablation.py commands requesting more than 64 CPU "
+                "cores, with worker-threads fixed at one when specified, and "
+                "with parseable job-shard episode units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed jobs times episodes. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history; no live co-location "
+                "profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_cpu_ablation_c65p_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=7,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c65p ablation sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module69 completed-history wall-clock audit for "
+                        "parseable c65p run_freqduet_ablation.py production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service cache uses the minimum realized completed-task "
+                        "episode rate as a conservative profile-1 lower-service point. "
+                        "Promoted ep100 shell batches and native-promotion validation "
+                        "records are separate Module69 classes."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_promoted_ep100_c65p_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for high-CPU FreqDuet "
+                "promoted ep100 shell-batch records. It covers only "
+                "run_freqduet_promoted_ep100_hpc_batch.sh commands with parseable "
+                "job-start/job-end bounds and the script's verified EPISODES=100 "
+                "default."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed job-count times 100 episode units. Only profile 1 is "
+                "loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_promoted_ep100_c65p_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c65p promoted-batch sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module69 completed-history wall-clock audit for "
+                        "FreqDuet promoted ep100 HPC batch records. The work-unit "
+                        "definition is checked against the local shell script, which "
+                        "passes EPISODES=100 to its underlying ablation/baseline "
+                        "runners."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The parser rejects commands with a non-100 EPISODES override "
+                        "or missing job bounds. Other promoted or external-baseline "
+                        "shell commands remain outside this class."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_runner_v3_c3_8_completed_history",
             purpose=(
                 "A strict completed-history closure slice for the dominant direct "
@@ -597,6 +678,47 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     note=(
                         "This intentionally separate class keeps smoke/fix overhead "
                         "from being applied to batch native-promotion workloads."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c65p_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for high-CPU "
+                "Transit/FreqHRL native-promotion validation records. It covers "
+                "no-GPU native_promotion_replan_validation commands requesting "
+                "more than 64 CPU cores when seed work units can be parsed from "
+                "explicit CLI seeds, seed-index ranges, Python-AST seed "
+                "comprehensions, or shell command-substitution Python snippets."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history; no live "
+                "co-location profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c65p_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=57,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native-validation c65p sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module69 completed-history wall-clock audit for "
+                        "c65p native_promotion_replan_validation records with "
+                        "statically parsed seed work units."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The AST parser proves shell-generated seed lists without "
+                        "executing the command. Native commands with unparseable "
+                        "dynamic seed logic remain measurement-required."
                     ),
                 ),
             ),

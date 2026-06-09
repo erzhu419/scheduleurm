@@ -1079,6 +1079,138 @@ def test_module68_native_promotion_c33_seed_units_completed_history_profile1(che
           diag=str(report))
 
 
+def test_module69_c65p_completed_history_profile1(check, sch):
+    ablation = {
+        "id": "freq-c65p-ablation",
+        "project": "FreqDuet",
+        "signature": "FreqDuet/final-driftfb/node003/s2",
+        "description": "FreqDuet c65p ablation shard",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 80,
+        "ram_mb": 98304,
+        "cmd": (
+            "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 "
+            "python scripts/run_freqduet_ablation.py "
+            "--configs F_freqduet_terminal_main_hiro,F_freqduet_gen_highnoise_main_hiro "
+            "--seeds 42,123,456,789 "
+            "--episodes 40 --last-k 20 --workers 80 --worker-threads 1 "
+            "--job-start 0 --job-end 16 --skip-existing"
+        ),
+    }
+    ablation_cls = classify_record(ablation, include_representative=False)
+    check("Module69 maps c65p run_freqduet_ablation.py with parsed episode units",
+          ablation_cls["workload_key"] == "freqduet_cpu_ablation_c65p_completed_history"
+          and ablation_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(ablation_cls["units"]), 640.0),
+          diag=str(ablation_cls))
+
+    non_strict_threads = dict(ablation)
+    non_strict_threads["id"] = "freq-c65p-ablation-threads2"
+    non_strict_threads["cmd"] = non_strict_threads["cmd"].replace("--worker-threads 1", "--worker-threads 2")
+    non_strict_cls = classify_record(non_strict_threads, include_representative=False)
+    check("Module69 rejects c65p ablation commands with multi-thread workers",
+          non_strict_cls["workload_key"] is None and non_strict_cls["reason"] == "unmapped_cpu",
+          diag=str(non_strict_cls))
+
+    promoted = dict(ablation)
+    promoted["id"] = "freq-c65p-promoted"
+    promoted["signature"] = "FreqDuet/promoted-ep100-genbase-r1/node001_s0"
+    promoted["description"] = "FreqDuet promoted ep100 gen+external one-batch"
+    promoted["cpu_cores"] = 84
+    promoted["cmd"] = (
+        "PYTHON_BIN=/env/bin/python THREADS=1 bash "
+        "scripts/run_freqduet_promoted_ep100_hpc_batch.sh "
+        "--job-start 0 --job-end 84 --workers 84 --worker-threads 1 "
+        "--shard-label r1_node001_s0"
+    )
+    promoted_cls = classify_record(promoted, include_representative=False)
+    check("Module69 maps promoted ep100 c65p shell batches with job-count units",
+          promoted_cls["workload_key"] == "freqduet_promoted_ep100_c65p_completed_history"
+          and math.isclose(float(promoted_cls["units"]), 8400.0),
+          diag=str(promoted_cls))
+
+    promoted_bad = dict(promoted)
+    promoted_bad["id"] = "freq-c65p-promoted-ep50"
+    promoted_bad["cmd"] = "EPISODES=50 " + promoted_bad["cmd"]
+    promoted_bad_cls = classify_record(promoted_bad, include_representative=False)
+    check("Module69 rejects promoted shell batches with non-ep100 override",
+          promoted_bad_cls["workload_key"] is None and promoted_bad_cls["reason"] == "unmapped_cpu",
+          diag=str(promoted_bad_cls))
+
+    native = dict(ablation)
+    native["id"] = "native-c65p-shell-pyc"
+    native["project"] = "FreqHRLNative"
+    native["signature"] = "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5"
+    native["description"] = "Freq-HRL native c65p command-substitution seed generator"
+    native["cpu_cores"] = 71
+    native["cmd"] = (
+        "export PYTHONDONTWRITEBYTECODE=1; PY=/env/bin/python3.10; "
+        "SEEDS=$($PY -c \"print(' '.join(str(201 + 10*i) for i in range(0, 71)))\"); "
+        "$PY -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--preset persistent_stress --seeds $SEEDS --episodes 2 "
+        "--min-pairs 64 --workers 71 --output-dir out"
+    )
+    native_cls = classify_record(native, include_representative=False)
+    check("Module69 proves c65p shell-generated native seed lists by AST",
+          native_cls["workload_key"] == "transit_native_promotion_c65p_completed_history"
+          and math.isclose(float(native_cls["units"]), 142.0),
+          diag=str(native_cls))
+
+    cache = build_default_cache()
+    ablation_profiles = cache.profiles("freqduet_cpu_ablation_c65p_completed_history")
+    promoted_profiles = cache.profiles("freqduet_promoted_ep100_c65p_completed_history")
+    native_profiles = cache.profiles("transit_native_promotion_c65p_completed_history")
+    check("Module69 service cache exposes three separated c65p lower services",
+          [record.profile for record in ablation_profiles] == [1]
+          and [record.profile for record in promoted_profiles] == [1]
+          and [record.profile for record in native_profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_cpu_ablation_c65p_completed_history", 1).aggregate_rate,
+              1.0997359841532857,
+              rel_tol=1e-12,
+          )
+          and math.isclose(
+              cache.get("freqduet_promoted_ep100_c65p_completed_history", 1).aggregate_rate,
+              1.7274785454630845,
+              rel_tol=1e-12,
+          )
+          and math.isclose(
+              cache.get("transit_native_promotion_c65p_completed_history", 1).aggregate_rate,
+              0.18213138004622983,
+              rel_tol=1e-12,
+          ),
+          diag=str({
+              "ablation": [record.snapshot() for record in ablation_profiles],
+              "promoted": [record.snapshot() for record in promoted_profiles],
+              "native": [record.snapshot() for record in native_profiles],
+          }))
+
+    report = build_production_load_certificate(
+        records=[ablation, promoted, native],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_freqduet_cpu_ablation_c65p_completed_history",
+            "production_freqduet_promoted_ep100_c65p_completed_history",
+            "production_transit_native_promotion_c65p_completed_history",
+        ),
+    )
+    check("Production load certificate sums Module69 c65p parsed units",
+          report["mapped_counts"] == {
+              "freqduet_cpu_ablation_c65p_completed_history": 1,
+              "freqduet_promoted_ep100_c65p_completed_history": 1,
+              "transit_native_promotion_c65p_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["freqduet_cpu_ablation_c65p_completed_history"], 640.0)
+          and math.isclose(report["mapped_units"]["freqduet_promoted_ep100_c65p_completed_history"], 8400.0)
+          and math.isclose(report["mapped_units"]["transit_native_promotion_c65p_completed_history"], 142.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-compare",

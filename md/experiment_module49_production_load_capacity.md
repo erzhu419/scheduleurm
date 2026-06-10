@@ -88,12 +88,16 @@ parsing, RESCO config/main.py runs, and Nature-emissions extraction/SUMO
 singletons.  It uses one completed production command as the service unit for
 each class so resume, `--skip_existing`, and shell-loop semantics are not
 expanded into artificial work units.
+Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe blocker
+by identifying it as Transit/FreqHRL native work rather than FreqDuet ablation,
+then splitting it into persistent-stress native promotion, native real-demand
+batch validation, and alighting-safe/rescue shard validation.
 
 ```text
-record_count_window = 6179
-mapped_task_count = 2774
-mapped_fraction = 0.448940
-unmapped_task_count = 3405
+record_count_window = 6328
+mapped_task_count = 2950
+mapped_fraction = 0.466182
+unmapped_task_count = 3378
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -134,6 +138,9 @@ strict rows added to the mapped slice are:
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
+| `transit_native_promotion_c3_8_persistent_stress_completed_history` | 7 | 0.000013503 |
+| `transit_native_real_demand_batch_c3_8_completed_history` | 28 | 0.000282407 |
+| `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
 
 Capacity LP:
 
@@ -151,12 +158,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6179
-mapped_task_count = 4699
-representative_mapped_task_count = 1925
-mapped_fraction = 0.760479
-strict_mapped_fraction = 0.448940
-unmapped_task_count = 1480
+record_count_window = 6328
+mapped_task_count = 4896
+representative_mapped_task_count = 1946
+mapped_fraction = 0.773704
+strict_mapped_fraction = 0.466182
+unmapped_task_count = 1432
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -164,7 +171,7 @@ usable_for_global_theorem = false
 
 Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
-Module71 through Module78 add the same strict rows shown above; representative
+Module71 through Module79 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
@@ -238,14 +245,19 @@ records, and 2 Nature-emissions records split into extraction and direct SUMO
 execution.  The mapped LP remains positive but tightens to `0.000008435`,
 because the offline-sumo lower-service point is deliberately one completed eval
 command over the slowest completed wall-clock duration.
+Module79 maps 7 raw-window c3_8 native-promotion persistent-stress records, 28
+c3_8 native real-demand batch records, and 14 c3_8 alighting-safe/rescue records
+with parsed seed/native-control units.  This removes the former
+`freqduet_cpu_ablation|c_3_8` blocker without charging Transit native validation
+to a FreqDuet ablation service class.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3405 / 6179 tasks
-representative unmapped: 1480 / 6179 tasks
-representative-mapped but not theorem-grade: 1925 tasks
+strict unmapped: 3378 / 6328 tasks
+representative unmapped: 1432 / 6328 tasks
+representative-mapped but not theorem-grade: 1946 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

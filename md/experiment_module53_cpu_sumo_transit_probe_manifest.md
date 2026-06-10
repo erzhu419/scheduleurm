@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module78
+## Status After Module79
 
 The original top sub-bucket was:
 
@@ -313,15 +313,26 @@ nature_emissions_extract_c_le2_completed_history: completed_active = 1, raw_hist
 nature_emissions_sumo_c_le2_completed_history: completed_active = 1, raw_history_all = 1, unit = nature_sumo_run, min = 0.003339202 nature-sumo-run/s
 ```
 
+Module79 measured completed-history profile-1 lower-service points for the
+previous `freqduet_cpu_ablation|c_3_8` first-probe blocker.  The residual records
+were Transit/FreqHRL native commands rather than FreqDuet ablations, so they are
+split by native service semantics:
+
+```text
+transit_native_promotion_c3_8_persistent_stress_completed_history: completed_active = 7, raw_history_all = 7, unit = seed_episode, min = 0.008254466 seed-episode/s
+transit_native_real_demand_batch_c3_8_completed_history: completed_active = 7, raw_history_all = 28, unit = native_control_episode, min = 0.013410918 native-control-episode/s
+transit_native_real_demand_alighting_c3_8_completed_history: completed_active = 7, raw_history_all = 14, unit = native_control_episode, min = 0.019432989 native-control-episode/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 94
-cpu_cores median = 11.5
+record_count = 73
+cpu_cores median = 21
 cpu_cores p90 = 48
 cpu_cores max = 61
-ram_mb median = 12797.500
+ram_mb median = 9677.000
 ram_mb p90 = 65536
 ram_mb max = 65536
 theorem_status = measurement_required
@@ -331,30 +342,29 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.191489 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.180851 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.159574 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 14 | 0.148936 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.127660 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.063830 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.053191 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.021277 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.021277 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.021277 |
-| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.010638 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.232877 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.205479 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.164384 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.150685 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.082192 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.068493 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.027397 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.027397 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.027397 |
+| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.013699 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
-transit_freqhrl_cpu_validation|c_3_8
 sumo_eval_cpu|c_3_8
+transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 sumo_eval_cpu|c_33_64
+transit_freqhrl_cpu_validation|c_33_64
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -411,8 +421,9 @@ Module77 closes the previous BAMOR c_le2 first-probe blocker by splitting
 train-compare, Mujoco, and diagnostic-shard work into separate profile-1
 completed-history training-step classes.  Module78 closes the previous
 `sumo_eval_cpu|c_le2` first-probe blocker with six completed-command service
-classes.  The global theorem remains open because 94 completed/active production records
+classes.  Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe
+blocker by mapping Transit/FreqHRL native commands to native service classes.
+The global theorem remains open because 73 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 18 residual `freqduet_cpu_ablation|c_3_8` records, 17
-`bamor_cpu_training|c_17_32` records, and 15
-`freqduet_cpu_ablation|c_33_64` records.
+certificates, led by 17 `bamor_cpu_training|c_17_32` records, 15
+`freqduet_cpu_ablation|c_33_64` records, and 12 `sumo_eval_cpu|c_3_8` records.

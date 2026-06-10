@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "sumo_eval_cpu|c_le2",
       "freqduet_cpu_ablation|c_3_8",
       "bamor_cpu_training|c_17_32",
       "freqduet_cpu_ablation|c_33_64",
       "transit_freqhrl_cpu_validation|c_3_8",
       "sumo_eval_cpu|c_3_8",
       "transit_freqhrl_cpu_validation|c_17_32",
-      "sumo_eval_cpu|c_33_64"
+      "sumo_eval_cpu|c_33_64",
+      "transit_freqhrl_cpu_validation|c_33_64"
     ],
     "node_targets": [
       "local_cpu",
@@ -34,160 +34,33 @@
     "BAMOR": 17,
     "CFCMT": 6,
     "FreqHRLNative": 5,
-    "H2Oplus": 2,
-    "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
-    "SimpleSAC": 2,
-    "TransitDuet": 36,
-    "ZSW_platform": 6,
-    "config": 5,
+    "TransitDuet": 38,
+    "ZSW_platform": 5,
     "freqduet": 15,
-    "offline-sumo": 14,
+    "offline-sumo": 5,
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 113,
+  "record_count": 94,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 8.0,
+      "median": 11.5,
       "min": 1.0,
       "p90": 48.0
     },
     "ram_mb": {
       "max": 65536.0,
-      "median": 8192.0,
+      "median": 12797.5,
       "min": 5.0,
       "p90": 65536.0
     }
   },
   "status_counts": {
-    "done": 113
+    "done": 94
   },
   "sub_bucket_count": 11,
   "sub_buckets": [
-    {
-      "count": 21,
-      "examples": [
-        {
-          "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_checkpoints_parallel.py --n_workers 2 --skip_existing",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "P1 eval-v2 RESUME: main results",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "offline-sumo",
-          "ram_mb": 1655,
-          "signature": "offline-sumo/eval-v2/main",
-          "status": "done",
-          "task_id": "t2816"
-        },
-        {
-          "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_operational.py --n_workers 2 --out_csv experiment_output/eval_operational_v3.csv",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "offline-sumo",
-          "ram_mb": 716,
-          "signature": "offline-sumo/auto-adopted/p59935",
-          "status": "done",
-          "task_id": "t2909"
-        },
-        {
-          "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_E10.py --n_workers 2 --out_csv experiment_output/eval_E10_v2.csv",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "offline-sumo",
-          "ram_mb": 719,
-          "signature": "offline-sumo/auto-adopted/p640083",
-          "status": "done",
-          "task_id": "t2980"
-        },
-        {
-          "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_passenger.py --n_workers 2 --out_csv experiment_output/eval_passenger_v2.csv",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "offline-sumo",
-          "ram_mb": 684,
-          "signature": "offline-sumo/auto-adopted/p758235",
-          "status": "done",
-          "task_id": "t2987"
-        },
-        {
-          "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_E10.py --n_workers 2 --out_csv experiment_output/eval_E10_v2.csv",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "P1 eval-v2 RESUME: WSRL/RLPD E10",
-          "eta_seconds": 0,
-          "eta_source": null,
-          "project": "offline-sumo",
-          "ram_mb": 1484,
-          "signature": "offline-sumo/eval-v2/E10",
-          "status": "done",
-          "task_id": "t2871"
-        }
-      ],
-      "fraction": 0.18584070796460178,
-      "project_counts": {
-        "H2Oplus": 2,
-        "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
-        "SimpleSAC": 2,
-        "ZSW_platform": 1,
-        "config": 5,
-        "offline-sumo": 9
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1,
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 1.0,
-          "min": 1.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 15263.0,
-          "median": 1382.0,
-          "min": 16.0,
-          "p90": 7174.0
-        }
-      },
-      "signature_prefixes": {
-        "H2Oplus/eval_p4_nojtt_s42_grid_epoch80_gated": 1,
-        "offline-sumo/auto-adopted/p59935": 1,
-        "offline-sumo/auto-adopted/p640083": 1,
-        "offline-sumo/auto-adopted/p758235": 1,
-        "offline-sumo/eval-v2/E10": 1,
-        "offline-sumo/eval-v2/main": 1,
-        "offline-sumo/eval-v2/noBC": 1,
-        "offline-sumo/eval-v2/passenger": 1
-      },
-      "sub_bucket": "sumo_eval_cpu|c_le2"
-    },
     {
       "count": 18,
       "examples": [
@@ -257,7 +130,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.1592920353982301,
+      "fraction": 0.19148936170212766,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -377,7 +250,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.1504424778761062,
+      "fraction": 0.18085106382978725,
       "project_counts": {
         "BAMOR": 17
       },
@@ -496,7 +369,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.13274336283185842,
+      "fraction": 0.1595744680851064,
       "project_counts": {
         "freqduet": 15
       },
@@ -547,7 +420,7 @@
       "sub_bucket": "freqduet_cpu_ablation|c_33_64"
     },
     {
-      "count": 13,
+      "count": 14,
       "examples": [
         {
           "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.public_market_data --source csv --csv-files transit_hrl/data/public_market_yahoo/SPY.csv transit_hrl/data/public_market_yahoo/QQQ.csv transit_hrl/data/public_market_yahoo/IWM.csv --steps 1500 --output-dir transit_hrl/results/trading_public_market_yahoo_csv",
@@ -615,9 +488,9 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.11504424778761062,
+      "fraction": 0.14893617021276595,
       "project_counts": {
-        "TransitDuet": 13
+        "TransitDuet": 14
       },
       "recommended_probe_profiles": {
         "representative_cpu_cores_per_task": [
@@ -648,7 +521,7 @@
         },
         "ram_mb": {
           "max": 16000.0,
-          "median": 486.0,
+          "median": 474.0,
           "min": 37.0,
           "p90": 2301.0
         }
@@ -734,7 +607,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.10619469026548672,
+      "fraction": 0.1276595744680851,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -855,7 +728,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.05309734513274336,
+      "fraction": 0.06382978723404255,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -970,7 +843,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.04424778761061947,
+      "fraction": 0.05319148936170213,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1045,7 +918,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.017699115044247787,
+      "fraction": 0.02127659574468085,
       "project_counts": {
         "python": 2
       },
@@ -1116,7 +989,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.017699115044247787,
+      "fraction": 0.02127659574468085,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1189,7 +1062,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.017699115044247787,
+      "fraction": 0.02127659574468085,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1230,12 +1103,70 @@
         "TransitDuet/auto-adopted/p4110099": 1
       },
       "sub_bucket": "transit_freqhrl_cpu_validation|c_9_16"
+    },
+    {
+      "count": 1,
+      "examples": [
+        {
+          "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
+          "cpu_cores": 2,
+          "cwd": "/home/erzhu419/mine_code/TransitDuet",
+          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 625,
+          "signature": "TransitDuet/auto-adopted/p597729",
+          "status": "done",
+          "task_id": "t9046"
+        }
+      ],
+      "fraction": 0.010638297872340425,
+      "project_counts": {
+        "TransitDuet": 1
+      },
+      "recommended_probe_profiles": {
+        "representative_cpu_cores_per_task": [
+          2
+        ],
+        "requires_progress_unit": true,
+        "suggested_units": [
+          "completed_seed",
+          "completed_episode",
+          "completed_eval_pair",
+          "completed_training_step"
+        ],
+        "task_concurrency_profiles": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "resource_summary": {
+        "cpu_cores": {
+          "max": 2.0,
+          "median": 2.0,
+          "min": 2.0,
+          "p90": 2.0
+        },
+        "ram_mb": {
+          "max": 625.0,
+          "median": 625.0,
+          "min": 625.0,
+          "p90": 625.0
+        }
+      },
+      "signature_prefixes": {
+        "TransitDuet/auto-adopted/p597729": 1
+      },
+      "sub_bucket": "transit_freqhrl_cpu_validation|c_le2"
     }
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781032620.8781207,
-    "start_ts": 1778440620.8781207,
+    "end_ts": 1781066568.3203616,
+    "start_ts": 1778474568.3203616,
     "window_days": 30.0
   }
 }

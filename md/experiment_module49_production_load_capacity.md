@@ -82,12 +82,18 @@ Module77 closes the BAMOR c_le2 production-training residual by splitting
 training-step service classes.  Some production commands specify `--device cuda`
 even though the scheduler record has zero estimated VRAM, so these rows are kept
 as production-history service certificates rather than pure CPU microbenchmarks.
+Module78 closes the previous `sumo_eval_cpu|c_le2` residual by splitting
+offline-sumo eval scripts, H2Oplus/SimpleSAC complex shell eval jobs, ZSW metrics
+parsing, RESCO config/main.py runs, and Nature-emissions extraction/SUMO
+singletons.  It uses one completed production command as the service unit for
+each class so resume, `--skip_existing`, and shell-loop semantics are not
+expanded into artificial work units.
 
 ```text
-record_count_window = 5980
-mapped_task_count = 2599
-mapped_fraction = 0.434615
-unmapped_task_count = 3381
+record_count_window = 6179
+mapped_task_count = 2774
+mapped_fraction = 0.448940
+unmapped_task_count = 3405
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -122,11 +128,17 @@ strict rows added to the mapped slice are:
 | `bamor_train_compare_c_le2_completed_history` | 7 | 0.042438272 |
 | `bamor_mujoco_c_le2_completed_history` | 16 | 0.174382716 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
+| `offline_sumo_eval_c_le2_completed_history` | 11 | 0.000004244 |
+| `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
+| `zsw_metrics_parser_c_le2_completed_history` | 1 | 0.000000386 |
+| `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
+| `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
+| `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
 
 Capacity LP:
 
 ```text
-delta = 0.000050804
+delta = 0.000008435
 status = optimal
 ```
 
@@ -139,12 +151,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 5980
-mapped_task_count = 4495
-representative_mapped_task_count = 1896
-mapped_fraction = 0.751672
-strict_mapped_fraction = 0.434615
-unmapped_task_count = 1485
+record_count_window = 6179
+mapped_task_count = 4699
+representative_mapped_task_count = 1925
+mapped_fraction = 0.760479
+strict_mapped_fraction = 0.448940
+unmapped_task_count = 1480
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -152,7 +164,7 @@ usable_for_global_theorem = false
 
 Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
-Module71 through Module77 add the same strict rows shown above; representative
+Module71 through Module78 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
@@ -161,7 +173,7 @@ auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
 Capacity LP:
 
 ```text
-delta = 0.000050804
+delta = 0.000008435
 status = optimal
 ```
 
@@ -202,9 +214,7 @@ snapshot-generation records, 10 policy-rollout records, and 1 traffic-signal
 phase2 singleton.  It does not close offline-sumo, H2Oplus, RESCO/config, ZSW
 metrics-parser, or Nature-emissions SUMO records.
 Module74 maps 16 completed-active c17_32 direct runner records, 16 completed
-paper-longtrain shards, and 14 residual native-promotion records.  The mapped
-LP remains positive but the slack tightens to `0.000050804`, which is exactly
-the kind of theorem-condition accounting the OR version needs.
+paper-longtrain shards, and 14 residual native-promotion records.
 Module75 maps 6 c9_16 BAMOR train-compare records, 3 c9_16 BAMOR Mujoco
 records, and 34 c9_16 BAMOR diagnostic-shard records with script-specific
 training-step lower-service rates.  This removes the previous top BAMOR c9_16
@@ -222,14 +232,20 @@ training-step lower-service rates.  The split is service-semantic rather than
 cosmetic: the three command shapes have materially different completed-history
 rates, and the `--device cuda` flag on some records means the certificate must be
 read as a production-history row, not a generic CPU-only benchmark.
+Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
+complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
+records, and 2 Nature-emissions records split into extraction and direct SUMO
+execution.  The mapped LP remains positive but tightens to `0.000008435`,
+because the offline-sumo lower-service point is deliberately one completed eval
+command over the slowest completed wall-clock duration.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3381 / 5980 tasks
-representative unmapped: 1485 / 5980 tasks
-representative-mapped but not theorem-grade: 1896 tasks
+strict unmapped: 3405 / 6179 tasks
+representative unmapped: 1480 / 6179 tasks
+representative-mapped but not theorem-grade: 1925 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

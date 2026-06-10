@@ -1,0 +1,172 @@
+{
+  "cpu_counts": {
+    "1": 6,
+    "2": 3
+  },
+  "duration_s": {
+    "max": 78871.66329979897,
+    "median": 1441.6120676994324,
+    "min": 0.3222169876098633
+  },
+  "interpretation": "Strict completed-history lower-service certificate for offline-sumo c_le2 eval_*.py production records. The progress unit is one completed production eval command; checkpoint, seed, and episode counts are not expanded because commands may use resume or skip-existing semantics.",
+  "parsed_units_eval_job": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "offline-sumo": 9
+  },
+  "ram_counts": {
+    "1440": 1,
+    "1480": 1,
+    "1484": 1,
+    "15263": 1,
+    "1655": 1,
+    "684": 1,
+    "716": 1,
+    "719": 1,
+    "8414": 1
+  },
+  "realized_eval_job_s": [
+    2.458275065379282,
+    3.1034986932805317,
+    2.13381304187241,
+    2.6258547182450496,
+    2.1373375373918313e-05,
+    3.6835955739229344e-05,
+    1.2678824791597223e-05,
+    2.998520186967474e-05,
+    0.0006936678891678743
+  ],
+  "record_count": 9,
+  "run_id": "module78_offline_sumo_eval_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_passenger.py --n_workers 2 --out_csv experiment_output/eval_passenger_v2.csv",
+      "cpu_cores": 1,
+      "duration_s": 78871.66329979897,
+      "project": "offline-sumo",
+      "ram_mb": 1440,
+      "rate_eval_job_s": 1.2678824791597223e-05,
+      "signature": "offline-sumo/eval-v2/passenger",
+      "status": "done",
+      "task_id": "t2870",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_E10.py --n_workers 2 --out_csv experiment_output/eval_E10_v2.csv",
+      "cpu_cores": 1,
+      "duration_s": 46787.181832790375,
+      "project": "offline-sumo",
+      "ram_mb": 1484,
+      "rate_eval_job_s": 2.1373375373918313e-05,
+      "signature": "offline-sumo/eval-v2/E10",
+      "status": "done",
+      "task_id": "t2871",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_operational.py --n_workers 12 --pin_cores 0,2,4,6,8,10,12,14,16,18,20,22 --out_csv experiment_output/eval_operational_v3.csv",
+      "cpu_cores": 1,
+      "duration_s": 33349.783814907074,
+      "project": "offline-sumo",
+      "ram_mb": 8414,
+      "rate_eval_job_s": 2.998520186967474e-05,
+      "signature": "offline-sumo/eval-v2/operational",
+      "status": "done",
+      "task_id": "t3063",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_noBC.py --n_workers 2 --out_csv experiment_output/eval_noBC_v2.csv",
+      "cpu_cores": 1,
+      "duration_s": 27147.388466835022,
+      "project": "offline-sumo",
+      "ram_mb": 1480,
+      "rate_eval_job_s": 3.6835955739229344e-05,
+      "signature": "offline-sumo/eval-v2/noBC",
+      "status": "done",
+      "task_id": "t2869",
+      "units": 1.0
+    },
+    {
+      "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 293 --end 305 --item_multiplier 10 --n_workers 2 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu2_fix0b/results.csv --skip_existing",
+      "cpu_cores": 2,
+      "duration_s": 1441.6120676994324,
+      "project": "offline-sumo",
+      "ram_mb": 15263,
+      "rate_eval_job_s": 0.0006936678891678743,
+      "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0b-missing293-304",
+      "status": "done",
+      "task_id": "t3193",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_E10.py --n_workers 2 --out_csv experiment_output/eval_E10_v2.csv",
+      "cpu_cores": 1,
+      "duration_s": 0.4686446189880371,
+      "project": "offline-sumo",
+      "ram_mb": 719,
+      "rate_eval_job_s": 2.13381304187241,
+      "signature": "offline-sumo/auto-adopted/p640083",
+      "status": "done",
+      "task_id": "t2980",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_checkpoints_parallel.py --n_workers 2 --skip_existing",
+      "cpu_cores": 2,
+      "duration_s": 0.40678930282592773,
+      "project": "offline-sumo",
+      "ram_mb": 1655,
+      "rate_eval_job_s": 2.458275065379282,
+      "signature": "offline-sumo/eval-v2/main",
+      "status": "done",
+      "task_id": "t2816",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_passenger.py --n_workers 2 --out_csv experiment_output/eval_passenger_v2.csv",
+      "cpu_cores": 1,
+      "duration_s": 0.3808283805847168,
+      "project": "offline-sumo",
+      "ram_mb": 684,
+      "rate_eval_job_s": 2.6258547182450496,
+      "signature": "offline-sumo/auto-adopted/p758235",
+      "status": "done",
+      "task_id": "t2987",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u eval_operational.py --n_workers 2 --out_csv experiment_output/eval_operational_v3.csv",
+      "cpu_cores": 2,
+      "duration_s": 0.3222169876098633,
+      "project": "offline-sumo",
+      "ram_mb": 716,
+      "rate_eval_job_s": 3.1034986932805317,
+      "signature": "offline-sumo/auto-adopted/p59935",
+      "status": "done",
+      "task_id": "t2909",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module78_scheduler_queue_and_archive_30d_completed_active",
+  "total_units_eval_job": 9.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "offline_sumo_eval_c_le2_completed_history"
+}

@@ -1410,6 +1410,150 @@ def test_module77_bamor_cle2_training_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module78_sumo_cle2_residual_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 1024,
+    }
+    offline = {
+        **base,
+        "id": "module78-offline",
+        "project": "offline-sumo",
+        "signature": "offline-sumo/eval-v2/operational",
+        "cwd": "/home/erzhu419/mine_code/offline-sumo",
+        "cmd": (
+            "/env/bin/python -u eval_operational.py --n_workers 12 "
+            "--out_csv experiment_output/eval_operational_v3.csv"
+        ),
+    }
+    h2o = {
+        **base,
+        "id": "module78-h2o-shell",
+        "project": "SimpleSAC",
+        "signature": "H2Oplus/p0-p1_default_eval_s42",
+        "cwd": "/home/erzhu419/mine_code/sumo-rl/H2Oplus/SimpleSAC",
+        "cmd": (
+            "bash -lc 'for method in p4_nojtt_ep20_s42 p4_nojtt_ep40_s42; do "
+            "bash run_multiseed_eval.sh \"$method\" 1001 1.0; done'"
+        ),
+    }
+    zsw = {
+        **base,
+        "id": "module78-zsw-metrics",
+        "project": "ZSW_platform",
+        "signature": "ZSW_platform/auto-adopted/p21690",
+        "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform",
+        "cmd": (
+            "/env/bin/python TSP_only/src/oracle/m1_metrics_parser.py "
+            "--tripinfo out.tripinfo.xml --personinfo out.personinfo.xml --stopinfo out.stopinfo.xml"
+        ),
+    }
+    resco = {
+        **base,
+        "id": "module78-resco",
+        "project": "config",
+        "signature": "config/auto-adopted/p48578",
+        "cwd": "/home/erzhu419/mine_code/CFCMT/H2Oplus/downloads/traffic_signal_resco/repo/resco_benchmark/config",
+        "cmd": (
+            "/usr/bin/python3 main.py @arterial4x4 @MPLight episodes:100 testing:5 "
+            "save_console_log:False libsumo:True gui:False save_model:False seed:131"
+        ),
+    }
+    nature_extract = {
+        **base,
+        "id": "module78-nature-extract",
+        "project": "Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+        "signature": "Nature_Emissions_gpu1_balanced_p100_20260605_153448/auto-adopted/p1803",
+        "cwd": "/home/erzhu419/Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+        "cmd": (
+            "/env/bin/python scripts/real_road_mapping/extract_open_berlin_corridor_actual_demand.py "
+            "--output-root runs --output-suffix routeguard050_v1"
+        ),
+    }
+    nature_sumo = {
+        **base,
+        "id": "module78-nature-sumo",
+        "project": "Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+        "signature": "Nature_Emissions_gpu1_balanced_p100_20260605_153448/auto-adopted/p4444",
+        "cwd": "/home/erzhu419/Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+        "cmd": "/env/bin/sumo -c runs/baseline_human/configs/human_baseline.sumocfg --fcd-output out.xml",
+    }
+
+    expected = {
+        "module78-offline": "offline_sumo_eval_c_le2_completed_history",
+        "module78-h2o-shell": "h2oplus_shell_eval_c_le2_completed_history",
+        "module78-zsw-metrics": "zsw_metrics_parser_c_le2_completed_history",
+        "module78-resco": "resco_config_eval_c_le2_completed_history",
+        "module78-nature-extract": "nature_emissions_extract_c_le2_completed_history",
+        "module78-nature-sumo": "nature_emissions_sumo_c_le2_completed_history",
+    }
+    rows = [offline, h2o, zsw, resco, nature_extract, nature_sumo]
+    mapped = {row["id"]: classify_record(row, include_representative=False) for row in rows}
+    check("Module78 maps each sumo_eval_cpu c_le2 residual command shape separately",
+          all(
+              mapped[row_id]["workload_key"] == key
+              and mapped[row_id]["mapping_mode"] == "strict_measured"
+              and math.isclose(float(mapped[row_id]["units"]), 1.0)
+              for row_id, key in expected.items()
+          ),
+          diag=str(mapped))
+
+    clean_simple = {
+        **base,
+        "id": "module78-clean-simple",
+        "project": "SimpleSAC",
+        "signature": "H2Oplus/r3_eval_nosnap_wsrl_nosnap_s42_s1001_od0.6",
+        "cmd": "bash /repo/SimpleSAC/run_multiseed_eval.sh wsrl_nosnap_s42 1001 0.6",
+    }
+    clean_cls = classify_record(clean_simple, include_representative=False)
+    check("Module78 does not steal clean Module59 SimpleSAC eval records",
+          clean_cls["workload_key"] == "sumo_eval_simple_sac_c_le2",
+          diag=str(clean_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "offline_sumo_eval_c_le2_completed_history": 1.2678824791597223e-05,
+        "h2oplus_shell_eval_c_le2_completed_history": 7.962432212763291e-05,
+        "zsw_metrics_parser_c_le2_completed_history": 0.058559362044645305,
+        "resco_config_eval_c_le2_completed_history": 7.378534661398382e-05,
+        "nature_emissions_extract_c_le2_completed_history": 0.022218150425893826,
+        "nature_emissions_sumo_c_le2_completed_history": 0.003339202281791623,
+    }
+    check("Module78 service cache exposes six profile1 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+
+    report = build_production_load_certificate(
+        records=rows,
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_offline_sumo_eval_c_le2_completed_history",
+            "production_h2oplus_shell_eval_c_le2_completed_history",
+            "production_zsw_metrics_parser_c_le2_completed_history",
+            "production_resco_config_eval_c_le2_completed_history",
+            "production_nature_emissions_extract_c_le2_completed_history",
+            "production_nature_emissions_sumo_c_le2_completed_history",
+        ),
+    )
+    check("production load certificate sums Module78 production-job units",
+          report["mapped_counts"] == {key: 1 for key in expected_rates}
+          and all(math.isclose(report["mapped_units"][key], 1.0) for key in expected_rates)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

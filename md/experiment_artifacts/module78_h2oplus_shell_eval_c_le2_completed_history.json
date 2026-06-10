@@ -1,0 +1,96 @@
+{
+  "cpu_counts": {
+    "2": 4
+  },
+  "duration_s": {
+    "max": 12558.976620197296,
+    "median": 8878.634427666664,
+    "min": 5359.964679718018
+  },
+  "interpretation": "Strict completed-history lower-service certificate for H2Oplus and complex SimpleSAC c_le2 shell eval records. The progress unit is one completed shell eval job; shell loops and checkpoint waits are not expanded into sub-units.",
+  "parsed_units_shell_eval_job": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "H2Oplus": 2,
+    "SimpleSAC": 2
+  },
+  "ram_counts": {
+    "1200": 1,
+    "2500": 1,
+    "615": 2
+  },
+  "realized_shell_eval_job_s": [
+    0.00017973931127451912,
+    0.00018656839359109528,
+    7.962432212763291e-05,
+    8.200986038080441e-05
+  ],
+  "record_count": 4,
+  "run_id": "module78_h2oplus_shell_eval_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "bash -lc 'set -euo pipefail\ncd /home/erzhu419/mine_code/sumo-rl/H2Oplus/SimpleSAC\nmethods=(p4_nojtt_ep20_s42 p4_nojtt_ep40_s42 p4_nojtt_ep60_s42 p4_nojtt_ep80_s42 p4_nojtt_final_s42 p4_nojtt_hs09_s42 p4_nojtt_hs08_s42)\nfor method in \"${methods[@]}\"; do\n  for seed in 1001 1002 1003; do\n    echo \"[P0/P1] eval method=${method} seed=${seed} od=1.0\"\n    bash run_multiseed_eval.sh \"$method\" \"$seed\" 1.0\n  done\ndone\n/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python aggregate_multiseed.py\n'",
+      "cpu_cores": 2,
+      "duration_s": 12558.976620197296,
+      "project": "SimpleSAC",
+      "ram_mb": 615,
+      "rate_shell_eval_job_s": 7.962432212763291e-05,
+      "signature": "H2Oplus/p0-p1_default_eval_s42",
+      "status": "done",
+      "task_id": "t3035",
+      "units": 1.0
+    },
+    {
+      "cmd": "bash SimpleSAC/run_p4_hold_calibration.sh",
+      "cpu_cores": 2,
+      "duration_s": 12193.655681848526,
+      "project": "H2Oplus",
+      "ram_mb": 1200,
+      "rate_shell_eval_job_s": 8.200986038080441e-05,
+      "signature": "H2Oplus/p4_hold_calib_val2001_then_test",
+      "status": "done",
+      "task_id": "t3040",
+      "units": 1.0
+    },
+    {
+      "cmd": "bash -lc 'set -euo pipefail; H2O_ROOT=/home/erzhu419/mine_code/sumo-rl/H2Oplus; ckpt80=\"\"; until ckpt80=$(find \"$H2O_ROOT/experiment_output\" -maxdepth 2 -path \"$H2O_ROOT/experiment_output/h2op_snap_p4_floor_ess_nojtt_seed42_*_pid*/checkpoint_epoch80.pt\" -printf \"%T@ %p\\n\" 2>/dev/null | sort -nr | awk \"NR == 1 {print \\$2}\") && [[ -n \"$ckpt80\" ]]; do echo \"[p4 eval] waiting for clean P4 no-JTT checkpoint_epoch80.pt\"; sleep 60; done; best=\"${ckpt80%/checkpoint_epoch80.pt}/checkpoint_best.pt\"; test ",
+      "cpu_cores": 2,
+      "duration_s": 5563.613173484802,
+      "project": "H2Oplus",
+      "ram_mb": 2500,
+      "rate_shell_eval_job_s": 0.00017973931127451912,
+      "signature": "H2Oplus/eval_p4_nojtt_s42_grid_epoch80_gated",
+      "status": "done",
+      "task_id": "t3023",
+      "units": 1.0
+    },
+    {
+      "cmd": "bash -lc 'set -euo pipefail\ncd /home/erzhu419/mine_code/sumo-rl/H2Oplus/SimpleSAC\nEXP_ROOT=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output\nwait_for_final() {\n  local pattern=\"$1\"\n  local found=\"\"\n  while true; do\n    found=$(find \"$EXP_ROOT\" -maxdepth 2 -path \"$EXP_ROOT/${pattern}/model_final.pt\" -print -quit 2>/dev/null || true)\n    if [[ -n \"$found\" ]]; then\n      echo \"[P2/P3] final model ready: $found\"\n      break\n    fi\n    echo \"[P2/P3] waiting for model_final.pt under pattern: ",
+      "cpu_cores": 2,
+      "duration_s": 5359.964679718018,
+      "project": "SimpleSAC",
+      "ram_mb": 615,
+      "rate_shell_eval_job_s": 0.00018656839359109528,
+      "signature": "H2Oplus/p2-p3_default_eval_s42",
+      "status": "done",
+      "task_id": "t3038",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module78_scheduler_queue_and_archive_30d_completed_active",
+  "total_units_shell_eval_job": 4.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "h2oplus_shell_eval_c_le2_completed_history"
+}

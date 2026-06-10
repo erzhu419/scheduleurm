@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module77
+## Status After Module78
 
 The original top sub-bucket was:
 
@@ -299,15 +299,29 @@ bamor_mujoco_c_le2_completed_history: completed_active = 16, raw_history_all = 1
 bamor_diagnostic_shard_c_le2_completed_history: completed_active = 3, raw_history_all = 3, unit = training_step, min = 101.339501734 training-step/s
 ```
 
+Module78 measured completed-history profile-1 lower-service points for the
+previous `sumo_eval_cpu|c_le2` first-probe blocker.  Each class uses one
+completed production command as its progress unit, rather than expanding
+resume/skip-existing/shell-loop commands into seed or episode counts:
+
+```text
+offline_sumo_eval_c_le2_completed_history: completed_active = 9, raw_history_all = 11, unit = eval_job, min = 0.000012679 eval-job/s
+h2oplus_shell_eval_c_le2_completed_history: completed_active = 4, raw_history_all = 5, unit = shell_eval_job, min = 0.000079624 shell-eval-job/s
+zsw_metrics_parser_c_le2_completed_history: completed_active = 1, raw_history_all = 1, unit = metrics_parse_job, min = 0.058559362 metrics-parse-job/s
+resco_config_eval_c_le2_completed_history: completed_active = 5, raw_history_all = 5, unit = resco_config_run, min = 0.000073785 resco-config-run/s
+nature_emissions_extract_c_le2_completed_history: completed_active = 1, raw_history_all = 1, unit = nature_extract_job, min = 0.022218150 nature-extract-job/s
+nature_emissions_sumo_c_le2_completed_history: completed_active = 1, raw_history_all = 1, unit = nature_sumo_run, min = 0.003339202 nature-sumo-run/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 113
-cpu_cores median = 8
+record_count = 94
+cpu_cores median = 11.5
 cpu_cores p90 = 48
 cpu_cores max = 61
-ram_mb median = 8192.000
+ram_mb median = 12797.500
 ram_mb p90 = 65536
 ram_mb max = 65536
 theorem_status = measurement_required
@@ -317,24 +331,23 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `sumo_eval_cpu|c_le2` | 21 | 0.185841 |
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.159292 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.150442 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.132743 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.115044 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.106195 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.053097 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.044248 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.017699 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.017699 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.017699 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.191489 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.180851 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.159574 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 14 | 0.148936 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.127660 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.063830 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.053191 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.021277 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.021277 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.021277 |
+| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.010638 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
@@ -396,9 +409,10 @@ ablation, baseline-rule, preflight/env-check, Transit/FreqHRL analysis-matrix,
 and Transit/FreqHRL merge work into five strict completed-history classes.
 Module77 closes the previous BAMOR c_le2 first-probe blocker by splitting
 train-compare, Mujoco, and diagnostic-shard work into separate profile-1
-completed-history training-step classes.  The global theorem remains open because
-113 completed/active production records
+completed-history training-step classes.  Module78 closes the previous
+`sumo_eval_cpu|c_le2` first-probe blocker with six completed-command service
+classes.  The global theorem remains open because 94 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 21 `sumo_eval_cpu|c_le2` records, 18 residual
-`freqduet_cpu_ablation|c_3_8` records, and 17
-`bamor_cpu_training|c_17_32` records.
+certificates, led by 18 residual `freqduet_cpu_ablation|c_3_8` records, 17
+`bamor_cpu_training|c_17_32` records, and 15
+`freqduet_cpu_ablation|c_33_64` records.

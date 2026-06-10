@@ -71,6 +71,12 @@ DEFAULT_TASKSETS = (
     "production_bamor_train_compare_c_le2_completed_history",
     "production_bamor_mujoco_c_le2_completed_history",
     "production_bamor_diagnostic_shard_c_le2_completed_history",
+    "production_offline_sumo_eval_c_le2_completed_history",
+    "production_h2oplus_shell_eval_c_le2_completed_history",
+    "production_zsw_metrics_parser_c_le2_completed_history",
+    "production_resco_config_eval_c_le2_completed_history",
+    "production_nature_emissions_extract_c_le2_completed_history",
+    "production_nature_emissions_sumo_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -545,6 +551,11 @@ def classify_record(
             "module59_simple_sac_sumo_eval_c_le2_completed_history",
             units=1.0,
         )
+
+    sumo_c_le2 = _sumo_eval_c_le2_completed_history_units(row=row, est_vram=est_vram, cpu=cpu)
+    if sumo_c_le2 is not None:
+        workload_key, units, reason = sumo_c_le2
+        return _mapped(workload_key, "strict_measured", reason, units=units)
 
     if _is_freqduet_runner_v3_allfreq_alllayers_c9_16(row=row, est_vram=est_vram, cpu=cpu):
         return _mapped(
@@ -1827,6 +1838,98 @@ def _is_simple_sac_sumo_eval_c_le2(*, row: Mapping[str, Any], est_vram: float, c
     if "bash -lc" in cmd_lower or "$" in cmd:
         return False
     return _parse_simple_sac_multiseed_eval_identity(cmd) is not None
+
+
+def _sumo_eval_c_le2_completed_history_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, str(row.get("description") or "").lower(), cmd_lower))
+
+    if project == "offline-sumo" or "/offline-sumo" in cwd or signature.startswith("offline-sumo/"):
+        accepted = (
+            "eval_checkpoints_parallel.py",
+            "eval_operational.py",
+            "eval_e10.py",
+            "eval_passenger.py",
+            "eval_nobc.py",
+            "eval_arbitrary_ckpts.py",
+        )
+        if any(script in cmd_lower for script in accepted):
+            return (
+                "offline_sumo_eval_c_le2_completed_history",
+                1.0,
+                "module78_offline_sumo_eval_c_le2_completed_history",
+            )
+
+    if (
+        project in {"h2oplus", "simplesac"}
+        or "/sumo-rl/h2oplus" in cwd
+        or signature.startswith("h2oplus/")
+    ):
+        if (
+            "bash -lc" in cmd_lower
+            or "run_p4_hold_calibration.sh" in cmd_lower
+            or "checkpoint_epoch80" in cmd_lower
+        ) and (
+            "run_multiseed_eval.sh" in cmd_lower
+            or "run_p4_hold_calibration.sh" in cmd_lower
+            or "checkpoint_epoch80" in cmd_lower
+        ):
+            return (
+                "h2oplus_shell_eval_c_le2_completed_history",
+                1.0,
+                "module78_h2oplus_shell_eval_c_le2_completed_history",
+            )
+
+    if (
+        "zsw_platform" in text
+        or "zsw_tsp_m0_gpu1" in text
+    ) and "m1_metrics_parser.py" in cmd_lower:
+        return (
+            "zsw_metrics_parser_c_le2_completed_history",
+            1.0,
+            "module78_zsw_metrics_parser_c_le2_completed_history",
+        )
+
+    if (
+        project == "config"
+        and "resco_benchmark/config" in cwd
+        and "main.py" in cmd_lower
+        and "episodes:" in cmd_lower
+    ):
+        return (
+            "resco_config_eval_c_le2_completed_history",
+            1.0,
+            "module78_resco_config_eval_c_le2_completed_history",
+        )
+
+    if project.startswith("nature_emissions") or signature.startswith("nature_emissions"):
+        if "extract_open_berlin_corridor_actual_demand.py" in cmd_lower:
+            return (
+                "nature_emissions_extract_c_le2_completed_history",
+                1.0,
+                "module78_nature_emissions_extract_c_le2_completed_history",
+            )
+        if "sumo " in f" {cmd_lower} " and ".sumocfg" in cmd_lower:
+            return (
+                "nature_emissions_sumo_c_le2_completed_history",
+                1.0,
+                "module78_nature_emissions_sumo_c_le2_completed_history",
+            )
+
+    return None
 
 
 def _parse_simple_sac_multiseed_eval_identity(cmd: str) -> tuple[str, int, float] | None:

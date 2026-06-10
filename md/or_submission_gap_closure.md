@@ -191,10 +191,10 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.000050804
-    representative mapping delta = 0.000050804
+    strict measured mapping delta = 0.000008435
+    representative mapping delta = 0.000008435
   Full global theorem coverage is still open because the representative run
-  leaves 1485 / 5980 tasks unmapped and maps 1896 tasks only by representative
+  leaves 1480 / 6179 tasks unmapped and maps 1925 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2766
-    mapped = 2295
-    strict mapped = 1387
-    measurement_required = 471
-    mapped_fraction = 0.829718
+    records = 2910
+    mapped = 2447
+    strict mapped = 1510
+    measurement_required = 463
+    mapped_fraction = 0.840893
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 113 / 2766 records
+    cpu_sumo_transit_eval_or_control = 94 / 2910 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -268,7 +268,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module77 raw-window LP = 0.000050804
+    strict mapped delta after Module78 raw-window LP = 0.000008435
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -623,8 +623,55 @@ Remaining scope limitation:
     note = some records specify --device cuda despite zero estimated VRAM, so the
            certificate is production-history service, not a generic CPU-only curve
 
+  Module78 closes the previous `sumo_eval_cpu|c_le2` first-probe blocker with
+  six completed-history certificates.  All use one completed production command
+  as the service unit to avoid overstating resume, skip-existing, checkpoint-wait,
+  and shell-loop work:
+    offline-sumo eval_*.py c_le2 commands
+      -> offline_sumo_eval_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 9
+    raw-window strict mapped count = 11
+    parsed completed-history work = 9 eval-job units
+    min completed wall-clock rate = 0.000012679 eval-job/s
+
+    H2Oplus/SimpleSAC complex shell eval c_le2 commands
+      -> h2oplus_shell_eval_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 4
+    raw-window strict mapped count = 5
+    parsed completed-history work = 4 shell-eval-job units
+    min completed wall-clock rate = 0.000079624 shell-eval-job/s
+
+    ZSW m1_metrics_parser.py c_le2 command
+      -> zsw_metrics_parser_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 1
+    parsed completed-history work = 1 metrics-parse-job unit
+    min completed wall-clock rate = 0.058559362 metrics-parse-job/s
+
+    RESCO config/main.py c_le2 commands
+      -> resco_config_eval_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 5 resco-config-run units
+    min completed wall-clock rate = 0.000073785 resco-config-run/s
+
+    Nature emissions demand extraction c_le2 command
+      -> nature_emissions_extract_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 1
+    parsed completed-history work = 1 nature-extract-job unit
+    min completed wall-clock rate = 0.022218150 nature-extract-job/s
+
+    Nature emissions direct SUMO c_le2 command
+      -> nature_emissions_sumo_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 1
+    parsed completed-history work = 1 nature-sumo-run unit
+    min completed wall-clock rate = 0.003339202 nature-sumo-run/s
+
   The current remaining top probe order is:
-    sumo_eval_cpu|c_le2 residual command shapes
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

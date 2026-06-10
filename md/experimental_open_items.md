@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 2766
-representative mapped = 2295
-strict mapped = 1387
-measurement_required = 471
-mapped_fraction = 0.829718
+records = 2910
+representative mapped = 2447
+strict mapped = 1510
+measurement_required = 463
+mapped_fraction = 0.840893
 ```
 
 最大未闭合 bucket 是：
@@ -278,6 +278,7 @@ after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766 completed-active 
 after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766 completed-active records
 after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766 completed-active records
 after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766 completed-active records
+after Module78:  cpu_sumo_transit_eval_or_control = 94 / 2910 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -584,12 +585,47 @@ workload_key = bamor_diagnostic_shard_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 3
 unit rule = parsed training steps
+
+closed completed-history slice = offline-sumo c_le2 eval_*.py production commands
+workload_key = offline_sumo_eval_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 9
+unit rule = one completed eval command
+
+closed completed-history slice = H2Oplus/SimpleSAC c_le2 complex shell eval jobs
+workload_key = h2oplus_shell_eval_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 4
+unit rule = one completed shell eval job
+
+closed completed-history singleton = ZSW c_le2 m1_metrics_parser.py
+workload_key = zsw_metrics_parser_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = one completed metrics parser job
+
+closed completed-history slice = RESCO config/main.py c_le2 control-eval runs
+workload_key = resco_config_eval_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = one completed RESCO config run
+
+closed completed-history singleton = Nature emissions demand extraction
+workload_key = nature_emissions_extract_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = one completed extraction job
+
+closed completed-history singleton = Nature emissions direct SUMO binary run
+workload_key = nature_emissions_sumo_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = one completed SUMO binary run
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

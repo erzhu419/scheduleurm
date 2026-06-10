@@ -304,6 +304,60 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module78_offline_sumo_eval_c_le2_completed_history_reports",
+        workload_key="offline_sumo_eval_c_le2_completed_history",
+        command_fingerprint="offline_sumo_eval_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module78_h2oplus_shell_eval_c_le2_completed_history_reports",
+        workload_key="h2oplus_shell_eval_c_le2_completed_history",
+        command_fingerprint="h2oplus_shell_eval_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module78_zsw_metrics_parser_c_le2_completed_history_reports",
+        workload_key="zsw_metrics_parser_c_le2_completed_history",
+        command_fingerprint="zsw_metrics_parser_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module78_resco_config_eval_c_le2_completed_history_reports",
+        workload_key="resco_config_eval_c_le2_completed_history",
+        command_fingerprint="resco_config_eval_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module78_nature_emissions_extract_c_le2_completed_history_reports",
+        workload_key="nature_emissions_extract_c_le2_completed_history",
+        command_fingerprint="nature_emissions_extract_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module78_nature_emissions_sumo_c_le2_completed_history_reports",
+        workload_key="nature_emissions_sumo_c_le2_completed_history",
+        command_fingerprint="nature_emissions_sumo_c_le2_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248_reports",
         workload_key="freqduet_cpu_ablation_c9_16",
         command_fingerprint="freqduet_cpu_ablation_main_hiro_c9_16_v1",
@@ -665,6 +719,12 @@ def legacy_policy() -> ReplayPolicy:
             "bamor_train_compare_c_le2_completed_history": 1,
             "bamor_mujoco_c_le2_completed_history": 1,
             "bamor_diagnostic_shard_c_le2_completed_history": 1,
+            "offline_sumo_eval_c_le2_completed_history": 1,
+            "h2oplus_shell_eval_c_le2_completed_history": 1,
+            "zsw_metrics_parser_c_le2_completed_history": 1,
+            "resco_config_eval_c_le2_completed_history": 1,
+            "nature_emissions_extract_c_le2_completed_history": 1,
+            "nature_emissions_sumo_c_le2_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

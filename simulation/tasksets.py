@@ -1907,6 +1907,188 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_offline_sumo_eval_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for offline-sumo c_le2 "
+                "evaluation commands. It covers completed no-GPU eval_*.py "
+                "production records requesting at most 2 scheduler CPU cores."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed production evaluation command, not "
+                "checkpoint, seed, or episode count, because several commands use "
+                "--skip_existing or resume semantics."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="offline_sumo_eval_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=9,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history offline-sumo c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module78 completed-history wall-clock audit "
+                        "for offline-sumo c_le2 eval command records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses one completed production eval command as the service unit.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_h2oplus_shell_eval_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for H2Oplus/SimpleSAC "
+                "complex shell eval commands in the c_le2 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed shell eval job; shell loops and "
+                "checkpoint-wait logic are not expanded into artificial sub-units."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="h2oplus_shell_eval_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history H2Oplus shell-eval c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module78 completed-history wall-clock audit "
+                        "for H2Oplus and complex SimpleSAC shell eval records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Clean one-shot SimpleSAC run_multiseed_eval.sh tasks remain in Module59.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_zsw_metrics_parser_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for ZSW metrics parser "
+                "records in the c_le2 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed metrics-parser job."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="zsw_metrics_parser_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history ZSW metrics parser singleton",
+                    benchmark_source="Scheduleurm module78 completed-history wall-clock audit for m1_metrics_parser.py.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="ZSW duration-bearing simulator runners remain covered by Module65.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_resco_config_eval_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for RESCO benchmark "
+                "config/main.py SUMO-control evaluation commands in the c_le2 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed RESCO config run; episode counts "
+                "are intentionally not charged as service units."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="resco_config_eval_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history RESCO config c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module78 completed-history wall-clock audit "
+                        "for traffic_signal_resco config/main.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses one completed config run as the conservative production-job unit.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_nature_emissions_extract_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure singleton for Nature emissions "
+                "real-road demand extraction in the c_le2 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed extraction job."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="nature_emissions_extract_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Nature emissions extraction singleton",
+                    benchmark_source=(
+                        "Scheduleurm module78 completed-history wall-clock audit "
+                        "for extract_open_berlin_corridor_actual_demand.py."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Separated from direct SUMO binary execution because the service semantics differ.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_nature_emissions_sumo_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure singleton for Nature emissions "
+                "direct SUMO binary execution in the c_le2 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed SUMO binary run."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="nature_emissions_sumo_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Nature emissions SUMO singleton",
+                    benchmark_source=(
+                        "Scheduleurm module78 completed-history wall-clock audit "
+                        "for direct SUMO .sumocfg execution."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Separated from extraction because direct simulator execution has a different service unit.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_zsw_tsp_sumo_eval_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for ZSW TSP/SUMO CPU eval "

@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module77.  It should be read together
+This note records the current gap after Module78.  It should be read together
 with:
 
 ```text
@@ -55,6 +55,12 @@ md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
 md/experiment_module77_bamor_train_compare_c_le2_completed_history.md
 md/experiment_module77_bamor_mujoco_c_le2_completed_history.md
 md/experiment_module77_bamor_diagnostic_shard_c_le2_completed_history.md
+md/experiment_module78_offline_sumo_eval_c_le2_completed_history.md
+md/experiment_module78_h2oplus_shell_eval_c_le2_completed_history.md
+md/experiment_module78_zsw_metrics_parser_c_le2_completed_history.md
+md/experiment_module78_resco_config_eval_c_le2_completed_history.md
+md/experiment_module78_nature_emissions_extract_c_le2_completed_history.md
+md/experiment_module78_nature_emissions_sumo_c_le2_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -329,16 +335,52 @@ workload_key = bamor_diagnostic_shard_c_le2_completed_history
 completed-active strict mapped count = 3
 feasible profiles = 1
 unit rule = parsed training steps
+
+completed-history slice = offline-sumo c_le2 eval_*.py production commands
+workload_key = offline_sumo_eval_c_le2_completed_history
+completed-active strict mapped count = 9
+feasible profiles = 1
+unit rule = one completed eval command
+
+completed-history slice = H2Oplus/SimpleSAC c_le2 complex shell eval jobs
+workload_key = h2oplus_shell_eval_c_le2_completed_history
+completed-active strict mapped count = 4
+feasible profiles = 1
+unit rule = one completed shell eval job
+
+completed-history singleton = ZSW c_le2 m1_metrics_parser.py
+workload_key = zsw_metrics_parser_c_le2_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = one completed metrics parser job
+
+completed-history slice = RESCO config/main.py c_le2 control-eval runs
+workload_key = resco_config_eval_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = one completed RESCO config run
+
+completed-history singleton = Nature emissions real-road demand extraction
+workload_key = nature_emissions_extract_c_le2_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = one completed extraction job
+
+completed-history singleton = Nature emissions direct SUMO binary run
+workload_key = nature_emissions_sumo_c_le2_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = one completed SUMO binary run
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2766
-strict completed-active mapped count = 1387
-representative completed-active mapped count = 2295
-measurement_required = 471
-cpu_sumo_transit_eval_or_control remaining = 113 / 2766
+completed_active_production records = 2910
+strict completed-active mapped count = 1510
+representative completed-active mapped count = 2447
+measurement_required = 463
+cpu_sumo_transit_eval_or_control remaining = 94 / 2910
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -396,6 +438,13 @@ not a pure CPU benchmark claim: several completed records specify `--device cuda
 while the scheduler estimated zero VRAM, so the safe interpretation is a
 production-history completed-service certificate for those command shapes.
 
+The previous `sumo_eval_cpu|c_le2` first-probe blocker is now closed at the
+command-shape level.  Module78 certifies offline-sumo eval scripts,
+H2Oplus/SimpleSAC complex shell eval jobs, ZSW metrics parsing, RESCO
+config/main.py runs, and Nature-emissions extraction/SUMO singletons separately.
+The service unit is one completed production command, which avoids overstating
+work for resume, `--skip_existing`, checkpoint-wait, and shell-loop commands.
+
 The previous `freqduet_cpu_ablation|c_65p` top bucket is now closed at the
 command-shape level.  Module69 splits it into high-CPU
 `run_freqduet_ablation.py`, promoted ep100 shell-batch, and native-promotion
@@ -411,7 +460,8 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
 212 / 2766 after Module74, 169 / 2766 after Module75,
-139 / 2766 after Module76, and 113 / 2766 after Module77.
+139 / 2766 after Module76, 113 / 2766 after Module77, and
+94 / 2910 after Module78.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -419,9 +469,10 @@ does the same for BAMOR c_9_16, and Module77 does the same for BAMOR c_le2.
 Remaining BAMOR c_17_32 records are still separate CPU/SUMO/transit obligations
 until they receive their own service certificates.
 
-Module65 closes only the ZSW TSP/SUMO c_le2 runner slice.  Remaining
-`sumo_eval_cpu|c_le2` records are CFCMT/offline-sumo/H2Oplus/direct-SUMO
-command shapes and remain separate obligations.
+Module65 closes only the ZSW TSP/SUMO c_le2 runner slice.  Module72 and Module78
+then close the remaining CFCMT/offline-sumo/H2Oplus/RESCO/Nature c_le2 SUMO/eval
+command shapes that have completed-history certificates.  Higher-CPU SUMO/eval
+records remain separate obligations.
 
 Module68 closes only parseable c33_64 native-promotion seed-unit records.  It
 does not authorize charging c65p/c17_32 native-promotion records, direct
@@ -476,6 +527,11 @@ diagnostic-shard training-step work.  The certificate keeps CUDA-flagged
 zero-estimated-VRAM records in production-history semantics instead of using them
 as generic CPU-only curves.
 
+Module78 closes the former `sumo_eval_cpu|c_le2` first-probe blocker with six
+explicit completed-history service classes.  It intentionally uses completed
+production-command units rather than parsed episode/checkpoint counts, making the
+new mapped-capacity slack smaller but more defensible.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -488,7 +544,7 @@ profile-1 lower-service rates.  This tightening is part of the theorem
 condition audit, not a reason to relabel slow tasks:
 
 ```text
-strict mapped delta = 0.000050804
+strict mapped delta = 0.000008435
 ```
 
 This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
@@ -507,7 +563,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes

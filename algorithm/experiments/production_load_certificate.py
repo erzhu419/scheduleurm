@@ -77,6 +77,9 @@ DEFAULT_TASKSETS = (
     "production_resco_config_eval_c_le2_completed_history",
     "production_nature_emissions_extract_c_le2_completed_history",
     "production_nature_emissions_sumo_c_le2_completed_history",
+    "production_transit_native_promotion_c3_8_persistent_stress_completed_history",
+    "production_transit_native_real_demand_batch_c3_8_completed_history",
+    "production_transit_native_real_demand_alighting_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -470,6 +473,11 @@ def classify_record(
             "module66_freqduet_runner_v3_c3_8_completed_history",
             units=runner_c3_8_units,
         )
+
+    transit_c3_8 = _transit_freqhrl_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
+    if transit_c3_8 is not None:
+        workload_key, units, reason = transit_c3_8
+        return _mapped(workload_key, "strict_measured", reason, units=units)
 
     c9_16_units = _freqduet_ablation_c9_16_units(row=row, est_vram=est_vram, cpu=cpu)
     if c9_16_units is not None:
@@ -2083,6 +2091,53 @@ def _transit_freqhrl_c_le2_units(
     if units is None or not math.isfinite(float(units)) or float(units) <= 0:
         return None
     return workload_key, float(units), reason
+
+
+def _transit_freqhrl_c3_8_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if not any(token in text for token in ("freq_hrl", "freqhrl", "transitduet", "native_real_demand")):
+        return None
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if "native_promotion_replan_validation" in cmd_lower:
+        units = _parse_native_promotion_seed_units(cmd)
+        if units is None or units <= 0:
+            return None
+        return (
+            "transit_native_promotion_c3_8_persistent_stress_completed_history",
+            float(units),
+            "module79_transit_native_promotion_c3_8_persistent_stress_completed_history",
+        )
+    if "native_real_demand_control_validation" in cmd_lower:
+        tokens = _shlex_tokens(cmd)
+        source_count = _transit_count_option(tokens, "--sources", 2)
+        units = 2.0 * source_count * _transit_seed_episode_units(tokens, seed_default=3)
+        if units <= 0:
+            return None
+        if "alighting_safe" in text or "alighting_rescue" in text:
+            return (
+                "transit_native_real_demand_alighting_c3_8_completed_history",
+                float(units),
+                "module79_transit_native_real_demand_alighting_c3_8_completed_history",
+            )
+        return (
+            "transit_native_real_demand_batch_c3_8_completed_history",
+            float(units),
+            "module79_transit_native_real_demand_batch_c3_8_completed_history",
+        )
+    return None
 
 
 def _shlex_tokens(cmd: str) -> list[str]:

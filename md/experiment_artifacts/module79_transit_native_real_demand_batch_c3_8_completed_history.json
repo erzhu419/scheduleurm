@@ -1,0 +1,139 @@
+{
+  "cpu_counts": {
+    "3": 1,
+    "4": 1,
+    "8": 5
+  },
+  "duration_s": {
+    "max": 3579.1732585430145,
+    "median": 1725.4179239273071,
+    "min": 91.21485161781311
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c3_8 native_real_demand_control_validation batch records. Units follow the existing native-control parser: 2 times source-count times seed-count times episodes.",
+  "parsed_units_native_control_episode": [
+    48.0,
+    48.0,
+    48.0,
+    48.0,
+    48.0,
+    48.0,
+    12.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 7
+  },
+  "ram_counts": {
+    "16384": 2,
+    "553": 1,
+    "8192": 4
+  },
+  "realized_native_control_episode_s": [
+    0.024117938117213227,
+    0.03147582622567347,
+    0.0293941646925364,
+    0.02589814751653569,
+    0.02781934703143971,
+    0.01341091825756977,
+    0.1315575236616024
+  ],
+  "record_count": 7,
+  "run_id": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --config transit_hrl/freq_transitduet/configs_freqduet/T_freqhrl_native_full.yaml \\\n  --sources afc apc \\\n  --seeds 31 41 51 61 71 81 91 101 111 121 131 141 \\\n  --episodes 1 \\\n  --device cpu \\\n  --max-series 8 \\\n  --min-bins 20 \\\n  --limit 8 \\\n  --min-pairs 10 \\\n  --output-dir transit_hrl/results/schedul",
+      "cpu_cores": 8,
+      "duration_s": 3579.1732585430145,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "rate_native_control_episode_s": 0.01341091825756977,
+      "signature": "TransitDuet/freqhrl-native-real-demand-v8-24pair-node003",
+      "status": "done",
+      "task_id": "t7949",
+      "units": 48.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nOUT=transit_hrl/results/scheduler_native_real_demand_reward_floor_throughput_v3_24pair\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --sources afc apc \\\n  --seeds 31 41 51 61 71 81 91 101 111 1",
+      "cpu_cores": 4,
+      "duration_s": 1990.2198839187622,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "rate_native_control_episode_s": 0.024117938117213227,
+      "signature": "TransitDuet/freq-hrl-native-real-demand-v3-reward-floor-throughput-24pair-retry-node004",
+      "status": "done",
+      "task_id": "t7751",
+      "units": 48.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --sources afc apc \\\n  --seeds 31 41 51 61 71 81 91 101 111 121 131 141 \\\n  --episodes 1 \\\n  --device cpu \\\n  --max-series 4 \\\n  --min-bins 24 \\\n  --limit 1000 \\\n  --min-pairs 10 \\\n  --output-dir transit_hrl/results/scheduler_native_real_demand_throughput_damped_v6_24pair\necho DONE_REAL_DEMAND_V6_24PAIR",
+      "cpu_cores": 8,
+      "duration_s": 1853.4144177436829,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "rate_native_control_episode_s": 0.02589814751653569,
+      "signature": "TransitDuet/freqhrl-native-real-demand-v6-24pair",
+      "status": "done",
+      "task_id": "t7886",
+      "units": 48.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --sources afc apc \\\n  --seeds 31 41 51 61 71 81 91 101 111 121 131 141 \\\n  --episodes 1 \\\n  --device cpu \\\n  --max-series 4 \\\n  --min-bins 24 \\\n  --limit 1000 \\\n  --min-pairs 10 \\\n  --output-dir transit_hrl/results/scheduler_native_real_demand_no_lower_damp_v7_24pair_node002\necho DONE_REAL_DEMAND_V7_NODE",
+      "cpu_cores": 8,
+      "duration_s": 1725.4179239273071,
+      "project": "TransitDuet",
+      "ram_mb": 8192,
+      "rate_native_control_episode_s": 0.02781934703143971,
+      "signature": "TransitDuet/freqhrl-native-real-demand-v7-24pair-node002",
+      "status": "done",
+      "task_id": "t7891",
+      "units": 48.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nOUT=transit_hrl/results/scheduler_native_real_demand_selective_reward_wait_v5_24pair\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation --sources afc apc --seeds 31 41 51 61 71 81 91 101 111 121 131 141",
+      "cpu_cores": 8,
+      "duration_s": 1632.977174282074,
+      "project": "TransitDuet",
+      "ram_mb": 16384,
+      "rate_native_control_episode_s": 0.0293941646925364,
+      "signature": "TransitDuet/freqhrl-native-real-demand-v5-selective-reward-wait-24pair",
+      "status": "done",
+      "task_id": "t7867",
+      "units": 48.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nOUT=transit_hrl/results/scheduler_native_real_demand_wait_pressure_v4_24pair\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation --sources afc apc --seeds 31 41 51 61 71 81 91 101 111 121 131 141 --episo",
+      "cpu_cores": 8,
+      "duration_s": 1524.9798259735107,
+      "project": "TransitDuet",
+      "ram_mb": 16384,
+      "rate_native_control_episode_s": 0.03147582622567347,
+      "signature": "TransitDuet/freqhrl-native-real-demand-v4-wait-pressure-24pair-node006-retry",
+      "status": "done",
+      "task_id": "t7826",
+      "units": 48.0
+    },
+    {
+      "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_real_demand_control_validation.py",
+      "cpu_cores": 3,
+      "duration_s": 91.21485161781311,
+      "project": "TransitDuet",
+      "ram_mb": 553,
+      "rate_native_control_episode_s": 0.1315575236616024,
+      "signature": "TransitDuet/auto-adopted/p4042572",
+      "status": "done",
+      "task_id": "t7958",
+      "units": 12.0
+    }
+  ],
+  "source_scope": "module79_scheduler_queue_and_archive_30d_completed_active",
+  "total_units_native_control_episode": 300.0,
+  "window": {
+    "end_ts": 1781069842.422357,
+    "start_ts": 1778477842.422357,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_native_real_demand_batch_c3_8_completed_history"
+}

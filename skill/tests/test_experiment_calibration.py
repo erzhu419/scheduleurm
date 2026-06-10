@@ -1554,6 +1554,124 @@ def test_module78_sumo_cle2_residual_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module79_transit_c3_8_native_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 4,
+        "ram_mb": 30000,
+        "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet/transit_hrl",
+    }
+    promotion = {
+        **base,
+        "id": "module79-promotion",
+        "project": "FreqHRLNative",
+        "signature": "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-v8-fixed-interval-cli",
+        "cmd": (
+            "PY=/env/bin/python; SEEDS=$($PY -c \"seeds=[3551,3581,3681,3961,4071,4101]; "
+            "print(' '.join(map(str, seeds[2:6])))\"); "
+            "$PY -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--preset persistent_stress --variants interval_only --seeds $SEEDS "
+            "--episodes 1 --min-pairs 1 --workers 4 --output-dir out"
+        ),
+    }
+    batch = {
+        **base,
+        "id": "module79-batch",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/freqhrl-native-real-demand-v8-24pair-node003",
+        "cmd": (
+            "PYTHONPATH=transit_hrl /env/bin/python -m "
+            "freq_hrl.experiments.transit.native_real_demand_control_validation "
+            "--sources afc apc --seeds 31 41 51 61 71 81 91 101 111 121 131 141 "
+            "--episodes 1 --device cpu --max-series 8 --min-bins 20 --limit 8 "
+            "--min-pairs 10 --output-dir out"
+        ),
+    }
+    alighting = {
+        **base,
+        "id": "module79-alighting",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node001-31_41",
+        "cmd": (
+            "PYTHONPATH=transit_hrl /env/bin/python -m "
+            "freq_hrl.experiments.transit.native_real_demand_control_validation "
+            "--control-profile alighting_safe_v2 --sources afc apc --seeds 31 41 "
+            "--episodes 1 --device cpu --min-pairs 2 --output-dir out"
+        ),
+    }
+    expected = {
+        "module79-promotion": (
+            "transit_native_promotion_c3_8_persistent_stress_completed_history",
+            4.0,
+        ),
+        "module79-batch": (
+            "transit_native_real_demand_batch_c3_8_completed_history",
+            48.0,
+        ),
+        "module79-alighting": (
+            "transit_native_real_demand_alighting_c3_8_completed_history",
+            8.0,
+        ),
+    }
+    rows = [promotion, batch, alighting]
+    mapped = {row["id"]: classify_record(row, include_representative=False) for row in rows}
+    check("Module79 maps c3_8 Transit/FreqHRL native command shapes separately",
+          all(
+              mapped[row_id]["workload_key"] == key
+              and mapped[row_id]["mapping_mode"] == "strict_measured"
+              and math.isclose(float(mapped[row_id]["units"]), units)
+              for row_id, (key, units) in expected.items()
+          ),
+          diag=str(mapped))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_native_promotion_c3_8_persistent_stress_completed_history": 0.008254465907208857,
+        "transit_native_real_demand_batch_c3_8_completed_history": 0.01341091825756977,
+        "transit_native_real_demand_alighting_c3_8_completed_history": 0.01943298920817775,
+    }
+    check("Module79 service cache exposes three profile1 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+
+    report = build_production_load_certificate(
+        records=rows,
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_transit_native_promotion_c3_8_persistent_stress_completed_history",
+            "production_transit_native_real_demand_batch_c3_8_completed_history",
+            "production_transit_native_real_demand_alighting_c3_8_completed_history",
+        ),
+    )
+    check("production load certificate sums Module79 parsed native units",
+          report["mapped_counts"] == {key: 1 for key in expected_rates}
+          and math.isclose(
+              report["mapped_units"]["transit_native_promotion_c3_8_persistent_stress_completed_history"],
+              4.0,
+          )
+          and math.isclose(
+              report["mapped_units"]["transit_native_real_demand_batch_c3_8_completed_history"],
+              48.0,
+          )
+          and math.isclose(
+              report["mapped_units"]["transit_native_real_demand_alighting_c3_8_completed_history"],
+              8.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

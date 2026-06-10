@@ -194,7 +194,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000008435
     representative mapping delta = 0.000008435
   Full global theorem coverage is still open because the representative run
-  leaves 1480 / 6179 tasks unmapped and maps 1925 tasks only by representative
+  leaves 1432 / 6328 tasks unmapped and maps 1946 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 2910
-    mapped = 2447
-    strict mapped = 1510
-    measurement_required = 463
-    mapped_fraction = 0.840893
+    records = 3058
+    mapped = 2616
+    strict mapped = 1658
+    measurement_required = 442
+    mapped_fraction = 0.855461
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 94 / 2910 records
+    cpu_sumo_transit_eval_or_control = 73 / 3058 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -671,14 +671,41 @@ Remaining scope limitation:
     parsed completed-history work = 1 nature-sumo-run unit
     min completed wall-clock rate = 0.003339202 nature-sumo-run/s
 
+  Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe blocker
+  by identifying the records as Transit/FreqHRL native commands and splitting
+  them into three native-service certificates:
+    native_promotion_replan_validation persistent-stress c3_8
+      -> transit_native_promotion_c3_8_persistent_stress_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    raw-window strict mapped count = 7
+    parsed completed-history work = 35 seed-episode units
+    min completed wall-clock rate = 0.008254466 seed-episode/s
+
+    native_real_demand_control_validation batch c3_8
+      -> transit_native_real_demand_batch_c3_8_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    raw-window strict mapped count = 28
+    parsed completed-history work = 300 native-control-episode units
+    min completed wall-clock rate = 0.013410918 native-control-episode/s
+
+    native_real_demand_control_validation alighting c3_8
+      -> transit_native_real_demand_alighting_c3_8_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    raw-window strict mapped count = 14
+    parsed completed-history work = 60 native-control-episode units
+    min completed wall-clock rate = 0.019432989 native-control-episode/s
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_3_8 residual native/control command shapes
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
-    transit_freqhrl_cpu_validation|c_3_8
     sumo_eval_cpu|c_3_8
+    transit_freqhrl_cpu_validation|c_3_8
     transit_freqhrl_cpu_validation|c_17_32
     sumo_eval_cpu|c_33_64
+    transit_freqhrl_cpu_validation|c_33_64
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

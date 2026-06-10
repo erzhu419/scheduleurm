@@ -665,7 +665,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                 TaskSetMember(
                     workload_key="cfcmt_feed_conversion_c_le2_completed_history",
                     resource_kind="cpu_sumo_transit",
-                    task_count=5,
+                    task_count=7,
                     total_units=1,
                     resource_count=1,
                     variation_cv=0.45,
@@ -1562,7 +1562,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                 TaskSetMember(
                     workload_key="bamor_train_compare_c9_16_completed_history",
                     resource_kind="cpu_sumo_transit",
-                    task_count=6,
+                    task_count=7,
                     total_units=1,
                     resource_count=1,
                     variation_cv=0.35,
@@ -2085,6 +2085,100 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     required_profiles=(1,),
                     empirical_status="real",
                     note="Separated from extraction because direct simulator execution has a different service unit.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_promotion_c3_8_persistent_stress_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c3_8 Transit/FreqHRL "
+                "native-promotion persistent-stress records that had been grouped "
+                "under the broad FreqDuet residual manifest bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c3_8_persistent_stress_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c3_8 native-promotion persistent-stress sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module79 completed-history wall-clock audit "
+                        "for c3_8 native_promotion_replan_validation persistent-stress records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="This is Transit/FreqHRL native work, not a FreqDuet ablation command.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_real_demand_batch_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c3_8 Transit/FreqHRL "
+                "native real-demand control batch validations."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed source-count, seed-count, and episode units. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_real_demand_batch_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c3_8 native real-demand batch sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module79 completed-history wall-clock audit "
+                        "for c3_8 native_real_demand_control_validation batch records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Separated from alighting shards because their command shape and run duration differ.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_real_demand_alighting_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c3_8 Transit/FreqHRL "
+                "native real-demand alighting-safe/rescue shard validations."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed source-count, seed-count, and episode units. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_real_demand_alighting_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=7,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c3_8 native real-demand alighting sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module79 completed-history wall-clock audit "
+                        "for c3_8 alighting-safe/rescue native_real_demand_control_validation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Separated from larger real-demand batch records to keep lower-service semantics tight.",
                 ),
             ),
         ),

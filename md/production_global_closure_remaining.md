@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module78.  It should be read together
+This note records the current gap after Module79.  It should be read together
 with:
 
 ```text
@@ -61,6 +61,9 @@ md/experiment_module78_zsw_metrics_parser_c_le2_completed_history.md
 md/experiment_module78_resco_config_eval_c_le2_completed_history.md
 md/experiment_module78_nature_emissions_extract_c_le2_completed_history.md
 md/experiment_module78_nature_emissions_sumo_c_le2_completed_history.md
+md/experiment_module79_transit_native_promotion_c3_8_persistent_stress_completed_history.md
+md/experiment_module79_transit_native_real_demand_batch_c3_8_completed_history.md
+md/experiment_module79_transit_native_real_demand_alighting_c3_8_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -371,16 +374,34 @@ workload_key = nature_emissions_sumo_c_le2_completed_history
 completed-active strict mapped count = 1
 feasible profiles = 1
 unit rule = one completed SUMO binary run
+
+completed-history slice = Transit/FreqHRL c3_8 native-promotion persistent stress
+workload_key = transit_native_promotion_c3_8_persistent_stress_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = parsed seed-count times episodes
+
+completed-history slice = Transit/FreqHRL c3_8 native real-demand batch validation
+workload_key = transit_native_real_demand_batch_c3_8_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = parsed native-control episode units
+
+completed-history slice = Transit/FreqHRL c3_8 native real-demand alighting shards
+workload_key = transit_native_real_demand_alighting_c3_8_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = parsed native-control episode units
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 2910
-strict completed-active mapped count = 1510
-representative completed-active mapped count = 2447
-measurement_required = 463
-cpu_sumo_transit_eval_or_control remaining = 94 / 2910
+completed_active_production records = 3058
+strict completed-active mapped count = 1658
+representative completed-active mapped count = 2616
+measurement_required = 442
+cpu_sumo_transit_eval_or_control remaining = 73 / 3058
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -445,6 +466,12 @@ config/main.py runs, and Nature-emissions extraction/SUMO singletons separately.
 The service unit is one completed production command, which avoids overstating
 work for resume, `--skip_existing`, checkpoint-wait, and shell-loop commands.
 
+The previous `freqduet_cpu_ablation|c_3_8` first-probe blocker is now closed at
+the native-service level.  Module79 identifies the residual rows as
+Transit/FreqHRL native commands, not FreqDuet ablation commands, and certifies
+native promotion, native real-demand batch, and alighting-shard service classes
+separately.
+
 The previous `freqduet_cpu_ablation|c_65p` top bucket is now closed at the
 command-shape level.  Module69 splits it into high-CPU
 `run_freqduet_ablation.py`, promoted ep100 shell-batch, and native-promotion
@@ -460,8 +487,8 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
 212 / 2766 after Module74, 169 / 2766 after Module75,
-139 / 2766 after Module76, 113 / 2766 after Module77, and
-94 / 2910 after Module78.
+139 / 2766 after Module76, 113 / 2766 after Module77,
+94 / 2910 after Module78, and 73 / 3058 after Module79.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -532,6 +559,10 @@ explicit completed-history service classes.  It intentionally uses completed
 production-command units rather than parsed episode/checkpoint counts, making the
 new mapped-capacity slack smaller but more defensible.
 
+Module79 closes the former `freqduet_cpu_ablation|c_3_8` first-probe blocker
+with three explicit native-service classes.  This corrects the manifest's broad
+keyword bucket rather than pretending the records are FreqDuet ablations.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -563,13 +594,13 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
-transit_freqhrl_cpu_validation|c_3_8
 sumo_eval_cpu|c_3_8
+transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 sumo_eval_cpu|c_33_64
+transit_freqhrl_cpu_validation|c_33_64
 ```
 
 For every slice, the required closure pattern is:

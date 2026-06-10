@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module78
+## Current Result After Module79
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 2910
-representative mapped = 2447
-strict mapped = 1510
-unmapped / measurement-required = 463
-representative mapped_fraction = 0.840893
+completed_active_production records = 3058
+representative mapped = 2616
+strict mapped = 1658
+unmapped / measurement-required = 442
+representative mapped_fraction = 0.855461
 capacity slack on mapped raw-window representative load from Module49 delta = 0.000008435
 global theorem closed = false
 ```
@@ -69,6 +69,14 @@ nature_emissions_extract_c_le2_completed_history = 1 / 2910 completed-active pro
 nature_emissions_sumo_c_le2_completed_history = 1 / 2910 completed-active production records
 ```
 
+Module79 then adds:
+
+```text
+transit_native_promotion_c3_8_persistent_stress_completed_history = 7 / 3058 completed-active production records
+transit_native_real_demand_batch_c3_8_completed_history = 7 / 3058 completed-active production records
+transit_native_real_demand_alighting_c3_8_completed_history = 7 / 3058 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -77,12 +85,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 144 | 0.049485 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 94 | 0.032302 |
-| `cpu_eval_generic` | measurement required | 82 | 0.028179 |
-| `artifact_io_control` | measurement required | 77 | 0.026460 |
-| `scheduler_control_plane` | measurement required | 50 | 0.017182 |
-| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005498 |
+| `generic_cpu_python` | measurement required | 144 | 0.047090 |
+| `cpu_eval_generic` | measurement required | 82 | 0.026815 |
+| `artifact_io_control` | measurement required | 77 | 0.025180 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 73 | 0.023872 |
+| `scheduler_control_plane` | measurement required | 50 | 0.016351 |
+| `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005232 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -113,6 +121,7 @@ after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766
 after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766
 after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766
 after Module78:  cpu_sumo_transit_eval_or_control = 94 / 2910
+after Module79:  cpu_sumo_transit_eval_or_control = 73 / 3058
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -167,6 +176,10 @@ splitting offline-sumo eval commands, H2Oplus/SimpleSAC complex shell eval jobs,
 ZSW metrics parsing, RESCO config/main.py runs, and Nature-emissions
 extraction/SUMO singletons.  The conservative unit is one completed production
 command, not an expanded episode/seed/checkpoint count.
+Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe blocker
+by recognizing the remaining records as Transit/FreqHRL native work and mapping
+persistent-stress native promotion, native real-demand batch validation, and
+alighting-safe/rescue shard validation separately.
 
 ## Interpretation
 
@@ -219,5 +232,5 @@ maps 9 completed-active offline-sumo eval records, 4 H2Oplus/SimpleSAC shell eva
 records, 5 RESCO config/main.py records, and three singleton parser/extraction/SUMO
 records.  The next
 closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`freqduet_cpu_ablation|c_3_8`, `bamor_cpu_training|c_17_32`, and
-`freqduet_cpu_ablation|c_33_64` in the regenerated Module53 manifest.
+`bamor_cpu_training|c_17_32`, `freqduet_cpu_ablation|c_33_64`, and
+`sumo_eval_cpu|c_3_8` in the regenerated Module53 manifest.

@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3280
-representative mapped = 2882
-strict mapped = 1849
-measurement_required = 398
-mapped_fraction = 0.878659
+records = 3327
+representative mapped = 2931
+strict mapped = 1898
+measurement_required = 396
+mapped_fraction = 0.880974
 ```
 
 最大未闭合 bucket 是：
@@ -288,6 +288,7 @@ after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214 completed-active r
 after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211 completed-active records
 after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255 completed-active records
 after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280 completed-active records
+after Module88:  cpu_sumo_transit_eval_or_control = 5 / 3327 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -677,12 +678,23 @@ closed population-boundary correction = external auto-adopt FreqDuet spin helper
 excluded command shape = freqduet_autoadopt_spin.py
 completed-active removed count = 2
 unit rule = none; no scheduler id/log/progress unit, so excluded from controlled arrivals
+
+closed completed-history slice = Transit/FreqHRL c33_64 trading policy
+workload_key = transit_trading_policy_c33_64_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = policy train/eval unit
+
+closed completed-history slice = Transit/FreqHRL c33_64 pressure matrix
+workload_key = transit_trading_pressure_matrix_c33_64_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = seed-step-asset-scenario-baseline
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8

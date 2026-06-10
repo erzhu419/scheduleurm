@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module87
+## Current Result After Module88
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3280
-representative mapped = 2882
-strict mapped = 1849
-unmapped / measurement-required = 398
-representative mapped_fraction = 0.878659
+completed_active_production records = 3327
+representative mapped = 2931
+strict mapped = 1898
+unmapped / measurement-required = 396
+representative mapped_fraction = 0.880974
 capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
 global theorem closed = false
 ```
@@ -138,6 +138,13 @@ external freqduet_autoadopt_spin.py helpers excluded = 2
 reason = external auto-adopted, no scheduler id, no scheduler log, no progress unit
 ```
 
+Module88 then adds:
+
+```text
+transit_trading_policy_c33_64_completed_history = 1 / 3327 completed-active production records
+transit_trading_pressure_matrix_c33_64_completed_history = 1 / 3327 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -146,12 +153,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 162 | 0.049390 |
-| `cpu_eval_generic` | measurement required | 82 | 0.025000 |
-| `artifact_io_control` | measurement required | 77 | 0.023476 |
-| `scheduler_control_plane` | measurement required | 56 | 0.017073 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004268 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 7 | 0.002134 |
+| `generic_cpu_python` | measurement required | 162 | 0.048693 |
+| `cpu_eval_generic` | measurement required | 82 | 0.024647 |
+| `artifact_io_control` | measurement required | 77 | 0.023144 |
+| `scheduler_control_plane` | measurement required | 56 | 0.016832 |
+| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004208 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 5 | 0.001503 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -191,6 +198,7 @@ after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214
 after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211
 after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255
 after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280
+after Module88:  cpu_sumo_transit_eval_or_control = 5 / 3327
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -285,6 +293,9 @@ Module87 removes the two external `freqduet_autoadopt_spin.py` helpers from the
 controlled-arrival theorem population.  This is not a service certificate; it is
 the same no-scheduler-id/no-log/no-progress-unit population-boundary correction
 used for unobservable external stdin/wait-for helpers.
+Module88 closes the c33_64 Transit/FreqHRL trading residual by mapping the
+policy-entry and pressure-test matrix command shapes into separate
+completed-history service classes.
 
 ## Interpretation
 
@@ -344,8 +355,9 @@ classes.  Module84 maps 6 completed-active Transit/FreqHRL c17_32 residual
 records across four service classes.  Module85 maps 6 completed-active c9_16
 wait-credit shell shards.  Module86 maps 5 completed-active offline-sumo c33_64
 eval-command shards.  Module87 excludes 2 external auto-adopt spin helpers from
-the controlled-arrival population.  The next closure targets are now the
-remaining CPU/SUMO/transit residual buckets, led by
-`transit_freqhrl_cpu_validation|c_33_64`,
-`transit_freqhrl_cpu_validation|c_9_16`, and
-`transit_freqhrl_cpu_validation|c_le2` in the regenerated Module53 manifest.
+the controlled-arrival population.  Module88 maps 2 completed-active c33_64
+Transit/FreqHRL trading records.  The next closure targets are now the remaining
+CPU/SUMO/transit residual buckets, led by
+`transit_freqhrl_cpu_validation|c_9_16`,
+`transit_freqhrl_cpu_validation|c_le2`, and `bamor_cpu_training|c_3_8` in the
+regenerated Module53 manifest.

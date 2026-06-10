@@ -1,0 +1,51 @@
+{
+  "cpu_counts": {
+    "61": 1
+  },
+  "duration_s": {
+    "max": 68.14454412460327,
+    "median": 68.14454412460327,
+    "min": 68.14454412460327
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c33_64 Transit/FreqHRL pressure-test matrix production records. Units reuse the established seed-step-asset times scenario and baseline parser.",
+  "parsed_units_seed_step_asset_scenario_baseline": [
+    388800.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "64000": 1
+  },
+  "realized_seed_step_asset_scenario_baseline_s": [
+    5705.519128414355
+  ],
+  "record_count": 1,
+  "run_id": "module88_transit_trading_pressure_matrix_c33_64_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.pressure_test_matrix --scenarios persistent_shift stationary_low_noise stationary_high_noise --seeds 42 123 456 789 2026 --steps 720 --assets 3 --workers 61 --output-dir transit_hrl/results/trading_pressure_matrix_part0",
+      "cpu_cores": 61,
+      "duration_s": 68.14454412460327,
+      "project": "TransitDuet",
+      "ram_mb": 64000,
+      "rate_seed_step_asset_scenario_baseline_s": 5705.519128414355,
+      "signature": "TransitDuet/FreqHRL-trading-pressure-part0-w61-results",
+      "status": "done",
+      "task_id": "t5048",
+      "units": 388800.0
+    }
+  ],
+  "source_scope": "module88_transit_trading_pressure_matrix_c33_64_completed_history_scheduler_queue_archive_completed_active",
+  "total_units_seed_step_asset_scenario_baseline": 388800.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_trading_pressure_matrix_c33_64_completed_history"
+}

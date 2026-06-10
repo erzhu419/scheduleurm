@@ -99,6 +99,8 @@ DEFAULT_TASKSETS = (
     "production_transit_trading_promotion_recovery_c17_32_completed_history",
     "production_transit_demand_estimator_c17_32_completed_history",
     "production_transit_gap_closure_c17_32_completed_history",
+    "production_transit_trading_policy_c33_64_completed_history",
+    "production_transit_trading_pressure_matrix_c33_64_completed_history",
     "production_bamor_mujoco_c17_32_completed_history",
     "production_bamor_diagnostic_shard_c17_32_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
@@ -339,6 +341,16 @@ def classify_record(
             "strict_measured",
             "module81_freqduet_runner_v3_c33_64_completed_history",
             units=runner_c33_64_units,
+        )
+
+    transit_c33_64_units = _transit_freqhrl_c33_64_trading_units(row=row, est_vram=est_vram, cpu=cpu)
+    if transit_c33_64_units is not None:
+        workload_key, units, reason = transit_c33_64_units
+        return _mapped(
+            workload_key,
+            "strict_measured",
+            reason,
+            units=units,
         )
 
     offline_sumo_c33_64 = _offline_sumo_eval_c33_64_units(
@@ -991,6 +1003,47 @@ def _transit_freqhrl_c17_32_residual_units(
             "transit_gap_closure_c17_32_completed_history",
             float(units),
             "module84_transit_gap_closure_c17_32_completed_history",
+        )
+    return None
+
+
+def _transit_freqhrl_c33_64_trading_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if not (32.0 < float(cpu) <= 64.0):
+        return None
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if "bamor" in text:
+        return None
+    if not any(token in text for token in ("transitduet", "freq_hrl", "freqhrl", "transit_hrl")):
+        return None
+    cmd = str(row.get("cmd") or "")
+    tokens = _shlex_tokens(cmd)
+    module = _python_module_from_tokens(tokens)
+    if not module:
+        return None
+    if module.endswith("trading.policy_entry"):
+        return (
+            "transit_trading_policy_c33_64_completed_history",
+            float(_transit_trading_policy_entry_units(tokens)),
+            "module88_transit_trading_policy_c33_64_completed_history",
+        )
+    if module.endswith("trading.pressure_test_matrix"):
+        scenario_count = _transit_count_option(tokens, "--scenarios", 6)
+        baseline_count = _transit_count_option(tokens, "--baselines", 12)
+        units = _transit_seed_step_asset_units(tokens) * scenario_count * baseline_count
+        return (
+            "transit_trading_pressure_matrix_c33_64_completed_history",
+            float(units),
+            "module88_transit_trading_pressure_matrix_c33_64_completed_history",
         )
     return None
 

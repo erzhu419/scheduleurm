@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 
-This note records the current gap after Module87.  It should be read together
+This note records the current gap after Module88.  It should be read together
 with:
 
 ```text
@@ -84,6 +84,8 @@ md/experiment_module84_transit_gap_closure_c17_32_completed_history.md
 md/experiment_module85_transit_native_promotion_c9_16_wait_credit_shell_completed_history.md
 md/experiment_module86_offline_sumo_eval_c33_64_completed_history.md
 md/experiment_module87_external_auto_adopt_spin_population_boundary.md
+md/experiment_module88_transit_trading_policy_c33_64_completed_history.md
+md/experiment_module88_transit_trading_pressure_matrix_c33_64_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -493,11 +495,11 @@ unit rule = one completed eval command; skip-existing item ranges are not expand
 Not yet closed:
 
 ```text
-completed_active_production records = 3280
-strict completed-active mapped count = 1849
-representative completed-active mapped count = 2882
-measurement_required = 398
-cpu_sumo_transit_eval_or_control remaining = 7 / 3280
+completed_active_production records = 3327
+strict completed-active mapped count = 1898
+representative completed-active mapped count = 2931
+measurement_required = 396
+cpu_sumo_transit_eval_or_control remaining = 5 / 3327
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -592,7 +594,7 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
 43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
 Module83, 20 / 3214 after Module84, 14 / 3211 after Module85, and
-10 / 3255 after Module86, and 7 / 3280 after Module87.
+10 / 3255 after Module86, 7 / 3280 after Module87, and 5 / 3327 after Module88.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -714,6 +716,11 @@ not a service-rate shortcut: it applies only to external auto-adopted helper
 records with no scheduler id, no scheduler log, and no reproducible progress
 unit.
 
+Module88 closes the former `transit_freqhrl_cpu_validation|c_33_64` first-probe
+blocker by splitting the two completed-active records into c33_64 trading policy
+and pressure-matrix completed-history service classes.  It reuses the existing
+policy and pressure parsers rather than merging unlike work under one rate.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -745,7 +752,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8

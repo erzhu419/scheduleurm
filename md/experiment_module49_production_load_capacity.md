@@ -125,12 +125,15 @@ Module86 closes the offline-sumo c33_64 eval-command residual with the same
 conservative service semantics as Module78: one completed production eval
 command is the progress unit because the records use `--skip_existing`/resume
 semantics and cannot be safely expanded into item or checkpoint counts.
+Module88 closes the c33_64 Transit/FreqHRL trading residual by splitting
+policy-entry and pressure-test matrix commands into separate completed-history
+service classes that reuse the existing policy and pressure unit parsers.
 
 ```text
-record_count_window = 6658
-mapped_task_count = 3229
-mapped_fraction = 0.484980
-unmapped_task_count = 3429
+record_count_window = 6704
+mapped_task_count = 3277
+mapped_fraction = 0.488813
+unmapped_task_count = 3427
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -157,6 +160,8 @@ strict rows most recently added to the mapped slice are:
 | `transit_gap_closure_c17_32_completed_history` | 8 | 0.546666667 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `offline_sumo_eval_c33_64_completed_history` | 15 | 0.000005787 |
+| `transit_trading_policy_c33_64_completed_history` | 1 | 0.008333333 |
+| `transit_trading_pressure_matrix_c33_64_completed_history` | 1 | 0.150000000 |
 
 Capacity LP:
 
@@ -182,12 +187,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6658
-mapped_task_count = 5336
+record_count_window = 6704
+mapped_task_count = 5384
 representative_mapped_task_count = 2107
-mapped_fraction = 0.801442
-strict_mapped_fraction = 0.484980
-unmapped_task_count = 1322
+mapped_fraction = 0.803103
+strict_mapped_fraction = 0.488813
+unmapped_task_count = 1320
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -200,7 +205,7 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has been regenerated after Module86, but
+The representative raw-window artifact has been regenerated after Module88, but
 it remains diagnostic.  Use the strict Module49 artifact above for the current
 proof-facing mapped capacity slice.
 
@@ -288,6 +293,8 @@ rows to a FreqDuet ablation service class.
 Module86 maps c33_64 offline-sumo eval records to a separate completed-history
 service class.  It uses one completed eval command as the work unit and does not
 expand `--skip_existing` item ranges into artificial service.
+Module88 maps c33_64 Transit/FreqHRL trading policy and pressure-test matrix
+records with separate completed-history lower-service rows.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
@@ -313,8 +320,8 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3429 / 6658 tasks
-representative unmapped: 1322 / 6658 tasks
+strict unmapped: 3427 / 6704 tasks
+representative unmapped: 1320 / 6704 tasks
 representative-mapped but not theorem-grade: 2107 tasks
 ```
 

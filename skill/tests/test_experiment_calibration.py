@@ -2183,6 +2183,93 @@ def test_module84_transit_c17_32_residual_completed_history_profile1(check, sch)
           diag=str(report))
 
 
+def test_module88_transit_c33_64_trading_completed_history_profile1(check, sch):
+    base = {
+        "project": "TransitDuet",
+        "signature": "TransitDuet/module88",
+        "description": "Transit/FreqHRL c33_64 trading residual",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 48,
+        "ram_mb": 64000,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+    }
+    policy = dict(base)
+    policy["id"] = "module88-policy-c33"
+    policy["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.trading.policy_entry --mode train "
+        "--train-seeds 42 123 456 789 2026 "
+        "--eval-seeds 31415 27182 16180 11235 4242 "
+        "--steps 720 --assets 3 --scenario persistent_shift "
+        "--generations 16 --population 48 --elite-frac 0.25 "
+        "--workers 48 --output-dir out"
+    )
+    policy_cls = classify_record(policy, include_representative=False)
+    check("Module88 maps c33_64 policy_entry with established policy units",
+          policy_cls["workload_key"] == "transit_trading_policy_c33_64_completed_history"
+          and math.isclose(float(policy_cls["units"]), 8305200.0),
+          diag=str(policy_cls))
+
+    pressure = dict(base)
+    pressure["id"] = "module88-pressure-c33"
+    pressure["cpu_cores"] = 61
+    pressure["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.trading.pressure_test_matrix "
+        "--scenarios persistent_shift stationary_low_noise stationary_high_noise "
+        "--seeds 42 123 456 789 2026 --steps 720 --assets 3 "
+        "--workers 61 --output-dir out"
+    )
+    pressure_cls = classify_record(pressure, include_representative=False)
+    check("Module88 maps c33_64 pressure matrix with scenario-baseline units",
+          pressure_cls["workload_key"] == "transit_trading_pressure_matrix_c33_64_completed_history"
+          and math.isclose(float(pressure_cls["units"]), 388800.0),
+          diag=str(pressure_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_trading_policy_c33_64_completed_history": 66082.5196870828,
+        "transit_trading_pressure_matrix_c33_64_completed_history": 5705.519128414355,
+    }
+    check("Module88 service cache exposes two profile1 c33_64 Transit lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+
+    tasksets = {
+        "production_transit_trading_policy_c33_64_completed_history",
+        "production_transit_trading_pressure_matrix_c33_64_completed_history",
+    }
+    check("Module88 tasksets are included in the default production certificate",
+          tasksets.issubset(set(DEFAULT_TASKSETS)),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[policy, pressure],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=tuple(sorted(tasksets)),
+    )
+    check("production load certificate certifies Module88 c33_64 Transit trading slices",
+          report["mapped_counts"] == {
+              "transit_trading_policy_c33_64_completed_history": 1,
+              "transit_trading_pressure_matrix_c33_64_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_trading_policy_c33_64_completed_history"], 8305200.0)
+          and math.isclose(report["mapped_units"]["transit_trading_pressure_matrix_c33_64_completed_history"], 388800.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

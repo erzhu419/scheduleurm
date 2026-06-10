@@ -547,6 +547,24 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module88_transit_trading_policy_c33_64_completed_history_reports",
+        workload_key="transit_trading_policy_c33_64_completed_history",
+        command_fingerprint="transit_trading_policy_c33_64_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module88_transit_trading_pressure_matrix_c33_64_completed_history_reports",
+        workload_key="transit_trading_pressure_matrix_c33_64_completed_history",
+        command_fingerprint="transit_trading_pressure_matrix_c33_64_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248_reports",
         workload_key="freqduet_cpu_ablation_c9_16",
         command_fingerprint="freqduet_cpu_ablation_main_hiro_c9_16_v1",
@@ -920,6 +938,8 @@ def legacy_policy() -> ReplayPolicy:
             "transit_trading_promotion_recovery_c17_32_completed_history": 1,
             "transit_demand_estimator_c17_32_completed_history": 1,
             "transit_gap_closure_c17_32_completed_history": 1,
+            "transit_trading_policy_c33_64_completed_history": 1,
+            "transit_trading_pressure_matrix_c33_64_completed_history": 1,
             "bamor_train_compare_c9_16_completed_history": 1,
             "bamor_mujoco_c9_16_completed_history": 1,
             "bamor_diagnostic_shard_c9_16_completed_history": 1,

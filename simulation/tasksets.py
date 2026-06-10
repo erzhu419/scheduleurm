@@ -2863,6 +2863,71 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_trading_policy_c33_64_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_33_64 Transit/FreqHRL "
+                "trading policy-entry training commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with the existing policy train/eval unit parser. Only profile 1 "
+                "is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_policy_c33_64_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit policy-entry c33_64 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module88 completed-history wall-clock audit "
+                        "for c_33_64 freq_hrl.experiments.trading.policy_entry records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Units reuse the established policy train/eval parser.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_trading_pressure_matrix_c33_64_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_33_64 Transit/FreqHRL "
+                "trading pressure-test matrix commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-step-asset times scenario and baseline units. "
+                "Only profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_pressure_matrix_c33_64_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit pressure-matrix c33_64 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module88 completed-history wall-clock audit "
+                        "for c_33_64 freq_hrl.experiments.trading.pressure_test_matrix records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Units reuse the Module70/84 pressure-matrix parser: seeds "
+                        "times steps times assets times scenario count times baseline count."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

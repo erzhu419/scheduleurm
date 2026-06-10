@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module87
+## Status After Module88
 
 The original top sub-bucket was:
 
@@ -394,17 +394,24 @@ reason = external auto-adopted, no scheduler id, no log, no progress unit
 service certificate = none
 ```
 
+Module88 then closes the c33_64 Transit/FreqHRL trading residual:
+
+```text
+transit_trading_policy_c33_64_completed_history: completed_active = 1, raw_history_all = 1, unit = policy_train_eval_unit, min = 66082.519687083 policy-train-eval-unit/s
+transit_trading_pressure_matrix_c33_64_completed_history: completed_active = 1, raw_history_all = 1, unit = seed_step_asset_scenario_baseline, min = 5705.519128414 seed-step-asset-scenario-baseline/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 7
-cpu_cores median = 15.000000
-cpu_cores p90 = 48
-cpu_cores max = 61
-ram_mb median = 625.000
-ram_mb p90 = 64000
-ram_mb max = 64000
+record_count = 5
+cpu_cores median = 7.000000
+cpu_cores p90 = 15
+cpu_cores max = 15
+ram_mb median = 528.000
+ram_mb p90 = 625
+ram_mb max = 630
 theorem_status = measurement_required
 ```
 
@@ -412,17 +419,15 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.285714 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.285714 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.285714 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.142857 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.400000 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.400000 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.200000 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8
@@ -512,7 +517,9 @@ therefore removed from the current first-probe order.
 Module87 removes two external auto-adopt `freqduet_autoadopt_spin.py` helpers
 from the controlled-arrival theorem population; this is a population-boundary
 correction, not a service-rate claim.
-The global theorem remains open because 7 completed/active production records
+Module88 closes the c33_64 Transit/FreqHRL trading policy and pressure-matrix
+residual with separated completed-history lower-service rows.
+The global theorem remains open because 5 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by two c33/c9/low-CPU Transit/FreqHRL residual buckets and
-one BAMOR c3_8 residual.
+certificates, led by c9_16 and low-CPU Transit/FreqHRL residual buckets and one
+BAMOR c3_8 residual.

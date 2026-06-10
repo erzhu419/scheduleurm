@@ -3,13 +3,11 @@
   "interpretation": "This manifest extracts real production templates for a missing coverage bucket. It does not certify service until the listed sub-buckets receive progress-bearing service curves.",
   "probe_grid": {
     "cpu_buckets": [
-      "c_33_64",
       "c_3_8",
       "c_9_16",
       "c_le2"
     ],
     "first_probe_order": [
-      "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
       "transit_freqhrl_cpu_validation|c_le2",
       "bamor_cpu_training|c_3_8"
@@ -27,101 +25,28 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 6
+    "TransitDuet": 4
   },
-  "record_count": 7,
+  "record_count": 5,
   "resource_summary": {
     "cpu_cores": {
-      "max": 61.0,
-      "median": 15.0,
+      "max": 15.0,
+      "median": 7.0,
       "min": 2.0,
-      "p90": 48.0
+      "p90": 15.0
     },
     "ram_mb": {
-      "max": 64000.0,
-      "median": 625.0,
+      "max": 630.0,
+      "median": 528.0,
       "min": 94.0,
-      "p90": 64000.0
+      "p90": 625.0
     }
   },
   "status_counts": {
-    "done": 7
+    "done": 5
   },
-  "sub_bucket_count": 4,
+  "sub_bucket_count": 3,
   "sub_buckets": [
-    {
-      "count": 2,
-      "examples": [
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.policy_entry --mode train --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --generations 16 --population 48 --elite-frac 0.25 --workers 48 --output-dir transit_hrl/results/trading_policy_learned_linear",
-          "cpu_cores": 48,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL learned linear trading policy, 48 workers on jtl110cpu",
-          "eta_seconds": 0,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 64000,
-          "signature": "TransitDuet/FreqHRL-trading-policy-linear-w48",
-          "status": "done",
-          "task_id": "t5038"
-        },
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.pressure_test_matrix --scenarios persistent_shift stationary_low_noise stationary_high_noise --seeds 42 123 456 789 2026 --steps 720 --assets 3 --workers 61 --output-dir transit_hrl/results/trading_pressure_matrix_part0",
-          "cpu_cores": 61,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL trading pressure matrix part0, 61 workers on jtl110cpu",
-          "eta_seconds": 39,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 64000,
-          "signature": "TransitDuet/FreqHRL-trading-pressure-part0-w61-results",
-          "status": "done",
-          "task_id": "t5048"
-        }
-      ],
-      "fraction": 0.2857142857142857,
-      "project_counts": {
-        "TransitDuet": 2
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          48,
-          61
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 61.0,
-          "median": 54.5,
-          "min": 48.0,
-          "p90": 48.0
-        },
-        "ram_mb": {
-          "max": 64000.0,
-          "median": 64000.0,
-          "min": 64000.0,
-          "p90": 64000.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/FreqHRL-trading-policy-linear-w48": 1,
-        "TransitDuet/FreqHRL-trading-pressure-part0-w61-results": 1
-      },
-      "sub_bucket": "transit_freqhrl_cpu_validation|c_33_64"
-    },
     {
       "count": 2,
       "examples": [
@@ -152,7 +77,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.2857142857142857,
+      "fraction": 0.4,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -224,7 +149,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.2857142857142857,
+      "fraction": 0.4,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -283,7 +208,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.14285714285714285,
+      "fraction": 0.2,
       "project_counts": {
         "BAMOR": 1
       },
@@ -327,8 +252,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781132675.112572,
-    "start_ts": 1778540675.112572,
+    "end_ts": 1781133512.618801,
+    "start_ts": 1778541512.618801,
     "window_days": 30.0
   }
 }

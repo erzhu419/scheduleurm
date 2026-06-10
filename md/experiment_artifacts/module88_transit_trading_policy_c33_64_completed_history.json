@@ -1,0 +1,51 @@
+{
+  "cpu_counts": {
+    "48": 1
+  },
+  "duration_s": {
+    "max": 125.67922711372375,
+    "median": 125.67922711372375,
+    "min": 125.67922711372375
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c33_64 Transit/FreqHRL trading policy-entry production records. Units reuse the established policy train/eval parser.",
+  "parsed_units_policy_train_eval_unit": [
+    8305200.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "64000": 1
+  },
+  "realized_policy_train_eval_unit_s": [
+    66082.5196870828
+  ],
+  "record_count": 1,
+  "run_id": "module88_transit_trading_policy_c33_64_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.policy_entry --mode train --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --generations 16 --population 48 --elite-frac 0.25 --workers 48 --output-dir transit_hrl/results/trading_policy_learned_linear",
+      "cpu_cores": 48,
+      "duration_s": 125.67922711372375,
+      "project": "TransitDuet",
+      "ram_mb": 64000,
+      "rate_policy_train_eval_unit_s": 66082.5196870828,
+      "signature": "TransitDuet/FreqHRL-trading-policy-linear-w48",
+      "status": "done",
+      "task_id": "t5038",
+      "units": 8305200.0
+    }
+  ],
+  "source_scope": "module88_transit_trading_policy_c33_64_completed_history_scheduler_queue_archive_completed_active",
+  "total_units_policy_train_eval_unit": 8305200.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_trading_policy_c33_64_completed_history"
+}

@@ -1,0 +1,199 @@
+{
+  "cpu_counts": {
+    "1": 13,
+    "2": 3
+  },
+  "duration_s": {
+    "max": 1557.0415573120117,
+    "median": 543.0309196710587,
+    "min": 245.4743196964264
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c_le2 train_bamor_mujoco.py production records with parseable training-step units. Some commands specify --device cuda while the scheduler record has zero estimated VRAM; this is a completed-history service class, not a pure CPU microbenchmark.",
+  "parsed_units_training_step": [
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    20000.0,
+    60000.0,
+    6000.0,
+    60000.0,
+    6000.0,
+    60000.0,
+    60000.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 16
+  },
+  "ram_counts": {
+    "1423": 1,
+    "1599": 1,
+    "1606": 3,
+    "1607": 3,
+    "1608": 3,
+    "1609": 1,
+    "1621": 1,
+    "1650": 1,
+    "1674": 1,
+    "2841": 1
+  },
+  "realized_training_step_s": [
+    80.82273180800367,
+    47.22554670240067,
+    39.06326946586449,
+    34.80699790760043,
+    38.613696590650946,
+    30.427522780438625,
+    34.2482186455374,
+    41.45840625949873,
+    36.72320818319673,
+    36.93804906306593,
+    90.02008238102049,
+    24.442475316440802,
+    38.53461695883095,
+    23.68602883211671,
+    50.085595240950404,
+    52.3958506837289
+  ],
+  "record_count": 16,
+  "run_id": "module77_bamor_mujoco_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v3_contrast_stratified --total_steps 6000 --switch_interval 3000 --seed 0 --num_seeds 1 --save_dir results/smoke_v3_contrast_mujoco --eval_freq 6000 --device cuda --hidden 64",
+      "cpu_cores": 2,
+      "duration_s": 253.31388568878174,
+      "project": "BAMOR",
+      "rate_unit_s": 23.68602883211671,
+      "signature": "BAMOR/auto-adopted/p327220",
+      "task_id": "t8076",
+      "units": 6000.0
+    },
+    {
+      "cmd": "python3 train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v3_seq_belief --total_steps 6000 --switch_interval 3000 --seed 0 --num_seeds 1 --save_dir results/smoke_v3_mujoco --eval_freq 6000 --device cuda --hidden 64",
+      "cpu_cores": 2,
+      "duration_s": 245.4743196964264,
+      "project": "BAMOR",
+      "rate_unit_s": 24.442475316440802,
+      "signature": "BAMOR/auto-adopted/p286234",
+      "task_id": "t8057",
+      "units": 6000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_generic --total_steps 20000 --switch_interval 10000 --seed 1 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 657.2996475696564,
+      "project": "BAMOR",
+      "rate_unit_s": 30.427522780438625,
+      "signature": "BAMOR/auto-adopted/p4023047",
+      "task_id": "t7953",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_generic --total_steps 20000 --switch_interval 10000 --seed 2 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 583.9719784259796,
+      "project": "BAMOR",
+      "rate_unit_s": 34.2482186455374,
+      "signature": "BAMOR/auto-adopted/p4028371",
+      "task_id": "t7954",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_contrast_hybrid --total_steps 20000 --switch_interval 10000 --seed 2 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 574.5970983505249,
+      "project": "BAMOR",
+      "rate_unit_s": 34.80699790760043,
+      "signature": "BAMOR/auto-adopted/p4016719",
+      "task_id": "t7945",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_hybrid --total_steps 20000 --switch_interval 10000 --seed 1 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 544.6147270202637,
+      "project": "BAMOR",
+      "rate_unit_s": 36.72320818319673,
+      "signature": "BAMOR/auto-adopted/p4035703",
+      "task_id": "t7956",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_hybrid --total_steps 20000 --switch_interval 10000 --seed 2 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 541.4471123218536,
+      "project": "BAMOR",
+      "rate_unit_s": 36.93804906306593,
+      "signature": "BAMOR/auto-adopted/p4037251",
+      "task_id": "t7957",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v3_seq_belief --total_steps 20000 --switch_interval 10000 --seed 0 --num_seeds 3 --save_dir results/mujoco_mc_v3_cuda_20260608 --eval_freq 20000 --device cuda --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 1557.0415573120117,
+      "project": "BAMOR",
+      "rate_unit_s": 38.53461695883095,
+      "signature": "BAMOR/auto-adopted/p293702",
+      "task_id": "t8058",
+      "units": 60000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_generic --total_steps 20000 --switch_interval 10000 --seed 0 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 517.9509284496307,
+      "project": "BAMOR",
+      "rate_unit_s": 38.613696590650946,
+      "signature": "BAMOR/auto-adopted/p4021546",
+      "task_id": "t7952",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_contrast_hybrid --total_steps 20000 --switch_interval 10000 --seed 1 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 511.9899146556854,
+      "project": "BAMOR",
+      "rate_unit_s": 39.06326946586449,
+      "signature": "BAMOR/auto-adopted/p4014901",
+      "task_id": "t7938",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_hybrid --total_steps 20000 --switch_interval 10000 --seed 0 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 482.4112117290497,
+      "project": "BAMOR",
+      "rate_unit_s": 41.45840625949873,
+      "signature": "BAMOR/auto-adopted/p4030174",
+      "task_id": "t7955",
+      "units": 20000.0
+    },
+    {
+      "cmd": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_contrast_hybrid --total_steps 20000 --switch_interval 10000 --seed 0 --num_seeds 1 --save_dir results/mujoco_mc_v2_cuda_20260608_170652 --device cuda --eval_freq 100000 --hidden 64",
+      "cpu_cores": 1,
+      "duration_s": 423.4995970726013,
+      "project": "BAMOR",
+      "rate_unit_s": 47.22554670240067,
+      "signature": "BAMOR/auto-adopted/p4011489",
+      "task_id": "t7936",
+      "units": 20000.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_training_step": 452000.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_mujoco_c_le2_completed_history"
+}

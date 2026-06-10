@@ -246,10 +246,10 @@ population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
 records = 2766
-representative mapped = 2269
-strict mapped = 1361
-measurement_required = 497
-mapped_fraction = 0.820318
+representative mapped = 2295
+strict mapped = 1387
+measurement_required = 471
+mapped_fraction = 0.829718
 ```
 
 最大未闭合 bucket 是：
@@ -277,6 +277,7 @@ after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766 completed-active 
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766 completed-active records
 after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766 completed-active records
 after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766 completed-active records
+after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -565,18 +566,37 @@ workload_key = transit_freqhrl_merge_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 6
 unit rule = merge_job
+
+closed completed-history slice = BAMOR c_le2 train_compare_baselines.py
+workload_key = bamor_train_compare_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 7
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_le2 train_bamor_mujoco.py
+workload_key = bamor_mujoco_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 16
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_le2 run_bamor_diagnostic_shard.py
+workload_key = bamor_diagnostic_shard_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 3
+unit rule = parsed training steps
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 transit_freqhrl_cpu_validation|c_3_8
 sumo_eval_cpu|c_3_8
+transit_freqhrl_cpu_validation|c_17_32
+sumo_eval_cpu|c_33_64
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

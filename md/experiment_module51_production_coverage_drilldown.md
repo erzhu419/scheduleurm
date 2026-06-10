@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module76
+## Current Result After Module77
 
 For the 30-day completed/active production window:
 
 ```text
 completed_active_production records = 2766
-representative mapped = 2269
-strict mapped = 1361
-unmapped / measurement-required = 497
-representative mapped_fraction = 0.820318
+representative mapped = 2295
+strict mapped = 1387
+unmapped / measurement-required = 471
+representative mapped_fraction = 0.829718
 capacity slack on mapped raw-window representative load from Module49 delta = 0.000050804
 global theorem closed = false
 ```
@@ -56,7 +56,7 @@ with no scheduler id and no log are not scheduler-controlled arrivals.  They
 remain operational telemetry/background-load evidence, but they are outside the
 arrival stream that Scheduleurm can assign to service actions.
 
-The newly measured Module56 through Module76 sub-buckets appear as
+The newly measured Module56 through Module77 sub-buckets appear as
 strict mapped coverage:
 
 ```text
@@ -103,6 +103,9 @@ transit_freqhrl_merge_c_le2_completed_history = 6 / 2766 completed-active produc
 freqduet_preflight_c_le2_completed_history = 5 / 2766 completed-active production records
 freqduet_baseline_rule_c_le2_completed_history = 5 / 2766 completed-active production records
 freqduet_cpu_ablation_c_le2_completed_history = 3 / 2766 completed-active production records
+bamor_mujoco_c_le2_completed_history = 16 / 2766 completed-active production records
+bamor_train_compare_c_le2_completed_history = 7 / 2766 completed-active production records
+bamor_diagnostic_shard_c_le2_completed_history = 3 / 2766 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -114,7 +117,7 @@ not close the global theorem because measured coverage is still incomplete.
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
 | `generic_cpu_python` | measurement required | 143 | 0.051699 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 139 | 0.050253 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 113 | 0.040853 |
 | `cpu_eval_generic` | measurement required | 82 | 0.029646 |
 | `artifact_io_control` | measurement required | 77 | 0.027838 |
 | `scheduler_control_plane` | measurement required | 40 | 0.014461 |
@@ -147,6 +150,7 @@ after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766
 after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766
 after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766
+after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -191,6 +195,11 @@ Module76 closes most of the previous `freqduet_cpu_ablation|c_le2` residual by
 splitting FreqDuet ablation, baseline-rule, preflight/env-check, Transit/FreqHRL
 analysis-matrix, and Transit/FreqHRL merge jobs into five completed-history
 service classes.  Two `freqduet_autoadopt_spin.py` helpers remain unmeasured.
+Module77 closes the previous `bamor_cpu_training|c_le2` first-probe blocker by
+splitting BAMOR c_le2 training records into train-compare, Mujoco, and
+diagnostic-shard script-level service classes.  Several records carry
+`--device cuda` while the scheduler estimated zero VRAM, so they are certified as
+production-history service rows, not as generic CPU-only workload curves.
 
 ## Interpretation
 
@@ -237,7 +246,8 @@ records, 6 c9_16 BAMOR train-compare records, and 3 c9_16 BAMOR Mujoco records
 with script-specific training-step lower-service points.  Module76 maps 11
 Transit/FreqHRL analysis-matrix records, 6 Transit/FreqHRL merge records, 5
 FreqDuet preflight records, 5 FreqDuet baseline-rule records, and 3 FreqDuet
-c_le2 ablation records.  The next
+c_le2 ablation records.  Module77 maps 16 c_le2 BAMOR Mujoco records, 7 c_le2
+BAMOR train-compare records, and 3 c_le2 BAMOR diagnostic-shard records.  The next
 closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`bamor_cpu_training|c_le2`, `sumo_eval_cpu|c_le2`, and
-`freqduet_cpu_ablation|c_3_8` in the regenerated Module53 manifest.
+`sumo_eval_cpu|c_le2`, `freqduet_cpu_ablation|c_3_8`, and
+`bamor_cpu_training|c_17_32` in the regenerated Module53 manifest.

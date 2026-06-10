@@ -1,0 +1,125 @@
+{
+  "cpu_counts": {
+    "1": 5,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 1006.0195777416229,
+    "median": 246.2418224811554,
+    "min": 154.5873053073883
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c_le2 train_compare_baselines.py production records with parseable training-step units. Some commands specify --device cuda while the scheduler record has zero estimated VRAM; this is a completed-history service class, not a pure CPU microbenchmark.",
+  "parsed_units_training_step": [
+    60000.0,
+    5000.0,
+    5000.0,
+    5000.0,
+    5000.0,
+    15000.0,
+    15000.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 7
+  },
+  "ram_counts": {
+    "1412": 1,
+    "1414": 1,
+    "1415": 2,
+    "1416": 3
+  },
+  "realized_training_step_s": [
+    59.64098644550421,
+    29.566196060702286,
+    32.34418240267386,
+    20.30524282845025,
+    32.31199704270975,
+    34.23262253658511,
+    27.515595124204193
+  ],
+  "record_count": 7,
+  "run_id": "module77_bamor_train_compare_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 train_compare_baselines.py --method bamor --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
+      "cpu_cores": 2,
+      "duration_s": 246.2418224811554,
+      "project": "BAMOR",
+      "rate_unit_s": 20.30524282845025,
+      "signature": "BAMOR/auto-adopted/p757830",
+      "task_id": "t7477",
+      "units": 5000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method bamor_ns --total_steps 5000 --switch_interval 300 --seed 0 --seeds 3 --save_dir results/diagnostic_core_5k_s3 --device cuda --eval_freq 0",
+      "cpu_cores": 1,
+      "duration_s": 545.1453959941864,
+      "project": "BAMOR",
+      "rate_unit_s": 27.515595124204193,
+      "signature": "BAMOR/auto-adopted/p772832",
+      "task_id": "t7486",
+      "units": 15000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method bamor_oracle_cone --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
+      "cpu_cores": 2,
+      "duration_s": 169.1120491027832,
+      "project": "BAMOR",
+      "rate_unit_s": 29.566196060702286,
+      "signature": "BAMOR/auto-adopted/p737336",
+      "task_id": "t7471",
+      "units": 5000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method bamor_ns_eps --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
+      "cpu_cores": 1,
+      "duration_s": 154.74128675460815,
+      "project": "BAMOR",
+      "rate_unit_s": 32.31199704270975,
+      "signature": "BAMOR/auto-adopted/p762128",
+      "task_id": "t7480",
+      "units": 5000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method bamor_oracle --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
+      "cpu_cores": 1,
+      "duration_s": 154.5873053073883,
+      "project": "BAMOR",
+      "rate_unit_s": 32.34418240267386,
+      "signature": "BAMOR/auto-adopted/p745790",
+      "task_id": "t7474",
+      "units": 5000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method uniform --total_steps 5000 --switch_interval 300 --seed 0 --seeds 3 --save_dir results/diagnostic_core_5k_s3 --device cuda --eval_freq 0",
+      "cpu_cores": 1,
+      "duration_s": 438.1785235404968,
+      "project": "BAMOR",
+      "rate_unit_s": 34.23262253658511,
+      "signature": "BAMOR/auto-adopted/p767747",
+      "task_id": "t7481",
+      "units": 15000.0
+    },
+    {
+      "cmd": "python3 train_compare_baselines.py --method uniform --total_steps 20000 --switch_interval 300 --seed 0 --seeds 3 --save_dir results/diagnostic_quick_20k_s3 --device cuda",
+      "cpu_cores": 1,
+      "duration_s": 1006.0195777416229,
+      "project": "BAMOR",
+      "rate_unit_s": 59.64098644550421,
+      "signature": "BAMOR/auto-adopted/p720106",
+      "task_id": "t7468",
+      "units": 60000.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_training_step": 110000.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_train_compare_c_le2_completed_history"
+}

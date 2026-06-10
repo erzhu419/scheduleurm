@@ -119,6 +119,7 @@ md/experiment_module76_freqduet_preflight_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
 md/experiment_module86_offline_sumo_eval_c33_64_completed_history.md
+md/experiment_module87_external_auto_adopt_spin_population_boundary.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -196,7 +197,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000011136
     representative mapping delta = 0.000011136
   Full global theorem coverage is still open because the representative run
-  leaves 1318 / 6626 tasks unmapped and maps 2107 tasks only by representative
+  leaves 1322 / 6658 tasks unmapped and maps 2107 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -204,13 +205,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3255
-    mapped = 2855
-    strict mapped = 1822
-    measurement_required = 400
-    mapped_fraction = 0.877112
+    records = 3280
+    mapped = 2882
+    strict mapped = 1849
+    measurement_required = 398
+    mapped_fraction = 0.878659
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 10 / 3255 records
+    cpu_sumo_transit_eval_or_control = 7 / 3280 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -793,8 +794,13 @@ Remaining scope limitation:
       raw-window strict mapped count = 15
       min completed wall-clock rate = 0.000151576 eval-command/s
 
+  Module87 removes external auto-adopt FreqDuet spin helpers from the
+  controlled-arrival theorem population:
+    freqduet_autoadopt_spin.py helpers -> excluded_external_auto_adopted_unobservable
+      completed-active removed count = 2
+      criterion = external auto-adopted, no scheduler id, no scheduler log, no progress unit
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_le2
     transit_freqhrl_cpu_validation|c_33_64
     transit_freqhrl_cpu_validation|c_9_16
     transit_freqhrl_cpu_validation|c_le2

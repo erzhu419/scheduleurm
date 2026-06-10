@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module86
+## Status After Module87
 
 The original top sub-bucket was:
 
@@ -385,15 +385,24 @@ Module86 then closes the offline-sumo c33_64 eval-command residual:
 offline_sumo_eval_c33_64_completed_history: completed_active = 5, raw_history_all = 15, unit = eval_command, min = 0.000151576 eval-command/s
 ```
 
+Module87 then removes two external auto-adopt spin helpers from the
+controlled-arrival production population:
+
+```text
+excluded = freqduet_autoadopt_spin.py helpers
+reason = external auto-adopted, no scheduler id, no log, no progress unit
+service certificate = none
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 10
-cpu_cores median = 4.500000
+record_count = 7
+cpu_cores median = 15.000000
 cpu_cores p90 = 48
 cpu_cores max = 61
-ram_mb median = 528.000
+ram_mb median = 625.000
 ram_mb p90 = 64000
 ram_mb max = 64000
 theorem_status = measurement_required
@@ -403,18 +412,16 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_le2` | 3 | 0.300000 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.200000 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.200000 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.200000 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.100000 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.285714 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.285714 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.285714 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.142857 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_le2
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
@@ -502,7 +509,10 @@ static shell arithmetic seed-range parser and a profile-1 lower-service row.
 Module86 closes the offline-sumo c33_64 eval-command residual with one completed
 eval command as the conservative unit; the `sumo_eval_cpu|c_33_64` sub-bucket is
 therefore removed from the current first-probe order.
-The global theorem remains open because 10 completed/active production records
+Module87 removes two external auto-adopt `freqduet_autoadopt_spin.py` helpers
+from the controlled-arrival theorem population; this is a population-boundary
+correction, not a service-rate claim.
+The global theorem remains open because 7 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by `freqduet_cpu_ablation|c_le2`, two c33/c9/low-CPU
-Transit/FreqHRL residual buckets, and one BAMOR c3_8 residual.
+certificates, led by two c33/c9/low-CPU Transit/FreqHRL residual buckets and
+one BAMOR c3_8 residual.

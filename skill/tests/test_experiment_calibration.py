@@ -1065,8 +1065,9 @@ def test_module61_freqduet_c33_ablation_completed_history_profile1(check, sch):
         "--episodes 40 --seed 2026"
     )
     direct_cls = classify_record(direct_runner, include_representative=False)
-    check("module61 classifier does not map c33_64 direct runner_v3 records",
-          direct_cls["workload_key"] is None and direct_cls["reason"] == "unmapped_cpu",
+    check("module61 ablation classifier leaves c33_64 direct runner_v3 records to Module81",
+          direct_cls["workload_key"] == "freqduet_runner_v3_c33_64_completed_history"
+          and math.isclose(float(direct_cls["units"]), 40.0),
           diag=str(direct_cls))
 
     cache = build_default_cache()
@@ -1092,6 +1093,87 @@ def test_module61_freqduet_c33_ablation_completed_history_profile1(check, sch):
           and math.isclose(
               report["lambda"]["freqduet_cpu_ablation_c33_64_completed_history"],
               1520.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module81_freqduet_runner_c33_completed_history_profile1(check, sch):
+    row = {
+        "id": "freq-runner-c33",
+        "project": "freqduet",
+        "signature": "freqduet/auto-adopted/p492006",
+        "description": "FreqDuet c33_64 direct runner task",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 48,
+        "ram_mb": 12287,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "/env/bin/python runner_v3.py --config "
+            "configs_freqduet/F_freqduet_terminal_main_hicap_abs15_hiro.yaml "
+            "--episodes 40 --seed 2026 --no-resume --logs-dir out"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module81 maps FreqDuet c33_64 direct runner_v3 records with episode units",
+          cls["workload_key"] == "freqduet_runner_v3_c33_64_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 40.0),
+          diag=str(cls))
+
+    ablation = dict(row)
+    ablation["id"] = "freq-c33-ablation-still-module61"
+    ablation["cmd"] = (
+        "python scripts/run_freqduet_ablation.py "
+        "--configs F_freqduet_terminal_main_hiro --seeds 42 "
+        "--episodes 20 --workers 48 --worker-threads 1 --job-start 0 --job-end 1"
+    )
+    ablation_cls = classify_record(ablation, include_representative=False)
+    check("Module81 does not steal c33_64 run_freqduet_ablation records from Module61",
+          ablation_cls["workload_key"] == "freqduet_cpu_ablation_c33_64_completed_history"
+          and math.isclose(float(ablation_cls["units"]), 20.0),
+          diag=str(ablation_cls))
+
+    non_freqduet = dict(row)
+    non_freqduet["id"] = "not-freqduet-c33-runner"
+    non_freqduet["project"] = "other"
+    non_freqduet["signature"] = "other/runner"
+    non_freqduet["cwd"] = "/tmp/other"
+    non_freqduet_cls = classify_record(non_freqduet, include_representative=False)
+    check("Module81 requires FreqDuet project/path/signature evidence",
+          non_freqduet_cls["workload_key"] is None
+          and non_freqduet_cls["reason"] == "unmapped_cpu",
+          diag=str(non_freqduet_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_runner_v3_c33_64_completed_history")
+    check("Module81 service cache exposes only profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_runner_v3_c33_64_completed_history", 1).aggregate_rate,
+              0.02846196475390614,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+    check("Module81 taskset is included in the default production certificate",
+          "production_freqduet_runner_v3_c33_64_completed_history" in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_runner_v3_c33_64_completed_history",),
+    )
+    check("production load certificate sums Module81 c33_64 runner episode units",
+          report["mapped_counts"] == {"freqduet_runner_v3_c33_64_completed_history": 1}
+          and math.isclose(report["mapped_units"]["freqduet_runner_v3_c33_64_completed_history"], 40.0)
+          and math.isclose(
+              report["lambda"]["freqduet_runner_v3_c33_64_completed_history"],
+              40.0 / 86400.0,
           )
           and report["global_coverage_usable_for_theorem"]
           and report["mapped_capacity_usable_for_theorem"],

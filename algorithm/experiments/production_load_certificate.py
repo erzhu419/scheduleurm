@@ -40,6 +40,7 @@ DEFAULT_TASKSETS = (
     "production_freqduet_cpu_ablation_c3_8_completed_history",
     "production_freqduet_runner_v3_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
+    "production_freqduet_runner_v3_c33_64_completed_history",
     "production_freqduet_cpu_ablation_c65p_completed_history",
     "production_freqduet_promoted_ep100_c65p_completed_history",
     "production_transit_native_promotion_c33_64_batch_completed_history",
@@ -302,6 +303,15 @@ def classify_record(
             "strict_measured",
             "module68_transit_native_promotion_c33_64_batch_completed_history",
             units=native_c33_64_units,
+        )
+
+    runner_c33_64_units = _freqduet_runner_v3_c33_64_units(row=row, est_vram=est_vram, cpu=cpu)
+    if runner_c33_64_units is not None:
+        return _mapped(
+            "freqduet_runner_v3_c33_64_completed_history",
+            "strict_measured",
+            "module81_freqduet_runner_v3_c33_64_completed_history",
+            units=runner_c33_64_units,
         )
 
     native_c17_32_units = _native_promotion_c17_32_seedrange_units(
@@ -1632,6 +1642,35 @@ def _freqduet_runner_v3_c17_32_units(
     if est_vram > 0:
         return None
     if not (16.0 < float(cpu) <= 32.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "runner_v3.py" not in cmd_lower:
+        return None
+    if "run_freqduet_ablation.py" in cmd_lower:
+        return None
+    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+        return None
+    units = _parse_runner_v3_episode_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_runner_v3_c33_64_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (32.0 < float(cpu) <= 64.0):
         return None
     project = str(row.get("project") or "").lower()
     cwd = str(row.get("cwd") or "").lower()

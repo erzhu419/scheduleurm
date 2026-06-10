@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3101
-    mapped = 2675
-    strict mapped = 1671
-    measurement_required = 426
-    mapped_fraction = 0.862625
+    records = 3095
+    mapped = 2679
+    strict mapped = 1657
+    measurement_required = 416
+    mapped_fraction = 0.865590
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 56 / 3101 records
+    cpu_sumo_transit_eval_or_control = 43 / 3095 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -716,8 +716,16 @@ Remaining scope limitation:
     parsed completed-history work = 30100000 training-step units
     min completed wall-clock rate = 896.623644960 training-step/s
 
+  Module81 closes the direct-runner part of the former FreqDuet c33_64 blocker:
+    runner_v3.py c33_64
+      -> freqduet_runner_v3_c33_64_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 15
+    raw-window strict mapped count = 32
+    parsed completed-history work = 600 episode units
+    min completed wall-clock rate = 0.028461965 episode/s
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
     sumo_eval_cpu|c_3_8
     transit_freqhrl_cpu_validation|c_3_8
     transit_freqhrl_cpu_validation|c_17_32
@@ -725,6 +733,7 @@ Remaining scope limitation:
     transit_freqhrl_cpu_validation|c_33_64
     transit_freqhrl_cpu_validation|c_9_16
     freqduet_cpu_ablation|c_le2
+    transit_freqhrl_cpu_validation|c_le2
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

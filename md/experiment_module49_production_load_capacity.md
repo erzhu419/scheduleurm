@@ -98,25 +98,28 @@ for the command shapes present in production by splitting it into
 training-step service classes.  It deliberately does not claim a c17_32
 `train_compare_baselines.py` class because that command shape is absent from the
 current bucket.
+Module81 closes the direct `runner_v3.py` command shape inside the previous
+`freqduet_cpu_ablation|c_33_64` residual by adding a separate completed-history
+episode service class.  It does not merge these records with c33_64
+`run_freqduet_ablation.py` or native-promotion classes.
 
 ```text
-record_count_window = 6396
-mapped_task_count = 2925
-mapped_fraction = 0.457317
-unmapped_task_count = 3471
+record_count_window = 6440
+mapped_task_count = 2968
+mapped_fraction = 0.460870
+unmapped_task_count = 3472
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module80
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module81
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
-| `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
+| `freqduet_runner_v3_c33_64_completed_history` | 32 | 0.000493827 |
 
 Capacity LP:
 
@@ -230,12 +233,17 @@ Module80 maps 14 raw-window c17_32 BAMOR diagnostic-shard records and 3 c17_32
 BAMOR Mujoco records using script-specific completed-history training-step
 lower-service rates.  This removes the former `bamor_cpu_training|c_17_32`
 first-probe blocker while keeping absent c17_32 train-compare work unclaimed.
+Module81 maps 32 raw-window c33_64 direct FreqDuet `runner_v3.py` records with
+explicit episode units and a conservative completed-history lower-service rate.
+This removes the direct-runner part of the previous
+`freqduet_cpu_ablation|c_33_64` residual without charging it to the c33_64
+ablation or native-promotion service classes.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3471 / 6396 tasks
+strict unmapped: 3472 / 6440 tasks
 representative unmapped: 1410 / 6400 tasks
 representative-mapped but not theorem-grade: 2064 tasks
 ```

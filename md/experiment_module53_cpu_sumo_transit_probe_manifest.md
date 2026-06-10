@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module80
+## Status After Module81
 
 The original top sub-bucket was:
 
@@ -334,16 +334,23 @@ bamor_mujoco_c17_32_completed_history: completed_active = 3, raw_history_all = 3
 bamor_diagnostic_shard_c17_32_completed_history: completed_active = 14, raw_history_all = 14, unit = training_step, min = 896.623644960 training-step/s
 ```
 
+Module81 measured a completed-history profile-1 lower-service point for direct
+FreqDuet `runner_v3.py` records inside c33_64:
+
+```text
+freqduet_runner_v3_c33_64_completed_history: completed_active = 15, raw_history_all = 32, unit = episode, min = 0.028461965 episode/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 56
-cpu_cores median = 16
-cpu_cores p90 = 48
+record_count = 43
+cpu_cores median = 4
+cpu_cores p90 = 37
 cpu_cores max = 61
-ram_mb median = 1517.000
-ram_mb p90 = 19729
+ram_mb median = 625.000
+ram_mb p90 = 16000
 ram_mb max = 64000
 theorem_status = measurement_required
 ```
@@ -352,22 +359,21 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.267857 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.214286 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.196429 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.107143 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.089286 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.035714 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.035714 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.035714 |
-| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.017857 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.279070 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.255814 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.139535 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.116279 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.046512 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.046512 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.046512 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.046512 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.023256 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
@@ -375,6 +381,7 @@ sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 freqduet_cpu_ablation|c_le2
+transit_freqhrl_cpu_validation|c_le2
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -436,8 +443,11 @@ blocker by mapping Transit/FreqHRL native commands to native service classes.
 Module80 closes the previous `bamor_cpu_training|c_17_32` first-probe blocker
 by mapping c17_32 BAMOR Mujoco and diagnostic-shard commands to separate
 training-step completed-history service classes.
-The global theorem remains open because 56 completed/active production records
+Module81 closes the direct-runner portion of the previous
+`freqduet_cpu_ablation|c_33_64` blocker by mapping c33_64 FreqDuet
+`runner_v3.py` commands to a separate episode completed-history service class.
+The global theorem remains open because 43 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 15 `freqduet_cpu_ablation|c_33_64` records, 12
-`sumo_eval_cpu|c_3_8` records, and 11
-`transit_freqhrl_cpu_validation|c_3_8` records.
+certificates, led by 12 `sumo_eval_cpu|c_3_8` records, 11
+`transit_freqhrl_cpu_validation|c_3_8` records, and 6
+`transit_freqhrl_cpu_validation|c_17_32` records.

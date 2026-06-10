@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module80.  It should be read together
+This note records the current gap after Module81.  It should be read together
 with:
 
 ```text
@@ -66,6 +66,7 @@ md/experiment_module79_transit_native_real_demand_batch_c3_8_completed_history.m
 md/experiment_module79_transit_native_real_demand_alighting_c3_8_completed_history.md
 md/experiment_module80_bamor_mujoco_c17_32_completed_history.md
 md/experiment_module80_bamor_diagnostic_shard_c17_32_completed_history.md
+md/experiment_module81_freqduet_runner_v3_c33_64_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -406,16 +407,22 @@ workload_key = bamor_diagnostic_shard_c17_32_completed_history
 completed-active strict mapped count = 14
 feasible profiles = 1
 unit rule = parsed shard training-step units
+
+completed-history slice = FreqDuet c33_64 direct runner_v3
+workload_key = freqduet_runner_v3_c33_64_completed_history
+completed-active strict mapped count = 15
+feasible profiles = 1
+unit rule = parsed episode units
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3101
-strict completed-active mapped count = 1671
-representative completed-active mapped count = 2675
-measurement_required = 426
-cpu_sumo_transit_eval_or_control remaining = 56 / 3101
+completed_active_production records = 3095
+strict completed-active mapped count = 1657
+representative completed-active mapped count = 2679
+measurement_required = 416
+cpu_sumo_transit_eval_or_control remaining = 43 / 3095
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -453,13 +460,14 @@ certifies native promotion, native real-demand batch, and alighting-shard
 service classes separately.  The remaining c3_8 CPU/SUMO/transit obligation is
 now the separate `transit_freqhrl_cpu_validation|c_3_8` sub-bucket.
 
-The current `freqduet_cpu_ablation|c_33_64` group is not fully closed either.
+The previous `freqduet_cpu_ablation|c_33_64` residual is now closed at the
+measured command-shape level.
 Module61 certifies only parseable `run_freqduet_ablation.py` records using a
 completed-history profile-1 lower-service point.  Module68 certifies parseable
 no-GPU native-promotion c33_64 records by splitting batch seed-episode work from
-single-seed smoke/fix work.  The remaining 15 c33_64 records are direct-runner,
-single-command-shape, or otherwise unparseable residuals and stay in the
-Module53 manifest.
+single-seed smoke/fix work.  Module81 certifies the remaining direct
+`runner_v3.py` c33_64 records with explicit episode units.  Any future c33_64
+command shape outside these parsers remains unclaimed until separately measured.
 
 The current `freqduet_cpu_ablation|c_le2` group is almost fully closed.  Module62
 certifies the direct `runner_v3.py` part with explicit episode counts.  Module76
@@ -505,8 +513,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
 212 / 2766 after Module74, 169 / 2766 after Module75,
 139 / 2766 after Module76, 113 / 2766 after Module77,
-94 / 2910 after Module78, 73 / 3058 after Module79, and 56 / 3101 after
-Module80.
+94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
+and 43 / 3095 after Module81.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -589,6 +597,11 @@ training-step service classes: Mujoco and diagnostic shard.  It does not claim a
 c17_32 train-compare service class until that command shape is actually present
 and measured.
 
+Module81 closes the direct-runner portion of the former
+`freqduet_cpu_ablation|c_33_64` blocker with a separate
+`runner_v3.py --episodes` completed-history class.  The remaining first-probe
+target is no longer FreqDuet c33_64.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -620,7 +633,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
@@ -628,6 +640,7 @@ sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
 freqduet_cpu_ablation|c_le2
+transit_freqhrl_cpu_validation|c_le2
 ```
 
 For every slice, the required closure pattern is:

@@ -365,6 +365,43 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_runner_v3_c33_64_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for direct FreqDuet "
+                "runner_v3 records in the c_33_64 residual bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with explicit --episodes units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history; no live co-location "
+                "profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_runner_v3_c33_64_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=15,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history runner c33 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module81 completed-history wall-clock audit for "
+                        "c_33_64 direct runner_v3.py production records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is separated from run_freqduet_ablation.py, "
+                        "native-promotion, and lower-CPU runner_v3 records. The "
+                        "service cache uses the minimum realized completed-task "
+                        "episode rate."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_cpu_ablation_c65p_completed_history",
             purpose=(
                 "A strict completed-history closure slice for high-CPU FreqDuet "

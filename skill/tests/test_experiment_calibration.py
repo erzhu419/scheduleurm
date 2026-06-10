@@ -1755,6 +1755,159 @@ def test_module79_transit_c3_8_native_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module83_transit_c3_8_residual_completed_history_profile1(check, sch):
+    base = {
+        "project": "TransitDuet",
+        "signature": "TransitDuet/auto-adopted/module83",
+        "description": "Transit/FreqHRL c3_8 residual",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 4,
+        "ram_mb": 1024,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+    }
+    public_csv = dict(base)
+    public_csv["id"] = "module83-public-csv"
+    public_csv["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.trading.public_market_data --source csv "
+        "--csv-files transit_hrl/data/SPY.csv transit_hrl/data/QQQ.csv transit_hrl/data/IWM.csv "
+        "--steps 1500 --output-dir out"
+    )
+    public_cls = classify_record(public_csv, include_representative=False)
+    check("Module83 maps Transit c3_8 public CSV eval with step-file units",
+          public_cls["workload_key"] == "transit_trading_public_csv_c3_8_completed_history"
+          and math.isclose(float(public_cls["units"]), 4500.0),
+          diag=str(public_cls))
+
+    pressure_merge = dict(base)
+    pressure_merge["id"] = "module83-pressure-merge"
+    pressure_merge["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.trading.merge_pressure_matrix --input-dirs a b "
+        "--steps 720 --output-dir out"
+    )
+    merge_cls = classify_record(pressure_merge, include_representative=False)
+    check("Module83 maps Transit c3_8 pressure merge as one merge job",
+          merge_cls["workload_key"] == "transit_trading_pressure_merge_c3_8_completed_history"
+          and math.isclose(float(merge_cls["units"]), 1.0),
+          diag=str(merge_cls))
+
+    policy = dict(base)
+    policy["id"] = "module83-policy"
+    policy["cpu_cores"] = 5
+    policy["cmd"] = (
+        "python3 -m freq_hrl.experiments.trading.policy_entry --mode train "
+        "--policy pg_linear --train-seeds 42 123 456 --eval-seeds 31415 27182 16180 "
+        "--steps 360 --assets 3 --scenario persistent_shift --pg-iterations 8 "
+        "--pg-learning-rate 0.05 --output-dir out"
+    )
+    policy_cls = classify_record(policy, include_representative=False)
+    check("Module83 maps Transit c3_8 policy_entry with parsed train/eval units",
+          policy_cls["workload_key"] == "transit_trading_policy_c3_8_completed_history"
+          and math.isclose(float(policy_cls["units"]), 29160.0),
+          diag=str(policy_cls))
+
+    surrogate = dict(base)
+    surrogate["id"] = "module83-surrogate"
+    surrogate["cpu_cores"] = 3
+    surrogate["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.ppo_surrogate "
+        "--train-seeds 11 23 37 41 53 --eval-seeds 101 131 151 181 211 "
+        "--steps 240 --corridors 2 --scenario persistent_shift --iterations 8 "
+        "--optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 "
+        "--plan-eval-offset-s 300 --plan-coefficient-scale-s 18 --output-dir out"
+    )
+    surrogate_cls = classify_record(surrogate, include_representative=False)
+    check("Module83 maps Transit c3_8 PPO surrogate with parsed surrogate units",
+          surrogate_cls["workload_key"] == "transit_surrogate_c3_8_completed_history"
+          and math.isclose(float(surrogate_cls["units"]), 21600.0),
+          diag=str(surrogate_cls))
+
+    pytest_row = dict(base)
+    pytest_row["id"] = "module83-pytest"
+    pytest_row["cpu_cores"] = 3
+    pytest_row["cmd"] = (
+        "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py "
+        "transit_hrl/tests/test_native_promotion_replan_validation.py"
+    )
+    pytest_cls = classify_record(pytest_row, include_representative=False)
+    check("Module83 maps Transit c3_8 pytest as test job before native parser",
+          pytest_cls["workload_key"] == "transit_freqhrl_tests_c3_8_completed_history"
+          and math.isclose(float(pytest_cls["units"]), 1.0),
+          diag=str(pytest_cls))
+
+    native_merge = dict(base)
+    native_merge["id"] = "module83-native-merge"
+    native_merge["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.merge_native_promotion_shards "
+        "--input-dirs a b c --min-pairs 32 --output-dir out"
+    )
+    native_merge_cls = classify_record(native_merge, include_representative=False)
+    check("Module83 maps Transit c3_8 native merge as one merge job",
+          native_merge_cls["workload_key"] == "transit_native_merge_c3_8_completed_history"
+          and math.isclose(float(native_merge_cls["units"]), 1.0),
+          diag=str(native_merge_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_trading_public_csv_c3_8_completed_history": 59.87810573071916,
+        "transit_trading_pressure_merge_c3_8_completed_history": 0.06223627915634021,
+        "transit_trading_policy_c3_8_completed_history": 398.62503828962275,
+        "transit_surrogate_c3_8_completed_history": 299.11507012883635,
+        "transit_freqhrl_tests_c3_8_completed_history": 0.0109631269718002,
+        "transit_native_merge_c3_8_completed_history": 0.01251310659626489,
+    }
+    cache_ok = True
+    cache_diag = {}
+    for key, rate in expected_rates.items():
+        profiles = cache.profiles(key)
+        cache_diag[key] = [record.snapshot() for record in profiles]
+        cache_ok = (
+            cache_ok
+            and [record.profile for record in profiles] == [1]
+            and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+        )
+    check("Module83 service cache exposes six profile1 completed-history lower services",
+          cache_ok,
+          diag=str(cache_diag))
+
+    tasksets = {
+        "production_transit_trading_public_csv_c3_8_completed_history",
+        "production_transit_trading_pressure_merge_c3_8_completed_history",
+        "production_transit_trading_policy_c3_8_completed_history",
+        "production_transit_surrogate_c3_8_completed_history",
+        "production_transit_freqhrl_tests_c3_8_completed_history",
+        "production_transit_native_merge_c3_8_completed_history",
+    }
+    check("Module83 tasksets are included in the default production certificate",
+          tasksets.issubset(set(DEFAULT_TASKSETS)),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[public_csv, pressure_merge, policy, surrogate, pytest_row, native_merge],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=tuple(sorted(tasksets)),
+    )
+    check("production load certificate certifies Module83 Transit c3_8 residual sub-slices",
+          report["mapped_counts"] == {
+              "transit_trading_public_csv_c3_8_completed_history": 1,
+              "transit_trading_pressure_merge_c3_8_completed_history": 1,
+              "transit_trading_policy_c3_8_completed_history": 1,
+              "transit_surrogate_c3_8_completed_history": 1,
+              "transit_freqhrl_tests_c3_8_completed_history": 1,
+              "transit_native_merge_c3_8_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_trading_public_csv_c3_8_completed_history"], 4500.0)
+          and math.isclose(report["mapped_units"]["transit_trading_policy_c3_8_completed_history"], 29160.0)
+          and math.isclose(report["mapped_units"]["transit_surrogate_c3_8_completed_history"], 21600.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

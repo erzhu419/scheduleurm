@@ -1,0 +1,58 @@
+{
+  "cpu_counts": {
+    "4": 1
+  },
+  "duration_s": {
+    "max": 75.1526780128479,
+    "median": 75.1526780128479,
+    "min": 75.1526780128479,
+    "p10": 75.1526780128479,
+    "p90": 75.1526780128479
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 freq_hrl.experiments.trading.public_market_data production records. Units are parsed as --steps times CSV-file count. Failed/cancelled same-shape attempts are not used as lower-service samples.",
+  "parsed_units_csv_step": {
+    "max": 4500.0,
+    "median": 4500.0,
+    "min": 4500.0,
+    "p10": 4500.0,
+    "p90": 4500.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "16000": 1
+  },
+  "realized_csv_step_s": {
+    "max": 59.87810573071916,
+    "median": 59.87810573071916,
+    "min": 59.87810573071916,
+    "p10": 59.87810573071916,
+    "p90": 59.87810573071916
+  },
+  "record_count": 1,
+  "run_id": "module83_transit_trading_public_csv_c3_8_completed_history",
+  "scope": "Transit/FreqHRL c3_8 public-market CSV evaluation",
+  "slowest_12": [
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.public_market_data --source csv --csv-files transit_hrl/data/public_market_yahoo/SPY.csv transit_hrl/data/public_market_yahoo/QQQ.csv transit_hrl/data/public_market_yahoo/IWM.csv --steps 1500 --output-dir transit_hrl/results/trading_public_market_yahoo_csv",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 75.1526780128479,
+      "finished_at": 1780211626.0449004,
+      "parsed_units_csv_step": 4500.0,
+      "project": "TransitDuet",
+      "ram_mb": 16000.0,
+      "realized_csv_step_s": 59.87810573071916,
+      "signature": "TransitDuet/FreqHRL-trading-public-yahoo-csv",
+      "started_at": 1780211550.8922224,
+      "status": "done",
+      "task_id": "t5047"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "transit_trading_public_csv_c3_8_completed_history"
+}

@@ -1,0 +1,58 @@
+{
+  "cpu_counts": {
+    "3": 1
+  },
+  "duration_s": {
+    "max": 72.2130115032196,
+    "median": 72.2130115032196,
+    "min": 72.2130115032196,
+    "p10": 72.2130115032196,
+    "p90": 72.2130115032196
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 freq_hrl.experiments.transit.ppo_surrogate production records. Units reuse the Module70 surrogate train/eval parser.",
+  "parsed_units_surrogate_seed_step_corridor": {
+    "max": 21600.0,
+    "median": 21600.0,
+    "min": 21600.0,
+    "p10": 21600.0,
+    "p90": 21600.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "592": 1
+  },
+  "realized_surrogate_seed_step_corridor_s": {
+    "max": 299.11507012883635,
+    "median": 299.11507012883635,
+    "min": 299.11507012883635,
+    "p10": 299.11507012883635,
+    "p90": 299.11507012883635
+  },
+  "record_count": 1,
+  "run_id": "module83_transit_surrogate_c3_8_completed_history",
+  "scope": "Transit/FreqHRL c3_8 PPO surrogate",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.transit.ppo_surrogate --train-seeds 11 23 37 41 53 --eval-seeds 101 131 151 181 211 --steps 240 --corridors 2 --scenario persistent_shift --iterations 8 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale-s 18 --output-dir transit_hrl/results/transit_ppo_plan_surr...",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 72.2130115032196,
+      "finished_at": 1780248174.6916409,
+      "parsed_units_surrogate_seed_step_corridor": 21600.0,
+      "project": "TransitDuet",
+      "ram_mb": 592.0,
+      "realized_surrogate_seed_step_corridor_s": 299.11507012883635,
+      "signature": "TransitDuet/auto-adopted/p88184",
+      "started_at": 1780248102.4786294,
+      "status": "done",
+      "task_id": "t5136"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "transit_surrogate_c3_8_completed_history"
+}

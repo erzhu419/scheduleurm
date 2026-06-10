@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "transit_freqhrl_cpu_validation|c_3_8",
       "transit_freqhrl_cpu_validation|c_17_32",
       "freqduet_cpu_ablation|c_9_16",
       "sumo_eval_cpu|c_33_64",
       "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
       "freqduet_cpu_ablation|c_le2",
-      "transit_freqhrl_cpu_validation|c_le2"
+      "transit_freqhrl_cpu_validation|c_le2",
+      "bamor_cpu_training|c_3_8"
     ],
     "node_targets": [
       "local_cpu",
@@ -32,149 +32,30 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 30,
+    "TransitDuet": 18,
     "offline-sumo": 5,
     "python": 2
   },
-  "record_count": 38,
+  "record_count": 26,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 14.0,
+      "median": 16.0,
       "min": 1.0,
       "p90": 37.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 1073.5,
+      "median": 11236.0,
       "min": 5.0,
       "p90": 32768.0
     }
   },
   "status_counts": {
-    "done": 38
+    "done": 26
   },
-  "sub_bucket_count": 9,
+  "sub_bucket_count": 8,
   "sub_buckets": [
-    {
-      "count": 12,
-      "examples": [
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.public_market_data --source csv --csv-files transit_hrl/data/public_market_yahoo/SPY.csv transit_hrl/data/public_market_yahoo/QQQ.csv transit_hrl/data/public_market_yahoo/IWM.csv --steps 1500 --output-dir transit_hrl/results/trading_public_market_yahoo_csv",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL public Yahoo CSV market-data evaluation",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "TransitDuet/FreqHRL-trading-public-yahoo-csv",
-          "status": "done",
-          "task_id": "t5047"
-        },
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.merge_pressure_matrix --input-dirs transit_hrl/results/trading_pressure_matrix_part0 transit_hrl/results/trading_pressure_matrix_part1 --steps 720 --output-dir transit_hrl/results/trading_pressure_matrix",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Merge Freq-HRL trading pressure matrix shards with synced output",
-          "eta_seconds": 43,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "TransitDuet/FreqHRL-trading-pressure-merge-results",
-          "status": "done",
-          "task_id": "t5055"
-        },
-        {
-          "cmd": "python3 -m unittest discover -s transit_hrl/tests",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 82,
-          "signature": "TransitDuet/auto-adopted/p4058099",
-          "status": "done",
-          "task_id": "t5088"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.policy_entry --mode train --policy pg_linear --train-seeds 42 123 456 --eval-seeds 31415 27182 16180 --steps 360 --assets 3 --scenario persistent_shift --pg-iterations 8 --pg-learning-rate 0.05 --pg-discount 0.995 --pg-leakage-policy-loss-scale 0.0005 --pg-leakage-constraint-threshold 0.0 --pg-leakage-lagrange-lr 0.0001 --optimizer-seed 2027 --output-dir /tmp/freq_hrl_pg_leak_s0.0005",
-          "cpu_cores": 5,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": 104,
-          "eta_source": "runtime_history_fallback",
-          "project": "TransitDuet",
-          "ram_mb": 37,
-          "signature": "TransitDuet/auto-adopted/p4161139",
-          "status": "done",
-          "task_id": "t5112"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.transit.ppo_surrogate --train-seeds 11 23 37 41 53 --eval-seeds 101 131 151 181 211 --steps 240 --corridors 2 --scenario persistent_shift --iterations 8 --optimizer-seed 2026 --plan-basis-dim 4 --plan-horizon-s 1800 --plan-eval-offset-s 300 --plan-coefficient-scale-s 18 --output-dir transit_hrl/results/transit_ppo_plan_surrogate",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 592,
-          "signature": "TransitDuet/auto-adopted/p88184",
-          "status": "done",
-          "task_id": "t5136"
-        }
-      ],
-      "fraction": 0.3157894736842105,
-      "project_counts": {
-        "TransitDuet": 12
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          3,
-          4,
-          5
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 5.0,
-          "median": 4.0,
-          "min": 3.0,
-          "p90": 4.0
-        },
-        "ram_mb": {
-          "max": 16000.0,
-          "median": 474.0,
-          "min": 37.0,
-          "p90": 625.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/FreqHRL-trading-pressure-merge-results": 1,
-        "TransitDuet/FreqHRL-trading-public-yahoo-csv": 1,
-        "TransitDuet/auto-adopted/p4058099": 1,
-        "TransitDuet/auto-adopted/p4161139": 1,
-        "TransitDuet/auto-adopted/p499041": 1,
-        "TransitDuet/auto-adopted/p522007": 1,
-        "TransitDuet/auto-adopted/p561634": 1,
-        "TransitDuet/auto-adopted/p88184": 1
-      },
-      "sub_bucket": "transit_freqhrl_cpu_validation|c_3_8"
-    },
     {
       "count": 6,
       "examples": [
@@ -244,7 +125,7 @@
           "task_id": "t9442"
         }
       ],
-      "fraction": 0.15789473684210525,
+      "fraction": 0.23076923076923078,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -354,7 +235,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.15789473684210525,
+      "fraction": 0.23076923076923078,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -469,7 +350,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.13157894736842105,
+      "fraction": 0.19230769230769232,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -544,7 +425,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.05263157894736842,
+      "fraction": 0.07692307692307693,
       "project_counts": {
         "python": 2
       },
@@ -615,7 +496,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.05263157894736842,
+      "fraction": 0.07692307692307693,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -688,7 +569,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.05263157894736842,
+      "fraction": 0.07692307692307693,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -760,7 +641,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.05263157894736842,
+      "fraction": 0.07692307692307693,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -819,7 +700,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.02631578947368421,
+      "fraction": 0.038461538461538464,
       "project_counts": {
         "BAMOR": 1
       },
@@ -863,8 +744,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781127037.1966736,
-    "start_ts": 1778535037.1966736,
+    "end_ts": 1781128254.9685678,
+    "start_ts": 1778536254.9685678,
     "window_days": 30.0
   }
 }

@@ -1,0 +1,172 @@
+{
+  "cpu_counts": {
+    "3": 3,
+    "4": 4,
+    "5": 1
+  },
+  "duration_s": {
+    "max": 91.21485161781311,
+    "median": 73.08667814731598,
+    "min": 7.981587171554565,
+    "p10": 7.981587171554565,
+    "p90": 81.75928378105164
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 Transit/FreqHRL unittest and pytest production records. The progress unit is one completed test command.",
+  "parsed_units_test_job": {
+    "max": 1.0,
+    "median": 1.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 1.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 8
+  },
+  "ram_counts": {
+    "104": 1,
+    "428": 1,
+    "462": 1,
+    "486": 1,
+    "553": 1,
+    "582": 1,
+    "625": 1,
+    "82": 1
+  },
+  "realized_test_job_s": {
+    "max": 0.1252883641444,
+    "median": 0.013688079293956528,
+    "min": 0.0109631269718002,
+    "p10": 0.0109631269718002,
+    "p90": 0.020661189858085106
+  },
+  "record_count": 8,
+  "run_id": "module83_transit_freqhrl_tests_c3_8_completed_history",
+  "scope": "Transit/FreqHRL c3_8 unittest/pytest jobs",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m pytest -q -s transit_hrl/tests/test_native_real_demand_control_validation.py",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 91.21485161781311,
+      "finished_at": 1780912567.5246565,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 553.0,
+      "realized_test_job_s": 0.0109631269718002,
+      "signature": "TransitDuet/auto-adopted/p4042572",
+      "started_at": 1780912476.309805,
+      "status": "done",
+      "task_id": "t7958"
+    },
+    {
+      "cmd_prefix": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 81.75928378105164,
+      "finished_at": 1781095548.3024776,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 582.0,
+      "realized_test_job_s": 0.012231026909163776,
+      "signature": "TransitDuet/auto-adopted/p977805",
+      "started_at": 1781095466.5431938,
+      "status": "done",
+      "task_id": "t9421"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest discover -s transit_hrl/tests",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 76.64572334289551,
+      "finished_at": 1780292649.462591,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 462.0,
+      "realized_test_job_s": 0.013047042370860377,
+      "signature": "TransitDuet/auto-adopted/p572246",
+      "started_at": 1780292572.8168676,
+      "status": "done",
+      "task_id": "t5272"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest transit_hrl.tests.test_public_afc_demand_validation",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 74.57748985290527,
+      "finished_at": 1780362704.8538396,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 104.0,
+      "realized_test_job_s": 0.013408871791908984,
+      "signature": "TransitDuet/auto-adopted/p1493861",
+      "started_at": 1780362630.2763498,
+      "status": "done",
+      "task_id": "t5640"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest transit_hrl.tests.test_transit_ppo_surrogate transit_hrl.tests.test_dual_actor_critic",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 71.59586644172668,
+      "finished_at": 1780285658.9722543,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 428.0,
+      "realized_test_job_s": 0.01396728679600407,
+      "signature": "TransitDuet/auto-adopted/p499041",
+      "started_at": 1780285587.3763878,
+      "status": "done",
+      "task_id": "t5258"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest discover -s transit_hrl/tests",
+      "cpu_cores": 5.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 69.25599193572998,
+      "finished_at": 1780287698.6738036,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 486.0,
+      "realized_test_job_s": 0.014439183846041894,
+      "signature": "TransitDuet/auto-adopted/p522007",
+      "started_at": 1780287629.4178116,
+      "status": "done",
+      "task_id": "t5262"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest discover -s transit_hrl/tests",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 48.39992308616638,
+      "finished_at": 1780291648.7915301,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 625.0,
+      "realized_test_job_s": 0.020661189858085106,
+      "signature": "TransitDuet/auto-adopted/p561634",
+      "started_at": 1780291600.391607,
+      "status": "done",
+      "task_id": "t5266"
+    },
+    {
+      "cmd_prefix": "python3 -m unittest discover -s transit_hrl/tests",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 7.981587171554565,
+      "finished_at": 1780225781.9822006,
+      "parsed_units_test_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 82.0,
+      "realized_test_job_s": 0.1252883641444,
+      "signature": "TransitDuet/auto-adopted/p4058099",
+      "started_at": 1780225774.0006135,
+      "status": "done",
+      "task_id": "t5088"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "transit_freqhrl_tests_c3_8_completed_history"
+}

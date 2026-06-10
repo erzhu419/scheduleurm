@@ -283,6 +283,7 @@ after Module79:  cpu_sumo_transit_eval_or_control = 73 / 3058 completed-active r
 after Module80:  cpu_sumo_transit_eval_or_control = 56 / 3101 completed-active records
 after Module81:  cpu_sumo_transit_eval_or_control = 43 / 3095 completed-active records
 after Module82:  cpu_sumo_transit_eval_or_control = 38 / 3136 completed-active records
+after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -666,7 +667,6 @@ unit rule = parsed episode units
 当前剩余 first probe order 是：
 
 ```text
-transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64

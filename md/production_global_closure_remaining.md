@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module82.  It should be read together
+This note records the current gap after Module83.  It should be read together
 with:
 
 ```text
@@ -71,6 +71,12 @@ md/experiment_module82_cfcmt_snapshot_generation_c3_8_completed_history.md
 md/experiment_module82_cfcmt_pytest_sumo_c3_8_completed_history.md
 md/experiment_module82_cfcmt_traffic_signal_phase1_c3_8_completed_history.md
 md/experiment_module82_zsw_m21_sumo_eval_c3_8_completed_history.md
+md/experiment_module83_transit_trading_public_csv_c3_8_completed_history.md
+md/experiment_module83_transit_trading_pressure_merge_c3_8_completed_history.md
+md/experiment_module83_transit_trading_policy_c3_8_completed_history.md
+md/experiment_module83_transit_surrogate_c3_8_completed_history.md
+md/experiment_module83_transit_freqhrl_tests_c3_8_completed_history.md
+md/experiment_module83_transit_native_merge_c3_8_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -441,16 +447,28 @@ workload_key = zsw_m21_sumo_eval_c3_8_completed_history
 completed-active strict mapped count = 6
 feasible profiles = 1
 unit rule = parsed simulated seconds from --duration
+
+completed-history slices = Transit/FreqHRL c3_8 residual
+workload_keys =
+  transit_trading_public_csv_c3_8_completed_history
+  transit_trading_pressure_merge_c3_8_completed_history
+  transit_trading_policy_c3_8_completed_history
+  transit_surrogate_c3_8_completed_history
+  transit_freqhrl_tests_c3_8_completed_history
+  transit_native_merge_c3_8_completed_history
+completed-active strict mapped count = 13
+feasible profiles = 1
+unit rule = command-shape-specific parsed units or one completed command
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3136
-strict completed-active mapped count = 1696
-representative completed-active mapped count = 2717
-measurement_required = 419
-cpu_sumo_transit_eval_or_control remaining = 38 / 3136
+completed_active_production records = 3199
+strict completed-active mapped count = 1756
+representative completed-active mapped count = 2789
+measurement_required = 410
+cpu_sumo_transit_eval_or_control remaining = 26 / 3199
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -542,7 +560,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 212 / 2766 after Module74, 169 / 2766 after Module75,
 139 / 2766 after Module76, 113 / 2766 after Module77,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
-43 / 3095 after Module81, and 38 / 3136 after Module82.
+43 / 3095 after Module81, 38 / 3136 after Module82, and 26 / 3199 after
+Module83.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -636,6 +655,11 @@ pytest jobs, CFCMT traffic-signal phase1, and ZSW M21 SUMO runners.  It
 intentionally does not claim CFCMT local snapshot validation or non-M21 ZSW
 c3_8 command shapes.
 
+Module83 closes the former `transit_freqhrl_cpu_validation|c_3_8` first-probe
+blocker with six separate completed-history classes: public CSV market-data
+evaluation, pressure-matrix merge, policy-entry train/eval, PPO surrogate
+train/eval, pytest/unittest jobs, and native-promotion shard merge.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -667,7 +691,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64

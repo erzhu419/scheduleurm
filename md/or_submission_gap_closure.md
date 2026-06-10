@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3136
-    mapped = 2717
-    strict mapped = 1696
-    measurement_required = 419
-    mapped_fraction = 0.866390
+    records = 3199
+    mapped = 2789
+    strict mapped = 1756
+    measurement_required = 410
+    mapped_fraction = 0.871835
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 38 / 3136 records
+    cpu_sumo_transit_eval_or_control = 26 / 3199 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -739,8 +739,27 @@ Remaining scope limitation:
       completed-active strict mapped count = 6
       min completed wall-clock rate = 7.269619812 sim-second/s
 
+  Module83 closes the former Transit/FreqHRL c3_8 blocker with six strict classes:
+    public CSV market eval -> transit_trading_public_csv_c3_8_completed_history
+      completed-active strict mapped count = 1
+      min completed wall-clock rate = 59.878105731 csv-step/s
+    pressure-matrix merge -> transit_trading_pressure_merge_c3_8_completed_history
+      completed-active strict mapped count = 1
+      min completed wall-clock rate = 0.062236279 merge-job/s
+    policy-entry train/eval -> transit_trading_policy_c3_8_completed_history
+      completed-active strict mapped count = 1
+      min completed wall-clock rate = 398.625038290 policy-seed-step-asset/s
+    PPO surrogate train/eval -> transit_surrogate_c3_8_completed_history
+      completed-active strict mapped count = 1
+      min completed wall-clock rate = 299.115070129 surrogate-seed-step-corridor/s
+    Transit/FreqHRL tests -> transit_freqhrl_tests_c3_8_completed_history
+      completed-active strict mapped count = 8
+      min completed wall-clock rate = 0.010963127 test-job/s
+    native-promotion shard merge -> transit_native_merge_c3_8_completed_history
+      completed-active strict mapped count = 1
+      min completed wall-clock rate = 0.012513107 native-merge-job/s
+
   The current remaining top probe order is:
-    transit_freqhrl_cpu_validation|c_3_8
     transit_freqhrl_cpu_validation|c_17_32
     freqduet_cpu_ablation|c_9_16
     sumo_eval_cpu|c_33_64

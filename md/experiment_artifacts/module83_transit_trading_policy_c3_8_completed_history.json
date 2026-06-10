@@ -1,0 +1,58 @@
+{
+  "cpu_counts": {
+    "5": 1
+  },
+  "duration_s": {
+    "max": 73.15145111083984,
+    "median": 73.15145111083984,
+    "min": 73.15145111083984,
+    "p10": 73.15145111083984,
+    "p90": 73.15145111083984
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 freq_hrl.experiments.trading.policy_entry production records. Units reuse the Module70 train/eval seed-step-asset parser.",
+  "parsed_units_policy_seed_step_asset": {
+    "max": 29160.0,
+    "median": 29160.0,
+    "min": 29160.0,
+    "p10": 29160.0,
+    "p90": 29160.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "37": 1
+  },
+  "realized_policy_seed_step_asset_s": {
+    "max": 398.62503828962275,
+    "median": 398.62503828962275,
+    "min": 398.62503828962275,
+    "p10": 398.62503828962275,
+    "p90": 398.62503828962275
+  },
+  "record_count": 1,
+  "run_id": "module83_transit_trading_policy_c3_8_completed_history",
+  "scope": "Transit/FreqHRL c3_8 trading policy entry",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m freq_hrl.experiments.trading.policy_entry --mode train --policy pg_linear --train-seeds 42 123 456 --eval-seeds 31415 27182 16180 --steps 360 --assets 3 --scenario persistent_shift --pg-iterations 8 --pg-learning-rate 0.05 --pg-discount 0.995 --pg-leakage-policy-loss-scale 0.0005 --pg-leakage-constraint-threshold 0.0 --pg-leakage-lagrange-lr 0....",
+      "cpu_cores": 5.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 73.15145111083984,
+      "finished_at": 1780236125.8130772,
+      "parsed_units_policy_seed_step_asset": 29160.0,
+      "project": "TransitDuet",
+      "ram_mb": 37.0,
+      "realized_policy_seed_step_asset_s": 398.62503828962275,
+      "signature": "TransitDuet/auto-adopted/p4161139",
+      "started_at": 1780236052.661626,
+      "status": "done",
+      "task_id": "t5112"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "transit_trading_policy_c3_8_completed_history"
+}

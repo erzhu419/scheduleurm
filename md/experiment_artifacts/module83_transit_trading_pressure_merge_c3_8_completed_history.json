@@ -1,0 +1,58 @@
+{
+  "cpu_counts": {
+    "4": 1
+  },
+  "duration_s": {
+    "max": 16.067798614501953,
+    "median": 16.067798614501953,
+    "min": 16.067798614501953,
+    "p10": 16.067798614501953,
+    "p90": 16.067798614501953
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 freq_hrl.experiments.trading.merge_pressure_matrix production records. The progress unit is one completed merge command, not an expanded --steps count.",
+  "parsed_units_merge_job": {
+    "max": 1.0,
+    "median": 1.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 1.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 1
+  },
+  "ram_counts": {
+    "16000": 1
+  },
+  "realized_merge_job_s": {
+    "max": 0.06223627915634021,
+    "median": 0.06223627915634021,
+    "min": 0.06223627915634021,
+    "p10": 0.06223627915634021,
+    "p90": 0.06223627915634021
+  },
+  "record_count": 1,
+  "run_id": "module83_transit_trading_pressure_merge_c3_8_completed_history",
+  "scope": "Transit/FreqHRL c3_8 pressure-matrix merge",
+  "slowest_12": [
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.merge_pressure_matrix --input-dirs transit_hrl/results/trading_pressure_matrix_part0 transit_hrl/results/trading_pressure_matrix_part1 --steps 720 --output-dir transit_hrl/results/trading_pressure_matrix",
+      "cpu_cores": 4.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 16.067798614501953,
+      "finished_at": 1780212882.7976356,
+      "parsed_units_merge_job": 1.0,
+      "project": "TransitDuet",
+      "ram_mb": 16000.0,
+      "realized_merge_job_s": 0.06223627915634021,
+      "signature": "TransitDuet/FreqHRL-trading-pressure-merge-results",
+      "started_at": 1780212866.729837,
+      "status": "done",
+      "task_id": "t5055"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "transit_trading_pressure_merge_c3_8_completed_history"
+}

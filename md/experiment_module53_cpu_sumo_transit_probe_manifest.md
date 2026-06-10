@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module79
+## Status After Module80
 
 The original top sub-bucket was:
 
@@ -324,17 +324,27 @@ transit_native_real_demand_batch_c3_8_completed_history: completed_active = 7, r
 transit_native_real_demand_alighting_c3_8_completed_history: completed_active = 7, raw_history_all = 14, unit = native_control_episode, min = 0.019432989 native-control-episode/s
 ```
 
+Module80 measured completed-history profile-1 lower-service points for the
+previous `bamor_cpu_training|c_17_32` first-probe blocker.  The observed
+production command shapes are c17_32 Mujoco and diagnostic-shard jobs, so the
+certificate keeps them separate:
+
+```text
+bamor_mujoco_c17_32_completed_history: completed_active = 3, raw_history_all = 3, unit = training_step, min = 25.959797537 training-step/s
+bamor_diagnostic_shard_c17_32_completed_history: completed_active = 14, raw_history_all = 14, unit = training_step, min = 896.623644960 training-step/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 73
-cpu_cores median = 21
+record_count = 56
+cpu_cores median = 16
 cpu_cores p90 = 48
 cpu_cores max = 61
-ram_mb median = 9677.000
-ram_mb p90 = 65536
-ram_mb max = 65536
+ram_mb median = 1517.000
+ram_mb p90 = 19729
+ram_mb max = 64000
 theorem_status = measurement_required
 ```
 
@@ -342,29 +352,29 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `bamor_cpu_training|c_17_32` | 17 | 0.232877 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.205479 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.164384 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.150685 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.082192 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.068493 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.027397 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.027397 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.027397 |
-| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.013699 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.267857 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.214286 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.196429 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.107143 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.089286 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.035714 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.035714 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.035714 |
+| `transit_freqhrl_cpu_validation|c_le2` | 1 | 0.017857 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
+transit_freqhrl_cpu_validation|c_9_16
+freqduet_cpu_ablation|c_le2
 ```
 
 Each remaining sub-bucket still needs progress-bearing service curves over:
@@ -423,7 +433,11 @@ completed-history training-step classes.  Module78 closes the previous
 `sumo_eval_cpu|c_le2` first-probe blocker with six completed-command service
 classes.  Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe
 blocker by mapping Transit/FreqHRL native commands to native service classes.
-The global theorem remains open because 73 completed/active production records
+Module80 closes the previous `bamor_cpu_training|c_17_32` first-probe blocker
+by mapping c17_32 BAMOR Mujoco and diagnostic-shard commands to separate
+training-step completed-history service classes.
+The global theorem remains open because 56 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 17 `bamor_cpu_training|c_17_32` records, 15
-`freqduet_cpu_ablation|c_33_64` records, and 12 `sumo_eval_cpu|c_3_8` records.
+certificates, led by 15 `freqduet_cpu_ablation|c_33_64` records, 12
+`sumo_eval_cpu|c_3_8` records, and 11
+`transit_freqhrl_cpu_validation|c_3_8` records.

@@ -1,0 +1,93 @@
+{
+  "cpu_counts": {
+    "29": 3
+  },
+  "duration_s": {
+    "max": 1926.0550830364227,
+    "median": 842.6815137863159,
+    "min": 759.4538867473602,
+    "p10": 759.4538867473602,
+    "p90": 842.6815137863159
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c17_32 train_bamor_mujoco.py production records with parseable training-step units. Only profile 1 is loaded; BAMOR c_le2, c3_8, c9_16, and diagnostic-shard records remain separate classes.",
+  "parsed_units_training_step": {
+    "max": 50000.0,
+    "median": 50000.0,
+    "min": 50000.0,
+    "p10": 50000.0,
+    "p90": 50000.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 3
+  },
+  "ram_counts": {
+    "2524": 1,
+    "2539": 1,
+    "2541": 1
+  },
+  "realized_training_step_s": {
+    "max": 65.83678202523043,
+    "median": 59.33439761285521,
+    "min": 25.959797536618257,
+    "p10": 25.959797536618257,
+    "p90": 59.33439761285521
+  },
+  "record_count": 3,
+  "run_id": "module80_bamor_mujoco_c17_32_completed_history",
+  "scope": "BAMOR c17_32 train_bamor_mujoco.py",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_contrast_hybrid --total_steps 50000 --switch_interval 25000 --seed 0 --num_seeds 1 --save_dir results/mujoco_mc_v2_20260608_160542 --device cpu --eval_freq 100000 --hidden 64",
+      "cpu_cores": 29.0,
+      "duration_s": 1926.0550830364227,
+      "finished_at": 1780907962.485719,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 2524.0,
+      "realized_training_step_s": 25.959797536618257,
+      "signature": "BAMOR/auto-adopted/p3959673",
+      "started_at": 1780906036.430636,
+      "status": "done",
+      "task_id": "t7931"
+    },
+    {
+      "cmd_prefix": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_contrast_hybrid --total_steps 50000 --switch_interval 25000 --seed 1 --num_seeds 1 --save_dir results/mujoco_mc_v2_20260608_160542 --device cpu --eval_freq 100000 --hidden 64",
+      "cpu_cores": 29.0,
+      "duration_s": 842.6815137863159,
+      "finished_at": 1780908764.079134,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 2541.0,
+      "realized_training_step_s": 59.33439761285521,
+      "signature": "BAMOR/auto-adopted/p3990777",
+      "started_at": 1780907921.3976202,
+      "status": "done",
+      "task_id": "t7933"
+    },
+    {
+      "cmd_prefix": "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 --method bamor_v2_proto_generic --total_steps 50000 --switch_interval 25000 --seed 2 --num_seeds 1 --save_dir results/mujoco_mc_v2_20260608_160542 --device cpu --eval_freq 100000 --hidden 64",
+      "cpu_cores": 29.0,
+      "duration_s": 759.4538867473602,
+      "finished_at": 1780909551.1119432,
+      "parsed_units_training_step": 50000.0,
+      "project": "BAMOR",
+      "ram_mb": 2539.0,
+      "realized_training_step_s": 65.83678202523043,
+      "signature": "BAMOR/auto-adopted/p3999772",
+      "started_at": 1780908791.6580565,
+      "status": "done",
+      "task_id": "t7934"
+    }
+  ],
+  "source_scope": "classifier: BAMOR c17_32 train_bamor_mujoco.py, no GPU, 17-32 CPU cores",
+  "total_units_training_step": 150000.0,
+  "window": {
+    "end_ts": 1781074641.2424605,
+    "start_ts": 1778482641.2424605,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_mujoco_c17_32_completed_history"
+}

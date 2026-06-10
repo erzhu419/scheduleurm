@@ -36,17 +36,17 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module79
+## Current Result After Module80
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3058
-representative mapped = 2616
-strict mapped = 1658
-unmapped / measurement-required = 442
-representative mapped_fraction = 0.855461
-capacity slack on mapped raw-window representative load from Module49 delta = 0.000008435
+completed_active_production records = 3101
+representative mapped = 2675
+strict mapped = 1671
+unmapped / measurement-required = 426
+representative mapped_fraction = 0.862625
+capacity slack on mapped raw-window representative load from Module49 delta = 0.000010750
 global theorem closed = false
 ```
 
@@ -77,6 +77,13 @@ transit_native_real_demand_batch_c3_8_completed_history = 7 / 3058 completed-act
 transit_native_real_demand_alighting_c3_8_completed_history = 7 / 3058 completed-active production records
 ```
 
+Module80 then adds:
+
+```text
+bamor_diagnostic_shard_c17_32_completed_history = 14 / 3101 completed-active production records
+bamor_mujoco_c17_32_completed_history = 3 / 3101 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -85,11 +92,11 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 144 | 0.047090 |
-| `cpu_eval_generic` | measurement required | 82 | 0.026815 |
-| `artifact_io_control` | measurement required | 77 | 0.025180 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 73 | 0.023872 |
-| `scheduler_control_plane` | measurement required | 50 | 0.016351 |
+| `generic_cpu_python` | measurement required | 144 | 0.046437 |
+| `cpu_eval_generic` | measurement required | 82 | 0.026443 |
+| `artifact_io_control` | measurement required | 77 | 0.024831 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 56 | 0.018059 |
+| `scheduler_control_plane` | measurement required | 51 | 0.016446 |
 | `gpu_rl_unmeasured_variant` | measurement required | 16 | 0.005232 |
 
 The dominant remaining production-coverage blocker is still the
@@ -122,6 +129,7 @@ after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766
 after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766
 after Module78:  cpu_sumo_transit_eval_or_control = 94 / 2910
 after Module79:  cpu_sumo_transit_eval_or_control = 73 / 3058
+after Module80:  cpu_sumo_transit_eval_or_control = 56 / 3101
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -180,6 +188,11 @@ Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe blocker
 by recognizing the remaining records as Transit/FreqHRL native work and mapping
 persistent-stress native promotion, native real-demand batch validation, and
 alighting-safe/rescue shard validation separately.
+Module80 closes the previous `bamor_cpu_training|c_17_32` first-probe blocker
+for observed production command shapes by splitting c17_32 BAMOR training into
+Mujoco and diagnostic-shard completed-history training-step service classes.
+It does not claim a c17_32 train-compare class because no such command shape is
+present in the current production bucket.
 
 ## Interpretation
 
@@ -230,7 +243,8 @@ c_le2 ablation records.  Module77 maps 16 c_le2 BAMOR Mujoco records, 7 c_le2
 BAMOR train-compare records, and 3 c_le2 BAMOR diagnostic-shard records.  Module78
 maps 9 completed-active offline-sumo eval records, 4 H2Oplus/SimpleSAC shell eval
 records, 5 RESCO config/main.py records, and three singleton parser/extraction/SUMO
-records.  The next
-closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`bamor_cpu_training|c_17_32`, `freqduet_cpu_ablation|c_33_64`, and
-`sumo_eval_cpu|c_3_8` in the regenerated Module53 manifest.
+records.  Module80 maps 14 c17_32 BAMOR diagnostic-shard records and 3 c17_32
+BAMOR Mujoco records.  The next closure targets are now the remaining
+CPU/SUMO/transit residual buckets, led by `freqduet_cpu_ablation|c_33_64`,
+`sumo_eval_cpu|c_3_8`, and `transit_freqhrl_cpu_validation|c_3_8` in the
+regenerated Module53 manifest.

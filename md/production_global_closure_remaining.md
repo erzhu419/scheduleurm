@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module79.  It should be read together
+This note records the current gap after Module80.  It should be read together
 with:
 
 ```text
@@ -64,6 +64,8 @@ md/experiment_module78_nature_emissions_sumo_c_le2_completed_history.md
 md/experiment_module79_transit_native_promotion_c3_8_persistent_stress_completed_history.md
 md/experiment_module79_transit_native_real_demand_batch_c3_8_completed_history.md
 md/experiment_module79_transit_native_real_demand_alighting_c3_8_completed_history.md
+md/experiment_module80_bamor_mujoco_c17_32_completed_history.md
+md/experiment_module80_bamor_diagnostic_shard_c17_32_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -392,16 +394,28 @@ workload_key = transit_native_real_demand_alighting_c3_8_completed_history
 completed-active strict mapped count = 7
 feasible profiles = 1
 unit rule = parsed native-control episode units
+
+completed-history slice = BAMOR c17_32 Mujoco training
+workload_key = bamor_mujoco_c17_32_completed_history
+completed-active strict mapped count = 3
+feasible profiles = 1
+unit rule = parsed training-step units
+
+completed-history slice = BAMOR c17_32 diagnostic shard training
+workload_key = bamor_diagnostic_shard_c17_32_completed_history
+completed-active strict mapped count = 14
+feasible profiles = 1
+unit rule = parsed shard training-step units
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3058
-strict completed-active mapped count = 1658
-representative completed-active mapped count = 2616
-measurement_required = 442
-cpu_sumo_transit_eval_or_control remaining = 73 / 3058
+completed_active_production records = 3101
+strict completed-active mapped count = 1671
+representative completed-active mapped count = 2675
+measurement_required = 426
+cpu_sumo_transit_eval_or_control remaining = 56 / 3101
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -429,12 +443,15 @@ certifying residual `runner_v3.py` records separately.  A single coarse native
 c9_16 class was rejected because its slow lower-service rate made the mapped
 production-load LP infeasible.
 
-The current `freqduet_cpu_ablation|c_3_8` group is also not fully closed.
+The previous `freqduet_cpu_ablation|c_3_8` group is now closed at the measured
+command-shape level.
 Module60 certifies only parseable `run_freqduet_ablation.py` records using a
 completed-history profile-1 lower-service point.  Module66 certifies the direct
-`runner_v3.py` c3_8 records with explicit episodes.  The remaining 18 c3_8
-records are native/control command shapes and stay in the regenerated Module53
-manifest.
+`runner_v3.py` c3_8 records with explicit episodes.  Module79 then identifies
+the residual c3_8 rows as Transit/FreqHRL native/control command shapes and
+certifies native promotion, native real-demand batch, and alighting-shard
+service classes separately.  The remaining c3_8 CPU/SUMO/transit obligation is
+now the separate `transit_freqhrl_cpu_validation|c_3_8` sub-bucket.
 
 The current `freqduet_cpu_ablation|c_33_64` group is not fully closed either.
 Module61 certifies only parseable `run_freqduet_ablation.py` records using a
@@ -488,13 +505,16 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
 212 / 2766 after Module74, 169 / 2766 after Module75,
 139 / 2766 after Module76, 113 / 2766 after Module77,
-94 / 2910 after Module78, and 73 / 3058 after Module79.
+94 / 2910 after Module78, 73 / 3058 after Module79, and 56 / 3101 after
+Module80.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
-does the same for BAMOR c_9_16, and Module77 does the same for BAMOR c_le2.
-Remaining BAMOR c_17_32 records are still separate CPU/SUMO/transit obligations
-until they receive their own service certificates.
+does the same for BAMOR c_9_16, Module77 does the same for BAMOR c_le2, and
+Module80 closes the observed c_17_32 BAMOR command shapes with separate Mujoco
+and diagnostic-shard training-step certificates.  A c17_32 train-compare class
+remains unclaimed until that command shape appears and receives its own
+completed-history service certificate.
 
 Module65 closes only the ZSW TSP/SUMO c_le2 runner slice.  Module72 and Module78
 then close the remaining CFCMT/offline-sumo/H2Oplus/RESCO/Nature c_le2 SUMO/eval
@@ -563,6 +583,12 @@ Module79 closes the former `freqduet_cpu_ablation|c_3_8` first-probe blocker
 with three explicit native-service classes.  This corrects the manifest's broad
 keyword bucket rather than pretending the records are FreqDuet ablations.
 
+Module80 closes the former `bamor_cpu_training|c_17_32` first-probe blocker for
+the observed production command shapes with two explicit completed-history
+training-step service classes: Mujoco and diagnostic shard.  It does not claim a
+c17_32 train-compare service class until that command shape is actually present
+and measured.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -575,7 +601,7 @@ profile-1 lower-service rates.  This tightening is part of the theorem
 condition audit, not a reason to relabel slow tasks:
 
 ```text
-strict mapped delta = 0.000008435
+strict mapped delta = 0.000010750
 ```
 
 This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
@@ -594,13 +620,14 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
+transit_freqhrl_cpu_validation|c_9_16
+freqduet_cpu_ablation|c_le2
 ```
 
 For every slice, the required closure pattern is:

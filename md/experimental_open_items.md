@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3058
-representative mapped = 2616
-strict mapped = 1658
-measurement_required = 442
-mapped_fraction = 0.855461
+records = 3101
+representative mapped = 2675
+strict mapped = 1671
+measurement_required = 426
+mapped_fraction = 0.862625
 ```
 
 最大未闭合 bucket 是：
@@ -280,6 +280,7 @@ after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766 completed-active 
 after Module77:  cpu_sumo_transit_eval_or_control = 113 / 2766 completed-active records
 after Module78:  cpu_sumo_transit_eval_or_control = 94 / 2910 completed-active records
 after Module79:  cpu_sumo_transit_eval_or_control = 73 / 3058 completed-active records
+after Module80:  cpu_sumo_transit_eval_or_control = 56 / 3101 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -640,18 +641,31 @@ workload_key = transit_native_real_demand_alighting_c3_8_completed_history
 feasible profiles = 1
 completed-active mapped count = 7
 unit rule = parsed native-control episode units
+
+closed completed-history slice = BAMOR c17_32 Mujoco training
+workload_key = bamor_mujoco_c17_32_completed_history
+feasible profiles = 1
+completed-active mapped count = 3
+unit rule = parsed training-step units
+
+closed completed-history slice = BAMOR c17_32 diagnostic shard training
+workload_key = bamor_diagnostic_shard_c17_32_completed_history
+feasible profiles = 1
+completed-active mapped count = 14
+unit rule = parsed shard training-step units
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
+transit_freqhrl_cpu_validation|c_9_16
+freqduet_cpu_ablation|c_le2
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

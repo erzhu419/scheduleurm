@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module89
+## Status After Module90
 
 The original top sub-bucket was:
 
@@ -407,17 +407,23 @@ Module89 then closes the c9_16 Transit/FreqHRL pressure-matrix residual:
 transit_trading_pressure_matrix_c9_16_completed_history: completed_active = 2, raw_history_all = 2, unit = seed_step_asset_scenario_baseline, min = 12223.088100591 seed-step-asset-scenario-baseline/s
 ```
 
+Module90 then closes the low-CPU Transit/FreqHRL pytest residual:
+
+```text
+transit_freqhrl_tests_c_le2_completed_history: completed_active = 2, raw_history_all = 2, unit = test_job, min = 0.013511587 test-job/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 3
-cpu_cores median = 2.000000
-cpu_cores p90 = 2
+record_count = 1
+cpu_cores median = 7.000000
+cpu_cores p90 = 7
 cpu_cores max = 7
-ram_mb median = 625.000
-ram_mb p90 = 625
-ram_mb max = 630
+ram_mb median = 94.000
+ram_mb p90 = 94
+ram_mb max = 94
 theorem_status = measurement_required
 ```
 
@@ -425,15 +431,13 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.666667 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.333333 |
+| `bamor_cpu_training|c_3_8` | 1 | 1.000000 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8
 ```
 
@@ -525,7 +529,8 @@ Module88 closes the c33_64 Transit/FreqHRL trading policy and pressure-matrix
 residual with separated completed-history lower-service rows.
 Module89 closes the c9_16 Transit/FreqHRL pressure-matrix residual with a
 separate completed-history lower-service row.
-The global theorem remains open because 3 completed/active production records
-in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by low-CPU Transit/FreqHRL residuals and one BAMOR c3_8
-residual.
+Module90 closes the low-CPU Transit/FreqHRL pytest residual with one completed
+pytest command as the conservative unit.  The global theorem remains open
+because 1 completed/active production record in the CPU/SUMO/transit family
+still requires a measured curve or equivalence certificate: the remaining
+`bamor_cpu_training|c_3_8` residual.

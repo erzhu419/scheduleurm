@@ -102,29 +102,38 @@ Module81 closes the direct `runner_v3.py` command shape inside the previous
 `freqduet_cpu_ablation|c_33_64` residual by adding a separate completed-history
 episode service class.  It does not merge these records with c33_64
 `run_freqduet_ablation.py` or native-promotion classes.
+Module82 closes the previous `sumo_eval_cpu|c_3_8` blocker by splitting it into
+four completed-history service classes: CFCMT snapshot generation, CFCMT
+SUMO/traffic pytest jobs, CFCMT traffic-signal phase1, and ZSW M21 SUMO
+runner records.  The CFCMT snapshot class uses parsed snapshot-window units,
+pytest and phase1 use one completed command as the unit, and ZSW M21 uses
+parsed simulated seconds from `--duration`.
 
 ```text
-record_count_window = 6440
-mapped_task_count = 2968
-mapped_fraction = 0.460870
-unmapped_task_count = 3472
+record_count_window = 6486
+mapped_task_count = 3016
+mapped_fraction = 0.465002
+unmapped_task_count = 3470
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module81
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module82
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `freqduet_runner_v3_c33_64_completed_history` | 32 | 0.000493827 |
+| `cfcmt_snapshot_generation_c3_8_completed_history` | 1 | 0.000555556 |
+| `cfcmt_pytest_sumo_c3_8_completed_history` | 4 | 0.000001543 |
+| `cfcmt_traffic_signal_phase1_c3_8_completed_history` | 1 | 0.000000386 |
+| `zsw_m21_sumo_eval_c3_8_completed_history` | 6 | 0.041666667 |
 
 Capacity LP:
 
 ```text
-delta = 0.000010750
+delta = 0.000011136
 status = optimal
 ```
 
@@ -155,6 +164,10 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
+The representative raw-window artifact has not been regenerated after
+Module82 because the representative LP is diagnostic and can be much larger
+than the strict theorem-grade LP.  Use the strict Module49 artifact above for
+the current proof-facing mapped capacity slice.
 
 Capacity LP:
 
@@ -218,6 +231,11 @@ training-step lower-service rates.  The split is service-semantic rather than
 cosmetic: the three command shapes have materially different completed-history
 rates, and the `--device cuda` flag on some records means the certificate must be
 read as a production-history row, not a generic CPU-only benchmark.
+Module82 maps the c3_8 SUMO block that previously led the remaining Module53
+manifest: 1 CFCMT snapshot-generation record, 4 CFCMT pytest records, 1 CFCMT
+traffic-signal phase1 record, and 6 ZSW M21 records.  It deliberately excludes
+CFCMT local snapshot validation and non-M21 ZSW c3_8 commands until those
+command shapes receive their own service certificates.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO

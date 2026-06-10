@@ -862,6 +862,108 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_cfcmt_snapshot_generation_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 CFCMT "
+                "SUMO/APC/AVL snapshot-generation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with snapshot-window units inferred from --snapshot-period and "
+                "the stage2-report duration family. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_snapshot_generation_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT snapshot generation c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module82 completed-history wall-clock audit "
+                        "for c_3_8 cf_h2o.eval.sumo_apc_avl_snapshot_generation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This is the c_3_8 sibling of the Module72 c_le2 snapshot "
+                        "class. Duration is inferred from stage2-report names "
+                        "before SUMO generation path tokens are considered."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_pytest_sumo_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 CFCMT "
+                "SUMO and traffic-signal pytest jobs."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as completed pytest-job units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_pytest_sumo_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=4,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT pytest SUMO c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module82 completed-history wall-clock audit "
+                        "for c_3_8 CFCMT SUMO/traffic-signal pytest records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service unit is one completed pytest command because "
+                        "test internals are not uniformly progress-counted in the "
+                        "scheduler archive."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_cfcmt_traffic_signal_phase1_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for the c_3_8 CFCMT "
+                "traffic_signal_sumo_phase1.py production command."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one phase1 run. Only profile 1 is loaded from the realized "
+                "completed-task wall-clock record."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cfcmt_traffic_signal_phase1_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history CFCMT traffic signal phase1 singleton",
+                    benchmark_source=(
+                        "Scheduleurm module82 completed-history wall-clock audit "
+                        "for c_3_8 traffic_signal_sumo_phase1.py."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Phase1 is separated from phase2 because the existing measured class was c_le2 only.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for the low-CPU CFCMT "
@@ -2325,6 +2427,43 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                         "simulated-second rate as a conservative profile-1 lower-service "
                         "point. CFCMT, offline-sumo, H2Oplus, and direct SUMO binary "
                         "records remain unmeasured unless covered by other modules."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_zsw_m21_sumo_eval_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for ZSW M21 TSP/SUMO "
+                "runner records in the c_3_8 bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed simulated SUMO seconds from --duration. Only profile "
+                "1 is loaded from realized completed-task wall-clock history; no "
+                "live co-location profile is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="zsw_m21_sumo_eval_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history ZSW M21 SUMO c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module82 completed-history wall-clock audit "
+                        "for c_3_8 m21_cycle_conserving_tsp_runner.py records "
+                        "with explicit --duration."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is intentionally narrower than Module65: it "
+                        "does not claim baseline_runner.py, oracle_tsp_runner.py, "
+                        "or c_le2 ZSW records."
                     ),
                 ),
             ),

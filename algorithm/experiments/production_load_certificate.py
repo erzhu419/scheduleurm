@@ -63,6 +63,11 @@ DEFAULT_TASKSETS = (
     "production_bamor_train_compare_c9_16_completed_history",
     "production_bamor_mujoco_c9_16_completed_history",
     "production_bamor_diagnostic_shard_c9_16_completed_history",
+    "production_freqduet_cpu_ablation_c_le2_completed_history",
+    "production_freqduet_baseline_rule_c_le2_completed_history",
+    "production_freqduet_preflight_c_le2_completed_history",
+    "production_transit_freqhrl_analysis_matrix_c_le2_completed_history",
+    "production_transit_freqhrl_merge_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -444,6 +449,33 @@ def classify_record(
             "strict_measured",
             "module71_freqduet_runner_v3_c9_16_residual_completed_history",
             units=runner_c9_16_units,
+        )
+
+    c_le2_units = _freqduet_ablation_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if c_le2_units is not None:
+        return _mapped(
+            "freqduet_cpu_ablation_c_le2_completed_history",
+            "strict_measured",
+            "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            units=c_le2_units,
+        )
+
+    baseline_c_le2_units = _freqduet_baseline_rule_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if baseline_c_le2_units is not None:
+        return _mapped(
+            "freqduet_baseline_rule_c_le2_completed_history",
+            "strict_measured",
+            "module76_freqduet_baseline_rule_c_le2_completed_history",
+            units=baseline_c_le2_units,
+        )
+
+    preflight_c_le2_units = _freqduet_preflight_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
+    if preflight_c_le2_units is not None:
+        return _mapped(
+            "freqduet_preflight_c_le2_completed_history",
+            "strict_measured",
+            "module76_freqduet_preflight_c_le2_completed_history",
+            units=preflight_c_le2_units,
         )
 
     runner_c_le2_units = _freqduet_runner_v3_c_le2_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -1335,6 +1367,74 @@ def _freqduet_ablation_c9_16_units(*, row: Mapping[str, Any], est_vram: float, c
     return units if units is not None and units > 0 else None
 
 
+def _freqduet_ablation_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    units = _parse_freqduet_ablation_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_baseline_rule_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, cmd_lower))
+    if "bamor" in text:
+        return None
+    if "run_baseline_rule.py" not in cmd_lower:
+        return None
+    if "freqduet" not in text:
+        return None
+    episodes = _positive_float_option(_shlex_tokens(cmd), "--episodes", default=0.0)
+    return episodes if episodes > 0 else None
+
+
+def _freqduet_preflight_c_le2_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if float(cpu) > 2.0:
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    description = str(row.get("description") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+    if "bamor" in text:
+        return None
+    if "freqduet" not in text:
+        return None
+    if "freqduet_autoadopt_spin.py" in cmd_lower:
+        return None
+    preflight_tokens = (
+        "preflight",
+        "env-smoke",
+        "hpc-cpu-probe",
+        "py_compile",
+        "import_check",
+        "import sys",
+        "deps ok",
+    )
+    return 1.0 if any(token in text for token in preflight_tokens) else None
+
+
 def _parse_freqduet_ablation_units(cmd: str) -> float | None:
     import shlex
 
@@ -1813,6 +1913,22 @@ def _transit_freqhrl_c_le2_units(
         units = 2.0 * source_count * _transit_seed_episode_units(tokens, seed_default=3)
         workload_key = "transit_native_control_c_le2_completed_history"
         reason = "module70_transit_native_control_c_le2_completed_history"
+    elif module.endswith("transit.merge_native_real_demand_shards") or module.endswith(
+        "transit.merge_native_promotion_shards"
+    ):
+        units = 1.0
+        workload_key = "transit_freqhrl_merge_c_le2_completed_history"
+        reason = "module76_transit_freqhrl_merge_c_le2_completed_history"
+    elif module in {
+        "freq_hrl.experiments.trading.order_book_large_replay_manifest_validation",
+        "freq_hrl.experiments.encoder_cross_domain_matrix",
+        "freq_hrl.experiments.leakage_no_tradeoff_matrix",
+        "freq_hrl.experiments.theory_appendix",
+        "freq_hrl.experiments.top_journal_unified_matrix",
+    }:
+        units = 1.0
+        workload_key = "transit_freqhrl_analysis_matrix_c_le2_completed_history"
+        reason = "module76_transit_freqhrl_analysis_matrix_c_le2_completed_history"
 
     if units is None or not math.isfinite(float(units)) or float(units) <= 0:
         return None

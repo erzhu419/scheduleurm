@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module75.  It should be read together
+This note records the current gap after Module76.  It should be read together
 with:
 
 ```text
@@ -47,6 +47,11 @@ md/experiment_module74_transit_native_promotion_c17_32_residual_completed_histor
 md/experiment_module75_bamor_train_compare_c9_16_completed_history.md
 md/experiment_module75_bamor_mujoco_c9_16_completed_history.md
 md/experiment_module75_bamor_diagnostic_shard_c9_16_completed_history.md
+md/experiment_module76_freqduet_ablation_c_le2_completed_history.md
+md/experiment_module76_freqduet_baseline_rule_c_le2_completed_history.md
+md/experiment_module76_freqduet_preflight_c_le2_completed_history.md
+md/experiment_module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.md
+md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -273,16 +278,46 @@ workload_key = bamor_diagnostic_shard_c9_16_completed_history
 completed-active strict mapped count = 34
 feasible profiles = 1
 unit rule = parsed training steps
+
+completed-history slice = FreqDuet c_le2 run_freqduet_ablation.py
+workload_key = freqduet_cpu_ablation_c_le2_completed_history
+completed-active strict mapped count = 3
+feasible profiles = 1
+unit rule = parsed jobs times episodes
+
+completed-history slice = FreqDuet c_le2 run_baseline_rule.py
+workload_key = freqduet_baseline_rule_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = parsed episodes
+
+completed-history slice = FreqDuet c_le2 preflight/env checks
+workload_key = freqduet_preflight_c_le2_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = preflight_check
+
+completed-history slice = Transit/FreqHRL c_le2 analysis matrix/report jobs
+workload_key = transit_freqhrl_analysis_matrix_c_le2_completed_history
+completed-active strict mapped count = 11
+feasible profiles = 1
+unit rule = analysis_job
+
+completed-history slice = Transit/FreqHRL c_le2 shard merge jobs
+workload_key = transit_freqhrl_merge_c_le2_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = merge_job
 ```
 
 Not yet closed:
 
 ```text
 completed_active_production records = 2766
-strict completed-active mapped count = 1331
-representative completed-active mapped count = 2239
-measurement_required = 527
-cpu_sumo_transit_eval_or_control remaining = 169 / 2766
+strict completed-active mapped count = 1361
+representative completed-active mapped count = 2269
+measurement_required = 497
+cpu_sumo_transit_eval_or_control remaining = 139 / 2766
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -325,10 +360,13 @@ single-seed smoke/fix work.  The remaining 15 c33_64 records are direct-runner,
 single-command-shape, or otherwise unparseable residuals and stay in the
 Module53 manifest.
 
-The current `freqduet_cpu_ablation|c_le2` group is not fully closed.  Module62
-certifies the direct `runner_v3.py` part with explicit episode counts.  The
-remaining c_le2 records are ablation, baseline-rule, scheduler wait, native
-validation, or shell-loop command shapes.
+The current `freqduet_cpu_ablation|c_le2` group is almost fully closed.  Module62
+certifies the direct `runner_v3.py` part with explicit episode counts.  Module76
+certifies c_le2 `run_freqduet_ablation.py`, `run_baseline_rule.py`, preflight,
+Transit/FreqHRL analysis-matrix, and Transit/FreqHRL merge command shapes.  The
+only residual c_le2 records in this sub-bucket are two
+`freqduet_autoadopt_spin.py` helpers, which are left unmeasured because their
+stable progress unit is not part of the scheduler-controlled workload model.
 
 The previous `freqduet_cpu_ablation|c_65p` top bucket is now closed at the
 command-shape level.  Module69 splits it into high-CPU
@@ -344,7 +382,8 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 576 / 2679 after Module66/67, 532 / 2755 after Module68, 471 / 2781 after
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
-212 / 2766 after Module74, and 169 / 2766 after Module75.
+212 / 2766 after Module74, 169 / 2766 after Module75, and
+139 / 2766 after Module76.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -397,6 +436,11 @@ three explicit completed-history service classes: train-compare, Mujoco, and
 diagnostic-shard training-step work.  The split is required because those three
 script shapes have materially different service rates.
 
+Module76 closes most of the former `freqduet_cpu_ablation|c_le2` residual with
+five explicit completed-history service classes: FreqDuet ablation episodes,
+baseline-rule episodes, preflight checks, Transit/FreqHRL analysis jobs, and
+Transit/FreqHRL merge jobs.  It does not claim the two auto-adopt spin helpers.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -428,12 +472,13 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
+transit_freqhrl_cpu_validation|c_3_8
+sumo_eval_cpu|c_3_8
 ```
 
 For every slice, the required closure pattern is:

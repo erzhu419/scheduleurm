@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module75
+## Current Result After Module76
 
 For the 30-day completed/active production window:
 
 ```text
 completed_active_production records = 2766
-representative mapped = 2239
-strict mapped = 1331
-unmapped / measurement-required = 527
-representative mapped_fraction = 0.809472
+representative mapped = 2269
+strict mapped = 1361
+unmapped / measurement-required = 497
+representative mapped_fraction = 0.820318
 capacity slack on mapped raw-window representative load from Module49 delta = 0.000050804
 global theorem closed = false
 ```
@@ -56,7 +56,7 @@ with no scheduler id and no log are not scheduler-controlled arrivals.  They
 remain operational telemetry/background-load evidence, but they are outside the
 arrival stream that Scheduleurm can assign to service actions.
 
-The newly measured Module56 through Module75 sub-buckets appear as
+The newly measured Module56 through Module76 sub-buckets appear as
 strict mapped coverage:
 
 ```text
@@ -98,6 +98,11 @@ transit_native_promotion_c17_32_residual_completed_history = 14 / 2766 completed
 bamor_diagnostic_shard_c9_16_completed_history = 34 / 2766 completed-active production records
 bamor_train_compare_c9_16_completed_history = 6 / 2766 completed-active production records
 bamor_mujoco_c9_16_completed_history = 3 / 2766 completed-active production records
+transit_freqhrl_analysis_matrix_c_le2_completed_history = 11 / 2766 completed-active production records
+transit_freqhrl_merge_c_le2_completed_history = 6 / 2766 completed-active production records
+freqduet_preflight_c_le2_completed_history = 5 / 2766 completed-active production records
+freqduet_baseline_rule_c_le2_completed_history = 5 / 2766 completed-active production records
+freqduet_cpu_ablation_c_le2_completed_history = 3 / 2766 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -108,8 +113,8 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 169 | 0.061099 |
 | `generic_cpu_python` | measurement required | 143 | 0.051699 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 139 | 0.050253 |
 | `cpu_eval_generic` | measurement required | 82 | 0.029646 |
 | `artifact_io_control` | measurement required | 77 | 0.027838 |
 | `scheduler_control_plane` | measurement required | 40 | 0.014461 |
@@ -141,6 +146,7 @@ after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766
 after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766
+after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -181,6 +187,10 @@ diagnostic-shard script-level service classes.  This is a service-semantics
 refinement as well as a coverage gain: the diagnostic-shard rate is orders of
 magnitude higher than train-compare, so one coarse BAMOR c9_16 class would be
 both conservative and misleading.
+Module76 closes most of the previous `freqduet_cpu_ablation|c_le2` residual by
+splitting FreqDuet ablation, baseline-rule, preflight/env-check, Transit/FreqHRL
+analysis-matrix, and Transit/FreqHRL merge jobs into five completed-history
+service classes.  Two `freqduet_autoadopt_spin.py` helpers remain unmeasured.
 
 ## Interpretation
 
@@ -224,7 +234,10 @@ SUMO-generation records, and 1 traffic-signal phase2 singleton.  Module74 maps
 16 c17_32 runner_v3 records, 16 paper-longtrain shards, and 14 residual
 native-promotion records.  Module75 maps 34 c9_16 BAMOR diagnostic-shard
 records, 6 c9_16 BAMOR train-compare records, and 3 c9_16 BAMOR Mujoco records
-with script-specific training-step lower-service points.  The next
+with script-specific training-step lower-service points.  Module76 maps 11
+Transit/FreqHRL analysis-matrix records, 6 Transit/FreqHRL merge records, 5
+FreqDuet preflight records, 5 FreqDuet baseline-rule records, and 3 FreqDuet
+c_le2 ablation records.  The next
 closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`freqduet_cpu_ablation|c_le2`, `bamor_cpu_training|c_le2`, and
-`sumo_eval_cpu|c_le2` in the regenerated Module53 manifest.
+`bamor_cpu_training|c_le2`, `sumo_eval_cpu|c_le2`, and
+`freqduet_cpu_ablation|c_3_8` in the regenerated Module53 manifest.

@@ -71,12 +71,17 @@ the progress unit because those production commands used `--skip-existing`.
 Module75 closes the BAMOR c9_16 CPU-training residual by splitting it into
 script-level completed-history classes for `train_compare_baselines.py`,
 `train_bamor_mujoco.py`, and `run_bamor_diagnostic_shard.py`.
+Module76 closes most of the c_le2 residual previously shown under
+`freqduet_cpu_ablation|c_le2`: FreqDuet ablation, baseline-rule, preflight/env
+checks, Transit/FreqHRL analysis-matrix jobs, and Transit/FreqHRL merge jobs are
+separated into five completed-history service classes.  The two auto-adopt spin
+helpers remain unmeasured.
 
 ```text
 record_count_window = 5980
-mapped_task_count = 2525
-mapped_fraction = 0.422241
-unmapped_task_count = 3455
+mapped_task_count = 2573
+mapped_fraction = 0.430268
+unmapped_task_count = 3407
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -103,6 +108,11 @@ strict rows added to the mapped slice are:
 | `bamor_train_compare_c9_16_completed_history` | 6 | 0.001273148 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
+| `freqduet_cpu_ablation_c_le2_completed_history` | 7 | 0.000928627 |
+| `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
+| `freqduet_preflight_c_le2_completed_history` | 14 | 0.000005401 |
+| `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
+| `transit_freqhrl_merge_c_le2_completed_history` | 8 | 0.000003086 |
 
 Capacity LP:
 
@@ -121,11 +131,11 @@ certificates.
 
 ```text
 record_count_window = 5980
-mapped_task_count = 4421
+mapped_task_count = 4469
 representative_mapped_task_count = 1896
-mapped_fraction = 0.739298
-strict_mapped_fraction = 0.422241
-unmapped_task_count = 1559
+mapped_fraction = 0.747324
+strict_mapped_fraction = 0.430268
+unmapped_task_count = 1511
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -133,7 +143,7 @@ usable_for_global_theorem = false
 
 Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
-Module71 through Module75 add the same strict rows shown above; representative
+Module71 through Module76 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
@@ -191,13 +201,19 @@ records, and 34 c9_16 BAMOR diagnostic-shard records with script-specific
 training-step lower-service rates.  This removes the previous top BAMOR c9_16
 CPU-training residual without charging fast diagnostic-shard tasks to the
 slower train-compare service class.
+Module76 maps the c_le2 residual command shapes that have clear completed
+progress units: 7 raw-window FreqDuet ablation records, 5 baseline-rule records,
+14 preflight/env-check records, 14 Transit/FreqHRL analysis-matrix records, and
+8 Transit/FreqHRL merge records.  It deliberately leaves the two
+`freqduet_autoadopt_spin.py` helpers unmeasured because their stable progress
+unit is not part of the scheduler-controlled workload model.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3455 / 5980 tasks
-representative unmapped: 1559 / 5980 tasks
+strict unmapped: 3407 / 5980 tasks
+representative unmapped: 1511 / 5980 tasks
 representative-mapped but not theorem-grade: 1896 tasks
 ```
 

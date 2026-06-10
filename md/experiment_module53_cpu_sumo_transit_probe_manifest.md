@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module82
+## Status After Module83
 
 The original top sub-bucket was:
 
@@ -351,15 +351,27 @@ cfcmt_traffic_signal_phase1_c3_8_completed_history: completed_active = 1, raw_hi
 zsw_m21_sumo_eval_c3_8_completed_history: completed_active = 6, raw_history_all = 6, unit = sim_second, min = 7.269619812 sim-second/s
 ```
 
+Module83 measured completed-history profile-1 lower-service points for the
+Transit/FreqHRL c3_8 residual:
+
+```text
+transit_trading_public_csv_c3_8_completed_history: completed_active = 1, raw_history_all = 4, unit = csv_step, min = 59.878105731 csv-step/s
+transit_trading_pressure_merge_c3_8_completed_history: completed_active = 1, raw_history_all = 3, unit = merge_job, min = 0.062236279 merge-job/s
+transit_trading_policy_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = policy_seed_step_asset, min = 398.625038290 policy-seed-step-asset/s
+transit_surrogate_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = surrogate_seed_step_corridor, min = 299.115070129 surrogate-seed-step-corridor/s
+transit_freqhrl_tests_c3_8_completed_history: completed_active = 8, raw_history_all = 8, unit = test_job, min = 0.010963127 test-job/s
+transit_native_merge_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = native_merge_job, min = 0.012513107 native-merge-job/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 38
-cpu_cores median = 14
+record_count = 26
+cpu_cores median = 16.000000
 cpu_cores p90 = 37
 cpu_cores max = 61
-ram_mb median = 1073.500
+ram_mb median = 11236.000
 ram_mb p90 = 32768
 ram_mb max = 64000
 theorem_status = measurement_required
@@ -369,22 +381,20 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `transit_freqhrl_cpu_validation|c_3_8` | 12 | 0.315789 |
-| `freqduet_cpu_ablation|c_9_16` | 6 | 0.157895 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.157895 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.131579 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.052632 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.052632 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.052632 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.052632 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.026316 |
+| `freqduet_cpu_ablation|c_9_16` | 6 | 0.230769 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.230769 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.192308 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.076923 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.076923 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.076923 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.076923 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.038462 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
 freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
@@ -460,8 +470,12 @@ Module82 closes the previous `sumo_eval_cpu|c_3_8` first-probe blocker by
 splitting it into CFCMT snapshot generation, CFCMT SUMO/traffic pytest, CFCMT
 traffic-signal phase1, and ZSW M21 completed-history service classes.  It does
 not claim CFCMT local snapshot validation or non-M21 ZSW c3_8 command shapes.
-The global theorem remains open because 38 completed/active production records
+Module83 closes the Transit/FreqHRL c3_8 residual by splitting public CSV eval,
+pressure-matrix merge, policy-entry train/eval, PPO surrogate train/eval,
+pytest/unittest jobs, and native-promotion shard merge into six service
+classes.  Failed/cancelled same-shape attempts are accounted for in raw load
+classification but are not used as lower-service samples.
+The global theorem remains open because 26 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 12 `transit_freqhrl_cpu_validation|c_3_8` records, 6
-`transit_freqhrl_cpu_validation|c_17_32` records, 6
+certificates, led by 6 `transit_freqhrl_cpu_validation|c_17_32` records, 6
 `freqduet_cpu_ablation|c_9_16` records, and 5 `sumo_eval_cpu|c_33_64` records.

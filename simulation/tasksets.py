@@ -2469,6 +2469,192 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_trading_public_csv_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "public-market CSV evaluation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with step times CSV-file units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_public_csv_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit public CSV c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 freq_hrl.experiments.trading.public_market_data records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Failed/cancelled same-shape attempts are not used as lower-service samples.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_trading_pressure_merge_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "pressure-matrix merge commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as completed merge-job units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_pressure_merge_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit pressure merge c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 freq_hrl.experiments.trading.merge_pressure_matrix records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The unit is one completed merge command, not the --steps argument.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_trading_policy_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "trading policy-entry training/evaluation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed train/eval seed-step-asset units. Only profile 1 "
+                "is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_policy_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit policy-entry c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 freq_hrl.experiments.trading.policy_entry records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses the same policy train/eval unit parser as the Module70 c_le2 policy class.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_surrogate_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "PPO surrogate training/evaluation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed train/eval seed-step-corridor units. Only profile 1 "
+                "is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_surrogate_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit surrogate c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 freq_hrl.experiments.transit.ppo_surrogate records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses the same surrogate train/eval unit parser as the Module70 c_le2 surrogate class.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_freqhrl_tests_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "pytest/unittest jobs."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as completed test-command units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_freqhrl_tests_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=8,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit test c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 Transit/FreqHRL unittest and pytest records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Test internals are not expanded into artificial progress units.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_native_merge_c3_8_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_3_8 Transit/FreqHRL "
+                "native-promotion shard merge commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as completed merge-command units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_merge_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit native merge c3_8 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module83 completed-history wall-clock audit "
+                        "for c_3_8 freq_hrl.experiments.transit.merge_native_promotion_shards records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The unit is one completed merge command, not an expanded shard count.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

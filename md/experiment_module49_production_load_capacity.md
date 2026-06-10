@@ -108,27 +108,36 @@ SUMO/traffic pytest jobs, CFCMT traffic-signal phase1, and ZSW M21 SUMO
 runner records.  The CFCMT snapshot class uses parsed snapshot-window units,
 pytest and phase1 use one completed command as the unit, and ZSW M21 uses
 parsed simulated seconds from `--duration`.
+Module83 closes the next Transit/FreqHRL c3_8 residual by splitting it into six
+completed-history service classes: public CSV market evaluation, pressure-matrix
+merge, policy-entry train/eval, PPO surrogate train/eval, pytest/unittest jobs,
+and native-promotion shard merge.
 
 ```text
-record_count_window = 6486
-mapped_task_count = 3016
-mapped_fraction = 0.465002
+record_count_window = 6552
+mapped_task_count = 3082
+mapped_fraction = 0.470391
 unmapped_task_count = 3470
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
+action_generation = dominating_product_action_certificate
+full_action_count = 404352
+action_count_evaluated = 1
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module82
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `cfcmt_snapshot_generation_c3_8_completed_history` | 1 | 0.000555556 |
-| `cfcmt_pytest_sumo_c3_8_completed_history` | 4 | 0.000001543 |
-| `cfcmt_traffic_signal_phase1_c3_8_completed_history` | 1 | 0.000000386 |
-| `zsw_m21_sumo_eval_c3_8_completed_history` | 6 | 0.041666667 |
+| `transit_trading_public_csv_c3_8_completed_history` | 4 | 0.003472222 |
+| `transit_trading_pressure_merge_c3_8_completed_history` | 3 | 0.000001157 |
+| `transit_trading_policy_c3_8_completed_history` | 1 | 0.011250000 |
+| `transit_surrogate_c3_8_completed_history` | 1 | 0.008333333 |
+| `transit_freqhrl_tests_c3_8_completed_history` | 8 | 0.000003086 |
+| `transit_native_merge_c3_8_completed_history` | 1 | 0.000000386 |
 
 Capacity LP:
 
@@ -136,6 +145,14 @@ Capacity LP:
 delta = 0.000011136
 status = optimal
 ```
+
+For reproducibility, the strict artifact now avoids enumerating the entire
+404,352-action product when the service map is the current independent
+per-workload profile product.  It constructs the explicit full-product action
+that chooses each workload's maximum measured lower-service profile and solves
+the same slack check on that single action.  This is a valid sufficient
+certificate because that action is a member of the full product action set; it
+does not change the measured service map or the theorem assumptions.
 
 ## Representative Mapping Result
 
@@ -236,6 +253,11 @@ manifest: 1 CFCMT snapshot-generation record, 4 CFCMT pytest records, 1 CFCMT
 traffic-signal phase1 record, and 6 ZSW M21 records.  It deliberately excludes
 CFCMT local snapshot validation and non-M21 ZSW c3_8 commands until those
 command shapes receive their own service certificates.
+Module83 maps the next c3_8 Transit/FreqHRL residual: public-market CSV eval,
+pressure-matrix merge, policy-entry train/eval, PPO surrogate train/eval,
+Transit/FreqHRL test jobs, and native-promotion shard merge.  Failed/cancelled
+same-shape attempts can be classified for raw load accounting, but only `done`
+records with positive wall-clock duration are used as lower-service samples.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO

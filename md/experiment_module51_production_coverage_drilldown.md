@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module82
+## Current Result After Module83
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3136
-representative mapped = 2717
-strict mapped = 1696
-unmapped / measurement-required = 419
-representative mapped_fraction = 0.866390
+completed_active_production records = 3199
+representative mapped = 2789
+strict mapped = 1756
+unmapped / measurement-required = 410
+representative mapped_fraction = 0.871835
 capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
 global theorem closed = false
 ```
@@ -99,6 +99,17 @@ cfcmt_traffic_signal_phase1_c3_8_completed_history = 1 / 3136 completed-active p
 zsw_m21_sumo_eval_c3_8_completed_history = 6 / 3136 completed-active production records
 ```
 
+Module83 then adds:
+
+```text
+transit_trading_public_csv_c3_8_completed_history = 1 / 3199 completed-active production records
+transit_trading_pressure_merge_c3_8_completed_history = 1 / 3199 completed-active production records
+transit_trading_policy_c3_8_completed_history = 1 / 3199 completed-active production records
+transit_surrogate_c3_8_completed_history = 1 / 3199 completed-active production records
+transit_freqhrl_tests_c3_8_completed_history = 8 / 3199 completed-active production records
+transit_native_merge_c3_8_completed_history = 1 / 3199 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -107,12 +118,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 152 | 0.048469 |
-| `cpu_eval_generic` | measurement required | 82 | 0.026148 |
-| `artifact_io_control` | measurement required | 77 | 0.024554 |
-| `scheduler_control_plane` | measurement required | 55 | 0.017538 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 38 | 0.012117 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004464 |
+| `generic_cpu_python` | measurement required | 155 | 0.048453 |
+| `cpu_eval_generic` | measurement required | 82 | 0.025633 |
+| `artifact_io_control` | measurement required | 77 | 0.024070 |
+| `scheduler_control_plane` | measurement required | 55 | 0.017193 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 26 | 0.008128 |
+| `gpu_rl_unmeasured_variant` | measurement required | 15 | 0.004689 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -147,6 +158,7 @@ after Module79:  cpu_sumo_transit_eval_or_control = 73 / 3058
 after Module80:  cpu_sumo_transit_eval_or_control = 56 / 3101
 after Module81:  cpu_sumo_transit_eval_or_control = 43 / 3095
 after Module82:  cpu_sumo_transit_eval_or_control = 38 / 3136
+after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -220,6 +232,10 @@ and ZSW M21 runner records into four separate completed-history service
 classes.  This split is required for service semantics: pytest jobs are not
 snapshot-window work, and c3_8 ZSW baseline/oracle runners are not claimed by
 the M21 certificate.
+Module83 closes the next Transit/FreqHRL c3_8 residual by mapping public CSV
+market evaluation, pressure-matrix merge, policy-entry train/eval, PPO
+surrogate train/eval, pytest/unittest jobs, and native-promotion shard merge
+into six separate completed-history service classes.
 
 ## Interpretation
 
@@ -273,8 +289,9 @@ records, 5 RESCO config/main.py records, and three singleton parser/extraction/S
 records.  Module80 maps 14 c17_32 BAMOR diagnostic-shard records and 3 c17_32
 BAMOR Mujoco records.  Module81 maps 15 completed-active c33_64 FreqDuet
 direct runner records.  Module82 maps 12 completed-active SUMO c3_8 records
-across CFCMT snapshot/pytest/phase1 and ZSW M21 service classes.  The next
-closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`transit_freqhrl_cpu_validation|c_3_8`,
-`transit_freqhrl_cpu_validation|c_17_32`, `freqduet_cpu_ablation|c_9_16`, and
-`sumo_eval_cpu|c_33_64` in the regenerated Module53 manifest.
+across CFCMT snapshot/pytest/phase1 and ZSW M21 service classes.  Module83 maps
+13 completed-active Transit/FreqHRL c3_8 residual records across six service
+classes.  The next closure targets are now the remaining CPU/SUMO/transit
+residual buckets, led by `transit_freqhrl_cpu_validation|c_17_32`,
+`freqduet_cpu_ablation|c_9_16`, and `sumo_eval_cpu|c_33_64` in the regenerated
+Module53 manifest.

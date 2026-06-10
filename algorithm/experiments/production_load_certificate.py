@@ -26,6 +26,9 @@ from simulation.tasksets import TaskSetMember, taskset_by_name
 
 from .capacity_lp import solve_capacity_slack
 from .empirical_slack_certificate import (
+    _action_features,
+    _action_id,
+    _class_service,
     _finite_support_second_moment_bound,
     _profile_domain,
     _product_actions,
@@ -84,6 +87,12 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c3_8_persistent_stress_completed_history",
     "production_transit_native_real_demand_batch_c3_8_completed_history",
     "production_transit_native_real_demand_alighting_c3_8_completed_history",
+    "production_transit_trading_public_csv_c3_8_completed_history",
+    "production_transit_trading_pressure_merge_c3_8_completed_history",
+    "production_transit_trading_policy_c3_8_completed_history",
+    "production_transit_surrogate_c3_8_completed_history",
+    "production_transit_freqhrl_tests_c3_8_completed_history",
+    "production_transit_native_merge_c3_8_completed_history",
     "production_bamor_mujoco_c17_32_completed_history",
     "production_bamor_diagnostic_shard_c17_32_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
@@ -159,7 +168,13 @@ def build_production_load_certificate(
     }
     cache = build_default_cache()
     domains = {member.workload_key: _profile_domain(cache, member) for member in members}
-    actions = _product_actions(cache, tuple(members), domains)
+    full_action_count_estimate = _product_action_count(domains, members)
+    if full_action_count_estimate > 100_000:
+        actions = _dominating_product_actions(cache, tuple(members), domains)
+        action_generation = "dominating_product_action_certificate"
+    else:
+        actions = _product_actions(cache, tuple(members), domains)
+        action_generation = "full_product_actions"
     capacity = solve_capacity_slack(actions, lam)
     moment = {
         "B": _finite_support_second_moment_bound(actions, lam),
@@ -198,7 +213,9 @@ def build_production_load_certificate(
         "capacity": capacity,
         "moment": moment,
         "action_profile_domains": domains,
-        "full_action_count": len(actions),
+        "full_action_count": full_action_count_estimate,
+        "action_count_evaluated": len(actions),
+        "action_generation": action_generation,
         "mapped_capacity_usable_for_theorem": mapped_capacity_usable,
         "global_coverage_usable_for_theorem": global_coverage_usable,
         "usable_for_global_theorem": mapped_capacity_usable and global_coverage_usable,
@@ -693,6 +710,44 @@ def _classified_units(cls: Mapping[str, Any], *, fallback: float) -> float:
     except (TypeError, ValueError):
         pass
     return float(fallback)
+
+
+def _product_action_count(
+    domains: Mapping[str, list[int]],
+    members: Iterable[TaskSetMember],
+) -> int:
+    out = 1
+    for member in members:
+        out *= max(1, len(domains.get(member.workload_key, [])))
+    return int(out)
+
+
+def _dominating_product_actions(
+    cache: Any,
+    members: tuple[TaskSetMember, ...],
+    domains: Mapping[str, list[int]],
+) -> list[dict[str, Any]]:
+    profiles: dict[str, int] = {}
+    service: dict[str, float] = {}
+    for member in members:
+        choices = sorted(int(profile) for profile in domains[member.workload_key])
+        best_profile = max(
+            choices,
+            key=lambda profile: _class_service(cache, member, profile),
+        )
+        profiles[member.workload_key] = best_profile
+        service[member.workload_key] = _class_service(cache, member, best_profile)
+    action_id = _action_id(profiles)
+    return [
+        {
+            "action_id": action_id,
+            "profiles": profiles,
+            "features": _action_features(action_id, profiles, members),
+            "service_vector": service,
+            "lower_service": service,
+            "penalty_units": 0.0,
+        }
+    ]
 
 
 def _is_freqduet_cpu_ablation_c17_32(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> bool:
@@ -2292,6 +2347,22 @@ def _transit_freqhrl_c3_8_units(
         return None
     cmd = str(row.get("cmd") or "")
     cmd_lower = cmd.lower()
+    tokens = _shlex_tokens(cmd)
+    module = _python_module_from_tokens(tokens)
+    if module in {"unittest", "pytest"} and any(
+        token in cmd_lower
+        for token in (
+            "transit_hrl/tests",
+            "transit_hrl.tests",
+            "test_native_transit_ppo_bridge.py",
+            "test_native_promotion_replan_validation.py",
+        )
+    ):
+        return (
+            "transit_freqhrl_tests_c3_8_completed_history",
+            1.0,
+            "module83_transit_freqhrl_tests_c3_8_completed_history",
+        )
     if "native_promotion_replan_validation" in cmd_lower:
         units = _parse_native_promotion_seed_units(cmd)
         if units is None or units <= 0:
@@ -2317,6 +2388,41 @@ def _transit_freqhrl_c3_8_units(
             "transit_native_real_demand_batch_c3_8_completed_history",
             float(units),
             "module79_transit_native_real_demand_batch_c3_8_completed_history",
+        )
+    if module.endswith("trading.public_market_data"):
+        steps = _transit_int_option(tokens, "--steps", 1500)
+        csv_count = _transit_count_option(tokens, "--csv-files", 1)
+        units = float(steps * csv_count)
+        return (
+            "transit_trading_public_csv_c3_8_completed_history",
+            units,
+            "module83_transit_trading_public_csv_c3_8_completed_history",
+        )
+    if module.endswith("trading.merge_pressure_matrix"):
+        return (
+            "transit_trading_pressure_merge_c3_8_completed_history",
+            1.0,
+            "module83_transit_trading_pressure_merge_c3_8_completed_history",
+        )
+    if module.endswith("trading.policy_entry"):
+        units = _transit_trading_policy_entry_units(tokens)
+        return (
+            "transit_trading_policy_c3_8_completed_history",
+            float(units),
+            "module83_transit_trading_policy_c3_8_completed_history",
+        )
+    if module.endswith("transit.ppo_surrogate"):
+        units = _transit_surrogate_train_eval_units(tokens, default_iterations=8)
+        return (
+            "transit_surrogate_c3_8_completed_history",
+            float(units),
+            "module83_transit_surrogate_c3_8_completed_history",
+        )
+    if module.endswith("transit.merge_native_promotion_shards"):
+        return (
+            "transit_native_merge_c3_8_completed_history",
+            1.0,
+            "module83_transit_native_merge_c3_8_completed_history",
         )
     return None
 
@@ -2509,6 +2615,9 @@ def _markdown(report: Mapping[str, Any]) -> str:
         f"representative_mapped_task_count = {report.get('representative_mapped_task_count')}",
         f"unmapped_task_count = {report.get('unmapped_task_count')}",
         f"mapped_fraction = {report.get('mapped_fraction')}",
+        f"action_generation = {report.get('action_generation')}",
+        f"full_action_count = {report.get('full_action_count')}",
+        f"action_count_evaluated = {report.get('action_count_evaluated')}",
         "```",
         "",
         "| Workload | Count | Lambda |",

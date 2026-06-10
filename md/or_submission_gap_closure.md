@@ -191,10 +191,10 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.000010750
-    representative mapping delta = 0.000010750
+    strict measured mapping delta = 0.000011136
+    representative mapping delta = 0.000011136
   Full global theorem coverage is still open because the representative run
-  leaves 1410 / 6400 tasks unmapped and maps 2064 tasks only by representative
+  leaves 1341 / 6564 tasks unmapped and maps 2105 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3199
-    mapped = 2789
-    strict mapped = 1756
-    measurement_required = 410
-    mapped_fraction = 0.871835
+    records = 3214
+    mapped = 2807
+    strict mapped = 1774
+    measurement_required = 407
+    mapped_fraction = 0.873367
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 26 / 3199 records
+    cpu_sumo_transit_eval_or_control = 20 / 3214 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -759,8 +759,25 @@ Remaining scope limitation:
       completed-active strict mapped count = 1
       min completed wall-clock rate = 0.012513107 native-merge-job/s
 
+  Module84 closes the former Transit/FreqHRL c17_32 blocker with four strict classes:
+    pressure-test matrix -> transit_trading_pressure_matrix_c17_32_completed_history
+      completed-active strict mapped count = 1
+      raw-window strict mapped count = 5
+      min completed wall-clock rate = 6526.878819304 seed-step-asset-scenario-baseline/s
+    promotion-recovery validation -> transit_trading_promotion_recovery_c17_32_completed_history
+      completed-active strict mapped count = 1
+      raw-window strict mapped count = 1
+      min completed wall-clock rate = 0.163527120 recovery-command/s
+    demand-estimator validation -> transit_demand_estimator_c17_32_completed_history
+      completed-active strict mapped count = 2
+      raw-window strict mapped count = 10
+      min completed wall-clock rate = 225.220667384 seed-step/s
+    gap-closure validation -> transit_gap_closure_c17_32_completed_history
+      completed-active strict mapped count = 2
+      raw-window strict mapped count = 8
+      min completed wall-clock rate = 257.874955538 surrogate-seed-step-corridor/s
+
   The current remaining top probe order is:
-    transit_freqhrl_cpu_validation|c_17_32
     freqduet_cpu_ablation|c_9_16
     sumo_eval_cpu|c_33_64
     transit_freqhrl_cpu_validation|c_33_64

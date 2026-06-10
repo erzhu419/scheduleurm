@@ -2655,6 +2655,141 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_trading_pressure_matrix_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_17_32 Transit/FreqHRL "
+                "trading pressure-test matrix commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-step-asset times scenario and baseline units. "
+                "Only profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_pressure_matrix_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit pressure-matrix c17_32 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module84 completed-history wall-clock audit "
+                        "for c_17_32 freq_hrl.experiments.trading.pressure_test_matrix records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Units reuse the Module70 pressure-matrix parser: seeds times "
+                        "steps times assets times scenario count times baseline count."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_trading_promotion_recovery_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_17_32 Transit/FreqHRL "
+                "trading promotion-recovery validation commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped as "
+                "completed recovery-validation command units. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_trading_promotion_recovery_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit promotion-recovery c17_32 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module84 completed-history wall-clock audit "
+                        "for c_17_32 freq_hrl.experiments.trading.promotion_recovery_validation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The command has no exposed seed/step progress counter in "
+                        "the scheduler record, so the theorem certificate uses one "
+                        "completed command as the conservative unit."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_demand_estimator_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_17_32 Transit/FreqHRL "
+                "demand-estimator validation shards."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed seed-step units. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_demand_estimator_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit demand-estimator c17_32 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module84 completed-history wall-clock audit "
+                        "for c_17_32 freq_hrl.experiments.transit.demand_estimator_validation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Units are explicit validation seeds times validation steps.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_gap_closure_c17_32_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_17_32 Transit/FreqHRL "
+                "gap-closure PPO surrogate validation shards."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed surrogate train/eval seed-step-corridor units and the "
+                "same fourfold gap-closure factor used in the Module70 c_le2 certificate. "
+                "Only profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_gap_closure_c17_32_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.40,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit gap-closure c17_32 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module84 completed-history wall-clock audit "
+                        "for c_17_32 freq_hrl.experiments.transit.gap_closure_validation records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The fourfold factor preserves the existing c_le2 gap-closure "
+                        "unit convention instead of redefining a weaker unit."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_sumo_eval_simple_sac_c_le2",
             purpose=(
                 "A strict completed-history closure slice for the largest clean "

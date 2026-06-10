@@ -1,6 +1,6 @@
 # Module53 CPU/SUMO/Transit Probe Manifest
 
-Date: 2026-06-10
+Date: 2026-06-11
 
 Module51 identified `cpu_sumo_transit_eval_or_control` as the dominant
 production-coverage blocker.  Module53 breaks that bucket into concrete
@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module83
+## Status After Module84
 
 The original top sub-bucket was:
 
@@ -363,16 +363,26 @@ transit_freqhrl_tests_c3_8_completed_history: completed_active = 8, raw_history_
 transit_native_merge_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = native_merge_job, min = 0.012513107 native-merge-job/s
 ```
 
+Module84 then closes the Transit/FreqHRL c17_32 residual with four
+completed-history lower-service rows:
+
+```text
+transit_trading_pressure_matrix_c17_32_completed_history: completed_active = 1, raw_history_all = 5, unit = seed_step_asset_scenario_baseline, min = 6526.878819304 seed-step-asset-scenario-baseline/s
+transit_trading_promotion_recovery_c17_32_completed_history: completed_active = 1, raw_history_all = 1, unit = recovery_command, min = 0.163527120 recovery-command/s
+transit_demand_estimator_c17_32_completed_history: completed_active = 2, raw_history_all = 10, unit = seed_step, min = 225.220667384 seed-step/s
+transit_gap_closure_c17_32_completed_history: completed_active = 2, raw_history_all = 8, unit = surrogate_seed_step_corridor, min = 257.874955538 surrogate-seed-step-corridor/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 26
-cpu_cores median = 16.000000
+record_count = 20
+cpu_cores median = 14.000000
 cpu_cores p90 = 37
 cpu_cores max = 61
-ram_mb median = 11236.000
-ram_mb p90 = 32768
+ram_mb median = 7898.500
+ram_mb p90 = 16000
 ram_mb max = 64000
 theorem_status = measurement_required
 ```
@@ -381,21 +391,19 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_9_16` | 6 | 0.230769 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.230769 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.192308 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.076923 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.076923 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.076923 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.076923 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.038462 |
+| `freqduet_cpu_ablation|c_9_16` | 6 | 0.300000 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.250000 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.100000 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.100000 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.100000 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.100000 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.050000 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-transit_freqhrl_cpu_validation|c_17_32
 freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
@@ -475,7 +483,13 @@ pressure-matrix merge, policy-entry train/eval, PPO surrogate train/eval,
 pytest/unittest jobs, and native-promotion shard merge into six service
 classes.  Failed/cancelled same-shape attempts are accounted for in raw load
 classification but are not used as lower-service samples.
-The global theorem remains open because 26 completed/active production records
+Module84 closes the Transit/FreqHRL c17_32 residual by splitting pressure-test
+matrix, promotion-recovery validation, demand-estimator validation, and
+gap-closure validation into four service classes.  Failed/cancelled same-shape
+attempts are accounted for in raw load classification but are not used as
+lower-service samples.
+The global theorem remains open because 20 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 6 `transit_freqhrl_cpu_validation|c_17_32` records, 6
-`freqduet_cpu_ablation|c_9_16` records, and 5 `sumo_eval_cpu|c_33_64` records.
+certificates, led by 6 `freqduet_cpu_ablation|c_9_16` records, 5
+`sumo_eval_cpu|c_33_64` records, and 2
+`transit_freqhrl_cpu_validation|c_33_64` records.

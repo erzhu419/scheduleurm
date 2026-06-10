@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module74
+## Current Result After Module75
 
 For the 30-day completed/active production window:
 
 ```text
 completed_active_production records = 2766
-representative mapped = 2196
-strict mapped = 1288
-unmapped / measurement-required = 570
-representative mapped_fraction = 0.793926
+representative mapped = 2239
+strict mapped = 1331
+unmapped / measurement-required = 527
+representative mapped_fraction = 0.809472
 capacity slack on mapped raw-window representative load from Module49 delta = 0.000050804
 global theorem closed = false
 ```
@@ -56,7 +56,7 @@ with no scheduler id and no log are not scheduler-controlled arrivals.  They
 remain operational telemetry/background-load evidence, but they are outside the
 arrival stream that Scheduleurm can assign to service actions.
 
-The newly measured Module56 through Module74 sub-buckets appear as
+The newly measured Module56 through Module75 sub-buckets appear as
 strict mapped coverage:
 
 ```text
@@ -95,6 +95,9 @@ freqduet_runner_v3_allfreq_alllayers_c9_16 = 1 / 2766 completed-active productio
 freqduet_runner_v3_c17_32_completed_history = 16 / 2766 completed-active production records
 freqduet_paper_longtrain_c17_32_completed_history = 16 / 2766 completed-active production records
 transit_native_promotion_c17_32_residual_completed_history = 14 / 2766 completed-active production records
+bamor_diagnostic_shard_c9_16_completed_history = 34 / 2766 completed-active production records
+bamor_train_compare_c9_16_completed_history = 6 / 2766 completed-active production records
+bamor_mujoco_c9_16_completed_history = 3 / 2766 completed-active production records
 ```
 
 Module51 now intentionally reports coverage only.  The mapped representative
@@ -105,7 +108,7 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `cpu_sumo_transit_eval_or_control` | measurement required | 212 | 0.076645 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 169 | 0.061099 |
 | `generic_cpu_python` | measurement required | 143 | 0.051699 |
 | `cpu_eval_generic` | measurement required | 82 | 0.029646 |
 | `artifact_io_control` | measurement required | 77 | 0.027838 |
@@ -137,6 +140,7 @@ after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805
 after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766
+after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -171,6 +175,12 @@ Module74 closes the previous `freqduet_cpu_ablation|c_17_32` first-probe
 residual by splitting direct runner_v3, paper-longtrain shell-wrapper, and
 native-promotion residual records into separate completed-history service
 classes.
+Module75 closes the previous `bamor_cpu_training|c_9_16` first-probe blocker by
+splitting BAMOR CPU-training records into train-compare, Mujoco, and
+diagnostic-shard script-level service classes.  This is a service-semantics
+refinement as well as a coverage gain: the diagnostic-shard rate is orders of
+magnitude higher than train-compare, so one coarse BAMOR c9_16 class would be
+both conservative and misleading.
 
 ## Interpretation
 
@@ -212,7 +222,9 @@ records.  Module72 maps 10 CFCMT policy-rollout records, 5 feed-conversion
 records, 5 environment-validation records, 5 snapshot-generation records, 4
 SUMO-generation records, and 1 traffic-signal phase2 singleton.  Module74 maps
 16 c17_32 runner_v3 records, 16 paper-longtrain shards, and 14 residual
-native-promotion records.  The next
+native-promotion records.  Module75 maps 34 c9_16 BAMOR diagnostic-shard
+records, 6 c9_16 BAMOR train-compare records, and 3 c9_16 BAMOR Mujoco records
+with script-specific training-step lower-service points.  The next
 closure targets are now the remaining CPU/SUMO/transit residual buckets, led by
-`bamor_cpu_training|c_9_16`, `freqduet_cpu_ablation|c_le2`, and
-`bamor_cpu_training|c_le2` in the regenerated Module53 manifest.
+`freqduet_cpu_ablation|c_le2`, `bamor_cpu_training|c_le2`, and
+`sumo_eval_cpu|c_le2` in the regenerated Module53 manifest.

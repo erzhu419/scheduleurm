@@ -68,12 +68,15 @@ Module74 closes the c17_32 residual command shapes by splitting them into direct
 `runner_v3.py`, `run_freqduet_paper_longtrain_matrix.sh`, and residual
 native-promotion classes.  The paper-longtrain class uses one completed shard as
 the progress unit because those production commands used `--skip-existing`.
+Module75 closes the BAMOR c9_16 CPU-training residual by splitting it into
+script-level completed-history classes for `train_compare_baselines.py`,
+`train_bamor_mujoco.py`, and `run_bamor_diagnostic_shard.py`.
 
 ```text
 record_count_window = 5980
-mapped_task_count = 2482
-mapped_fraction = 0.415050
-unmapped_task_count = 3498
+mapped_task_count = 2525
+mapped_fraction = 0.422241
+unmapped_task_count = 3455
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -97,6 +100,9 @@ strict rows added to the mapped slice are:
 | `freqduet_runner_v3_c17_32_completed_history` | 16 | 0.000216049 |
 | `freqduet_paper_longtrain_c17_32_completed_history` | 35 | 0.000013503 |
 | `transit_native_promotion_c17_32_residual_completed_history` | 16 | 0.000505787 |
+| `bamor_train_compare_c9_16_completed_history` | 6 | 0.001273148 |
+| `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
+| `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 
 Capacity LP:
 
@@ -115,11 +121,11 @@ certificates.
 
 ```text
 record_count_window = 5980
-mapped_task_count = 4378
+mapped_task_count = 4421
 representative_mapped_task_count = 1896
-mapped_fraction = 0.732107
-strict_mapped_fraction = 0.415050
-unmapped_task_count = 1602
+mapped_fraction = 0.739298
+strict_mapped_fraction = 0.422241
+unmapped_task_count = 1559
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -127,7 +133,7 @@ usable_for_global_theorem = false
 
 Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
-Module71 through Module74 add the same strict rows shown above; representative
+Module71 through Module75 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
@@ -180,13 +186,18 @@ Module74 maps 16 completed-active c17_32 direct runner records, 16 completed
 paper-longtrain shards, and 14 residual native-promotion records.  The mapped
 LP remains positive but the slack tightens to `0.000050804`, which is exactly
 the kind of theorem-condition accounting the OR version needs.
+Module75 maps 6 c9_16 BAMOR train-compare records, 3 c9_16 BAMOR Mujoco
+records, and 34 c9_16 BAMOR diagnostic-shard records with script-specific
+training-step lower-service rates.  This removes the previous top BAMOR c9_16
+CPU-training residual without charging fast diagnostic-shard tasks to the
+slower train-compare service class.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3498 / 5980 tasks
-representative unmapped: 1602 / 5980 tasks
+strict unmapped: 3455 / 5980 tasks
+representative unmapped: 1559 / 5980 tasks
 representative-mapped but not theorem-grade: 1896 tasks
 ```
 

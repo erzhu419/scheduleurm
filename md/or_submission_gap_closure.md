@@ -110,6 +110,9 @@ md/experiment_module72_cfcmt_sumo_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_snapshot_generation_c_le2_completed_history.md
 md/experiment_module72_cfcmt_policy_rollout_c_le2_completed_history.md
 md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
+md/experiment_module75_bamor_train_compare_c9_16_completed_history.md
+md/experiment_module75_bamor_mujoco_c9_16_completed_history.md
+md/experiment_module75_bamor_diagnostic_shard_c9_16_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -133,6 +136,9 @@ md/experiment_artifacts/module66_freqduet_runner_v3_c3_8_completed_history.json
 md/experiment_artifacts/module67_bamor_train_compare_c3_8_completed_history.json
 md/experiment_artifacts/module67_bamor_mujoco_c3_8_completed_history.json
 md/experiment_artifacts/module67_bamor_diagnostic_shard_c3_8_completed_history.json
+md/experiment_artifacts/module75_bamor_train_compare_c9_16_completed_history.json
+md/experiment_artifacts/module75_bamor_mujoco_c9_16_completed_history.json
+md/experiment_artifacts/module75_bamor_diagnostic_shard_c9_16_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_batch_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_single_seed_completed_history.json
 md/experiment_artifacts/module69_freqduet_ablation_c65p_completed_history.json
@@ -178,7 +184,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000050804
     representative mapping delta = 0.000050804
   Full global theorem coverage is still open because the representative run
-  leaves 1602 / 5980 tasks unmapped and maps 1896 tasks only by representative
+  leaves 1559 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -187,12 +193,12 @@ Remaining scope limitation:
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
     records = 2766
-    mapped = 2196
-    strict mapped = 1288
-    measurement_required = 570
-    mapped_fraction = 0.793926
+    mapped = 2239
+    strict mapped = 1331
+    measurement_required = 527
+    mapped_fraction = 0.809472
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 212 / 2766 records
+    cpu_sumo_transit_eval_or_control = 169 / 2766 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -252,7 +258,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module74 raw-window LP = 0.000050804
+    strict mapped delta after Module75 raw-window LP = 0.000050804
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -521,8 +527,30 @@ Remaining scope limitation:
     parsed completed-history work = 970 seed-episode units
     min completed wall-clock rate = 0.059097 seed-episode/s
 
+  Module75 closes the previous `bamor_cpu_training|c_9_16` first-probe blocker
+  with three completed-history certificates:
+    train_compare_baselines.py c9_16
+      -> bamor_train_compare_c9_16_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 6
+    parsed completed-history work = 3300 training-step units
+    min completed wall-clock rate = 1.507947 training-step/s
+
+    train_bamor_mujoco.py c9_16
+      -> bamor_mujoco_c9_16_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 3
+    parsed completed-history work = 18000 training-step units
+    min completed wall-clock rate = 37.690626 training-step/s
+
+    run_bamor_diagnostic_shard.py c9_16
+      -> bamor_diagnostic_shard_c9_16_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 34
+    parsed completed-history work = 43200000 training-step units
+    min completed wall-clock rate = 1051.983313 training-step/s
+
   The current remaining top probe order is:
-    bamor_cpu_training|c_9_16
     freqduet_cpu_ablation|c_le2 residual command shapes
     bamor_cpu_training|c_le2
     sumo_eval_cpu|c_le2 residual command shapes

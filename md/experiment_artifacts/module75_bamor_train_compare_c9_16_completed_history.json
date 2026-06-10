@@ -1,0 +1,137 @@
+{
+  "cpu_counts": {
+    "10": 3,
+    "9": 3
+  },
+  "duration_s": {
+    "max": 198.9459936618805,
+    "median": 140.7219796180725,
+    "min": 82.40768504142761,
+    "p10": 82.40768504142761,
+    "p90": 198.78241419792175
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c9_16 train_compare_baselines.py production records with parseable training-step units. Only profile 1 is loaded; BAMOR c_le2, c3_8, c17_32, and other c9_16 scripts remain separate classes.",
+  "parsed_units_training_step": {
+    "max": 800.0,
+    "median": 550.0,
+    "min": 300.0,
+    "p10": 300.0,
+    "p90": 800.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 6
+  },
+  "ram_counts": {
+    "622": 3,
+    "626": 1,
+    "627": 1,
+    "629": 1
+  },
+  "realized_training_step_s": {
+    "max": 9.707832462443614,
+    "median": 5.5898423267819455,
+    "min": 1.50794692809882,
+    "p10": 1.50794692809882,
+    "p90": 9.688643591681602
+  },
+  "record_count": 6,
+  "run_id": "module75_bamor_train_compare_c9_16_completed_history",
+  "scope": "BAMOR c9_16 train_compare_baselines.py",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_seq_contrast_cone --total_steps 300 --seeds 1 --save_dir results/smoke_v2_seq --eval_freq 0",
+      "cpu_cores": 10.0,
+      "duration_s": 198.9459936618805,
+      "finished_at": 1780885358.270442,
+      "parsed_units_training_step": 300.0,
+      "project": "BAMOR",
+      "ram_mb": 629.0,
+      "realized_training_step_s": 1.50794692809882,
+      "signature": "BAMOR/auto-adopted/p3166652",
+      "started_at": 1780885159.3244483,
+      "status": "done",
+      "task_id": "t7818"
+    },
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_seq --total_steps 300 --seeds 1 --save_dir results/smoke_v2_seq --eval_freq 0",
+      "cpu_cores": 10.0,
+      "duration_s": 198.78241419792175,
+      "finished_at": 1780885358.103133,
+      "parsed_units_training_step": 300.0,
+      "project": "BAMOR",
+      "ram_mb": 626.0,
+      "realized_training_step_s": 1.509187828362417,
+      "signature": "BAMOR/auto-adopted/p3166619",
+      "started_at": 1780885159.3207188,
+      "status": "done",
+      "task_id": "t7817"
+    },
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_seq_contrast --total_steps 300 --seeds 1 --save_dir results/smoke_v2_seq --eval_freq 0",
+      "cpu_cores": 10.0,
+      "duration_s": 198.71364855766296,
+      "finished_at": 1780885357.929418,
+      "parsed_units_training_step": 300.0,
+      "project": "BAMOR",
+      "ram_mb": 627.0,
+      "realized_training_step_s": 1.5097100887508774,
+      "signature": "BAMOR/auto-adopted/p3166618",
+      "started_at": 1780885159.2157695,
+      "status": "done",
+      "task_id": "t7816"
+    },
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_proto_hybrid_cone --total_steps 800 --seed 2 --seeds 1 --save_dir results/smoke_v2_proto/bamor_v2_proto_hybrid_cone --eval_freq 0",
+      "cpu_cores": 9.0,
+      "duration_s": 82.73031067848206,
+      "finished_at": 1780900466.8950014,
+      "parsed_units_training_step": 800.0,
+      "project": "BAMOR",
+      "ram_mb": 622.0,
+      "realized_training_step_s": 9.669974564813014,
+      "signature": "BAMOR/auto-adopted/p3733689",
+      "started_at": 1780900384.1646907,
+      "status": "done",
+      "task_id": "t7894"
+    },
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_proto_generic --total_steps 800 --seed 2 --seeds 1 --save_dir results/smoke_v2_proto/bamor_v2_proto_generic --eval_freq 0",
+      "cpu_cores": 9.0,
+      "duration_s": 82.5708978176117,
+      "finished_at": 1780900466.7327797,
+      "parsed_units_training_step": 800.0,
+      "project": "BAMOR",
+      "ram_mb": 622.0,
+      "realized_training_step_s": 9.688643591681602,
+      "signature": "BAMOR/auto-adopted/p3733688",
+      "started_at": 1780900384.161882,
+      "status": "done",
+      "task_id": "t7893"
+    },
+    {
+      "cmd_prefix": "python3 train_compare_baselines.py --method bamor_v2_proto_hybrid --total_steps 800 --seed 2 --seeds 1 --save_dir results/smoke_v2_proto/bamor_v2_proto_hybrid --eval_freq 0",
+      "cpu_cores": 9.0,
+      "duration_s": 82.40768504142761,
+      "finished_at": 1780900466.5667174,
+      "parsed_units_training_step": 800.0,
+      "project": "BAMOR",
+      "ram_mb": 622.0,
+      "realized_training_step_s": 9.707832462443614,
+      "signature": "BAMOR/auto-adopted/p3733687",
+      "started_at": 1780900384.1590323,
+      "status": "done",
+      "task_id": "t7892"
+    }
+  ],
+  "source_scope": "classifier: BAMOR c9_16 train_compare_baselines.py, no GPU, 9-16 CPU cores",
+  "total_units_training_step": 3300.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_train_compare_c9_16_completed_history"
+}

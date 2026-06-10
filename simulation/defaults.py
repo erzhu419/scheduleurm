@@ -205,6 +205,33 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module75_bamor_train_compare_c9_16_completed_history_reports",
+        workload_key="bamor_train_compare_c9_16_completed_history",
+        command_fingerprint="bamor_train_compare_c9_16_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module75_bamor_mujoco_c9_16_completed_history_reports",
+        workload_key="bamor_mujoco_c9_16_completed_history",
+        command_fingerprint="bamor_mujoco_c9_16_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module75_bamor_diagnostic_shard_c9_16_completed_history_reports",
+        workload_key="bamor_diagnostic_shard_c9_16_completed_history",
+        command_fingerprint="bamor_diagnostic_shard_c9_16_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248_reports",
         workload_key="freqduet_cpu_ablation_c9_16",
         command_fingerprint="freqduet_cpu_ablation_main_hiro_c9_16_v1",
@@ -555,6 +582,9 @@ def legacy_policy() -> ReplayPolicy:
             "cfcmt_snapshot_generation_c_le2_completed_history": 1,
             "cfcmt_policy_rollout_c_le2_completed_history": 1,
             "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
+            "bamor_train_compare_c9_16_completed_history": 1,
+            "bamor_mujoco_c9_16_completed_history": 1,
+            "bamor_diagnostic_shard_c9_16_completed_history": 1,
             "bamor_cpu_training_c3_8_completed_history": 1,
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,

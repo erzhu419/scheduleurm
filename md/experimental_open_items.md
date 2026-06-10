@@ -246,10 +246,10 @@ population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
 records = 2766
-representative mapped = 2196
-strict mapped = 1288
-measurement_required = 570
-mapped_fraction = 0.793926
+representative mapped = 2239
+strict mapped = 1331
+measurement_required = 527
+mapped_fraction = 0.809472
 ```
 
 最大未闭合 bucket 是：
@@ -275,6 +275,7 @@ after Module71:  cpu_sumo_transit_eval_or_control = 350 / 2805 completed-active 
 after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840 completed-active records
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766 completed-active records
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766 completed-active records
+after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -515,12 +516,29 @@ workload_key = transit_native_promotion_c17_32_residual_completed_history
 feasible profiles = 1
 completed-active mapped count = 14
 unit rule = statically parsed seed-count times episodes
+
+closed completed-history slice = BAMOR c_9_16 train_compare_baselines.py
+workload_key = bamor_train_compare_c9_16_completed_history
+feasible profiles = 1
+completed-active mapped count = 6
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_9_16 train_bamor_mujoco.py
+workload_key = bamor_mujoco_c9_16_completed_history
+feasible profiles = 1
+completed-active mapped count = 3
+unit rule = parsed training steps
+
+closed completed-history slice = BAMOR c_9_16 run_bamor_diagnostic_shard.py
+workload_key = bamor_diagnostic_shard_c9_16_completed_history
+feasible profiles = 1
+completed-active mapped count = 34
+unit rule = parsed training steps
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes

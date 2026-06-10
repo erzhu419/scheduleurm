@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "bamor_cpu_training|c_9_16",
       "freqduet_cpu_ablation|c_le2",
       "bamor_cpu_training|c_le2",
       "sumo_eval_cpu|c_le2",
       "freqduet_cpu_ablation|c_3_8",
       "bamor_cpu_training|c_17_32",
       "freqduet_cpu_ablation|c_33_64",
-      "transit_freqhrl_cpu_validation|c_3_8"
+      "transit_freqhrl_cpu_validation|c_3_8",
+      "sumo_eval_cpu|c_3_8"
     ],
     "node_targets": [
       "local_cpu",
@@ -31,7 +31,7 @@
     ]
   },
   "project_counts": {
-    "BAMOR": 86,
+    "BAMOR": 43,
     "CFCMT": 6,
     "FreqHRLNative": 5,
     "H2Oplus": 2,
@@ -47,13 +47,13 @@
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 212,
+  "record_count": 169,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 5.0,
+      "median": 3.0,
       "min": 1.0,
-      "p90": 32.0
+      "p90": 37.0
     },
     "ram_mb": {
       "max": 65536.0,
@@ -63,129 +63,10 @@
     }
   },
   "status_counts": {
-    "done": 212
+    "done": 169
   },
-  "sub_bucket_count": 13,
+  "sub_bucket_count": 12,
   "sub_buckets": [
-    {
-      "count": 43,
-      "examples": [
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 8 --end 19 --item-offset 0 --methods 'uniform_ctx_oracle bamor_ctx_oracle bamor_ctx_oracle_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_ctx_oracle_hpc_20260608_045043' --device cpu --eval-freq 0 --workers 11 --max-workers 10 --threads-per-run 2 && echo DONE",
-          "cpu_cores": 11,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "BAMOR diagnostic shard diagnostic_ctx_oracle_hpc_20260608_045043 node002 [8,19)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "BAMOR",
-          "ram_mb": 65536,
-          "signature": "BAMOR/diagnostic-shard/diagnostic_ctx_oracle_hpc_20260608_045043/offset0/node002",
-          "status": "done",
-          "task_id": "t7634"
-        },
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 31 --end 44 --item-offset 0 --methods 'uniform_ctx_oracle bamor_ctx_oracle bamor_ctx_oracle_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_ctx_oracle_hpc_20260608_045043' --device cpu --eval-freq 0 --workers 13 --max-workers 10 --threads-per-run 2 && echo DONE",
-          "cpu_cores": 13,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "BAMOR diagnostic shard diagnostic_ctx_oracle_hpc_20260608_045043 node005 [31,44)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "BAMOR",
-          "ram_mb": 65536,
-          "signature": "BAMOR/diagnostic-shard/diagnostic_ctx_oracle_hpc_20260608_045043/offset0/node005",
-          "status": "done",
-          "task_id": "t7637"
-        },
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 44 --end 60 --item-offset 0 --methods 'uniform_ctx_oracle bamor_ctx_oracle bamor_ctx_oracle_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_ctx_oracle_hpc_20260608_045043' --device cpu --eval-freq 0 --workers 16 --max-workers 10 --threads-per-run 2 && echo DONE",
-          "cpu_cores": 16,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "BAMOR diagnostic shard diagnostic_ctx_oracle_hpc_20260608_045043 node006 [44,60)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "BAMOR",
-          "ram_mb": 65536,
-          "signature": "BAMOR/diagnostic-shard/diagnostic_ctx_oracle_hpc_20260608_045043/offset0/node006",
-          "status": "done",
-          "task_id": "t7638"
-        },
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 8 --end 19 --item-offset 0 --methods 'bamor_ctx bamor_ctx_nc bamor_ctx_fixed_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_ctx_belief_hpc_20260608_051021' --device cpu --eval-freq 0 --workers 11 --max-workers 10 --threads-per-run 2 && echo DONE",
-          "cpu_cores": 11,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "BAMOR diagnostic shard diagnostic_ctx_belief_hpc_20260608_051021 node002 [8,19)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history",
-          "project": "BAMOR",
-          "ram_mb": 65536,
-          "signature": "BAMOR/diagnostic-shard/diagnostic_ctx_belief_hpc_20260608_051021/offset0/node002",
-          "status": "done",
-          "task_id": "t7640"
-        },
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 31 --end 44 --item-offset 0 --methods 'bamor_ctx bamor_ctx_nc bamor_ctx_fixed_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_ctx_belief_hpc_20260608_051021' --device cpu --eval-freq 0 --workers 13 --max-workers 10 --threads-per-run 2 && echo DONE",
-          "cpu_cores": 13,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "BAMOR diagnostic shard diagnostic_ctx_belief_hpc_20260608_051021 node005 [31,44)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "BAMOR",
-          "ram_mb": 65536,
-          "signature": "BAMOR/diagnostic-shard/diagnostic_ctx_belief_hpc_20260608_051021/offset0/node005",
-          "status": "done",
-          "task_id": "t7643"
-        }
-      ],
-      "fraction": 0.2028301886792453,
-      "project_counts": {
-        "BAMOR": 43
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          9,
-          13,
-          16
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 16.0,
-          "median": 11.0,
-          "min": 9.0,
-          "p90": 16.0
-        },
-        "ram_mb": {
-          "max": 65536.0,
-          "median": 65536.0,
-          "min": 622.0,
-          "p90": 65536.0
-        }
-      },
-      "signature_prefixes": {
-        "BAMOR/diagnostic-shard/diagnostic_ctx_belief_hpc_20260608_051021/offset0": 3,
-        "BAMOR/diagnostic-shard/diagnostic_ctx_oracle_hpc_20260608_045043/offset0": 3,
-        "BAMOR/diagnostic-shard/diagnostic_fastdet_hpc_20260608_054134/offset0": 4,
-        "BAMOR/diagnostic-shard/diagnostic_v2_contrast_hpc_20260608_092735/offset0": 3,
-        "BAMOR/diagnostic-shard/diagnostic_v2_hybrid_hpc_20260608_083812/offset0": 5,
-        "BAMOR/diagnostic-shard/diagnostic_v2_proto_hpc_20260608_143710/offset0": 3,
-        "BAMOR/diagnostic-shard/diagnostic_v2_proto_vs_best_ext_20260608_150149/offset0": 5,
-        "BAMOR/diagnostic-shard/diagnostic_v2_seq_hpc_20260608_102731/offset0": 3
-      },
-      "sub_bucket": "bamor_cpu_training|c_9_16"
-    },
     {
       "count": 32,
       "examples": [
@@ -255,7 +136,7 @@
           "task_id": "t4883"
         }
       ],
-      "fraction": 0.1509433962264151,
+      "fraction": 0.1893491124260355,
       "project_counts": {
         "TransitDuet": 17,
         "freq_transitduet": 1,
@@ -377,7 +258,7 @@
           "task_id": "t7480"
         }
       ],
-      "fraction": 0.12264150943396226,
+      "fraction": 0.15384615384615385,
       "project_counts": {
         "BAMOR": 26
       },
@@ -495,7 +376,7 @@
           "task_id": "t2871"
         }
       ],
-      "fraction": 0.09905660377358491,
+      "fraction": 0.1242603550295858,
       "project_counts": {
         "H2Oplus": 2,
         "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
@@ -618,7 +499,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.08490566037735849,
+      "fraction": 0.10650887573964497,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -738,7 +619,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.08018867924528301,
+      "fraction": 0.10059171597633136,
       "project_counts": {
         "BAMOR": 17
       },
@@ -857,7 +738,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.07075471698113207,
+      "fraction": 0.08875739644970414,
       "project_counts": {
         "freqduet": 15
       },
@@ -976,7 +857,7 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.06132075471698113,
+      "fraction": 0.07692307692307693,
       "project_counts": {
         "TransitDuet": 13
       },
@@ -1095,7 +976,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.05660377358490566,
+      "fraction": 0.07100591715976332,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -1216,7 +1097,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.02830188679245283,
+      "fraction": 0.03550295857988166,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -1331,7 +1212,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.02358490566037736,
+      "fraction": 0.029585798816568046,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1406,7 +1287,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.009433962264150943,
+      "fraction": 0.011834319526627219,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1479,7 +1360,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.009433962264150943,
+      "fraction": 0.011834319526627219,
       "project_counts": {
         "TransitDuet": 2
       },

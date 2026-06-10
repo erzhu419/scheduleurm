@@ -60,6 +60,9 @@ DEFAULT_TASKSETS = (
     "production_cfcmt_snapshot_generation_c_le2_completed_history",
     "production_cfcmt_policy_rollout_c_le2_completed_history",
     "production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
+    "production_bamor_train_compare_c9_16_completed_history",
+    "production_bamor_mujoco_c9_16_completed_history",
+    "production_bamor_diagnostic_shard_c9_16_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -366,6 +369,35 @@ def classify_record(
                 "bamor_diagnostic_shard_c3_8_completed_history",
                 "strict_measured",
                 "module67_bamor_diagnostic_shard_c3_8_completed_history",
+                units=units,
+            )
+
+    bamor_c9_16_script_units = _bamor_cpu_training_c9_16_script_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if bamor_c9_16_script_units is not None:
+        script, units = bamor_c9_16_script_units
+        if script == "train_compare_baselines.py":
+            return _mapped(
+                "bamor_train_compare_c9_16_completed_history",
+                "strict_measured",
+                "module75_bamor_train_compare_c9_16_completed_history",
+                units=units,
+            )
+        if script == "train_bamor_mujoco.py":
+            return _mapped(
+                "bamor_mujoco_c9_16_completed_history",
+                "strict_measured",
+                "module75_bamor_mujoco_c9_16_completed_history",
+                units=units,
+            )
+        if script == "run_bamor_diagnostic_shard.py":
+            return _mapped(
+                "bamor_diagnostic_shard_c9_16_completed_history",
+                "strict_measured",
+                "module75_bamor_diagnostic_shard_c9_16_completed_history",
                 units=units,
             )
 
@@ -1122,9 +1154,41 @@ def _bamor_cpu_training_c3_8_script_units(
     est_vram: float,
     cpu: float,
 ) -> tuple[str, float] | None:
+    return _bamor_cpu_training_script_units_in_cpu_range(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+        lower_exclusive=2.0,
+        upper_inclusive=8.0,
+    )
+
+
+def _bamor_cpu_training_c9_16_script_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float] | None:
+    return _bamor_cpu_training_script_units_in_cpu_range(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+        lower_exclusive=8.0,
+        upper_inclusive=16.0,
+    )
+
+
+def _bamor_cpu_training_script_units_in_cpu_range(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+    lower_exclusive: float,
+    upper_inclusive: float,
+) -> tuple[str, float] | None:
     if est_vram > 0:
         return None
-    if not (2.0 < float(cpu) <= 8.0):
+    if not (float(lower_exclusive) < float(cpu) <= float(upper_inclusive)):
         return None
     project = str(row.get("project") or "").lower()
     cwd = str(row.get("cwd") or "").lower()

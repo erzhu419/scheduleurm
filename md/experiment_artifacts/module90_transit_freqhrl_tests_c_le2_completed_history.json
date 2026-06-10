@@ -1,0 +1,66 @@
+{
+  "cpu_counts": {
+    "2": 2
+  },
+  "duration_s": {
+    "max": 74.01055145263672,
+    "median": 73.60996210575104,
+    "min": 73.20937275886536
+  },
+  "interpretation": "Strict completed-history lower-service certificate for low-CPU Transit/FreqHRL pytest production records. The progress unit is one completed pytest command.",
+  "parsed_units_test_job": [
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 2
+  },
+  "ram_counts": {
+    "625": 1,
+    "630": 1
+  },
+  "realized_test_job_s": [
+    0.013659453186325846,
+    0.013511586934194823
+  ],
+  "record_count": 2,
+  "run_id": "module90_transit_freqhrl_tests_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
+      "cpu_cores": 2,
+      "duration_s": 74.01055145263672,
+      "project": "TransitDuet",
+      "ram_mb": 630,
+      "rate_test_job_s": 0.013511586934194823,
+      "signature": "TransitDuet/auto-adopted/p873546",
+      "status": "done",
+      "task_id": "t9398",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
+      "cpu_cores": 2,
+      "duration_s": 73.20937275886536,
+      "project": "TransitDuet",
+      "ram_mb": 625,
+      "rate_test_job_s": 0.013659453186325846,
+      "signature": "TransitDuet/auto-adopted/p597729",
+      "status": "done",
+      "task_id": "t9046",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module90_scheduler_queue_completed_active",
+  "total_units_test_job": 2.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_freqhrl_tests_c_le2_completed_history"
+}

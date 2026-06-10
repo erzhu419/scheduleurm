@@ -55,6 +55,7 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c_le2_completed_history",
     "production_transit_native_control_c_le2_completed_history",
     "production_transit_freqhrl_import_smoke_c_le2_completed_history",
+    "production_transit_freqhrl_tests_c_le2_completed_history",
     "production_transit_native_promotion_c9_16_bounded_wait_completed_history",
     "production_transit_native_promotion_c9_16_residual_completed_history",
     "production_transit_native_promotion_c9_16_wait_credit_shell_completed_history",
@@ -2517,7 +2518,19 @@ def _transit_freqhrl_c_le2_units(
     units: float | None = None
     workload_key = ""
     reason = ""
-    if module.endswith("trading.promotion_sweep"):
+    if module in {"unittest", "pytest"} and any(
+        token in cmd_lower
+        for token in (
+            "transit_hrl/tests",
+            "transit_hrl.tests",
+            "test_native_transit_ppo_bridge.py",
+            "test_native_promotion_replan_validation.py",
+        )
+    ):
+        units = 1.0
+        workload_key = "transit_freqhrl_tests_c_le2_completed_history"
+        reason = "module90_transit_freqhrl_tests_c_le2_completed_history"
+    elif module.endswith("trading.promotion_sweep"):
         units = _transit_trading_promotion_sweep_units(tokens)
         workload_key = "transit_trading_sweep_c_le2_completed_history"
         reason = "module70_transit_trading_sweep_c_le2_completed_history"

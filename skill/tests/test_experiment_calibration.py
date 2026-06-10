@@ -2322,6 +2322,58 @@ def test_module89_transit_c9_16_pressure_matrix_completed_history_profile1(check
           diag=str(report))
 
 
+def test_module90_transit_cle2_pytest_completed_history_profile1(check, sch):
+    row = {
+        "id": "module90-pytest-cle2",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/auto-adopted/p597729",
+        "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 2,
+        "ram_mb": 625,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+        "cmd": (
+            "python3 -m pytest -q -s "
+            "transit_hrl/tests/test_native_transit_ppo_bridge.py "
+            "transit_hrl/tests/test_native_promotion_replan_validation.py"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    key = "transit_freqhrl_tests_c_le2_completed_history"
+    check("Module90 maps low-CPU Transit pytest as completed test jobs",
+          cls["workload_key"] == key
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles(key)
+    check("Module90 service cache exposes one profile1 c_le2 pytest lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.013511586934194823, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in profiles]))
+
+    taskset = "production_transit_freqhrl_tests_c_le2_completed_history"
+    check("Module90 taskset is included in the default production certificate",
+          taskset in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(taskset,),
+    )
+    check("production load certificate certifies Module90 low-CPU pytest slice",
+          report["mapped_counts"] == {key: 1}
+          and math.isclose(report["mapped_units"][key], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3333
-representative mapped = 2939
-strict mapped = 1906
-measurement_required = 394
-mapped_fraction = 0.881788
+records = 3331
+representative mapped = 2938
+strict mapped = 1908
+measurement_required = 393
+mapped_fraction = 0.882017
 ```
 
 最大未闭合 bucket 是：
@@ -290,6 +290,7 @@ after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255 completed-active r
 after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280 completed-active records
 after Module88:  cpu_sumo_transit_eval_or_control = 5 / 3327 completed-active records
 after Module89:  cpu_sumo_transit_eval_or_control = 3 / 3333 completed-active records
+after Module90:  cpu_sumo_transit_eval_or_control = 1 / 3331 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -697,16 +698,21 @@ workload_key = transit_trading_pressure_matrix_c9_16_completed_history
 feasible profiles = 1
 completed-active mapped count = 2
 unit rule = seed-step-asset-scenario-baseline
+
+closed completed-history slice = Transit/FreqHRL c_le2 pytest commands
+workload_key = transit_freqhrl_tests_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 2
+unit rule = one completed pytest command
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8
 ```
 
-后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
+后续应优先实现这个 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
 
 Module54/56 已经完成第 2-5 步的第一个闭合实例：
 

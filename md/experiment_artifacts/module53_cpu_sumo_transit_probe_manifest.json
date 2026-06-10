@@ -3,11 +3,9 @@
   "interpretation": "This manifest extracts real production templates for a missing coverage bucket. It does not certify service until the listed sub-buckets receive progress-bearing service curves.",
   "probe_grid": {
     "cpu_buckets": [
-      "c_3_8",
-      "c_le2"
+      "c_3_8"
     ],
     "first_probe_order": [
-      "transit_freqhrl_cpu_validation|c_le2",
       "bamor_cpu_training|c_3_8"
     ],
     "node_targets": [
@@ -22,101 +20,28 @@
     ]
   },
   "project_counts": {
-    "BAMOR": 1,
-    "TransitDuet": 2
+    "BAMOR": 1
   },
-  "record_count": 3,
+  "record_count": 1,
   "resource_summary": {
     "cpu_cores": {
       "max": 7.0,
-      "median": 2.0,
-      "min": 2.0,
-      "p90": 2.0
+      "median": 7.0,
+      "min": 7.0,
+      "p90": 7.0
     },
     "ram_mb": {
-      "max": 630.0,
-      "median": 625.0,
+      "max": 94.0,
+      "median": 94.0,
       "min": 94.0,
-      "p90": 625.0
+      "p90": 94.0
     }
   },
   "status_counts": {
-    "done": 3
+    "done": 1
   },
-  "sub_bucket_count": 2,
+  "sub_bucket_count": 1,
   "sub_buckets": [
-    {
-      "count": 2,
-      "examples": [
-        {
-          "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 625,
-          "signature": "TransitDuet/auto-adopted/p597729",
-          "status": "done",
-          "task_id": "t9046"
-        },
-        {
-          "cmd": "python3 -m pytest -q -s transit_hrl/tests/test_native_transit_ppo_bridge.py transit_hrl/tests/test_native_promotion_replan_validation.py",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 630,
-          "signature": "TransitDuet/auto-adopted/p873546",
-          "status": "done",
-          "task_id": "t9398"
-        }
-      ],
-      "fraction": 0.6666666666666666,
-      "project_counts": {
-        "TransitDuet": 2
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 2.0,
-          "min": 2.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 630.0,
-          "median": 627.5,
-          "min": 625.0,
-          "p90": 625.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/auto-adopted/p597729": 1,
-        "TransitDuet/auto-adopted/p873546": 1
-      },
-      "sub_bucket": "transit_freqhrl_cpu_validation|c_le2"
-    },
     {
       "count": 1,
       "examples": [
@@ -134,7 +59,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.3333333333333333,
+      "fraction": 1.0,
       "project_counts": {
         "BAMOR": 1
       },
@@ -178,8 +103,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781134397.8566248,
-    "start_ts": 1778542397.8566248,
+    "end_ts": 1781135127.597076,
+    "start_ts": 1778543127.597076,
     "window_days": 30.0
   }
 }

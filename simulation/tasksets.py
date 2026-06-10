@@ -1574,6 +1574,37 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_freqhrl_tests_c_le2_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for low-CPU "
+                "Transit/FreqHRL pytest jobs."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one completed pytest command. Only profile 1 is loaded from "
+                "realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_freqhrl_tests_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit pytest c_le2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module90 completed-history wall-clock audit "
+                        "for low-CPU Transit/FreqHRL pytest records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed pytest command.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_bamor_cpu_training_c3_8_completed_history",
             purpose=(
                 "A strict completed-history closure slice for BAMOR c_3_8 CPU "

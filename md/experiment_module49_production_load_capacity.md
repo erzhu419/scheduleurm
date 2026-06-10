@@ -130,11 +130,13 @@ policy-entry and pressure-test matrix commands into separate completed-history
 service classes that reuse the existing policy and pressure unit parsers.
 Module89 closes the c9_16 Transit/FreqHRL pressure-test matrix residual with the
 same pressure unit parser.
+Module90 closes the low-CPU Transit/FreqHRL pytest residual with a separate
+completed-test-job service class.
 
 ```text
-record_count_window = 6707
-mapped_task_count = 3285
-mapped_fraction = 0.489787
+record_count_window = 6694
+mapped_task_count = 3272
+mapped_fraction = 0.488796
 unmapped_task_count = 3422
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
@@ -165,6 +167,7 @@ strict rows most recently added to the mapped slice are:
 | `transit_trading_policy_c33_64_completed_history` | 1 | 0.008333333 |
 | `transit_trading_pressure_matrix_c33_64_completed_history` | 1 | 0.150000000 |
 | `transit_trading_pressure_matrix_c9_16_completed_history` | 2 | 0.600000000 |
+| `transit_freqhrl_tests_c_le2_completed_history` | 2 | 0.000000772 |
 
 Capacity LP:
 
@@ -190,12 +193,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6707
-mapped_task_count = 5395
-representative_mapped_task_count = 2110
-mapped_fraction = 0.804383
-strict_mapped_fraction = 0.489787
-unmapped_task_count = 1312
+record_count_window = 6694
+mapped_task_count = 5384
+representative_mapped_task_count = 2112
+mapped_fraction = 0.804302
+strict_mapped_fraction = 0.488796
+unmapped_task_count = 1310
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -208,7 +211,7 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has been regenerated after Module89, but
+The representative raw-window artifact has been regenerated after Module90, but
 it remains diagnostic.  Use the strict Module49 artifact above for the current
 proof-facing mapped capacity slice.
 
@@ -300,6 +303,8 @@ Module88 maps c33_64 Transit/FreqHRL trading policy and pressure-test matrix
 records with separate completed-history lower-service rows.
 Module89 maps c9_16 Transit/FreqHRL pressure-test matrix records with a
 separate completed-history lower-service row.
+Module90 maps low-CPU Transit/FreqHRL pytest records with a completed-test-job
+lower-service row.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
@@ -325,9 +330,9 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3422 / 6707 tasks
-representative unmapped: 1312 / 6707 tasks
-representative-mapped but not theorem-grade: 2110 tasks
+strict unmapped: 3422 / 6694 tasks
+representative unmapped: 1310 / 6694 tasks
+representative-mapped but not theorem-grade: 2112 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

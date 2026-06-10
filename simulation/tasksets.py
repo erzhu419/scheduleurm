@@ -1649,6 +1649,164 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_freqduet_cpu_ablation_c_le2_completed_history",
+            purpose=(
+                "A script-level FreqDuet c_le2 closure slice. It covers no-GPU "
+                "run_freqduet_ablation.py records requesting at most 2 CPU cores "
+                "with parseable episode work units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed job-count times episodes. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_cpu_ablation_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=3,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history c_le2 FreqDuet ablation sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module76 completed-history wall-clock audit "
+                        "for FreqDuet c_le2 run_freqduet_ablation.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Preflight commands that mention run_freqduet_ablation.py only through py_compile are excluded.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_baseline_rule_c_le2_completed_history",
+            purpose=(
+                "A script-level FreqDuet c_le2 closure slice for "
+                "run_baseline_rule.py records with explicit episode counts."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed --episodes. Only profile 1 is loaded from realized "
+                "completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_baseline_rule_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history FreqDuet baseline-rule sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module76 completed-history wall-clock audit "
+                        "for FreqDuet c_le2 run_baseline_rule.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Baseline-rule records are separated from run_freqduet_ablation.py records.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_preflight_c_le2_completed_history",
+            purpose=(
+                "A FreqDuet c_le2 preflight/env-check closure slice. It covers "
+                "dependency import checks, py_compile preflights, and read-only "
+                "environment probes."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one completed preflight check per record. Only profile 1 is "
+                "loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_preflight_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history FreqDuet preflight sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module76 completed-history wall-clock audit "
+                        "for FreqDuet c_le2 preflight and environment checks."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Auto-adopt spin helpers are excluded because their progress unit is not stable.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_freqhrl_analysis_matrix_c_le2_completed_history",
+            purpose=(
+                "A Transit/FreqHRL c_le2 analysis/reporting closure slice. It "
+                "covers matrix, appendix, replay-manifest, and unified-report "
+                "commands that produce one analysis artifact per record."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one completed analysis job per record. Only profile 1 is "
+                "loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_freqhrl_analysis_matrix_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=11,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit/FreqHRL analysis-matrix sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module76 completed-history wall-clock audit "
+                        "for Transit/FreqHRL c_le2 analysis and matrix jobs."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses completed analysis job as the progress unit to avoid overclaiming script-specific internals.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_transit_freqhrl_merge_c_le2_completed_history",
+            purpose=(
+                "A Transit/FreqHRL c_le2 merge closure slice. It covers native "
+                "real-demand and native-promotion shard merge commands."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "as one completed merge job per record. Only profile 1 is loaded "
+                "from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_freqhrl_merge_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Transit/FreqHRL merge sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module76 completed-history wall-clock audit "
+                        "for Transit/FreqHRL c_le2 shard merge jobs."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Uses completed merge job as the progress unit; input-shard count is not charged as service.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_zsw_tsp_sumo_eval_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for ZSW TSP/SUMO CPU eval "

@@ -272,15 +272,30 @@ The split prevents the slow train-compare lower-service point from being used
 as the service class for diagnostic-shard tasks, and it prevents the fast
 diagnostic-shard rate from being charged to slower train-compare work.
 
+Module76 measured completed-history profile-1 lower-service points for five
+c_le2 residual command shapes that had previously been grouped under
+`freqduet_cpu_ablation|c_le2`:
+
+```text
+freqduet_cpu_ablation_c_le2_completed_history: completed_active = 3, raw_history_all = 7, unit = episode, min = 0.013767135 episode/s
+freqduet_baseline_rule_c_le2_completed_history: completed_active = 5, raw_history_all = 5, unit = episode, min = 0.279960678 episode/s
+freqduet_preflight_c_le2_completed_history: completed_active = 5, raw_history_all = 14, unit = preflight_check, min = 0.005813124 preflight-check/s
+transit_freqhrl_analysis_matrix_c_le2_completed_history: completed_active = 11, raw_history_all = 14, unit = analysis_job, min = 0.005627378 analysis-job/s
+transit_freqhrl_merge_c_le2_completed_history: completed_active = 6, raw_history_all = 8, unit = merge_job, min = 0.006077690 merge-job/s
+```
+
+Two `freqduet_autoadopt_spin.py` helpers remain unmeasured because their stable
+progress unit is not part of the scheduler-controlled workload model.
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 169
-cpu_cores median = 3
-cpu_cores p90 = 37
+record_count = 139
+cpu_cores median = 4
+cpu_cores p90 = 48
 cpu_cores max = 61
-ram_mb median = 4096.000
+ram_mb median = 2524.000
 ram_mb p90 = 65536
 ram_mb max = 65536
 theorem_status = measurement_required
@@ -290,25 +305,24 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_le2` | 32 | 0.189349 |
-| `bamor_cpu_training|c_le2` | 26 | 0.153846 |
-| `sumo_eval_cpu|c_le2` | 21 | 0.124260 |
-| `freqduet_cpu_ablation|c_3_8` | 18 | 0.106509 |
-| `bamor_cpu_training|c_17_32` | 17 | 0.100592 |
-| `freqduet_cpu_ablation|c_33_64` | 15 | 0.088757 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.076923 |
-| `sumo_eval_cpu|c_3_8` | 12 | 0.071006 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.035503 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.029586 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.011834 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.011834 |
+| `bamor_cpu_training|c_le2` | 26 | 0.187050 |
+| `sumo_eval_cpu|c_le2` | 21 | 0.151079 |
+| `freqduet_cpu_ablation|c_3_8` | 18 | 0.129496 |
+| `bamor_cpu_training|c_17_32` | 17 | 0.122302 |
+| `freqduet_cpu_ablation|c_33_64` | 15 | 0.107914 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 13 | 0.093525 |
+| `sumo_eval_cpu|c_3_8` | 12 | 0.086331 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.043165 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.035971 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.014388 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.014388 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.014388 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
@@ -363,7 +377,11 @@ residual by splitting runner_v3, paper-longtrain, and native residual work.
 Module75 closes the previous BAMOR c9_16 first-probe blocker by splitting
 train-compare, Mujoco, and diagnostic-shard work into separate profile-1
 completed-history lower-service classes.
-The global theorem remains open because 169 completed/active production records
+Module76 closes most of the previous c_le2 residual by splitting FreqDuet
+ablation, baseline-rule, preflight/env-check, Transit/FreqHRL analysis-matrix,
+and Transit/FreqHRL merge work into five strict completed-history classes.
+The global theorem remains open because 139 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 32 residual `freqduet_cpu_ablation|c_le2` records, 26
-`bamor_cpu_training|c_le2` records, and 21 `sumo_eval_cpu|c_le2` records.
+certificates, led by 26 `bamor_cpu_training|c_le2` records, 21
+`sumo_eval_cpu|c_le2` records, and 18 residual
+`freqduet_cpu_ablation|c_3_8` records.

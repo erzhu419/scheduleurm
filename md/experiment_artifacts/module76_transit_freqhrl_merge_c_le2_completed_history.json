@@ -1,0 +1,110 @@
+{
+  "cpu_counts": {
+    "1": 4,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 164.536194562912,
+    "median": 86.98052036762238,
+    "min": 55.09280323982239
+  },
+  "interpretation": "Strict completed-history lower-service certificate for Transit/FreqHRL c_le2 native real-demand and native-promotion shard merge jobs. The conservative unit is one completed merge job.",
+  "parsed_units_merge_job": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 6
+  },
+  "ram_counts": {
+    "4096": 6
+  },
+  "realized_merge_job_s": [
+    0.011333431208820004,
+    0.006077690095218778,
+    0.011445660192543748,
+    0.012246105344113465,
+    0.01154845345022693,
+    0.018151191102891207
+  ],
+  "record_count": 6,
+  "run_id": "module76_transit_freqhrl_merge_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.merge_native_real_demand_shards --input-dirs transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_0 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_1 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_2 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_3 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_4 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_5 --min-pairs 24 --output-dir transit_hrl/results/transit_native_real_demand_waitaware_v2_24seed_merged_drift && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 164.536194562912,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.006077690095218778,
+      "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-drift-newdir",
+      "task_id": "t7621",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.merge_native_real_demand_shards --input-dirs transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_0 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_1 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_2 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_3 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_4 transit_hrl/results/scheduler_native_real_demand_waitaware_v2_shard_5 --min-pairs 24 --output-dir transit_hrl/results/transit_native_real_demand_waitaware_v2_24seed_merged && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 88.23453211784363,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011333431208820004,
+      "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-retry",
+      "task_id": "t7602",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.transit.merge_native_promotion_shards --output-dir transit_hrl/results/transit_native_promotion_pressure_guarded_wait_v24_2048seed_merged --min-pairs 10 --input-dirs transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_node001_0_342_w32_retry transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_pref_342_684_w32 transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_pref_684_1025_w32 transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_pref_1025_1366_w32 transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_pref_1366_1707_w32 transit_hrl/results/scheduler_native_promotion_pressure_guarded_wait_v24_2048seed_node006_1707_2048_w32_retry && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 87.36935949325562,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011445660192543748,
+      "signature": "TransitDuet/native-promotion-v24-2048-merge",
+      "task_id": "t7622",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.merge_native_promotion_shards \\\n  --input-dirs \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node001_0_80_w64 \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node002_80_176_w96 \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node003_176_256_w64 \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node004_256_304_w32 \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node005_304_416_w96 \\\n  transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v26_512seed_node006_416_512_w128 \\\n  --output-dir transit_hrl/results/transit_native_promotion_reward_floor_throughput_v26_512seed_merged \\\n  --min-pairs 30\necho DONE_NATIVE_PROMOTION_V26_MERGE",
+      "cpu_cores": 2,
+      "duration_s": 86.59168124198914,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.01154845345022693,
+      "signature": "TransitDuet/freqhrl-native-promotion-v26-merge-512seed",
+      "task_id": "t7827",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.merge_native_promotion_shards \\\n  --input-dirs \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_0 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_1 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_2 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_3 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_4 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_5 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_6 \\\n    transit_hrl/results/scheduler_native_promotion_reward_floor_throughput_v25_512seed_shard_7 \\\n  --output-dir transit_hrl/results/transit_native_promotion_reward_floor_throughput_v25_512seed_merged \\\n  --min-pairs 30\necho DONE_NATIVE_PROMOTION_V25_MERGE_RETRY",
+      "cpu_cores": 1,
+      "duration_s": 81.65861487388611,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.012246105344113465,
+      "signature": "TransitDuet/freq-hrl-native-promotion-v25-reward-floor-throughput-512seed/merge-retry-nowait",
+      "task_id": "t7799",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.merge_native_promotion_shards \\\n  --input-dirs \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node001_0_80_w64 \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node002_80_176_w96 \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node003_176_256_w64 \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node004_256_304_w32 \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node005_304_416_w96 \\\n  transit_hrl/results/scheduler_native_promotion_selective_reward_wait_v27_512seed_node006_416_512_w128 \\\n  --output-dir transit_hrl/results/transit_native_promotion_selective_reward_wait_v27_512seed_merged \\\n  --min-pairs 30\necho DONE_NATIVE_PROMOTION_V27_MERGE",
+      "cpu_cores": 2,
+      "duration_s": 55.09280323982239,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.018151191102891207,
+      "signature": "TransitDuet/freqhrl-native-promotion-v27-merge-512seed",
+      "task_id": "t7875",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_merge_job": 6.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_freqhrl_merge_c_le2_completed_history"
+}

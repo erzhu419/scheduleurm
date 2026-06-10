@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "freqduet_cpu_ablation|c_le2",
       "bamor_cpu_training|c_le2",
       "sumo_eval_cpu|c_le2",
       "freqduet_cpu_ablation|c_3_8",
       "bamor_cpu_training|c_17_32",
       "freqduet_cpu_ablation|c_33_64",
       "transit_freqhrl_cpu_validation|c_3_8",
-      "sumo_eval_cpu|c_3_8"
+      "sumo_eval_cpu|c_3_8",
+      "transit_freqhrl_cpu_validation|c_17_32"
     ],
     "node_targets": [
       "local_cpu",
@@ -37,158 +37,34 @@
     "H2Oplus": 2,
     "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
     "SimpleSAC": 2,
-    "TransitDuet": 53,
+    "TransitDuet": 36,
     "ZSW_platform": 6,
     "config": 5,
-    "freq_transitduet": 1,
-    "freqduet": 26,
-    "md": 1,
+    "freqduet": 15,
     "offline-sumo": 14,
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 169,
+  "record_count": 139,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 3.0,
+      "median": 4.0,
       "min": 1.0,
-      "p90": 37.0
+      "p90": 48.0
     },
     "ram_mb": {
       "max": 65536.0,
-      "median": 4096.0,
+      "median": 2524.0,
       "min": 5.0,
       "p90": 65536.0
     }
   },
   "status_counts": {
-    "done": 169
+    "done": 139
   },
   "sub_bucket_count": 12,
   "sub_buckets": [
-    {
-      "count": 32,
-      "examples": [
-        {
-          "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 789 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
-          "description": "auto-adopted: freqduet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "freqduet",
-          "ram_mb": 175,
-          "signature": "freqduet/auto-adopted/p2712945",
-          "status": "done",
-          "task_id": "t4879"
-        },
-        {
-          "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 123 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
-          "description": "auto-adopted: freqduet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "freqduet",
-          "ram_mb": 174,
-          "signature": "freqduet/auto-adopted/p2712946",
-          "status": "done",
-          "task_id": "t4880"
-        },
-        {
-          "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 456 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
-          "description": "auto-adopted: freqduet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "freqduet",
-          "ram_mb": 175,
-          "signature": "freqduet/auto-adopted/p2712950",
-          "status": "done",
-          "task_id": "t4881"
-        },
-        {
-          "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 2026 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
-          "description": "auto-adopted: freqduet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "freqduet",
-          "ram_mb": 175,
-          "signature": "freqduet/auto-adopted/p2712954",
-          "status": "done",
-          "task_id": "t4882"
-        },
-        {
-          "cmd": "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 --seed 42 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
-          "description": "auto-adopted: freqduet on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "freqduet",
-          "ram_mb": 176,
-          "signature": "freqduet/auto-adopted/p2712960",
-          "status": "done",
-          "task_id": "t4883"
-        }
-      ],
-      "fraction": 0.1893491124260355,
-      "project_counts": {
-        "TransitDuet": 17,
-        "freq_transitduet": 1,
-        "freqduet": 11,
-        "md": 1,
-        "python": 2
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1,
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 1.0,
-          "min": 1.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 65536.0,
-          "median": 4096.0,
-          "min": 5.0,
-          "p90": 4096.0
-        }
-      },
-      "signature_prefixes": {
-        "FreqDuet/env-smoke-win-jtl110cpu": 1,
-        "FreqDuet/env-smoke-win-jtl110cpu2-v2": 1,
-        "freqduet/auto-adopted/p2712945": 1,
-        "freqduet/auto-adopted/p2712946": 1,
-        "freqduet/auto-adopted/p2712950": 1,
-        "freqduet/auto-adopted/p2712954": 1,
-        "freqduet/auto-adopted/p2712960": 1,
-        "python/auto-adopted/p423895": 2
-      },
-      "sub_bucket": "freqduet_cpu_ablation|c_le2"
-    },
     {
       "count": 26,
       "examples": [
@@ -258,7 +134,7 @@
           "task_id": "t7480"
         }
       ],
-      "fraction": 0.15384615384615385,
+      "fraction": 0.18705035971223022,
       "project_counts": {
         "BAMOR": 26
       },
@@ -376,7 +252,7 @@
           "task_id": "t2871"
         }
       ],
-      "fraction": 0.1242603550295858,
+      "fraction": 0.1510791366906475,
       "project_counts": {
         "H2Oplus": 2,
         "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
@@ -499,7 +375,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.10650887573964497,
+      "fraction": 0.12949640287769784,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -619,7 +495,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.10059171597633136,
+      "fraction": 0.1223021582733813,
       "project_counts": {
         "BAMOR": 17
       },
@@ -738,7 +614,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.08875739644970414,
+      "fraction": 0.1079136690647482,
       "project_counts": {
         "freqduet": 15
       },
@@ -857,7 +733,7 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.07692307692307693,
+      "fraction": 0.09352517985611511,
       "project_counts": {
         "TransitDuet": 13
       },
@@ -976,7 +852,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.07100591715976332,
+      "fraction": 0.08633093525179857,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -1097,7 +973,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.03550295857988166,
+      "fraction": 0.04316546762589928,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -1212,7 +1088,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.029585798816568046,
+      "fraction": 0.03597122302158273,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1261,6 +1137,77 @@
       "count": 2,
       "examples": [
         {
+          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py",
+          "cpu_cores": 1,
+          "cwd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python",
+          "description": "auto-adopted: python on node001:CPU-only (1 procs)",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "python",
+          "ram_mb": 5,
+          "signature": "python/auto-adopted/p423895",
+          "status": "done",
+          "task_id": "t5368"
+        },
+        {
+          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py",
+          "cpu_cores": 1,
+          "cwd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python",
+          "description": "auto-adopted: python on node001:CPU-only (1 procs)",
+          "eta_seconds": 27,
+          "eta_source": "runtime_history_fallback",
+          "project": "python",
+          "ram_mb": 5,
+          "signature": "python/auto-adopted/p423895",
+          "status": "done",
+          "task_id": "t5370"
+        }
+      ],
+      "fraction": 0.014388489208633094,
+      "project_counts": {
+        "python": 2
+      },
+      "recommended_probe_profiles": {
+        "representative_cpu_cores_per_task": [
+          1
+        ],
+        "requires_progress_unit": true,
+        "suggested_units": [
+          "completed_seed",
+          "completed_episode",
+          "completed_eval_pair",
+          "completed_training_step"
+        ],
+        "task_concurrency_profiles": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "resource_summary": {
+        "cpu_cores": {
+          "max": 1.0,
+          "median": 1.0,
+          "min": 1.0,
+          "p90": 1.0
+        },
+        "ram_mb": {
+          "max": 5.0,
+          "median": 5.0,
+          "min": 5.0,
+          "p90": 5.0
+        }
+      },
+      "signature_prefixes": {
+        "python/auto-adopted/p423895": 2
+      },
+      "sub_bucket": "freqduet_cpu_ablation|c_le2"
+    },
+    {
+      "count": 2,
+      "examples": [
+        {
           "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.policy_entry --mode train --train-seeds 42 123 456 789 2026 --eval-seeds 31415 27182 16180 11235 4242 --steps 720 --assets 3 --scenario persistent_shift --generations 16 --population 48 --elite-frac 0.25 --workers 48 --output-dir transit_hrl/results/trading_policy_learned_linear",
           "cpu_cores": 48,
           "cwd": "/home/erzhu419/mine_code/TransitDuet",
@@ -1287,7 +1234,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.011834319526627219,
+      "fraction": 0.014388489208633094,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1360,7 +1307,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.011834319526627219,
+      "fraction": 0.014388489208633094,
       "project_counts": {
         "TransitDuet": 2
       },

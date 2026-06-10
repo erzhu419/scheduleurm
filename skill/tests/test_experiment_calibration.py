@@ -1127,8 +1127,9 @@ def test_module62_freqduet_runner_cle2_completed_history_profile1(check, sch):
         "--seeds 42 --episodes 20 --workers 1 --worker-threads 1"
     )
     ablation_cls = classify_record(ablation, include_representative=False)
-    check("module62 classifier does not map c_le2 ablation records",
-          ablation_cls["workload_key"] is None and ablation_cls["reason"] == "unmapped_cpu",
+    check("module76 classifier maps c_le2 ablation records after completed-history certificate",
+          ablation_cls["workload_key"] == "freqduet_cpu_ablation_c_le2_completed_history"
+          and math.isclose(float(ablation_cls["units"]), 20.0),
           diag=str(ablation_cls))
 
     cache = build_default_cache()
@@ -1155,6 +1156,157 @@ def test_module62_freqduet_runner_cle2_completed_history_profile1(check, sch):
               report["lambda"]["freqduet_runner_v3_c_le2_completed_history"],
               40.0 / 86400.0,
           )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module76_cle2_residual_completed_history_splits(check, sch):
+    ablation = {
+        "id": "module76-ablation-cle2",
+        "project": "freqduet",
+        "signature": "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2",
+        "description": "FreqDuet c_le2 run_freqduet_ablation task",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 4096,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet/FreqDuet/freqduet",
+        "cmd": (
+            "python -u scripts/run_freqduet_ablation.py "
+            "--configs F_freqduet_terminal_final_nopromotion_hiro,F_freqduet_terminal_final_promotion_hiro "
+            "--seeds 42,123,456,789,2026 --episodes 40 --last-k 20 "
+            "--worker-threads 1 --workers 8 --job-start 5 --job-end 10 --clean"
+        ),
+    }
+    ablation_cls = classify_record(ablation, include_representative=False)
+    check("Module76 maps c_le2 run_freqduet_ablation.py with parsed episode units",
+          ablation_cls["workload_key"] == "freqduet_cpu_ablation_c_le2_completed_history"
+          and ablation_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(ablation_cls["units"]), 200.0),
+          diag=str(ablation_cls))
+
+    baseline = dict(ablation)
+    baseline["id"] = "module76-baseline-rule"
+    baseline["signature"] = "freqduet/auto-adopted/p2712945"
+    baseline["cmd"] = (
+        "python3 run_baseline_rule.py --upper rule_fixed --episodes 20 "
+        "--seed 789 --demand_noise 0.15 --fleet_mode elastic --fleet_min 8 --fleet_max 16"
+    )
+    baseline_cls = classify_record(baseline, include_representative=False)
+    check("Module76 maps c_le2 run_baseline_rule.py with parsed episodes",
+          baseline_cls["workload_key"] == "freqduet_baseline_rule_c_le2_completed_history"
+          and math.isclose(float(baseline_cls["units"]), 20.0),
+          diag=str(baseline_cls))
+
+    preflight = dict(ablation)
+    preflight["id"] = "module76-preflight"
+    preflight["signature"] = "FreqDuet/valueguard-preflight-remote-v2"
+    preflight["cmd"] = (
+        "set -euo pipefail\n"
+        "PY=/env/bin/python\n"
+        "$PY -m py_compile runner_v3.py scripts/run_freqduet_ablation.py\n"
+        "echo DONE"
+    )
+    preflight_cls = classify_record(preflight, include_representative=False)
+    check("Module76 maps c_le2 preflight separately from ablation despite py_compile text",
+          preflight_cls["workload_key"] == "freqduet_preflight_c_le2_completed_history"
+          and math.isclose(float(preflight_cls["units"]), 1.0),
+          diag=str(preflight_cls))
+
+    analysis = {
+        "id": "module76-analysis",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/leakage-no-tradeoff-matrix-v27-v5",
+        "description": "Transit/FreqHRL analysis matrix c_le2 job",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 4096,
+        "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+        "cmd": (
+            "PYTHONPATH=transit_hrl /env/bin/python -m "
+            "freq_hrl.experiments.leakage_no_tradeoff_matrix "
+            "--results-root transit_hrl/results --min-pairs 5 --output-dir out"
+        ),
+    }
+    analysis_cls = classify_record(analysis, include_representative=False)
+    check("Module76 maps Transit/FreqHRL analysis matrix jobs as completed analysis units",
+          analysis_cls["workload_key"] == "transit_freqhrl_analysis_matrix_c_le2_completed_history"
+          and math.isclose(float(analysis_cls["units"]), 1.0),
+          diag=str(analysis_cls))
+
+    merge = dict(analysis)
+    merge["id"] = "module76-merge"
+    merge["signature"] = "TransitDuet/native-real-demand-waitaware-v2-merge"
+    merge["cmd"] = (
+        "PYTHONPATH=transit_hrl /env/bin/python -m "
+        "freq_hrl.experiments.transit.merge_native_real_demand_shards "
+        "--input-dirs a b c --min-pairs 24 --output-dir out"
+    )
+    merge_cls = classify_record(merge, include_representative=False)
+    check("Module76 maps Transit/FreqHRL merge jobs as completed merge units",
+          merge_cls["workload_key"] == "transit_freqhrl_merge_c_le2_completed_history"
+          and math.isclose(float(merge_cls["units"]), 1.0),
+          diag=str(merge_cls))
+
+    spin = dict(ablation)
+    spin["id"] = "module76-spin"
+    spin["project"] = "python"
+    spin["signature"] = "python/auto-adopted/p423895"
+    spin["cwd"] = "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python"
+    spin["cmd"] = "/env/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py"
+    spin_cls = classify_record(spin, include_representative=False)
+    check("Module76 leaves auto-adopt spin helpers unmeasured",
+          spin_cls["workload_key"] is None and spin_cls["reason"] == "unmapped_cpu",
+          diag=str(spin_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "freqduet_cpu_ablation_c_le2_completed_history": 0.013767135197622387,
+        "freqduet_baseline_rule_c_le2_completed_history": 0.2799606783210553,
+        "freqduet_preflight_c_le2_completed_history": 0.005813123703207098,
+        "transit_freqhrl_analysis_matrix_c_le2_completed_history": 0.005627377518782017,
+        "transit_freqhrl_merge_c_le2_completed_history": 0.006077690095218778,
+    }
+    check("Module76 service cache exposes five c_le2 residual profile1 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+
+    report = build_production_load_certificate(
+        records=[ablation, baseline, preflight, analysis, merge],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_freqduet_cpu_ablation_c_le2_completed_history",
+            "production_freqduet_baseline_rule_c_le2_completed_history",
+            "production_freqduet_preflight_c_le2_completed_history",
+            "production_transit_freqhrl_analysis_matrix_c_le2_completed_history",
+            "production_transit_freqhrl_merge_c_le2_completed_history",
+        ),
+    )
+    check("production load certificate sums Module76 c_le2 residual units",
+          report["mapped_counts"] == {
+              "freqduet_cpu_ablation_c_le2_completed_history": 1,
+              "freqduet_baseline_rule_c_le2_completed_history": 1,
+              "freqduet_preflight_c_le2_completed_history": 1,
+              "transit_freqhrl_analysis_matrix_c_le2_completed_history": 1,
+              "transit_freqhrl_merge_c_le2_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["freqduet_cpu_ablation_c_le2_completed_history"], 200.0)
+          and math.isclose(report["mapped_units"]["freqduet_baseline_rule_c_le2_completed_history"], 20.0)
+          and math.isclose(report["mapped_units"]["freqduet_preflight_c_le2_completed_history"], 1.0)
+          and math.isclose(report["mapped_units"]["transit_freqhrl_analysis_matrix_c_le2_completed_history"], 1.0)
+          and math.isclose(report["mapped_units"]["transit_freqhrl_merge_c_le2_completed_history"], 1.0)
           and report["global_coverage_usable_for_theorem"]
           and report["mapped_capacity_usable_for_theorem"],
           diag=str(report))

@@ -4,29 +4,29 @@
 
 | View | Mapping | Records | Mapped | Unmapped | Mapped Fraction | Delta | Global Theorem |
 |---|---|---:|---:|---:|---:|---:|---:|
-| `raw_history_all` | `strict` | 5980 | 2525 | 3455 | 0.422241 | NA | false |
-| `raw_history_all` | `representative` | 5980 | 4421 | 1559 | 0.739298 | NA | false |
-| `attempted_production` | `strict` | 4220 | 1548 | 2672 | 0.366825 | NA | false |
-| `attempted_production` | `representative` | 4220 | 3313 | 907 | 0.785071 | NA | false |
-| `completed_active_production` | `strict` | 2766 | 1331 | 1435 | 0.481200 | NA | false |
-| `completed_active_production` | `representative` | 2766 | 2239 | 527 | 0.809472 | NA | false |
+| `raw_history_all` | `strict` | 5980 | 2573 | 3407 | 0.430268 | NA | false |
+| `raw_history_all` | `representative` | 5980 | 4469 | 1511 | 0.747324 | NA | false |
+| `attempted_production` | `strict` | 4220 | 1586 | 2634 | 0.375829 | NA | false |
+| `attempted_production` | `representative` | 4220 | 3351 | 869 | 0.794076 | NA | false |
+| `completed_active_production` | `strict` | 2766 | 1361 | 1405 | 0.492046 | NA | false |
+| `completed_active_production` | `representative` | 2766 | 2269 | 497 | 0.820318 | NA | false |
 
 ## Completed/Active Production Obligations
 
 ```text
 record_count = 2766
-mapped_count = 2239
-measurement_required_count = 527
-mapped_fraction = 0.809472161966739
+mapped_count = 2269
+measurement_required_count = 497
+mapped_fraction = 0.8203181489515546
 ```
 
 | Bucket | Status | Count | Fraction | Top Projects |
 |---|---|---:|---:|---|
 | `hybrid_rl_resac_ant` | `mapped` | 787 | 0.284526 | RE-SAC-JMLR:340, RE-SAC:210, BAPR:134, bapr_v15:103 |
-| `cpu_sumo_transit_eval_or_control` | `measurement_required` | 169 | 0.061099 | TransitDuet:53, BAMOR:43, freqduet:26, offline-sumo:14, CFCMT:6, ZSW_platform:6, config:5, FreqHRLNative:5 |
 | `freqduet_cpu_ablation_c17_32` | `mapped` | 153 | 0.055315 | FreqDuet:110, freqduet:36, TransitDuet:7 |
 | `bamor_mujoco_c3_8_completed_history` | `mapped` | 152 | 0.054953 | BAMOR:152 |
 | `generic_cpu_python` | `measurement_required` | 143 | 0.051699 | RE-SAC:81, Asumption Agent:43, CFCMT:11, sensing-compressibility-v10k:6, sensing-compressibility-v2k:1, Nature_Emissions_gpu1_balanced_p100_20260605_153448:1 |
+| `cpu_sumo_transit_eval_or_control` | `measurement_required` | 139 | 0.050253 | BAMOR:43, TransitDuet:36, freqduet:15, offline-sumo:14, CFCMT:6, ZSW_platform:6, config:5, FreqHRLNative:5 |
 | `cpu_heavy_local_bench` | `mapped` | 121 | 0.043745 | BAPR:85, sensing-compressibility-pems:13, CFCMT:12, TransitDuet:5, sensing-compressibility-v10k:4, bapr_v15:2 |
 | `freqduet_cpu_ablation_c9_16` | `mapped` | 116 | 0.041938 | FreqDuet:96, TransitDuet:19, freqduet:1 |
 | `transit_native_promotion_c17_32_seedrange_completed_history` | `mapped` | 91 | 0.032899 | TransitDuet:91 |

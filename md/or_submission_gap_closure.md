@@ -113,6 +113,11 @@ md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
 md/experiment_module75_bamor_train_compare_c9_16_completed_history.md
 md/experiment_module75_bamor_mujoco_c9_16_completed_history.md
 md/experiment_module75_bamor_diagnostic_shard_c9_16_completed_history.md
+md/experiment_module76_freqduet_ablation_c_le2_completed_history.md
+md/experiment_module76_freqduet_baseline_rule_c_le2_completed_history.md
+md/experiment_module76_freqduet_preflight_c_le2_completed_history.md
+md/experiment_module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.md
+md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -139,6 +144,11 @@ md/experiment_artifacts/module67_bamor_diagnostic_shard_c3_8_completed_history.j
 md/experiment_artifacts/module75_bamor_train_compare_c9_16_completed_history.json
 md/experiment_artifacts/module75_bamor_mujoco_c9_16_completed_history.json
 md/experiment_artifacts/module75_bamor_diagnostic_shard_c9_16_completed_history.json
+md/experiment_artifacts/module76_freqduet_ablation_c_le2_completed_history.json
+md/experiment_artifacts/module76_freqduet_baseline_rule_c_le2_completed_history.json
+md/experiment_artifacts/module76_freqduet_preflight_c_le2_completed_history.json
+md/experiment_artifacts/module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.json
+md/experiment_artifacts/module76_transit_freqhrl_merge_c_le2_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_batch_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_single_seed_completed_history.json
 md/experiment_artifacts/module69_freqduet_ablation_c65p_completed_history.json
@@ -184,7 +194,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000050804
     representative mapping delta = 0.000050804
   Full global theorem coverage is still open because the representative run
-  leaves 1559 / 5980 tasks unmapped and maps 1896 tasks only by representative
+  leaves 1511 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -193,12 +203,12 @@ Remaining scope limitation:
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
     records = 2766
-    mapped = 2239
-    strict mapped = 1331
-    measurement_required = 527
-    mapped_fraction = 0.809472
+    mapped = 2269
+    strict mapped = 1361
+    measurement_required = 497
+    mapped_fraction = 0.820318
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 169 / 2766 records
+    cpu_sumo_transit_eval_or_control = 139 / 2766 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -258,7 +268,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module75 raw-window LP = 0.000050804
+    strict mapped delta after Module76 raw-window LP = 0.000050804
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -550,13 +560,52 @@ Remaining scope limitation:
     parsed completed-history work = 43200000 training-step units
     min completed wall-clock rate = 1051.983313 training-step/s
 
+  Module76 closes most of the previous `freqduet_cpu_ablation|c_le2` residual
+  with five completed-history certificates:
+    run_freqduet_ablation.py c_le2
+      -> freqduet_cpu_ablation_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 3
+    parsed completed-history work = 207 episode units
+    min completed wall-clock rate = 0.013767 episode/s
+
+    run_baseline_rule.py c_le2
+      -> freqduet_baseline_rule_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 100 episode units
+    min completed wall-clock rate = 0.279961 episode/s
+
+    FreqDuet preflight/env checks c_le2
+      -> freqduet_preflight_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 5
+    parsed completed-history work = 5 preflight-check units
+    min completed wall-clock rate = 0.005813 preflight-check/s
+
+    Transit/FreqHRL analysis matrix/report jobs c_le2
+      -> transit_freqhrl_analysis_matrix_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 11
+    parsed completed-history work = 11 analysis-job units
+    min completed wall-clock rate = 0.005627 analysis-job/s
+
+    Transit/FreqHRL shard merge jobs c_le2
+      -> transit_freqhrl_merge_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 6
+    parsed completed-history work = 6 merge-job units
+    min completed wall-clock rate = 0.006078 merge-job/s
+    note = two freqduet_autoadopt_spin.py helpers remain unmeasured
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_le2 residual command shapes
     bamor_cpu_training|c_le2
     sumo_eval_cpu|c_le2 residual command shapes
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
+    transit_freqhrl_cpu_validation|c_3_8
+    sumo_eval_cpu|c_3_8
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

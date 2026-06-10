@@ -246,10 +246,10 @@ population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
 records = 2766
-representative mapped = 2239
-strict mapped = 1331
-measurement_required = 527
-mapped_fraction = 0.809472
+representative mapped = 2269
+strict mapped = 1361
+measurement_required = 497
+mapped_fraction = 0.820318
 ```
 
 最大未闭合 bucket 是：
@@ -276,6 +276,7 @@ after Module72:  cpu_sumo_transit_eval_or_control = 320 / 2840 completed-active 
 after Module73:  cpu_sumo_transit_eval_or_control = 258 / 2766 completed-active records
 after Module74:  cpu_sumo_transit_eval_or_control = 212 / 2766 completed-active records
 after Module75:  cpu_sumo_transit_eval_or_control = 169 / 2766 completed-active records
+after Module76:  cpu_sumo_transit_eval_or_control = 139 / 2766 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -534,17 +535,48 @@ workload_key = bamor_diagnostic_shard_c9_16_completed_history
 feasible profiles = 1
 completed-active mapped count = 34
 unit rule = parsed training steps
+
+closed completed-history slice = FreqDuet c_le2 run_freqduet_ablation.py
+workload_key = freqduet_cpu_ablation_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 3
+unit rule = parsed jobs times episodes
+
+closed completed-history slice = FreqDuet c_le2 run_baseline_rule.py
+workload_key = freqduet_baseline_rule_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = parsed episodes
+
+closed completed-history slice = FreqDuet c_le2 preflight/env checks
+workload_key = freqduet_preflight_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = preflight_check
+
+closed completed-history slice = Transit/FreqHRL c_le2 analysis matrix/report jobs
+workload_key = transit_freqhrl_analysis_matrix_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 11
+unit rule = analysis_job
+
+closed completed-history slice = Transit/FreqHRL c_le2 shard merge jobs
+workload_key = transit_freqhrl_merge_c_le2_completed_history
+feasible profiles = 1
+completed-active mapped count = 6
+unit rule = merge_job
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
+transit_freqhrl_cpu_validation|c_3_8
+sumo_eval_cpu|c_3_8
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

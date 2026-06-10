@@ -1,0 +1,101 @@
+{
+  "cpu_counts": {
+    "1": 2,
+    "2": 3
+  },
+  "duration_s": {
+    "max": 172.02455186843872,
+    "median": 83.61408185958862,
+    "min": 46.25928282737732
+  },
+  "interpretation": "Strict completed-history lower-service certificate for FreqDuet c_le2 preflight, import, py_compile, and environment probe records. Auto-adopt spin helpers are excluded because their progress unit is not stable.",
+  "parsed_units_preflight_check": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "freqduet": 4,
+    "md": 1
+  },
+  "ram_counts": {
+    "1024": 1,
+    "4096": 2,
+    "8192": 2
+  },
+  "realized_preflight_check_s": [
+    0.021617282821517862,
+    0.011365045282995197,
+    0.011959707955404917,
+    0.005813123703207098,
+    0.017696156974951784
+  ],
+  "record_count": 5,
+  "run_id": "module76_freqduet_preflight_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "set -euo pipefail\necho HOST=$(hostname)\necho START_FREQDUET_PREFLIGHT\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\ntest -x \"$PY\"\ntest -f configs_freqduet/F_freqduet_terminal_main_valueguard_hiro.yaml\ntest -f configs_freqduet/F_freqduet_gen_highnoise_main_valueguard_hiro.yaml\ngrep -q \"value_guard\" runner_v3.py\ngrep -q \"fleet_noharm_lower_value_guard_headway_mean\" runner_v3.py\n\"$PY\" -m py_compile runner_v3.py scripts/run_freqduet_ablation.py scripts/compare_freqduet_candidate.py\necho DONE",
+      "cpu_cores": 2,
+      "duration_s": 172.02455186843872,
+      "project": "freqduet",
+      "rate_unit_s": 0.005813123703207098,
+      "signature": "FreqDuet/valueguard-preflight-remote-v2",
+      "task_id": "t7455",
+      "units": 1.0
+    },
+    {
+      "cmd": "python -u -c \"import sys, numpy, pandas, torch, yaml; import runner_v3; print('deps ok', sys.executable, numpy.__version__, pandas.__version__, torch.__version__)\"",
+      "cpu_cores": 2,
+      "duration_s": 87.98909068107605,
+      "project": "freqduet",
+      "rate_unit_s": 0.011365045282995197,
+      "signature": "FreqDuet/env-smoke-win-jtl110cpu2-v2",
+      "task_id": "t4974",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -u; echo PROBE_START=$(date -Is); echo HOSTNAME=$(hostname); echo UNAME=$(uname -a); echo PWD=$PWD; echo USER=$(whoami); echo SLURM_JOB_ID=${SLURM_JOB_ID:-}; echo SLURM_JOB_NODELIST=${SLURM_JOB_NODELIST:-}; echo SLURM_JOB_PARTITION=${SLURM_JOB_PARTITION:-}; echo SLURM_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK:-}; echo PYTHON3=$(command -v python3 || true); python3 -V 2>&1 || true; echo DF_PWD; df -T \"$PWD\" 2>&1 || true; echo IMPORT_CHECK; python3 - <<'PY'\nimport importlib.util, json, os, sys\nmods=['numpy','pandas','yaml','torch','traci','sumolib']\nprint('sys_executable=' + sys.executable)\nprint('sys_prefix=' + sys.prefix)\nprint('base_prefix=' + getattr(sys, 'base_prefix', ''))\nprint('conda_prefix=' + str(os.environ.get('CONDA_PREFIX','')))\nfor m in mods:\n    spec=importlib.util.find_spec(m)\n    print(f'import:{m}:', 'OK' if spec else 'MISSING')\nPY\nif command -v sumo >/dev/null 2>&1; then echo SUMO_BIN=$(command -v sumo); sumo --version 2>&1 | head -n 2; else echo SUMO_BIN=MISSING; fi; echo PROBE_END=$(date -Is)",
+      "cpu_cores": 1,
+      "duration_s": 83.61408185958862,
+      "project": "md",
+      "rate_unit_s": 0.011959707955404917,
+      "signature": "FreqDuet/hpc-cpu-probe/node001-node006-readonly-20260601",
+      "task_id": "t5170",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 FREQDUET_TORCH_THREADS=1\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\necho START_TERMFB30_PREFLIGHT $(hostname) $(date)\n$PY -m py_compile runner_v3.py upper/timetable_planner.py scripts/run_freqduet_ablation.py scripts/compare_freqduet_candidate.py\n$PY - <<'PY'\nfrom runner_v3 import load_config\ncfg=load_config('configs_freqduet/F_freqduet_terminal_main_termfb30_hiro.yaml')\nprint(cfg['_name'], cfg['upper']['timetable_planner']['terminal_feedback'])\nPY\necho DONE_TERMFB30_PREFLIGHT $(date)",
+      "cpu_cores": 1,
+      "duration_s": 56.50944447517395,
+      "project": "freqduet",
+      "rate_unit_s": 0.017696156974951784,
+      "signature": "TransitDuet/freqduet-termfb30-preflight",
+      "task_id": "t7603",
+      "units": 1.0
+    },
+    {
+      "cmd": "python -u -c \"import sys, numpy, pandas, torch, yaml; import runner_v3; print('deps ok', sys.executable, numpy.__version__, pandas.__version__, torch.__version__)\"",
+      "cpu_cores": 2,
+      "duration_s": 46.25928282737732,
+      "project": "freqduet",
+      "rate_unit_s": 0.021617282821517862,
+      "signature": "FreqDuet/env-smoke-win-jtl110cpu",
+      "task_id": "t4972",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_preflight_check": 5.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "freqduet_preflight_c_le2_completed_history"
+}

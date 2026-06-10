@@ -1,0 +1,77 @@
+{
+  "cpu_counts": {
+    "1": 1,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 3979.4846892356873,
+    "median": 203.09039092063904,
+    "min": 72.63675308227539
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_le2 run_freqduet_ablation.py production records with parseable episode work. Preflight commands that only mention run_freqduet_ablation.py through py_compile are excluded.",
+  "parsed_units_episode": [
+    6.0,
+    200.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "freq_transitduet": 1,
+    "freqduet": 2
+  },
+  "ram_counts": {
+    "65536": 1,
+    "826": 1,
+    "827": 1
+  },
+  "realized_episode_s": [
+    0.02954349525253807,
+    0.050257763408662004,
+    0.013767135197622387
+  ],
+  "record_count": 3,
+  "run_id": "module76_freqduet_ablation_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_adaptive_rawcredit_hiro --seeds 42 --episodes 1 --last-k 1 --workers 1 --worker-threads 1 --logs-dir results_freqduet/smoke_adaptive_rawcredit_20260531/logs --out-dir results_freqduet/smoke_adaptive_rawcredit_20260531/summary",
+      "cpu_cores": 2,
+      "duration_s": 72.63675308227539,
+      "project": "freqduet",
+      "rate_unit_s": 0.013767135197622387,
+      "signature": "freqduet/auto-adopted/p244393",
+      "task_id": "t5161",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 scripts/run_freqduet_ablation.py --configs T_nofreq_terminal,T_freqhrl_terminal,T_allfreq_terminal,T_swapped_terminal,T_nopromotion_terminal,T_noleakage_terminal --seeds 42 --episodes 1 --last-k 1 --logs-dir logs_freqhrl_validation --out-dir results_freqhrl/transit_validation_smoke --upper-warmup-eps 0 --worker-threads 1 --clean",
+      "cpu_cores": 2,
+      "duration_s": 203.09039092063904,
+      "project": "freq_transitduet",
+      "rate_unit_s": 0.02954349525253807,
+      "signature": "freq_transitduet/auto-adopted/p3482571",
+      "task_id": "t4991",
+      "units": 6.0
+    },
+    {
+      "cmd": "python -u scripts/run_freqduet_ablation.py --configs F_freqduet_terminal_final_nopromotion_hiro,F_freqduet_terminal_final_promotion_hiro --seeds 42,123,456,789,2026 --episodes 40 --last-k 20 --worker-threads 1 --upper-warmup-eps 10 --workers 8 --logs-dir results_freqduet/promotion_cooldown_base_20260531/jtl110cpu2/logs --out-dir results_freqduet/promotion_cooldown_base_20260531/jtl110cpu2/summary --job-start 5 --job-end 10 --clean",
+      "cpu_cores": 1,
+      "duration_s": 3979.4846892356873,
+      "project": "freqduet",
+      "rate_unit_s": 0.050257763408662004,
+      "signature": "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2",
+      "task_id": "t5108",
+      "units": 200.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_episode": 207.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "freqduet_cpu_ablation_c_le2_completed_history"
+}

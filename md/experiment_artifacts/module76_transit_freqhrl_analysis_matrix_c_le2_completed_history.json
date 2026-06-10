@@ -1,0 +1,170 @@
+{
+  "cpu_counts": {
+    "1": 9,
+    "2": 2
+  },
+  "duration_s": {
+    "max": 177.70266819000244,
+    "median": 83.35224652290344,
+    "min": 25.2859947681427
+  },
+  "interpretation": "Strict completed-history lower-service certificate for Transit/FreqHRL c_le2 analysis, matrix, appendix, replay-manifest, and unified-report jobs. The conservative unit is one completed analysis job.",
+  "parsed_units_analysis_job": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 11
+  },
+  "ram_counts": {
+    "4096": 11
+  },
+  "realized_analysis_job_s": [
+    0.005627377518782017,
+    0.007207661408032283,
+    0.03954758391629026,
+    0.011133962394839629,
+    0.011749845476498837,
+    0.012384920932145256,
+    0.0303842094581072,
+    0.011997277118682351,
+    0.02161571744761761,
+    0.014723083074612507,
+    0.011246342555765173
+  ],
+  "record_count": 11,
+  "run_id": "module76_transit_freqhrl_analysis_matrix_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.trading.order_book_large_replay_manifest_validation --manifest transit_hrl/results/order_book_large_replay_manifest_fixture/manifest.json --methods ema state_space --steps 4 --levels 2 --latency-bins 0 --execution-modes market --min-pairs 1 --output-dir transit_hrl/results/scheduler_order_book_large_replay_manifest_fixture_smoke && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 177.70266819000244,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.005627377518782017,
+      "signature": "TransitDuet/order-book-large-replay-manifest-smoke",
+      "task_id": "t7600",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.encoder_cross_domain_matrix --results-root transit_hrl/results --min-pairs 5 --output-dir transit_hrl/results/scheduler_encoder_cross_domain_matrix && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 138.7412564754486,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.007207661408032283,
+      "signature": "TransitDuet/encoder-cross-domain-matrix",
+      "task_id": "t7601",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.theory_appendix --results-root transit_hrl/results --output-dir transit_hrl/results/scheduler_freq_hrl_theory_appendix && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 89.81528449058533,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011133962394839629,
+      "signature": "TransitDuet/freq-hrl-theory-appendix",
+      "task_id": "t7620",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.top_journal_unified_matrix --results-root transit_hrl/results --output-dir transit_hrl/results/scheduler_top_journal_unified_matrix_v27_v5\necho DONE_UNIFIED_MATRIX_V27_V5",
+      "cpu_cores": 2,
+      "duration_s": 88.91779661178589,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011246342555765173,
+      "signature": "TransitDuet/freqhrl-unified-matrix-v27-v5",
+      "task_id": "t7877",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.leakage_no_tradeoff_matrix --results-root transit_hrl/results --min-pairs 5 --output-dir transit_hrl/results/scheduler_leakage_no_tradeoff_matrix_drift && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 85.10750222206116,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011749845476498837,
+      "signature": "TransitDuet/leakage-no-tradeoff-matrix-drift",
+      "task_id": "t7623",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.leakage_no_tradeoff_matrix \\\n  --results-root transit_hrl/results \\\n  --min-pairs 5 \\\n  --output-dir transit_hrl/results/scheduler_leakage_no_tradeoff_matrix_v25_v3\necho DONE_LEAKAGE_MATRIX_V25_V3_RETRY",
+      "cpu_cores": 1,
+      "duration_s": 83.35224652290344,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.011997277118682351,
+      "signature": "TransitDuet/freq-hrl-leakage-no-tradeoff-v25-v3-retry-nowait",
+      "task_id": "t7800",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.top_journal_unified_matrix --results-root transit_hrl/results --output-dir transit_hrl/results/scheduler_top_journal_unified_matrix && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 80.74334955215454,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.012384920932145256,
+      "signature": "TransitDuet/top-journal-unified-matrix-final",
+      "task_id": "t7624",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.leakage_no_tradeoff_matrix --results-root transit_hrl/results --min-pairs 5 --output-dir transit_hrl/results/scheduler_leakage_no_tradeoff_matrix_v27_v5\necho DONE_LEAKAGE_MATRIX_V27_V5",
+      "cpu_cores": 2,
+      "duration_s": 67.92055678367615,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.014723083074612507,
+      "signature": "TransitDuet/freqhrl-leakage-matrix-v27-v5",
+      "task_id": "t7876",
+      "units": 1.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\nfor p in \\\n  transit_hrl/results/transit_native_promotion_reward_floor_throughput_v25_512seed_merged/summary.json \\\n  transit_hrl/results/scheduler_native_real_demand_reward_floor_throughput_v3_24pair/summary.json \\\n  transit_hrl/results/scheduler_leakage_no_tradeoff_matrix_v25_v3/summary.json; do\n  i=0\n  until [ -f \"$p\" ]; do\n    i=$((i+1))\n    if [ \"$i\" -gt 240 ]; then echo \"timeout waiting for $p\"; exit 3; fi\n    sleep 5\n  done\ndone\n$PY -m freq_hrl.experiments.top_journal_unified_matrix \\\n  --results-root transit_hrl/results \\\n  --output-dir transit_hrl/results/scheduler_top_journal_unified_matrix_v25_v3\necho DONE_TOP_JOURNAL_UNIFIED_MATRIX_V25_V3_RETRY",
+      "cpu_cores": 1,
+      "duration_s": 46.262632846832275,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.02161571744761761,
+      "signature": "TransitDuet/freq-hrl-top-journal-unified-v25-v3-retry-nowait",
+      "task_id": "t7801",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.top_journal_unified_matrix --results-root transit_hrl/results --output-dir transit_hrl/results/scheduler_top_journal_unified_matrix_v2 && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 32.911832094192505,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.0303842094581072,
+      "signature": "TransitDuet/top-journal-unified-matrix-final-v2",
+      "task_id": "t7632",
+      "units": 1.0
+    },
+    {
+      "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -m freq_hrl.experiments.leakage_no_tradeoff_matrix --results-root transit_hrl/results --min-pairs 5 --output-dir transit_hrl/results/scheduler_leakage_no_tradeoff_matrix && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 25.2859947681427,
+      "project": "TransitDuet",
+      "rate_unit_s": 0.03954758391629026,
+      "signature": "TransitDuet/leakage-no-tradeoff-matrix-retry",
+      "task_id": "t7617",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_analysis_job": 11.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_freqhrl_analysis_matrix_c_le2_completed_history"
+}

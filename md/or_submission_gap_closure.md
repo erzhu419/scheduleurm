@@ -191,10 +191,10 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.000008435
-    representative mapping delta = 0.000008435
+    strict measured mapping delta = 0.000010750
+    representative mapping delta = 0.000010750
   Full global theorem coverage is still open because the representative run
-  leaves 1432 / 6328 tasks unmapped and maps 1946 tasks only by representative
+  leaves 1410 / 6400 tasks unmapped and maps 2064 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3058
-    mapped = 2616
-    strict mapped = 1658
-    measurement_required = 442
-    mapped_fraction = 0.855461
+    records = 3101
+    mapped = 2675
+    strict mapped = 1671
+    measurement_required = 426
+    mapped_fraction = 0.862625
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 73 / 3058 records
+    cpu_sumo_transit_eval_or_control = 56 / 3101 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -698,14 +698,33 @@ Remaining scope limitation:
     parsed completed-history work = 60 native-control-episode units
     min completed wall-clock rate = 0.019432989 native-control-episode/s
 
+  Module80 closes the former BAMOR c17_32 first-probe blocker for the observed
+  production command shapes:
+    train_bamor_mujoco.py c17_32
+      -> bamor_mujoco_c17_32_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 3
+    raw-window strict mapped count = 3
+    parsed completed-history work = 150000 training-step units
+    min completed wall-clock rate = 25.959797537 training-step/s
+
+    run_bamor_diagnostic_shard.py c17_32
+      -> bamor_diagnostic_shard_c17_32_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 14
+    raw-window strict mapped count = 14
+    parsed completed-history work = 30100000 training-step units
+    min completed wall-clock rate = 896.623644960 training-step/s
+
   The current remaining top probe order is:
-    bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
     sumo_eval_cpu|c_3_8
     transit_freqhrl_cpu_validation|c_3_8
     transit_freqhrl_cpu_validation|c_17_32
     sumo_eval_cpu|c_33_64
     transit_freqhrl_cpu_validation|c_33_64
+    transit_freqhrl_cpu_validation|c_9_16
+    freqduet_cpu_ablation|c_le2
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

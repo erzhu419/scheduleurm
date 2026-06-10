@@ -80,6 +80,8 @@ DEFAULT_TASKSETS = (
     "production_transit_native_promotion_c3_8_persistent_stress_completed_history",
     "production_transit_native_real_demand_batch_c3_8_completed_history",
     "production_transit_native_real_demand_alighting_c3_8_completed_history",
+    "production_bamor_mujoco_c17_32_completed_history",
+    "production_bamor_diagnostic_shard_c17_32_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -444,6 +446,28 @@ def classify_record(
                 "bamor_diagnostic_shard_c9_16_completed_history",
                 "strict_measured",
                 "module75_bamor_diagnostic_shard_c9_16_completed_history",
+                units=units,
+            )
+
+    bamor_c17_32_script_units = _bamor_cpu_training_c17_32_script_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if bamor_c17_32_script_units is not None:
+        script, units = bamor_c17_32_script_units
+        if script == "train_bamor_mujoco.py":
+            return _mapped(
+                "bamor_mujoco_c17_32_completed_history",
+                "strict_measured",
+                "module80_bamor_mujoco_c17_32_completed_history",
+                units=units,
+            )
+        if script == "run_bamor_diagnostic_shard.py":
+            return _mapped(
+                "bamor_diagnostic_shard_c17_32_completed_history",
+                "strict_measured",
+                "module80_bamor_diagnostic_shard_c17_32_completed_history",
                 units=units,
             )
 
@@ -1273,6 +1297,21 @@ def _bamor_cpu_training_c9_16_script_units(
         cpu=cpu,
         lower_exclusive=8.0,
         upper_inclusive=16.0,
+    )
+
+
+def _bamor_cpu_training_c17_32_script_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float] | None:
+    return _bamor_cpu_training_script_units_in_cpu_range(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+        lower_exclusive=16.0,
+        upper_inclusive=32.0,
     )
 
 

@@ -3,18 +3,20 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 6328
-mapped_task_count = 2950
+record_count_window = 6396
+mapped_task_count = 2925
 representative_mapped_task_count = 0
-unmapped_task_count = 3378
-mapped_fraction = 0.4661820480404551
+unmapped_task_count = 3471
+mapped_fraction = 0.4573170731707317
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
+| `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
+| `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
 | `bamor_mujoco_c3_8_completed_history` | 347 | 6.693672840 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_mujoco_c_le2_completed_history` | 16 | 0.174382716 |
@@ -49,9 +51,9 @@ mapped_fraction = 0.4661820480404551
 | `light_control_local` | 206 | 0.794753086 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
-| `offline_sumo_eval_c_le2_completed_history` | 11 | 0.000004244 |
+| `offline_sumo_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
+| `sumo_eval_simple_sac_c_le2` | 35 | 0.000013503 |
 | `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
 | `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
 | `transit_freqhrl_merge_c_le2_completed_history` | 8 | 0.000003086 |
@@ -74,7 +76,7 @@ mapped_fraction = 0.4661820480404551
 
 | Quantity | Value |
 |---|---:|
-| `delta` | 0.000008435 |
+| `delta` | 0.000010750 |
 | `mapped_capacity_usable_for_theorem` | true |
 | `global_coverage_usable_for_theorem` | false |
 | `usable_for_global_theorem` | false |
@@ -84,7 +86,7 @@ mapped_fraction = 0.4661820480404551
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1629 |
-| `unmapped_gpu` | 1594 |
+| `unmapped_cpu` | 1705 |
+| `unmapped_gpu` | 1611 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

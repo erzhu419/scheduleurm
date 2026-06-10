@@ -3,18 +3,20 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 6328
-mapped_task_count = 4896
-representative_mapped_task_count = 1946
-unmapped_task_count = 1432
-mapped_fraction = 0.7737041719342604
+record_count_window = 6400
+mapped_task_count = 4990
+representative_mapped_task_count = 2064
+unmapped_task_count = 1410
+mapped_fraction = 0.7796875
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
+| `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
+| `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
 | `bamor_mujoco_c3_8_completed_history` | 347 | 6.693672840 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_mujoco_c_le2_completed_history` | 16 | 0.174382716 |
@@ -27,7 +29,7 @@ mapped_fraction = 0.7737041719342604
 | `cfcmt_snapshot_generation_c_le2_completed_history` | 5 | 0.000601852 |
 | `cfcmt_sumo_generation_c_le2_completed_history` | 4 | 0.040972222 |
 | `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
-| `cpu_heavy_local_bench` | 426 | 0.164351852 |
+| `cpu_heavy_local_bench` | 523 | 0.201774691 |
 | `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
 | `freqduet_cpu_ablation_c17_32` | 216 | 0.006000000 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
@@ -45,13 +47,13 @@ mapped_fraction = 0.7737041719342604
 | `freqduet_runner_v3_c_le2_completed_history` | 86 | 0.001799383 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `hybrid_rl_resac_ant` | 2051 | 0.063302469 |
+| `hybrid_rl_resac_ant` | 2072 | 0.063950617 |
 | `light_control_local` | 206 | 0.794753086 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
-| `offline_sumo_eval_c_le2_completed_history` | 11 | 0.000004244 |
+| `offline_sumo_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `sumo_eval_simple_sac_c_le2` | 71 | 0.000027392 |
+| `sumo_eval_simple_sac_c_le2` | 35 | 0.000013503 |
 | `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
 | `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
 | `transit_freqhrl_merge_c_le2_completed_history` | 8 | 0.000003086 |
@@ -62,7 +64,7 @@ mapped_fraction = 0.7737041719342604
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 7 | 0.000013503 |
 | `transit_native_promotion_c65p_completed_history` | 139 | 0.012426698 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 61 | 0.003154707 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 62 | 0.003179398 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
 | `transit_native_real_demand_batch_c3_8_completed_history` | 28 | 0.000282407 |
@@ -74,7 +76,7 @@ mapped_fraction = 0.7737041719342604
 
 | Quantity | Value |
 |---|---:|
-| `delta` | 0.000008435 |
+| `delta` | 0.000010750 |
 | `mapped_capacity_usable_for_theorem` | true |
 | `global_coverage_usable_for_theorem` | false |
 | `usable_for_global_theorem` | false |
@@ -84,7 +86,7 @@ mapped_fraction = 0.7737041719342604
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1258 |
-| `unmapped_gpu` | 19 |
+| `unmapped_cpu` | 1238 |
+| `unmapped_gpu` | 17 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

@@ -92,60 +92,36 @@ Module79 closes the previous `freqduet_cpu_ablation|c_3_8` first-probe blocker
 by identifying it as Transit/FreqHRL native work rather than FreqDuet ablation,
 then splitting it into persistent-stress native promotion, native real-demand
 batch validation, and alighting-safe/rescue shard validation.
+Module80 closes the previous `bamor_cpu_training|c_17_32` first-probe blocker
+for the command shapes present in production by splitting it into
+`train_bamor_mujoco.py` and `run_bamor_diagnostic_shard.py` completed-history
+training-step service classes.  It deliberately does not claim a c17_32
+`train_compare_baselines.py` class because that command shape is absent from the
+current bucket.
 
 ```text
-record_count_window = 6328
-mapped_task_count = 2950
-mapped_fraction = 0.466182
-unmapped_task_count = 3378
+record_count_window = 6396
+mapped_task_count = 2925
+mapped_fraction = 0.457317
+unmapped_task_count = 3471
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The latest
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module80
 strict rows added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 45 | 0.003028935 |
-| `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
-| `cfcmt_feed_conversion_c_le2_completed_history` | 5 | 0.000001929 |
-| `cfcmt_env_validation_c_le2_completed_history` | 5 | 0.033641975 |
-| `cfcmt_sumo_generation_c_le2_completed_history` | 4 | 0.040972222 |
-| `cfcmt_snapshot_generation_c_le2_completed_history` | 5 | 0.000601852 |
-| `cfcmt_policy_rollout_c_le2_completed_history` | 10 | 0.054328704 |
-| `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
-| `freqduet_runner_v3_c17_32_completed_history` | 16 | 0.000216049 |
-| `freqduet_paper_longtrain_c17_32_completed_history` | 35 | 0.000013503 |
-| `transit_native_promotion_c17_32_residual_completed_history` | 16 | 0.000505787 |
-| `bamor_train_compare_c9_16_completed_history` | 6 | 0.001273148 |
-| `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
-| `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
-| `freqduet_cpu_ablation_c_le2_completed_history` | 7 | 0.000928627 |
-| `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
-| `freqduet_preflight_c_le2_completed_history` | 14 | 0.000005401 |
-| `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
-| `transit_freqhrl_merge_c_le2_completed_history` | 8 | 0.000003086 |
-| `bamor_train_compare_c_le2_completed_history` | 7 | 0.042438272 |
-| `bamor_mujoco_c_le2_completed_history` | 16 | 0.174382716 |
-| `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
-| `offline_sumo_eval_c_le2_completed_history` | 11 | 0.000004244 |
-| `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `zsw_metrics_parser_c_le2_completed_history` | 1 | 0.000000386 |
-| `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
-| `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
-| `transit_native_promotion_c3_8_persistent_stress_completed_history` | 7 | 0.000013503 |
-| `transit_native_real_demand_batch_c3_8_completed_history` | 28 | 0.000282407 |
-| `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
+| `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
+| `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
 
 Capacity LP:
 
 ```text
-delta = 0.000008435
+delta = 0.000010750
 status = optimal
 ```
 
@@ -158,12 +134,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6328
-mapped_task_count = 4896
-representative_mapped_task_count = 1946
-mapped_fraction = 0.773704
-strict_mapped_fraction = 0.466182
-unmapped_task_count = 1432
+record_count_window = 6400
+mapped_task_count = 4990
+representative_mapped_task_count = 2064
+mapped_fraction = 0.779688
+strict_mapped_fraction = 0.457188
+unmapped_task_count = 1410
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -171,7 +147,7 @@ usable_for_global_theorem = false
 
 Full representative-load tables are generated in
 `md/experiment_artifacts/module49_production_load_representative.md`.
-Module71 through Module79 add the same strict rows shown above; representative
+Module71 through Module80 add the same strict rows shown above; representative
 assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
@@ -180,7 +156,7 @@ auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
 Capacity LP:
 
 ```text
-delta = 0.000008435
+delta = 0.000010750
 status = optimal
 ```
 
@@ -250,14 +226,18 @@ c3_8 native real-demand batch records, and 14 c3_8 alighting-safe/rescue records
 with parsed seed/native-control units.  This removes the former
 `freqduet_cpu_ablation|c_3_8` blocker without charging Transit native validation
 to a FreqDuet ablation service class.
+Module80 maps 14 raw-window c17_32 BAMOR diagnostic-shard records and 3 c17_32
+BAMOR Mujoco records using script-specific completed-history training-step
+lower-service rates.  This removes the former `bamor_cpu_training|c_17_32`
+first-probe blocker while keeping absent c17_32 train-compare work unclaimed.
 
 It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3378 / 6328 tasks
-representative unmapped: 1432 / 6328 tasks
-representative-mapped but not theorem-grade: 1946 tasks
+strict unmapped: 3471 / 6396 tasks
+representative unmapped: 1410 / 6400 tasks
+representative-mapped but not theorem-grade: 2064 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

@@ -25,6 +25,7 @@ from algorithm.experiments.production_cpu_workload_curve import (
     render_cpu_workload_command,
 )
 from algorithm.experiments.production_load_certificate import (
+    DEFAULT_TASKSETS,
     build_production_load_certificate,
     classify_record,
 )
@@ -2480,6 +2481,116 @@ def test_module75_bamor_c9_16_training_completed_history_profile1(check, sch):
           and math.isclose(report["mapped_units"]["bamor_train_compare_c9_16_completed_history"], 300.0)
           and math.isclose(report["mapped_units"]["bamor_mujoco_c9_16_completed_history"], 6000.0)
           and math.isclose(report["mapped_units"]["bamor_diagnostic_shard_c9_16_completed_history"], 1100000.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module80_bamor_c17_32_training_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "status": "done",
+        "project": "BAMOR",
+        "signature": "BAMOR/module80/c17",
+        "description": "BAMOR c17 training",
+        "est_vram_mb": 0,
+        "cpu_cores": 18,
+        "ram_mb": 65536,
+        "cwd": "/home/erzhu419/mine_code/BAMOR",
+    }
+    mujoco = {
+        **base,
+        "id": "bamor-c17-mujoco",
+        "cpu_cores": 29,
+        "ram_mb": 2541,
+        "cmd": (
+            "python3 -u train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 "
+            "--method bamor_v2_contrast_hybrid --total_steps 50000 "
+            "--switch_interval 25000 --seed 0 --num_seeds 1 --save_dir out "
+            "--device cpu --eval_freq 100000 --hidden 64"
+        ),
+    }
+    mujoco_cls = classify_record(mujoco, include_representative=False)
+    check("Module80 maps BAMOR c17_32 train_bamor_mujoco with parsed training-step units",
+          mujoco_cls["workload_key"] == "bamor_mujoco_c17_32_completed_history"
+          and mujoco_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(mujoco_cls["units"]), 50000.0),
+          diag=str(mujoco_cls))
+
+    shard = {
+        **base,
+        "id": "bamor-c17-shard",
+        "cmd": (
+            "/env/bin/python run_bamor_diagnostic_shard.py --start 14 --end 32 "
+            "--item-offset 0 --methods 'bamor_v2_seq bamor_v2_seq_contrast "
+            "bamor_v2_seq_contrast_cone' --seed-start 0 --seeds 20 "
+            "--total-steps 100000 --switch-interval 300 --save-dir out "
+            "--device cpu --eval-freq 0 --workers 18 --max-workers 18 "
+            "--threads-per-run 2"
+        ),
+    }
+    shard_cls = classify_record(shard, include_representative=False)
+    check("Module80 maps BAMOR c17_32 diagnostic shard with parsed shard training-step units",
+          shard_cls["workload_key"] == "bamor_diagnostic_shard_c17_32_completed_history"
+          and shard_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(shard_cls["units"]), 1800000.0),
+          diag=str(shard_cls))
+
+    compare = {
+        **base,
+        "id": "bamor-c17-train-compare-unclaimed",
+        "cmd": (
+            "python train_compare_baselines.py --method bamor_v2_seq "
+            "--total_steps 100000 --seeds 1 --save_dir out --eval_freq 0 "
+            "--device cpu"
+        ),
+    }
+    compare_cls = classify_record(compare, include_representative=False)
+    check("Module80 does not claim absent BAMOR c17_32 train_compare service class",
+          compare_cls["workload_key"] is None and compare_cls["reason"] == "unmapped_cpu",
+          diag=str(compare_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "bamor_mujoco_c17_32_completed_history": 25.959797536618257,
+        "bamor_diagnostic_shard_c17_32_completed_history": 896.6236449600236,
+    }
+    check("Module80 service cache exposes two BAMOR c17_32 profile1 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+    check("Module80 tasksets are included in the default production certificate",
+          {
+              "production_bamor_mujoco_c17_32_completed_history",
+              "production_bamor_diagnostic_shard_c17_32_completed_history",
+          }.issubset(set(DEFAULT_TASKSETS)),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[mujoco, shard],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_bamor_mujoco_c17_32_completed_history",
+            "production_bamor_diagnostic_shard_c17_32_completed_history",
+        ),
+    )
+    check("production load certificate sums Module80 BAMOR c17_32 training-step units",
+          report["mapped_counts"] == {
+              "bamor_mujoco_c17_32_completed_history": 1,
+              "bamor_diagnostic_shard_c17_32_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["bamor_mujoco_c17_32_completed_history"], 50000.0)
+          and math.isclose(
+              report["mapped_units"]["bamor_diagnostic_shard_c17_32_completed_history"],
+              1800000.0,
+          )
           and report["global_coverage_usable_for_theorem"]
           and report["mapped_capacity_usable_for_theorem"],
           diag=str(report))

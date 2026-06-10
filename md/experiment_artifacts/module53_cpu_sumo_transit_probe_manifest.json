@@ -9,10 +9,9 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "sumo_eval_cpu|c_33_64",
+      "freqduet_cpu_ablation|c_le2",
       "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
-      "freqduet_cpu_ablation|c_le2",
       "transit_freqhrl_cpu_validation|c_le2",
       "bamor_cpu_training|c_3_8"
     ],
@@ -29,146 +28,32 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 6,
-    "offline-sumo": 5,
+    "TransitDuet": 7,
     "python": 2
   },
-  "record_count": 14,
+  "record_count": 10,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 26.0,
+      "median": 4.5,
       "min": 1.0,
-      "p90": 37.0
+      "p90": 48.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 627.5,
+      "median": 528.0,
       "min": 5.0,
-      "p90": 15101.0
+      "p90": 64000.0
     }
   },
   "status_counts": {
-    "done": 14
+    "done": 9,
+    "running": 1
   },
-  "sub_bucket_count": 6,
+  "sub_bucket_count": 5,
   "sub_buckets": [
     {
-      "count": 5,
-      "examples": [
-        {
-          "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 242 --end 316 --item_multiplier 10 --n_workers 37 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu2_split0/results.csv --skip_existing",
-          "cpu_cores": 37,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [242,316)",
-          "eta_seconds": 0,
-          "eta_source": "progress_rate",
-          "project": "offline-sumo",
-          "ram_mb": 1517,
-          "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split0",
-          "status": "done",
-          "task_id": "t3182"
-        },
-        {
-          "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 316 --end 390 --item_multiplier 10 --n_workers 37 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu2_split1/results.csv --skip_existing",
-          "cpu_cores": 37,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [316,390)",
-          "eta_seconds": 10,
-          "eta_source": "progress_rate",
-          "project": "offline-sumo",
-          "ram_mb": 1517,
-          "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split1",
-          "status": "done",
-          "task_id": "t3183"
-        },
-        {
-          "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 242 --end 316 --item_multiplier 10 --n_workers 37 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu2_fix0/results.csv --skip_existing",
-          "cpu_cores": 37,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [242,316)",
-          "eta_seconds": 31,
-          "eta_source": "runtime_history",
-          "project": "offline-sumo",
-          "ram_mb": 15,
-          "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0",
-          "status": "done",
-          "task_id": "t3184"
-        },
-        {
-          "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 316 --end 390 --item_multiplier 10 --n_workers 37 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu2_fix1/results.csv --skip_existing",
-          "cpu_cores": 37,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [316,390)",
-          "eta_seconds": 0,
-          "eta_source": "progress_rate",
-          "project": "offline-sumo",
-          "ram_mb": 14280,
-          "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1",
-          "status": "done",
-          "task_id": "t3185"
-        },
-        {
-          "cmd": "python eval_arbitrary_ckpts.py --preset e10-rerun --start 0 --end 242 --item_multiplier 10 --n_workers 37 --out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/e10_rerun_flat_jtl110cpu/results.csv --skip_existing",
-          "cpu_cores": 37,
-          "cwd": "/home/erzhu419/mine_code/offline-sumo",
-          "description": "offline-sumo E10 WSRL/RLPD rerun flat jtl110cpu continue [0,242)",
-          "eta_seconds": 0,
-          "eta_source": "progress_rate",
-          "project": "offline-sumo",
-          "ram_mb": 15101,
-          "signature": "offline-sumo/e10-rerun-flat/jtl110cpu-continue",
-          "status": "done",
-          "task_id": "t3186"
-        }
-      ],
-      "fraction": 0.35714285714285715,
-      "project_counts": {
-        "offline-sumo": 5
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          37
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 37.0,
-          "median": 37.0,
-          "min": 37.0,
-          "p90": 37.0
-        },
-        "ram_mb": {
-          "max": 15101.0,
-          "median": 1517.0,
-          "min": 15.0,
-          "p90": 14280.0
-        }
-      },
-      "signature_prefixes": {
-        "offline-sumo/e10-rerun-flat/jtl110cpu-continue": 1,
-        "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0": 1,
-        "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1": 1,
-        "offline-sumo/e10-rerun-flat/jtl110cpu2-split0": 1,
-        "offline-sumo/e10-rerun-flat/jtl110cpu2-split1": 1
-      },
-      "sub_bucket": "sumo_eval_cpu|c_33_64"
-    },
-    {
-      "count": 2,
+      "count": 3,
       "examples": [
         {
           "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py",
@@ -195,10 +80,24 @@
           "signature": "python/auto-adopted/p423895",
           "status": "done",
           "task_id": "t5370"
+        },
+        {
+          "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -c \"import json,time; from pathlib import Path; d=json.loads(Path('transit_hrl/results/scheduler_native_real_demand_alighting_safe_v2_scale14_24pair_merged_node002/summary.json').read_text()); checks={r['metric']:r for r in d['paired_checks']}; keys=['control_score','ep_reward','avg_wait_min','native_avg_board_wait_min','native_alighted_pax','native_completed_throughput_pax','LowerLFDrift']; li...",
+          "cpu_cores": 1,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Print Freq-HRL native real-demand scale1.4 compact summary for scheduler status capture",
+          "eta_seconds": 0,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 512,
+          "signature": "freq-hrl-native-real-demand-alighting-safe-v2-scale14-summary-sleeper-node002",
+          "status": "running",
+          "task_id": "t9583"
         }
       ],
-      "fraction": 0.14285714285714285,
+      "fraction": 0.3,
       "project_counts": {
+        "TransitDuet": 1,
         "python": 2
       },
       "recommended_probe_profiles": {
@@ -227,13 +126,14 @@
           "p90": 1.0
         },
         "ram_mb": {
-          "max": 5.0,
+          "max": 512.0,
           "median": 5.0,
           "min": 5.0,
           "p90": 5.0
         }
       },
       "signature_prefixes": {
+        "freq-hrl-native-real-demand-alighting-safe-v2-scale14-summary-sleeper-node002": 1,
         "python/auto-adopted/p423895": 2
       },
       "sub_bucket": "freqduet_cpu_ablation|c_le2"
@@ -268,7 +168,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.14285714285714285,
+      "fraction": 0.2,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -341,7 +241,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.14285714285714285,
+      "fraction": 0.2,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -413,7 +313,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.14285714285714285,
+      "fraction": 0.2,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -472,7 +372,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.07142857142857142,
+      "fraction": 0.1,
       "project_counts": {
         "BAMOR": 1
       },
@@ -516,8 +416,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781131099.0196526,
-    "start_ts": 1778539099.0196526,
+    "end_ts": 1781131858.158443,
+    "start_ts": 1778539858.158443,
     "window_days": 30.0
   }
 }

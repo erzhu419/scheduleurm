@@ -313,6 +313,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module86_offline_sumo_eval_c33_64_completed_history_reports",
+        workload_key="offline_sumo_eval_c33_64_completed_history",
+        command_fingerprint="offline_sumo_eval_c33_64_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module78_h2oplus_shell_eval_c_le2_completed_history_reports",
         workload_key="h2oplus_shell_eval_c_le2_completed_history",
         command_fingerprint="h2oplus_shell_eval_c_le2_completed_history_v1",
@@ -923,6 +932,7 @@ def legacy_policy() -> ReplayPolicy:
             "bamor_mujoco_c_le2_completed_history": 1,
             "bamor_diagnostic_shard_c_le2_completed_history": 1,
             "offline_sumo_eval_c_le2_completed_history": 1,
+            "offline_sumo_eval_c33_64_completed_history": 1,
             "h2oplus_shell_eval_c_le2_completed_history": 1,
             "zsw_metrics_parser_c_le2_completed_history": 1,
             "resco_config_eval_c_le2_completed_history": 1,

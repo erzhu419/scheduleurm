@@ -813,6 +813,66 @@ def test_module85_transit_native_c9_16_wait_credit_shell_completed_history(check
           diag=str(report))
 
 
+def test_module86_offline_sumo_eval_c33_64_completed_history(check, sch):
+    row = {
+        "id": "module86-offline-c33",
+        "project": "offline-sumo",
+        "signature": "offline-sumo/e10-rerun-flat/jtl110cpu-continue",
+        "description": "offline SUMO c33_64 production rerun shard",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 37,
+        "ram_mb": 15101,
+        "cwd": "/home/erzhu419/mine_code/offline-sumo",
+        "cmd": (
+            "python eval_arbitrary_ckpts.py --preset e10-rerun --start 0 --end 242 "
+            "--item_multiplier 10 --n_workers 37 "
+            "--out_csv /home/erzhu419/mine_code/offline-sumo/experiment_output/"
+            "e10_rerun_flat_jtl110cpu_continue/results.csv --skip_existing"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    key = "offline_sumo_eval_c33_64_completed_history"
+    check("Module86 maps offline-sumo c33_64 eval commands as one production command",
+          cls["workload_key"] == key
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    c_le2 = dict(row)
+    c_le2["id"] = "module86-offline-cle2-control"
+    c_le2["cpu_cores"] = 2
+    c_le2_cls = classify_record(c_le2, include_representative=False)
+    check("Module86 leaves c_le2 offline-sumo eval commands in the Module78 slice",
+          c_le2_cls["workload_key"] == "offline_sumo_eval_c_le2_completed_history",
+          diag=str(c_le2_cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles(key)
+    check("Module86 service cache exposes one profile1 c33_64 lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.00015157602182596419, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in profiles]))
+
+    check("Module86 taskset is included in the default production certificate",
+          "production_offline_sumo_eval_c33_64_completed_history" in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_offline_sumo_eval_c33_64_completed_history",),
+    )
+    check("production load certificate certifies Module86 offline-sumo c33_64 slice",
+          report["mapped_counts"] == {key: 1}
+          and math.isclose(report["mapped_units"][key], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module72_cfcmt_sumo_cle2_completed_history_profile1(check, sch):
     base = {
         "project": "CFCMT",

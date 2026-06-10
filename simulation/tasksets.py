@@ -2186,6 +2186,43 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_offline_sumo_eval_c33_64_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for offline-sumo c33_64 "
+                "evaluation commands. It covers completed no-GPU eval_*.py "
+                "production records requesting more than 32 and at most 64 "
+                "scheduler CPU cores."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. The "
+                "progress unit is one completed production evaluation command, not "
+                "checkpoint, seed, or item count, because the commands use "
+                "--skip_existing and resume semantics."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="offline_sumo_eval_c33_64_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history offline-sumo c33_64 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module86 completed-history wall-clock audit "
+                        "for offline-sumo c33_64 eval command records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Uses one completed production eval command as the service "
+                        "unit; skip-existing item ranges are not expanded."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_h2oplus_shell_eval_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for H2Oplus/SimpleSAC "

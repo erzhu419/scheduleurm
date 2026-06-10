@@ -118,6 +118,7 @@ md/experiment_module76_freqduet_baseline_rule_c_le2_completed_history.md
 md/experiment_module76_freqduet_preflight_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
+md/experiment_module86_offline_sumo_eval_c33_64_completed_history.md
 md/experiment_artifacts/module48_portfolio_slack_certificate.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
@@ -149,6 +150,7 @@ md/experiment_artifacts/module76_freqduet_baseline_rule_c_le2_completed_history.
 md/experiment_artifacts/module76_freqduet_preflight_c_le2_completed_history.json
 md/experiment_artifacts/module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.json
 md/experiment_artifacts/module76_transit_freqhrl_merge_c_le2_completed_history.json
+md/experiment_artifacts/module86_offline_sumo_eval_c33_64_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_batch_completed_history.json
 md/experiment_artifacts/module68_transit_native_promotion_c33_64_single_seed_completed_history.json
 md/experiment_artifacts/module69_freqduet_ablation_c65p_completed_history.json
@@ -194,7 +196,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000011136
     representative mapping delta = 0.000011136
   Full global theorem coverage is still open because the representative run
-  leaves 1333 / 6583 tasks unmapped and maps 2106 tasks only by representative
+  leaves 1318 / 6626 tasks unmapped and maps 2107 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +204,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3211
-    mapped = 2808
-    strict mapped = 1775
-    measurement_required = 403
-    mapped_fraction = 0.874494
+    records = 3255
+    mapped = 2855
+    strict mapped = 1822
+    measurement_required = 400
+    mapped_fraction = 0.877112
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 14 / 3211 records
+    cpu_sumo_transit_eval_or_control = 10 / 3255 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -784,12 +786,19 @@ Remaining scope limitation:
       raw-window strict mapped count = 6
       min completed wall-clock rate = 0.115357646 seed-episode/s
 
+  Module86 closes the former SUMO c33_64 manifest blocker with conservative
+  completed-command semantics:
+    offline-sumo eval_arbitrary_ckpts.py rerun shards -> offline_sumo_eval_c33_64_completed_history
+      completed-active strict mapped count = 5
+      raw-window strict mapped count = 15
+      min completed wall-clock rate = 0.000151576 eval-command/s
+
   The current remaining top probe order is:
-    sumo_eval_cpu|c_33_64
+    freqduet_cpu_ablation|c_le2
     transit_freqhrl_cpu_validation|c_33_64
     transit_freqhrl_cpu_validation|c_9_16
-    freqduet_cpu_ablation|c_le2
     transit_freqhrl_cpu_validation|c_le2
+    bamor_cpu_training|c_3_8
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 6626
-mapped_task_count = 5308
+record_count_window = 6658
+mapped_task_count = 5336
 representative_mapped_task_count = 2107
-unmapped_task_count = 1318
-mapped_fraction = 0.801086628433444
+unmapped_task_count = 1322
+mapped_fraction = 0.8014418744367678
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -20,7 +20,7 @@ action_count_evaluated = 1
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
 | `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
-| `bamor_mujoco_c3_8_completed_history` | 423 | 8.159722222 |
+| `bamor_mujoco_c3_8_completed_history` | 451 | 8.699845679 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_mujoco_c_le2_completed_history` | 18 | 0.174537037 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
@@ -106,7 +106,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1146 |
+| `unmapped_cpu` | 1150 |
 | `unmapped_gpu` | 17 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

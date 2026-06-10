@@ -9,7 +9,6 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "freqduet_cpu_ablation|c_le2",
       "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
       "transit_freqhrl_cpu_validation|c_le2",
@@ -28,116 +27,28 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 7,
-    "python": 2
+    "TransitDuet": 6
   },
-  "record_count": 10,
+  "record_count": 7,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 4.5,
-      "min": 1.0,
+      "median": 15.0,
+      "min": 2.0,
       "p90": 48.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 528.0,
-      "min": 5.0,
+      "median": 625.0,
+      "min": 94.0,
       "p90": 64000.0
     }
   },
   "status_counts": {
-    "done": 9,
-    "running": 1
+    "done": 7
   },
-  "sub_bucket_count": 5,
+  "sub_bucket_count": 4,
   "sub_buckets": [
-    {
-      "count": 3,
-      "examples": [
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py",
-          "cpu_cores": 1,
-          "cwd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python",
-          "description": "auto-adopted: python on node001:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "python",
-          "ram_mb": 5,
-          "signature": "python/auto-adopted/p423895",
-          "status": "done",
-          "task_id": "t5368"
-        },
-        {
-          "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python /home/zhengliang01/scheduleurm_work/tmp/freqduet_autoadopt_spin.py",
-          "cpu_cores": 1,
-          "cwd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python",
-          "description": "auto-adopted: python on node001:CPU-only (1 procs)",
-          "eta_seconds": 27,
-          "eta_source": "runtime_history_fallback",
-          "project": "python",
-          "ram_mb": 5,
-          "signature": "python/auto-adopted/p423895",
-          "status": "done",
-          "task_id": "t5370"
-        },
-        {
-          "cmd": "PYTHONPATH=transit_hrl /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -c \"import json,time; from pathlib import Path; d=json.loads(Path('transit_hrl/results/scheduler_native_real_demand_alighting_safe_v2_scale14_24pair_merged_node002/summary.json').read_text()); checks={r['metric']:r for r in d['paired_checks']}; keys=['control_score','ep_reward','avg_wait_min','native_avg_board_wait_min','native_alighted_pax','native_completed_throughput_pax','LowerLFDrift']; li...",
-          "cpu_cores": 1,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Print Freq-HRL native real-demand scale1.4 compact summary for scheduler status capture",
-          "eta_seconds": 0,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 512,
-          "signature": "freq-hrl-native-real-demand-alighting-safe-v2-scale14-summary-sleeper-node002",
-          "status": "running",
-          "task_id": "t9583"
-        }
-      ],
-      "fraction": 0.3,
-      "project_counts": {
-        "TransitDuet": 1,
-        "python": 2
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 1.0,
-          "median": 1.0,
-          "min": 1.0,
-          "p90": 1.0
-        },
-        "ram_mb": {
-          "max": 512.0,
-          "median": 5.0,
-          "min": 5.0,
-          "p90": 5.0
-        }
-      },
-      "signature_prefixes": {
-        "freq-hrl-native-real-demand-alighting-safe-v2-scale14-summary-sleeper-node002": 1,
-        "python/auto-adopted/p423895": 2
-      },
-      "sub_bucket": "freqduet_cpu_ablation|c_le2"
-    },
     {
       "count": 2,
       "examples": [
@@ -168,7 +79,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.2,
+      "fraction": 0.2857142857142857,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -241,7 +152,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.2,
+      "fraction": 0.2857142857142857,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -313,7 +224,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.2,
+      "fraction": 0.2857142857142857,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -372,7 +283,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.1,
+      "fraction": 0.14285714285714285,
       "project_counts": {
         "BAMOR": 1
       },
@@ -416,8 +327,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781131858.158443,
-    "start_ts": 1778539858.158443,
+    "end_ts": 1781132675.112572,
+    "start_ts": 1778540675.112572,
     "window_days": 30.0
   }
 }

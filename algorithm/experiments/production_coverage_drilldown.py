@@ -121,7 +121,11 @@ def _is_unobservable_external_auto_adopted(row: Mapping[str, Any], *, text: str)
     if row.get("scheduler_id") or row.get("log_path"):
         return False
     cmd = str(row.get("cmd") or "").strip().lower()
-    return cmd == "python3 -" or "scheduler.py wait-for" in cmd
+    return (
+        cmd == "python3 -"
+        or "scheduler.py wait-for" in cmd
+        or "freqduet_autoadopt_spin.py" in cmd
+    )
 
 
 def bucket_obligation(row: Mapping[str, Any]) -> dict[str, Any]:

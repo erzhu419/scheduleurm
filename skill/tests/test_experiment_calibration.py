@@ -1468,6 +1468,17 @@ def test_module76_cle2_residual_completed_history_splits(check, sch):
     check("Module76 leaves auto-adopt spin helpers unmeasured",
           spin_cls["workload_key"] is None and spin_cls["reason"] == "unmapped_cpu",
           diag=str(spin_cls))
+    spin_external = dict(spin)
+    spin_external["origin"] = "external"
+    spin_external["auto_adopted"] = True
+    spin_external["adopted"] = True
+    spin_external["scheduler_id"] = None
+    spin_external["log_path"] = None
+    spin_obligation = bucket_obligation(spin_external)
+    check("Module87 excludes external auto-adopt spin helpers from controlled arrivals",
+          spin_obligation["status"] == "excluded_from_production_population"
+          and spin_obligation["population_label"] == "excluded_external_auto_adopted_unobservable",
+          diag=str(spin_obligation))
 
     cache = build_default_cache()
     expected_rates = {

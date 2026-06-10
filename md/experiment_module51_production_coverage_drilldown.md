@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module86
+## Current Result After Module87
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3255
-representative mapped = 2855
-strict mapped = 1822
-unmapped / measurement-required = 400
-representative mapped_fraction = 0.877112
+completed_active_production records = 3280
+representative mapped = 2882
+strict mapped = 1849
+unmapped / measurement-required = 398
+representative mapped_fraction = 0.878659
 capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
 global theorem closed = false
 ```
@@ -131,6 +131,13 @@ Module86 then adds:
 offline_sumo_eval_c33_64_completed_history = 5 / 3255 completed-active production records
 ```
 
+Module87 then corrects the production-population boundary:
+
+```text
+external freqduet_autoadopt_spin.py helpers excluded = 2
+reason = external auto-adopted, no scheduler id, no scheduler log, no progress unit
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -139,12 +146,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 161 | 0.049462 |
-| `cpu_eval_generic` | measurement required | 82 | 0.025192 |
-| `artifact_io_control` | measurement required | 77 | 0.023656 |
-| `scheduler_control_plane` | measurement required | 56 | 0.017204 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004301 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 10 | 0.003072 |
+| `generic_cpu_python` | measurement required | 162 | 0.049390 |
+| `cpu_eval_generic` | measurement required | 82 | 0.025000 |
+| `artifact_io_control` | measurement required | 77 | 0.023476 |
+| `scheduler_control_plane` | measurement required | 56 | 0.017073 |
+| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004268 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 7 | 0.002134 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -183,6 +190,7 @@ after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199
 after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214
 after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211
 after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255
+after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -273,6 +281,10 @@ Module86 closes the offline-sumo c33_64 eval-command residual by mapping the
 five completed-active high-CPU offline-sumo rerun shards into a separate
 completed-history service class.  The unit is one completed production eval
 command; `--skip_existing` item ranges are not expanded.
+Module87 removes the two external `freqduet_autoadopt_spin.py` helpers from the
+controlled-arrival theorem population.  This is not a service certificate; it is
+the same no-scheduler-id/no-log/no-progress-unit population-boundary correction
+used for unobservable external stdin/wait-for helpers.
 
 ## Interpretation
 
@@ -331,7 +343,9 @@ across CFCMT snapshot/pytest/phase1 and ZSW M21 service classes.  Module83 maps
 classes.  Module84 maps 6 completed-active Transit/FreqHRL c17_32 residual
 records across four service classes.  Module85 maps 6 completed-active c9_16
 wait-credit shell shards.  Module86 maps 5 completed-active offline-sumo c33_64
-eval-command shards.  The next closure targets are now the remaining
-CPU/SUMO/transit residual buckets, led by `freqduet_cpu_ablation|c_le2`,
-`transit_freqhrl_cpu_validation|c_33_64`, and
-`transit_freqhrl_cpu_validation|c_9_16` in the regenerated Module53 manifest.
+eval-command shards.  Module87 excludes 2 external auto-adopt spin helpers from
+the controlled-arrival population.  The next closure targets are now the
+remaining CPU/SUMO/transit residual buckets, led by
+`transit_freqhrl_cpu_validation|c_33_64`,
+`transit_freqhrl_cpu_validation|c_9_16`, and
+`transit_freqhrl_cpu_validation|c_le2` in the regenerated Module53 manifest.

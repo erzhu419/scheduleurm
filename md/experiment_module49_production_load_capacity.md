@@ -127,10 +127,10 @@ command is the progress unit because the records use `--skip_existing`/resume
 semantics and cannot be safely expanded into item or checkpoint counts.
 
 ```text
-record_count_window = 6626
-mapped_task_count = 3201
-mapped_fraction = 0.483097
-unmapped_task_count = 3425
+record_count_window = 6658
+mapped_task_count = 3229
+mapped_fraction = 0.484980
+unmapped_task_count = 3429
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -182,12 +182,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6626
-mapped_task_count = 5308
+record_count_window = 6658
+mapped_task_count = 5336
 representative_mapped_task_count = 2107
-mapped_fraction = 0.801087
-strict_mapped_fraction = 0.483097
-unmapped_task_count = 1318
+mapped_fraction = 0.801442
+strict_mapped_fraction = 0.484980
+unmapped_task_count = 1322
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -313,8 +313,8 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3425 / 6626 tasks
-representative unmapped: 1318 / 6626 tasks
+strict unmapped: 3429 / 6658 tasks
+representative unmapped: 1322 / 6658 tasks
 representative-mapped but not theorem-grade: 2107 tasks
 ```
 

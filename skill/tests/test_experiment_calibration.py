@@ -1312,6 +1312,104 @@ def test_module76_cle2_residual_completed_history_splits(check, sch):
           diag=str(report))
 
 
+def test_module77_bamor_cle2_training_completed_history_profile1(check, sch):
+    compare = {
+        "id": "bamor-cle2-compare",
+        "project": "BAMOR",
+        "signature": "BAMOR/auto-adopted/p720106",
+        "description": "BAMOR c_le2 train compare production record",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 1412,
+        "cwd": "/home/erzhu419/mine_code/BAMOR",
+        "cmd": (
+            "python3 train_compare_baselines.py --method uniform --total_steps 5000 "
+            "--switch_interval 300 --seed 0 --seeds 3 --save_dir out "
+            "--device cuda --eval_freq 0"
+        ),
+    }
+    compare_cls = classify_record(compare, include_representative=False)
+    check("Module77 maps BAMOR c_le2 train_compare_baselines despite cuda device flag",
+          compare_cls["workload_key"] == "bamor_train_compare_c_le2_completed_history"
+          and compare_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(compare_cls["units"]), 15000.0),
+          diag=str(compare_cls))
+
+    mujoco = dict(compare)
+    mujoco["id"] = "bamor-cle2-mujoco"
+    mujoco["signature"] = "BAMOR/auto-adopted/p4054856"
+    mujoco["cmd"] = (
+        "python3 train_bamor_mujoco.py --env mo-mountaincarcontinuous-v0 "
+        "--method bamor --total_steps 20000 --switch_interval 10000 "
+        "--seed 0 --num_seeds 3 --save_dir out --eval_freq 20000 "
+        "--device cuda --hidden 64"
+    )
+    mujoco_cls = classify_record(mujoco, include_representative=False)
+    check("Module77 maps BAMOR c_le2 train_bamor_mujoco with parsed num_seeds times total_steps",
+          mujoco_cls["workload_key"] == "bamor_mujoco_c_le2_completed_history"
+          and math.isclose(float(mujoco_cls["units"]), 60000.0),
+          diag=str(mujoco_cls))
+
+    shard = dict(compare)
+    shard["id"] = "bamor-cle2-shard"
+    shard["signature"] = "BAMOR/diagnostic-shard/diagnostic_v2_generic_hpc_20260608_113450/offset0/node001"
+    shard["ram_mb"] = 65536
+    shard["cmd"] = (
+        "/env/bin/python run_bamor_diagnostic_shard.py --start 0 --end 2 "
+        "--item-offset 0 --methods 'bamor_v2_generic bamor_v2_contrast_generic' "
+        "--seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 "
+        "--save-dir out --device cpu --eval-freq 0 --workers 2 --max-workers 12 "
+        "--threads-per-run 2"
+    )
+    shard_cls = classify_record(shard, include_representative=False)
+    check("Module77 maps BAMOR c_le2 diagnostic shard with parsed shard training steps",
+          shard_cls["workload_key"] == "bamor_diagnostic_shard_c_le2_completed_history"
+          and math.isclose(float(shard_cls["units"]), 200000.0),
+          diag=str(shard_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "bamor_train_compare_c_le2_completed_history": 20.30524282845025,
+        "bamor_mujoco_c_le2_completed_history": 23.68602883211671,
+        "bamor_diagnostic_shard_c_le2_completed_history": 101.33950173403711,
+    }
+    check("Module77 service cache exposes three BAMOR c_le2 profile1 lower services",
+          all(
+              [record.profile for record in cache.profiles(key)] == [1]
+              and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({
+              key: [record.snapshot() for record in cache.profiles(key)]
+              for key in expected_rates
+          }))
+
+    report = build_production_load_certificate(
+        records=[compare, mujoco, shard],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_bamor_train_compare_c_le2_completed_history",
+            "production_bamor_mujoco_c_le2_completed_history",
+            "production_bamor_diagnostic_shard_c_le2_completed_history",
+        ),
+    )
+    check("production load certificate sums BAMOR c_le2 training-step units",
+          report["mapped_counts"] == {
+              "bamor_train_compare_c_le2_completed_history": 1,
+              "bamor_mujoco_c_le2_completed_history": 1,
+              "bamor_diagnostic_shard_c_le2_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["bamor_train_compare_c_le2_completed_history"], 15000.0)
+          and math.isclose(report["mapped_units"]["bamor_mujoco_c_le2_completed_history"], 60000.0)
+          and math.isclose(report["mapped_units"]["bamor_diagnostic_shard_c_le2_completed_history"], 200000.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

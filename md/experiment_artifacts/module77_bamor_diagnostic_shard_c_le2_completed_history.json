@@ -1,0 +1,74 @@
+{
+  "cpu_counts": {
+    "1": 2,
+    "2": 1
+  },
+  "duration_s": {
+    "max": 986.7820374965668,
+    "median": 887.2782509326935,
+    "min": 326.07477927207947
+  },
+  "interpretation": "Strict completed-history lower-service certificate for BAMOR c_le2 run_bamor_diagnostic_shard.py production records with parseable shard training-step units.",
+  "parsed_units_training_step": [
+    200000.0,
+    100000.0,
+    100000.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "BAMOR": 3
+  },
+  "ram_counts": {
+    "65536": 3
+  },
+  "realized_training_step_s": [
+    225.40843279970295,
+    306.6781191211332,
+    101.33950173403711
+  ],
+  "record_count": 3,
+  "run_id": "module77_bamor_diagnostic_shard_c_le2_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 0 --end 1 --item-offset 0 --methods 'bamor_v2_boundary_hybrid bamor_v2_boundary_hybrid_cone bamor_v2_boundary_generic' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_v2_boundary_hpc_20260608_131508' --device cpu --eval-freq 0 --workers 1 --max-workers 12 --threads-per-run 2 && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 986.7820374965668,
+      "project": "BAMOR",
+      "rate_unit_s": 101.33950173403711,
+      "signature": "BAMOR/diagnostic-shard/diagnostic_v2_boundary_hpc_20260608_131508/offset0/node001",
+      "task_id": "t7878",
+      "units": 100000.0
+    },
+    {
+      "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 0 --end 2 --item-offset 0 --methods 'bamor_v2_generic bamor_v2_contrast_generic bamor_v2_contrast_generic_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_v2_generic_hpc_20260608_113450' --device cpu --eval-freq 0 --workers 2 --max-workers 12 --threads-per-run 2 && echo DONE",
+      "cpu_cores": 2,
+      "duration_s": 887.2782509326935,
+      "project": "BAMOR",
+      "rate_unit_s": 225.40843279970295,
+      "signature": "BAMOR/diagnostic-shard/diagnostic_v2_generic_hpc_20260608_113450/offset0/node001",
+      "task_id": "t7868",
+      "units": 200000.0
+    },
+    {
+      "cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python run_bamor_diagnostic_shard.py --start 19 --end 20 --item-offset 0 --methods 'bamor_v2_generic bamor_v2_contrast_generic bamor_v2_contrast_generic_cone' --seed-start 0 --seeds 20 --total-steps 100000 --switch-interval 300 --save-dir 'results/diagnostic_v2_generic_hpc_20260608_113450' --device cpu --eval-freq 0 --workers 1 --max-workers 12 --threads-per-run 2 && echo DONE",
+      "cpu_cores": 1,
+      "duration_s": 326.07477927207947,
+      "project": "BAMOR",
+      "rate_unit_s": 306.6781191211332,
+      "signature": "BAMOR/diagnostic-shard/diagnostic_v2_generic_hpc_20260608_113450/offset0/node003",
+      "task_id": "t7870",
+      "units": 100000.0
+    }
+  ],
+  "source_scope": "module72_snapshot_queue_and_archive_30d_completed_active",
+  "total_units_training_step": 400000.0,
+  "window": {
+    "end_ts": 1781032620.8781207,
+    "start_ts": 1778440620.8781207,
+    "window_days": 30.0
+  },
+  "workload_key": "bamor_diagnostic_shard_c_le2_completed_history"
+}

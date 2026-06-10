@@ -1807,6 +1807,106 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_bamor_train_compare_c_le2_completed_history",
+            purpose=(
+                "A script-level BAMOR c_le2 closure slice. It covers BAMOR "
+                "train_compare_baselines.py production records requesting at most "
+                "2 scheduler CPU cores with parseable training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed method-count times seed-count times total_steps. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_train_compare_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=7,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR c_le2 train-compare sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module77 completed-history wall-clock audit for "
+                        "BAMOR c_le2 train_compare_baselines.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "Some production commands specify --device cuda while the "
+                        "scheduler record has zero estimated VRAM; this is a "
+                        "completed-history service class, not a pure CPU microbenchmark."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_bamor_mujoco_c_le2_completed_history",
+            purpose=(
+                "A script-level BAMOR c_le2 closure slice. It covers BAMOR "
+                "train_bamor_mujoco.py production records requesting at most "
+                "2 scheduler CPU cores with parseable training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed method-count times num_seeds times total_steps. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_mujoco_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=16,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR c_le2 Mujoco sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module77 completed-history wall-clock audit for "
+                        "BAMOR c_le2 train_bamor_mujoco.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="This class is separated from c3_8 and c9_16 Mujoco service classes.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_bamor_diagnostic_shard_c_le2_completed_history",
+            purpose=(
+                "A script-level BAMOR c_le2 closure slice. It covers BAMOR "
+                "run_bamor_diagnostic_shard.py production records requesting at "
+                "most 2 scheduler CPU cores with parseable shard training-step units."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with parsed shard-item count times total_steps. Only profile 1 "
+                "is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_diagnostic_shard_c_le2_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=3,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR c_le2 diagnostic-shard sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module77 completed-history wall-clock audit for "
+                        "BAMOR c_le2 run_bamor_diagnostic_shard.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="Shard work units are parsed as item-count times total_steps.",
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_zsw_tsp_sumo_eval_c_le2_completed_history",
             purpose=(
                 "A strict completed-history closure slice for ZSW TSP/SUMO CPU eval "

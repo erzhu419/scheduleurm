@@ -68,6 +68,9 @@ DEFAULT_TASKSETS = (
     "production_freqduet_preflight_c_le2_completed_history",
     "production_transit_freqhrl_analysis_matrix_c_le2_completed_history",
     "production_transit_freqhrl_merge_c_le2_completed_history",
+    "production_bamor_train_compare_c_le2_completed_history",
+    "production_bamor_mujoco_c_le2_completed_history",
+    "production_bamor_diagnostic_shard_c_le2_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -351,6 +354,35 @@ def classify_record(
             reason,
             units=units,
         )
+
+    bamor_c_le2_script_units = _bamor_cpu_training_c_le2_script_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if bamor_c_le2_script_units is not None:
+        script, units = bamor_c_le2_script_units
+        if script == "train_compare_baselines.py":
+            return _mapped(
+                "bamor_train_compare_c_le2_completed_history",
+                "strict_measured",
+                "module77_bamor_train_compare_c_le2_completed_history",
+                units=units,
+            )
+        if script == "train_bamor_mujoco.py":
+            return _mapped(
+                "bamor_mujoco_c_le2_completed_history",
+                "strict_measured",
+                "module77_bamor_mujoco_c_le2_completed_history",
+                units=units,
+            )
+        if script == "run_bamor_diagnostic_shard.py":
+            return _mapped(
+                "bamor_diagnostic_shard_c_le2_completed_history",
+                "strict_measured",
+                "module77_bamor_diagnostic_shard_c_le2_completed_history",
+                units=units,
+            )
 
     bamor_script_units = _bamor_cpu_training_c3_8_script_units(row=row, est_vram=est_vram, cpu=cpu)
     if bamor_script_units is not None:
@@ -1192,6 +1224,21 @@ def _bamor_cpu_training_c3_8_script_units(
         cpu=cpu,
         lower_exclusive=2.0,
         upper_inclusive=8.0,
+    )
+
+
+def _bamor_cpu_training_c_le2_script_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float] | None:
+    return _bamor_cpu_training_script_units_in_cpu_range(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+        lower_exclusive=-1.0,
+        upper_inclusive=2.0,
     )
 
 

@@ -10,14 +10,14 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "bamor_cpu_training|c_le2",
       "sumo_eval_cpu|c_le2",
       "freqduet_cpu_ablation|c_3_8",
       "bamor_cpu_training|c_17_32",
       "freqduet_cpu_ablation|c_33_64",
       "transit_freqhrl_cpu_validation|c_3_8",
       "sumo_eval_cpu|c_3_8",
-      "transit_freqhrl_cpu_validation|c_17_32"
+      "transit_freqhrl_cpu_validation|c_17_32",
+      "sumo_eval_cpu|c_33_64"
     ],
     "node_targets": [
       "local_cpu",
@@ -31,7 +31,7 @@
     ]
   },
   "project_counts": {
-    "BAMOR": 43,
+    "BAMOR": 17,
     "CFCMT": 6,
     "FreqHRLNative": 5,
     "H2Oplus": 2,
@@ -45,144 +45,26 @@
     "python": 2,
     "zsw_tsp_m0_gpu1": 1
   },
-  "record_count": 139,
+  "record_count": 113,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 4.0,
+      "median": 8.0,
       "min": 1.0,
       "p90": 48.0
     },
     "ram_mb": {
       "max": 65536.0,
-      "median": 2524.0,
+      "median": 8192.0,
       "min": 5.0,
       "p90": 65536.0
     }
   },
   "status_counts": {
-    "done": 139
+    "done": 113
   },
-  "sub_bucket_count": 12,
+  "sub_bucket_count": 11,
   "sub_buckets": [
-    {
-      "count": 26,
-      "examples": [
-        {
-          "cmd": "python3 train_compare_baselines.py --method uniform --total_steps 20000 --switch_interval 300 --seed 0 --seeds 3 --save_dir results/diagnostic_quick_20k_s3 --device cuda",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": 0,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 1412,
-          "signature": "BAMOR/auto-adopted/p720106",
-          "status": "done",
-          "task_id": "t7468"
-        },
-        {
-          "cmd": "python3 train_compare_baselines.py --method bamor_oracle_cone --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 1414,
-          "signature": "BAMOR/auto-adopted/p737336",
-          "status": "done",
-          "task_id": "t7471"
-        },
-        {
-          "cmd": "python3 train_compare_baselines.py --method bamor_oracle --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 1416,
-          "signature": "BAMOR/auto-adopted/p745790",
-          "status": "done",
-          "task_id": "t7474"
-        },
-        {
-          "cmd": "python3 train_compare_baselines.py --method bamor --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
-          "cpu_cores": 2,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 1415,
-          "signature": "BAMOR/auto-adopted/p757830",
-          "status": "done",
-          "task_id": "t7477"
-        },
-        {
-          "cmd": "python3 train_compare_baselines.py --method bamor_ns_eps --total_steps 5000 --switch_interval 300 --seed 0 --seeds 1 --save_dir results/diagnostic_smoke_5k_s1 --device cuda --eval_freq 0",
-          "cpu_cores": 1,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 1416,
-          "signature": "BAMOR/auto-adopted/p762128",
-          "status": "done",
-          "task_id": "t7480"
-        }
-      ],
-      "fraction": 0.18705035971223022,
-      "project_counts": {
-        "BAMOR": 26
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          1,
-          2
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 2.0,
-          "median": 1.0,
-          "min": 1.0,
-          "p90": 2.0
-        },
-        "ram_mb": {
-          "max": 65536.0,
-          "median": 1607.0,
-          "min": 1412.0,
-          "p90": 2841.0
-        }
-      },
-      "signature_prefixes": {
-        "BAMOR/auto-adopted/p720106": 1,
-        "BAMOR/auto-adopted/p737336": 1,
-        "BAMOR/auto-adopted/p745790": 1,
-        "BAMOR/auto-adopted/p757830": 1,
-        "BAMOR/auto-adopted/p762128": 1,
-        "BAMOR/auto-adopted/p767747": 1,
-        "BAMOR/auto-adopted/p772832": 1,
-        "BAMOR/diagnostic-shard/diagnostic_v2_generic_hpc_20260608_113450/offset0": 2
-      },
-      "sub_bucket": "bamor_cpu_training|c_le2"
-    },
     {
       "count": 21,
       "examples": [
@@ -252,7 +134,7 @@
           "task_id": "t2871"
         }
       ],
-      "fraction": 0.1510791366906475,
+      "fraction": 0.18584070796460178,
       "project_counts": {
         "H2Oplus": 2,
         "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 2,
@@ -375,7 +257,7 @@
           "task_id": "t6901"
         }
       ],
-      "fraction": 0.12949640287769784,
+      "fraction": 0.1592920353982301,
       "project_counts": {
         "FreqHRLNative": 5,
         "TransitDuet": 13
@@ -495,7 +377,7 @@
           "task_id": "t7609"
         }
       ],
-      "fraction": 0.1223021582733813,
+      "fraction": 0.1504424778761062,
       "project_counts": {
         "BAMOR": 17
       },
@@ -614,7 +496,7 @@
           "task_id": "t5571"
         }
       ],
-      "fraction": 0.1079136690647482,
+      "fraction": 0.13274336283185842,
       "project_counts": {
         "freqduet": 15
       },
@@ -733,7 +615,7 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.09352517985611511,
+      "fraction": 0.11504424778761062,
       "project_counts": {
         "TransitDuet": 13
       },
@@ -852,7 +734,7 @@
           "task_id": "t4142"
         }
       ],
-      "fraction": 0.08633093525179857,
+      "fraction": 0.10619469026548672,
       "project_counts": {
         "CFCMT": 6,
         "ZSW_platform": 5,
@@ -973,7 +855,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.04316546762589928,
+      "fraction": 0.05309734513274336,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -1088,7 +970,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.03597122302158273,
+      "fraction": 0.04424778761061947,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -1163,7 +1045,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.014388489208633094,
+      "fraction": 0.017699115044247787,
       "project_counts": {
         "python": 2
       },
@@ -1234,7 +1116,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.014388489208633094,
+      "fraction": 0.017699115044247787,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -1307,7 +1189,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.014388489208633094,
+      "fraction": 0.017699115044247787,
       "project_counts": {
         "TransitDuet": 2
       },

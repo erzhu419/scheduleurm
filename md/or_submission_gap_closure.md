@@ -194,7 +194,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000050804
     representative mapping delta = 0.000050804
   Full global theorem coverage is still open because the representative run
-  leaves 1511 / 5980 tasks unmapped and maps 1896 tasks only by representative
+  leaves 1485 / 5980 tasks unmapped and maps 1896 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -203,12 +203,12 @@ Remaining scope limitation:
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
     records = 2766
-    mapped = 2269
-    strict mapped = 1361
-    measurement_required = 497
-    mapped_fraction = 0.820318
+    mapped = 2295
+    strict mapped = 1387
+    measurement_required = 471
+    mapped_fraction = 0.829718
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 139 / 2766 records
+    cpu_sumo_transit_eval_or_control = 113 / 2766 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -268,7 +268,7 @@ Remaining scope limitation:
     completed-active strict mapped count = 54
     min completed wall-clock rate = 0.001525164 eval/s
   This improves coverage but makes mapped-capacity slack tight:
-    strict mapped delta after Module76 raw-window LP = 0.000050804
+    strict mapped delta after Module77 raw-window LP = 0.000050804
 
   Module72 closes the CFCMT portion of `sumo_eval_cpu|c_le2` with six
   script-level completed-history certificates:
@@ -598,14 +598,40 @@ Remaining scope limitation:
     min completed wall-clock rate = 0.006078 merge-job/s
     note = two freqduet_autoadopt_spin.py helpers remain unmeasured
 
+  Module77 closes the previous `bamor_cpu_training|c_le2` first-probe blocker
+  with three completed-history certificates:
+    train_compare_baselines.py c_le2
+      -> bamor_train_compare_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 7
+    parsed completed-history work = 110000 training-step units
+    min completed wall-clock rate = 20.305243 training-step/s
+
+    train_bamor_mujoco.py c_le2
+      -> bamor_mujoco_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 16
+    parsed completed-history work = 452000 training-step units
+    min completed wall-clock rate = 23.686029 training-step/s
+
+    run_bamor_diagnostic_shard.py c_le2
+      -> bamor_diagnostic_shard_c_le2_completed_history
+    feasible profiles = 1
+    completed-active strict mapped count = 3
+    parsed completed-history work = 400000 training-step units
+    min completed wall-clock rate = 101.339502 training-step/s
+    note = some records specify --device cuda despite zero estimated VRAM, so the
+           certificate is production-history service, not a generic CPU-only curve
+
   The current remaining top probe order is:
-    bamor_cpu_training|c_le2
     sumo_eval_cpu|c_le2 residual command shapes
     freqduet_cpu_ablation|c_3_8 residual native/control command shapes
     bamor_cpu_training|c_17_32
     freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
     transit_freqhrl_cpu_validation|c_3_8
     sumo_eval_cpu|c_3_8
+    transit_freqhrl_cpu_validation|c_17_32
+    sumo_eval_cpu|c_33_64
 
   Module54 adds the actual progress-bearing CPU-only runner used for the first
   theorem-grade production slice.  Module56 validates it on jtl110cpu2:

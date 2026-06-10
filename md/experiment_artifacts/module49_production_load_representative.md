@@ -4,20 +4,23 @@
 window_days = 30.0
 include_representative = True
 record_count_window = 5980
-mapped_task_count = 4469
+mapped_task_count = 4495
 representative_mapped_task_count = 1896
-unmapped_task_count = 1511
-mapped_fraction = 0.7473244147157191
+unmapped_task_count = 1485
+mapped_fraction = 0.7516722408026756
 ```
 
 | Workload | Count | Lambda |
 |---|---:|---:|
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
+| `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
 | `bamor_mujoco_c3_8_completed_history` | 166 | 3.202160494 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
+| `bamor_mujoco_c_le2_completed_history` | 16 | 0.174382716 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `bamor_train_compare_c9_16_completed_history` | 6 | 0.001273148 |
+| `bamor_train_compare_c_le2_completed_history` | 7 | 0.042438272 |
 | `cfcmt_env_validation_c_le2_completed_history` | 5 | 0.033641975 |
 | `cfcmt_feed_conversion_c_le2_completed_history` | 5 | 0.000001929 |
 | `cfcmt_policy_rollout_c_le2_completed_history` | 10 | 0.054328704 |
@@ -72,7 +75,7 @@ mapped_fraction = 0.7473244147157191
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1337 |
+| `unmapped_cpu` | 1311 |
 | `unmapped_gpu` | 19 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

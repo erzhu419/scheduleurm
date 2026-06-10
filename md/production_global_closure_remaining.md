@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module76.  It should be read together
+This note records the current gap after Module77.  It should be read together
 with:
 
 ```text
@@ -52,6 +52,9 @@ md/experiment_module76_freqduet_baseline_rule_c_le2_completed_history.md
 md/experiment_module76_freqduet_preflight_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_analysis_matrix_c_le2_completed_history.md
 md/experiment_module76_transit_freqhrl_merge_c_le2_completed_history.md
+md/experiment_module77_bamor_train_compare_c_le2_completed_history.md
+md/experiment_module77_bamor_mujoco_c_le2_completed_history.md
+md/experiment_module77_bamor_diagnostic_shard_c_le2_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -308,16 +311,34 @@ workload_key = transit_freqhrl_merge_c_le2_completed_history
 completed-active strict mapped count = 6
 feasible profiles = 1
 unit rule = merge_job
+
+completed-history slice = BAMOR c_le2 train_compare_baselines.py
+workload_key = bamor_train_compare_c_le2_completed_history
+completed-active strict mapped count = 7
+feasible profiles = 1
+unit rule = parsed training steps
+
+completed-history slice = BAMOR c_le2 train_bamor_mujoco.py
+workload_key = bamor_mujoco_c_le2_completed_history
+completed-active strict mapped count = 16
+feasible profiles = 1
+unit rule = parsed training steps
+
+completed-history slice = BAMOR c_le2 run_bamor_diagnostic_shard.py
+workload_key = bamor_diagnostic_shard_c_le2_completed_history
+completed-active strict mapped count = 3
+feasible profiles = 1
+unit rule = parsed training steps
 ```
 
 Not yet closed:
 
 ```text
 completed_active_production records = 2766
-strict completed-active mapped count = 1361
-representative completed-active mapped count = 2269
-measurement_required = 497
-cpu_sumo_transit_eval_or_control remaining = 139 / 2766
+strict completed-active mapped count = 1387
+representative completed-active mapped count = 2295
+measurement_required = 471
+cpu_sumo_transit_eval_or_control remaining = 113 / 2766
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -368,6 +389,13 @@ only residual c_le2 records in this sub-bucket are two
 `freqduet_autoadopt_spin.py` helpers, which are left unmeasured because their
 stable progress unit is not part of the scheduler-controlled workload model.
 
+The previous `bamor_cpu_training|c_le2` first-probe blocker is now closed at the
+script-shape level.  Module77 certifies `train_compare_baselines.py`,
+`train_bamor_mujoco.py`, and `run_bamor_diagnostic_shard.py` separately.  This is
+not a pure CPU benchmark claim: several completed records specify `--device cuda`
+while the scheduler estimated zero VRAM, so the safe interpretation is a
+production-history completed-service certificate for those command shapes.
+
 The previous `freqduet_cpu_ablation|c_65p` top bucket is now closed at the
 command-shape level.  Module69 splits it into high-CPU
 `run_freqduet_ablation.py`, promoted ep100 shell-batch, and native-promotion
@@ -382,13 +410,14 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 576 / 2679 after Module66/67, 532 / 2755 after Module68, 471 / 2781 after
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 320 / 2840 after Module72, 258 / 2766 after Module73,
-212 / 2766 after Module74, 169 / 2766 after Module75, and
-139 / 2766 after Module76.
+212 / 2766 after Module74, 169 / 2766 after Module75,
+139 / 2766 after Module76, and 113 / 2766 after Module77.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
-certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
-BAMOR c_le2, c_9_16, and c_17_32 records are still separate CPU/SUMO/transit
-obligations until they receive their own service certificates.
+certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
+does the same for BAMOR c_9_16, and Module77 does the same for BAMOR c_le2.
+Remaining BAMOR c_17_32 records are still separate CPU/SUMO/transit obligations
+until they receive their own service certificates.
 
 Module65 closes only the ZSW TSP/SUMO c_le2 runner slice.  Remaining
 `sumo_eval_cpu|c_le2` records are CFCMT/offline-sumo/H2Oplus/direct-SUMO
@@ -441,6 +470,12 @@ five explicit completed-history service classes: FreqDuet ablation episodes,
 baseline-rule episodes, preflight checks, Transit/FreqHRL analysis jobs, and
 Transit/FreqHRL merge jobs.  It does not claim the two auto-adopt spin helpers.
 
+Module77 closes the former `bamor_cpu_training|c_le2` first-probe blocker with
+three explicit completed-history service classes: train-compare, Mujoco, and
+diagnostic-shard training-step work.  The certificate keeps CUDA-flagged
+zero-estimated-VRAM records in production-history semantics instead of using them
+as generic CPU-only curves.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -472,13 +507,14 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes
 freqduet_cpu_ablation|c_3_8 residual native/control command shapes
 bamor_cpu_training|c_17_32
 freqduet_cpu_ablation|c_33_64 residual direct-runner/single-command shapes
 transit_freqhrl_cpu_validation|c_3_8
 sumo_eval_cpu|c_3_8
+transit_freqhrl_cpu_validation|c_17_32
+sumo_eval_cpu|c_33_64
 ```
 
 For every slice, the required closure pattern is:

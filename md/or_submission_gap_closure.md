@@ -194,7 +194,7 @@ Remaining scope limitation:
     strict measured mapping delta = 0.000011136
     representative mapping delta = 0.000011136
   Full global theorem coverage is still open because the representative run
-  leaves 1341 / 6564 tasks unmapped and maps 2105 tasks only by representative
+  leaves 1333 / 6583 tasks unmapped and maps 2106 tasks only by representative
   bucket equivalence rather than theorem-grade service measurement.
 
   Module51 tightens the population definition.  Module73 further excludes
@@ -202,13 +202,13 @@ Remaining scope limitation:
   controlled-arrival theorem population when they have no scheduler id, no
   scheduler log, and no reproducible progress unit.  In the reviewer-facing
   completed-active production view, representative coverage is:
-    records = 3214
-    mapped = 2807
-    strict mapped = 1774
-    measurement_required = 407
-    mapped_fraction = 0.873367
+    records = 3211
+    mapped = 2808
+    strict mapped = 1775
+    measurement_required = 403
+    mapped_fraction = 0.874494
   The dominant remaining bucket is:
-    cpu_sumo_transit_eval_or_control = 20 / 3214 records
+    cpu_sumo_transit_eval_or_control = 14 / 3211 records
   Therefore the next production-coverage closure target is a theorem-grade
   service curve for the CPU/SUMO/transit evaluation/control family, not another
   generic q01/q11 GPU RL probe.
@@ -777,8 +777,14 @@ Remaining scope limitation:
       raw-window strict mapped count = 8
       min completed wall-clock rate = 257.874955538 surrogate-seed-step-corridor/s
 
+  Module85 closes the former FreqDuet c9_16 manifest blocker by correcting it
+  to Transit/FreqHRL native-promotion shell shards:
+    wait-credit v39 shell shards -> transit_native_promotion_c9_16_wait_credit_shell_completed_history
+      completed-active strict mapped count = 6
+      raw-window strict mapped count = 6
+      min completed wall-clock rate = 0.115357646 seed-episode/s
+
   The current remaining top probe order is:
-    freqduet_cpu_ablation|c_9_16
     sumo_eval_cpu|c_33_64
     transit_freqhrl_cpu_validation|c_33_64
     transit_freqhrl_cpu_validation|c_9_16

@@ -57,6 +57,7 @@ DEFAULT_TASKSETS = (
     "production_transit_freqhrl_import_smoke_c_le2_completed_history",
     "production_transit_native_promotion_c9_16_bounded_wait_completed_history",
     "production_transit_native_promotion_c9_16_residual_completed_history",
+    "production_transit_native_promotion_c9_16_wait_credit_shell_completed_history",
     "production_freqduet_runner_v3_c9_16_residual_completed_history",
     "production_cfcmt_feed_conversion_c_le2_completed_history",
     "production_cfcmt_env_validation_c_le2_completed_history",
@@ -998,6 +999,13 @@ def _native_promotion_c9_16_seed_units(
         return None
     if "native_promotion_replan_validation" not in cmd_lower:
         return None
+    shell_units = _parse_native_promotion_shell_seedrange_units(cmd)
+    if shell_units is not None and shell_units > 0 and "wait_credit_aligned_v39" in cmd_lower:
+        return (
+            "transit_native_promotion_c9_16_wait_credit_shell_completed_history",
+            float(shell_units),
+            "module85_transit_native_promotion_c9_16_wait_credit_shell_completed_history",
+        )
     units = _parse_native_promotion_seed_units(cmd)
     if units is None or units <= 0:
         return None
@@ -1042,6 +1050,43 @@ def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
     except ValueError:
         return None
     seed_count = max(0, seed_end - seed_start)
+    if seed_count <= 0 or not math.isfinite(episodes) or episodes <= 0:
+        return None
+    return float(seed_count) * float(episodes)
+
+
+def _parse_native_promotion_shell_seedrange_units(cmd: str) -> float | None:
+    import re
+
+    if "native_promotion_replan_validation" not in str(cmd):
+        return None
+    assignments: dict[str, int] = {}
+    for name, left, right in re.findall(
+        r"\b([A-Za-z_][A-Za-z0-9_]*)=\$\(\(\s*(-?\d+)\s*\+\s*(-?\d+)\s*\)\)",
+        str(cmd),
+    ):
+        assignments[str(name)] = int(left) + int(right)
+    if not assignments:
+        return None
+    start_match = re.search(
+        r"--seed-index-start\s+[\"']?\$([A-Za-z_][A-Za-z0-9_]*)[\"']?",
+        str(cmd),
+    )
+    end_match = re.search(
+        r"--seed-index-end\s+[\"']?\$([A-Za-z_][A-Za-z0-9_]*)[\"']?",
+        str(cmd),
+    )
+    if start_match is None or end_match is None:
+        return None
+    start = assignments.get(start_match.group(1))
+    end = assignments.get(end_match.group(1))
+    if start is None or end is None:
+        return None
+    episode_match = re.search(r"--episodes\s+([0-9]+(?:\.[0-9]+)?)", str(cmd))
+    episodes = 1.0
+    if episode_match is not None:
+        episodes = float(episode_match.group(1))
+    seed_count = max(0, int(end) - int(start))
     if seed_count <= 0 or not math.isfinite(episodes) or episodes <= 0:
         return None
     return float(seed_count) * float(episodes)

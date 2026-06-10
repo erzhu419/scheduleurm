@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 6564
-mapped_task_count = 3118
+record_count_window = 6583
+mapped_task_count = 3144
 representative_mapped_task_count = 0
-unmapped_task_count = 3446
-mapped_fraction = 0.47501523461304085
+unmapped_task_count = 3439
+mapped_fraction = 0.4775938022178338
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -41,8 +41,8 @@ action_count_evaluated = 1
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
-| `freqduet_cpu_ablation_c9_16` | 141 | 0.077584877 |
-| `freqduet_cpu_ablation_c_le2_completed_history` | 7 | 0.000928627 |
+| `freqduet_cpu_ablation_c9_16` | 140 | 0.077044753 |
+| `freqduet_cpu_ablation_c_le2_completed_history` | 8 | 0.001468750 |
 | `freqduet_paper_longtrain_c17_32_completed_history` | 35 | 0.000013503 |
 | `freqduet_preflight_c_le2_completed_history` | 14 | 0.000005401 |
 | `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
@@ -64,7 +64,7 @@ action_count_evaluated = 1
 | `transit_demand_estimator_c17_32_completed_history` | 10 | 0.024444444 |
 | `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
 | `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
-| `transit_freqhrl_merge_c_le2_completed_history` | 9 | 0.000003472 |
+| `transit_freqhrl_merge_c_le2_completed_history` | 11 | 0.000004244 |
 | `transit_freqhrl_tests_c3_8_completed_history` | 8 | 0.000003086 |
 | `transit_gap_closure_c17_32_completed_history` | 8 | 0.546666667 |
 | `transit_native_control_c_le2_completed_history` | 21 | 0.000125000 |
@@ -75,7 +75,8 @@ action_count_evaluated = 1
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 14 | 0.000124614 |
 | `transit_native_promotion_c65p_completed_history` | 169 | 0.013414352 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 76 | 0.003266204 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 94 | 0.003340278 |
+| `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
 | `transit_native_real_demand_batch_c3_8_completed_history` | 27 | 0.000277778 |
@@ -104,7 +105,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1638 |
-| `unmapped_gpu` | 1653 |
+| `unmapped_cpu` | 1630 |
+| `unmapped_gpu` | 1654 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

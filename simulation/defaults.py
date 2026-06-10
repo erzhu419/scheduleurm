@@ -673,6 +673,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module85_transit_native_promotion_c9_16_wait_credit_shell_completed_history_reports",
+        workload_key="transit_native_promotion_c9_16_wait_credit_shell_completed_history",
+        command_fingerprint="transit_native_promotion_c9_16_wait_credit_shell_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module71_freqduet_runner_v3_c9_16_residual_completed_history_reports",
         workload_key="freqduet_runner_v3_c9_16_residual_completed_history",
         command_fingerprint="freqduet_runner_v3_c9_16_residual_completed_history_v1",
@@ -881,6 +890,7 @@ def legacy_policy() -> ReplayPolicy:
             "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
             "transit_native_promotion_c9_16_bounded_wait_completed_history": 1,
             "transit_native_promotion_c9_16_residual_completed_history": 1,
+            "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 1,
             "freqduet_runner_v3_c9_16_residual_completed_history": 1,
             "cfcmt_feed_conversion_c_le2_completed_history": 1,
             "cfcmt_env_validation_c_le2_completed_history": 1,

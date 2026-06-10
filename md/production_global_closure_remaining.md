@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 
-This note records the current gap after Module84.  It should be read together
+This note records the current gap after Module85.  It should be read together
 with:
 
 ```text
@@ -81,6 +81,7 @@ md/experiment_module84_transit_trading_pressure_matrix_c17_32_completed_history.
 md/experiment_module84_transit_trading_promotion_recovery_c17_32_completed_history.md
 md/experiment_module84_transit_demand_estimator_c17_32_completed_history.md
 md/experiment_module84_transit_gap_closure_c17_32_completed_history.md
+md/experiment_module85_transit_native_promotion_c9_16_wait_credit_shell_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -473,16 +474,22 @@ workload_keys =
 completed-active strict mapped count = 6
 feasible profiles = 1
 unit rule = parsed pressure/demand/gap units or one recovery command
+
+completed-history slice = Transit/FreqHRL c9_16 wait-credit shell native-promotion shards
+workload_key = transit_native_promotion_c9_16_wait_credit_shell_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = statically parsed shell arithmetic seed range times episodes
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3214
-strict completed-active mapped count = 1774
-representative completed-active mapped count = 2807
-measurement_required = 407
-cpu_sumo_transit_eval_or_control remaining = 20 / 3214
+completed_active_production records = 3211
+strict completed-active mapped count = 1775
+representative completed-active mapped count = 2808
+measurement_required = 403
+cpu_sumo_transit_eval_or_control remaining = 14 / 3211
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -575,7 +582,7 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 139 / 2766 after Module76, 113 / 2766 after Module77,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
 43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
-Module83, and 20 / 3214 after Module84.
+Module83, 20 / 3214 after Module84, and 14 / 3211 after Module85.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -680,6 +687,12 @@ promotion-recovery validation, demand-estimator validation, and gap-closure
 validation.  It deliberately keeps c33_64, c9_16, and c_le2 Transit/FreqHRL
 residuals as separate obligations in the regenerated Module53 manifest.
 
+Module85 closes the former `freqduet_cpu_ablation|c_9_16` first-probe blocker
+by correcting the manifest's broad keyword grouping: the six rows are actually
+Transit/FreqHRL wait-credit native-promotion shell shards, not FreqDuet ablation
+commands.  The new parser evaluates only literal shell arithmetic seed-index
+assignments and does not execute the command.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -711,7 +724,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16

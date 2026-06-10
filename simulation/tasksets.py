@@ -645,6 +645,42 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_transit_native_promotion_c9_16_wait_credit_shell_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for c_9_16 Transit/FreqHRL "
+                "native-promotion wait-credit v39 shell arithmetic shards."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with statically parsed shell arithmetic seed-index ranges. Only "
+                "profile 1 is loaded from realized completed-task wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_promotion_c9_16_wait_credit_shell_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history native wait-credit c9_16 shell sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module85 completed-history wall-clock audit for "
+                        "c_9_16 wait_credit_aligned_v39 native_promotion_replan_validation "
+                        "shell shards with S/E arithmetic seed ranges."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The parser evaluates only literal shell integer assignments "
+                        "of the form VAR=$((a + b)) and referenced seed-index variables; "
+                        "it does not execute the production shell command."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_freqduet_runner_v3_c9_16_residual_completed_history",
             purpose=(
                 "A strict completed-history closure slice for residual c_9_16 "

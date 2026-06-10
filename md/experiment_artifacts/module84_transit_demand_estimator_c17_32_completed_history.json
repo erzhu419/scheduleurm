@@ -1,0 +1,74 @@
+{
+  "cpu_counts": {
+    "32": 2
+  },
+  "duration_s": {
+    "max": 102.29967021942139,
+    "median": 65.56975483894348,
+    "min": 28.839839458465576,
+    "p10": 28.839839458465576,
+    "p90": 28.839839458465576
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_17_32 freq_hrl.experiments.transit.demand_estimator_validation production records. Units are explicit validation seeds times validation steps.",
+  "parsed_units_seed_step": {
+    "max": 23040.0,
+    "median": 23040.0,
+    "min": 23040.0,
+    "p10": 23040.0,
+    "p90": 23040.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 2
+  },
+  "ram_counts": {
+    "8192": 2
+  },
+  "realized_seed_step_s": {
+    "max": 798.8948771085095,
+    "median": 512.0577722463466,
+    "min": 225.22066738418383,
+    "p10": 225.22066738418383,
+    "p90": 225.22066738418383
+  },
+  "record_count": 2,
+  "run_id": "module84_transit_demand_estimator_c17_32_completed_history",
+  "scope": "Transit/FreqHRL c17_32 demand-estimator validation",
+  "slowest_12": [
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.transit.demand_estimator_validation --seeds 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 --steps 720 --warmup 40 --output-dir transit_hrl/results/scheduler_demand_estimator_shard_1_fixed",
+      "cpu_cores": 32.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 102.29967021942139,
+      "finished_at": 1780277604.5035417,
+      "parsed_units_seed_step": 23040.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_step_s": 225.22066738418383,
+      "signature": "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds",
+      "started_at": 1780277502.2038715,
+      "status": "done",
+      "task_id": "t5237"
+    },
+    {
+      "cmd_prefix": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.transit.demand_estimator_validation --seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 --steps 720 --warmup 40 --output-dir transit_hrl/results/scheduler_demand_estimator_shard_0_fixed",
+      "cpu_cores": 32.0,
+      "cwd": "/home/erzhu419/mine_code/TransitDuet",
+      "duration_s": 28.839839458465576,
+      "finished_at": 1780277521.7299232,
+      "parsed_units_seed_step": 23040.0,
+      "project": "TransitDuet",
+      "ram_mb": 8192.0,
+      "realized_seed_step_s": 798.8948771085095,
+      "signature": "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds",
+      "started_at": 1780277492.8900838,
+      "status": "done",
+      "task_id": "t5236"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "total_units": 46080.0,
+  "workload_key": "transit_demand_estimator_c17_32_completed_history"
+}

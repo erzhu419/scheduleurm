@@ -1908,6 +1908,147 @@ def test_module83_transit_c3_8_residual_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module84_transit_c17_32_residual_completed_history_profile1(check, sch):
+    base = {
+        "project": "TransitDuet",
+        "signature": "TransitDuet/module84",
+        "description": "Transit/FreqHRL c17_32 residual",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 24,
+        "ram_mb": 8192,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+    }
+    pressure = dict(base)
+    pressure["id"] = "module84-pressure-matrix"
+    pressure["ram_mb"] = 48000
+    pressure["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.trading.pressure_test_matrix "
+        "--scenarios localized_burst ood_period --seeds 42 123 456 789 2026 "
+        "--steps 720 --assets 3 --workers 24 --output-dir out"
+    )
+    pressure_cls = classify_record(pressure, include_representative=False)
+    check("Module84 maps Transit c17_32 pressure matrix with scenario-baseline units",
+          pressure_cls["workload_key"] == "transit_trading_pressure_matrix_c17_32_completed_history"
+          and math.isclose(float(pressure_cls["units"]), 259200.0),
+          diag=str(pressure_cls))
+
+    recovery = dict(base)
+    recovery["id"] = "module84-promotion-recovery"
+    recovery["cpu_cores"] = 17
+    recovery["ram_mb"] = 558
+    recovery["cmd"] = (
+        "python3 -m freq_hrl.experiments.trading.promotion_recovery_validation "
+        "--workers 16 --output-dir out"
+    )
+    recovery_cls = classify_record(recovery, include_representative=False)
+    check("Module84 maps promotion recovery as one completed validation command",
+          recovery_cls["workload_key"] == "transit_trading_promotion_recovery_c17_32_completed_history"
+          and math.isclose(float(recovery_cls["units"]), 1.0),
+          diag=str(recovery_cls))
+
+    demand = dict(base)
+    demand["id"] = "module84-demand-estimator"
+    demand["cpu_cores"] = 32
+    demand["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.transit.demand_estimator_validation "
+        "--seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 "
+        "17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 "
+        "--steps 720 --warmup 40 --output-dir out"
+    )
+    demand_cls = classify_record(demand, include_representative=False)
+    check("Module84 maps demand estimator with seed-step units",
+          demand_cls["workload_key"] == "transit_demand_estimator_c17_32_completed_history"
+          and math.isclose(float(demand_cls["units"]), 23040.0),
+          diag=str(demand_cls))
+
+    gap = dict(base)
+    gap["id"] = "module84-gap-closure"
+    gap["cpu_cores"] = 32
+    gap["ram_mb"] = 32768
+    gap["cmd"] = (
+        "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m "
+        "freq_hrl.experiments.transit.gap_closure_validation "
+        "--train-seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 "
+        "17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 "
+        "--eval-seeds 1001 1002 1003 1004 1005 1006 1007 1008 "
+        "1009 1010 1011 1012 1013 1014 1015 1016 1017 1018 1019 1020 "
+        "1021 1022 1023 1024 1025 1026 1027 1028 1029 1030 1031 1032 "
+        "--steps 240 --iterations 8 --output-dir out"
+    )
+    gap_cls = classify_record(gap, include_representative=False)
+    check("Module84 maps gap closure with fourfold surrogate train/eval units",
+          gap_cls["workload_key"] == "transit_gap_closure_c17_32_completed_history"
+          and math.isclose(float(gap_cls["units"]), 552960.0),
+          diag=str(gap_cls))
+
+    native = dict(base)
+    native["id"] = "module84-native-stays-module74"
+    native["cpu_cores"] = 32
+    native["cmd"] = (
+        "python3 -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+        "--seeds 1 2 3 4 --episodes 2 --workers 16 --output-dir out"
+    )
+    native_cls = classify_record(native, include_representative=False)
+    check("Module84 residual parser does not steal native promotion records",
+          native_cls["workload_key"] == "transit_native_promotion_c17_32_residual_completed_history",
+          diag=str(native_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_trading_pressure_matrix_c17_32_completed_history": 6526.878819304279,
+        "transit_trading_promotion_recovery_c17_32_completed_history": 0.1635271202392017,
+        "transit_demand_estimator_c17_32_completed_history": 225.22066738418383,
+        "transit_gap_closure_c17_32_completed_history": 257.8749555379547,
+    }
+    cache_ok = True
+    cache_diag = {}
+    for key, rate in expected_rates.items():
+        profiles = cache.profiles(key)
+        cache_diag[key] = [record.snapshot() for record in profiles]
+        cache_ok = (
+            cache_ok
+            and [record.profile for record in profiles] == [1]
+            and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+        )
+    check("Module84 service cache exposes four profile1 c17_32 Transit lower services",
+          cache_ok,
+          diag=str(cache_diag))
+
+    tasksets = {
+        "production_transit_trading_pressure_matrix_c17_32_completed_history",
+        "production_transit_trading_promotion_recovery_c17_32_completed_history",
+        "production_transit_demand_estimator_c17_32_completed_history",
+        "production_transit_gap_closure_c17_32_completed_history",
+    }
+    check("Module84 tasksets are included in the default production certificate",
+          tasksets.issubset(set(DEFAULT_TASKSETS)),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[pressure, recovery, demand, gap],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=tuple(sorted(tasksets)),
+    )
+    check("production load certificate certifies Module84 Transit c17_32 residual sub-slices",
+          report["mapped_counts"] == {
+              "transit_trading_pressure_matrix_c17_32_completed_history": 1,
+              "transit_trading_promotion_recovery_c17_32_completed_history": 1,
+              "transit_demand_estimator_c17_32_completed_history": 1,
+              "transit_gap_closure_c17_32_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_trading_pressure_matrix_c17_32_completed_history"], 259200.0)
+          and math.isclose(report["mapped_units"]["transit_demand_estimator_c17_32_completed_history"], 23040.0)
+          and math.isclose(report["mapped_units"]["transit_gap_closure_c17_32_completed_history"], 552960.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

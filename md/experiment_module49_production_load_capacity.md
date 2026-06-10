@@ -1,6 +1,6 @@
 # Module49 Production-Load Capacity Attempt
 
-Date: 2026-06-10
+Date: 2026-06-11
 
 This module attempts to move from a declared finite-slice load model to a
 production-history load certificate.  It reads Scheduleurm task records from
@@ -112,12 +112,18 @@ Module83 closes the next Transit/FreqHRL c3_8 residual by splitting it into six
 completed-history service classes: public CSV market evaluation, pressure-matrix
 merge, policy-entry train/eval, PPO surrogate train/eval, pytest/unittest jobs,
 and native-promotion shard merge.
+Module84 closes the next Transit/FreqHRL c17_32 residual by splitting it into
+four completed-history service classes: trading pressure-test matrix,
+promotion-recovery validation, demand-estimator validation, and gap-closure PPO
+surrogate validation.  Pressure, demand, and gap-closure use parsed work units;
+promotion-recovery uses one completed command because the scheduler record has
+no stable exposed seed/step counter.
 
 ```text
-record_count_window = 6552
-mapped_task_count = 3082
-mapped_fraction = 0.470391
-unmapped_task_count = 3470
+record_count_window = 6564
+mapped_task_count = 3118
+mapped_fraction = 0.475015
+unmapped_task_count = 3446
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -127,8 +133,8 @@ action_count_evaluated = 1
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83
-strict rows added to the mapped slice are:
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83-84
+strict rows most recently added to the mapped slice are:
 
 | Workload | Count | Lambda |
 |---|---:|---:|
@@ -138,6 +144,10 @@ strict rows added to the mapped slice are:
 | `transit_surrogate_c3_8_completed_history` | 1 | 0.008333333 |
 | `transit_freqhrl_tests_c3_8_completed_history` | 8 | 0.000003086 |
 | `transit_native_merge_c3_8_completed_history` | 1 | 0.000000386 |
+| `transit_trading_pressure_matrix_c17_32_completed_history` | 5 | 0.600000000 |
+| `transit_trading_promotion_recovery_c17_32_completed_history` | 1 | 0.000000386 |
+| `transit_demand_estimator_c17_32_completed_history` | 10 | 0.024444444 |
+| `transit_gap_closure_c17_32_completed_history` | 8 | 0.546666667 |
 
 Capacity LP:
 
@@ -163,12 +173,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6400
-mapped_task_count = 4990
-representative_mapped_task_count = 2064
-mapped_fraction = 0.779688
-strict_mapped_fraction = 0.457188
-unmapped_task_count = 1410
+record_count_window = 6564
+mapped_task_count = 5223
+representative_mapped_task_count = 2105
+mapped_fraction = 0.795704
+strict_mapped_fraction = 0.475015
+unmapped_task_count = 1341
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -181,15 +191,14 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has not been regenerated after
-Module82 because the representative LP is diagnostic and can be much larger
-than the strict theorem-grade LP.  Use the strict Module49 artifact above for
-the current proof-facing mapped capacity slice.
+The representative raw-window artifact has been regenerated after Module84, but
+it remains diagnostic.  Use the strict Module49 artifact above for the current
+proof-facing mapped capacity slice.
 
 Capacity LP:
 
 ```text
-delta = 0.000010750
+delta = 0.000011136
 status = optimal
 ```
 
@@ -258,6 +267,11 @@ pressure-matrix merge, policy-entry train/eval, PPO surrogate train/eval,
 Transit/FreqHRL test jobs, and native-promotion shard merge.  Failed/cancelled
 same-shape attempts can be classified for raw load accounting, but only `done`
 records with positive wall-clock duration are used as lower-service samples.
+Module84 maps the next c17_32 Transit/FreqHRL residual: pressure-test matrix,
+promotion-recovery validation, demand-estimator validation, and gap-closure
+validation.  The strict raw-window LP counts all same-shape arrivals in the
+30-day raw history, while the lower-service rows are selected only from completed
+records with positive wall-clock duration.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
@@ -283,9 +297,9 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3472 / 6440 tasks
-representative unmapped: 1410 / 6400 tasks
-representative-mapped but not theorem-grade: 2064 tasks
+strict unmapped: 3446 / 6564 tasks
+representative unmapped: 1341 / 6564 tasks
+representative-mapped but not theorem-grade: 2105 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

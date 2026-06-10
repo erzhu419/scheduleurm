@@ -1,8 +1,8 @@
 # Production Global Closure Remaining
 
-Date: 2026-06-10
+Date: 2026-06-11
 
-This note records the current gap after Module83.  It should be read together
+This note records the current gap after Module84.  It should be read together
 with:
 
 ```text
@@ -77,6 +77,10 @@ md/experiment_module83_transit_trading_policy_c3_8_completed_history.md
 md/experiment_module83_transit_surrogate_c3_8_completed_history.md
 md/experiment_module83_transit_freqhrl_tests_c3_8_completed_history.md
 md/experiment_module83_transit_native_merge_c3_8_completed_history.md
+md/experiment_module84_transit_trading_pressure_matrix_c17_32_completed_history.md
+md/experiment_module84_transit_trading_promotion_recovery_c17_32_completed_history.md
+md/experiment_module84_transit_demand_estimator_c17_32_completed_history.md
+md/experiment_module84_transit_gap_closure_c17_32_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -459,16 +463,26 @@ workload_keys =
 completed-active strict mapped count = 13
 feasible profiles = 1
 unit rule = command-shape-specific parsed units or one completed command
+
+completed-history slices = Transit/FreqHRL c17_32 residual
+workload_keys =
+  transit_trading_pressure_matrix_c17_32_completed_history
+  transit_trading_promotion_recovery_c17_32_completed_history
+  transit_demand_estimator_c17_32_completed_history
+  transit_gap_closure_c17_32_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = parsed pressure/demand/gap units or one recovery command
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3199
-strict completed-active mapped count = 1756
-representative completed-active mapped count = 2789
-measurement_required = 410
-cpu_sumo_transit_eval_or_control remaining = 26 / 3199
+completed_active_production records = 3214
+strict completed-active mapped count = 1774
+representative completed-active mapped count = 2807
+measurement_required = 407
+cpu_sumo_transit_eval_or_control remaining = 20 / 3214
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -560,8 +574,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 212 / 2766 after Module74, 169 / 2766 after Module75,
 139 / 2766 after Module76, 113 / 2766 after Module77,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
-43 / 3095 after Module81, 38 / 3136 after Module82, and 26 / 3199 after
-Module83.
+43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
+Module83, and 20 / 3214 after Module84.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -660,6 +674,12 @@ blocker with six separate completed-history classes: public CSV market-data
 evaluation, pressure-matrix merge, policy-entry train/eval, PPO surrogate
 train/eval, pytest/unittest jobs, and native-promotion shard merge.
 
+Module84 closes the former `transit_freqhrl_cpu_validation|c_17_32` first-probe
+blocker with four separate completed-history classes: pressure-test matrix,
+promotion-recovery validation, demand-estimator validation, and gap-closure
+validation.  It deliberately keeps c33_64, c9_16, and c_le2 Transit/FreqHRL
+residuals as separate obligations in the regenerated Module53 manifest.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -672,7 +692,7 @@ profile-1 lower-service rates.  This tightening is part of the theorem
 condition audit, not a reason to relabel slow tasks:
 
 ```text
-strict mapped delta = 0.000010750
+strict mapped delta = 0.000011136
 ```
 
 This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
@@ -691,7 +711,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-transit_freqhrl_cpu_validation|c_17_32
 freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64

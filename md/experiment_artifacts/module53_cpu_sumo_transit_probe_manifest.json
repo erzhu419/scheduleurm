@@ -3,14 +3,12 @@
   "interpretation": "This manifest extracts real production templates for a missing coverage bucket. It does not certify service until the listed sub-buckets receive progress-bearing service curves.",
   "probe_grid": {
     "cpu_buckets": [
-      "c_17_32",
       "c_33_64",
       "c_3_8",
       "c_9_16",
       "c_le2"
     ],
     "first_probe_order": [
-      "transit_freqhrl_cpu_validation|c_17_32",
       "freqduet_cpu_ablation|c_9_16",
       "sumo_eval_cpu|c_33_64",
       "transit_freqhrl_cpu_validation|c_33_64",
@@ -32,29 +30,29 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 18,
+    "TransitDuet": 12,
     "offline-sumo": 5,
     "python": 2
   },
-  "record_count": 26,
+  "record_count": 20,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 16.0,
+      "median": 14.0,
       "min": 1.0,
       "p90": 37.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 11236.0,
+      "median": 7898.5,
       "min": 5.0,
-      "p90": 32768.0
+      "p90": 16000.0
     }
   },
   "status_counts": {
-    "done": 26
+    "done": 20
   },
-  "sub_bucket_count": 8,
+  "sub_bucket_count": 7,
   "sub_buckets": [
     {
       "count": 6,
@@ -125,7 +123,7 @@
           "task_id": "t9442"
         }
       ],
-      "fraction": 0.23076923076923078,
+      "fraction": 0.3,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -165,121 +163,6 @@
         "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512": 6
       },
       "sub_bucket": "freqduet_cpu_ablation|c_9_16"
-    },
-    {
-      "count": 6,
-      "examples": [
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.pressure_test_matrix --scenarios localized_burst ood_period --seeds 42 123 456 789 2026 --steps 720 --assets 3 --workers 24 --output-dir transit_hrl/results/trading_pressure_matrix_part1",
-          "cpu_cores": 24,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL trading pressure matrix part1, 24 workers on jtl110cpu2",
-          "eta_seconds": 136,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 48000,
-          "signature": "TransitDuet/FreqHRL-trading-pressure-part1-w24",
-          "status": "done",
-          "task_id": "t5039"
-        },
-        {
-          "cmd": "python3 -m freq_hrl.experiments.trading.promotion_recovery_validation --workers 16 --output-dir transit_hrl/results/trading_promotion_recovery_validation",
-          "cpu_cores": 17,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "auto-adopted: TransitDuet on local:CPU-only (17 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 558,
-          "signature": "TransitDuet/auto-adopted/p4153748",
-          "status": "done",
-          "task_id": "t5111"
-        },
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.transit.demand_estimator_validation --seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 --steps 720 --warmup 40 --output-dir transit_hrl/results/scheduler_demand_estimator_shard_0_fixed",
-          "cpu_cores": 32,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL Transit demand estimator validation shard 0 with Windows-safe explicit seed list",
-          "eta_seconds": 43,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 8192,
-          "signature": "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds",
-          "status": "done",
-          "task_id": "t5236"
-        },
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.transit.demand_estimator_validation --seeds 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 --steps 720 --warmup 40 --output-dir transit_hrl/results/scheduler_demand_estimator_shard_1_fixed",
-          "cpu_cores": 32,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL Transit demand estimator validation shard 1 with Windows-safe explicit seed list",
-          "eta_seconds": 43,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 8192,
-          "signature": "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds",
-          "status": "done",
-          "task_id": "t5237"
-        },
-        {
-          "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.transit.gap_closure_validation --train-seeds 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 --eval-seeds 1001 1002 1003 1004 1005 1006 1007 1008 1009 1010 1011 1012 1013 1014 1015 1016 1017 1018 1019 1020 1021 1022 1023 1024 1025 1026 1027 1028 1029 1030 1031 1032 --steps 240 --iterations 8 --output-dir transit_hrl/results/scheduler_gap_closure_shard_0_fixed",
-          "cpu_cores": 32,
-          "cwd": "/home/erzhu419/mine_code/TransitDuet",
-          "description": "Freq-HRL Transit gap-closure PPO surrogate matrix shard 0 with Windows-safe explicit seed list",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history",
-          "project": "TransitDuet",
-          "ram_mb": 32768,
-          "signature": "TransitDuet/freq-hrl-gap-closure-ppo-v4-windows-seeds",
-          "status": "done",
-          "task_id": "t5234"
-        }
-      ],
-      "fraction": 0.23076923076923078,
-      "project_counts": {
-        "TransitDuet": 6
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          17,
-          24,
-          32
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 32.0,
-          "median": 32.0,
-          "min": 17.0,
-          "p90": 32.0
-        },
-        "ram_mb": {
-          "max": 48000.0,
-          "median": 20480.0,
-          "min": 558.0,
-          "p90": 32768.0
-        }
-      },
-      "signature_prefixes": {
-        "TransitDuet/FreqHRL-trading-pressure-part1-w24": 1,
-        "TransitDuet/auto-adopted/p4153748": 1,
-        "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds": 2,
-        "TransitDuet/freq-hrl-gap-closure-ppo-v4-windows-seeds": 2
-      },
-      "sub_bucket": "transit_freqhrl_cpu_validation|c_17_32"
     },
     {
       "count": 5,
@@ -350,7 +233,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.19230769230769232,
+      "fraction": 0.25,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -425,7 +308,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.07692307692307693,
+      "fraction": 0.1,
       "project_counts": {
         "python": 2
       },
@@ -496,7 +379,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.07692307692307693,
+      "fraction": 0.1,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -569,7 +452,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.07692307692307693,
+      "fraction": 0.1,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -641,7 +524,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.07692307692307693,
+      "fraction": 0.1,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -700,7 +583,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.038461538461538464,
+      "fraction": 0.05,
       "project_counts": {
         "BAMOR": 1
       },
@@ -744,8 +627,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781128254.9685678,
-    "start_ts": 1778536254.9685678,
+    "end_ts": 1781129985.8210595,
+    "start_ts": 1778537985.8210595,
     "window_days": 30.0
   }
 }

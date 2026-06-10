@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module73.  It should be read together
+This note records the current gap after Module75.  It should be read together
 with:
 
 ```text
@@ -44,6 +44,9 @@ md/experiment_module72_cfcmt_traffic_signal_phase2_c_le2_completed_history.md
 md/experiment_module74_freqduet_runner_v3_c17_32_completed_history.md
 md/experiment_module74_freqduet_paper_longtrain_c17_32_completed_history.md
 md/experiment_module74_transit_native_promotion_c17_32_residual_completed_history.md
+md/experiment_module75_bamor_train_compare_c9_16_completed_history.md
+md/experiment_module75_bamor_mujoco_c9_16_completed_history.md
+md/experiment_module75_bamor_diagnostic_shard_c9_16_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -252,16 +255,34 @@ workload_key = cfcmt_traffic_signal_phase2_c_le2_completed_history
 completed-active strict mapped count = 1
 feasible profiles = 1
 unit rule = phase2_run
+
+completed-history slice = BAMOR c_9_16 train_compare_baselines.py
+workload_key = bamor_train_compare_c9_16_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = parsed training steps
+
+completed-history slice = BAMOR c_9_16 train_bamor_mujoco.py
+workload_key = bamor_mujoco_c9_16_completed_history
+completed-active strict mapped count = 3
+feasible profiles = 1
+unit rule = parsed training steps
+
+completed-history slice = BAMOR c_9_16 run_bamor_diagnostic_shard.py
+workload_key = bamor_diagnostic_shard_c9_16_completed_history
+completed-active strict mapped count = 34
+feasible profiles = 1
+unit rule = parsed training steps
 ```
 
 Not yet closed:
 
 ```text
 completed_active_production records = 2766
-strict completed-active mapped count = 1288
-representative completed-active mapped count = 2196
-measurement_required = 570
-cpu_sumo_transit_eval_or_control remaining = 212 / 2766
+strict completed-active mapped count = 1331
+representative completed-active mapped count = 2239
+measurement_required = 527
+cpu_sumo_transit_eval_or_control remaining = 169 / 2766
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -322,8 +343,8 @@ slices and population-boundary correction: 862 / 2471 after Module62, 803 /
 2487 after Module63, 704 / 2553 after Module64, 659 / 2589 after Module65,
 576 / 2679 after Module66/67, 532 / 2755 after Module68, 471 / 2781 after
 Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
-320 / 2840 after Module72, 258 / 2766 after Module73, and
-212 / 2766 after Module74.
+320 / 2840 after Module72, 258 / 2766 after Module73,
+212 / 2766 after Module74, and 169 / 2766 after Module75.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Remaining
@@ -371,6 +392,11 @@ episodes, paper-longtrain completed shards, and residual native seed-episodes.
 The longtrain class is intentionally shard-based because its production command
 uses `--skip-existing`.
 
+Module75 closes the former `bamor_cpu_training|c_9_16` first-probe blocker with
+three explicit completed-history service classes: train-compare, Mujoco, and
+diagnostic-shard training-step work.  The split is required because those three
+script shapes have materially different service rates.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -402,7 +428,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-bamor_cpu_training|c_9_16
 freqduet_cpu_ablation|c_le2 residual command shapes
 bamor_cpu_training|c_le2
 sumo_eval_cpu|c_le2 residual command shapes

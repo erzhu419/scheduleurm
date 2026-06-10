@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module88
+## Status After Module89
 
 The original top sub-bucket was:
 
@@ -401,15 +401,21 @@ transit_trading_policy_c33_64_completed_history: completed_active = 1, raw_histo
 transit_trading_pressure_matrix_c33_64_completed_history: completed_active = 1, raw_history_all = 1, unit = seed_step_asset_scenario_baseline, min = 5705.519128414 seed-step-asset-scenario-baseline/s
 ```
 
+Module89 then closes the c9_16 Transit/FreqHRL pressure-matrix residual:
+
+```text
+transit_trading_pressure_matrix_c9_16_completed_history: completed_active = 2, raw_history_all = 2, unit = seed_step_asset_scenario_baseline, min = 12223.088100591 seed-step-asset-scenario-baseline/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 5
-cpu_cores median = 7.000000
-cpu_cores p90 = 15
-cpu_cores max = 15
-ram_mb median = 528.000
+record_count = 3
+cpu_cores median = 2.000000
+cpu_cores p90 = 2
+cpu_cores max = 7
+ram_mb median = 625.000
 ram_mb p90 = 625
 ram_mb max = 630
 theorem_status = measurement_required
@@ -419,16 +425,14 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.400000 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.400000 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.200000 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.666667 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.333333 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8
 ```
@@ -519,7 +523,9 @@ from the controlled-arrival theorem population; this is a population-boundary
 correction, not a service-rate claim.
 Module88 closes the c33_64 Transit/FreqHRL trading policy and pressure-matrix
 residual with separated completed-history lower-service rows.
-The global theorem remains open because 5 completed/active production records
+Module89 closes the c9_16 Transit/FreqHRL pressure-matrix residual with a
+separate completed-history lower-service row.
+The global theorem remains open because 3 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by c9_16 and low-CPU Transit/FreqHRL residual buckets and one
-BAMOR c3_8 residual.
+certificates, led by low-CPU Transit/FreqHRL residuals and one BAMOR c3_8
+residual.

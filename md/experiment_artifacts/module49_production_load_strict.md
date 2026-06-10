@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 6704
-mapped_task_count = 3277
+record_count_window = 6707
+mapped_task_count = 3285
 representative_mapped_task_count = 0
-unmapped_task_count = 3427
-mapped_fraction = 0.4888126491646778
+unmapped_task_count = 3422
+mapped_fraction = 0.48978678992097807
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -76,7 +76,7 @@ action_count_evaluated = 1
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 14 | 0.000124614 |
 | `transit_native_promotion_c65p_completed_history` | 169 | 0.013414352 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 94 | 0.003340278 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 100 | 0.003364969 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
@@ -88,6 +88,7 @@ action_count_evaluated = 1
 | `transit_trading_policy_c_le2_completed_history` | 18 | 1.600000000 |
 | `transit_trading_pressure_matrix_c17_32_completed_history` | 5 | 0.600000000 |
 | `transit_trading_pressure_matrix_c33_64_completed_history` | 1 | 0.150000000 |
+| `transit_trading_pressure_matrix_c9_16_completed_history` | 2 | 0.600000000 |
 | `transit_trading_pressure_merge_c3_8_completed_history` | 3 | 0.000001157 |
 | `transit_trading_promotion_recovery_c17_32_completed_history` | 1 | 0.000000386 |
 | `transit_trading_public_csv_c3_8_completed_history` | 4 | 0.003472222 |
@@ -108,7 +109,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1617 |
-| `unmapped_gpu` | 1655 |
+| `unmapped_cpu` | 1609 |
+| `unmapped_gpu` | 1658 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

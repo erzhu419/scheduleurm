@@ -1,0 +1,65 @@
+{
+  "cpu_counts": {
+    "15": 2
+  },
+  "duration_s": {
+    "max": 63.617311239242554,
+    "median": 57.44747853279114,
+    "min": 51.27764582633972
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c9_16 Transit/FreqHRL pressure-test matrix production records. Units reuse the established seed-step-asset times scenario and baseline parser.",
+  "parsed_units_seed_step_asset_scenario_baseline": [
+    777600.0,
+    777600.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "TransitDuet": 2
+  },
+  "ram_counts": {
+    "528": 2
+  },
+  "realized_seed_step_asset_scenario_baseline_s": [
+    12223.088100591318,
+    15164.502727630512
+  ],
+  "record_count": 2,
+  "run_id": "module89_transit_trading_pressure_matrix_c9_16_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 -m freq_hrl.experiments.trading.pressure_test_matrix --seeds 42 123 456 789 2026 --steps 720 --assets 3 --workers 16 --output-dir transit_hrl/results/trading_pressure_matrix",
+      "cpu_cores": 15,
+      "duration_s": 63.617311239242554,
+      "project": "TransitDuet",
+      "ram_mb": 528,
+      "rate_seed_step_asset_scenario_baseline_s": 12223.088100591318,
+      "signature": "TransitDuet/auto-adopted/p4058457",
+      "status": "done",
+      "task_id": "t5089",
+      "units": 777600.0
+    },
+    {
+      "cmd": "python3 -m freq_hrl.experiments.trading.pressure_test_matrix --seeds 42 123 456 789 2026 --steps 720 --assets 3 --workers 16 --output-dir transit_hrl/results/trading_pressure_matrix",
+      "cpu_cores": 15,
+      "duration_s": 51.27764582633972,
+      "project": "TransitDuet",
+      "ram_mb": 528,
+      "rate_seed_step_asset_scenario_baseline_s": 15164.502727630512,
+      "signature": "TransitDuet/auto-adopted/p4110099",
+      "status": "done",
+      "task_id": "t5099",
+      "units": 777600.0
+    }
+  ],
+  "source_scope": "module89_scheduler_queue_archive_completed_active",
+  "total_units_seed_step_asset_scenario_baseline": 1555200.0,
+  "window": {
+    "end_ts": 1781066058.3179877,
+    "start_ts": 1778474058.3179877,
+    "window_days": 30.0
+  },
+  "workload_key": "transit_trading_pressure_matrix_c9_16_completed_history"
+}

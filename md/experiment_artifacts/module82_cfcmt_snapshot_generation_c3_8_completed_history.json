@@ -1,0 +1,58 @@
+{
+  "cpu_counts": {
+    "3": 1
+  },
+  "duration_s": {
+    "max": 4848.355226278305,
+    "median": 4848.355226278305,
+    "min": 4848.355226278305,
+    "p10": 4848.355226278305,
+    "p90": 4848.355226278305
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 CFCMT cf_h2o.eval.sumo_apc_avl_snapshot_generation production records. Only real snapshot-generation module/script commands are mapped; pytest and local snapshot validation commands are separate or unclaimed.",
+  "parsed_units_snapshot_window": {
+    "max": 1440.0,
+    "median": 1440.0,
+    "min": 1440.0,
+    "p10": 1440.0,
+    "p90": 1440.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 1
+  },
+  "ram_counts": {
+    "10584": 1
+  },
+  "realized_snapshot_window_s": {
+    "max": 0.2970079403825724,
+    "median": 0.2970079403825724,
+    "min": 0.2970079403825724,
+    "p10": 0.2970079403825724,
+    "p90": 0.2970079403825724
+  },
+  "record_count": 1,
+  "run_id": "module82_cfcmt_snapshot_generation_c3_8_completed_history",
+  "scope": "CFCMT c3_8 SUMO/APC/AVL snapshot generation",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full_day.json --snapshot-period 60 --workers 4 --out cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.json --md-out cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.md",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/CFCMT",
+      "duration_s": 4848.355226278305,
+      "finished_at": 1779199257.4452965,
+      "parsed_units_snapshot_window": 1440.0,
+      "project": "CFCMT",
+      "ram_mb": 10584.0,
+      "realized_snapshot_window_s": 0.2970079403825724,
+      "signature": "CFCMT/auto-adopted/p540371",
+      "started_at": 1779194409.0900702,
+      "status": "done",
+      "task_id": "t3756"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "cfcmt_snapshot_generation_c3_8_completed_history"
+}

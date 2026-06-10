@@ -1,0 +1,107 @@
+{
+  "cpu_counts": {
+    "3": 1,
+    "5": 3
+  },
+  "duration_s": {
+    "max": 73.02338218688965,
+    "median": 59.93568742275238,
+    "min": 3.4796674251556396,
+    "p10": 3.4796674251556396,
+    "p90": 70.21042656898499
+  },
+  "interpretation": "Strict completed-history lower-service certificate for c_3_8 CFCMT SUMO/traffic-signal pytest production records. The progress unit is one completed pytest command because the archive does not expose uniform internal test progress.",
+  "parsed_units_pytest_job": {
+    "max": 1.0,
+    "median": 1.0,
+    "min": 1.0,
+    "p10": 1.0,
+    "p90": 1.0
+  },
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "CFCMT": 4
+  },
+  "ram_counts": {
+    "473": 1,
+    "524": 1,
+    "542": 1,
+    "635": 1
+  },
+  "realized_pytest_job_s": {
+    "max": 0.28738378638449097,
+    "median": 0.017189722706025454,
+    "min": 0.013694243816873444,
+    "p10": 0.013694243816873444,
+    "p90": 0.020136546616706687
+  },
+  "record_count": 4,
+  "run_id": "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+  "scope": "CFCMT c3_8 SUMO and traffic-signal pytest jobs",
+  "slowest_12": [
+    {
+      "cmd_prefix": "python3 -m pytest -q -s cf_h2o/tests/test_traffic_signal_sumo_phase1.py",
+      "cpu_cores": 5.0,
+      "cwd": "/home/erzhu419/mine_code/CFCMT",
+      "duration_s": 73.02338218688965,
+      "finished_at": 1780356927.2525454,
+      "parsed_units_pytest_job": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 473.0,
+      "realized_pytest_job_s": 0.013694243816873444,
+      "signature": "CFCMT/auto-adopted/p1435975",
+      "started_at": 1780356854.2291632,
+      "status": "done",
+      "task_id": "t5624"
+    },
+    {
+      "cmd_prefix": "python3 -m pytest -q -s cf_h2o/tests/test_traffic_signal_transfer_feasibility.py cf_h2o/tests/test_traffic_signal_sumo_phase1.py cf_h2o/tests/test_traffic_signal_sumo_phase2.py cf_h2o/tests/test_traffic_signal_resco_probe.py cf_h2o/tests/test_traffic_signal_resco_phase_benchmark.py cf_h2o/tests/test_traffic_signal_resco_cfcmt_benchmark.py",
+      "cpu_cores": 3.0,
+      "cwd": "/home/erzhu419/mine_code/CFCMT",
+      "duration_s": 70.21042656898499,
+      "finished_at": 1780385536.9105513,
+      "parsed_units_pytest_job": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 635.0,
+      "realized_pytest_job_s": 0.01424289879534422,
+      "signature": "CFCMT/auto-adopted/p1808275",
+      "started_at": 1780385466.7001247,
+      "status": "done",
+      "task_id": "t5827"
+    },
+    {
+      "cmd_prefix": "python3 -m pytest -s cf_h2o/tests/test_sumo_apc_avl_snapshot_generation.py cf_h2o/tests/test_sumo_apc_avl_sumo_generation.py -q",
+      "cpu_cores": 5.0,
+      "cwd": "/home/erzhu419/mine_code/CFCMT",
+      "duration_s": 49.660948276519775,
+      "finished_at": 1779199638.3644342,
+      "parsed_units_pytest_job": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 524.0,
+      "realized_pytest_job_s": 0.020136546616706687,
+      "signature": "CFCMT/auto-adopted/p587036",
+      "started_at": 1779199588.703486,
+      "status": "done",
+      "task_id": "t3757"
+    },
+    {
+      "cmd_prefix": "python3 -m pytest -q -s cf_h2o/tests/test_sumo_apc_avl_sumo_generation.py cf_h2o/tests/test_sumo_apc_avl_snapshot_generation.py cf_h2o/tests/test_sumo_policy_rollout_validation.py",
+      "cpu_cores": 5.0,
+      "cwd": "/home/erzhu419/mine_code/CFCMT",
+      "duration_s": 3.4796674251556396,
+      "finished_at": 1780294794.6104198,
+      "parsed_units_pytest_job": 1.0,
+      "project": "CFCMT",
+      "ram_mb": 542.0,
+      "realized_pytest_job_s": 0.28738378638449097,
+      "signature": "CFCMT/auto-adopted/p596490",
+      "started_at": 1780294791.1307523,
+      "status": "done",
+      "task_id": "t5291"
+    }
+  ],
+  "theorem_status": "strict_completed_history_lower_service",
+  "workload_key": "cfcmt_pytest_sumo_c3_8_completed_history"
+}

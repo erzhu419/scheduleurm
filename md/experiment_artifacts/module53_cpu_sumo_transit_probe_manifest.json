@@ -10,9 +10,9 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "sumo_eval_cpu|c_3_8",
       "transit_freqhrl_cpu_validation|c_3_8",
       "transit_freqhrl_cpu_validation|c_17_32",
+      "freqduet_cpu_ablation|c_9_16",
       "sumo_eval_cpu|c_33_64",
       "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
@@ -32,156 +32,32 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "CFCMT": 6,
-    "TransitDuet": 23,
-    "ZSW_platform": 5,
+    "TransitDuet": 30,
     "offline-sumo": 5,
-    "python": 2,
-    "zsw_tsp_m0_gpu1": 1
+    "python": 2
   },
-  "record_count": 43,
+  "record_count": 38,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 4.0,
+      "median": 14.0,
       "min": 1.0,
       "p90": 37.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 625.0,
+      "median": 1073.5,
       "min": 5.0,
-      "p90": 16000.0
+      "p90": 32768.0
     }
   },
   "status_counts": {
-    "done": 43
+    "done": 38
   },
   "sub_bucket_count": 9,
   "sub_buckets": [
     {
       "count": 12,
-      "examples": [
-        {
-          "cmd": "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation --stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full_day.json --snapshot-period 60 --workers 4 --out cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.json --md-out cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.md",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/mine_code/CFCMT",
-          "description": "auto-adopted: CFCMT on local:CPU-only (4 procs)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "CFCMT",
-          "ram_mb": 10584,
-          "signature": "CFCMT/auto-adopted/p540371",
-          "status": "done",
-          "task_id": "t3756"
-        },
-        {
-          "cmd": "python3 -m pytest -s cf_h2o/tests/test_sumo_apc_avl_snapshot_generation.py cf_h2o/tests/test_sumo_apc_avl_sumo_generation.py -q",
-          "cpu_cores": 5,
-          "cwd": "/home/erzhu419/mine_code/CFCMT",
-          "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "CFCMT",
-          "ram_mb": 524,
-          "signature": "CFCMT/auto-adopted/p587036",
-          "status": "done",
-          "task_id": "t3757"
-        },
-        {
-          "cmd": "/home/erzhu419/.conda/envs/offline-sumo/bin/python /home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform/TSP_only/src/oracle/m21_cycle_conserving_tsp_runner.py --duration 18000 --seed 1 --backend libsumo --tls-program 120s --scoring-mode passenger_benefit --trigger-period 90 --max-distance 450 --requested-seconds 5 --min-score 5 --max-actions-per-trigger 12 --tls-cooldown 120 --bus-cooldown 90 --lambda-social 0.015 --lambda-signal 0.25 --lambda-fairness 0.35 --station-waiting-capacity-cap 50 --station-...",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1",
-          "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (3 procs)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "zsw_tsp_m0_gpu1",
-          "ram_mb": 769,
-          "signature": "zsw_tsp_m0_gpu1/auto-adopted/p8925",
-          "status": "done",
-          "task_id": "t4036"
-        },
-        {
-          "cmd": "/home/erzhu419/.conda/envs/offline-sumo/bin/python TSP_only/src/oracle/m21_cycle_conserving_tsp_runner.py --config /home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform/TSP_only/sumo_final_d1_s1_120s/base_d1_s1_120s.sumocfg --duration 18000 --backend libsumo --seed 3 --tls-program 120s --scoring-mode arrival_passenger_benefit --trigger-period 30 --downstream-stop-count 3 --station-waiting-delay-factor 2.0 --enable-line-headway-penalty --headway-penalty-mode scheduled --lambda-headway 80 --headway-targe...",
-          "cpu_cores": 3,
-          "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform",
-          "description": "auto-adopted: ZSW_platform on jtl110gpu:CPU-only (3 procs)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "ZSW_platform",
-          "ram_mb": 598,
-          "signature": "ZSW_platform/auto-adopted/p23313",
-          "status": "done",
-          "task_id": "t4137"
-        },
-        {
-          "cmd": "/home/erzhu419/.conda/envs/offline-sumo/bin/python TSP_only/src/oracle/m21_cycle_conserving_tsp_runner.py --config /home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform/TSP_only/sumo_final_d1_s1_120s/base_d1_s1_120s.sumocfg --duration 18000 --backend libsumo --seed 3 --tls-program 120s --scoring-mode arrival_passenger_benefit --trigger-period 30 --downstream-stop-count 3 --station-waiting-delay-factor 2.0 --enable-line-headway-penalty --headway-penalty-mode both --lambda-headway 80 --headway-target 0 -...",
-          "cpu_cores": 4,
-          "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform",
-          "description": "auto-adopted: ZSW_platform on jtl110gpu:CPU-only (4 procs)",
-          "eta_seconds": 0,
-          "eta_source": "runtime_history_fallback",
-          "project": "ZSW_platform",
-          "ram_mb": 824,
-          "signature": "ZSW_platform/auto-adopted/p13878",
-          "status": "done",
-          "task_id": "t4142"
-        }
-      ],
-      "fraction": 0.27906976744186046,
-      "project_counts": {
-        "CFCMT": 6,
-        "ZSW_platform": 5,
-        "zsw_tsp_m0_gpu1": 1
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          3,
-          4,
-          5
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 5.0,
-          "median": 3.5,
-          "min": 3.0,
-          "p90": 5.0
-        },
-        "ram_mb": {
-          "max": 10584.0,
-          "median": 658.5,
-          "min": 473.0,
-          "p90": 781.0
-        }
-      },
-      "signature_prefixes": {
-        "CFCMT/auto-adopted/p540371": 1,
-        "CFCMT/auto-adopted/p587036": 1,
-        "ZSW_platform/auto-adopted/p13878": 1,
-        "ZSW_platform/auto-adopted/p1852476": 1,
-        "ZSW_platform/auto-adopted/p20899": 1,
-        "ZSW_platform/auto-adopted/p23313": 1,
-        "ZSW_platform/auto-adopted/p23983": 1,
-        "zsw_tsp_m0_gpu1/auto-adopted/p8925": 1
-      },
-      "sub_bucket": "sumo_eval_cpu|c_3_8"
-    },
-    {
-      "count": 11,
       "examples": [
         {
           "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=transit_hrl python3 -m freq_hrl.experiments.trading.public_market_data --source csv --csv-files transit_hrl/data/public_market_yahoo/SPY.csv transit_hrl/data/public_market_yahoo/QQQ.csv transit_hrl/data/public_market_yahoo/IWM.csv --steps 1500 --output-dir transit_hrl/results/trading_public_market_yahoo_csv",
@@ -249,9 +125,9 @@
           "task_id": "t5136"
         }
       ],
-      "fraction": 0.2558139534883721,
+      "fraction": 0.3157894736842105,
       "project_counts": {
-        "TransitDuet": 11
+        "TransitDuet": 12
       },
       "recommended_probe_profiles": {
         "representative_cpu_cores_per_task": [
@@ -278,13 +154,13 @@
           "max": 5.0,
           "median": 4.0,
           "min": 3.0,
-          "p90": 5.0
+          "p90": 4.0
         },
         "ram_mb": {
           "max": 16000.0,
-          "median": 462.0,
+          "median": 474.0,
           "min": 37.0,
-          "p90": 16000.0
+          "p90": 625.0
         }
       },
       "signature_prefixes": {
@@ -298,6 +174,116 @@
         "TransitDuet/auto-adopted/p88184": 1
       },
       "sub_bucket": "transit_freqhrl_cpu_validation|c_3_8"
+    },
+    {
+      "count": 6,
+      "examples": [
+        {
+          "cmd": "bash -lc 'S=$((428 + 0)); E=$((428 + 14)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-end...",
+          "cpu_cores": 14,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 16000,
+          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+          "status": "done",
+          "task_id": "t9438"
+        },
+        {
+          "cmd": "bash -lc 'S=$((428 + 14)); E=$((428 + 28)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
+          "cpu_cores": 14,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 16000,
+          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+          "status": "done",
+          "task_id": "t9439"
+        },
+        {
+          "cmd": "bash -lc 'S=$((428 + 28)); E=$((428 + 42)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
+          "cpu_cores": 14,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 16000,
+          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+          "status": "done",
+          "task_id": "t9440"
+        },
+        {
+          "cmd": "bash -lc 'S=$((428 + 42)); E=$((428 + 56)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
+          "cpu_cores": 14,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 16000,
+          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+          "status": "done",
+          "task_id": "t9441"
+        },
+        {
+          "cmd": "bash -lc 'S=$((428 + 56)); E=$((428 + 70)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
+          "cpu_cores": 14,
+          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+          "eta_seconds": null,
+          "eta_source": null,
+          "project": "TransitDuet",
+          "ram_mb": 16000,
+          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+          "status": "done",
+          "task_id": "t9442"
+        }
+      ],
+      "fraction": 0.15789473684210525,
+      "project_counts": {
+        "TransitDuet": 6
+      },
+      "recommended_probe_profiles": {
+        "representative_cpu_cores_per_task": [
+          14
+        ],
+        "requires_progress_unit": true,
+        "suggested_units": [
+          "completed_seed",
+          "completed_episode",
+          "completed_eval_pair",
+          "completed_training_step"
+        ],
+        "task_concurrency_profiles": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "resource_summary": {
+        "cpu_cores": {
+          "max": 14.0,
+          "median": 14.0,
+          "min": 14.0,
+          "p90": 14.0
+        },
+        "ram_mb": {
+          "max": 16000.0,
+          "median": 16000.0,
+          "min": 16000.0,
+          "p90": 16000.0
+        }
+      },
+      "signature_prefixes": {
+        "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512": 6
+      },
+      "sub_bucket": "freqduet_cpu_ablation|c_9_16"
     },
     {
       "count": 6,
@@ -368,7 +354,7 @@
           "task_id": "t5234"
         }
       ],
-      "fraction": 0.13953488372093023,
+      "fraction": 0.15789473684210525,
       "project_counts": {
         "TransitDuet": 6
       },
@@ -483,7 +469,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.11627906976744186,
+      "fraction": 0.13157894736842105,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -558,7 +544,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.046511627906976744,
+      "fraction": 0.05263157894736842,
       "project_counts": {
         "python": 2
       },
@@ -629,7 +615,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.046511627906976744,
+      "fraction": 0.05263157894736842,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -702,7 +688,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.046511627906976744,
+      "fraction": 0.05263157894736842,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -774,7 +760,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.046511627906976744,
+      "fraction": 0.05263157894736842,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -833,7 +819,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.023255813953488372,
+      "fraction": 0.02631578947368421,
       "project_counts": {
         "BAMOR": 1
       },
@@ -877,8 +863,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781085137.369979,
-    "start_ts": 1778493137.369979,
+    "end_ts": 1781127037.1966736,
+    "start_ts": 1778535037.1966736,
     "window_days": 30.0
   }
 }

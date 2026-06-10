@@ -2765,6 +2765,155 @@ def test_module65_zsw_tsp_sumo_cle2_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module82_sumo_c3_8_completed_history_profile1(check, sch):
+    cfcmt_snapshot = {
+        "id": "cfcmt-snapshot-c3",
+        "project": "CFCMT",
+        "signature": "CFCMT/sumo_snapshot_generation/full_day",
+        "description": "CFCMT c3 snapshot generation",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 3,
+        "ram_mb": 2048,
+        "cwd": "/home/erzhu419/mine_code/CFCMT",
+        "cmd": (
+            "python3 -m cf_h2o.eval.sumo_apc_avl_snapshot_generation "
+            "--stage2-report cf_h2o/results/sumo_apc_avl_sumo_generation_full_day.json "
+            "--snapshot-period 60 --workers 4 --out out.json --md-out out.md"
+        ),
+    }
+    snapshot_cls = classify_record(cfcmt_snapshot, include_representative=False)
+    check("Module82 maps CFCMT c3_8 snapshot generation with parsed snapshot-window units",
+          snapshot_cls["workload_key"] == "cfcmt_snapshot_generation_c3_8_completed_history"
+          and snapshot_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(snapshot_cls["units"]), 1440.0),
+          diag=str(snapshot_cls))
+
+    cfcmt_pytest = dict(cfcmt_snapshot)
+    cfcmt_pytest["id"] = "cfcmt-pytest-c5"
+    cfcmt_pytest["cpu_cores"] = 5
+    cfcmt_pytest["cmd"] = (
+        "python3 -m pytest -q -s "
+        "cf_h2o/tests/test_sumo_apc_avl_sumo_generation.py "
+        "cf_h2o/tests/test_sumo_apc_avl_snapshot_generation.py "
+        "cf_h2o/tests/test_sumo_policy_rollout_validation.py"
+    )
+    pytest_cls = classify_record(cfcmt_pytest, include_representative=False)
+    check("Module82 keeps CFCMT pytest commands as completed pytest jobs",
+          pytest_cls["workload_key"] == "cfcmt_pytest_sumo_c3_8_completed_history"
+          and math.isclose(float(pytest_cls["units"]), 1.0),
+          diag=str(pytest_cls))
+
+    local_validation = dict(cfcmt_snapshot)
+    local_validation["id"] = "cfcmt-local-snapshot-validation"
+    local_validation["cmd"] = (
+        "python3 -m cf_h2o.eval.sumo_apc_avl_local_snapshot_validation "
+        "--stage3-report cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.json"
+    )
+    local_cls = classify_record(local_validation, include_representative=False)
+    check("Module82 does not overclaim CFCMT local snapshot validation as generation service",
+          local_cls["workload_key"] is None and local_cls["reason"] == "unmapped_cpu",
+          diag=str(local_cls))
+
+    cfcmt_phase1 = dict(cfcmt_snapshot)
+    cfcmt_phase1["id"] = "cfcmt-phase1-c3"
+    cfcmt_phase1["cmd"] = (
+        "python3 cf_h2o/eval/traffic_signal_sumo_phase1.py "
+        "--out cf_h2o/results/traffic_signal_sumo_phase1.json "
+        "--md-out cf_h2o/results/traffic_signal_sumo_phase1.md"
+    )
+    phase1_cls = classify_record(cfcmt_phase1, include_representative=False)
+    check("Module82 maps CFCMT c3_8 traffic signal phase1 as a singleton run",
+          phase1_cls["workload_key"] == "cfcmt_traffic_signal_phase1_c3_8_completed_history"
+          and math.isclose(float(phase1_cls["units"]), 1.0),
+          diag=str(phase1_cls))
+
+    zsw_m21 = {
+        "id": "zsw-m21-c3",
+        "project": "ZSW_platform",
+        "signature": "ZSW_platform/auto-adopted/p4143",
+        "description": "ZSW M21 SUMO runner",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 3,
+        "ram_mb": 4096,
+        "cwd": "/home/erzhu419/zsw_tsp_m0_gpu1/ZSW_platform",
+        "cmd": (
+            "python TSP_only/src/oracle/m21_cycle_conserving_tsp_runner.py "
+            "--config cfg.sumocfg --duration 18000 --backend libsumo --seed 1 "
+            "--tls-program 120s --output out.json"
+        ),
+    }
+    zsw_cls = classify_record(zsw_m21, include_representative=False)
+    check("Module82 maps ZSW c3_8 M21 runner with parsed simulated-second units",
+          zsw_cls["workload_key"] == "zsw_m21_sumo_eval_c3_8_completed_history"
+          and math.isclose(float(zsw_cls["units"]), 18000.0),
+          diag=str(zsw_cls))
+
+    zsw_baseline = dict(zsw_m21)
+    zsw_baseline["id"] = "zsw-baseline-c3"
+    zsw_baseline["cmd"] = (
+        "python TSP_only/src/oracle/baseline_runner.py "
+        "--config cfg.sumocfg --duration 18000 --backend libsumo --seed 1"
+    )
+    baseline_cls = classify_record(zsw_baseline, include_representative=False)
+    check("Module82 does not claim c3_8 ZSW baseline runner under the M21 certificate",
+          baseline_cls["workload_key"] is None and baseline_cls["reason"] == "unmapped_cpu",
+          diag=str(baseline_cls))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "cfcmt_snapshot_generation_c3_8_completed_history": 0.2970079403825724,
+        "cfcmt_pytest_sumo_c3_8_completed_history": 0.013694243816873444,
+        "cfcmt_traffic_signal_phase1_c3_8_completed_history": 0.012971997531540368,
+        "zsw_m21_sumo_eval_c3_8_completed_history": 7.269619811924874,
+    }
+    cache_ok = True
+    cache_diag = {}
+    for key, rate in expected_rates.items():
+        profiles = cache.profiles(key)
+        cache_diag[key] = [record.snapshot() for record in profiles]
+        cache_ok = (
+            cache_ok
+            and [record.profile for record in profiles] == [1]
+            and math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+        )
+    check("Module82 service cache exposes four profile1 completed-history lower services",
+          cache_ok,
+          diag=str(cache_diag))
+
+    tasksets = {
+        "production_cfcmt_snapshot_generation_c3_8_completed_history",
+        "production_cfcmt_pytest_sumo_c3_8_completed_history",
+        "production_cfcmt_traffic_signal_phase1_c3_8_completed_history",
+        "production_zsw_m21_sumo_eval_c3_8_completed_history",
+    }
+    check("Module82 tasksets are included in the default production certificate",
+          tasksets.issubset(set(DEFAULT_TASKSETS)),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[cfcmt_snapshot, cfcmt_pytest, cfcmt_phase1, zsw_m21],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=tuple(sorted(tasksets)),
+    )
+    check("production load certificate certifies Module82 c3_8 SUMO sub-slices",
+          report["mapped_counts"] == {
+              "cfcmt_snapshot_generation_c3_8_completed_history": 1,
+              "cfcmt_pytest_sumo_c3_8_completed_history": 1,
+              "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
+              "zsw_m21_sumo_eval_c3_8_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["cfcmt_snapshot_generation_c3_8_completed_history"], 1440.0)
+          and math.isclose(report["mapped_units"]["zsw_m21_sumo_eval_c3_8_completed_history"], 18000.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
     row = {
         "id": "simple-sumo",

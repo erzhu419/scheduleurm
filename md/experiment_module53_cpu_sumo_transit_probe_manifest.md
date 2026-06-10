@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module81
+## Status After Module82
 
 The original top sub-bucket was:
 
@@ -341,16 +341,26 @@ FreqDuet `runner_v3.py` records inside c33_64:
 freqduet_runner_v3_c33_64_completed_history: completed_active = 15, raw_history_all = 32, unit = episode, min = 0.028461965 episode/s
 ```
 
+Module82 measured completed-history profile-1 lower-service points for the
+previous `sumo_eval_cpu|c_3_8` blocker:
+
+```text
+cfcmt_snapshot_generation_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = snapshot_window, min = 0.297007940 snapshot-window/s
+cfcmt_pytest_sumo_c3_8_completed_history: completed_active = 4, raw_history_all = 4, unit = pytest_job, min = 0.013694244 pytest-job/s
+cfcmt_traffic_signal_phase1_c3_8_completed_history: completed_active = 1, raw_history_all = 1, unit = phase1_run, min = 0.012971998 phase1-run/s
+zsw_m21_sumo_eval_c3_8_completed_history: completed_active = 6, raw_history_all = 6, unit = sim_second, min = 7.269619812 sim-second/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 43
-cpu_cores median = 4
+record_count = 38
+cpu_cores median = 14
 cpu_cores p90 = 37
 cpu_cores max = 61
-ram_mb median = 625.000
-ram_mb p90 = 16000
+ram_mb median = 1073.500
+ram_mb p90 = 32768
 ram_mb max = 64000
 theorem_status = measurement_required
 ```
@@ -359,24 +369,24 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `sumo_eval_cpu|c_3_8` | 12 | 0.279070 |
-| `transit_freqhrl_cpu_validation|c_3_8` | 11 | 0.255814 |
-| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.139535 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.116279 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.046512 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.046512 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.046512 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.046512 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.023256 |
+| `transit_freqhrl_cpu_validation|c_3_8` | 12 | 0.315789 |
+| `freqduet_cpu_ablation|c_9_16` | 6 | 0.157895 |
+| `transit_freqhrl_cpu_validation|c_17_32` | 6 | 0.157895 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.131579 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.052632 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.052632 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.052632 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.052632 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.026316 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
+freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
@@ -446,8 +456,12 @@ training-step completed-history service classes.
 Module81 closes the direct-runner portion of the previous
 `freqduet_cpu_ablation|c_33_64` blocker by mapping c33_64 FreqDuet
 `runner_v3.py` commands to a separate episode completed-history service class.
-The global theorem remains open because 43 completed/active production records
+Module82 closes the previous `sumo_eval_cpu|c_3_8` first-probe blocker by
+splitting it into CFCMT snapshot generation, CFCMT SUMO/traffic pytest, CFCMT
+traffic-signal phase1, and ZSW M21 completed-history service classes.  It does
+not claim CFCMT local snapshot validation or non-M21 ZSW c3_8 command shapes.
+The global theorem remains open because 38 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 12 `sumo_eval_cpu|c_3_8` records, 11
-`transit_freqhrl_cpu_validation|c_3_8` records, and 6
-`transit_freqhrl_cpu_validation|c_17_32` records.
+certificates, led by 12 `transit_freqhrl_cpu_validation|c_3_8` records, 6
+`transit_freqhrl_cpu_validation|c_17_32` records, 6
+`freqduet_cpu_ablation|c_9_16` records, and 5 `sumo_eval_cpu|c_33_64` records.

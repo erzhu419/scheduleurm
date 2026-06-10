@@ -1,36 +1,14 @@
 {
   "completed_active_production_obligations": {
-    "mapped_count": 2679,
-    "mapped_fraction": 0.865589660743134,
-    "measurement_required_count": 416,
-    "record_count": 3095,
+    "mapped_count": 2717,
+    "mapped_fraction": 0.8663903061224489,
+    "measurement_required_count": 419,
+    "record_count": 3136,
     "top_buckets": [
       {
         "bucket": "hybrid_rl_resac_ant",
-        "count": 820,
+        "count": 819,
         "examples": [
-          {
-            "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 4,
-            "description": "scheduler-heal resubmit after misclassified OOM (was CUDA init failure)",
-            "est_vram_mb": 1200,
-            "project": "RE-SAC",
-            "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/b4/sens_ema_0.05_Ant-v2_16",
-            "status": "done",
-            "task_id": "t2910"
-          },
-          {
-            "bucket": "hybrid_rl_resac_ant",
-            "cpu_cores": 2,
-            "description": "b4 sens_betaend_0.0_Ant-v2_24 (heal reroute from local OOM)",
-            "est_vram_mb": 1200,
-            "project": "RE-SAC",
-            "reason": "gpu_rl_representative",
-            "signature": "RE-SAC/b4/sens_betaend_0.0_Ant-v2_24",
-            "status": "done",
-            "task_id": "t2911"
-          },
           {
             "bucket": "hybrid_rl_resac_ant",
             "cpu_cores": 1,
@@ -63,14 +41,36 @@
             "signature": "RE-SAC/b4/sens_anchor_0.001_HalfCheetah-v2_24",
             "status": "done",
             "task_id": "t2992"
+          },
+          {
+            "bucket": "hybrid_rl_resac_ant",
+            "cpu_cores": 4,
+            "description": "RE-SAC b4 sens_anchor_0.01 Ant-v2 seed24 (corrected full command after --stat truncation)",
+            "est_vram_mb": 1500,
+            "project": "RE-SAC",
+            "reason": "gpu_rl_representative",
+            "signature": "RE-SAC/b4/sens_anchor_0.01_Ant-v2_24",
+            "status": "done",
+            "task_id": "t3053"
+          },
+          {
+            "bucket": "hybrid_rl_resac_ant",
+            "cpu_cores": 2,
+            "description": "RE-SAC sens_betaend_-1.0 Ant-v2 s24 (rerouted from local OOM)",
+            "est_vram_mb": 1100,
+            "project": "RE-SAC",
+            "reason": "gpu_rl_representative",
+            "signature": "RE-SAC/b4/sens_betaend_-1.0_Ant-v2_24",
+            "status": "done",
+            "task_id": "t2993"
           }
         ],
-        "fraction_of_completed_active_production": 0.2649434571890145,
+        "fraction_of_completed_active_production": 0.2611607142857143,
         "status": "mapped",
         "top_projects": {
-          "BAPR": 147,
-          "CS-BAPR": 18,
-          "RE-SAC": 210,
+          "BAPR": 146,
+          "CS-BAPR": 20,
+          "RE-SAC": 208,
           "RE-SAC-JMLR": 340,
           "bapr_v15": 103,
           "sensing-compressibility-v10k": 2
@@ -146,7 +146,7 @@
             "task_id": "t7988"
           }
         ],
-        "fraction_of_completed_active_production": 0.10565428109854604,
+        "fraction_of_completed_active_production": 0.10427295918367346,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 327
@@ -217,7 +217,7 @@
             "task_id": "t5052"
           }
         ],
-        "fraction_of_completed_active_production": 0.06526655896607432,
+        "fraction_of_completed_active_production": 0.06441326530612244,
         "status": "mapped",
         "top_projects": {
           "BAPR": 165,
@@ -240,7 +240,7 @@
       },
       {
         "bucket": "freqduet_cpu_ablation_c17_32",
-        "count": 173,
+        "count": 172,
         "examples": [
           {
             "bucket": "freqduet_cpu_ablation_c17_32",
@@ -298,10 +298,10 @@
             "task_id": "t5140"
           }
         ],
-        "fraction_of_completed_active_production": 0.055896607431340874,
+        "fraction_of_completed_active_production": 0.0548469387755102,
         "status": "mapped",
         "top_projects": {
-          "FreqDuet": 130,
+          "FreqDuet": 129,
           "TransitDuet": 7,
           "freqduet": 36
         },
@@ -318,7 +318,7 @@
       },
       {
         "bucket": "generic_cpu_python",
-        "count": 145,
+        "count": 152,
         "examples": [
           {
             "bucket": "generic_cpu_python",
@@ -376,10 +376,10 @@
             "task_id": "t3442"
           }
         ],
-        "fraction_of_completed_active_production": 0.046849757673667204,
+        "fraction_of_completed_active_production": 0.04846938775510204,
         "status": "measurement_required",
         "top_projects": {
-          "Asumption Agent": 45,
+          "Asumption Agent": 52,
           "CFCMT": 11,
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1,
           "RE-SAC": 81,
@@ -399,7 +399,7 @@
       },
       {
         "bucket": "freqduet_cpu_ablation_c9_16",
-        "count": 116,
+        "count": 122,
         "examples": [
           {
             "bucket": "freqduet_cpu_ablation_c9_16",
@@ -457,10 +457,10 @@
             "task_id": "t5297"
           }
         ],
-        "fraction_of_completed_active_production": 0.037479806138933765,
+        "fraction_of_completed_active_production": 0.0389030612244898,
         "status": "mapped",
         "top_projects": {
-          "FreqDuet": 96,
+          "FreqDuet": 102,
           "TransitDuet": 19,
           "freqduet": 1
         },
@@ -477,7 +477,7 @@
       },
       {
         "bucket": "transit_native_promotion_c17_32_seedrange_completed_history",
-        "count": 102,
+        "count": 104,
         "examples": [
           {
             "bucket": "transit_native_promotion_c17_32_seedrange_completed_history",
@@ -535,10 +535,10 @@
             "task_id": "t7277"
           }
         ],
-        "fraction_of_completed_active_production": 0.03295638126009693,
+        "fraction_of_completed_active_production": 0.03316326530612245,
         "status": "mapped",
         "top_projects": {
-          "TransitDuet": 102
+          "TransitDuet": 104
         },
         "top_signature_prefixes": {
           "TransitDuet/auto-adopted/p59411": 1,
@@ -553,7 +553,7 @@
       },
       {
         "bucket": "freqduet_runner_v3_c_le2_completed_history",
-        "count": 88,
+        "count": 90,
         "examples": [
           {
             "bucket": "freqduet_runner_v3_c_le2_completed_history",
@@ -611,11 +611,11 @@
             "task_id": "t4859"
           }
         ],
-        "fraction_of_completed_active_production": 0.028432956381260095,
+        "fraction_of_completed_active_production": 0.028698979591836735,
         "status": "mapped",
         "top_projects": {
           "freq_transitduet": 3,
-          "freqduet": 85
+          "freqduet": 87
         },
         "top_signature_prefixes": {
           "freqduet/auto-adopted/p2075998": 1,
@@ -630,7 +630,7 @@
       },
       {
         "bucket": "freqduet_runner_v3_c3_8_completed_history",
-        "count": 86,
+        "count": 87,
         "examples": [
           {
             "bucket": "freqduet_runner_v3_c3_8_completed_history",
@@ -688,10 +688,10 @@
             "task_id": "t4844"
           }
         ],
-        "fraction_of_completed_active_production": 0.02778675282714055,
+        "fraction_of_completed_active_production": 0.02774234693877551,
         "status": "mapped",
         "top_projects": {
-          "freqduet": 86
+          "freqduet": 87
         },
         "top_signature_prefixes": {
           "freqduet/auto-adopted/p1858447": 1,
@@ -764,7 +764,7 @@
             "task_id": "t3700"
           }
         ],
-        "fraction_of_completed_active_production": 0.026494345718901455,
+        "fraction_of_completed_active_production": 0.02614795918367347,
         "status": "measurement_required",
         "top_projects": {
           "Asumption Agent": 19,
@@ -843,7 +843,7 @@
             "task_id": "t3489"
           }
         ],
-        "fraction_of_completed_active_production": 0.024878836833602584,
+        "fraction_of_completed_active_production": 0.024553571428571428,
         "status": "measurement_required",
         "top_projects": {
           "RE-SAC": 72,
@@ -858,6 +858,83 @@
           "RE-SAC/review5/sens_anchor_0_HalfCheetah-v2_32": 1,
           "RE-SAC/review5/sens_betaend_-1.5_HalfCheetah-v2_40": 1,
           "RE-SAC/review5/sens_ratio_0.75_HalfCheetah-v2_40": 1
+        }
+      },
+      {
+        "bucket": "transit_native_promotion_c65p_completed_history",
+        "count": 77,
+        "examples": [
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 71,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6688"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 99,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6689"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6690"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6691"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6692"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.024553571428571428,
+        "status": "mapped",
+        "top_projects": {
+          "FreqHRLNative": 21,
+          "TransitDuet": 56
+        },
+        "top_signature_prefixes": {
+          "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-512seed-py310-v8": 5,
+          "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5": 6,
+          "FreqHRLNative/native-promotion-persistent-stress-samewait812-512seed-py310-v7": 4,
+          "FreqHRLNative/native-promotion-persistent-stress-tightgapcap-512seed-py310-v6": 6,
+          "freq-hrl-native-promotion-v40-promotion-confirmed-wait-credit-512seed": 6,
+          "freq-hrl-native-promotion-v41-risk-banded-wait-credit-512seed": 6,
+          "freq-hrl-native-promotion-v42-odshift-512seed": 6,
+          "freq-hrl-native-promotion-v42-risk-banded-delta-floor-512seed": 6
         }
       },
       {
@@ -920,7 +997,7 @@
             "task_id": "t6040"
           }
         ],
-        "fraction_of_completed_active_production": 0.02358642972536349,
+        "fraction_of_completed_active_production": 0.023278061224489797,
         "status": "mapped",
         "top_projects": {
           "FreqHRL": 27,
@@ -999,7 +1076,7 @@
             "task_id": "t5355"
           }
         ],
-        "fraction_of_completed_active_production": 0.020355411954765753,
+        "fraction_of_completed_active_production": 0.020089285714285716,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 54,
@@ -1077,7 +1154,7 @@
             "task_id": "t7546"
           }
         ],
-        "fraction_of_completed_active_production": 0.018739903069466882,
+        "fraction_of_completed_active_production": 0.018494897959183673,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 58
@@ -1095,7 +1172,7 @@
       },
       {
         "bucket": "scheduler_control_plane",
-        "count": 55,
+        "count": 56,
         "examples": [
           {
             "bucket": "scheduler_control_plane",
@@ -1153,11 +1230,11 @@
             "task_id": "t8099"
           }
         ],
-        "fraction_of_completed_active_production": 0.017770597738287562,
+        "fraction_of_completed_active_production": 0.017857142857142856,
         "status": "measurement_required",
         "top_projects": {
           "sched-hpc-e2e-20260522-214808-175687": 1,
-          "scheduleurm": 54
+          "scheduleurm": 55
         },
         "top_signature_prefixes": {
           "scheduleurm/auto-adopted/p257828": 1,
@@ -1168,6 +1245,83 @@
           "scheduleurm/auto-adopted/p423313": 1,
           "scheduleurm/auto-adopted/p423316": 1,
           "smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687": 1
+        }
+      },
+      {
+        "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+        "count": 53,
+        "examples": [
+          {
+            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+            "cpu_cores": 16,
+            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part0 fixed4",
+            "est_vram_mb": 0,
+            "project": "FreqHRL",
+            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
+            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part0_fixed4",
+            "status": "done",
+            "task_id": "t6515"
+          },
+          {
+            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+            "cpu_cores": 16,
+            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part1 fixed4",
+            "est_vram_mb": 0,
+            "project": "FreqHRL",
+            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
+            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part1_fixed4",
+            "status": "done",
+            "task_id": "t6516"
+          },
+          {
+            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+            "cpu_cores": 16,
+            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part2 fixed4",
+            "est_vram_mb": 0,
+            "project": "FreqHRL",
+            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
+            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part2_fixed4",
+            "status": "done",
+            "task_id": "t6517"
+          },
+          {
+            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+            "cpu_cores": 16,
+            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part3 fixed4",
+            "est_vram_mb": 0,
+            "project": "FreqHRL",
+            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
+            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part3_fixed4",
+            "status": "done",
+            "task_id": "t6518"
+          },
+          {
+            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
+            "cpu_cores": 16,
+            "description": "Freq-HRL native promotion projected target v16 2048-seed shard node001 0-342",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
+            "signature": "TransitDuet/native-promotion-projected-target-v16-2048-node001-0-342-w16",
+            "status": "done",
+            "task_id": "t7158"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.016900510204081634,
+        "status": "mapped",
+        "top_projects": {
+          "FreqHRL": 4,
+          "TransitDuet": 49
+        },
+        "top_signature_prefixes": {
+          "TransitDuet/native-promotion-projected-target-v16-2048-node001-0-342-w16": 1,
+          "TransitDuet/native-promotion-projected-target-v16-2048-node002-342-684-w16": 1,
+          "TransitDuet/native-promotion-projected-target-v16-2048-node003-684-1025-w16": 1,
+          "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0000-0086": 6,
+          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part0_fixed4": 1,
+          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part1_fixed4": 1,
+          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part2_fixed4": 1,
+          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part3_fixed4": 1
         }
       },
       {
@@ -1230,7 +1384,7 @@
             "task_id": "t3895"
           }
         ],
-        "fraction_of_completed_active_production": 0.01615508885298869,
+        "fraction_of_completed_active_production": 0.01594387755102041,
         "status": "mapped",
         "top_projects": {
           "ZSW_platform": 36,
@@ -1245,242 +1399,6 @@
           "zsw_tsp_m0_gpu1/auto-adopted/p3882": 1,
           "zsw_tsp_m0_gpu1/auto-adopted/p5332": 1,
           "zsw_tsp_m0_gpu1/auto-adopted/p8617": 1
-        }
-      },
-      {
-        "bucket": "transit_native_promotion_c65p_completed_history",
-        "count": 49,
-        "examples": [
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 71,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6688"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 99,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6689"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6690"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6691"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6692"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.015831987075928918,
-        "status": "mapped",
-        "top_projects": {
-          "FreqHRLNative": 21,
-          "TransitDuet": 28
-        },
-        "top_signature_prefixes": {
-          "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-512seed-py310-v8": 5,
-          "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5": 6,
-          "FreqHRLNative/native-promotion-persistent-stress-samewait812-512seed-py310-v7": 4,
-          "FreqHRLNative/native-promotion-persistent-stress-tightgapcap-512seed-py310-v6": 6,
-          "TransitDuet/native-promotion-v12-direct-node002-64-168": 1,
-          "TransitDuet/native-promotion-v12-direct-node003-168-272": 1,
-          "TransitDuet/native-promotion-v12-direct-node004-272-352": 1,
-          "TransitDuet/native-promotion-v12-direct-node005-352-432": 1
-        }
-      },
-      {
-        "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-        "count": 47,
-        "examples": [
-          {
-            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-            "cpu_cores": 16,
-            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part0 fixed4",
-            "est_vram_mb": 0,
-            "project": "FreqHRL",
-            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
-            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part0_fixed4",
-            "status": "done",
-            "task_id": "t6515"
-          },
-          {
-            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-            "cpu_cores": 16,
-            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part1 fixed4",
-            "est_vram_mb": 0,
-            "project": "FreqHRL",
-            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
-            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part1_fixed4",
-            "status": "done",
-            "task_id": "t6516"
-          },
-          {
-            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-            "cpu_cores": 16,
-            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part2 fixed4",
-            "est_vram_mb": 0,
-            "project": "FreqHRL",
-            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
-            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part2_fixed4",
-            "status": "done",
-            "task_id": "t6517"
-          },
-          {
-            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-            "cpu_cores": 16,
-            "description": "Freq-HRL native learned wait replan nocap 1024 shard4 part3 fixed4",
-            "est_vram_mb": 0,
-            "project": "FreqHRL",
-            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
-            "signature": "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part3_fixed4",
-            "status": "done",
-            "task_id": "t6518"
-          },
-          {
-            "bucket": "transit_native_promotion_c9_16_residual_completed_history",
-            "cpu_cores": 16,
-            "description": "Freq-HRL native promotion projected target v16 2048-seed shard node001 0-342",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module71_transit_native_promotion_c9_16_residual_completed_history",
-            "signature": "TransitDuet/native-promotion-projected-target-v16-2048-node001-0-342-w16",
-            "status": "done",
-            "task_id": "t7158"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.01518578352180937,
-        "status": "mapped",
-        "top_projects": {
-          "FreqHRL": 4,
-          "TransitDuet": 43
-        },
-        "top_signature_prefixes": {
-          "TransitDuet/native-promotion-projected-target-v16-2048-node001-0-342-w16": 1,
-          "TransitDuet/native-promotion-projected-target-v16-2048-node002-342-684-w16": 1,
-          "TransitDuet/native-promotion-projected-target-v16-2048-node003-684-1025-w16": 1,
-          "TransitDuet/native-promotion-projected-target-v16-2048-node004-1025-1366-w16": 1,
-          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part0_fixed4": 1,
-          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part1_fixed4": 1,
-          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part2_fixed4": 1,
-          "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32_shard4_part3_fixed4": 1
-        }
-      },
-      {
-        "bucket": "cpu_sumo_transit_eval_or_control",
-        "count": 43,
-        "examples": [
-          {
-            "bucket": "cpu_sumo_transit_eval_or_control",
-            "cpu_cores": 37,
-            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [242,316)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "unmapped_cpu",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split0",
-            "status": "done",
-            "task_id": "t3182"
-          },
-          {
-            "bucket": "cpu_sumo_transit_eval_or_control",
-            "cpu_cores": 37,
-            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [316,390)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "unmapped_cpu",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split1",
-            "status": "done",
-            "task_id": "t3183"
-          },
-          {
-            "bucket": "cpu_sumo_transit_eval_or_control",
-            "cpu_cores": 37,
-            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [242,316)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "unmapped_cpu",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0",
-            "status": "done",
-            "task_id": "t3184"
-          },
-          {
-            "bucket": "cpu_sumo_transit_eval_or_control",
-            "cpu_cores": 37,
-            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [316,390)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "unmapped_cpu",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1",
-            "status": "done",
-            "task_id": "t3185"
-          },
-          {
-            "bucket": "cpu_sumo_transit_eval_or_control",
-            "cpu_cores": 37,
-            "description": "offline-sumo E10 WSRL/RLPD rerun flat jtl110cpu continue [0,242)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "unmapped_cpu",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu-continue",
-            "status": "done",
-            "task_id": "t3186"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.013893376413570274,
-        "status": "measurement_required",
-        "top_projects": {
-          "BAMOR": 1,
-          "CFCMT": 6,
-          "TransitDuet": 23,
-          "ZSW_platform": 5,
-          "offline-sumo": 5,
-          "python": 2,
-          "zsw_tsp_m0_gpu1": 1
-        },
-        "top_signature_prefixes": {
-          "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds": 2,
-          "TransitDuet/freq-hrl-gap-closure-ppo-v4-windows-seeds": 2,
-          "offline-sumo/e10-rerun-flat/jtl110cpu-continue": 1,
-          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0": 1,
-          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1": 1,
-          "offline-sumo/e10-rerun-flat/jtl110cpu2-split0": 1,
-          "offline-sumo/e10-rerun-flat/jtl110cpu2-split1": 1,
-          "python/auto-adopted/p423895": 2
         }
       },
       {
@@ -1543,7 +1461,7 @@
             "task_id": "t4983"
           }
         ],
-        "fraction_of_completed_active_production": 0.012924071082390954,
+        "fraction_of_completed_active_production": 0.012755102040816327,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 1,
@@ -1560,6 +1478,85 @@
           "FreqDuet/highnoise_interface_diag_20260531/jtl110cpu2": 1,
           "freqduet/auto-adopted/p2061366": 1,
           "freqduet/auto-adopted/p2913509": 1
+        }
+      },
+      {
+        "bucket": "cpu_sumo_transit_eval_or_control",
+        "count": 38,
+        "examples": [
+          {
+            "bucket": "cpu_sumo_transit_eval_or_control",
+            "cpu_cores": 37,
+            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [242,316)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "unmapped_cpu",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split0",
+            "status": "done",
+            "task_id": "t3182"
+          },
+          {
+            "bucket": "cpu_sumo_transit_eval_or_control",
+            "cpu_cores": 37,
+            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 split [316,390)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "unmapped_cpu",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-split1",
+            "status": "done",
+            "task_id": "t3183"
+          },
+          {
+            "bucket": "cpu_sumo_transit_eval_or_control",
+            "cpu_cores": 37,
+            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [242,316)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "unmapped_cpu",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0",
+            "status": "done",
+            "task_id": "t3184"
+          },
+          {
+            "bucket": "cpu_sumo_transit_eval_or_control",
+            "cpu_cores": 37,
+            "description": "offline-sumo E10 RLPD rerun flat jtl110cpu2 fix [316,390)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "unmapped_cpu",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1",
+            "status": "done",
+            "task_id": "t3185"
+          },
+          {
+            "bucket": "cpu_sumo_transit_eval_or_control",
+            "cpu_cores": 37,
+            "description": "offline-sumo E10 WSRL/RLPD rerun flat jtl110cpu continue [0,242)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "unmapped_cpu",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu-continue",
+            "status": "done",
+            "task_id": "t3186"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.01211734693877551,
+        "status": "measurement_required",
+        "top_projects": {
+          "BAMOR": 1,
+          "TransitDuet": 30,
+          "offline-sumo": 5,
+          "python": 2
+        },
+        "top_signature_prefixes": {
+          "TransitDuet/freq-hrl-demand-estimator-v4-windows-seeds": 2,
+          "TransitDuet/freq-hrl-gap-closure-ppo-v4-windows-seeds": 2,
+          "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512": 6,
+          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0": 1,
+          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix1": 1,
+          "offline-sumo/e10-rerun-flat/jtl110cpu2-split0": 1,
+          "offline-sumo/e10-rerun-flat/jtl110cpu2-split1": 1,
+          "python/auto-adopted/p423895": 2
         }
       },
       {
@@ -1622,7 +1619,7 @@
             "task_id": "t7643"
           }
         ],
-        "fraction_of_completed_active_production": 0.01098546042003231,
+        "fraction_of_completed_active_production": 0.010841836734693877,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 34
@@ -1698,7 +1695,7 @@
             "task_id": "t7639"
           }
         ],
-        "fraction_of_completed_active_production": 0.008077544426494346,
+        "fraction_of_completed_active_production": 0.007971938775510204,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 25
@@ -1774,7 +1771,7 @@
             "task_id": "t5319"
           }
         ],
-        "fraction_of_completed_active_production": 0.006138933764135703,
+        "fraction_of_completed_active_production": 0.006058673469387755,
         "status": "mapped",
         "top_projects": {
           "FreqHRLNative": 1,
@@ -1789,82 +1786,6 @@
           "TransitDuet/auto-adopted/p671745": 1,
           "TransitDuet/auto-adopted/p685839": 1,
           "TransitDuet/auto-adopted/p700242": 1
-        }
-      },
-      {
-        "bucket": "sumo_eval_simple_sac_c_le2",
-        "count": 18,
-        "examples": [
-          {
-            "bucket": "sumo_eval_simple_sac_c_le2",
-            "cpu_cores": 2,
-            "description": "R3 nosnap eval gated: rlpd_nosnap_s42 sumo1001 od0.6",
-            "est_vram_mb": 0,
-            "project": "SimpleSAC",
-            "reason": "module59_simple_sac_sumo_eval_c_le2_completed_history",
-            "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.6",
-            "status": "done",
-            "task_id": "t2873"
-          },
-          {
-            "bucket": "sumo_eval_simple_sac_c_le2",
-            "cpu_cores": 2,
-            "description": "R3 nosnap eval gated: rlpd_nosnap_s42 sumo1001 od0.8",
-            "est_vram_mb": 0,
-            "project": "SimpleSAC",
-            "reason": "module59_simple_sac_sumo_eval_c_le2_completed_history",
-            "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.8",
-            "status": "done",
-            "task_id": "t2874"
-          },
-          {
-            "bucket": "sumo_eval_simple_sac_c_le2",
-            "cpu_cores": 2,
-            "description": "R3 nosnap eval gated: rlpd_nosnap_s42 sumo1001 od1.0",
-            "est_vram_mb": 0,
-            "project": "SimpleSAC",
-            "reason": "module59_simple_sac_sumo_eval_c_le2_completed_history",
-            "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od1.0",
-            "status": "done",
-            "task_id": "t2875"
-          },
-          {
-            "bucket": "sumo_eval_simple_sac_c_le2",
-            "cpu_cores": 2,
-            "description": "R3 nosnap eval gated: rlpd_nosnap_s42 sumo1002 od0.6",
-            "est_vram_mb": 0,
-            "project": "SimpleSAC",
-            "reason": "module59_simple_sac_sumo_eval_c_le2_completed_history",
-            "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.6",
-            "status": "done",
-            "task_id": "t2876"
-          },
-          {
-            "bucket": "sumo_eval_simple_sac_c_le2",
-            "cpu_cores": 2,
-            "description": "R3 nosnap eval gated: rlpd_nosnap_s42 sumo1002 od0.8",
-            "est_vram_mb": 0,
-            "project": "SimpleSAC",
-            "reason": "module59_simple_sac_sumo_eval_c_le2_completed_history",
-            "signature": "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.8",
-            "status": "done",
-            "task_id": "t2877"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.005815831987075929,
-        "status": "mapped",
-        "top_projects": {
-          "SimpleSAC": 18
-        },
-        "top_signature_prefixes": {
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.6": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od0.8": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1001_od1.0": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.6": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od0.8": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1002_od1.0": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.6": 1,
-          "H2Oplus/r3_eval_nosnap_rlpd_nosnap_s42_s1003_od0.8": 1
         }
       },
       {
@@ -1927,7 +1848,7 @@
             "task_id": "t5117"
           }
         ],
-        "fraction_of_completed_active_production": 0.005815831987075929,
+        "fraction_of_completed_active_production": 0.005739795918367347,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 18
@@ -1941,6 +1862,82 @@
           "TransitDuet/auto-adopted/p4194280": 1,
           "TransitDuet/auto-adopted/p50951": 1,
           "TransitDuet/auto-adopted/p52474": 1
+        }
+      },
+      {
+        "bucket": "bamor_mujoco_c_le2_completed_history",
+        "count": 17,
+        "examples": [
+          {
+            "bucket": "bamor_mujoco_c_le2_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: BAMOR on local:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module77_bamor_mujoco_c_le2_completed_history",
+            "signature": "BAMOR/auto-adopted/p4008305",
+            "status": "done",
+            "task_id": "t7935"
+          },
+          {
+            "bucket": "bamor_mujoco_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: BAMOR on local:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module77_bamor_mujoco_c_le2_completed_history",
+            "signature": "BAMOR/auto-adopted/p4011489",
+            "status": "done",
+            "task_id": "t7936"
+          },
+          {
+            "bucket": "bamor_mujoco_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module77_bamor_mujoco_c_le2_completed_history",
+            "signature": "BAMOR/auto-adopted/p4014901",
+            "status": "done",
+            "task_id": "t7938"
+          },
+          {
+            "bucket": "bamor_mujoco_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module77_bamor_mujoco_c_le2_completed_history",
+            "signature": "BAMOR/auto-adopted/p4016719",
+            "status": "done",
+            "task_id": "t7945"
+          },
+          {
+            "bucket": "bamor_mujoco_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "BAMOR",
+            "reason": "module77_bamor_mujoco_c_le2_completed_history",
+            "signature": "BAMOR/auto-adopted/p4021546",
+            "status": "done",
+            "task_id": "t7952"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.005420918367346939,
+        "status": "mapped",
+        "top_projects": {
+          "BAMOR": 17
+        },
+        "top_signature_prefixes": {
+          "BAMOR/auto-adopted/p4008305": 1,
+          "BAMOR/auto-adopted/p4011489": 1,
+          "BAMOR/auto-adopted/p4014901": 1,
+          "BAMOR/auto-adopted/p4016719": 1,
+          "BAMOR/auto-adopted/p4021546": 1,
+          "BAMOR/auto-adopted/p4023047": 1,
+          "BAMOR/auto-adopted/p4028371": 1,
+          "BAMOR/auto-adopted/p4030174": 1
         }
       },
       {
@@ -2003,7 +2000,7 @@
             "task_id": "t5392"
           }
         ],
-        "fraction_of_completed_active_production": 0.005169628432956382,
+        "fraction_of_completed_active_production": 0.00510204081632653,
         "status": "mapped",
         "top_projects": {
           "freqduet": 16
@@ -2079,7 +2076,7 @@
             "task_id": "t5917"
           }
         ],
-        "fraction_of_completed_active_production": 0.005169628432956382,
+        "fraction_of_completed_active_production": 0.00510204081632653,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 16
@@ -2093,82 +2090,6 @@
           "FreqDuet/paper-longtrain-current-200ep-direct-r2/node005_s10": 1,
           "FreqDuet/paper-longtrain-current-200ep-direct-r2/node005_s4": 1,
           "FreqDuet/paper-longtrain-current-200ep-direct-r2/node006_s5": 1
-        }
-      },
-      {
-        "bucket": "bamor_mujoco_c_le2_completed_history",
-        "count": 16,
-        "examples": [
-          {
-            "bucket": "bamor_mujoco_c_le2_completed_history",
-            "cpu_cores": 2,
-            "description": "auto-adopted: BAMOR on local:CPU-only (2 procs)",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module77_bamor_mujoco_c_le2_completed_history",
-            "signature": "BAMOR/auto-adopted/p4008305",
-            "status": "done",
-            "task_id": "t7935"
-          },
-          {
-            "bucket": "bamor_mujoco_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: BAMOR on local:CPU-only (2 procs)",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module77_bamor_mujoco_c_le2_completed_history",
-            "signature": "BAMOR/auto-adopted/p4011489",
-            "status": "done",
-            "task_id": "t7936"
-          },
-          {
-            "bucket": "bamor_mujoco_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module77_bamor_mujoco_c_le2_completed_history",
-            "signature": "BAMOR/auto-adopted/p4014901",
-            "status": "done",
-            "task_id": "t7938"
-          },
-          {
-            "bucket": "bamor_mujoco_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module77_bamor_mujoco_c_le2_completed_history",
-            "signature": "BAMOR/auto-adopted/p4016719",
-            "status": "done",
-            "task_id": "t7945"
-          },
-          {
-            "bucket": "bamor_mujoco_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "BAMOR",
-            "reason": "module77_bamor_mujoco_c_le2_completed_history",
-            "signature": "BAMOR/auto-adopted/p4021546",
-            "status": "done",
-            "task_id": "t7952"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.005169628432956382,
-        "status": "mapped",
-        "top_projects": {
-          "BAMOR": 16
-        },
-        "top_signature_prefixes": {
-          "BAMOR/auto-adopted/p4008305": 1,
-          "BAMOR/auto-adopted/p4011489": 1,
-          "BAMOR/auto-adopted/p4014901": 1,
-          "BAMOR/auto-adopted/p4016719": 1,
-          "BAMOR/auto-adopted/p4021546": 1,
-          "BAMOR/auto-adopted/p4023047": 1,
-          "BAMOR/auto-adopted/p4028371": 1,
-          "BAMOR/auto-adopted/p4030174": 1
         }
       },
       {
@@ -2231,7 +2152,7 @@
             "task_id": "t5571"
           }
         ],
-        "fraction_of_completed_active_production": 0.004846526655896607,
+        "fraction_of_completed_active_production": 0.0047831632653061226,
         "status": "mapped",
         "top_projects": {
           "freqduet": 15
@@ -2307,7 +2228,7 @@
             "task_id": "t2970"
           }
         ],
-        "fraction_of_completed_active_production": 0.004523424878836834,
+        "fraction_of_completed_active_production": 0.004464285714285714,
         "status": "measurement_required",
         "top_projects": {
           "H2Oplus": 14
@@ -2383,7 +2304,7 @@
             "task_id": "t5007"
           }
         ],
-        "fraction_of_completed_active_production": 0.004523424878836834,
+        "fraction_of_completed_active_production": 0.004464285714285714,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 14
@@ -2459,7 +2380,7 @@
             "task_id": "t6092"
           }
         ],
-        "fraction_of_completed_active_production": 0.004523424878836834,
+        "fraction_of_completed_active_production": 0.004464285714285714,
         "status": "mapped",
         "top_projects": {
           "FreqHRL": 9,
@@ -2533,7 +2454,7 @@
             "task_id": "t7609"
           }
         ],
-        "fraction_of_completed_active_production": 0.004523424878836834,
+        "fraction_of_completed_active_production": 0.004464285714285714,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 14
@@ -2607,7 +2528,7 @@
             "task_id": "t5421"
           }
         ],
-        "fraction_of_completed_active_production": 0.0038772213247172858,
+        "fraction_of_completed_active_production": 0.003826530612244898,
         "status": "mapped",
         "top_projects": {
           "freqduet": 12
@@ -2683,7 +2604,7 @@
             "task_id": "t7623"
           }
         ],
-        "fraction_of_completed_active_production": 0.003554119547657512,
+        "fraction_of_completed_active_production": 0.00350765306122449,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 11
@@ -2759,7 +2680,7 @@
             "task_id": "t5337"
           }
         ],
-        "fraction_of_completed_active_production": 0.0032310177705977385,
+        "fraction_of_completed_active_production": 0.0031887755102040817,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 10
@@ -2835,7 +2756,7 @@
             "task_id": "t6899"
           }
         ],
-        "fraction_of_completed_active_production": 0.0029079159935379646,
+        "fraction_of_completed_active_production": 0.0028698979591836736,
         "status": "mapped",
         "top_projects": {
           "FreqHRLNative": 5,
@@ -2909,7 +2830,7 @@
             "task_id": "t5647"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 5,
@@ -2985,7 +2906,7 @@
             "task_id": "t5873"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3060,7 +2981,7 @@
             "task_id": "t7137"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3135,7 +3056,7 @@
             "task_id": "t7480"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 7
@@ -3148,6 +3069,81 @@
           "BAMOR/auto-adopted/p762128": 1,
           "BAMOR/auto-adopted/p767747": 1,
           "BAMOR/auto-adopted/p772832": 1
+        }
+      },
+      {
+        "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+        "count": 7,
+        "examples": [
+          {
+            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "Merge Freq-HRL native real-demand wait-aware v2 24-seed shards retry",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
+            "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-retry",
+            "status": "done",
+            "task_id": "t7602"
+          },
+          {
+            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "Drift-aware merge native real-demand v2 from existing shards",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
+            "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-drift-newdir",
+            "status": "done",
+            "task_id": "t7621"
+          },
+          {
+            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "Merge Freq-HRL v24 pressure-guarded wait promotion 2048 seeds",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
+            "signature": "TransitDuet/native-promotion-v24-2048-merge",
+            "status": "done",
+            "task_id": "t7622"
+          },
+          {
+            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "Merge retry Freq-HRL native promotion v25 reward-floor throughput 512-seed shards",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
+            "signature": "TransitDuet/freq-hrl-native-promotion-v25-reward-floor-throughput-512seed/merge-retry-nowait",
+            "status": "done",
+            "task_id": "t7799"
+          },
+          {
+            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
+            "cpu_cores": 2,
+            "description": "Merge Freq-HRL native promotion v26 512-seed shards",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
+            "signature": "TransitDuet/freqhrl-native-promotion-v26-merge-512seed",
+            "status": "done",
+            "task_id": "t7827"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.002232142857142857,
+        "status": "mapped",
+        "top_projects": {
+          "TransitDuet": 7
+        },
+        "top_signature_prefixes": {
+          "TransitDuet/auto-adopted/p1068893": 1,
+          "TransitDuet/freq-hrl-native-promotion-v25-reward-floor-throughput-512seed/merge-retry-nowait": 1,
+          "TransitDuet/freqhrl-native-promotion-v26-merge-512seed": 1,
+          "TransitDuet/freqhrl-native-promotion-v27-merge-512seed": 1,
+          "TransitDuet/native-promotion-v24-2048-merge": 1,
+          "TransitDuet/native-real-demand-waitaware-v2-merge-drift-newdir": 1,
+          "TransitDuet/native-real-demand-waitaware-v2-merge-retry": 1
         }
       },
       {
@@ -3210,7 +3206,7 @@
             "task_id": "t7891"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3285,7 +3281,7 @@
             "task_id": "t8381"
           }
         ],
-        "fraction_of_completed_active_production": 0.002261712439418417,
+        "fraction_of_completed_active_production": 0.002232142857142857,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3298,6 +3294,81 @@
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node004-91_101": 1,
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node005-111_121": 1,
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node006-131_141": 1
+        }
+      },
+      {
+        "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+        "count": 6,
+        "examples": [
+          {
+            "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: zsw_tsp_m0_gpu1 on jtl110gpu:CPU-only (3 procs)",
+            "est_vram_mb": 0,
+            "project": "zsw_tsp_m0_gpu1",
+            "reason": "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            "signature": "zsw_tsp_m0_gpu1/auto-adopted/p8925",
+            "status": "done",
+            "task_id": "t4036"
+          },
+          {
+            "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: ZSW_platform on jtl110gpu:CPU-only (3 procs)",
+            "est_vram_mb": 0,
+            "project": "ZSW_platform",
+            "reason": "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            "signature": "ZSW_platform/auto-adopted/p23313",
+            "status": "done",
+            "task_id": "t4137"
+          },
+          {
+            "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: ZSW_platform on jtl110gpu:CPU-only (4 procs)",
+            "est_vram_mb": 0,
+            "project": "ZSW_platform",
+            "reason": "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            "signature": "ZSW_platform/auto-adopted/p13878",
+            "status": "done",
+            "task_id": "t4142"
+          },
+          {
+            "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: ZSW_platform on jtl110gpu:CPU-only (4 procs)",
+            "est_vram_mb": 0,
+            "project": "ZSW_platform",
+            "reason": "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            "signature": "ZSW_platform/auto-adopted/p20899",
+            "status": "done",
+            "task_id": "t4143"
+          },
+          {
+            "bucket": "zsw_m21_sumo_eval_c3_8_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: ZSW_platform on jtl110gpu2:CPU-only (4 procs)",
+            "est_vram_mb": 0,
+            "project": "ZSW_platform",
+            "reason": "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            "signature": "ZSW_platform/auto-adopted/p1852476",
+            "status": "done",
+            "task_id": "t4145"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.001913265306122449,
+        "status": "mapped",
+        "top_projects": {
+          "ZSW_platform": 5,
+          "zsw_tsp_m0_gpu1": 1
+        },
+        "top_signature_prefixes": {
+          "ZSW_platform/auto-adopted/p13878": 1,
+          "ZSW_platform/auto-adopted/p1852476": 1,
+          "ZSW_platform/auto-adopted/p20899": 1,
+          "ZSW_platform/auto-adopted/p23313": 1,
+          "ZSW_platform/auto-adopted/p23983": 1,
+          "zsw_tsp_m0_gpu1/auto-adopted/p8925": 1
         }
       },
       {
@@ -3360,7 +3431,7 @@
             "task_id": "t6099"
           }
         ],
-        "fraction_of_completed_active_production": 0.0019386106623586429,
+        "fraction_of_completed_active_production": 0.001913265306122449,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 6
@@ -3372,80 +3443,6 @@
           "FreqDuet/promoted-ep100-genbase-r1/node004_s3": 1,
           "FreqDuet/promoted-ep100-genbase-r1/node005_s4": 1,
           "FreqDuet/promoted-ep100-genbase-r1/node006_s5": 1
-        }
-      },
-      {
-        "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-        "count": 6,
-        "examples": [
-          {
-            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "Merge Freq-HRL native real-demand wait-aware v2 24-seed shards retry",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
-            "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-retry",
-            "status": "done",
-            "task_id": "t7602"
-          },
-          {
-            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "Drift-aware merge native real-demand v2 from existing shards",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
-            "signature": "TransitDuet/native-real-demand-waitaware-v2-merge-drift-newdir",
-            "status": "done",
-            "task_id": "t7621"
-          },
-          {
-            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "Merge Freq-HRL v24 pressure-guarded wait promotion 2048 seeds",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
-            "signature": "TransitDuet/native-promotion-v24-2048-merge",
-            "status": "done",
-            "task_id": "t7622"
-          },
-          {
-            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "Merge retry Freq-HRL native promotion v25 reward-floor throughput 512-seed shards",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
-            "signature": "TransitDuet/freq-hrl-native-promotion-v25-reward-floor-throughput-512seed/merge-retry-nowait",
-            "status": "done",
-            "task_id": "t7799"
-          },
-          {
-            "bucket": "transit_freqhrl_merge_c_le2_completed_history",
-            "cpu_cores": 2,
-            "description": "Merge Freq-HRL native promotion v26 512-seed shards",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module76_transit_freqhrl_merge_c_le2_completed_history",
-            "signature": "TransitDuet/freqhrl-native-promotion-v26-merge-512seed",
-            "status": "done",
-            "task_id": "t7827"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.0019386106623586429,
-        "status": "mapped",
-        "top_projects": {
-          "TransitDuet": 6
-        },
-        "top_signature_prefixes": {
-          "TransitDuet/freq-hrl-native-promotion-v25-reward-floor-throughput-512seed/merge-retry-nowait": 1,
-          "TransitDuet/freqhrl-native-promotion-v26-merge-512seed": 1,
-          "TransitDuet/freqhrl-native-promotion-v27-merge-512seed": 1,
-          "TransitDuet/native-promotion-v24-2048-merge": 1,
-          "TransitDuet/native-real-demand-waitaware-v2-merge-drift-newdir": 1,
-          "TransitDuet/native-real-demand-waitaware-v2-merge-retry": 1
         }
       },
       {
@@ -3508,7 +3505,7 @@
             "task_id": "t7893"
           }
         ],
-        "fraction_of_completed_active_production": 0.0019386106623586429,
+        "fraction_of_completed_active_production": 0.001913265306122449,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 6
@@ -3520,79 +3517,6 @@
           "BAMOR/auto-adopted/p3733687": 1,
           "BAMOR/auto-adopted/p3733688": 1,
           "BAMOR/auto-adopted/p3733689": 1
-        }
-      },
-      {
-        "bucket": "offline_sumo_eval_c_le2_completed_history",
-        "count": 5,
-        "examples": [
-          {
-            "bucket": "offline_sumo_eval_c_le2_completed_history",
-            "cpu_cores": 2,
-            "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
-            "signature": "offline-sumo/auto-adopted/p59935",
-            "status": "done",
-            "task_id": "t2909"
-          },
-          {
-            "bucket": "offline_sumo_eval_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
-            "signature": "offline-sumo/auto-adopted/p640083",
-            "status": "done",
-            "task_id": "t2980"
-          },
-          {
-            "bucket": "offline_sumo_eval_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
-            "signature": "offline-sumo/auto-adopted/p758235",
-            "status": "done",
-            "task_id": "t2987"
-          },
-          {
-            "bucket": "offline_sumo_eval_c_le2_completed_history",
-            "cpu_cores": 1,
-            "description": "P1 eval-v2 RESUME: operational (12 workers pinned physical cores)",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
-            "signature": "offline-sumo/eval-v2/operational",
-            "status": "done",
-            "task_id": "t3063"
-          },
-          {
-            "bucket": "offline_sumo_eval_c_le2_completed_history",
-            "cpu_cores": 2,
-            "description": "offline-sumo E10 RLPD rerun fix0b missing work_items 293,304",
-            "est_vram_mb": 0,
-            "project": "offline-sumo",
-            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
-            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0b-missing293-304",
-            "status": "done",
-            "task_id": "t3193"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
-        "status": "mapped",
-        "top_projects": {
-          "offline-sumo": 5
-        },
-        "top_signature_prefixes": {
-          "offline-sumo/auto-adopted/p59935": 1,
-          "offline-sumo/auto-adopted/p640083": 1,
-          "offline-sumo/auto-adopted/p758235": 1,
-          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0b-missing293-304": 1,
-          "offline-sumo/eval-v2/operational": 1
         }
       },
       {
@@ -3655,7 +3579,7 @@
             "task_id": "t3696"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3728,7 +3652,7 @@
             "task_id": "t3697"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3801,7 +3725,7 @@
             "task_id": "t3760"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3874,7 +3798,7 @@
             "task_id": "t4883"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "freqduet": 5
@@ -3947,7 +3871,7 @@
             "task_id": "t7603"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "freqduet": 4,
@@ -4021,7 +3945,7 @@
             "task_id": "t6330"
           }
         ],
-        "fraction_of_completed_active_production": 0.0016155088852988692,
+        "fraction_of_completed_active_production": 0.0015943877551020409,
         "status": "mapped",
         "top_projects": {
           "config": 5
@@ -4032,6 +3956,67 @@
           "config/auto-adopted/p113555": 1,
           "config/auto-adopted/p48578": 1,
           "config/auto-adopted/p7754": 1
+        }
+      },
+      {
+        "bucket": "offline_sumo_eval_c_le2_completed_history",
+        "count": 4,
+        "examples": [
+          {
+            "bucket": "offline_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
+            "signature": "offline-sumo/auto-adopted/p640083",
+            "status": "done",
+            "task_id": "t2980"
+          },
+          {
+            "bucket": "offline_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: offline-sumo on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
+            "signature": "offline-sumo/auto-adopted/p758235",
+            "status": "done",
+            "task_id": "t2987"
+          },
+          {
+            "bucket": "offline_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "P1 eval-v2 RESUME: operational (12 workers pinned physical cores)",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
+            "signature": "offline-sumo/eval-v2/operational",
+            "status": "done",
+            "task_id": "t3063"
+          },
+          {
+            "bucket": "offline_sumo_eval_c_le2_completed_history",
+            "cpu_cores": 2,
+            "description": "offline-sumo E10 RLPD rerun fix0b missing work_items 293,304",
+            "est_vram_mb": 0,
+            "project": "offline-sumo",
+            "reason": "module78_offline_sumo_eval_c_le2_completed_history",
+            "signature": "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0b-missing293-304",
+            "status": "done",
+            "task_id": "t3193"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0012755102040816326,
+        "status": "mapped",
+        "top_projects": {
+          "offline-sumo": 4
+        },
+        "top_signature_prefixes": {
+          "offline-sumo/auto-adopted/p640083": 1,
+          "offline-sumo/auto-adopted/p758235": 1,
+          "offline-sumo/e10-rerun-flat/jtl110cpu2-fix0b-missing293-304": 1,
+          "offline-sumo/eval-v2/operational": 1
         }
       },
       {
@@ -4083,7 +4068,7 @@
             "task_id": "t3040"
           }
         ],
-        "fraction_of_completed_active_production": 0.0012924071082390954,
+        "fraction_of_completed_active_production": 0.0012755102040816326,
         "status": "mapped",
         "top_projects": {
           "H2Oplus": 2,
@@ -4145,7 +4130,7 @@
             "task_id": "t5333"
           }
         ],
-        "fraction_of_completed_active_production": 0.0012924071082390954,
+        "fraction_of_completed_active_production": 0.0012755102040816326,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 4
@@ -4155,6 +4140,67 @@
           "CFCMT/auto-adopted/p536951": 1,
           "CFCMT/auto-adopted/p675836": 1,
           "CFCMT/auto-adopted/p701176": 1
+        }
+      },
+      {
+        "bucket": "cfcmt_pytest_sumo_c3_8_completed_history",
+        "count": 4,
+        "examples": [
+          {
+            "bucket": "cfcmt_pytest_sumo_c3_8_completed_history",
+            "cpu_cores": 5,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p587036",
+            "status": "done",
+            "task_id": "t3757"
+          },
+          {
+            "bucket": "cfcmt_pytest_sumo_c3_8_completed_history",
+            "cpu_cores": 5,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p596490",
+            "status": "done",
+            "task_id": "t5291"
+          },
+          {
+            "bucket": "cfcmt_pytest_sumo_c3_8_completed_history",
+            "cpu_cores": 5,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p1435975",
+            "status": "done",
+            "task_id": "t5624"
+          },
+          {
+            "bucket": "cfcmt_pytest_sumo_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p1808275",
+            "status": "done",
+            "task_id": "t5827"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0012755102040816326,
+        "status": "mapped",
+        "top_projects": {
+          "CFCMT": 4
+        },
+        "top_signature_prefixes": {
+          "CFCMT/auto-adopted/p1435975": 1,
+          "CFCMT/auto-adopted/p1808275": 1,
+          "CFCMT/auto-adopted/p587036": 1,
+          "CFCMT/auto-adopted/p596490": 1
         }
       },
       {
@@ -4195,7 +4241,7 @@
             "task_id": "t5161"
           }
         ],
-        "fraction_of_completed_active_production": 0.0009693053311793214,
+        "fraction_of_completed_active_production": 0.0009566326530612245,
         "status": "mapped",
         "top_projects": {
           "freq_transitduet": 1,
@@ -4245,7 +4291,7 @@
             "task_id": "t5255"
           }
         ],
-        "fraction_of_completed_active_production": 0.0009693053311793214,
+        "fraction_of_completed_active_production": 0.0009566326530612245,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 3
@@ -4294,7 +4340,7 @@
             "task_id": "t7878"
           }
         ],
-        "fraction_of_completed_active_production": 0.0009693053311793214,
+        "fraction_of_completed_active_production": 0.0009566326530612245,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4342,7 +4388,7 @@
             "task_id": "t7924"
           }
         ],
-        "fraction_of_completed_active_production": 0.0009693053311793214,
+        "fraction_of_completed_active_production": 0.0009566326530612245,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4391,7 +4437,7 @@
             "task_id": "t7934"
           }
         ],
-        "fraction_of_completed_active_production": 0.0009693053311793214,
+        "fraction_of_completed_active_production": 0.0009566326530612245,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4400,6 +4446,31 @@
           "BAMOR/auto-adopted/p3959673": 1,
           "BAMOR/auto-adopted/p3990777": 1,
           "BAMOR/auto-adopted/p3999772": 1
+        }
+      },
+      {
+        "bucket": "cfcmt_snapshot_generation_c3_8_completed_history",
+        "count": 1,
+        "examples": [
+          {
+            "bucket": "cfcmt_snapshot_generation_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: CFCMT on local:CPU-only (4 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_snapshot_generation_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p540371",
+            "status": "done",
+            "task_id": "t3756"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.00031887755102040814,
+        "status": "mapped",
+        "top_projects": {
+          "CFCMT": 1
+        },
+        "top_signature_prefixes": {
+          "CFCMT/auto-adopted/p540371": 1
         }
       },
       {
@@ -4418,7 +4489,7 @@
             "task_id": "t4163"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "ZSW_platform": 1
@@ -4443,13 +4514,38 @@
             "task_id": "t4843"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "freqduet": 1
         },
         "top_signature_prefixes": {
           "freqduet/auto-adopted/p2000161": 1
+        }
+      },
+      {
+        "bucket": "cfcmt_traffic_signal_phase1_c3_8_completed_history",
+        "count": 1,
+        "examples": [
+          {
+            "bucket": "cfcmt_traffic_signal_phase1_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module82_cfcmt_traffic_signal_phase1_c3_8_completed_history",
+            "signature": "CFCMT/auto-adopted/p1430296",
+            "status": "done",
+            "task_id": "t5622"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.00031887755102040814,
+        "status": "mapped",
+        "top_projects": {
+          "CFCMT": 1
+        },
+        "top_signature_prefixes": {
+          "CFCMT/auto-adopted/p1430296": 1
         }
       },
       {
@@ -4468,7 +4564,7 @@
             "task_id": "t5639"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 1
@@ -4493,7 +4589,7 @@
             "task_id": "t6925"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4518,7 +4614,7 @@
             "task_id": "t7962"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1
@@ -4543,7 +4639,7 @@
             "task_id": "t8341"
           }
         ],
-        "fraction_of_completed_active_production": 0.00032310177705977385,
+        "fraction_of_completed_active_production": 0.00031887755102040814,
         "status": "mapped",
         "top_projects": {
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1
@@ -4564,7 +4660,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.8369541836954184,
+        "mapped_fraction": 0.8380161770966369,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4573,23 +4669,26 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 336,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "cpu_heavy_local_bench": 459,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 188,
+          "freqduet_cpu_ablation_c17_32": 191,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
-          "freqduet_cpu_ablation_c9_16": 128,
+          "freqduet_cpu_ablation_c9_16": 134,
           "freqduet_cpu_ablation_c_le2_completed_history": 4,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 12,
@@ -4597,45 +4696,45 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 15,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
-          "hybrid_rl_resac_ant": 1489,
+          "hybrid_rl_resac_ant": 1491,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 18,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
-          "transit_freqhrl_merge_c_le2_completed_history": 6,
+          "transit_freqhrl_merge_c_le2_completed_history": 7,
           "transit_native_control_c_le2_completed_history": 7,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 150,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 152,
           "transit_native_promotion_c33_64_batch_completed_history": 170,
-          "transit_native_promotion_c3_8_persistent_stress_completed_history": 9,
-          "transit_native_promotion_c65p_completed_history": 94,
+          "transit_native_promotion_c3_8_persistent_stress_completed_history": 10,
+          "transit_native_promotion_c65p_completed_history": 122,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 8,
-          "transit_native_promotion_c9_16_residual_completed_history": 57,
+          "transit_native_promotion_c9_16_residual_completed_history": 63,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 13,
           "transit_native_real_demand_batch_c3_8_completed_history": 26,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 3891,
-        "record_count_window": 4649,
-        "representative_mapped_task_count": 1948,
-        "strict_mapped_fraction": 0.41793934179393416,
+        "mapped_task_count": 3937,
+        "record_count_window": 4698,
+        "representative_mapped_task_count": 1950,
+        "strict_mapped_fraction": 0.4229459344401873,
         "unmapped_reasons": {
-          "unmapped_cpu": 743,
+          "unmapped_cpu": 746,
           "unmapped_gpu": 15
         },
-        "unmapped_task_count": 758,
+        "unmapped_task_count": 761,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -4643,7 +4742,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.41793934179393416,
+        "mapped_fraction": 0.4229459344401873,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4652,22 +4751,25 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 336,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 188,
+          "freqduet_cpu_ablation_c17_32": 191,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
-          "freqduet_cpu_ablation_c9_16": 128,
+          "freqduet_cpu_ablation_c9_16": 134,
           "freqduet_cpu_ablation_c_le2_completed_history": 4,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 12,
@@ -4675,44 +4777,44 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 15,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 18,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
-          "transit_freqhrl_merge_c_le2_completed_history": 6,
+          "transit_freqhrl_merge_c_le2_completed_history": 7,
           "transit_native_control_c_le2_completed_history": 7,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 150,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 152,
           "transit_native_promotion_c33_64_batch_completed_history": 170,
-          "transit_native_promotion_c3_8_persistent_stress_completed_history": 9,
-          "transit_native_promotion_c65p_completed_history": 94,
+          "transit_native_promotion_c3_8_persistent_stress_completed_history": 10,
+          "transit_native_promotion_c65p_completed_history": 122,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 8,
-          "transit_native_promotion_c9_16_residual_completed_history": 57,
+          "transit_native_promotion_c9_16_residual_completed_history": 63,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 13,
           "transit_native_real_demand_batch_c3_8_completed_history": 26,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 1943,
-        "record_count_window": 4649,
+        "mapped_task_count": 1987,
+        "record_count_window": 4698,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.41793934179393416,
+        "strict_mapped_fraction": 0.4229459344401873,
         "unmapped_reasons": {
-          "unmapped_cpu": 1202,
-          "unmapped_gpu": 1504
+          "unmapped_cpu": 1205,
+          "unmapped_gpu": 1506
         },
-        "unmapped_task_count": 2706,
+        "unmapped_task_count": 2711,
         "usable_for_global_theorem": false
       }
     },
@@ -4722,7 +4824,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.865589660743134,
+        "mapped_fraction": 0.8663903061224489,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4731,23 +4833,26 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 327,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 58,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "cpu_heavy_local_bench": 202,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 173,
+          "freqduet_cpu_ablation_c17_32": 172,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 7,
-          "freqduet_cpu_ablation_c9_16": 116,
+          "freqduet_cpu_ablation_c9_16": 122,
           "freqduet_cpu_ablation_c_le2_completed_history": 3,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 5,
@@ -4755,45 +4860,45 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 15,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
-          "hybrid_rl_resac_ant": 820,
+          "hybrid_rl_resac_ant": 819,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 18,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
-          "transit_freqhrl_merge_c_le2_completed_history": 6,
+          "transit_freqhrl_merge_c_le2_completed_history": 7,
           "transit_native_control_c_le2_completed_history": 7,
           "transit_native_promotion_c17_32_residual_completed_history": 14,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 102,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 104,
           "transit_native_promotion_c33_64_batch_completed_history": 73,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 9,
-          "transit_native_promotion_c65p_completed_history": 49,
+          "transit_native_promotion_c65p_completed_history": 77,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 7,
-          "transit_native_promotion_c9_16_residual_completed_history": 47,
+          "transit_native_promotion_c9_16_residual_completed_history": 53,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 7,
           "transit_native_real_demand_batch_c3_8_completed_history": 7,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 2679,
-        "record_count_window": 3095,
-        "representative_mapped_task_count": 1022,
-        "strict_mapped_fraction": 0.5353796445880452,
+        "mapped_task_count": 2717,
+        "record_count_window": 3136,
+        "representative_mapped_task_count": 1021,
+        "strict_mapped_fraction": 0.5408163265306123,
         "unmapped_reasons": {
-          "unmapped_cpu": 402,
+          "unmapped_cpu": 405,
           "unmapped_gpu": 14
         },
-        "unmapped_task_count": 416,
+        "unmapped_task_count": 419,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -4801,7 +4906,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.5353796445880452,
+        "mapped_fraction": 0.5408163265306123,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4810,22 +4915,25 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 327,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 58,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 173,
+          "freqduet_cpu_ablation_c17_32": 172,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 7,
-          "freqduet_cpu_ablation_c9_16": 116,
+          "freqduet_cpu_ablation_c9_16": 122,
           "freqduet_cpu_ablation_c_le2_completed_history": 3,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 5,
@@ -4833,44 +4941,44 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 15,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 18,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
-          "transit_freqhrl_merge_c_le2_completed_history": 6,
+          "transit_freqhrl_merge_c_le2_completed_history": 7,
           "transit_native_control_c_le2_completed_history": 7,
           "transit_native_promotion_c17_32_residual_completed_history": 14,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 102,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 104,
           "transit_native_promotion_c33_64_batch_completed_history": 73,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 9,
-          "transit_native_promotion_c65p_completed_history": 49,
+          "transit_native_promotion_c65p_completed_history": 77,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 7,
-          "transit_native_promotion_c9_16_residual_completed_history": 47,
+          "transit_native_promotion_c9_16_residual_completed_history": 53,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 7,
           "transit_native_real_demand_batch_c3_8_completed_history": 7,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 1657,
-        "record_count_window": 3095,
+        "mapped_task_count": 1696,
+        "record_count_window": 3136,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.5353796445880452,
+        "strict_mapped_fraction": 0.5408163265306123,
         "unmapped_reasons": {
-          "unmapped_cpu": 604,
-          "unmapped_gpu": 834
+          "unmapped_cpu": 607,
+          "unmapped_gpu": 833
         },
-        "unmapped_task_count": 1438,
+        "unmapped_task_count": 1440,
         "usable_for_global_theorem": false
       }
     },
@@ -4880,7 +4988,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.7852598913886734,
+        "mapped_fraction": 0.7876078914919852,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4889,23 +4997,26 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 347,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "cpu_heavy_local_bench": 524,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 220,
+          "freqduet_cpu_ablation_c17_32": 223,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 42,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
-          "freqduet_cpu_ablation_c9_16": 135,
+          "freqduet_cpu_ablation_c9_16": 141,
           "freqduet_cpu_ablation_c_le2_completed_history": 7,
           "freqduet_paper_longtrain_c17_32_completed_history": 35,
           "freqduet_preflight_c_le2_completed_history": 14,
@@ -4913,48 +5024,49 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 32,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 13,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "gpu_heavy_jax_matmul": 70,
           "h2oplus_shell_eval_c_le2_completed_history": 5,
-          "hybrid_rl_resac_ant": 2098,
+          "hybrid_rl_resac_ant": 2100,
           "light_control_local": 206,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 35,
+          "sumo_eval_simple_sac_c_le2": 17,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 14,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 2,
-          "transit_freqhrl_merge_c_le2_completed_history": 8,
+          "transit_freqhrl_merge_c_le2_completed_history": 9,
           "transit_native_control_c_le2_completed_history": 9,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 165,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 167,
           "transit_native_promotion_c33_64_batch_completed_history": 197,
-          "transit_native_promotion_c3_8_persistent_stress_completed_history": 12,
-          "transit_native_promotion_c65p_completed_history": 139,
+          "transit_native_promotion_c3_8_persistent_stress_completed_history": 14,
+          "transit_native_promotion_c65p_completed_history": 169,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 9,
-          "transit_native_promotion_c9_16_residual_completed_history": 63,
+          "transit_native_promotion_c9_16_residual_completed_history": 69,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 14,
           "transit_native_real_demand_batch_c3_8_completed_history": 28,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 5061,
-        "record_count_window": 6445,
-        "representative_mapped_task_count": 2091,
-        "strict_mapped_fraction": 0.460822342901474,
+        "mapped_task_count": 5110,
+        "record_count_window": 6488,
+        "representative_mapped_task_count": 2093,
+        "strict_mapped_fraction": 0.46501233045622686,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 1212,
+          "unmapped_cpu": 1206,
           "unmapped_gpu": 17
         },
-        "unmapped_task_count": 1384,
+        "unmapped_task_count": 1378,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -4962,7 +5074,7 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.460822342901474,
+        "mapped_fraction": 0.46501233045622686,
         "mapped_key_counts": {
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
@@ -4971,23 +5083,26 @@
           "bamor_mujoco_c17_32_completed_history": 3,
           "bamor_mujoco_c3_8_completed_history": 347,
           "bamor_mujoco_c9_16_completed_history": 3,
-          "bamor_mujoco_c_le2_completed_history": 16,
+          "bamor_mujoco_c_le2_completed_history": 17,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_sumo_c3_8_completed_history": 4,
+          "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
+          "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "cpu_heavy_local_bench": 55,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 220,
+          "freqduet_cpu_ablation_c17_32": 223,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
           "freqduet_cpu_ablation_c3_8_completed_history": 42,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
-          "freqduet_cpu_ablation_c9_16": 135,
+          "freqduet_cpu_ablation_c9_16": 141,
           "freqduet_cpu_ablation_c_le2_completed_history": 7,
           "freqduet_paper_longtrain_c17_32_completed_history": 35,
           "freqduet_preflight_c_le2_completed_history": 14,
@@ -4995,55 +5110,56 @@
           "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
           "freqduet_runner_v3_c17_32_completed_history": 16,
           "freqduet_runner_v3_c33_64_completed_history": 32,
-          "freqduet_runner_v3_c3_8_completed_history": 86,
+          "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 13,
-          "freqduet_runner_v3_c_le2_completed_history": 88,
+          "freqduet_runner_v3_c_le2_completed_history": 90,
           "gpu_heavy_jax_matmul": 70,
           "h2oplus_shell_eval_c_le2_completed_history": 5,
           "hybrid_rl_resac_ant": 476,
           "light_control_local": 206,
           "nature_emissions_extract_c_le2_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
-          "offline_sumo_eval_c_le2_completed_history": 5,
+          "offline_sumo_eval_c_le2_completed_history": 4,
           "resco_config_eval_c_le2_completed_history": 5,
-          "sumo_eval_simple_sac_c_le2": 35,
+          "sumo_eval_simple_sac_c_le2": 17,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 14,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 2,
-          "transit_freqhrl_merge_c_le2_completed_history": 8,
+          "transit_freqhrl_merge_c_le2_completed_history": 9,
           "transit_native_control_c_le2_completed_history": 9,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
-          "transit_native_promotion_c17_32_seedrange_completed_history": 165,
+          "transit_native_promotion_c17_32_seedrange_completed_history": 167,
           "transit_native_promotion_c33_64_batch_completed_history": 197,
-          "transit_native_promotion_c3_8_persistent_stress_completed_history": 12,
-          "transit_native_promotion_c65p_completed_history": 139,
+          "transit_native_promotion_c3_8_persistent_stress_completed_history": 14,
+          "transit_native_promotion_c65p_completed_history": 169,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 9,
-          "transit_native_promotion_c9_16_residual_completed_history": 63,
+          "transit_native_promotion_c9_16_residual_completed_history": 69,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 14,
           "transit_native_real_demand_batch_c3_8_completed_history": 28,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c_le2_completed_history": 18,
           "transit_trading_sweep_c_le2_completed_history": 14,
+          "zsw_m21_sumo_eval_c3_8_completed_history": 6,
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 2970,
-        "record_count_window": 6445,
+        "mapped_task_count": 3017,
+        "record_count_window": 6488,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.460822342901474,
+        "strict_mapped_fraction": 0.46501233045622686,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 1681,
-          "unmapped_gpu": 1639
+          "unmapped_cpu": 1675,
+          "unmapped_gpu": 1641
         },
-        "unmapped_task_count": 3475,
+        "unmapped_task_count": 3471,
         "usable_for_global_theorem": false
       }
     }
   },
   "window": {
-    "end_ts": 1781085137.369979,
-    "start_ts": 1778493137.369979,
+    "end_ts": 1781127037.1966736,
+    "start_ts": 1778535037.1966736,
     "window_s": 2592000.0
   },
   "window_days": 30.0

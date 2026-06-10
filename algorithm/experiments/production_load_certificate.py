@@ -59,6 +59,9 @@ DEFAULT_TASKSETS = (
     "production_cfcmt_env_validation_c_le2_completed_history",
     "production_cfcmt_sumo_generation_c_le2_completed_history",
     "production_cfcmt_snapshot_generation_c_le2_completed_history",
+    "production_cfcmt_snapshot_generation_c3_8_completed_history",
+    "production_cfcmt_pytest_sumo_c3_8_completed_history",
+    "production_cfcmt_traffic_signal_phase1_c3_8_completed_history",
     "production_cfcmt_policy_rollout_c_le2_completed_history",
     "production_cfcmt_traffic_signal_phase2_c_le2_completed_history",
     "production_bamor_train_compare_c9_16_completed_history",
@@ -89,6 +92,7 @@ DEFAULT_TASKSETS = (
     "production_bamor_mujoco_c3_8_completed_history",
     "production_bamor_diagnostic_shard_c3_8_completed_history",
     "production_zsw_tsp_sumo_eval_c_le2_completed_history",
+    "production_zsw_m21_sumo_eval_c3_8_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
     "production_transit_native_promotion_c17_32_seedrange_completed_history",
     "production_freqduet_runner_v3_c17_32_completed_history",
@@ -507,6 +511,20 @@ def classify_record(
             "module66_freqduet_runner_v3_c3_8_completed_history",
             units=runner_c3_8_units,
         )
+
+    zsw_m21_c3_8_units = _zsw_m21_sumo_eval_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
+    if zsw_m21_c3_8_units is not None:
+        return _mapped(
+            "zsw_m21_sumo_eval_c3_8_completed_history",
+            "strict_measured",
+            "module82_zsw_m21_sumo_eval_c3_8_completed_history",
+            units=zsw_m21_c3_8_units,
+        )
+
+    cfcmt_c3_8 = _cfcmt_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
+    if cfcmt_c3_8 is not None:
+        workload_key, units, reason = cfcmt_c3_8
+        return _mapped(workload_key, "strict_measured", reason, units=units)
 
     transit_c3_8 = _transit_freqhrl_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
     if transit_c3_8 is not None:
@@ -1793,6 +1811,68 @@ def _cfcmt_c_le2_units(
     return workload_key, units, f"module72_{workload_key}"
 
 
+def _cfcmt_c3_8_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project != "cfcmt" and "/cfcmt" not in cwd and not signature.startswith("cfcmt/"):
+        return None
+
+    if "pytest" in cmd_lower and any(
+        token in cmd_lower
+        for token in (
+            "test_sumo_apc_avl_sumo_generation.py",
+            "test_sumo_apc_avl_snapshot_generation.py",
+            "test_sumo_policy_rollout_validation.py",
+            "test_traffic_signal_sumo_phase1.py",
+            "test_traffic_signal_sumo_phase2.py",
+            "test_traffic_signal_resco_probe.py",
+            "test_traffic_signal_resco_phase_benchmark.py",
+            "test_traffic_signal_resco_cfcmt_benchmark.py",
+            "test_traffic_signal_transfer_feasibility.py",
+        )
+    ):
+        return (
+            "cfcmt_pytest_sumo_c3_8_completed_history",
+            1.0,
+            "module82_cfcmt_pytest_sumo_c3_8_completed_history",
+        )
+
+    if (
+        "cf_h2o.eval.sumo_apc_avl_snapshot_generation" in cmd_lower
+        or "sumo_apc_avl_snapshot_generation.py" in cmd_lower
+    ):
+        parsed = _parse_cfcmt_c_le2_units(cmd)
+        if parsed is not None:
+            workload_key, units = parsed
+            if workload_key == "cfcmt_snapshot_generation_c_le2_completed_history":
+                return (
+                    "cfcmt_snapshot_generation_c3_8_completed_history",
+                    units,
+                    "module82_cfcmt_snapshot_generation_c3_8_completed_history",
+                )
+
+    if "traffic_signal_sumo_phase1.py" in cmd_lower:
+        return (
+            "cfcmt_traffic_signal_phase1_c3_8_completed_history",
+            1.0,
+            "module82_cfcmt_traffic_signal_phase1_c3_8_completed_history",
+        )
+
+    return None
+
+
 def _parse_cfcmt_c_le2_units(cmd: str) -> tuple[str, float] | None:
     tokens = _shlex_tokens(cmd)
     cmd_lower = str(cmd).lower()
@@ -1867,6 +1947,29 @@ def _zsw_tsp_sumo_eval_c_le2_units(*, row: Mapping[str, Any], est_vram: float, c
         and "zsw_tsp_m0_gpu1" not in cwd
         and not signature.startswith(("zsw_platform/", "zsw_tsp_m0_gpu1/"))
     ):
+        return None
+    units = _parse_zsw_tsp_sumo_duration_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _zsw_m21_sumo_eval_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cpu: float) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if (
+        project not in {"zsw_platform", "zsw_tsp_m0_gpu1"}
+        and "zsw_platform" not in cwd
+        and "zsw_tsp_m0_gpu1" not in cwd
+        and not signature.startswith(("zsw_platform/", "zsw_tsp_m0_gpu1/"))
+    ):
+        return None
+    if "m21_cycle_conserving_tsp_runner.py" not in cmd_lower:
         return None
     units = _parse_zsw_tsp_sumo_duration_units(cmd)
     return units if units is not None and units > 0 else None

@@ -2,7 +2,7 @@
 
 Date: 2026-06-10
 
-This note records the current gap after Module81.  It should be read together
+This note records the current gap after Module82.  It should be read together
 with:
 
 ```text
@@ -67,6 +67,10 @@ md/experiment_module79_transit_native_real_demand_alighting_c3_8_completed_histo
 md/experiment_module80_bamor_mujoco_c17_32_completed_history.md
 md/experiment_module80_bamor_diagnostic_shard_c17_32_completed_history.md
 md/experiment_module81_freqduet_runner_v3_c33_64_completed_history.md
+md/experiment_module82_cfcmt_snapshot_generation_c3_8_completed_history.md
+md/experiment_module82_cfcmt_pytest_sumo_c3_8_completed_history.md
+md/experiment_module82_cfcmt_traffic_signal_phase1_c3_8_completed_history.md
+md/experiment_module82_zsw_m21_sumo_eval_c3_8_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -413,16 +417,40 @@ workload_key = freqduet_runner_v3_c33_64_completed_history
 completed-active strict mapped count = 15
 feasible profiles = 1
 unit rule = parsed episode units
+
+completed-history slice = CFCMT c3_8 snapshot generation
+workload_key = cfcmt_snapshot_generation_c3_8_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = parsed snapshot-window units
+
+completed-history slice = CFCMT c3_8 SUMO/traffic pytest
+workload_key = cfcmt_pytest_sumo_c3_8_completed_history
+completed-active strict mapped count = 4
+feasible profiles = 1
+unit rule = one completed pytest command
+
+completed-history slice = CFCMT c3_8 traffic-signal phase1
+workload_key = cfcmt_traffic_signal_phase1_c3_8_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = one completed phase1 command
+
+completed-history slice = ZSW c3_8 M21 SUMO runner
+workload_key = zsw_m21_sumo_eval_c3_8_completed_history
+completed-active strict mapped count = 6
+feasible profiles = 1
+unit rule = parsed simulated seconds from --duration
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3095
-strict completed-active mapped count = 1657
-representative completed-active mapped count = 2679
-measurement_required = 416
-cpu_sumo_transit_eval_or_control remaining = 43 / 3095
+completed_active_production records = 3136
+strict completed-active mapped count = 1696
+representative completed-active mapped count = 2717
+measurement_required = 419
+cpu_sumo_transit_eval_or_control remaining = 38 / 3136
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -514,7 +542,7 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 212 / 2766 after Module74, 169 / 2766 after Module75,
 139 / 2766 after Module76, 113 / 2766 after Module77,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
-and 43 / 3095 after Module81.
+43 / 3095 after Module81, and 38 / 3136 after Module82.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -602,6 +630,12 @@ Module81 closes the direct-runner portion of the former
 `runner_v3.py --episodes` completed-history class.  The remaining first-probe
 target is no longer FreqDuet c33_64.
 
+Module82 closes the former `sumo_eval_cpu|c_3_8` first-probe blocker with four
+separate completed-history classes: CFCMT snapshot generation, CFCMT SUMO/traffic
+pytest jobs, CFCMT traffic-signal phase1, and ZSW M21 SUMO runners.  It
+intentionally does not claim CFCMT local snapshot validation or non-M21 ZSW
+c3_8 command shapes.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -633,9 +667,9 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-sumo_eval_cpu|c_3_8
 transit_freqhrl_cpu_validation|c_3_8
 transit_freqhrl_cpu_validation|c_17_32
+freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16

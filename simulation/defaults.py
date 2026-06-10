@@ -412,6 +412,42 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module82_cfcmt_snapshot_generation_c3_8_completed_history_reports",
+        workload_key="cfcmt_snapshot_generation_c3_8_completed_history",
+        command_fingerprint="cfcmt_snapshot_generation_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module82_cfcmt_pytest_sumo_c3_8_completed_history_reports",
+        workload_key="cfcmt_pytest_sumo_c3_8_completed_history",
+        command_fingerprint="cfcmt_pytest_sumo_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module82_cfcmt_traffic_signal_phase1_c3_8_completed_history_reports",
+        workload_key="cfcmt_traffic_signal_phase1_c3_8_completed_history",
+        command_fingerprint="cfcmt_traffic_signal_phase1_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module82_zsw_m21_sumo_eval_c3_8_completed_history_reports",
+        workload_key="zsw_m21_sumo_eval_c3_8_completed_history",
+        command_fingerprint="zsw_m21_sumo_eval_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module58_freqduet_ablation_c9_16_jtl110cpu2_curve_p1248_reports",
         workload_key="freqduet_cpu_ablation_c9_16",
         command_fingerprint="freqduet_cpu_ablation_main_hiro_c9_16_v1",
@@ -760,6 +796,9 @@ def legacy_policy() -> ReplayPolicy:
             "cfcmt_env_validation_c_le2_completed_history": 1,
             "cfcmt_sumo_generation_c_le2_completed_history": 1,
             "cfcmt_snapshot_generation_c_le2_completed_history": 1,
+            "cfcmt_snapshot_generation_c3_8_completed_history": 1,
+            "cfcmt_pytest_sumo_c3_8_completed_history": 1,
+            "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
             "cfcmt_policy_rollout_c_le2_completed_history": 1,
             "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
             "bamor_train_compare_c9_16_completed_history": 1,
@@ -790,6 +829,7 @@ def legacy_policy() -> ReplayPolicy:
             "bamor_mujoco_c3_8_completed_history": 1,
             "bamor_diagnostic_shard_c3_8_completed_history": 1,
             "zsw_tsp_sumo_eval_c_le2_completed_history": 1,
+            "zsw_m21_sumo_eval_c3_8_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
         },
     )

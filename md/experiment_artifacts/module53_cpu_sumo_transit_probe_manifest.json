@@ -9,7 +9,6 @@
       "c_le2"
     ],
     "first_probe_order": [
-      "freqduet_cpu_ablation|c_9_16",
       "sumo_eval_cpu|c_33_64",
       "transit_freqhrl_cpu_validation|c_33_64",
       "transit_freqhrl_cpu_validation|c_9_16",
@@ -30,140 +29,30 @@
   },
   "project_counts": {
     "BAMOR": 1,
-    "TransitDuet": 12,
+    "TransitDuet": 6,
     "offline-sumo": 5,
     "python": 2
   },
-  "record_count": 20,
+  "record_count": 14,
   "resource_summary": {
     "cpu_cores": {
       "max": 61.0,
-      "median": 14.0,
+      "median": 26.0,
       "min": 1.0,
       "p90": 37.0
     },
     "ram_mb": {
       "max": 64000.0,
-      "median": 7898.5,
+      "median": 627.5,
       "min": 5.0,
-      "p90": 16000.0
+      "p90": 15101.0
     }
   },
   "status_counts": {
-    "done": 20
+    "done": 14
   },
-  "sub_bucket_count": 7,
+  "sub_bucket_count": 6,
   "sub_buckets": [
-    {
-      "count": 6,
-      "examples": [
-        {
-          "cmd": "bash -lc 'S=$((428 + 0)); E=$((428 + 14)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-end...",
-          "cpu_cores": 14,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
-          "status": "done",
-          "task_id": "t9438"
-        },
-        {
-          "cmd": "bash -lc 'S=$((428 + 14)); E=$((428 + 28)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
-          "cpu_cores": 14,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
-          "status": "done",
-          "task_id": "t9439"
-        },
-        {
-          "cmd": "bash -lc 'S=$((428 + 28)); E=$((428 + 42)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
-          "cpu_cores": 14,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
-          "status": "done",
-          "task_id": "t9440"
-        },
-        {
-          "cmd": "bash -lc 'S=$((428 + 42)); E=$((428 + 56)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
-          "cpu_cores": 14,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
-          "status": "done",
-          "task_id": "t9441"
-        },
-        {
-          "cmd": "bash -lc 'S=$((428 + 56)); E=$((428 + 70)); PYTHONPATH=transit_hrl OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 TORCH_NUM_THREADS=1 /home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation --preset persistent_stress --stress-profile wait_credit_aligned_v39 --variants interval_only native_wait_aware_replan --seed-index-start \"$S\" --seed-index-en...",
-          "cpu_cores": 14,
-          "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
-          "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "TransitDuet",
-          "ram_mb": 16000,
-          "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
-          "status": "done",
-          "task_id": "t9442"
-        }
-      ],
-      "fraction": 0.3,
-      "project_counts": {
-        "TransitDuet": 6
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          14
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 14.0,
-          "median": 14.0,
-          "min": 14.0,
-          "p90": 14.0
-        },
-        "ram_mb": {
-          "max": 16000.0,
-          "median": 16000.0,
-          "min": 16000.0,
-          "p90": 16000.0
-        }
-      },
-      "signature_prefixes": {
-        "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512": 6
-      },
-      "sub_bucket": "freqduet_cpu_ablation|c_9_16"
-    },
     {
       "count": 5,
       "examples": [
@@ -233,7 +122,7 @@
           "task_id": "t3186"
         }
       ],
-      "fraction": 0.25,
+      "fraction": 0.35714285714285715,
       "project_counts": {
         "offline-sumo": 5
       },
@@ -308,7 +197,7 @@
           "task_id": "t5370"
         }
       ],
-      "fraction": 0.1,
+      "fraction": 0.14285714285714285,
       "project_counts": {
         "python": 2
       },
@@ -379,7 +268,7 @@
           "task_id": "t5048"
         }
       ],
-      "fraction": 0.1,
+      "fraction": 0.14285714285714285,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -452,7 +341,7 @@
           "task_id": "t5099"
         }
       ],
-      "fraction": 0.1,
+      "fraction": 0.14285714285714285,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -524,7 +413,7 @@
           "task_id": "t9398"
         }
       ],
-      "fraction": 0.1,
+      "fraction": 0.14285714285714285,
       "project_counts": {
         "TransitDuet": 2
       },
@@ -583,7 +472,7 @@
           "task_id": "t9381"
         }
       ],
-      "fraction": 0.05,
+      "fraction": 0.07142857142857142,
       "project_counts": {
         "BAMOR": 1
       },
@@ -627,8 +516,8 @@
   ],
   "theorem_status": "measurement_required",
   "window": {
-    "end_ts": 1781129985.8210595,
-    "start_ts": 1778537985.8210595,
+    "end_ts": 1781131099.0196526,
+    "start_ts": 1778539099.0196526,
     "window_days": 30.0
   }
 }

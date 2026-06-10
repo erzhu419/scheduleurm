@@ -750,6 +750,69 @@ def test_module71_c9_native_and_runner_residual_completed_history_profile1(check
           diag=str(report))
 
 
+def test_module85_transit_native_c9_16_wait_credit_shell_completed_history(check, sch):
+    row = {
+        "id": "module85-wait-credit-shell",
+        "project": "TransitDuet",
+        "signature": "freq-hrl-native-promotion-v39-wait-credit-aligned-512seed-missing0428-0512",
+        "description": "Freq-HRL native promotion v39 512seed missing shard 0428-0512",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 14,
+        "ram_mb": 16000,
+        "cwd": "/home/zhengliang01/scheduleurm_work/TransitDuet",
+        "cmd": (
+            "bash -lc 'S=$((428 + 0)); E=$((428 + 14)); PYTHONPATH=transit_hrl "
+            "OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 "
+            "/env/bin/python -u -m freq_hrl.experiments.transit.native_promotion_replan_validation "
+            "--preset persistent_stress --stress-profile wait_credit_aligned_v39 "
+            "--variants interval_only native_wait_aware_replan --seed-index-start \"$S\" "
+            "--seed-index-end \"$E\" --seed-base 31 --seed-step 10 --episodes 1 "
+            "--device cpu --min-pairs 4 --workers 14 --partial-every 16 --output-dir out'"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module85 maps c9_16 wait-credit shell shards with static seed-range units",
+          cls["workload_key"] == "transit_native_promotion_c9_16_wait_credit_shell_completed_history"
+          and math.isclose(float(cls["units"]), 14.0),
+          diag=str(cls))
+
+    unbound = dict(row)
+    unbound["id"] = "module85-unbound-shell"
+    unbound["cmd"] = row["cmd"].replace("E=$((428 + 14));", "")
+    unbound_cls = classify_record(unbound, include_representative=False)
+    check("Module85 does not execute shell or accept unbound seed-index variables",
+          unbound_cls["workload_key"] is None,
+          diag=str(unbound_cls))
+
+    cache = build_default_cache()
+    key = "transit_native_promotion_c9_16_wait_credit_shell_completed_history"
+    profiles = cache.profiles(key)
+    check("Module85 service cache exposes one profile1 wait-credit shell lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.1153576464059204, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in profiles]))
+
+    check("Module85 taskset is included in the default production certificate",
+          "production_transit_native_promotion_c9_16_wait_credit_shell_completed_history"
+          in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_transit_native_promotion_c9_16_wait_credit_shell_completed_history",),
+    )
+    check("production load certificate certifies Module85 wait-credit shell slice",
+          report["mapped_counts"] == {key: 1}
+          and math.isclose(report["mapped_units"][key], 14.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module72_cfcmt_sumo_cle2_completed_history_profile1(check, sch):
     base = {
         "project": "CFCMT",

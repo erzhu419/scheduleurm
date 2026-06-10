@@ -15,7 +15,7 @@ md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.md
 ```
 
-## Status After Module84
+## Status After Module85
 
 The original top sub-bucket was:
 
@@ -373,16 +373,22 @@ transit_demand_estimator_c17_32_completed_history: completed_active = 2, raw_his
 transit_gap_closure_c17_32_completed_history: completed_active = 2, raw_history_all = 8, unit = surrogate_seed_step_corridor, min = 257.874955538 surrogate-seed-step-corridor/s
 ```
 
+Module85 then closes the c9_16 wait-credit native-promotion shell residual:
+
+```text
+transit_native_promotion_c9_16_wait_credit_shell_completed_history: completed_active = 6, raw_history_all = 6, unit = seed_episode, min = 0.115357646 seed-episode/s
+```
+
 ## Current Remaining Bucket
 
 ```text
 bucket = cpu_sumo_transit_eval_or_control
-record_count = 20
-cpu_cores median = 14.000000
+record_count = 14
+cpu_cores median = 26.000000
 cpu_cores p90 = 37
 cpu_cores max = 61
-ram_mb median = 7898.500
-ram_mb p90 = 16000
+ram_mb median = 627.500
+ram_mb p90 = 15101
 ram_mb max = 64000
 theorem_status = measurement_required
 ```
@@ -391,20 +397,18 @@ theorem_status = measurement_required
 
 | Sub-Bucket | Count | Fraction |
 |---|---:|---:|
-| `freqduet_cpu_ablation|c_9_16` | 6 | 0.300000 |
-| `sumo_eval_cpu|c_33_64` | 5 | 0.250000 |
-| `freqduet_cpu_ablation|c_le2` | 2 | 0.100000 |
-| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.100000 |
-| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.100000 |
-| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.100000 |
-| `bamor_cpu_training|c_3_8` | 1 | 0.050000 |
+| `sumo_eval_cpu|c_33_64` | 5 | 0.357143 |
+| `freqduet_cpu_ablation|c_le2` | 2 | 0.142857 |
+| `transit_freqhrl_cpu_validation|c_33_64` | 2 | 0.142857 |
+| `transit_freqhrl_cpu_validation|c_9_16` | 2 | 0.142857 |
+| `transit_freqhrl_cpu_validation|c_le2` | 2 | 0.142857 |
+| `bamor_cpu_training|c_3_8` | 1 | 0.071429 |
 
 ## Next Probe Order
 
 The regenerated manifest recommends this first pass over the remaining bucket:
 
 ```text
-freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
@@ -488,8 +492,9 @@ matrix, promotion-recovery validation, demand-estimator validation, and
 gap-closure validation into four service classes.  Failed/cancelled same-shape
 attempts are accounted for in raw load classification but are not used as
 lower-service samples.
-The global theorem remains open because 20 completed/active production records
+Module85 closes the c9_16 wait-credit native-promotion shell residual with a
+static shell arithmetic seed-range parser and a profile-1 lower-service row.
+The global theorem remains open because 14 completed/active production records
 in the CPU/SUMO/transit family still require measured curves or equivalence
-certificates, led by 6 `freqduet_cpu_ablation|c_9_16` records, 5
-`sumo_eval_cpu|c_33_64` records, and 2
-`transit_freqhrl_cpu_validation|c_33_64` records.
+certificates, led by 5 `sumo_eval_cpu|c_33_64` records and three two-record
+Transit/FreqHRL residual buckets.

@@ -118,12 +118,15 @@ promotion-recovery validation, demand-estimator validation, and gap-closure PPO
 surrogate validation.  Pressure, demand, and gap-closure use parsed work units;
 promotion-recovery uses one completed command because the scheduler record has
 no stable exposed seed/step counter.
+Module85 closes the next c9_16 shell-shard native-promotion residual by adding
+a wait-credit v39 service class with statically parsed shell arithmetic
+seed-index ranges.
 
 ```text
-record_count_window = 6564
-mapped_task_count = 3118
-mapped_fraction = 0.475015
-unmapped_task_count = 3446
+record_count_window = 6583
+mapped_task_count = 3144
+mapped_fraction = 0.477594
+unmapped_task_count = 3439
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -148,6 +151,7 @@ strict rows most recently added to the mapped slice are:
 | `transit_trading_promotion_recovery_c17_32_completed_history` | 1 | 0.000000386 |
 | `transit_demand_estimator_c17_32_completed_history` | 10 | 0.024444444 |
 | `transit_gap_closure_c17_32_completed_history` | 8 | 0.546666667 |
+| `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 
 Capacity LP:
 
@@ -173,12 +177,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6564
-mapped_task_count = 5223
-representative_mapped_task_count = 2105
-mapped_fraction = 0.795704
-strict_mapped_fraction = 0.475015
-unmapped_task_count = 1341
+record_count_window = 6583
+mapped_task_count = 5250
+representative_mapped_task_count = 2106
+mapped_fraction = 0.797509
+strict_mapped_fraction = 0.477594
+unmapped_task_count = 1333
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -191,7 +195,7 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has been regenerated after Module84, but
+The representative raw-window artifact has been regenerated after Module85, but
 it remains diagnostic.  Use the strict Module49 artifact above for the current
 proof-facing mapped capacity slice.
 
@@ -272,6 +276,10 @@ promotion-recovery validation, demand-estimator validation, and gap-closure
 validation.  The strict raw-window LP counts all same-shape arrivals in the
 30-day raw history, while the lower-service rows are selected only from completed
 records with positive wall-clock duration.
+Module85 maps the c9_16 wait-credit v39 native-promotion shell shards with a
+static parser for literal shell arithmetic assignments.  This removes the
+previous `freqduet_cpu_ablation|c_9_16` manifest blocker without charging the
+rows to a FreqDuet ablation service class.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
@@ -297,9 +305,9 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3446 / 6564 tasks
-representative unmapped: 1341 / 6564 tasks
-representative-mapped but not theorem-grade: 2105 tasks
+strict unmapped: 3439 / 6583 tasks
+representative unmapped: 1333 / 6583 tasks
+representative-mapped but not theorem-grade: 2106 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3214
-representative mapped = 2807
-strict mapped = 1774
-measurement_required = 407
-mapped_fraction = 0.873367
+records = 3211
+representative mapped = 2808
+strict mapped = 1775
+measurement_required = 403
+mapped_fraction = 0.874494
 ```
 
 最大未闭合 bucket 是：
@@ -285,6 +285,7 @@ after Module81:  cpu_sumo_transit_eval_or_control = 43 / 3095 completed-active r
 after Module82:  cpu_sumo_transit_eval_or_control = 38 / 3136 completed-active records
 after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199 completed-active records
 after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214 completed-active records
+after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -668,7 +669,6 @@ unit rule = parsed episode units
 当前剩余 first probe order 是：
 
 ```text
-freqduet_cpu_ablation|c_9_16
 sumo_eval_cpu|c_33_64
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16

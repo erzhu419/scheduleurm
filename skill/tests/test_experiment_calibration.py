@@ -2270,6 +2270,58 @@ def test_module88_transit_c33_64_trading_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module89_transit_c9_16_pressure_matrix_completed_history_profile1(check, sch):
+    row = {
+        "id": "module89-pressure-c9",
+        "project": "TransitDuet",
+        "signature": "TransitDuet/auto-adopted/p4058457",
+        "description": "auto-adopted: TransitDuet on local:CPU-only (16 procs)",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 15,
+        "ram_mb": 528,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+        "cmd": (
+            "python3 -m freq_hrl.experiments.trading.pressure_test_matrix "
+            "--seeds 42 123 456 789 2026 --steps 720 --assets 3 "
+            "--workers 16 --output-dir transit_hrl/results/trading_pressure_matrix"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    key = "transit_trading_pressure_matrix_c9_16_completed_history"
+    check("Module89 maps c9_16 pressure matrix with scenario-baseline units",
+          cls["workload_key"] == key
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 777600.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles(key)
+    check("Module89 service cache exposes one profile1 c9_16 pressure lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 12223.088100591318, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in profiles]))
+
+    taskset = "production_transit_trading_pressure_matrix_c9_16_completed_history"
+    check("Module89 taskset is included in the default production certificate",
+          taskset in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(taskset,),
+    )
+    check("production load certificate certifies Module89 c9_16 pressure slice",
+          report["mapped_counts"] == {key: 1}
+          and math.isclose(report["mapped_units"][key], 777600.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module63_native_promotion_c17_seedrange_completed_history_profile1(check, sch):
     row = {
         "id": "native-c17",

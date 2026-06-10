@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 
-This note records the current gap after Module88.  It should be read together
+This note records the current gap after Module89.  It should be read together
 with:
 
 ```text
@@ -86,6 +86,7 @@ md/experiment_module86_offline_sumo_eval_c33_64_completed_history.md
 md/experiment_module87_external_auto_adopt_spin_population_boundary.md
 md/experiment_module88_transit_trading_policy_c33_64_completed_history.md
 md/experiment_module88_transit_trading_pressure_matrix_c33_64_completed_history.md
+md/experiment_module89_transit_trading_pressure_matrix_c9_16_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -495,11 +496,11 @@ unit rule = one completed eval command; skip-existing item ranges are not expand
 Not yet closed:
 
 ```text
-completed_active_production records = 3327
-strict completed-active mapped count = 1898
-representative completed-active mapped count = 2931
-measurement_required = 396
-cpu_sumo_transit_eval_or_control remaining = 5 / 3327
+completed_active_production records = 3333
+strict completed-active mapped count = 1906
+representative completed-active mapped count = 2939
+measurement_required = 394
+cpu_sumo_transit_eval_or_control remaining = 3 / 3333
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -594,7 +595,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
 43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
 Module83, 20 / 3214 after Module84, 14 / 3211 after Module85, and
-10 / 3255 after Module86, 7 / 3280 after Module87, and 5 / 3327 after Module88.
+10 / 3255 after Module86, 7 / 3280 after Module87, 5 / 3327 after Module88,
+and 3 / 3333 after Module89.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -721,6 +723,10 @@ blocker by splitting the two completed-active records into c33_64 trading policy
 and pressure-matrix completed-history service classes.  It reuses the existing
 policy and pressure parsers rather than merging unlike work under one rate.
 
+Module89 closes the former `transit_freqhrl_cpu_validation|c_9_16` first-probe
+blocker by mapping its two pressure-test matrix records to a c9_16
+completed-history service class that reuses the pressure parser.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -752,7 +758,6 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-transit_freqhrl_cpu_validation|c_9_16
 transit_freqhrl_cpu_validation|c_le2
 bamor_cpu_training|c_3_8
 ```

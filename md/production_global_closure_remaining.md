@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 
-This note records the current gap after Module85.  It should be read together
+This note records the current gap after Module86.  It should be read together
 with:
 
 ```text
@@ -82,6 +82,7 @@ md/experiment_module84_transit_trading_promotion_recovery_c17_32_completed_histo
 md/experiment_module84_transit_demand_estimator_c17_32_completed_history.md
 md/experiment_module84_transit_gap_closure_c17_32_completed_history.md
 md/experiment_module85_transit_native_promotion_c9_16_wait_credit_shell_completed_history.md
+md/experiment_module86_offline_sumo_eval_c33_64_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -480,16 +481,22 @@ workload_key = transit_native_promotion_c9_16_wait_credit_shell_completed_histor
 completed-active strict mapped count = 6
 feasible profiles = 1
 unit rule = statically parsed shell arithmetic seed range times episodes
+
+completed-history slice = offline-sumo c33_64 eval_*.py production commands
+workload_key = offline_sumo_eval_c33_64_completed_history
+completed-active strict mapped count = 5
+feasible profiles = 1
+unit rule = one completed eval command; skip-existing item ranges are not expanded
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3211
-strict completed-active mapped count = 1775
-representative completed-active mapped count = 2808
-measurement_required = 403
-cpu_sumo_transit_eval_or_control remaining = 14 / 3211
+completed_active_production records = 3255
+strict completed-active mapped count = 1822
+representative completed-active mapped count = 2855
+measurement_required = 400
+cpu_sumo_transit_eval_or_control remaining = 10 / 3255
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -582,7 +589,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 139 / 2766 after Module76, 113 / 2766 after Module77,
 94 / 2910 after Module78, 73 / 3058 after Module79, 56 / 3101 after Module80,
 43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
-Module83, 20 / 3214 after Module84, and 14 / 3211 after Module85.
+Module83, 20 / 3214 after Module84, 14 / 3211 after Module85, and
+10 / 3255 after Module86.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -693,6 +701,11 @@ Transit/FreqHRL wait-credit native-promotion shell shards, not FreqDuet ablation
 commands.  The new parser evaluates only literal shell arithmetic seed-index
 assignments and does not execute the command.
 
+Module86 closes the former `sumo_eval_cpu|c_33_64` first-probe blocker by
+mapping the five completed-active high-CPU offline-sumo rerun eval commands into
+a separate completed-history service class.  The unit is deliberately one
+completed eval command because the production commands use `--skip_existing`.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -724,11 +737,11 @@ collected and audited.
 The next production CPU/SUMO/transit slices should be attacked in this order:
 
 ```text
-sumo_eval_cpu|c_33_64
+freqduet_cpu_ablation|c_le2
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
-freqduet_cpu_ablation|c_le2
 transit_freqhrl_cpu_validation|c_le2
+bamor_cpu_training|c_3_8
 ```
 
 For every slice, the required closure pattern is:

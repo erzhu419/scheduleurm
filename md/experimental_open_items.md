@@ -245,11 +245,11 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3211
-representative mapped = 2808
-strict mapped = 1775
-measurement_required = 403
-mapped_fraction = 0.874494
+records = 3255
+representative mapped = 2855
+strict mapped = 1822
+measurement_required = 400
+mapped_fraction = 0.877112
 ```
 
 最大未闭合 bucket 是：
@@ -286,6 +286,7 @@ after Module82:  cpu_sumo_transit_eval_or_control = 38 / 3136 completed-active r
 after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199 completed-active records
 after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214 completed-active records
 after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211 completed-active records
+after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255 completed-active records
 ```
 
 所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
@@ -664,16 +665,22 @@ workload_key = freqduet_runner_v3_c33_64_completed_history
 feasible profiles = 1
 completed-active mapped count = 15
 unit rule = parsed episode units
+
+closed completed-history slice = offline-sumo c33_64 eval commands
+workload_key = offline_sumo_eval_c33_64_completed_history
+feasible profiles = 1
+completed-active mapped count = 5
+unit rule = one completed eval command
 ```
 
 当前剩余 first probe order 是：
 
 ```text
-sumo_eval_cpu|c_33_64
+freqduet_cpu_ablation|c_le2
 transit_freqhrl_cpu_validation|c_33_64
 transit_freqhrl_cpu_validation|c_9_16
-freqduet_cpu_ablation|c_le2
 transit_freqhrl_cpu_validation|c_le2
+bamor_cpu_training|c_3_8
 ```
 
 后续应优先实现这些 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。

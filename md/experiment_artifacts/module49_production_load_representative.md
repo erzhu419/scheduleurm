@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 6583
-mapped_task_count = 5250
-representative_mapped_task_count = 2106
-unmapped_task_count = 1333
-mapped_fraction = 0.7975087346194744
+record_count_window = 6626
+mapped_task_count = 5308
+representative_mapped_task_count = 2107
+unmapped_task_count = 1318
+mapped_fraction = 0.801086628433444
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -20,7 +20,7 @@ action_count_evaluated = 1
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
 | `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
-| `bamor_mujoco_c3_8_completed_history` | 387 | 7.465277778 |
+| `bamor_mujoco_c3_8_completed_history` | 423 | 8.159722222 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_mujoco_c_le2_completed_history` | 18 | 0.174537037 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
@@ -37,7 +37,7 @@ action_count_evaluated = 1
 | `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
 | `cpu_heavy_local_bench` | 524 | 0.202160494 |
 | `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
-| `freqduet_cpu_ablation_c17_32` | 223 | 0.006194444 |
+| `freqduet_cpu_ablation_c17_32` | 229 | 0.006361111 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
@@ -54,10 +54,11 @@ action_count_evaluated = 1
 | `freqduet_runner_v3_c_le2_completed_history` | 90 | 0.001868827 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `hybrid_rl_resac_ant` | 2113 | 0.065216049 |
+| `hybrid_rl_resac_ant` | 2114 | 0.065246914 |
 | `light_control_local` | 206 | 0.794753086 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
+| `offline_sumo_eval_c33_64_completed_history` | 15 | 0.000005787 |
 | `offline_sumo_eval_c_le2_completed_history` | 4 | 0.000001543 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `sumo_eval_simple_sac_c_le2` | 17 | 0.000006559 |
@@ -105,7 +106,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1161 |
+| `unmapped_cpu` | 1146 |
 | `unmapped_gpu` | 17 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

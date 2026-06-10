@@ -121,12 +121,16 @@ no stable exposed seed/step counter.
 Module85 closes the next c9_16 shell-shard native-promotion residual by adding
 a wait-credit v39 service class with statically parsed shell arithmetic
 seed-index ranges.
+Module86 closes the offline-sumo c33_64 eval-command residual with the same
+conservative service semantics as Module78: one completed production eval
+command is the progress unit because the records use `--skip_existing`/resume
+semantics and cannot be safely expanded into item or checkpoint counts.
 
 ```text
-record_count_window = 6583
-mapped_task_count = 3144
-mapped_fraction = 0.477594
-unmapped_task_count = 3439
+record_count_window = 6626
+mapped_task_count = 3201
+mapped_fraction = 0.483097
+unmapped_task_count = 3425
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -136,7 +140,7 @@ action_count_evaluated = 1
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83-84
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83-86
 strict rows most recently added to the mapped slice are:
 
 | Workload | Count | Lambda |
@@ -152,6 +156,7 @@ strict rows most recently added to the mapped slice are:
 | `transit_demand_estimator_c17_32_completed_history` | 10 | 0.024444444 |
 | `transit_gap_closure_c17_32_completed_history` | 8 | 0.546666667 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
+| `offline_sumo_eval_c33_64_completed_history` | 15 | 0.000005787 |
 
 Capacity LP:
 
@@ -177,12 +182,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6583
-mapped_task_count = 5250
-representative_mapped_task_count = 2106
-mapped_fraction = 0.797509
-strict_mapped_fraction = 0.477594
-unmapped_task_count = 1333
+record_count_window = 6626
+mapped_task_count = 5308
+representative_mapped_task_count = 2107
+mapped_fraction = 0.801087
+strict_mapped_fraction = 0.483097
+unmapped_task_count = 1318
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -195,7 +200,7 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has been regenerated after Module85, but
+The representative raw-window artifact has been regenerated after Module86, but
 it remains diagnostic.  Use the strict Module49 artifact above for the current
 proof-facing mapped capacity slice.
 
@@ -280,10 +285,13 @@ Module85 maps the c9_16 wait-credit v39 native-promotion shell shards with a
 static parser for literal shell arithmetic assignments.  This removes the
 previous `freqduet_cpu_ablation|c_9_16` manifest blocker without charging the
 rows to a FreqDuet ablation service class.
+Module86 maps c33_64 offline-sumo eval records to a separate completed-history
+service class.  It uses one completed eval command as the work unit and does not
+expand `--skip_existing` item ranges into artificial service.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
-execution.  The mapped LP remains positive but tightens to `0.000008435`,
+execution.  The mapped LP remains positive at `0.000011136`,
 because the offline-sumo lower-service point is deliberately one completed eval
 command over the slowest completed wall-clock duration.
 Module79 maps 7 raw-window c3_8 native-promotion persistent-stress records, 28
@@ -305,9 +313,9 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3439 / 6583 tasks
-representative unmapped: 1333 / 6583 tasks
-representative-mapped but not theorem-grade: 2106 tasks
+strict unmapped: 3425 / 6626 tasks
+representative unmapped: 1318 / 6626 tasks
+representative-mapped but not theorem-grade: 2107 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for

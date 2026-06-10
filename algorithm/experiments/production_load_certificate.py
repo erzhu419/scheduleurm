@@ -80,6 +80,7 @@ DEFAULT_TASKSETS = (
     "production_bamor_mujoco_c_le2_completed_history",
     "production_bamor_diagnostic_shard_c_le2_completed_history",
     "production_offline_sumo_eval_c_le2_completed_history",
+    "production_offline_sumo_eval_c33_64_completed_history",
     "production_h2oplus_shell_eval_c_le2_completed_history",
     "production_zsw_metrics_parser_c_le2_completed_history",
     "production_resco_config_eval_c_le2_completed_history",
@@ -338,6 +339,19 @@ def classify_record(
             "strict_measured",
             "module81_freqduet_runner_v3_c33_64_completed_history",
             units=runner_c33_64_units,
+        )
+
+    offline_sumo_c33_64 = _offline_sumo_eval_c33_64_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if offline_sumo_c33_64 is not None:
+        return _mapped(
+            "offline_sumo_eval_c33_64_completed_history",
+            "strict_measured",
+            "module86_offline_sumo_eval_c33_64_completed_history",
+            units=offline_sumo_c33_64,
         )
 
     native_c17_32_units = _native_promotion_c17_32_seedrange_units(
@@ -2290,6 +2304,35 @@ def _sumo_eval_c_le2_completed_history_units(
             )
 
     return None
+
+
+def _offline_sumo_eval_c33_64_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (32.0 < float(cpu) <= 64.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd_lower = str(row.get("cmd") or "").lower()
+    if not (project == "offline-sumo" or "/offline-sumo" in cwd or signature.startswith("offline-sumo/")):
+        return None
+    accepted = (
+        "eval_checkpoints_parallel.py",
+        "eval_operational.py",
+        "eval_e10.py",
+        "eval_passenger.py",
+        "eval_nobc.py",
+        "eval_arbitrary_ckpts.py",
+    )
+    if not any(script in cmd_lower for script in accepted):
+        return None
+    return 1.0
 
 
 def _parse_simple_sac_multiseed_eval_identity(cmd: str) -> tuple[str, int, float] | None:

@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module85
+## Current Result After Module86
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3211
-representative mapped = 2808
-strict mapped = 1775
-unmapped / measurement-required = 403
-representative mapped_fraction = 0.874494
+completed_active_production records = 3255
+representative mapped = 2855
+strict mapped = 1822
+unmapped / measurement-required = 400
+representative mapped_fraction = 0.877112
 capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
 global theorem closed = false
 ```
@@ -125,6 +125,12 @@ Module85 then adds:
 transit_native_promotion_c9_16_wait_credit_shell_completed_history = 6 / 3211 completed-active production records
 ```
 
+Module86 then adds:
+
+```text
+offline_sumo_eval_c33_64_completed_history = 5 / 3255 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -133,12 +139,12 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 160 | 0.049829 |
-| `cpu_eval_generic` | measurement required | 82 | 0.025537 |
-| `artifact_io_control` | measurement required | 77 | 0.023980 |
-| `scheduler_control_plane` | measurement required | 56 | 0.017440 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004360 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 14 | 0.004360 |
+| `generic_cpu_python` | measurement required | 161 | 0.049462 |
+| `cpu_eval_generic` | measurement required | 82 | 0.025192 |
+| `artifact_io_control` | measurement required | 77 | 0.023656 |
+| `scheduler_control_plane` | measurement required | 56 | 0.017204 |
+| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004301 |
+| `cpu_sumo_transit_eval_or_control` | measurement required | 10 | 0.003072 |
 
 The dominant remaining production-coverage blocker is still the
 CPU/SUMO/transit evaluation/control family, but it has been reduced from the
@@ -176,6 +182,7 @@ after Module82:  cpu_sumo_transit_eval_or_control = 38 / 3136
 after Module83:  cpu_sumo_transit_eval_or_control = 26 / 3199
 after Module84:  cpu_sumo_transit_eval_or_control = 20 / 3214
 after Module85:  cpu_sumo_transit_eval_or_control = 14 / 3211
+after Module86:  cpu_sumo_transit_eval_or_control = 10 / 3255
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -262,6 +269,10 @@ Module85 closes the next c9_16 native-promotion shell-shard residual by mapping
 wait-credit v39 shell arithmetic shards into a separate completed-history
 service class.  The parser statically evaluates literal integer assignments and
 does not execute the shell command.
+Module86 closes the offline-sumo c33_64 eval-command residual by mapping the
+five completed-active high-CPU offline-sumo rerun shards into a separate
+completed-history service class.  The unit is one completed production eval
+command; `--skip_existing` item ranges are not expanded.
 
 ## Interpretation
 
@@ -319,7 +330,8 @@ across CFCMT snapshot/pytest/phase1 and ZSW M21 service classes.  Module83 maps
 13 completed-active Transit/FreqHRL c3_8 residual records across six service
 classes.  Module84 maps 6 completed-active Transit/FreqHRL c17_32 residual
 records across four service classes.  Module85 maps 6 completed-active c9_16
-wait-credit shell shards.  The next closure targets are now the remaining
-CPU/SUMO/transit residual buckets, led by `sumo_eval_cpu|c_33_64`,
+wait-credit shell shards.  Module86 maps 5 completed-active offline-sumo c33_64
+eval-command shards.  The next closure targets are now the remaining
+CPU/SUMO/transit residual buckets, led by `freqduet_cpu_ablation|c_le2`,
 `transit_freqhrl_cpu_validation|c_33_64`, and
 `transit_freqhrl_cpu_validation|c_9_16` in the regenerated Module53 manifest.

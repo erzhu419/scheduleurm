@@ -95,7 +95,9 @@ md/or_submission_gap_closure.md
 
 ## Current State
 
-The global production theorem is not fully closed.
+The reviewer-facing completed-active production theorem population is now
+strictly closed by Modules97--99.  The scope is the Module51
+`completed_active_production` view, not the raw 30-day queue-history view.
 
 Already closed:
 
@@ -795,8 +797,9 @@ arrival_lambda_30d = 0.000058256173 command/s
 service_to_arrival_ratio = 5.058569
 ```
 
-After Module92--96, Module51 completed-active production obligations have no
-remaining measurement-required bucket:
+After Module92--96, Module51 completed-active production obligations had no
+remaining measurement-required bucket, but still contained representative
+strictness gaps:
 
 ```text
 record_count = 3378
@@ -805,15 +808,27 @@ measurement_required_count = 0
 mapped_fraction = 1.0
 ```
 
+Modules97--99 upgrade those remaining representative buckets to strict
+service-certificate classes:
+
+```text
+Module97: cpu_heavy_local_fabric_completed_history
+Module98: project-level hybrid RL production-fabric completed-command classes
+Module99: Transit real-demand c9_16 throughput_safe_wait_v6 finite-feature profile extension
+
+latest Module51 completed_active_production strict view
+record_count = 3411
+mapped_count = 3411
+representative_mapped_count = 0
+unmapped_count = 0
+measurement_required_count = 0
+global_theorem_closed = true
+```
+
 ## Interpretation
 
-The mapped capacity slack is positive, but that proves only that the already
-measured and mapped production slice lies inside the measured capacity region.
-It does not by itself prove that the full production load is stabilizable.
-The latest Module51 obligation view has no `measurement_required` bucket, but
-the strict view still contains representative buckets, so a paper claim should
-distinguish "all completed-active obligations mapped" from "all representative
-buckets upgraded to strict measured service certificates."
+The mapped capacity slack is positive for the theorem-facing completed-active
+production slice after strict closure:
 
 The mapped-capacity slack is now much tighter than before Module59 because the
 SimpleSAC and Module74 paper-longtrain slices use conservative completed-history
@@ -821,15 +836,18 @@ profile-1 lower-service rates.  This tightening is part of the theorem
 condition audit, not a reason to relabel slow tasks:
 
 ```text
-strict mapped delta = 0.000011136
+strict mapped delta = 0.00000912324072761479
 ```
 
-This is a theorem-condition warning, not a reason to relabel unmeasured tasks.
-Either future work measures higher SimpleSAC co-location profiles, or this slice
-stays as a conservative low-throughput service class.
+Module49 still reports raw-window `global_coverage_usable_for_theorem = false`
+because it evaluates every row in the raw 30-day history window, including
+cancelled, forgotten, benchmark, attempted-only, and otherwise non theorem
+population rows.  The paper claim should cite Module51 for population coverage
+and Module49 for mapped-slice capacity.
 
-Representative mappings are diagnostic.  They are not theorem-grade unless the
-bucket has either a measured service curve or a separate equivalence certificate.
+Representative mappings remain diagnostic for any future production bucket.
+They are not theorem-grade unless the bucket has either a measured service
+curve or a separate finite-feature/equivalence certificate.
 
 The live scheduler oracle trace / lower-service bridge is also not globally
 closed until real production candidate traces with lower-service semantics are

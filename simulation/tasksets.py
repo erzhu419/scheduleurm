@@ -2200,6 +2200,184 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_module97_cpu_heavy_local_fabric_completed_history",
+            purpose=(
+                "A strict production-fabric completed-history closure slice for "
+                "residual local CPU-heavy production commands that were previously "
+                "only representative-mapped to the q10 local CPU bucket."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed command as the service unit. Profile 1 is a "
+                "realized completed-command lower-service certificate over the "
+                "observed local CPU production fabric, not a generic CPU benchmark."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="cpu_heavy_local_fabric_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=189,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.45,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module97 residual CPU-heavy production-fabric closure",
+                    benchmark_source="Scheduleurm module97 production-fabric completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class intentionally uses completed-command service, "
+                        "separate from the synthetic q10 cpu_heavy_local_bench "
+                        "progress-unit curve."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_module98_hybrid_rl_project_fabric_completed_history",
+            purpose=(
+                "Strict production-fabric completed-history closure slices for "
+                "residual GPU/RL project families that were previously only "
+                "representative-mapped to the q11 hybrid RL curve."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "by project family with one completed command as the service unit. "
+                "Each member loads profile 1 from the corresponding project-level "
+                "completed-history burst."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="hybrid_rl_resac_jmlr_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=340,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 RE-SAC-JMLR GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed RE-SAC-JMLR GPU/RL command.",
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_resac_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=208,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 RE-SAC GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed RE-SAC GPU/RL command.",
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_bapr_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=142,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 BAPR GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed BAPR GPU/RL command.",
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_bapr_v15_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=103,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 bapr_v15 GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed bapr_v15 GPU/RL command.",
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_cs_bapr_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=59,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.60,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 CS-BAPR GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The artifact reports done/running/queued counts explicitly; "
+                        "the service unit is one completed CS-BAPR GPU/RL command."
+                    ),
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_sensing_v10k_project_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.50,
+                    quadrant="high_cpu_high_gpu",
+                    role="Module98 sensing-compressibility-v10k GPU/RL production-fabric closure",
+                    benchmark_source="Scheduleurm module98 project-level completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed sensing-compressibility-v10k GPU/RL command.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_module99_transit_real_demand_c9_16_profile_extension",
+            purpose=(
+                "A strict finite-feature profile-extension closure slice for "
+                "c9_16 Transit/FreqHRL native real-demand throughput-safe-wait "
+                "control-profile shards."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with the same real-demand source/seed/episode work-unit used by "
+                "Module95. The service lower bound is inherited from the measured "
+                "Module95 c9_16 native_real_demand_control_validation profile-1 "
+                "lower-service point, and the artifact records this as a "
+                "finite-feature profile-extension certificate."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_real_demand_safe_wait_c9_16_profile_extension",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module99 c9_16 native real-demand throughput-safe-wait profile extension",
+                    benchmark_source=(
+                        "Scheduleurm module99 finite-feature extension from the "
+                        "module95 native_real_demand_control_validation c9_16 "
+                        "completed-history lower-service point."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This does not claim all Transit workloads. It covers the "
+                        "same executable, c9_16 CPU range, source/seed/episode "
+                        "work-unit, and throughput_safe_wait_v6 control-profile "
+                        "family only."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_bamor_train_compare_c9_16_completed_history",
             purpose=(
                 "A script-level BAMOR c_9_16 closure slice. It covers no-GPU "

@@ -204,29 +204,29 @@ measured hybrid_research_portfolio finite service-action slice:
 Remaining scope limitation:
   Module49 estimates production load from a 30-day Scheduleurm history window.
   The mapped measured-bucket capacity LP is positive:
-    strict measured mapping delta = 0.000011136
-    representative mapping delta = 0.000011136
-  Full global theorem coverage is still open because the representative run
-  leaves 1309 / 6736 tasks unmapped and maps 2152 tasks only by representative
-  bucket equivalence rather than theorem-grade service measurement.
+    strict measured mapping delta = 0.00000912324072761479
+    representative mapping delta = 0.00000912324072761479
+  Module49 is intentionally a raw-window mapped-slice artifact, so its raw
+  `global_coverage_usable_for_theorem` flag remains false for non-theorem
+  population rows.
 
   Module51 tightens the population definition.  Module73 further excludes
   unobservable external auto-adopted stdin/wait-for processes from the
   controlled-arrival theorem population when they have no scheduler id, no
-  scheduler log, and no reproducible progress unit.  In the reviewer-facing
-  completed-active production view, representative coverage is:
-    records = 3347
-    mapped = 2955
-    strict mapped = 1911
-    measurement_required = 392
-    mapped_fraction = 0.882880
-  The former dominant CPU/SUMO/transit bucket is now closed in the regenerated
-  Module53 manifest:
-    cpu_sumo_transit_eval_or_control = 0 / 3347 records
-  Therefore the next production-coverage closure target is no longer another
-  CPU/SUMO/transit service curve. It is the remaining non-CPU/SUMO/transit
-  production buckets: generic CPU Python, CPU eval, artifact/control-plane, and
-  unmeasured GPU-RL variants.
+  scheduler log, and no reproducible progress unit.  Modules92--99 then close
+  the remaining command-shape, CPU-fabric, GPU/RL-fabric, and c9_16
+  real-demand profile-extension buckets.  In the reviewer-facing
+  completed-active production view:
+    records = 3411
+    strict mapped = 3411
+    representative mapped = 0
+    unmapped = 0
+    measurement_required = 0
+    global_theorem_closed = true
+  The former dominant CPU/SUMO/transit bucket and the later representative
+  CPU/GPU buckets are now closed for this population.  Future production rows
+  must still follow the same strict service-certificate pattern before being
+  added to theorem-facing claims.
 
   Module53 turns that target into concrete sub-buckets.  Module56 closed the
   exact run_freqduet_ablation.py slice inside the previous top sub-bucket:

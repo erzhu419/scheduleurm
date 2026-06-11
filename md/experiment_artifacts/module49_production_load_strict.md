@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 6853
-mapped_task_count = 3715
+record_count_window = 6921
+mapped_task_count = 4791
 representative_mapped_task_count = 0
-unmapped_task_count = 3138
-mapped_fraction = 0.5420983510871151
+unmapped_task_count = 2130
+mapped_fraction = 0.6922410056350239
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -15,11 +15,11 @@ action_count_evaluated = 1
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `assumption_agent_live_benchmark_completed_history` | 4 | 0.000001543 |
+| `assumption_agent_live_benchmark_completed_history` | 5 | 0.000001929 |
 | `assumption_agent_meta_qa_evolution_completed_history` | 21 | 0.000008102 |
 | `assumption_agent_performance_validation_completed_history` | 6 | 0.000002315 |
 | `assumption_agent_phase2_v20_framework_completed_history` | 6 | 0.000002315 |
-| `assumption_agent_unittest_completed_history` | 51 | 0.000019676 |
+| `assumption_agent_unittest_completed_history` | 53 | 0.000020448 |
 | `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
@@ -45,12 +45,13 @@ action_count_evaluated = 1
 | `cfcmt_traffic_signal_phase1_c3_8_completed_history` | 1 | 0.000000386 |
 | `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
+| `cpu_heavy_local_fabric_completed_history` | 189 | 0.000072917 |
 | `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
 | `freqduet_cpu_ablation_c17_32` | 227 | 0.006305556 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
-| `freqduet_cpu_ablation_c9_16` | 140 | 0.077044753 |
+| `freqduet_cpu_ablation_c9_16` | 141 | 0.078086420 |
 | `freqduet_cpu_ablation_c_le2_completed_history` | 9 | 0.002510417 |
 | `freqduet_paper_longtrain_c17_32_completed_history` | 35 | 0.000013503 |
 | `freqduet_preflight_c_le2_completed_history` | 14 | 0.000005401 |
@@ -61,22 +62,28 @@ action_count_evaluated = 1
 | `freqduet_runner_v3_c3_8_completed_history` | 87 | 0.001068287 |
 | `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
 | `freqduet_runner_v3_c_le2_completed_history` | 90 | 0.001868827 |
-| `freqduet_spacectx_ep100_c3_8_completed_history` | 5 | 0.005131173 |
+| `freqduet_spacectx_ep100_c3_8_completed_history` | 4 | 0.004089506 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `h2oplus_snapshot_gpu_completed_history` | 8 | 0.000003086 |
+| `hybrid_rl_bapr_project_fabric_completed_history` | 142 | 0.000054784 |
+| `hybrid_rl_bapr_v15_project_fabric_completed_history` | 103 | 0.000039738 |
+| `hybrid_rl_cs_bapr_project_fabric_completed_history` | 59 | 0.000022762 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
+| `hybrid_rl_resac_jmlr_project_fabric_completed_history` | 340 | 0.000131173 |
+| `hybrid_rl_resac_project_fabric_completed_history` | 208 | 0.000080247 |
+| `hybrid_rl_sensing_v10k_project_fabric_completed_history` | 2 | 0.000000772 |
 | `light_control_local` | 206 | 0.794753086 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_routeguard_analysis_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
 | `offline_sumo_eval_c33_64_completed_history` | 15 | 0.000005787 |
-| `offline_sumo_eval_c_le2_completed_history` | 4 | 0.000001543 |
+| `offline_sumo_eval_c_le2_completed_history` | 3 | 0.000001157 |
 | `resac_bus_seed_extension_cpu_eval_completed_history` | 2 | 0.000000772 |
 | `resac_conda_pack_completed_history` | 1 | 0.000000386 |
 | `resac_review5_jax_train_fabric_completed_history` | 151 | 0.000058256 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `scheduleurm_control_plane_completed_history` | 55 | 0.000021219 |
+| `scheduleurm_control_plane_completed_history` | 56 | 0.000021605 |
 | `scheduleurm_hpc_relay_smoke_completed_history` | 1 | 0.000000386 |
 | `sensing_pems_cache_completed_history` | 5 | 0.000001929 |
 | `sensing_voltage_cache_completed_history` | 6 | 0.000002315 |
@@ -91,16 +98,17 @@ action_count_evaluated = 1
 | `transit_native_merge_c3_8_completed_history` | 1 | 0.000000386 |
 | `transit_native_promotion_c17_32_residual_completed_history` | 16 | 0.000505787 |
 | `transit_native_promotion_c17_32_seedrange_completed_history` | 167 | 0.017858410 |
-| `transit_native_promotion_c33_64_batch_completed_history` | 200 | 0.020560185 |
+| `transit_native_promotion_c33_64_batch_completed_history` | 208 | 0.020757716 |
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 16 | 0.000132716 |
 | `transit_native_promotion_c65p_completed_history` | 184 | 0.014299383 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 100 | 0.003364969 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 116 | 0.003562500 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
-| `transit_native_real_demand_batch_c3_8_completed_history` | 31 | 0.000296296 |
+| `transit_native_real_demand_batch_c3_8_completed_history` | 35 | 0.000314815 |
 | `transit_native_real_demand_batch_c9_16_completed_history` | 2 | 0.000009259 |
+| `transit_native_real_demand_safe_wait_c9_16_profile_extension` | 2 | 0.000009259 |
 | `transit_surrogate_c3_8_completed_history` | 1 | 0.008333333 |
 | `transit_surrogate_validation_c_le2_completed_history` | 3 | 0.019037037 |
 | `transit_trading_policy_c33_64_completed_history` | 1 | 0.008333333 |
@@ -129,7 +137,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1215 |
-| `unmapped_gpu` | 1768 |
+| `unmapped_cpu` | 1032 |
+| `unmapped_gpu` | 943 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

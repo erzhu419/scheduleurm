@@ -1,14 +1,155 @@
 {
-  "blocker_count": 1,
-  "blockers": [
+  "blocker_count": 0,
+  "blockers": [],
+  "enriched_slot_count": 2,
+  "enriched_slots": [
     {
-      "path": "/home/erzhu419/.claude/scheduler/oracle_trace.jsonl",
-      "reason": "trace_file_does_not_exist"
+      "algorithm": "legacy",
+      "best_score_exact_over_candidate_set": true,
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "action_id": "node=local|cpu",
+          "algorithm_audit": {},
+          "candidate_bucket": null,
+          "class_key": null,
+          "gpu_idx": null,
+          "lower_service": {
+            "scheduleurm_control_plane_completed_history": 0.002376763057502073
+          },
+          "lower_service_source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/module94_scheduleurm_control_plane_completed_history_reports/profile_1_per_resource_summary.json",
+          "node": "local",
+          "penalty_units": 0.0,
+          "primary_numeric_score": 0.0,
+          "regime_key": null,
+          "score_sort_key": [
+            0,
+            1,
+            0,
+            0,
+            -9,
+            -8128
+          ],
+          "selected": true
+        }
+      ],
+      "hard_constraints": {
+        "allowed_nodes": [],
+        "preferred_node": null,
+        "require_gpu_idx": null,
+        "require_node": "local",
+        "resume_preferred_nodes": []
+      },
+      "phase": "require_node",
+      "priority": "high",
+      "project": "scheduleurm",
+      "queue_vector": {
+        "scheduleurm_control_plane_completed_history": 1.0
+      },
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_action_id": "node=local|cpu",
+      "signature": "scheduleurm/live-oracle-audit/20260611",
+      "slot_id": "slot:t9981:1781145424.92721:1781145677613",
+      "task_id": "t9981",
+      "theorem_semantics_available": false,
+      "ts": 1781145677.700589
+    },
+    {
+      "algorithm": "legacy",
+      "best_score_exact_over_candidate_set": true,
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "action_id": "node=local|cpu",
+          "algorithm_audit": {},
+          "candidate_bucket": null,
+          "class_key": null,
+          "gpu_idx": null,
+          "lower_service": {
+            "scheduleurm_control_plane_completed_history": 0.002376763057502073
+          },
+          "lower_service_source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/module94_scheduleurm_control_plane_completed_history_reports/profile_1_per_resource_summary.json",
+          "node": "local",
+          "penalty_units": 0.0,
+          "primary_numeric_score": 0.0,
+          "regime_key": null,
+          "score_sort_key": [
+            0,
+            1,
+            0,
+            0,
+            -8,
+            -8993
+          ],
+          "selected": true
+        }
+      ],
+      "hard_constraints": {
+        "allowed_nodes": [],
+        "preferred_node": null,
+        "require_gpu_idx": null,
+        "require_node": "local",
+        "resume_preferred_nodes": []
+      },
+      "phase": "require_node",
+      "priority": "high",
+      "project": "scheduleurm",
+      "queue_vector": {
+        "scheduleurm_control_plane_completed_history": 1.0
+      },
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_action_id": "node=local|cpu",
+      "signature": "scheduleurm/live-oracle-audit/20260611",
+      "slot_id": "slot:t9983:1781145424.92721:1781145827811",
+      "task_id": "t9983",
+      "theorem_semantics_available": false,
+      "ts": 1781145827.837714
     }
   ],
-  "enriched_slot_count": 0,
-  "input": "/home/erzhu419/.claude/scheduler/oracle_trace.jsonl",
-  "input_slot_count": 0,
-  "status": "NO_TRACE",
-  "usable_for_theorem": false
+  "input": "md/experiment_artifacts/module101_live_scheduler_oracle_trace_raw.jsonl",
+  "input_slot_count": 2,
+  "oracle_audit": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 2,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 2,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 2,
+    "rows": [
+      {
+        "best_action_id": "node=local|cpu",
+        "best_candidate_score": 0.002376763057502073,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=local|cpu",
+        "chosen_score": 0.002376763057502073,
+        "oracle_gap": 0.0,
+        "q_norm": 1.0,
+        "slot_id": "slot:t9981:1781145424.92721:1781145677613"
+      },
+      {
+        "best_action_id": "node=local|cpu",
+        "best_candidate_score": 0.002376763057502073,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=local|cpu",
+        "chosen_score": 0.002376763057502073,
+        "oracle_gap": 0.0,
+        "q_norm": 1.0,
+        "slot_id": "slot:t9983:1781145424.92721:1781145827811"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 2,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "queue_vector": "md/experiment_artifacts/module101_live_scheduler_oracle_queue_vector.json",
+  "service_lookup": "md/experiment_artifacts/module101_live_scheduler_oracle_service_lookup.json",
+  "status": "ENRICHED_THEOREM_PASS",
+  "usable_for_theorem": true
 }

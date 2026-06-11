@@ -59,10 +59,14 @@ oracle_gap(k) <= alpha0 + alpha1 * ||Q(k)||_1
 Current production status:
 
 ```text
-status = NO_TRACE
-input = /home/erzhu419/.claude/scheduler/oracle_trace.jsonl
-usable_for_theorem = false
-blocker = trace_file_does_not_exist
+input = md/experiment_artifacts/module101_live_scheduler_oracle_trace_raw.jsonl
+output = md/experiment_artifacts/module101_live_scheduler_oracle_trace_enriched.jsonl
+status = ENRICHED_THEOREM_PASS
+input_slot_count = 2
+enriched_slot_count = 2
+alpha0 = 0.0
+alpha1 = 0.0
+usable_for_theorem = true
 ```
 
 The regression test validates the non-production bridge on a two-candidate
@@ -78,7 +82,8 @@ alpha1                       -> 0.3
 ## Interpretation
 
 This closes the software path from live candidate traces to theorem constants
-`alpha0, alpha1`.  It does not claim a production oracle certificate yet.  A
-theorem-grade production pass still requires a real trace, a lower-service row
-for every candidate in every traced slot, and the correct queue vector for the
+`alpha0, alpha1`, and Module101 now exercises that path on one emitted live
+scheduler trace.  The scope remains per-trace: a theorem-grade online oracle
+claim for future dispatches still requires a real trace, a lower-service row for
+every candidate in every traced slot, and the correct queue vector for the
 decision state.

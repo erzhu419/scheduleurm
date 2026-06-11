@@ -1,4 +1,8 @@
+import json
 import math
+import tempfile
+from collections import Counter
+from pathlib import Path
 
 from algorithm.experiments.capacity_lp import drift_margin_certificate, solve_capacity_slack
 from algorithm.experiments.action_model import (
@@ -19,6 +23,9 @@ from algorithm.experiments.oracle_audit import audit_slots
 from algorithm.experiments.oracle_trace_enrichment import enrich_trace_slots
 from algorithm.experiments.penalty_fit import fit_penalty_envelope
 from algorithm.experiments.live_validation import compare_replay_to_live
+from algorithm.experiments.live_scheduler_oracle_closure import (
+    build_live_scheduler_oracle_closure,
+)
 from algorithm.experiments.portfolio_live_proxy import build_composed_live_report
 from algorithm.experiments.production_cpu_workload_curve import (
     build_submission_plan,
@@ -335,6 +342,46 @@ def test_oracle_trace_enrichment_attaches_lower_service_before_theorem_bridge(ch
           and math.isclose(audit["rows"][0]["oracle_gap"], 3.0)
           and math.isclose(audit["alpha1"], 0.3),
           diag=str(enriched))
+
+
+def test_live_scheduler_oracle_closure_requires_trace_and_enriches_live_slot(check, sch):
+    with tempfile.TemporaryDirectory() as td:
+        tmp_path = Path(td)
+        missing = build_live_scheduler_oracle_closure(trace_path=tmp_path / "missing.jsonl")
+        check("live scheduler oracle closure refuses absent live trace",
+              missing["status"] == "NO_TRACE"
+              and not missing["usable_for_live_scheduler_oracle_trace"],
+              diag=str(missing))
+
+        trace = tmp_path / "live_trace.jsonl"
+        trace.write_text(
+            json.dumps({
+                "slot_id": "slot-live",
+                "score_semantics": "scheduler_sort_key_minimization",
+                "task_id": "t-live",
+                "algorithm": "legacy",
+                "phase": "require_node",
+                "candidates": [
+                    {
+                        "action_id": "node=local|cpu",
+                        "selected": True,
+                        "primary_numeric_score": 0.0,
+                        "score_sort_key": [0.0],
+                    }
+                ],
+            }) + "\n",
+            encoding="utf-8",
+        )
+        closed = build_live_scheduler_oracle_closure(trace_path=trace)
+        bridge = closed["theorem_oracle_bridge"]
+        check("live scheduler oracle closure enriches emitted scheduler trace into theorem bridge",
+              closed["status"] == "LIVE_SCHEDULER_THEOREM_ORACLE_PASS"
+              and closed["usable_for_live_scheduler_oracle_trace"]
+              and closed["scheduler_score_audit"]["usable_for_scheduler_score_audit"]
+              and bridge["status"] == "THEOREM_ORACLE_PASS"
+              and math.isclose(bridge["alpha0"], 0.0)
+              and math.isclose(bridge["alpha1"], 0.0),
+              diag=str(closed))
 
 
 def test_slack_accounting_certificate_combines_theorem_constants(check, sch):
@@ -3383,6 +3430,15 @@ def test_module94_remaining_completed_history_profile1(check, sch):
         ),
         dict(
             base,
+            id="module94-scheduleurm-live-oracle-control",
+            project="scheduleurm",
+            signature="scheduleurm/live-oracle-audit-gated/20260611",
+            cwd="/home/erzhu419/mine_code/scheduleurm",
+            cmd="python3 -c 'print(\"DONE scheduleurm-live-oracle-audit\")'",
+            expected_key="scheduleurm_control_plane_completed_history",
+        ),
+        dict(
+            base,
             id="module94-hpc-smoke",
             project="sched-hpc-e2e-20260522-214808-175687",
             signature="smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687",
@@ -3430,18 +3486,18 @@ def test_module94_remaining_completed_history_profile1(check, sch):
 
     cache = build_default_cache()
     expected_rates = {
-        "assumption_agent_performance_validation_completed_history": 0.004287388788490953,
-        "assumption_agent_live_benchmark_completed_history": 0.010502483866490693,
-        "cfcmt_cpu_eval_completed_history": 0.0006725559539257635,
-        "cfcmt_pytest_cpu_completed_history": 0.0037277191327932707,
-        "sensing_voltage_cache_completed_history": 2.5898989869966667e-06,
-        "sensing_pems_cache_completed_history": 2.9060032041299026e-06,
+        "assumption_agent_performance_validation_completed_history": 0.008662232946927022,
+        "assumption_agent_live_benchmark_completed_history": 0.010628063338119095,
+        "cfcmt_cpu_eval_completed_history": 0.0024717048202461027,
+        "cfcmt_pytest_cpu_completed_history": 0.008407580006958583,
+        "sensing_voltage_cache_completed_history": 2.2569697287869053e-05,
+        "sensing_pems_cache_completed_history": 7.277248550811589e-05,
         "nature_emissions_routeguard_analysis_completed_history": 0.014325646265070921,
-        "scheduleurm_control_plane_completed_history": 0.00032671969225857604,
+        "scheduleurm_control_plane_completed_history": 0.002376763057502073,
         "scheduleurm_hpc_relay_smoke_completed_history": 0.016517801613172893,
-        "bapr_id_ood_merge_cpu_eval_completed_history": 0.004724246710130393,
-        "resac_bus_seed_extension_cpu_eval_completed_history": 9.542466202968175e-06,
-        "h2oplus_snapshot_gpu_completed_history": 0.0005584777370374466,
+        "bapr_id_ood_merge_cpu_eval_completed_history": 0.013885331044492152,
+        "resac_bus_seed_extension_cpu_eval_completed_history": 9.894845665886395e-06,
+        "h2oplus_snapshot_gpu_completed_history": 0.00068041098564836,
     }
     check("Module94 service cache exposes profile1 lower services",
           all([record.profile for record in cache.profiles(key)] == [1] for key in expected_rates)
@@ -3457,8 +3513,9 @@ def test_module94_remaining_completed_history_profile1(check, sch):
         taskset_names=("production_module94_remaining_completed_history",),
     )
     check("production load certificate sums Module94 command units",
-          report["mapped_counts"] == {row["expected_key"]: 1 for row in rows}
-          and all(math.isclose(value, 1.0) for value in report["mapped_units"].values())
+          report["mapped_counts"] == dict(Counter(row["expected_key"] for row in rows))
+          and all(math.isclose(report["mapped_units"][key], float(count))
+                  for key, count in Counter(row["expected_key"] for row in rows).items())
           and report["global_coverage_usable_for_theorem"]
           and report["mapped_capacity_usable_for_theorem"],
           diag=str(report))

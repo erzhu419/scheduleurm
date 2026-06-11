@@ -39,21 +39,25 @@ oracle_gap(k) <= alpha0 + alpha1 ||Q(k)||_1
 Current production trace status:
 
 ```text
-status = NO_TRACE
-trace_slot_count = 0
-converted_slot_count = 0
-usable_for_theorem = false
+input = md/experiment_artifacts/module101_live_scheduler_oracle_trace_enriched.jsonl
+status = THEOREM_ORACLE_PASS
+trace_slot_count = 2
+converted_slot_count = 2
+alpha0 = 0.0
+alpha1 = 0.0
+usable_for_theorem = true
 ```
 
-Reason:
+Scope:
 
 ```text
-~/.claude/scheduler/oracle_trace.jsonl does not exist yet
+one emitted live scheduler candidate-family trace after Module55 lower-service enrichment
 ```
 
-This is an honest blocker, not a theorem failure.  The implementation path is
-now closed: once real decisions are traced with lower-service vectors, the
-bridge can directly produce `alpha0, alpha1`.
+The previous `NO_TRACE` blocker is closed for this captured trace.  This does
+not make untraced future dispatches theorem-grade automatically; every future
+online-oracle claim still needs the same Module50 -> Module55 -> Module52
+artifact chain.
 
 Module55 now implements the enrichment feeder for this strict gate:
 

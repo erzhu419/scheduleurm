@@ -1,11 +1,38 @@
 {
-  "audited_slot_count": 0,
-  "input": "/home/erzhu419/.claude/scheduler/oracle_trace.jsonl",
+  "audited_slot_count": 2,
+  "input": "md/experiment_artifacts/module101_live_scheduler_oracle_trace_raw.jsonl",
   "max_scheduler_score_gap": 0.0,
-  "rows": [],
-  "status": "NO_TRACE",
-  "theorem_blocker": "trace file does not exist",
-  "trace_slot_count": 0,
-  "usable_for_scheduler_score_audit": false,
+  "rows": [
+    {
+      "algorithm": "legacy",
+      "best_action_id": "node=local|cpu",
+      "best_primary_score": 0.0,
+      "candidate_count": 1,
+      "phase": "require_node",
+      "scheduler_score_gap": 0.0,
+      "score_semantics": "scheduler_sort_key_minimization",
+      "selected_action_id": "node=local|cpu",
+      "selected_primary_score": 0.0,
+      "slot_id": "slot:t9981:1781145424.92721:1781145677613",
+      "task_id": "t9981"
+    },
+    {
+      "algorithm": "legacy",
+      "best_action_id": "node=local|cpu",
+      "best_primary_score": 0.0,
+      "candidate_count": 1,
+      "phase": "require_node",
+      "scheduler_score_gap": 0.0,
+      "score_semantics": "scheduler_sort_key_minimization",
+      "selected_action_id": "node=local|cpu",
+      "selected_primary_score": 0.0,
+      "slot_id": "slot:t9983:1781145424.92721:1781145827811",
+      "task_id": "t9983"
+    }
+  ],
+  "status": "SCHEDULER_SCORE_PASS",
+  "theorem_blocker": "trace uses scheduler sort-key semantics, not robust MaxWeight lower-service semantics",
+  "trace_slot_count": 2,
+  "usable_for_scheduler_score_audit": true,
   "usable_for_theorem": false
 }

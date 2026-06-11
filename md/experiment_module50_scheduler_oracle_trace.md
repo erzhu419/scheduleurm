@@ -91,29 +91,31 @@ MaxWeight theorem certificate.
 Current artifact:
 
 ```text
-status = NO_TRACE
-trace_slot_count = 0
-audited_slot_count = 0
-usable_for_scheduler_score_audit = false
-usable_for_theorem = false
-```
-
-Reason:
-
-```text
-No production candidate-family trace has been collected yet.
-```
-
-The new regression test does validate the mechanism on a synthetic two-GPU
-decision:
-
-```text
-candidate_count = 2
-selected_action = node=jtl110gpu|gpu=0
-scheduler_score_gap = 0
+input = md/experiment_artifacts/module101_live_scheduler_oracle_trace_raw.jsonl
 status = SCHEDULER_SCORE_PASS
+trace_slot_count = 2
+audited_slot_count = 2
+usable_for_scheduler_score_audit = true
 usable_for_theorem = false
 ```
+
+Theorem blocker:
+
+```text
+trace uses scheduler sort-key semantics, not robust MaxWeight lower-service semantics
+```
+
+Captured slots:
+
+```text
+slot:t9981:1781145424.92721:1781145677613 -> node=local|cpu
+slot:t9983:1781145424.92721:1781145827811 -> node=local|cpu
+scheduler_score_gap = 0
+```
+
+The regression test also validates the mechanism on a synthetic two-GPU
+decision, so both the synthetic and emitted-live paths now exercise the trace
+audit code.
 
 ## Remaining Theorem Condition
 
@@ -134,10 +136,10 @@ Then `algorithm/experiments/oracle_audit.py` can estimate:
 oracle_gap(k) <= alpha0 + alpha1 * ||Q(k)||_1
 ```
 
-Until those lower-service vectors are logged or reconstructed from the measured
-service cache for each live decision, the live scheduler oracle term remains an
-open empirical-theorem bridge.  The important correction is that selected-only
-history can no longer be mistaken for a full candidate-set certificate.
+Raw Module50 output is intentionally not the theorem-side certificate.  The
+important correction is that selected-only history can no longer be mistaken for
+a full candidate-set certificate, and scheduler-sort-key optimality is kept
+separate from robust MaxWeight lower-service optimality.
 
 Module55 now implements the reconstruction path:
 
@@ -149,6 +151,7 @@ scheduler candidate-family trace
 -> Module52 alpha0/alpha1 audit
 ```
 
-The remaining blocker is empirical coverage, not missing software plumbing:
-real production traces and lower-service rows must exist for every candidate in
-each traced slot.
+For the captured Module101 trace this path now closes through Module55 and
+Module52 with `alpha0 = alpha1 = 0`.  Future dispatches still need their own
+trace, measured lower-service rows, and queue vector before they are used as
+theorem-grade online oracle evidence.

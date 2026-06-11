@@ -15,8 +15,8 @@ Current Module51 status:
 
 ```text
 global_theorem_closed = true
-completed_active_production strict records = 3419
-strict mapped = 3419
+completed_active_production strict records = 3437
+strict mapped = 3437
 representative mapped = 0
 unmapped = 0
 measurement_required = 0
@@ -34,11 +34,11 @@ representative mapped delta = 0.00000912324072761479
 Module49 raw-window global coverage is intentionally false:
 
 ```text
-raw 30-day records = 6933
-strict raw mapped = 4803
-strict raw unmapped = 2130
-representative raw mapped = 6012
-representative raw unmapped = 921
+raw 30-day records = 6957
+strict raw mapped = 4825
+strict raw unmapped = 2132
+representative raw mapped = 6034
+representative raw unmapped = 923
 ```
 
 This is not a contradiction.  Raw history includes cancelled, forgotten,
@@ -53,7 +53,7 @@ completed-active production population:
 
 ```text
 status = SERVICE_MAP_THEOREM_ORACLE_PASS
-completed_active_record_count = 3419
+completed_active_record_count = 3437
 alpha0 = 0.0
 alpha1 = 0.0
 usable_for_service_map_oracle_bridge = true
@@ -64,9 +64,9 @@ This is a robust MaxWeight lower-service trace constructed from the measured
 production service map.  It proves the theorem bridge and alpha0/alpha1 audit
 close on the measured lower-service objects.
 
-It is not a live dispatch trace.  The live scheduler trace line remains open
-until a real candidate-family trace is captured from the scheduler and every
-candidate is enriched with:
+It is not itself a live dispatch trace.  Module101 separately closes one emitted
+live scheduler candidate-family trace by enriching every observed candidate
+with:
 
 ```text
 queue_vector
@@ -75,13 +75,23 @@ penalty_units
 score_semantics = robust_maxweight_lower_service
 ```
 
-Current live-trace modules are therefore correctly negative:
+Current live-trace modules now pass on that emitted trace:
 
 ```text
-Module50 scheduler trace audit: NO_TRACE
-Module52 theorem oracle trace bridge: NO_TRACE
-Module55 lower-service enrichment: NO_TRACE
+Module50 scheduler trace audit: SCHEDULER_SCORE_PASS
+Module55 lower-service enrichment: ENRICHED_THEOREM_PASS
+Module52 theorem oracle trace bridge: THEOREM_ORACLE_PASS
+Module101 live scheduler oracle closure: LIVE_SCHEDULER_THEOREM_ORACLE_PASS
+Module101 trace slots = 2
+Module101 candidate count = 2
+Module101 alpha0 = 0.0
+Module101 alpha1 = 0.0
 ```
+
+The Module101 scope is intentionally narrow: one emitted live scheduler trace
+over the local CPU control-plane candidate family.  It removes the previous
+`NO_TRACE` blocker and proves the pipeline is executable, but it is not a
+universal certificate for every future dispatch or every GPU candidate family.
 
 ## Lean Artifact
 
@@ -116,8 +126,8 @@ Do not claim:
 raw_history_all is closed;
 attempted_production is closed;
 future rolling queue rows are already closed;
-the live scheduler dispatch implementation has already emitted a theorem-grade
-lower-service oracle trace.
+every future scheduler dispatch is automatically theorem-grade without rerunning
+the trace/enrichment/audit pipeline.
 ```
 
 Primary current artifacts:
@@ -128,6 +138,9 @@ md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
 md/experiment_artifacts/module100_production_theorem_oracle_bridge.json
 md/experiment_artifacts/module100_production_theorem_oracle_trace.jsonl
+md/experiment_artifacts/module101_live_scheduler_oracle_closure.json
+md/experiment_artifacts/module101_live_scheduler_oracle_trace_raw.jsonl
+md/experiment_artifacts/module101_live_scheduler_oracle_trace_enriched.jsonl
 md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json
 md/experiment_artifacts/module55_oracle_trace_enrichment_status.json

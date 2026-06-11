@@ -4,19 +4,13 @@
 
 | Quantity | Value |
 |---|---:|
-| `status` | `NO_TRACE` |
-| `input_slot_count` | 0 |
-| `enriched_slot_count` | 0 |
-| `blocker_count` | 1 |
-| `alpha0` | NA |
-| `alpha1` | NA |
-| `usable_for_theorem` | false |
-
-## Blockers
-
-| Reason | Slot | Action | Bucket |
-|---|---|---|---|
-| `trace_file_does_not_exist` | `None` | `None` | `None` |
+| `status` | `ENRICHED_THEOREM_PASS` |
+| `input_slot_count` | 2 |
+| `enriched_slot_count` | 2 |
+| `blocker_count` | 0 |
+| `alpha0` | 0.000000000 |
+| `alpha1` | 0.000000000 |
+| `usable_for_theorem` | true |
 
 ## Interpretation
 

@@ -221,8 +221,8 @@ Remaining scope limitation:
   the remaining command-shape, CPU-fabric, GPU/RL-fabric, and c9_16
   real-demand profile-extension buckets.  In the reviewer-facing
   completed-active production view:
-    records = 3419
-    strict mapped = 3419
+    records = 3437
+    strict mapped = 3437
     representative mapped = 0
     unmapped = 0
     measurement_required = 0
@@ -234,9 +234,16 @@ Remaining scope limitation:
     alpha1 = 0
     usable_for_service_map_oracle_bridge = true
     usable_for_live_scheduler_oracle_trace = false
-  The live scheduler trace path remains separate: Modules50/52/55 correctly
-  report NO_TRACE until a real scheduler candidate-family trace is captured
-  and enriched with lower-service vectors.
+  The live scheduler trace path remains separate from Module100.  Module101 now
+  closes one emitted scheduler candidate-family trace:
+    status = LIVE_SCHEDULER_THEOREM_ORACLE_PASS
+    trace slots = 2
+    candidate count = 2
+    alpha0 = 0
+    alpha1 = 0
+    usable_for_live_scheduler_oracle_trace = true
+  This is a live-trace certificate for the captured local CPU control-plane
+  candidate family, not an automatic certificate for every future dispatch.
   The former dominant CPU/SUMO/transit bucket and the later representative
   CPU/GPU buckets are now closed for this population.  Future production rows
   must still follow the same strict service-certificate pattern before being
@@ -874,13 +881,18 @@ Remaining scope limitation:
   The remaining empirical step is to repeat this for the next sub-buckets and
   rerun Modules49/51/slack accounting after each new measured slice.
 
-  Module50 adds the missing live scheduler candidate-set trace hook.  It is
-  disabled by default and records the actual candidate family used by
-  pick_placement when SCHEDULEURM_ORACLE_AUDIT_LOG is set.  Unit validation
-  proves the selected action is scheduler-score best on a synthetic two-GPU
-  decision.  Current production status is NO_TRACE, so the live alpha0/alpha1
-  theorem certificate remains open until real candidate-family traces with
-  robust lower-service semantics are collected.
+  Module50 adds the live scheduler candidate-set trace hook.  It is disabled by
+  default and records the actual candidate family used by pick_placement when
+  SCHEDULEURM_ORACLE_TRACE_PATH or SCHEDULEURM_ORACLE_AUDIT_LOG is set.  On the
+  captured live trace:
+    status = SCHEDULER_SCORE_PASS
+    trace slots = 2
+    audited slots = 2
+    usable_for_scheduler_score_audit = true
+    usable_for_theorem = false
+  The false theorem flag is expected because Module50 audits scheduler-sort-key
+  optimality only; theorem semantics are supplied by Module55 and checked by
+  Module52.
 
   Module52 adds the theorem-side gate.  It refuses scheduler-sort-key-only
   traces and accepts only slots with:
@@ -888,18 +900,29 @@ Remaining scope limitation:
     queue_vector
     lower_service
     penalty_units
-  Current status is NO_TRACE, but the conversion path to oracle_audit.py is now
-  implemented and unit-tested.
+  Current captured-trace status:
+    status = THEOREM_ORACLE_PASS
+    trace slots = 2
+    converted slots = 2
+    alpha0 = 0
+    alpha1 = 0
+    usable_for_theorem = true
 
   Module55 adds the missing enrichment bridge from scheduler-sort-key trace to
   Module52 theorem trace:
     trace + measured lower-service lookup + queue_vector
       -> robust_maxweight_lower_service slots
       -> alpha0/alpha1 audit
-  The current production status is still NO_TRACE because
-  ~/.claude/scheduler/oracle_trace.jsonl does not exist.  The software path is
-  closed; the remaining blocker is real trace collection plus complete measured
-  lower-service coverage for every candidate in each traced slot.
+  Current captured-trace status:
+    status = ENRICHED_THEOREM_PASS
+    input slots = 2
+    enriched slots = 2
+    alpha0 = 0
+    alpha1 = 0
+    usable_for_theorem = true
+  This closes the first live scheduler trace bridge.  Additional future
+  dispatches still need their own trace/enrichment/audit artifacts before being
+  used as theorem-grade online oracle evidence.
 ```
 
 ## Gap 2: q10 Real CPU/Data-Loader Trace and q00 Control Bucket Closure

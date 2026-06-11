@@ -9,8 +9,8 @@ live scheduler dispatch trace.
 | Quantity | Value |
 |---|---:|
 | `status` | `SERVICE_MAP_THEOREM_ORACLE_PASS` |
-| `completed_active_record_count` | 3419 |
-| `mapped_task_count` | 3419 |
+| `completed_active_record_count` | 3437 |
+| `mapped_task_count` | 3437 |
 | `representative_mapped_task_count` | 0 |
 | `unmapped_task_count` | 0 |
 | `delta` | 0.000009123 |

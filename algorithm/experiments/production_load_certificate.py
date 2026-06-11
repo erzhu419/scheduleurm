@@ -1854,7 +1854,11 @@ def _module94_remaining_completed_history_units(
             )
 
     if est_vram <= 0 and project == "scheduleurm":
-        if "python" in cmd_lower and "algorithm.experiments.production_" in cmd_lower:
+        if (
+            ("python" in cmd_lower and "algorithm.experiments.production_" in cmd_lower)
+            or signature.startswith("scheduleurm/live-oracle-audit")
+            or "scheduleurm-live-oracle-audit" in cmd_lower
+        ):
             return (
                 "scheduleurm_control_plane_completed_history",
                 "module94_scheduleurm_control_plane_completed_history",

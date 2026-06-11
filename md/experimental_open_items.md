@@ -146,8 +146,10 @@ admission 阈值是否随 regime z、VRAM、batch size、phase 改变
 任务。当前算法已经把 `post_vram_frac`、`post_vram_bucket` 和 co-location
 profile 作为 finite features 记录，也允许通过 clean hard-rule mode 绕过
 1/3 packing rule；但是 `hybrid_rl_resac_ant` 的 production/replay 选择仍主要
-依赖已有 service cache。最新 live-robust replay 只把 q11 profile 1-3 当作
-portfolio sanity 的实测证书，早期 BAPR dense curve 虽显示 2-6/GPU 近似平台，
+依赖已有 service cache。当前 robust q11 cache 把 profile 1-9 作为
+first-boundary 之前的 feasible measured rows，profile 10 及以上被 fresh live
+OOM / invalid-placement boundary 剔除；standalone q11 选择 profile 2，mixed
+portfolio 选择 profile 3。早期 BAPR dense curve 虽显示 2-6/GPU 近似平台，
 但还没有把“83% VRAM 仍不慢”作为正式 production service row 接入。
 
 因此这条现象应转成一个新的 profiling 任务：

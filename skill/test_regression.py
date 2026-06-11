@@ -693,9 +693,9 @@ def test_high_defaults_lower_before_placement():
           not queued.get("last_block_reason"),
           diag=f"last_block_reason={queued.get('last_block_reason')!r}")
 
-def test_explicit_ram_not_lowered_before_placement():
-    """Explicit --ram-mb is an override and must not be lowered by sibling guesses."""
-    print("\n[9a] Explicit RAM estimates are not lowered before placement")
+def test_explicit_ram_can_lower_from_strong_sibling_evidence():
+    """Explicit --ram-mb can be lowered when live/history evidence proves it is over-padded."""
+    print("\n[9a] Explicit RAM estimates lower from strong sibling evidence")
     now = time.time()
     queued = {
         "id": "tq", "status": "queued", "signature": "P/cpu_eval/shard0",
@@ -732,11 +732,74 @@ def test_explicit_ram_not_lowered_before_placement():
     finally:
         for k, v in saved.items():
             setattr(sch, k, v)
-    check("explicit RAM remains at submitted value",
-          queued["ram_mb"] == 50000,
+    check("explicit RAM lowered with slack from sibling evidence",
+          queued["ram_mb"] < 50000 and queued["ram_mb"] >= 3000,
           diag=f"ram={queued.get('ram_mb')}")
-    check("task remains queued instead of launching with lowered RAM",
-          queued["status"] == "queued" and not any(ev.get("type") == "task_launched" for ev in events),
+    check("task launches after explicit RAM is corrected downward",
+          queued["status"] == "running" and any(ev.get("type") == "launched" for ev in events),
+          diag=f"status={queued.get('status')}, events={events}")
+    check("explicit RAM lower records forensic estimate update",
+          (queued.get("last_resource_estimate_update") or {}).get("kind", "").startswith("ram_explicit_"),
+          diag=str(queued.get("last_resource_estimate_update")))
+
+
+def test_explicit_vram_can_lower_below_one_third_freeze():
+    """Explicit --vram can be lowered from sibling evidence so tiny jobs fit warm GPUs."""
+    print("\n[9a2] Explicit VRAM estimates lower below 1/3 freeze line")
+    now = time.time()
+    queued = {
+        "id": "tgpu", "status": "queued", "signature": "P/gpu_eval/shard1",
+        "cmd": "python eval_gpu.py", "cwd": "/tmp", "priority": "normal",
+        "ram_mb": 4096, "ram_mb_explicit": True,
+        "est_vram_mb": 4096, "est_vram_mb_explicit": True,
+        "cpu_cores": 1, "submitted_at": now, "extra_env": {},
+        "remote_pids": [], "alive_pids": [], "log_path": None,
+        "started_at": None, "node": None, "gpu_idx": None,
+        "peak_vram_mb": 0, "peak_ram_mb": 0, "resume_from": None,
+        "resume_flag": "", "ckpt_dir": None, "ckpt_glob": "*", "git_repo": None,
+        "preferred_node": None, "require_node": None, "project": "P",
+        "description": "GPU eval shard",
+    }
+    state = {"tasks": [
+        {"id": "sib", "status": "running", "project": "P", "signature": "P/gpu_eval/shard0",
+         "description": "GPU eval shard", "peak_vram_mb": 364, "current_vram_mb": 364,
+         "peak_ram_mb": 1106, "current_ram_mb": 1106},
+        queued,
+    ], "next_id": 100}
+    nodes = [{"name": "local", "alive": True, "free_cpu": 8, "total_cpu": 12,
+              "free_ram_mb": 32000, "total_ram_mb": 64000, "loadavg": 1.0,
+              "running_count": 0,
+              "gpus": [{"idx": 0, "used_mb": 4096, "total_mb": 12288,
+                        "free_mb": 8192, "util_pct": 0}]}]
+    saved = {
+        "load_history": sch.load_history,
+        "launch": sch.launch,
+        "precheck_git": sch.precheck_git,
+        "find_resume": sch.find_resume,
+        "save_state": sch.save_state,
+    }
+    sch.load_history = lambda: {}
+    sch.precheck_git = lambda t: (True, "")
+    sch.find_resume = lambda t: None
+    sch.save_state = lambda s: None
+    def fake_launch(t, node_state=None):
+        t["status"] = "running"; t["remote_pids"] = [4243]
+        t["process_group"] = 4243; t["started_at"] = time.time()
+        t["log_path"] = "/tmp/fake-gpu.log"; return True, "pid=4243"
+    sch.launch = fake_launch
+    try:
+        events, _ = sch._do_dispatch(state, copy.deepcopy(nodes))
+    finally:
+        for k, v in saved.items():
+            setattr(sch, k, v)
+    check("explicit VRAM lowered below old 4096MB budget",
+          queued["est_vram_mb"] < 4096,
+          diag=f"vram={queued.get('est_vram_mb')}")
+    check("explicit VRAM lower keeps placement below 1/3+grace freeze",
+          4096 + queued["est_vram_mb"] < sch._gpu_freeze_line_mb(12288),
+          diag=f"used+need={4096 + queued.get('est_vram_mb', 0)} freeze={sch._gpu_freeze_line_mb(12288)}")
+    check("task launches after explicit VRAM is corrected downward",
+          queued["status"] == "running" and any(ev.get("type") == "launched" for ev in events),
           diag=f"status={queued.get('status')}, events={events}")
 
 def test_low_ram_estimate_raises_from_live_siblings():
@@ -15127,7 +15190,8 @@ if __name__ == "__main__":
     test_status_view_no_truncation()
     test_display_units_owner_and_kill_actor()
     test_high_defaults_lower_before_placement()
-    test_explicit_ram_not_lowered_before_placement()
+    test_explicit_ram_can_lower_from_strong_sibling_evidence()
+    test_explicit_vram_can_lower_below_one_third_freeze()
     test_low_ram_estimate_raises_from_live_siblings()
     test_probe_ram_auto_detect_and_optional_cap()
     test_running_descendant_resources_counted()

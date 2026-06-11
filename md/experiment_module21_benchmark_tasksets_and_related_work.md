@@ -58,7 +58,7 @@ surface rather than ad hoc names.
 | `q00_light_control` | low CPU, low GPU | Short/light control for scheduler overhead and queue churn. | Local CPU-only profiles 1-13 are clean real measurements; profile 14 is a measured local scheduling-capacity boundary under the exact light-control workload. |
 | `q01_gpu_bound_compute` | low CPU, high GPU | Pure GPU compute saturation curve. | `gpu_heavy_jax_matmul` profiles 1-8 are clean real measurements on `jtl110gpu2`. |
 | `q10_cpu_host_bound` | high CPU, low GPU | CPU/host saturation separate from GPU placement. | Real local CPU-heavy curve: profiles 1-9 are measured, and profile 10 is a measured local capacity boundary. The active taskset now uses this declared local CPU bucket rather than `cpu_heavy_protocol`. |
-| `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where 4-5/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-12 are clean real measurements; profile 13 hit runtime OOM/invalid placement and closes the higher-profile measurement obligation for this node bucket. |
+| `q11_cpu_gpu_coupled` | high CPU, high GPU | RE-SAC/BAPR-like coupled RL where several jobs/GPU can remain near solo ETA. | `hybrid_rl_resac_ant` profiles 1-9 are the current robust feasible measured rows; fresh profile-10 live sanity hit runtime OOM, so the first capacity boundary excludes profile 10 and above for this node bucket. |
 | `hybrid_research_portfolio` | mixed | Post-module portfolio similar to Gavel/Pollux/Sia trace replay. | Replay-ready for current validation: RE-SAC hybrid, JAX GPU-heavy, and real local CPU-heavy q10 bucket. |
 
 This is deliberately stricter than a pure simulator. GPU and hybrid co-location
@@ -124,8 +124,8 @@ the quadrant result.
 The next real probes should fill:
 
 - `q01_gpu_bound_compute`: profiles 1-8 are now measured; next only repeat on a second node/GPU if fabric calibration needs replication;
-- `q11_cpu_gpu_coupled`: profile 13 is already a measured capacity boundary on
-  this node bucket; do not spend GPU time on 14-16 unless we intentionally
+- `q11_cpu_gpu_coupled`: profile 10 is the first live robust capacity boundary
+  on this node bucket; do not spend GPU time on 10+ unless we intentionally
   change memory settings, task template, or node bucket;
 - `q00_light_control`: local control curve is measured through profile 13 and
   closed by a measured profile 14 capacity boundary; repeat only if we need a

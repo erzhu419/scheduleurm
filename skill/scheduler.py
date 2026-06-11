@@ -209,17 +209,21 @@ NODES = {
                        "sudo_ssh_host": "node007",
                        "sudo_ssh_run_as": "zhengliang01",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
-                       "max_vram_per_task": None, "max_concurrent_running": 15,
+                       "max_vram_per_task": None, "max_concurrent_running": 16,
                        "max_tasks_per_gpu": 4,
+                       "small_vram_task_threshold_mb": 768,
+                       "small_vram_max_concurrent_running": 24,
+                       "small_vram_max_tasks_per_gpu": 6,
                        "allow_gpu_over_one_third": True,
                        "gpu_util_saturation_pct": None,
                        "ignore_cpu_for_gpu_tasks": True,
+                       "cpu_slot_accounting": True,
                        "min_free_user_threads_for_gpu_task": 256,
                        "max_user_thread_fraction_for_gpu_task": 0.92,
                        "enable_claims": False,
                        "skip_launch_staging": True,
-                       "only_when_targeted": True,
-                       "stage_only_when_targeted": True,
+                       "only_when_targeted": False,
+                       "stage_only_when_targeted": False,
                        "relay_node": "jtl110gpu2",
                        "relay_root": "/tmp/scheduleurm-hpc-relay/node007-direct",
                        "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
@@ -228,6 +232,8 @@ NODES = {
                            "/home/erzhu419/mine_code",
                        ],
                        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
+                           ("/home/erzhu419/miniconda3/envs/csbapr/bin/python",
+                            "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"),
                            ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
                             "/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin/python"),
                        ],
@@ -274,6 +280,7 @@ for _hpc_cpu_idx in range(1, 7):
                             "cpu_cores": 192, "ram_mb": 0,
                             "ram_headroom_frac": 0.10, "max_vram_per_task": 0,
                             "max_concurrent_running": None,
+                            "cpu_slot_accounting": True,
                             "skip_launch_staging": True,
                             "only_when_targeted": True,
                             "stage_only_when_targeted": True,
@@ -595,6 +602,50 @@ def load_history(): return _load_json(VRAM_FILE, {})
 def save_history(h): _atomic_write_json(VRAM_FILE, h)
 def load_runtime_history(): return _load_json(RUNTIME_FILE, {})
 def save_runtime_history(h): _atomic_write_json(RUNTIME_FILE, h)
+
+
+_TASK_ID_RE = re.compile(r"^t(\d+)$")
+
+
+def _task_id_number(task_id: str) -> Optional[int]:
+    m = _TASK_ID_RE.match(str(task_id or ""))
+    if not m:
+        return None
+    try:
+        return int(m.group(1))
+    except Exception:
+        return None
+
+
+def _format_task_id(n: int) -> str:
+    """Format task IDs with four digits as a minimum width, not a maximum."""
+    try:
+        num = int(n)
+    except Exception:
+        num = 1
+    return f"t{max(1, num):04d}"
+
+
+def _allocate_task_id(state: dict) -> str:
+    """Allocate a monotonically increasing task id without wrapping at t9999."""
+    tasks = state.get("tasks") or []
+    used = {str(t.get("id")) for t in tasks if isinstance(t, dict) and t.get("id")}
+    max_seen = 0
+    for tid in used:
+        num = _task_id_number(tid)
+        if num is not None:
+            max_seen = max(max_seen, num)
+    try:
+        next_num = int(state.get("next_id") or 1)
+    except Exception:
+        next_num = 1
+    next_num = max(1, next_num, max_seen + 1)
+    while True:
+        tid = _format_task_id(next_num)
+        next_num += 1
+        if tid not in used:
+            state["next_id"] = next_num
+            return tid
 
 # ---------- Phase 3.2.0: cross-scheduler / cross-user resource claims ----------
 # Goal: stop two scheduleurm instances (different users OR different state dirs)
@@ -2124,7 +2175,11 @@ def _discover_result_artifacts(task: dict, include_log: bool = True) -> list:
 
 def _record_result_artifacts(task: dict) -> list:
     """Persist best-effort result artifacts on a terminal task record."""
-    discovered = _discover_result_artifacts(task, include_log=True)
+    # Declared result dirs are already authoritative. Avoid remote log scraping
+    # on relay-backed CPU nodes during dispatch; stale/unreachable logs should
+    # not block placement of unrelated queued work.
+    include_log = not bool(task.get("result_dir") or task.get("result_dirs"))
+    discovered = _discover_result_artifacts(task, include_log=include_log)
     if not discovered:
         return []
     combined = []
@@ -2371,6 +2426,36 @@ def _live_sibling_ram_floor(task, state):
             candidates.sort()
             return int(candidates[len(candidates) // 2])
     return 0
+
+
+def _with_resource_slack(observed_mb: int, *, min_mb: int) -> int:
+    observed = int(observed_mb or 0)
+    if observed <= 0:
+        return 0
+    # Add 20% slack using integer ceil; keeps estimates above live peaks while
+    # still letting tiny RL jobs fit below the 1/3 GPU freeze line.
+    return max(int(min_mb), (observed * 6 + 4) // 5)
+
+
+def _maybe_lower_explicit_resource_estimate(task: dict, key: str, observed_mb: int,
+                                            *, min_mb: int, kind: str) -> bool:
+    cur = int(task.get(key) or 0)
+    proposed = _with_resource_slack(observed_mb, min_mb=min_mb)
+    if cur <= 0 or proposed <= 0:
+        return False
+    if proposed >= cur:
+        return False
+    # Explicit user budgets can be intentionally padded. Only override when live
+    # siblings/history show the old value is clearly too high.
+    if proposed * 100 > cur * 85:
+        return False
+    task[key] = proposed
+    update = {"ts": time.time(), "kind": kind, f"old_{key}": cur, f"new_{key}": proposed}
+    if int(observed_mb or 0) > 0:
+        update["observed_mb"] = int(observed_mb)
+    task["last_resource_estimate_update"] = update
+    return True
+
 
 HISTORY_MAX_ENTRIES = int(os.environ.get("SCHEDULEURM_HISTORY_MAX_ENTRIES", "5000"))
 HISTORY_SAMPLES_PER_SIG = 10
@@ -3822,6 +3907,78 @@ def _cpu_labor_node_names() -> list:
     return [name for name, info in NODES.items() if info.get("cpu_labor_node")]
 
 
+def _cpu_slot_accounting_node_names() -> list:
+    return [
+        name for name, info in NODES.items()
+        if info.get("cpu_labor_node") or info.get("cpu_slot_accounting")
+    ]
+
+
+def _declared_cpu_slot_floor(task: dict) -> int:
+    """Minimum CPU slots a scheduler-owned batch task asked us to reserve."""
+    floors = []
+    for key in ("cpu_declared_cores", "cpu_auto_workers"):
+        try:
+            val = int((task or {}).get(key) or 0)
+        except Exception:
+            val = 0
+        if val > 0:
+            floors.append(val)
+    plan = (task or {}).get("cpu_batch_plan")
+    if isinstance(plan, dict):
+        try:
+            val = int(plan.get("workers") or 0)
+        except Exception:
+            val = 0
+        if val > 0:
+            floors.append(val)
+    return max(floors or [0])
+
+
+def _reserved_cpu_slots_for_task(task: dict) -> int:
+    try:
+        current = int((task or {}).get("cpu_cores") or DEFAULT_CPU_CORES)
+    except Exception:
+        current = DEFAULT_CPU_CORES
+    return max(0, current, _declared_cpu_slot_floor(task))
+
+
+def _apply_cpu_slot_accounting_to_nodes(state: dict, nodes: list) -> None:
+    """Overlay scheduler-declared CPU slots onto probed node load for batch nodes."""
+    from collections import Counter as _Counter
+
+    cpu_slot_names = set(_cpu_slot_accounting_node_names())
+    if "local" in NODES:
+        cpu_slot_names.add("local")
+    if not cpu_slot_names:
+        return
+    cpu_slot_reserved = _Counter()
+    for task in state.get("tasks", []):
+        if task.get("status") not in ("running", "launching"):
+            continue
+        node = task.get("node") or task.get("assigned_node")
+        if node not in cpu_slot_names:
+            continue
+        cpu_slot_reserved[node] += _reserved_cpu_slots_for_task(task)
+    for node_state in nodes:
+        name = node_state.get("name")
+        if name not in cpu_slot_names:
+            continue
+        total_cpu = int(NODES.get(name, {}).get("cpu_cores") or node_state.get("total_cpu") or 0)
+        if total_cpu <= 0:
+            continue
+        raw_reserved_cpu = int(cpu_slot_reserved.get(name, 0))
+        reserved_cpu = min(total_cpu, raw_reserved_cpu)
+        node_state["observed_free_cpu"] = node_state.get("free_cpu")
+        node_state["observed_loadavg"] = node_state.get("loadavg")
+        node_state["cpu_slot_accounting"] = True
+        node_state["cpu_slot_reserved"] = raw_reserved_cpu
+        node_state["total_cpu"] = total_cpu
+        if name != "local":
+            node_state["free_cpu"] = max(0, total_cpu - reserved_cpu)
+            node_state["loadavg"] = float(reserved_cpu)
+
+
 def _node_physical_cores(node: Optional[str], node_state: Optional[dict] = None) -> int:
     """Best estimate of schedulable physical cores for CPU-worker planning.
 
@@ -5144,8 +5301,7 @@ def _requeue_after_crash(parent, state):
     if retry_n > MAX_AUTO_RETRY:
         _write_escalation(parent, "APP_BUG_CAP", diag)
         return None
-    new_id = f"t{state['next_id']:04d}"
-    state["next_id"] += 1
+    new_id = _allocate_task_id(state)
     new_task = {**parent}
     new_task.update({
         "id": new_id,
@@ -5470,9 +5626,14 @@ def _batch_check_running(state):
             else:
                 # Scheduler-launched: upward tracking when sustained, lower only on big over-count
                 # (mirrors the _refresh_adopted_resources pattern from earlier).
+                declared_floor = _declared_cpu_slot_floor(t)
+                if declared_floor and cur_cpu < declared_floor:
+                    cur_cpu = declared_floor
+                    t["cpu_cores"] = declared_floor
                 if new_cpu > cur_cpu:
                     t["cpu_cores"] = new_cpu
-                elif cur_cpu > new_cpu * 2.5:
+                elif cur_cpu > new_cpu * 2.5 and not (
+                        t.get("cpu_cores_explicit") or declared_floor):
                     t["cpu_cores"] = new_cpu
 
 def update_running_tasks(state):
@@ -6330,13 +6491,33 @@ def _node_thread_pressure_block_reason(task: dict, node_state: Optional[dict],
     return ""
 
 
+def _node_concurrency_cap_for_task(task: dict, node_info: dict):
+    cap = node_info.get("max_concurrent_running")
+    threshold = int(node_info.get("small_vram_task_threshold_mb") or 0)
+    small_cap = node_info.get("small_vram_max_concurrent_running")
+    est_vram = int((task or {}).get("est_vram_mb") or 0)
+    if threshold > 0 and est_vram > 0 and est_vram <= threshold and small_cap is not None:
+        return small_cap
+    return cap
+
+
+def _gpu_task_cap_for_task(task: dict, node_info: dict):
+    cap = node_info.get("max_tasks_per_gpu")
+    threshold = int(node_info.get("small_vram_task_threshold_mb") or 0)
+    small_cap = node_info.get("small_vram_max_tasks_per_gpu")
+    est_vram = int((task or {}).get("est_vram_mb") or 0)
+    if threshold > 0 and est_vram > 0 and est_vram <= threshold and small_cap is not None:
+        return small_cap
+    return cap
+
+
 def _node_resources_ok(task, node_state, node_info):
     """CPU + RAM + concurrency check at node level (independent of which GPU). Returns (ok, reason).
     `node_state['running_count']` is set by _do_dispatch before pick_placement loop and incremented
     in-loop as new launches happen — caller is responsible for keeping it current."""
     # Hard cap on concurrent tasks per node (Fix A): defense against under-declared CPU/RAM
     # for SUMO/RL workloads. Even if cpu/ram math says "fits", refuse if we're at the cap.
-    cap = node_info.get("max_concurrent_running")
+    cap = _node_concurrency_cap_for_task(task, node_info)
     cur_running = node_state.get("running_count", 0)
     if (cap is not None and cur_running >= cap
             and not _hard_rule_bypassed("node_concurrency", task, node_info=node_info, node_state=node_state)):
@@ -6375,6 +6556,35 @@ def _task_capability_text(task: dict) -> str:
     return "\n".join(str(task.get(k) or "") for k in (
         "cmd", "cwd", "description", "signature", "project"
     )).lower()
+
+
+def _hpc_cpu_pool_soft_require_nodes(task: dict) -> list:
+    if int((task or {}).get("est_vram_mb") or 0) > 0:
+        return []
+    require = (task or {}).get("require_node")
+    pool = [f"node{i:03d}" for i in range(1, 7)]
+    if require not in pool:
+        return []
+    text = _task_capability_text(task)
+    is_freq_hrl = "freq_hrl" in text and (
+        "/scheduleurm_work/transitduet" in text
+        or "transit_hrl/freq_hrl" in text
+    )
+    is_freqduet = "freqduet" in text and (
+        "run_freqduet_ablation.py" in text
+        or "/scheduleurm_work/transitduet/freqduet/freqduet" in text
+    )
+    is_bamor = "bamor" in text and (
+        "train_bamor_mujoco.py" in text
+        or "/scheduleurm_work/bamor" in text
+        or "bamor/mujoco" in text
+    )
+    if not (is_freq_hrl or is_freqduet or is_bamor):
+        return []
+    # These shards use a shared staged workspace on node001-node006.
+    # Treat generated per-node pins as placement hints so full nodes can spill to
+    # free siblings in the same CPU pool.
+    return pool
 
 
 def _task_gpu_capability(task: dict) -> str:
@@ -6507,6 +6717,15 @@ def pick_placement(task, nodes):
         nodes = [n for n in nodes if n.get("name") in allowed]
     preferred = task.get("preferred_node")
     require = task.get("require_node")  # HARD pin — never falls back
+    soft_require_pool = _hpc_cpu_pool_soft_require_nodes(task)
+    if soft_require_pool:
+        # Generated FreqDuet/freq_hrl per-node pins describe the shared CPU
+        # pool, not a real locality preference. Let the pool score decide so
+        # empty siblings such as node006 receive work.
+        preferred = None
+        require = None
+        allowed = set(soft_require_pool)
+        nodes = [n for n in nodes if n.get("name") in allowed]
     require_gpu_idx = _task_required_gpu_idx(task)
     resume_preferred = []
     for n in (task.get("resume_preferred_nodes") or []):
@@ -6605,6 +6824,7 @@ def pick_placement(task, nodes):
                 require == n["name"]
                 or preferred == n["name"]
                 or n["name"] in (task.get("allowed_nodes") or [])
+                or n["name"] in soft_require_pool
                 or _task_requests_slurm(task)
             )
             if not targeted:
@@ -6663,7 +6883,10 @@ def pick_placement(task, nodes):
             fallback_penalty = 2 if cpu_fallback and not cpu_only else 0
             rt = _candidate_runtime_seconds(task, n["name"], None)
             rt_unknown = 1 if rt <= 0 else 0
-            score = (fallback_penalty, rt_unknown, rt, cpu_labor_bonus, -n["free_cpu"], -n["free_ram_mb"])
+            if soft_require_pool and cpu_only:
+                score = (fallback_penalty, cpu_labor_bonus, -n["free_cpu"], rt_unknown, rt, -n["free_ram_mb"])
+            else:
+                score = (fallback_penalty, rt_unknown, rt, cpu_labor_bonus, -n["free_cpu"], -n["free_ram_mb"])
             out.append((score, n["name"], None))
         else:
             for g in n["gpus"]:
@@ -6673,7 +6896,7 @@ def pick_placement(task, nodes):
                     continue
                 if require_gpu_idx is not None and g_idx != require_gpu_idx:
                     continue
-                max_tasks_per_gpu = node_info.get("max_tasks_per_gpu")
+                max_tasks_per_gpu = _gpu_task_cap_for_task(task, node_info)
                 if max_tasks_per_gpu is not None:
                     try:
                         gpu_task_count = int(g.get("running_task_count") or 0)
@@ -8959,7 +9182,7 @@ class LocalBackend(Backend):
                    # `set(rss_per_pid)` union below silently re-marked them as
                    # alive — a task with all descendants reaped to zombies
                    # could stay status=running forever.
-                   f"ps -eo pid=,ppid=,rss=,pcpu=,stat= 2>/dev/null; true")
+                   f"ps -eo pid= -o ppid= -o rss= -o pcpu= -o stat= 2>/dev/null; true")
             try:
                 rc, out, _ = run_on(node, cmd, timeout=30, check=False)
                 return out if rc == 0 else None
@@ -12308,8 +12531,9 @@ def cmd_submit(args):
         else:
             cpu_cores = hist.get("cpu_cores", DEFAULT_CPU_CORES)
         project = args.project or _project_from_path(args.cwd) or (sig.split("/", 1)[0] if "/" in sig else sig)
+        task_id = _allocate_task_id(state)
         task = {
-            "id": f"t{state['next_id']:04d}",
+            "id": task_id,
             "status": "queued",
             "description": args.description,
             "project": project,
@@ -12319,6 +12543,7 @@ def cmd_submit(args):
             "est_vram_mb": int(est_vram),
             "ram_mb": int(ram_mb),
             "cpu_cores": int(cpu_cores),
+            "cpu_declared_cores": int(cpu_cores),
             "est_vram_mb_explicit": args.vram is not None,
             "ram_mb_explicit": args.ram_mb is not None,
             "cpu_cores_explicit": args.cpu is not None,
@@ -12411,7 +12636,6 @@ def cmd_submit(args):
                 )
         _seed_pending_eta_from_history({"tasks": [task]})
         state["tasks"].append(task)
-        state["next_id"] += 1
         save_state(state)
     sources = []
     if hist.get("vram_mb") and args.vram is None: sources.append("vram=hist")
@@ -13875,6 +14099,8 @@ def _stage_launch_candidates_outside_lock():
         # falls back to other nodes; if we only stage to preferred, dispatch
         # may end up choosing a different node and stay in needs_stage forever.
         # So preferred → stage to ALL non-local nodes (preferred + fallbacks).
+        # FreqDuet/freq_hrl CPU-pool pins are softened by pick_placement, so
+        # stage them to the same node001-node006 pool that can receive them.
         queued_tasks = [t for t in state.get("tasks", []) if t.get("status") == "queued"]
         high_gpu_tasks = [
             t for t in queued_tasks
@@ -13906,7 +14132,10 @@ def _stage_launch_candidates_outside_lock():
             if not cwd:
                 continue
             require = t.get("require_node")
-            if require:
+            soft_require_pool = _hpc_cpu_pool_soft_require_nodes(t)
+            if soft_require_pool:
+                tgts = list(soft_require_pool)
+            elif require:
                 tgts = [require]
             else:
                 # No hard pin (preferred OR nothing) → stage to every node
@@ -13929,6 +14158,7 @@ def _stage_launch_candidates_outside_lock():
                         require == tn
                         or t.get("preferred_node") == tn
                         or tn in allowed
+                        or tn in soft_require_pool
                         or _task_requests_slurm(t)
                     )
                     if not targeted:
@@ -13963,6 +14193,7 @@ def _stage_launch_candidates_outside_lock():
                                 require == tn
                                 or t.get("preferred_node") == tn
                                 or tn in allowed
+                                or tn in soft_require_pool
                                 or _task_requests_slurm(t)
                             )
                             if not targeted:
@@ -15673,39 +15904,15 @@ def _do_dispatch(state, nodes):
         (t.get("node"), t.get("gpu_idx")) for t in state["tasks"]
         if _counts_against_node_concurrency(t) and t.get("gpu_idx") is not None
     )
-    cpu_labor_names = _cpu_labor_node_names()
-    cpu_slot_names = set(cpu_labor_names)
-    if "local" in NODES:
-        cpu_slot_names.add("local")
-    cpu_slot_reserved = _Counter()
-    for _t in state["tasks"]:
-        if _t.get("status") not in ("running", "launching"):
-            continue
-        _node = _t.get("node") or _t.get("assigned_node")
-        if _node not in cpu_slot_names:
-            continue
-        cpu_slot_reserved[_node] += max(0, int(_t.get("cpu_cores") or DEFAULT_CPU_CORES))
     # Phase 2.16/3.4.13: count OUR slurm-pending tasks per node and split by
     # CPU/GPU bucket. pick_placement throttles further dispatch only when the
     # matching bucket is full, so CPU-only work can proceed behind pending GPU jobs.
     slurm_pending_per_node = _count_slurm_pending_per_node(state)
+    _apply_cpu_slot_accounting_to_nodes(state, nodes)
     for n in nodes:
         n["running_count"] = running_per_node.get(n["name"], 0)
         for g in n.get("gpus") or []:
             g["running_task_count"] = running_per_gpu.get((n["name"], g.get("idx")), 0)
-        if n["name"] in cpu_slot_names:
-            total_cpu = int(NODES.get(n["name"], {}).get("cpu_cores") or n.get("total_cpu") or 0)
-            if total_cpu > 0:
-                raw_reserved_cpu = int(cpu_slot_reserved.get(n["name"], 0))
-                reserved_cpu = min(total_cpu, raw_reserved_cpu)
-                n["observed_free_cpu"] = n.get("free_cpu")
-                n["observed_loadavg"] = n.get("loadavg")
-                n["cpu_slot_accounting"] = True
-                n["cpu_slot_reserved"] = raw_reserved_cpu
-                n["total_cpu"] = total_cpu
-                if n["name"] != "local":
-                    n["free_cpu"] = max(0, total_cpu - reserved_cpu)
-                    n["loadavg"] = float(reserved_cpu)
         # Phase 3.4.13 P1 fix: store split (cpu, gpu) on the node dict for
         # pick_placement to consult. Keep the legacy `slurm_pending_count`
         # field as the SUM (cpu + gpu) for backwards compat — surfaces in
@@ -15728,9 +15935,9 @@ def _do_dispatch(state, nodes):
                         "cpu_deficit": ev.get("cpu_deficit"),
                         "ram_deficit": ev.get("ram_deficit"),
                         "protected_skipped": ev.get("protected_skipped") or []})
-    # Refresh est_vram_mb for queued tasks based on sibling observations. Tasks submitted with
-    # the 3500MB default get re-estimated against currently-running siblings, so placement
-    # decisions reflect actual workload rather than a one-size-fits-all guess.
+    # Refresh queued RAM/VRAM from history and live sibling observations. Non-explicit
+    # budgets keep the old lower-only behavior; explicit budgets are lowered only when
+    # real samples prove they are materially over-padded.
     history_cache = load_history()
     for t in state["tasks"]:
         if t.get("status") != "queued":
@@ -15740,8 +15947,13 @@ def _do_dispatch(state, nodes):
         if isinstance(h, int): h = {"vram_mb": h}
         if isinstance(h, dict) and h.get("vram_mb"):
             # OWN-signature history: this is real, trust it both up and down.
-            if not t.get("est_vram_mb_explicit"):
-                new_est = int(h["vram_mb"])
+            new_est = int(h["vram_mb"])
+            if t.get("est_vram_mb_explicit"):
+                _maybe_lower_explicit_resource_estimate(
+                    t, "est_vram_mb", new_est, min_mb=128,
+                    kind="vram_explicit_exact_history_lower",
+                )
+            else:
                 if new_est != t.get("est_vram_mb"):
                     t["est_vram_mb"] = new_est
         else:
@@ -15750,13 +15962,36 @@ def _do_dispatch(state, nodes):
             # state said 512, raising hurts schedulability and the eviction mechanism would
             # immediately catch a real OOM. Symmetric trust would let one giant sibling pollute
             # all small siblings' est upward forever.
-            if not t.get("est_vram_mb_explicit"):
-                new_est = _effective_est_vram(t, state, history_cache)
-                cur = t.get("est_vram_mb") or 0
+            new_est = _effective_est_vram(t, state, history_cache)
+            cur = t.get("est_vram_mb") or 0
+            if t.get("est_vram_mb_explicit"):
+                _maybe_lower_explicit_resource_estimate(
+                    t, "est_vram_mb", new_est, min_mb=128,
+                    kind="vram_explicit_sibling_lower",
+                )
+            else:
                 if new_est and 0 < new_est < cur:
                     t["est_vram_mb"] = new_est
         if t.get("ram_mb_explicit"):
-            pass
+            lowered = False
+            if isinstance(h, dict) and h.get("ram_mb"):
+                lowered = _maybe_lower_explicit_resource_estimate(
+                    t, "ram_mb", int(h["ram_mb"]), min_mb=512,
+                    kind="ram_explicit_exact_history_lower",
+                )
+            if not lowered:
+                live_ram = _live_sibling_ram_floor(t, state)
+                if live_ram:
+                    lowered = _maybe_lower_explicit_resource_estimate(
+                        t, "ram_mb", live_ram, min_mb=512,
+                        kind="ram_explicit_live_sibling_lower",
+                    )
+            if not lowered:
+                new_ram = _effective_est_ram(t, state, history_cache)
+                _maybe_lower_explicit_resource_estimate(
+                    t, "ram_mb", new_ram, min_mb=512,
+                    kind="ram_explicit_sibling_lower",
+                )
         elif isinstance(h, dict) and h.get("ram_mb"):
             new_ram = int(h["ram_mb"])
             if new_ram != t.get("ram_mb"):
@@ -15974,7 +16209,7 @@ def _do_dispatch(state, nodes):
                         algo_reason = _algorithm_gpu_fit_block_reason(t, g, NODES[n["name"]])
                         if algo_reason:
                             sub.append(algo_reason)
-                        max_tasks_per_gpu = NODES[n["name"]].get("max_tasks_per_gpu")
+                        max_tasks_per_gpu = _gpu_task_cap_for_task(t, NODES[n["name"]])
                         if max_tasks_per_gpu is not None:
                             try:
                                 gpu_task_count = int(g.get("running_task_count") or 0)
@@ -16011,8 +16246,16 @@ def _do_dispatch(state, nodes):
                         reasons.append(f"{n['name']}=node-ok-but-" + "/".join(gpu_reasons))
                     else:
                         reasons.append(f"{n['name']}=fits?(unexpected)")
+            reported_reasons = list(reasons[:4])
+            for extra_node in (require, prefer, "node007-direct"):
+                if not extra_node:
+                    continue
+                for reason in reasons:
+                    if reason.startswith(f"{extra_node}=") and reason not in reported_reasons:
+                        reported_reasons.append(reason)
+                        break
             pin = f"require={require} " if require else (f"prefer={prefer} " if prefer else "")
-            t["last_block_reason"] = f"no fit ({pin}prio={t.get('priority','normal')}): " + " | ".join(reasons[:4])
+            t["last_block_reason"] = f"no fit ({pin}prio={t.get('priority','normal')}): " + " | ".join(reported_reasons)
             events.append({"type": "no_fit", "task_id": t["id"], "task": t})
             continue
         t["node"], t["gpu_idx"] = placement
@@ -17518,7 +17761,7 @@ def _node_ppid_map(name):
     if _node_is_windows(name):
         return {}
     try:
-        rc, out, _ = run_on(name, "ps -eo pid=,ppid=", timeout=15, check=False)
+        rc, out, _ = run_on(name, "ps -eo pid= -o ppid=", timeout=15, check=False)
         if rc != 0: return {}
     except Exception:
         return {}
@@ -17856,6 +18099,12 @@ def _reconcile_external_tasks(state):
     for p in all_procs:
         if (p["node"], p["pid"]) in tracked: continue
         if p["pid"] in descendants_by_node.get(p["node"], set()): continue
+        try:
+            proc_pgid = int(p.get("pgid") or 0)
+        except Exception:
+            proc_pgid = 0
+        if proc_pgid > 1 and proc_pgid in scheduler_pgroups_by_node.get(p["node"], set()):
+            continue
         if p.get("is_slurm"): continue  # Phase 2.2: don't shadow slurm-managed work
         if p["owner"] not in adopt_owners_by_node.get(p["node"], {me}): continue
         roots = adopt_roots_by_node.get(p["node"], [])
@@ -17907,8 +18156,9 @@ def _reconcile_external_tasks(state):
         is_cpu_only_group = gpu_idx is None
         est_vram_for_record = 0 if is_cpu_only_group else (sum_vram or DEFAULT_VRAM_MB)
         desc_loc = f"{node}:CPU-only" if is_cpu_only_group else f"{node}:GPU{gpu_idx}"
+        task_id = _allocate_task_id(state)
         task = {
-            "id": f"t{state['next_id']:04d}",
+            "id": task_id,
             "status": "running",
             "description": f"auto-adopted: {project} on {desc_loc} ({len(pids)} procs)",
             "project": project,
@@ -17953,7 +18203,6 @@ def _reconcile_external_tasks(state):
             "notified_launch": True,
         }
         state["tasks"].append(task)
-        state["next_id"] += 1
         adopted.append(task)
     return adopted
 
@@ -17974,7 +18223,7 @@ def _cpu_ownership_snapshot(state, nodes) -> list:
         node = t.get("node") or t.get("assigned_node")
         if not node:
             continue
-        cpu = max(0, int(t.get("cpu_cores") or DEFAULT_CPU_CORES))
+        cpu = _reserved_cpu_slots_for_task(t)
         sid = t.get("scheduler_id")
         ours = (
             t.get("origin") == "scheduleurm"
@@ -18723,7 +18972,9 @@ def cmd_status(args):
         return
     print("=== nodes ===")
     node_loads = compute_node_load_seconds(state)
-    for n in probe_all():
+    nodes = probe_all()
+    _apply_cpu_slot_accounting_to_nodes(state, nodes)
+    for n in nodes:
         if not n["alive"]:
             print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
         if n.get("slurm_cluster"):
@@ -19534,8 +19785,9 @@ def cmd_adopt(args):
     ram_mb = hist.get("ram_mb") or DEFAULT_RAM_MB
     with state_lock():
         state = load_state()
+        task_id = _allocate_task_id(state)
         task = {
-            "id": f"t{state['next_id']:04d}",
+            "id": task_id,
             "status": "running",
             "description": args.description,
             "project": project,
@@ -19583,7 +19835,6 @@ def cmd_adopt(args):
             "notified_launch": True,
         }
         state["tasks"].append(task)
-        state["next_id"] += 1
         save_state(state)
     print(f"adopted {task['id']}: {len(pids)} pid(s)={pids} on {args.node}:GPU{args.gpu}  "
           f"vram_now={sum_vram}MB est={est}MB sig={args.signature}")

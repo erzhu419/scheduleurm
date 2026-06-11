@@ -2,10 +2,11 @@
 
 Date: 2026-06-05
 
-Update on 2026-06-08: modules39-46 replace the old q11 profile-10 candidate
+Update on 2026-06-11: modules39-46 replace the old q11 profile-10 candidate
 with a live-robust q11 feasible family. Standalone q11 now selects profile 2
-and the mixed portfolio selects profile 3. The profile-10 rows below are kept
-as historical module29 output, not as the current robust claim.
+and the mixed portfolio selects profile 3. The tables below are the current
+robust static replay; old profile-10 rows are historical module29 provenance
+only and must not be used as current claims.
 
 This module converts the replay benchmark into the reviewer-facing form:
 
@@ -47,7 +48,7 @@ The task lists are generated from `simulation/tasksets.py`.
 | `q00_light_control` | low CPU, low GPU | 512 | 1 local control pool | real profiles 1-13, closed at 14 |
 | `q01_gpu_bound_compute` | low CPU, high GPU | 48 | 2 GPUs | real profiles 1-8 |
 | `q10_cpu_host_bound` | high CPU, low GPU | 256 | 1 local CPU bucket | real profiles 1-9, closed at 10 |
-| `q11_cpu_gpu_coupled` | high CPU, high GPU | 160 | 1 GPU | real profiles 1-12, closed at 13 |
+| `q11_cpu_gpu_coupled` | high CPU, high GPU | 160 | 1 GPU | real profiles 1-9, closed at 10 |
 | `hybrid_research_portfolio` | mixed | 400 | hybrid/GPU/CPU pools | current portfolio |
 
 `static` arrival mode is the saturation benchmark: all jobs are present at time
@@ -110,8 +111,8 @@ Scheduleurm candidate vs legacy:
 | `q00_light_control` | `light_control_local=13` | 11.825x | 11.758x | 11.814x |
 | `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | 1.079x | 1.045x | 1.085x |
 | `q10_cpu_host_bound` | `cpu_heavy_local_bench=8` | 1.510x | 1.534x | 1.534x |
-| `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | 1.229x | 1.203x | 1.205x |
-| `hybrid_research_portfolio` | `cpu=8, gpu=1, hybrid=10` | 1.228x | 1.283x | 1.201x |
+| `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=2` | 1.154x | 1.176x | 1.156x |
+| `hybrid_research_portfolio` | `cpu=8, gpu=1, hybrid=3` | 1.161x | 1.269x | 1.186x |
 
 Scheduleurm candidate vs SOTA-style baselines on the same explicit task lists:
 
@@ -121,10 +122,9 @@ Scheduleurm candidate vs SOTA-style baselines on the same explicit task lists:
 | `q01_gpu_bound_compute` | throughput table endpoint | 0.984x | 1.116x | tradeoff, not dominated |
 | `q01_gpu_bound_compute` | delay oracle endpoint | 1.014x | 0.911x | tradeoff, not dominated |
 | `q10_cpu_host_bound` | all SOTA-style policies tie candidate | 1.000x | 1.000x | not dominated |
-| `q11_cpu_gpu_coupled` | delay oracle endpoint | 1.029x | 0.983x | tradeoff, not dominated |
-| `hybrid_research_portfolio` | throughput table endpoint | 1.001x | 0.999x | tradeoff, not dominated |
-| `hybrid_research_portfolio` | interference/composite endpoint | 1.000x | 1.000x | tie |
-| `hybrid_research_portfolio` | delay oracle endpoint | 1.028x | 0.977x | tradeoff, not dominated |
+| `q11_cpu_gpu_coupled` | all SOTA-style policies tie candidate | 1.000x | 1.000x | tie |
+| `hybrid_research_portfolio` | throughput table endpoint | 1.000x | 1.001x | tradeoff, not dominated |
+| `hybrid_research_portfolio` | delay/interference/composite endpoint | 1.005x | 0.997x | tradeoff, not dominated |
 
 ## Fixed SOTA-Policy Matrix
 
@@ -148,32 +148,31 @@ portfolio jobs:
 
 | Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
 |---|---|---:|---:|---:|---:|---:|
-| Scheduleurm candidate | this work | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
-| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 976 | 50910.238 | 6021.953 | 0.9995x | 1.0009x |
-| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 976 | 52010.559 | 5960.498 | 1.0211x | 0.9907x |
-| IADeep/Salus-style interference guard | IADeep, Salus | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
-| quadrant composite | mixed SOTA-style | 976 | 50937.535 | 6016.439 | 1.0000x | 1.0000x |
+| Scheduleurm candidate | this work | 976 | 53310.215 | 6089.605 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 976 | 53282.917 | 6095.119 | 0.9995x | 1.0009x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 976 | 53333.806 | 6085.398 | 1.0004x | 0.9993x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 976 | 53310.215 | 6089.605 | 1.0000x | 1.0000x |
+| quadrant composite | mixed SOTA-style | 976 | 53310.215 | 6089.605 | 1.0000x | 1.0000x |
 
 Full five-taskset suite, including `hybrid_research_portfolio`:
 
 | Fixed policy | Representative systems | Jobs | Sum makespan (s) | Job-weighted mean flow (s) | Candidate vs policy makespan | Candidate vs policy flow |
 |---|---|---:|---:|---:|---:|---:|
-| Scheduleurm candidate | this work | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
-| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 1376 | 77858.340 | 5992.094 | 1.0001x | 1.0004x |
-| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 1376 | 79673.134 | 5911.037 | 1.0234x | 0.9869x |
-| IADeep/Salus-style interference guard | IADeep, Salus | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
-| quadrant composite | mixed SOTA-style | 1376 | 77849.461 | 5989.780 | 1.0000x | 1.0000x |
+| Scheduleurm candidate | this work | 1376 | 81818.460 | 6060.620 | 1.0000x | 1.0000x |
+| Gavel/Pollux/Sia-style throughput table | Gavel, Pollux, Sia | 1376 | 81793.703 | 6067.049 | 0.9997x | 1.0011x |
+| SRPT/Gittins-style delay oracle | SRPT, Gittins, SERPT | 1376 | 81988.550 | 6052.181 | 1.0021x | 0.9986x |
+| IADeep/Salus-style interference guard | IADeep, Salus | 1376 | 81964.959 | 6055.165 | 1.0018x | 0.9991x |
+| quadrant composite | mixed SOTA-style | 1376 | 81964.959 | 6055.165 | 1.0018x | 0.9991x |
 
 Winner-transfer view:
 
 | Source taskset | Winner objective | Best fixed SOTA-style policy on source | Candidate vs that policy on full five-taskset makespan | Candidate vs that policy on full five-taskset flow |
 |---|---|---|---:|---:|
-| q00 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 1.0001x | 1.0004x |
-| q01 | makespan | throughput table | 1.0001x | 1.0004x |
-| q01 | mean-flow | delay oracle | 1.0234x | 0.9869x |
-| q10 | makespan or mean-flow | throughput table | 1.0001x | 1.0004x |
-| q11 | makespan | throughput/interference/composite tie; first-listed throughput table shown | 1.0001x | 1.0004x |
-| q11 | mean-flow | delay oracle | 1.0234x | 0.9869x |
+| q00 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 0.9997x | 1.0011x |
+| q01 | makespan | throughput table | 0.9997x | 1.0011x |
+| q01 | mean-flow | delay oracle | 1.0021x | 0.9986x |
+| q10 | makespan or mean-flow | throughput table | 0.9997x | 1.0011x |
+| q11 | makespan or mean-flow | all SOTA-style policies tie; first-listed throughput table shown | 0.9997x | 1.0011x |
 
 q01 SOTA endpoint check on the same 48-job task list:
 
@@ -198,16 +197,17 @@ Portfolio check on the same 400-job list:
 
 | Policy | Profiles | Makespan (s) | Mean flow (s) |
 |---|---|---:|---:|
-| legacy | `cpu=9, gpu=3, hybrid=5` | 33043.785 | 7599.635 |
-| Scheduleurm candidate | `cpu=8, gpu=1, hybrid=10` | 26911.926 | 5924.731 |
-| Gavel/Pollux/Sia-style throughput table | `cpu=8, gpu=6, hybrid=10` | 26948.103 | 5919.239 |
-| SRPT/Gittins-style delay oracle | `cpu=8, gpu=1, hybrid=1` | 27662.575 | 5790.350 |
-| IADeep/Salus-style interference guard | `cpu=8, gpu=1, hybrid=10` | 26911.926 | 5924.731 |
+| legacy | `cpu=9, gpu=3, hybrid=5` | 33095.049 | 7599.763 |
+| Scheduleurm candidate | `cpu=8, gpu=1, hybrid=3` | 28508.245 | 5989.897 |
+| Gavel/Pollux/Sia-style throughput table | `cpu=8, gpu=6, hybrid=3` | 28510.786 | 5998.559 |
+| SRPT/Gittins-style delay oracle | `cpu=8, gpu=1, hybrid=2` | 28654.744 | 5971.132 |
+| IADeep/Salus-style interference guard | `cpu=8, gpu=1, hybrid=2` | 28654.744 | 5971.132 |
 
-The portfolio candidate is now based on a real q10 local CPU curve rather than
-the old protocol CPU curve. It ties the interference/composite policy, has a
-small makespan edge but small mean-flow loss against the throughput endpoint,
-and has the opposite tradeoff against the delay endpoint.
+The portfolio candidate is now based on the real q10 local CPU curve and the
+live-robust q11 boundary. It is faster in all-job completion time than the
+delay/interference/composite endpoints, while the throughput endpoint is
+essentially tied on makespan and slightly worse on mean flow under this static
+task-list replay.
 
 ## Validation Scope
 
@@ -225,7 +225,8 @@ declared local CPU bucket; remaining breadth is a remote CPU-node/data-loader
 replication, more arrival seeds, and longer stability/load sweeps after the
 module-level policy validations stay passing.
 
-The q00 and q10 tasksets should be cited as declared local-bucket certificates:
+The q00, q10, and q11 tasksets should be cited as declared bucket certificates:
 `q00_light_control` for local light-control work and `q10_cpu_host_bound` for
-the local CPU-heavy benchmark bucket.  They are not evidence that every
-CPU-heavy or data-loader-heavy deployment has the same service curve.
+the local CPU-heavy benchmark bucket, plus `q11_cpu_gpu_coupled` for the current
+`hybrid_rl_resac_ant` robust node bucket. They are not evidence that every
+CPU-heavy, data-loader-heavy, RL, or BAPR deployment has the same service curve.

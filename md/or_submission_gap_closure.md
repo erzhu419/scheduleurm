@@ -67,6 +67,7 @@ algorithm/experiments/production_bucket_probe_manifest.py
 algorithm/oracle_trace.py
 algorithm/experiments/scheduler_oracle_trace_audit.py
 algorithm/experiments/theorem_oracle_trace_bridge.py
+algorithm/experiments/production_theorem_oracle_trace.py
 algorithm/experiments/production_cpu_workload_curve.py
 algorithm/experiments/oracle_trace_enrichment.py
 md/experiment_module30_slack_accounting.md
@@ -76,6 +77,7 @@ md/experiment_module51_production_coverage_drilldown.md
 md/experiment_module53_cpu_sumo_transit_probe_manifest.md
 md/experiment_module50_scheduler_oracle_trace.md
 md/experiment_module52_theorem_oracle_trace_bridge.md
+md/experiment_artifacts/module100_production_theorem_oracle_bridge.md
 md/experiment_module54_production_cpu_workload_curve_runner.md
 md/experiment_module55_oracle_trace_lower_service_enrichment.md
 md/experiment_module57_freqduet_runner_v3_c9_16_curve.md
@@ -131,6 +133,8 @@ md/experiment_artifacts/module51_production_coverage_drilldown.json
 md/experiment_artifacts/module53_cpu_sumo_transit_probe_manifest.json
 md/experiment_artifacts/module50_scheduler_oracle_trace_status.json
 md/experiment_artifacts/module52_theorem_oracle_trace_bridge.json
+md/experiment_artifacts/module100_production_theorem_oracle_bridge.json
+md/experiment_artifacts/module100_production_theorem_oracle_trace.jsonl
 md/experiment_artifacts/module54_freqduet_cpu_c17_32_plan.json
 md/experiment_artifacts/module55_oracle_trace_enrichment_status.json
 md/experiment_artifacts/module56_freqduet_cpu_c17_32_jtl110cpu2_curve_p124.json
@@ -217,12 +221,22 @@ Remaining scope limitation:
   the remaining command-shape, CPU-fabric, GPU/RL-fabric, and c9_16
   real-demand profile-extension buckets.  In the reviewer-facing
   completed-active production view:
-    records = 3411
-    strict mapped = 3411
+    records = 3419
+    strict mapped = 3419
     representative mapped = 0
     unmapped = 0
     measurement_required = 0
     global_theorem_closed = true
+  Module100 then builds a service-map robust MaxWeight lower-service oracle
+  bridge over the same completed-active population:
+    status = SERVICE_MAP_THEOREM_ORACLE_PASS
+    alpha0 = 0
+    alpha1 = 0
+    usable_for_service_map_oracle_bridge = true
+    usable_for_live_scheduler_oracle_trace = false
+  The live scheduler trace path remains separate: Modules50/52/55 correctly
+  report NO_TRACE until a real scheduler candidate-family trace is captured
+  and enriched with lower-service vectors.
   The former dominant CPU/SUMO/transit bucket and the later representative
   CPU/GPU buckets are now closed for this population.  Future production rows
   must still follow the same strict service-certificate pattern before being

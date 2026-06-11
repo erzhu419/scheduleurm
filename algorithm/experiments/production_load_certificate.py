@@ -41,6 +41,7 @@ DEFAULT_TASKSETS = (
     "q10_cpu_host_bound",
     "production_freqduet_cpu_c17_32",
     "production_freqduet_cpu_ablation_c3_8_completed_history",
+    "production_freqduet_spacectx_ep100_c3_8_completed_history",
     "production_freqduet_runner_v3_c3_8_completed_history",
     "production_freqduet_cpu_ablation_c33_64_completed_history",
     "production_freqduet_runner_v3_c33_64_completed_history",
@@ -105,6 +106,12 @@ DEFAULT_TASKSETS = (
     "production_transit_trading_pressure_matrix_c9_16_completed_history",
     "production_bamor_mujoco_c17_32_completed_history",
     "production_bamor_diagnostic_shard_c17_32_completed_history",
+    "production_assumption_agent_unittest_completed_history",
+    "production_assumption_agent_meta_qa_evolution_completed_history",
+    "production_assumption_agent_phase2_v20_framework_completed_history",
+    "production_module94_remaining_completed_history",
+    "production_module95_transit_resac_artifact_completed_history",
+    "production_module96_resac_review5_jax_train_fabric_completed_history",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -454,6 +461,11 @@ def classify_record(
             units=units,
         )
 
+    module95_units = _module95_transit_resac_artifact_units(row=row, est_vram=est_vram, cpu=cpu)
+    if module95_units is not None:
+        workload_key, units, reason = module95_units
+        return _mapped(workload_key, "strict_measured", reason, units=units)
+
     bamor_c_le2_script_units = _bamor_cpu_training_c_le2_script_units(
         row=row,
         est_vram=est_vram,
@@ -579,6 +591,19 @@ def classify_record(
             "strict_measured",
             "module64_bamor_cpu_training_c3_8_completed_history",
             units=bamor_c3_8_units,
+        )
+
+    spacectx_c3_8_units = _freqduet_spacectx_ep100_c3_8_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if spacectx_c3_8_units is not None:
+        return _mapped(
+            "freqduet_spacectx_ep100_c3_8_completed_history",
+            "strict_measured",
+            "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            units=spacectx_c3_8_units,
         )
 
     c3_8_units = _freqduet_ablation_c3_8_units(row=row, est_vram=est_vram, cpu=cpu)
@@ -710,6 +735,25 @@ def classify_record(
             "strict_measured",
             "module57_freqduet_runner_v3_allfreq_alllayers_c9_16",
         )
+
+    assumption_agent_units = _assumption_agent_completed_history_units(row=row, est_vram=est_vram)
+    if assumption_agent_units is not None:
+        workload_key, reason = assumption_agent_units
+        return _mapped(workload_key, "strict_measured", reason, units=1.0)
+
+    module94_units = _module94_remaining_completed_history_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if module94_units is not None:
+        workload_key, reason = module94_units
+        return _mapped(workload_key, "strict_measured", reason, units=1.0)
+
+    module96_units = _module96_resac_review5_jax_train_units(row=row, est_vram=est_vram)
+    if module96_units is not None:
+        workload_key, reason = module96_units
+        return _mapped(workload_key, "strict_measured", reason, units=1.0)
 
     if include_representative:
         if est_vram > 0 and any(
@@ -1154,6 +1198,54 @@ def _transit_freqhrl_c9_16_trading_units(
     return None
 
 
+def _module95_transit_resac_artifact_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    project = str(row.get("project") or "").strip().lower()
+    cwd = str(row.get("cwd") or "").strip().lower()
+    signature = str(row.get("signature") or "").strip().lower()
+    description = str(row.get("description") or "").strip().lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+
+    if 8.0 < float(cpu) <= 16.0 and any(
+        token in text for token in ("transitduet", "freq_hrl", "freqhrl")
+    ):
+        if (
+            "native_real_demand_control_validation" in cmd_lower
+            and "alighting_throughput_v5" in cmd_lower
+        ):
+            tokens = _shlex_tokens(cmd)
+            source_count = _transit_count_option(tokens, "--sources", 2)
+            units = 2.0 * source_count * _transit_seed_episode_units(tokens, seed_default=3)
+            if units <= 0:
+                return None
+            return (
+                "transit_native_real_demand_batch_c9_16_completed_history",
+                float(units),
+                "module95_transit_native_real_demand_batch_c9_16_completed_history",
+            )
+
+    if project == "re-sac" or "/re-sac" in cwd or signature.startswith("re-sac/"):
+        if "conda-pack" in cmd_lower and "resac-jax" in cmd_lower:
+            return (
+                "resac_conda_pack_completed_history",
+                1.0,
+                "module95_resac_conda_pack_completed_history",
+            )
+
+    return None
+
+
 def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
     import shlex
 
@@ -1586,6 +1678,190 @@ def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
     return units if units > 0 else None
 
 
+def _assumption_agent_completed_history_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+) -> tuple[str, str] | None:
+    if est_vram > 0:
+        return None
+    project = str(row.get("project") or "").strip().lower()
+    cwd = str(row.get("cwd") or "").strip().lower()
+    signature = str(row.get("signature") or "").strip().lower()
+    if project != "asumption agent" and "/asumption agent" not in cwd and not signature.startswith("asumption agent/"):
+        return None
+
+    import shlex
+
+    try:
+        tokens = shlex.split(str(row.get("cmd") or ""))
+    except ValueError:
+        tokens = str(row.get("cmd") or "").split()
+    if "-m" in tokens:
+        idx = tokens.index("-m")
+        module = tokens[idx + 1] if idx + 1 < len(tokens) else ""
+        if module == "unittest" and any(
+            str(token).startswith("tests.test_assumption_os") for token in tokens
+        ):
+            return (
+                "assumption_agent_unittest_completed_history",
+                "module92_assumption_agent_unittest_completed_history",
+            )
+        if module == "assumption_os.meta_qa_evolution":
+            return (
+                "assumption_agent_meta_qa_evolution_completed_history",
+                "module92_assumption_agent_meta_qa_evolution_completed_history",
+            )
+        if module == "assumption_os.performance_validation":
+            return (
+                "assumption_agent_performance_validation_completed_history",
+                "module94_assumption_agent_performance_validation_completed_history",
+            )
+        if module in {
+            "assumption_os.structural_live_ablation",
+            "assumption_os.full_v3_fresh_live_benchmark",
+        }:
+            return (
+                "assumption_agent_live_benchmark_completed_history",
+                "module94_assumption_agent_live_benchmark_completed_history",
+            )
+    if any(str(token).endswith("phase2_v20_framework.py") for token in tokens):
+        return (
+            "assumption_agent_phase2_v20_framework_completed_history",
+            "module92_assumption_agent_phase2_v20_framework_completed_history",
+        )
+    return None
+
+
+def _module94_remaining_completed_history_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, str] | None:
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    project = str(row.get("project") or "").strip().lower()
+    cwd = str(row.get("cwd") or "").strip().lower()
+    signature = str(row.get("signature") or "").strip().lower()
+    description = str(row.get("description") or "").strip().lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    text = " ".join((project, cwd, signature, description, cmd_lower))
+
+    if est_vram <= 0 and (project == "cfcmt" or "/cfcmt" in cwd or signature.startswith("cfcmt/")):
+        if "pytest" in cmd_lower and "cf_h2o/tests" in cmd_lower:
+            return (
+                "cfcmt_pytest_cpu_completed_history",
+                "module94_cfcmt_pytest_cpu_completed_history",
+            )
+        if "cf_h2o/eval/" in cmd_lower or "-m cf_h2o.eval." in cmd_lower:
+            return (
+                "cfcmt_cpu_eval_completed_history",
+                "module94_cfcmt_cpu_eval_completed_history",
+            )
+
+    if est_vram <= 0 and project in {"sensing-compressibility-v10k", "sensing-compressibility-v2k"}:
+        voltage_scripts = (
+            "path_b_tamu_voltage_cache.py",
+            "path_b_tamu_voltage_cache_10k.py",
+            "stage2_graph_regularized_reconstruction.py",
+        )
+        if any(script in cmd_lower for script in voltage_scripts):
+            return (
+                "sensing_voltage_cache_completed_history",
+                "module94_sensing_voltage_cache_completed_history",
+            )
+
+    if est_vram <= 0 and project == "sensing-compressibility-pems":
+        pems_scripts = (
+            "pems_d4d7_multweek_cache.py",
+            "validate_screened_mi_equivalence.py",
+        )
+        if any(script in cmd_lower for script in pems_scripts):
+            return (
+                "sensing_pems_cache_completed_history",
+                "module94_sensing_pems_cache_completed_history",
+            )
+
+    if est_vram <= 0 and (project.startswith("nature_emissions") or signature.startswith("nature_emissions")):
+        if "analyze_routeguard050_hybrid_accounting_py36.py" in cmd_lower:
+            return (
+                "nature_emissions_routeguard_analysis_completed_history",
+                "module94_nature_emissions_routeguard_analysis_completed_history",
+            )
+
+    if est_vram <= 0 and project == "scheduleurm":
+        if "python" in cmd_lower and "algorithm.experiments.production_" in cmd_lower:
+            return (
+                "scheduleurm_control_plane_completed_history",
+                "module94_scheduleurm_control_plane_completed_history",
+            )
+
+    if est_vram <= 0 and project.startswith("sched-hpc-e2e") and cmd_lower.strip() == "bash run.sh":
+        return (
+            "scheduleurm_hpc_relay_smoke_completed_history",
+            "module94_scheduleurm_hpc_relay_smoke_completed_history",
+        )
+
+    if est_vram <= 0 and project == "bapr":
+        if "jax_experiments.analysis.eval_id_ood" in cmd_lower and "--merge_shard" in cmd_lower:
+            return (
+                "bapr_id_ood_merge_cpu_eval_completed_history",
+                "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+            )
+
+    if est_vram <= 0 and project == "re-sac":
+        if "sac_ensemble_original_logging.py" in cmd_lower:
+            return (
+                "resac_bus_seed_extension_cpu_eval_completed_history",
+                "module94_resac_bus_seed_extension_cpu_eval_completed_history",
+            )
+
+    if est_vram > 0 and (
+        project == "h2oplus"
+        or "/sumo-rl/h2oplus" in cwd
+        or signature.startswith("h2oplus/")
+    ):
+        if "h2o+_bus_main.py" in cmd_lower and "--device=cuda" in cmd_lower:
+            return (
+                "h2oplus_snapshot_gpu_completed_history",
+                "module94_h2oplus_snapshot_gpu_completed_history",
+            )
+
+    return None
+
+
+def _module96_resac_review5_jax_train_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+) -> tuple[str, str] | None:
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    project = str(row.get("project") or "").strip().lower()
+    cwd = str(row.get("cwd") or "").strip().lower()
+    signature = str(row.get("signature") or "").strip().lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if not (project == "re-sac" or "/re-sac" in cwd or signature.startswith("re-sac/")):
+        return None
+    if "jax_experiments.train" not in cmd_lower:
+        return None
+    if "--device gpu" not in cmd_lower:
+        return None
+    if "--max_iters" not in cmd_lower:
+        return None
+    if est_vram > 0:
+        return None
+    return (
+        "resac_review5_jax_train_fabric_completed_history",
+        "module96_resac_review5_jax_train_fabric_completed_history",
+    )
+
+
 def _bamor_mujoco_policy_union_c3_8_units(
     *,
     row: Mapping[str, Any],
@@ -1800,6 +2076,32 @@ def _freqduet_ablation_c3_8_units(*, row: Mapping[str, Any], est_vram: float, cp
     if project == "bamor" or "/bamor" in cwd:
         return None
     if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    units = _parse_freqduet_ablation_units(cmd)
+    return units if units is not None and units > 0 else None
+
+
+def _freqduet_spacectx_ep100_c3_8_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    cmd_lower = cmd.lower()
+    if project == "bamor" or "/bamor" in cwd:
+        return None
+    if "run_freqduet_ablation.py" not in cmd_lower:
+        return None
+    if "spacectx_screen_ep100_wu10" not in cmd_lower:
+        return None
+    if "--skip-existing" not in cmd_lower or "--no-aggregate" not in cmd_lower:
         return None
     units = _parse_freqduet_ablation_units(cmd)
     return units if units is not None and units > 0 else None

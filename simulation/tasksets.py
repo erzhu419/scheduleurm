@@ -304,7 +304,7 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                 TaskSetMember(
                     workload_key="freqduet_cpu_ablation_c3_8_completed_history",
                     resource_kind="cpu_sumo_transit",
-                    task_count=40,
+                    task_count=42,
                     total_units=1,
                     resource_count=1,
                     variation_cv=0.30,
@@ -321,6 +321,45 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                         "episode rate as a conservative profile-1 lower-service point. "
                         "Runner_v3, native validation, and unknown-size commands in "
                         "the same c_3_8 bucket remain unmeasured."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_freqduet_spacectx_ep100_c3_8_completed_history",
+            purpose=(
+                "A strict completed/active production-history closure slice for "
+                "FreqDuet spacectx_screen_ep100_wu10 run_freqduet_ablation.py "
+                "shards whose CPU request is 3-8 cores and whose episode units "
+                "are parseable from job-start/job-end and episodes."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm production arrivals, mapped with parsed "
+                "jobs times episodes. The service lower bound is calibrated "
+                "only from completed spacectx_screen_ep100_wu10 shards; running "
+                "repair shards contribute arrival load but not service samples."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="freqduet_spacectx_ep100_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.20,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module93 completed-history wall-clock audit "
+                        "for spacectx_screen_ep100_wu10 FreqDuet c_3_8 shards."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This class is separated from the broader module60 c_3_8 "
+                        "ablation bucket because production spacectx shards run "
+                        "thousands of episode units per command and have a distinct "
+                        "completed-history service lower bound."
                     ),
                 ),
             ),
@@ -1786,6 +1825,376 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                         "Preset counts are intentionally not expanded, because the "
                         "production artifact generator exposes command completion "
                         "rather than a stable per-preset progress counter."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_assumption_agent_unittest_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for Asumption Agent "
+                "unittest production records."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed unittest command as the conservative unit. "
+                "Only profile 1 is loaded from realized completed-task wall-clock "
+                "history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="assumption_agent_unittest_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=51,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Asumption Agent unittest sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module92 completed-history wall-clock audit for "
+                        "Asumption Agent python3 -m unittest tests.test_assumption_os records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed unittest command.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_assumption_agent_meta_qa_evolution_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for Asumption Agent "
+                "meta_qa_evolution production records."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed meta-QA command as the conservative unit. "
+                "Only profile 1 is loaded from realized completed-task wall-clock "
+                "history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="assumption_agent_meta_qa_evolution_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=21,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Asumption Agent meta-QA sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module92 completed-history wall-clock audit for "
+                        "Asumption Agent python3 -m assumption_os.meta_qa_evolution records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service unit is one completed meta-QA command. "
+                        "Samples per dataset and reader options are not expanded."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_assumption_agent_phase2_v20_framework_completed_history",
+            purpose=(
+                "A strict completed-history closure slice for Asumption Agent "
+                "phase2_v20_framework production records."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed phase2 validation command as the conservative "
+                "unit. Only profile 1 is loaded from realized completed-task "
+                "wall-clock history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="assumption_agent_phase2_v20_framework_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history Asumption Agent phase2 sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module92 completed-history wall-clock audit for "
+                        "Asumption Agent phase2_v20_framework.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service unit is one completed phase2 framework command. "
+                        "Proposal ids, graph size, and sample counts are not expanded."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_module94_remaining_completed_history",
+            purpose=(
+                "Strict completed-history closure slices for the remaining "
+                "non-RE-SAC-review5 production records with stable command-level "
+                "service units after Module93."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed command as the conservative unit for each "
+                "sub-slice. Each member loads only profile 1 from realized "
+                "completed-task wall-clock history; no representative equivalence "
+                "is claimed by this module."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="assumption_agent_performance_validation_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual Asumption Agent performance validation",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed performance_validation command.",
+                ),
+                TaskSetMember(
+                    workload_key="assumption_agent_live_benchmark_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=4,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual Asumption Agent live benchmark commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed structural/live benchmark command.",
+                ),
+                TaskSetMember(
+                    workload_key="cfcmt_cpu_eval_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=71,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual CFCMT eval commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed cf_h2o eval command.",
+                ),
+                TaskSetMember(
+                    workload_key="cfcmt_pytest_cpu_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=11,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual CFCMT pytest commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed pytest command over cf_h2o/tests.",
+                ),
+                TaskSetMember(
+                    workload_key="sensing_voltage_cache_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=6,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual voltage-cache commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed voltage/cache reconstruction command.",
+                ),
+                TaskSetMember(
+                    workload_key="sensing_pems_cache_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=5,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual PeMS cache commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed PeMS cache or equivalence-validation command.",
+                ),
+                TaskSetMember(
+                    workload_key="nature_emissions_routeguard_analysis_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual Nature emissions routeguard analysis",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed routeguard accounting analysis command.",
+                ),
+                TaskSetMember(
+                    workload_key="scheduleurm_control_plane_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=55,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.25,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 Scheduleurm theorem-artifact control-plane commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed production-load or coverage certificate command.",
+                ),
+                TaskSetMember(
+                    workload_key="scheduleurm_hpc_relay_smoke_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.25,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 Scheduleurm HPC relay smoke command",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed hpc-relay smoke run.sh command.",
+                ),
+                TaskSetMember(
+                    workload_key="bapr_id_ood_merge_cpu_eval_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=3,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual BAPR id/ood merge commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed eval_id_ood merge_shard command.",
+                ),
+                TaskSetMember(
+                    workload_key="resac_bus_seed_extension_cpu_eval_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module94 residual RE-SAC bus seed-extension CPU eval commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed sac_ensemble_original_logging command.",
+                ),
+                TaskSetMember(
+                    workload_key="h2oplus_snapshot_gpu_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=8,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.30,
+                    quadrant="high_gpu_low_cpu",
+                    role="Module94 residual H2Oplus snapshot GPU commands",
+                    benchmark_source="Scheduleurm module94 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed h2o+_bus_main.py CUDA command.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_module95_transit_resac_artifact_completed_history",
+            purpose=(
+                "Strict completed-history closure slices for the final non-review5 "
+                "production records after Module94: Transit real-demand c9_16 "
+                "throughput shards and one RE-SAC conda-pack artifact command."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals. Transit "
+                "real-demand shards reuse the module79 source/seed/episode unit "
+                "definition; the conda-pack artifact uses one completed command as "
+                "the service unit."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="transit_native_real_demand_batch_c9_16_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=2,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.25,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module95 Transit real-demand throughput c9_16 shard closure",
+                    benchmark_source="Scheduleurm module95 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The progress unit matches module79: two directions times "
+                        "source count times seed/episode units."
+                    ),
+                ),
+                TaskSetMember(
+                    workload_key="resac_conda_pack_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.25,
+                    quadrant="high_cpu_low_gpu",
+                    role="Module95 RE-SAC conda-pack artifact command closure",
+                    benchmark_source="Scheduleurm module95 completed-history wall-clock audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note="The service unit is one completed conda-pack command.",
+                ),
+            ),
+        ),
+        TaskSet(
+            name="production_module96_resac_review5_jax_train_fabric_completed_history",
+            purpose=(
+                "A strict production-fabric completed-history closure slice for "
+                "RE-SAC review5 JAX GPU training commands whose metadata reported "
+                "zero estimated VRAM but whose command explicitly used --device gpu."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed training command as the service unit. The "
+                "profile-1 service lower bound is the conservative end-to-end "
+                "completed-command throughput over the observed production burst "
+                "from first submission to last completion."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="resac_review5_jax_train_fabric_completed_history",
+                    resource_kind="hybrid_rl",
+                    task_count=151,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_gpu_low_cpu",
+                    role="Module96 RE-SAC review5 production GPU-fabric closure",
+                    benchmark_source="Scheduleurm module96 production-fabric completed-history burst audit.",
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "This is a fabric-level service certificate over the observed "
+                        "production GPU pool, not a single-GPU throughput curve. "
+                        "It is intentionally separated from hybrid_rl_resac_ant "
+                        "representative mappings."
                     ),
                 ),
             ),

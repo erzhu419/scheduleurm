@@ -1,0 +1,82 @@
+{
+  "completed_record_count": 3,
+  "completed_units_command": 3.0,
+  "cpu_counts": {
+    "1": 3,
+    "2": 1
+  },
+  "duration_s": {
+    "max": 95.21557116508484,
+    "median": 94.09051942825317,
+    "min": 81.80829787254333
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual Asumption Agent structural/live benchmark production records. The progress unit is one completed command.",
+  "lower_service_command_s": 0.010502483866490693,
+  "parsed_units_command": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    0.012223698891254185,
+    0.010628063338119095,
+    0.010502483866490693
+  ],
+  "record_count": 4,
+  "run_id": "module94_assumption_agent_live_benchmark_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 -m assumption_os.full_v3_fresh_live_benchmark --root . --eval-id full_v3_fresh_live_business_guard_heldout300_gptmini_gpt55_20260611 --sample-size 300 --seed 20260613 --execute --selection-mode natural_repaired_guarded --solver-model gpt_mini --judge-model gpt55 --solve-workers 16 --judge-workers 8 --exclude-sample phase four/assumption_graph/paper_readiness_20260604/fresh_live_runs/full_v3_fresh_live_300_gptmini_gpt55_20260611_sample.json --exclude-sample phase four/assumption_graph/paper_readiness_20260604/fresh_live_runs/full_v3_fresh_live_guarded_heldout300_gptmini_gpt55_20260611_sample.json --out phase four/assumption_graph/paper_readiness_20260604/full_v3_fresh_live_business_guard_heldout300_gptmini_gpt55_20260611.json",
+      "cpu_cores": 1,
+      "duration_s": 95.21557116508484,
+      "est_vram_mb": 0,
+      "project": "Asumption Agent",
+      "ram_mb": 64,
+      "rate_command_s": 0.010502483866490693,
+      "signature": "Asumption Agent/auto-adopted/p1320204",
+      "status": "done",
+      "task_id": "t9806",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 -m assumption_os.full_v3_fresh_live_benchmark --root . --eval-id full_v3_fresh_live_guarded_preflight_20260611 --sample-size 300 --selection-mode natural_repaired_guarded --solve-workers 16 --judge-workers 8 --out phase four/assumption_graph/paper_readiness_20260604/full_v3_fresh_live_guarded_preflight_20260611.json",
+      "cpu_cores": 1,
+      "duration_s": 94.09051942825317,
+      "est_vram_mb": 0,
+      "project": "Asumption Agent",
+      "ram_mb": 63,
+      "rate_command_s": 0.010628063338119095,
+      "signature": "Asumption Agent/auto-adopted/p1316419",
+      "status": "done",
+      "task_id": "t9802",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 -m assumption_os.structural_live_ablation --eval-id structural_live_hybrid_dryrun_20260603 --selection-mode hybrid --max-cases 100 --dry-run",
+      "cpu_cores": 2,
+      "duration_s": 81.80829787254333,
+      "est_vram_mb": 0,
+      "project": "Asumption Agent",
+      "ram_mb": 54,
+      "rate_command_s": 0.012223698891254185,
+      "signature": "Asumption Agent/auto-adopted/p12078",
+      "status": "done",
+      "task_id": "t6102",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 3,
+    "running": 1
+  },
+  "total_units_command": 4.0,
+  "vram_counts": {
+    "0": 4
+  },
+  "workload_key": "assumption_agent_live_benchmark_completed_history"
+}

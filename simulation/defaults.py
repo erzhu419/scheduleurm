@@ -592,6 +592,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module93_freqduet_spacectx_ep100_c3_8_completed_history_reports",
+        workload_key="freqduet_spacectx_ep100_c3_8_completed_history",
+        command_fingerprint="freqduet_spacectx_ep100_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module61_freqduet_ablation_c33_64_completed_history_reports",
         workload_key="freqduet_cpu_ablation_c33_64_completed_history",
         command_fingerprint="freqduet_cpu_ablation_c33_64_completed_history_v1",
@@ -871,6 +880,144 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module92_assumption_agent_unittest_completed_history_reports",
+        workload_key="assumption_agent_unittest_completed_history",
+        command_fingerprint="assumption_agent_unittest_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module92_assumption_agent_meta_qa_evolution_completed_history_reports",
+        workload_key="assumption_agent_meta_qa_evolution_completed_history",
+        command_fingerprint="assumption_agent_meta_qa_evolution_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module92_assumption_agent_phase2_v20_framework_completed_history_reports",
+        workload_key="assumption_agent_phase2_v20_framework_completed_history",
+        command_fingerprint="assumption_agent_phase2_v20_framework_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    for artifact_name, workload_key, resource_kind, node_bucket in (
+        (
+            "module94_assumption_agent_performance_validation_completed_history",
+            "assumption_agent_performance_validation_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_assumption_agent_live_benchmark_completed_history",
+            "assumption_agent_live_benchmark_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_cfcmt_cpu_eval_completed_history",
+            "cfcmt_cpu_eval_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_cfcmt_pytest_cpu_completed_history",
+            "cfcmt_pytest_cpu_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_sensing_voltage_cache_completed_history",
+            "sensing_voltage_cache_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_sensing_pems_cache_completed_history",
+            "sensing_pems_cache_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_nature_emissions_routeguard_analysis_completed_history",
+            "nature_emissions_routeguard_analysis_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_scheduleurm_control_plane_completed_history",
+            "scheduleurm_control_plane_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_scheduleurm_hpc_relay_smoke_completed_history",
+            "scheduleurm_hpc_relay_smoke_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+            "bapr_id_ood_merge_cpu_eval_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_resac_bus_seed_extension_cpu_eval_completed_history",
+            "resac_bus_seed_extension_cpu_eval_completed_history",
+            "cpu_sumo_transit",
+            "production-history:cpu",
+        ),
+        (
+            "module94_h2oplus_snapshot_gpu_completed_history",
+            "h2oplus_snapshot_gpu_completed_history",
+            "hybrid_rl",
+            "production-history:gpu",
+        ),
+    ):
+        _add_summary_dir(
+            cache,
+            ARTIFACT_ROOT / f"{artifact_name}_reports",
+            workload_key=workload_key,
+            command_fingerprint=f"{workload_key}_v1",
+            resource_kind=resource_kind,
+            total_units=1,
+            node_bucket=node_bucket,
+        )
+    for artifact_name, workload_key in (
+        (
+            "module95_transit_native_real_demand_batch_c9_16_completed_history",
+            "transit_native_real_demand_batch_c9_16_completed_history",
+        ),
+        (
+            "module95_resac_conda_pack_completed_history",
+            "resac_conda_pack_completed_history",
+        ),
+    ):
+        _add_summary_dir(
+            cache,
+            ARTIFACT_ROOT / f"{artifact_name}_reports",
+            workload_key=workload_key,
+            command_fingerprint=f"{workload_key}_v1",
+            resource_kind="cpu_sumo_transit",
+            total_units=1,
+            node_bucket="production-history:cpu",
+        )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module96_resac_review5_jax_train_fabric_completed_history_reports",
+        workload_key="resac_review5_jax_train_fabric_completed_history",
+        command_fingerprint="resac_review5_jax_train_fabric_completed_history_v1",
+        resource_kind="hybrid_rl",
+        total_units=1,
+        node_bucket="production-history:gpu-fabric",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module65_zsw_tsp_sumo_eval_c_le2_completed_history_reports",
         workload_key="zsw_tsp_sumo_eval_c_le2_completed_history",
         command_fingerprint="zsw_tsp_sumo_eval_c_le2_completed_history_v1",
@@ -922,6 +1069,7 @@ def legacy_policy() -> ReplayPolicy:
             "cpu_heavy_local_bench": 9,
             "freqduet_cpu_ablation_c17_32": 1,
             "freqduet_cpu_ablation_c3_8_completed_history": 1,
+            "freqduet_spacectx_ep100_c3_8_completed_history": 1,
             "freqduet_cpu_ablation_c33_64_completed_history": 1,
             "freqduet_cpu_ablation_c65p_completed_history": 1,
             "freqduet_cpu_ablation_c9_16": 1,
@@ -998,6 +1146,24 @@ def legacy_policy() -> ReplayPolicy:
             "bamor_mujoco_c3_8_completed_history": 1,
             "bamor_diagnostic_shard_c3_8_completed_history": 1,
             "bamor_mujoco_policy_union_c3_8_completed_history": 1,
+            "assumption_agent_unittest_completed_history": 1,
+            "assumption_agent_meta_qa_evolution_completed_history": 1,
+            "assumption_agent_phase2_v20_framework_completed_history": 1,
+            "assumption_agent_performance_validation_completed_history": 1,
+            "assumption_agent_live_benchmark_completed_history": 1,
+            "cfcmt_cpu_eval_completed_history": 1,
+            "cfcmt_pytest_cpu_completed_history": 1,
+            "sensing_voltage_cache_completed_history": 1,
+            "sensing_pems_cache_completed_history": 1,
+            "nature_emissions_routeguard_analysis_completed_history": 1,
+            "scheduleurm_control_plane_completed_history": 1,
+            "scheduleurm_hpc_relay_smoke_completed_history": 1,
+            "bapr_id_ood_merge_cpu_eval_completed_history": 1,
+            "resac_bus_seed_extension_cpu_eval_completed_history": 1,
+            "h2oplus_snapshot_gpu_completed_history": 1,
+            "transit_native_real_demand_batch_c9_16_completed_history": 1,
+            "resac_conda_pack_completed_history": 1,
+            "resac_review5_jax_train_fabric_completed_history": 1,
             "zsw_tsp_sumo_eval_c_le2_completed_history": 1,
             "zsw_m21_sumo_eval_c3_8_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,

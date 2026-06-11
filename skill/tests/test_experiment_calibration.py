@@ -1076,6 +1076,67 @@ def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module93_freqduet_spacectx_ep100_c3_completed_history_profile1(check, sch):
+    row = {
+        "id": "freq-spacectx-c3",
+        "project": "freqduet",
+        "signature": "freqduet/spacectx_screen_ep100_wu10/shard_0027_0054",
+        "description": "FreqDuet spacectx ep100 c3_8 production shard",
+        "submitted_at": 900.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 4,
+        "ram_mb": 8192,
+        "cmd": (
+            "PYTHONPATH=. python -u scripts/run_freqduet_ablation.py "
+            "--configs F_freqduet_terminal_main_spacectx_hiro,F_freqduet_gen_highnoise_main_spacectx_hiro "
+            "--seeds 7,11,17,23,31,37,42,43,53,61,71,83,97,109,123,127,149,456,789,2026 "
+            "--episodes 100 --last-k 50 --workers 27 --worker-threads 1 "
+            "--logs-dir results_freqduet/spacectx_screen_ep100_wu10/logs_shards/shard_0027_0054 "
+            "--out-dir results_freqduet/spacectx_screen_ep100_wu10/shard_summaries/shard_0027_0054 "
+            "--job-start 27 --job-end 54 --skip-existing --no-aggregate"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module93 maps spacectx ep100 c3_8 shards before broader module60 c3_8 bucket",
+          cls["workload_key"] == "freqduet_spacectx_ep100_c3_8_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 2700.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("freqduet_spacectx_ep100_c3_8_completed_history")
+    check("module93 service cache exposes profile1 completed-history lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("freqduet_spacectx_ep100_c3_8_completed_history", 1).aggregate_rate,
+              0.5456346850150953,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    check("module93 taskset is included in default production certificate tasksets",
+          "production_freqduet_spacectx_ep100_c3_8_completed_history" in set(DEFAULT_TASKSETS),
+          diag=str(DEFAULT_TASKSETS))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_freqduet_spacectx_ep100_c3_8_completed_history",),
+    )
+    check("production load certificate sums parsed spacectx ep100 shard units",
+          report["mapped_counts"] == {"freqduet_spacectx_ep100_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["freqduet_spacectx_ep100_c3_8_completed_history"], 2700.0)
+          and math.isclose(
+              report["lambda"]["freqduet_spacectx_ep100_c3_8_completed_history"],
+              2700.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module66_freqduet_runner_c3_completed_history_profile1(check, sch):
     row = {
         "id": "freq-runner-c3",
@@ -3142,6 +3203,388 @@ def test_module91_bamor_mujoco_policy_union_c3_8_completed_history_profile1(chec
           diag=str(report))
 
 
+def test_module92_assumption_agent_completed_history_profile1(check, sch):
+    base = {
+        "project": "Asumption Agent",
+        "signature": "Asumption Agent/auto-adopted/p1",
+        "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "origin": "external",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 150,
+        "cwd": "/home/erzhu419/mine_code/Asumption Agent",
+    }
+    unittest = dict(base, id="assumption-unittest", cmd="python3 -m unittest tests.test_assumption_os")
+    unittest_method = dict(
+        base,
+        id="assumption-unittest-method",
+        cmd=(
+            "python3 -m unittest "
+            "tests.test_assumption_os.AssumptionOSTest.test_orthogonal_execution_queue_validates_expanded_trigger_contract"
+        ),
+    )
+    meta = dict(
+        base,
+        id="assumption-meta",
+        cmd=(
+            "python3 -m assumption_os.meta_qa_evolution --root . "
+            "--samples-per-dataset 20 --out /tmp/meta_qa.json"
+        ),
+    )
+    phase2 = dict(
+        base,
+        id="assumption-phase2",
+        cmd=(
+            "python3 phase one/scripts/validation/phase2_v20_framework.py "
+            "--variant proposal_demo --sample proposal_samples/demo.json --n 5"
+        ),
+    )
+
+    classified = {
+        "unittest": classify_record(unittest, include_representative=False),
+        "unittest_method": classify_record(unittest_method, include_representative=False),
+        "meta": classify_record(meta, include_representative=False),
+        "phase2": classify_record(phase2, include_representative=False),
+    }
+    check("Module92 maps Asumption Agent command shapes to strict completed-command classes",
+          classified["unittest"]["workload_key"] == "assumption_agent_unittest_completed_history"
+          and classified["unittest_method"]["workload_key"] == "assumption_agent_unittest_completed_history"
+          and classified["meta"]["workload_key"] == "assumption_agent_meta_qa_evolution_completed_history"
+          and classified["phase2"]["workload_key"] == "assumption_agent_phase2_v20_framework_completed_history"
+          and all(row["mapping_mode"] == "strict_measured" for row in classified.values())
+          and all(math.isclose(float(row["units"]), 1.0) for row in classified.values()),
+          diag=str(classified))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "assumption_agent_unittest_completed_history": 0.0025139266853356846,
+        "assumption_agent_meta_qa_evolution_completed_history": 0.00032882586875307136,
+        "assumption_agent_phase2_v20_framework_completed_history": 0.0020286642669604476,
+    }
+    check("Module92 service cache exposes profile1 Asumption Agent lower services",
+          all([record.profile for record in cache.profiles(key)] == [1] for key in expected_rates)
+          and all(
+              math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+              for key, rate in expected_rates.items()
+          ),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)] for key in expected_rates}))
+
+    report = build_production_load_certificate(
+        records=[unittest, meta, phase2],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=(
+            "production_assumption_agent_unittest_completed_history",
+            "production_assumption_agent_meta_qa_evolution_completed_history",
+            "production_assumption_agent_phase2_v20_framework_completed_history",
+        ),
+    )
+    check("production load certificate sums Asumption Agent completed-command units",
+          report["mapped_counts"] == {
+              "assumption_agent_meta_qa_evolution_completed_history": 1,
+              "assumption_agent_phase2_v20_framework_completed_history": 1,
+              "assumption_agent_unittest_completed_history": 1,
+          }
+          and all(math.isclose(value, 1.0) for value in report["mapped_units"].values())
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module94_remaining_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 2,
+        "ram_mb": 1024,
+    }
+    rows = [
+        dict(
+            base,
+            id="module94-assumption-perf",
+            project="Asumption Agent",
+            signature="Asumption Agent/auto-adopted/p-perf",
+            cwd="/home/erzhu419/mine_code/Asumption Agent",
+            cmd="python3 -m assumption_os.performance_validation --root . --eval-id smoke",
+            expected_key="assumption_agent_performance_validation_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-assumption-live",
+            project="Asumption Agent",
+            signature="Asumption Agent/auto-adopted/p-live",
+            cwd="/home/erzhu419/mine_code/Asumption Agent",
+            cmd="python3 -m assumption_os.full_v3_fresh_live_benchmark --root . --eval-id smoke",
+            expected_key="assumption_agent_live_benchmark_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-cfcmt-eval",
+            project="CFCMT",
+            signature="CFCMT/auto-adopted/p-eval",
+            cwd="/home/erzhu419/mine_code/CFCMT",
+            cmd="python3 -m cf_h2o.eval.full_module_pipeline_validation --workers 4",
+            expected_key="cfcmt_cpu_eval_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-cfcmt-pytest",
+            project="CFCMT",
+            signature="CFCMT/auto-adopted/p-pytest",
+            cwd="/home/erzhu419/mine_code/CFCMT",
+            cmd="python3 -m pytest -s -q cf_h2o/tests/test_synthetic_causal_ablation.py",
+            expected_key="cfcmt_pytest_cpu_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-sensing-voltage",
+            project="sensing-compressibility-v10k",
+            signature="sensing-compressibility-v10k/auto-adopted/p-voltage",
+            cwd="/home/erzhu419/mine_code/sensing-compressibility-v10k",
+            cmd="/home/erzhu419/.conda/envs/resac-jax/bin/python -u scripts/path_b_tamu_voltage_cache_10k.py",
+            expected_key="sensing_voltage_cache_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-sensing-pems",
+            project="sensing-compressibility-pems",
+            signature="sensing-compressibility-pems/auto-adopted/p-pems",
+            cwd="/home/erzhu419/mine_code/sensing-compressibility-pems",
+            cmd="/home/erzhu419/.conda/envs/bapr-jax/bin/python -u scripts/revision/pems_d4d7_multweek_cache.py --strict-files",
+            expected_key="sensing_pems_cache_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-nature-routeguard",
+            project="Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+            signature="Nature_Emissions_gpu1_balanced_p100_20260605_153448/auto-adopted/p-routeguard",
+            cwd="/home/erzhu419/Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+            cmd="python3 scripts/real_road_mapping/analyze_routeguard050_hybrid_accounting_py36.py --root /tmp/nature",
+            expected_key="nature_emissions_routeguard_analysis_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-scheduleurm-control",
+            project="scheduleurm",
+            signature="scheduleurm/auto-adopted/p-control",
+            cwd="/home/erzhu419/mine_code/scheduleurm",
+            cmd="python3 -m algorithm.experiments.production_load_certificate --output out.json",
+            expected_key="scheduleurm_control_plane_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-hpc-smoke",
+            project="sched-hpc-e2e-20260522-214808-175687",
+            signature="smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687",
+            cwd="/home/erzhu419/mine_code/sched-hpc-e2e-20260522-214808-175687",
+            cmd="bash run.sh",
+            expected_key="scheduleurm_hpc_relay_smoke_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-bapr-merge",
+            project="BAPR",
+            signature="BAPR/cpu_eval/id_ood_full_v2_item_direct6_gravityfix_20260609/merge",
+            cwd="/home/erzhu419/mine_code/BAPR",
+            cmd="bash -lc 'python -m jax_experiments.analysis.eval_id_ood --merge_shard'",
+            expected_key="bapr_id_ood_merge_cpu_eval_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-resac-bus",
+            project="RE-SAC",
+            signature="RE-SAC/bus-seed-extension/aleatoric_only_seed40",
+            cwd="/home/erzhu419/mine_code/RE-SAC",
+            cmd="/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u /home/erzhu419/mine_code/RE-SAC/sac_ensemble_original_logging.py --seed 40",
+            expected_key="resac_bus_seed_extension_cpu_eval_completed_history",
+        ),
+        dict(
+            base,
+            id="module94-h2oplus",
+            project="H2Oplus",
+            signature="H2Oplus/snap_p4_jtt_s42",
+            cwd="/home/erzhu419/mine_code/sumo-rl/H2Oplus",
+            est_vram_mb=384,
+            cmd="/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda",
+            expected_key="h2oplus_snapshot_gpu_completed_history",
+        ),
+    ]
+    classified = {
+        row["id"]: classify_record({k: v for k, v in row.items() if k != "expected_key"}, include_representative=False)
+        for row in rows
+    }
+    check("Module94 maps residual command families to strict measured completed-history classes",
+          all(classified[row["id"]]["workload_key"] == row["expected_key"] for row in rows)
+          and all(classified[row["id"]]["mapping_mode"] == "strict_measured" for row in rows),
+          diag=str(classified))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "assumption_agent_performance_validation_completed_history": 0.004287388788490953,
+        "assumption_agent_live_benchmark_completed_history": 0.010502483866490693,
+        "cfcmt_cpu_eval_completed_history": 0.0006725559539257635,
+        "cfcmt_pytest_cpu_completed_history": 0.0037277191327932707,
+        "sensing_voltage_cache_completed_history": 2.5898989869966667e-06,
+        "sensing_pems_cache_completed_history": 2.9060032041299026e-06,
+        "nature_emissions_routeguard_analysis_completed_history": 0.014325646265070921,
+        "scheduleurm_control_plane_completed_history": 0.00032671969225857604,
+        "scheduleurm_hpc_relay_smoke_completed_history": 0.016517801613172893,
+        "bapr_id_ood_merge_cpu_eval_completed_history": 0.004724246710130393,
+        "resac_bus_seed_extension_cpu_eval_completed_history": 9.542466202968175e-06,
+        "h2oplus_snapshot_gpu_completed_history": 0.0005584777370374466,
+    }
+    check("Module94 service cache exposes profile1 lower services",
+          all([record.profile for record in cache.profiles(key)] == [1] for key in expected_rates)
+          and all(math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+                  for key, rate in expected_rates.items()),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)] for key in expected_rates}))
+
+    records = [{k: v for k, v in row.items() if k != "expected_key"} for row in rows]
+    report = build_production_load_certificate(
+        records=records,
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module94_remaining_completed_history",),
+    )
+    check("production load certificate sums Module94 command units",
+          report["mapped_counts"] == {row["expected_key"]: 1 for row in rows}
+          and all(math.isclose(value, 1.0) for value in report["mapped_units"].values())
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module95_transit_resac_artifact_completed_history_profile1(check, sch):
+    base = {
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "ram_mb": 1024,
+    }
+    transit = dict(
+        base,
+        id="module95-transit-c9",
+        project="TransitDuet",
+        signature="freq_hrl_native_real_demand_alighting_throughput_v5_24pair",
+        cpu_cores=10,
+        cwd="/home/erzhu419/mine_code/TransitDuet",
+        cmd=(
+            "python -m freq_hrl.experiments.transit.native_real_demand_control_validation "
+            "--sources afc apc --seed-index-start 24 --seed-index-end 32 "
+            "--episodes 1 --control-profile alighting_throughput_v5"
+        ),
+    )
+    resac_pack = dict(
+        base,
+        id="module95-resac-pack",
+        project="RE-SAC",
+        signature="RE-SAC/auto-adopted/p213450",
+        cpu_cores=1,
+        cwd="/home/erzhu419/mine_code/RE-SAC",
+        cmd=(
+            "/home/erzhu419/.conda/envs/resac-jax/bin/python "
+            "/home/erzhu419/.conda/envs/resac-jax/bin/conda-pack "
+            "-p /home/erzhu419/.conda/envs/resac-jax -o /tmp/resac-jax-packed.tar.gz --force"
+        ),
+    )
+
+    transit_cls = classify_record(transit, include_representative=False)
+    resac_cls = classify_record(resac_pack, include_representative=False)
+    check("Module95 maps Transit c9_16 real-demand shards and RE-SAC conda-pack command",
+          transit_cls["workload_key"] == "transit_native_real_demand_batch_c9_16_completed_history"
+          and math.isclose(float(transit_cls["units"]), 12.0)
+          and resac_cls["workload_key"] == "resac_conda_pack_completed_history"
+          and math.isclose(float(resac_cls["units"]), 1.0),
+          diag=str({"transit": transit_cls, "resac": resac_cls}))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "transit_native_real_demand_batch_c9_16_completed_history": 0.0092741969369456,
+        "resac_conda_pack_completed_history": 0.002949807532151899,
+    }
+    check("Module95 service cache exposes profile1 lower services",
+          all([record.profile for record in cache.profiles(key)] == [1] for key in expected_rates)
+          and all(math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+                  for key, rate in expected_rates.items()),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)] for key in expected_rates}))
+
+    report = build_production_load_certificate(
+        records=[transit, resac_pack],
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module95_transit_resac_artifact_completed_history",),
+    )
+    check("production load certificate sums Module95 units",
+          report["mapped_counts"] == {
+              "resac_conda_pack_completed_history": 1,
+              "transit_native_real_demand_batch_c9_16_completed_history": 1,
+          }
+          and math.isclose(report["mapped_units"]["transit_native_real_demand_batch_c9_16_completed_history"], 12.0)
+          and math.isclose(report["mapped_units"]["resac_conda_pack_completed_history"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module96_resac_review5_jax_train_fabric_completed_history_profile1(check, sch):
+    row = {
+        "id": "module96-resac-review5",
+        "project": "RE-SAC",
+        "signature": "RE-SAC/review5/sens_betaend_0.0_HalfCheetah-v2_40",
+        "description": "RE-SAC review5 JAX train command",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 1,
+        "ram_mb": 1024,
+        "cwd": "/home/erzhu419/mine_code/RE-SAC",
+        "cmd": (
+            "PYTHONPATH=/home/erzhu419/mine_code/RE-SAC "
+            "XLA_PYTHON_CLIENT_MEM_FRACTION=0.20 "
+            "/home/erzhu419/.conda/envs/resac-jax/bin/python -u -m jax_experiments.train "
+            "--algo resac --env HalfCheetah-v2 --max_iters 2000 --resume "
+            "--backend spring --device gpu --run_name sens_betaend_0.0_HalfCheetah-v2_40"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module96 maps RE-SAC review5 JAX GPU train commands to fabric completed-history class",
+          cls["workload_key"] == "resac_review5_jax_train_fabric_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    key = "resac_review5_jax_train_fabric_completed_history"
+    check("Module96 service cache exposes production-fabric profile1 lower service",
+          [record.profile for record in cache.profiles(key)] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.00029469287550192746, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in cache.profiles(key)]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module96_resac_review5_jax_train_fabric_completed_history",),
+    )
+    check("production load certificate sums Module96 completed-command units",
+          report["mapped_counts"] == {"resac_review5_jax_train_fabric_completed_history": 1}
+          and math.isclose(report["mapped_units"]["resac_review5_jax_train_fabric_completed_history"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module75_bamor_c9_16_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-c9-compare",
@@ -3721,6 +4164,20 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
             "scheduler_id": None,
             "log_path": None,
         },
+        {
+            "id": "adopted-stdin-no-origin",
+            "project": "sensing-compressibility-v10k",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p789",
+            "description": "auto-adopted: sensing-compressibility-v10k on local:CPU-only (1 procs)",
+            "submitted_at": 906.0,
+            "status": "done",
+            "est_vram_mb": 0,
+            "cpu_cores": 1,
+            "cmd": "/env/bin/python -",
+            "auto_adopted": True,
+            "scheduler_id": None,
+            "log_path": None,
+        },
     ]
     report = build_coverage_drilldown(records=rows, window_days=1.0, now_ts=1000.0)
     completed = report["views"]["completed_active_production"]["representative"]
@@ -3742,8 +4199,10 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
     check("population label excludes unobservable external adopted control processes",
           population_label(rows[4])["label"] == "excluded_external_auto_adopted_unobservable"
           and population_label(rows[5])["label"] == "excluded_external_auto_adopted_unobservable"
+          and population_label(rows[6])["label"] == "excluded_external_auto_adopted_unobservable"
           and not population_label(rows[4])["include_completed_active"]
-          and not population_label(rows[5])["include_completed_active"],
+          and not population_label(rows[5])["include_completed_active"]
+          and not population_label(rows[6])["include_completed_active"],
           diag=str([population_label(row) for row in rows]))
     check("bucket obligation maps representative RL but not unmeasured transit CPU",
           bucket_obligation(rows[2])["status"] == "mapped"

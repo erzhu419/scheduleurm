@@ -1,0 +1,128 @@
+{
+  "completed_record_count": 6,
+  "completed_units_command": 6.0,
+  "cpu_counts": {
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "6": 1,
+    "7": 2
+  },
+  "duration_s": {
+    "max": 386115.445050478,
+    "median": 44534.63722991943,
+    "min": 9188.244875907898
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual sensing voltage-cache production records. The progress unit is one completed command.",
+  "lower_service_command_s": 2.5898989869966667e-06,
+  "parsed_units_command": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    2.4182612103885166e-05,
+    2.5898989869966667e-06,
+    0.00010883471364831134,
+    6.33556391748212e-05,
+    4.327187378729383e-06,
+    2.0956782471852937e-05
+  ],
+  "record_count": 6,
+  "run_id": "module94_sensing_voltage_cache_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/erzhu419/.conda/envs/resac-jax/bin/python -u scripts/path_b_tamu_voltage_cache_10k.py",
+      "cpu_cores": 6,
+      "duration_s": 386115.445050478,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v10k",
+      "ram_mb": 34324,
+      "rate_command_s": 2.5898989869966667e-06,
+      "signature": "sensing-compressibility-v10k/auto-adopted/p1824834",
+      "status": "done",
+      "task_id": "t3119",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/resac-jax/bin/python -u scripts/path_b_tamu_voltage_cache_10k.py",
+      "cpu_cores": 2,
+      "duration_s": 231096.9949939251,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v10k",
+      "ram_mb": 7361,
+      "rate_command_s": 4.327187378729383e-06,
+      "signature": "sensing-compressibility-v10k/auto-adopted/p95256",
+      "status": "done",
+      "task_id": "t3748",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/miniconda3/envs/csbapr/bin/python scripts/revision/stage2_graph_regularized_reconstruction.py --scale-id tamu_load_N1125 --scale-id tamu_voltage_N10000 --scale-id pems_d4_all_mainline_L1 --scale-id pems_d4d7_mainline_L2 --scale-id epa_us_2024_N807 --selection-methods stage1_guided_gsp_qr gsp_qr mi_greedy --k-frac 0.05 0.10 0.20 --lambda-grid 1e-4 1e-3 1e-2 1e-1 1 10 100 1000 --stage1-epsilon 0.05 --stage1-k-factor 1 --out-dir figures/revision/stage2_graph_regularized --out stage2_graph_regularized_5diagnostics.csv --val-out stage2_graph_regularized_5diagnostics_lambda_validation.csv --solve-chunk-size 192",
+      "cpu_cores": 3,
+      "duration_s": 47717.24864459038,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v10k",
+      "ram_mb": 2865,
+      "rate_command_s": 2.0956782471852937e-05,
+      "signature": "sensing-compressibility-v10k/auto-adopted/p3197505",
+      "status": "done",
+      "task_id": "t8607",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/bapr-jax/bin/python scripts/path_b_tamu_voltage_cache.py",
+      "cpu_cores": 4,
+      "duration_s": 41352.02581524849,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v2k",
+      "ram_mb": 2347,
+      "rate_command_s": 2.4182612103885166e-05,
+      "signature": "sensing-compressibility-v2k/auto-adopted/p28886",
+      "status": "done",
+      "task_id": "t3111",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/resac-jax/bin/python -u scripts/path_b_tamu_voltage_cache_10k.py",
+      "cpu_cores": 7,
+      "duration_s": 15783.914628982544,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v10k",
+      "ram_mb": 34845,
+      "rate_command_s": 6.33556391748212e-05,
+      "signature": "sensing-compressibility-v10k/auto-adopted/p3358",
+      "status": "done",
+      "task_id": "t3713",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/resac-jax/bin/python -u scripts/path_b_tamu_voltage_cache_10k.py",
+      "cpu_cores": 7,
+      "duration_s": 9188.244875907898,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-v10k",
+      "ram_mb": 34887,
+      "rate_command_s": 0.00010883471364831134,
+      "signature": "sensing-compressibility-v10k/auto-adopted/p15115",
+      "status": "done",
+      "task_id": "t3709",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 6
+  },
+  "total_units_command": 6.0,
+  "vram_counts": {
+    "0": 6
+  },
+  "workload_key": "sensing_voltage_cache_completed_history"
+}

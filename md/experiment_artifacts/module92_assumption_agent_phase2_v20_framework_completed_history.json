@@ -1,0 +1,124 @@
+{
+  "cpu_counts": {
+    "1": 5,
+    "3": 1
+  },
+  "duration_s": {
+    "max": 492.93518710136414,
+    "median": 338.46611416339874,
+    "min": 71.18705201148987
+  },
+  "interpretation": "Strict completed-history lower-service certificate for Asumption Agent phase2_v20_framework production records. The progress unit is one completed phase2 validation command.",
+  "parsed_units_phase2_command": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "project_counts": {
+    "Asumption Agent": 6
+  },
+  "ram_counts": {
+    "74": 1,
+    "85": 4,
+    "87": 1
+  },
+  "realized_phase2_command_s": [
+    0.003883908218907274,
+    0.0027080332299371985,
+    0.0032503355697239837,
+    0.0020286642669604476,
+    0.014047498410786783,
+    0.0021477926794211104
+  ],
+  "record_count": 6,
+  "run_id": "module92_assumption_agent_phase2_v20_framework_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "python3 phase one/scripts/validation/phase2_v20_framework.py --variant proposal_1c34e615945c --sample proposal_samples/prop_1c34e615945c_recursive_sample.json --assumption-graph phase four/assumption_graph --assumption-graph-skip-domains  --assumption-proposals phase four/assumption_graph/evolution_cycle_dryrun_phase2_v20_gpt55_21_50_proposals.json --assumption-proposal-ids prop_1c34e615945c --assumption-force-proposal-route",
+      "cpu_cores": 1,
+      "duration_s": 492.93518710136414,
+      "project": "Asumption Agent",
+      "ram_mb": 85,
+      "rate_phase2_command_s": 0.0020286642669604476,
+      "signature": "Asumption Agent/auto-adopted/p330602",
+      "status": "done",
+      "task_id": "t5213",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 phase one/scripts/validation/phase2_v20_framework.py --variant phase2_v20_claude_opus_technical_baseline --sample proposal_samples/orthogonal_technical_descendant_baseline_20260609_sample.json --n 5",
+      "cpu_cores": 1,
+      "duration_s": 465.594286441803,
+      "project": "Asumption Agent",
+      "ram_mb": 74,
+      "rate_phase2_command_s": 0.0021477926794211104,
+      "signature": "Asumption Agent/auto-adopted/p704367",
+      "status": "done",
+      "task_id": "t8144",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 phase one/scripts/validation/phase2_v20_framework.py --variant proposal_ready_combo_gpt54mini --sample proposal_samples/proposal_ready_union_sample.json --assumption-graph phase four/assumption_graph --assumption-graph-skip-domains  --assumption-proposals phase four/assumption_graph/proposals_phase2_v20_gpt55_21_50.json --assumption-proposal-ids prop_3a5cf90b1010 prop_e9c8ee2fa09b prop_b7fd42179967 prop_ad2c1f2b1cad prop_16571ee152bc prop_66a126a35878 --assumption-force-proposal-route",
+      "cpu_cores": 1,
+      "duration_s": 369.2716872692108,
+      "project": "Asumption Agent",
+      "ram_mb": 85,
+      "rate_phase2_command_s": 0.0027080332299371985,
+      "signature": "Asumption Agent/auto-adopted/p4066233",
+      "status": "done",
+      "task_id": "t5090",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 phase one/scripts/validation/phase2_v20_framework.py --variant proposal_ready_combo_se_mh_gpt55_confirm --sample proposal_samples/proposal_se_mh_sample.json --assumption-graph phase four/assumption_graph --assumption-graph-skip-domains  --assumption-proposals phase four/assumption_graph/proposals_phase2_v20_gpt55_21_50.json --assumption-proposal-ids prop_3a5cf90b1010 prop_e9c8ee2fa09b prop_b7fd42179967 prop_ad2c1f2b1cad prop_16571ee152bc prop_66a126a35878 --assumption-force-proposal-route --assumption-force-proposal-domains software_engineering --assumption-force-proposal-difficulties medium,hard",
+      "cpu_cores": 1,
+      "duration_s": 307.66054105758667,
+      "project": "Asumption Agent",
+      "ram_mb": 85,
+      "rate_phase2_command_s": 0.0032503355697239837,
+      "signature": "Asumption Agent/auto-adopted/p4106541",
+      "status": "done",
+      "task_id": "t5096",
+      "units": 1.0
+    },
+    {
+      "cmd": "python3 phase one/scripts/validation/phase2_v20_framework.py --variant proposal_66a126a35878 --sample proposal_samples/prop_66a126a35878_sample.json --assumption-graph phase four/assumption_graph --assumption-graph-skip-domains  --assumption-proposals phase four/assumption_graph/proposals_phase2_v20_gpt55_21_50.json --assumption-proposal-ids prop_66a126a35878 --assumption-force-proposal-route",
+      "cpu_cores": 1,
+      "duration_s": 257.47261357307434,
+      "project": "Asumption Agent",
+      "ram_mb": 85,
+      "rate_phase2_command_s": 0.003883908218907274,
+      "signature": "Asumption Agent/auto-adopted/p4057782",
+      "status": "done",
+      "task_id": "t5087",
+      "units": 1.0
+    },
+    {
+      "cmd": "/usr/bin/python3 phase one/scripts/validation/phase2_v20_framework.py --variant proposal_f6ea5d74b785 --sample proposal_samples/orthogonal_descendant_live_same_model_20260608_prop_f6ea5d74b785_sample.json --n 5 --assumption-graph phase four/assumption_graph/paper_readiness_20260604/orthogonal_descendant_live_graph_20260608 --assumption-graph-skip-domains  --assumption-proposals phase four/assumption_graph/paper_readiness_20260604/orthogonal_descendant_live_queue_proposals_20260608.json --assumption-proposal-ids prop_f6ea5d74b785 --assumption-force-proposal-route --assumption-route-scope-proposals",
+      "cpu_cores": 3,
+      "duration_s": 71.18705201148987,
+      "project": "Asumption Agent",
+      "ram_mb": 87,
+      "rate_phase2_command_s": 0.014047498410786783,
+      "signature": "Asumption Agent/auto-adopted/p361031",
+      "status": "done",
+      "task_id": "t8080",
+      "units": 1.0
+    }
+  ],
+  "source_scope": "module92_scheduler_queue_completed_active",
+  "total_units_phase2_command": 6.0,
+  "window": {
+    "end_ts": 1781137453.334376,
+    "start_ts": 1778545453.334376,
+    "window_days": 30.0
+  },
+  "workload_key": "assumption_agent_phase2_v20_framework_completed_history"
+}

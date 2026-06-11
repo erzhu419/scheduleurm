@@ -103,11 +103,11 @@ def population_label(row: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _is_unobservable_external_auto_adopted(row: Mapping[str, Any], *, text: str) -> bool:
-    """Exclude external adopted processes that cannot define a scheduler workload.
+    """Exclude adopted processes that cannot define a scheduler workload.
 
     The theorem-facing production population is the workload stream whose
     actions and service accounting are controlled by Scheduleurm.  A no-log,
-    no-scheduler-id external stdin process has neither a reproducible command
+    no-scheduler-id stdin process has neither a reproducible command
     template nor a progress-bearing unit, so including it in lambda would make
     the model claim arbitrary external processes as schedulable workload.
     """
@@ -116,13 +116,13 @@ def _is_unobservable_external_auto_adopted(row: Mapping[str, Any], *, text: str)
         or "auto-adopted" in text
     ):
         return False
-    if str(row.get("origin") or "").lower() != "external":
-        return False
     if row.get("scheduler_id") or row.get("log_path"):
         return False
     cmd = str(row.get("cmd") or "").strip().lower()
     return (
         cmd == "python3 -"
+        or cmd.endswith("/python -")
+        or cmd.endswith("python -")
         or "scheduler.py wait-for" in cmd
         or "freqduet_autoadopt_spin.py" in cmd
     )

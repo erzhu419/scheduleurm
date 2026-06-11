@@ -507,7 +507,7 @@ feasible profiles = 1
 unit rule = one completed aggregation command
 ```
 
-Not yet closed:
+Module91 snapshot before non-CPU/SUMO/transit closure:
 
 ```text
 completed_active_production records = 3347
@@ -515,6 +515,15 @@ strict completed-active mapped count = 1911
 representative completed-active mapped count = 2955
 measurement_required = 392
 cpu_sumo_transit_eval_or_control remaining = 0 / 3347
+```
+
+Module96 current completed-active obligation snapshot:
+
+```text
+completed_active_production records = 3378
+obligation mapped count = 3378
+measurement_required = 0
+obligation mapped_fraction = 1.0
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -753,11 +762,58 @@ the BAMOR c3_8 `aggregate_mujoco_policy_set_union.py` command to a separate
 completed-history service class.  The unit is one completed aggregation command;
 the `--preset` count is intentionally not expanded.
 
+Module92 closes three Asumption Agent command families: unittest,
+meta-QA evolution, and phase2 framework validation.  Module93 splits the
+FreqDuet `spacectx_screen_ep100_wu10` c3_8 production shards out of the broader
+module60 bucket because their completed-history episode throughput is a distinct
+service slice.
+
+Module94 closes the remaining command-shaped CPU/GPU obligations outside the
+RE-SAC review5 block: CFCMT eval/pytest, Asumption Agent performance/live
+benchmark commands, sensing voltage and PeMS cache commands, Nature emissions
+routeguard analysis, Scheduleurm control-plane certificate commands, BAPR and
+RE-SAC CPU eval commands, and H2Oplus snapshot CUDA commands.  Each is a
+separate completed-history service class.
+
+Module95 closes the last small non-review5 residuals: Transit real-demand
+`alighting_throughput_v5` c9_16 shards and the RE-SAC `resac-jax` conda-pack
+artifact command.  Module95 reuses the module79 Transit source/seed/episode
+unit definition for the c9_16 shards.
+
+Module96 closes the final RE-SAC review5 JAX train obligation as a
+production-GPU-fabric completed-history service certificate.  It deliberately
+does not claim a single-GPU throughput curve: the service lower bound is the
+end-to-end completed-command throughput over the observed production burst
+from first submission to last completion.  The measured values are:
+
+```text
+workload_key = resac_review5_jax_train_fabric_completed_history
+record_count = 151
+burst_span_days = 5.930530836
+lower_service = 0.000294692876 command/s
+arrival_lambda_30d = 0.000058256173 command/s
+service_to_arrival_ratio = 5.058569
+```
+
+After Module92--96, Module51 completed-active production obligations have no
+remaining measurement-required bucket:
+
+```text
+record_count = 3378
+mapped_count = 3378
+measurement_required_count = 0
+mapped_fraction = 1.0
+```
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
 measured and mapped production slice lies inside the measured capacity region.
-It does not prove that the full production load is stabilizable.
+It does not by itself prove that the full production load is stabilizable.
+The latest Module51 obligation view has no `measurement_required` bucket, but
+the strict view still contains representative buckets, so a paper claim should
+distinguish "all completed-active obligations mapped" from "all representative
+buckets upgraded to strict measured service certificates."
 
 The mapped-capacity slack is now much tighter than before Module59 because the
 SimpleSAC and Module74 paper-longtrain slices use conservative completed-history

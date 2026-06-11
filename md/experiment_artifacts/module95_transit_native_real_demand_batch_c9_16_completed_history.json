@@ -1,0 +1,60 @@
+{
+  "completed_record_count": 2,
+  "completed_units_real_demand_unit": 24.0,
+  "cpu_counts": {
+    "10": 1,
+    "9": 1
+  },
+  "duration_s": {
+    "max": 1293.9125707149506,
+    "median": 1289.9710623025894,
+    "min": 1286.0295538902283
+  },
+  "interpretation": "Strict completed-history lower-service certificate for Transit/FreqHRL native real-demand alighting_throughput_v5 c9_16 shards. The unit matches module79: two directions times source count times seed/episode units.",
+  "lower_service_real_demand_unit_s": 0.0092741969369456,
+  "parsed_units_real_demand_unit": [
+    12.0,
+    12.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_real_demand_unit_s": [
+    0.0092741969369456,
+    0.00933104528095805
+  ],
+  "record_count": 2,
+  "run_id": "module95_transit_native_real_demand_batch_c9_16_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --config transit_hrl/freq_transitduet/configs_freqduet/T_freqhrl_native_full.yaml \\\n  --sources afc apc \\\n  --seed-index-start 24 \\\n  --seed-index-end 32 \\\n  --seed-base 31 \\\n  --seed-step 10 \\\n  --episodes 1 \\\n  --device cpu \\\n  --max-series 8 \\\n  --min-bins 20 \\\n  --limit 8 \\\n  --min-pairs 6 \\\n  --control-profile alighting_throughput_v5 \\\n  --demand-scale-multiplier 1.35 \\\n  --output-dir transit_hrl/results/scheduler_native_real_demand_alighting_throughput_v5_24pair_shard_3_24_32",
+      "cpu_cores": 10,
+      "duration_s": 1293.9125707149506,
+      "est_vram_mb": 0,
+      "project": "TransitDuet",
+      "rate_real_demand_unit_s": 0.0092741969369456,
+      "signature": "freq_hrl_native_real_demand_alighting_throughput_v5_24pair",
+      "status": "done",
+      "task_id": "t9791",
+      "units": 12.0
+    },
+    {
+      "cmd": "set -e\nexport PYTHONPATH=transit_hrl\nPY=/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python\n$PY -m freq_hrl.experiments.transit.native_real_demand_control_validation \\\n  --config transit_hrl/freq_transitduet/configs_freqduet/T_freqhrl_native_full.yaml \\\n  --sources afc apc \\\n  --seed-index-start 32 \\\n  --seed-index-end 40 \\\n  --seed-base 31 \\\n  --seed-step 10 \\\n  --episodes 1 \\\n  --device cpu \\\n  --max-series 8 \\\n  --min-bins 20 \\\n  --limit 8 \\\n  --min-pairs 6 \\\n  --control-profile alighting_throughput_v5 \\\n  --demand-scale-multiplier 1.35 \\\n  --output-dir transit_hrl/results/scheduler_native_real_demand_alighting_throughput_v5_24pair_shard_4_32_40",
+      "cpu_cores": 9,
+      "duration_s": 1286.0295538902283,
+      "est_vram_mb": 0,
+      "project": "TransitDuet",
+      "rate_real_demand_unit_s": 0.00933104528095805,
+      "signature": "freq_hrl_native_real_demand_alighting_throughput_v5_24pair",
+      "status": "done",
+      "task_id": "t9792",
+      "units": 12.0
+    }
+  ],
+  "status_counts": {
+    "done": 2
+  },
+  "total_units_real_demand_unit": 24.0,
+  "workload_key": "transit_native_real_demand_batch_c9_16_completed_history"
+}

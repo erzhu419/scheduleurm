@@ -1,0 +1,64 @@
+{
+  "completed_record_count": 2,
+  "completed_units_command": 2.0,
+  "cpu_counts": {
+    "11": 2
+  },
+  "duration_s": {
+    "max": 104794.71226096153,
+    "median": 101191.05332314968,
+    "min": 97587.39438533783
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual RE-SAC bus seed-extension CPU eval commands. The progress unit is one completed command.",
+  "lower_service_command_s": 9.542466202968175e-06,
+  "parsed_units_command": [
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    1.0247225128804613e-05,
+    9.542466202968175e-06
+  ],
+  "record_count": 2,
+  "run_id": "module94_resac_bus_seed_extension_cpu_eval_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u /home/erzhu419/mine_code/RE-SAC/sac_ensemble_original_logging.py --seed 40 --run_name epistemic_only_seed40 --maximum_alpha 0.6 --critic_actor_ratio 2 --replay_buffer_size 1000000 --hidden_dim 64 --max_episodes 500 --plot_freq 25 --save_root /home/erzhu419/mine_code/RE-SAC/results/bus_seed_extension --eval_operational_episodes 10 --ensemble_size 10 --weight_reg 0 --beta -2 --beta_bc 0 --beta_ood 0.01",
+      "cpu_cores": 11,
+      "duration_s": 104794.71226096153,
+      "est_vram_mb": 0,
+      "project": "RE-SAC",
+      "ram_mb": 4584,
+      "rate_command_s": 9.542466202968175e-06,
+      "signature": "RE-SAC/bus-seed-extension/epistemic_only_seed40",
+      "status": "done",
+      "task_id": "t3439",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u /home/erzhu419/mine_code/RE-SAC/sac_ensemble_original_logging.py --seed 40 --run_name aleatoric_only_seed40 --maximum_alpha 0.6 --critic_actor_ratio 2 --replay_buffer_size 1000000 --hidden_dim 64 --max_episodes 500 --plot_freq 25 --save_root /home/erzhu419/mine_code/RE-SAC/results/bus_seed_extension --eval_operational_episodes 10 --ensemble_size 10 --weight_reg 0.01 --beta 0 --beta_bc 0 --beta_ood 0",
+      "cpu_cores": 11,
+      "duration_s": 97587.39438533783,
+      "est_vram_mb": 0,
+      "project": "RE-SAC",
+      "ram_mb": 4584,
+      "rate_command_s": 1.0247225128804613e-05,
+      "signature": "RE-SAC/bus-seed-extension/aleatoric_only_seed40",
+      "status": "done",
+      "task_id": "t3438",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 2
+  },
+  "total_units_command": 2.0,
+  "vram_counts": {
+    "0": 2
+  },
+  "workload_key": "resac_bus_seed_extension_cpu_eval_completed_history"
+}

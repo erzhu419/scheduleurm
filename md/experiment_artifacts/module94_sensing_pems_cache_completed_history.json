@@ -1,0 +1,112 @@
+{
+  "completed_record_count": 5,
+  "completed_units_command": 5.0,
+  "cpu_counts": {
+    "3": 2,
+    "4": 1,
+    "5": 1,
+    "6": 1
+  },
+  "duration_s": {
+    "max": 344115.2434308529,
+    "median": 13741.45726943016,
+    "min": 10356.318410158157
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual sensing PeMS cache production records. The progress unit is one completed command.",
+  "lower_service_command_s": 2.9060032041299026e-06,
+  "parsed_units_command": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    2.9060032041299026e-06,
+    7.277248550811589e-05,
+    1.5152720916150867e-05,
+    9.655941043866847e-05,
+    8.959085381742964e-05
+  ],
+  "record_count": 5,
+  "run_id": "module94_sensing_pems_cache_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/erzhu419/.conda/envs/bapr-jax/bin/python -u scripts/revision/pems_d4d7_multweek_cache.py --start 2026-04-13 --end 2026-05-10 --strict-files",
+      "cpu_cores": 5,
+      "duration_s": 344115.2434308529,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-pems",
+      "ram_mb": 12115,
+      "rate_command_s": 2.9060032041299026e-06,
+      "signature": "sensing-compressibility-pems/auto-adopted/p1347",
+      "status": "done",
+      "task_id": "t3194",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/bapr-jax/bin/python -u scripts/revision/pems_d4d7_multweek_cache.py --start 2026-04-13 --end 2026-05-10 --strict-files",
+      "cpu_cores": 3,
+      "duration_s": 65994.7481071949,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-pems",
+      "ram_mb": 6602,
+      "rate_command_s": 1.5152720916150867e-05,
+      "signature": "sensing-compressibility-pems/auto-adopted/p4456",
+      "status": "done",
+      "task_id": "t3747",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/bapr-jax/bin/python -u scripts/revision/pems_d4d7_multweek_cache.py --start 2026-04-13 --end 2026-05-10 --strict-files",
+      "cpu_cores": 6,
+      "duration_s": 13741.45726943016,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-pems",
+      "ram_mb": 6991,
+      "rate_command_s": 7.277248550811589e-05,
+      "signature": "sensing-compressibility-pems/auto-adopted/p2551",
+      "status": "done",
+      "task_id": "t3739",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python scripts/revision/validate_screened_mi_equivalence.py --scales pems_l1 --cache pems_l1=data/path_b_cache_fullscale/portable_screened_mi_validation/pems_l1 --out-dir figures/revision/screened_mi_validation_pems_l1_sample200 --n-targets 200 --n-jobs 8 --batch-size 4",
+      "cpu_cores": 4,
+      "duration_s": 11161.853664636612,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-pems",
+      "ram_mb": 292,
+      "rate_command_s": 8.959085381742964e-05,
+      "signature": "sensing-compressibility-pems/auto-adopted/p2963",
+      "status": "done",
+      "task_id": "t4046",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/.conda/envs/bapr-jax/bin/python -u scripts/revision/pems_d4d7_multweek_cache.py --districts d04 --freeways 101 --scope-label d4_fwy101_L0 --start 2026-04-13 --end 2026-05-10 --strict-files --granger-jobs 4 --granger-batch-size 4",
+      "cpu_cores": 3,
+      "duration_s": 10356.318410158157,
+      "est_vram_mb": 0,
+      "project": "sensing-compressibility-pems",
+      "ram_mb": 4894,
+      "rate_command_s": 9.655941043866847e-05,
+      "signature": "sensing-compressibility-pems/auto-adopted/p11599",
+      "status": "done",
+      "task_id": "t3910",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 5
+  },
+  "total_units_command": 5.0,
+  "vram_counts": {
+    "0": 5
+  },
+  "workload_key": "sensing_pems_cache_completed_history"
+}

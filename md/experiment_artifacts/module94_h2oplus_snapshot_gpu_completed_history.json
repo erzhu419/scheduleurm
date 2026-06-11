@@ -1,0 +1,154 @@
+{
+  "completed_record_count": 8,
+  "completed_units_command": 8.0,
+  "cpu_counts": {
+    "2": 8
+  },
+  "duration_s": {
+    "max": 1790.5816717147827,
+    "median": 1497.5911304950714,
+    "min": 1186.524829864502
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual H2Oplus snapshot CUDA production records. The progress unit is one completed command.",
+  "lower_service_command_s": 0.0005584777370374466,
+  "parsed_units_command": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    0.0008385006158555546,
+    0.0008427973649014976,
+    0.0007937501220758912,
+    0.0007732665725051354,
+    0.0005875553987915845,
+    0.0005731523733996321,
+    0.0005870353102587839,
+    0.0005584777370374466
+  ],
+  "record_count": 8,
+  "run_id": "module94_h2oplus_snapshot_gpu_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --use_jtt --jtt_warmup_epochs=40 --jtt_uniform_mix=0.8 --jtt_temperature_max=5.0 --jtt_temperature_min=2.0 --jtt_ema_decay=0.05 --name_str=h2op_snap_p4_jtt_late_soft",
+      "cpu_cores": 2,
+      "duration_s": 1790.5816717147827,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5542,
+      "rate_command_s": 0.0005584777370374466,
+      "signature": "H2Oplus/p3_jtt_late_soft_s42",
+      "status": "done",
+      "task_id": "t3037",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --name_str=h2op_snap_p4_floor_ess_nojtt",
+      "cpu_cores": 2,
+      "duration_s": 1744.7367339134216,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5080,
+      "rate_command_s": 0.0005731523733996321,
+      "signature": "H2Oplus/snap_p4_nojtt_s42_clean",
+      "status": "done",
+      "task_id": "t3021",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --sim_reward_rescale=5.0 --name_str=h2op_snap_p4_rescale5_nojtt",
+      "cpu_cores": 2,
+      "duration_s": 1703.4750423431396,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5034,
+      "rate_command_s": 0.0005870353102587839,
+      "signature": "H2Oplus/p2_rescale5_nojtt_s42",
+      "status": "done",
+      "task_id": "t3036",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=40 --jtt_temperature_max=2.0 --jtt_temperature_min=0.8 --jtt_uniform_mix=0.5 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_jtt --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --eval_use_ema_policy --name_str=h2op_snap_p4_jtt_cons_ema_mix",
+      "cpu_cores": 2,
+      "duration_s": 1701.9671711921692,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5534,
+      "rate_command_s": 0.0005875553987915845,
+      "signature": "H2Oplus/snap_p4_jtt_cons_ema_mix_s42",
+      "status": "done",
+      "task_id": "t3020",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_jtt --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --name_str=h2op_snap_p4_floor_ess_jtt",
+      "cpu_cores": 2,
+      "duration_s": 1293.2150897979736,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5425,
+      "rate_command_s": 0.0007732665725051354,
+      "signature": "H2Oplus/snap_p4_jtt_s42",
+      "status": "done",
+      "task_id": "t3011",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_jtt --nouse_cal_ql --name_str=h2op_snap_p3_jtt",
+      "cpu_cores": 2,
+      "duration_s": 1259.842325925827,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5418,
+      "rate_command_s": 0.0007937501220758912,
+      "signature": "H2Oplus/snap_p3_jtt_s42",
+      "status": "done",
+      "task_id": "t3009",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --nouse_cal_ql --name_str=h2op_snap_p2_uniform",
+      "cpu_cores": 2,
+      "duration_s": 1192.6049678325653,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5408,
+      "rate_command_s": 0.0008385006158555546,
+      "signature": "H2Oplus/snap_p2_uniform_s42",
+      "status": "done",
+      "task_id": "t3008",
+      "units": 1.0
+    },
+    {
+      "cmd": "/home/erzhu419/anaconda3/envs/LSTM-RL/bin/python -u SimpleSAC/h2o+_bus_main.py --device=cuda --dataset_file=/home/erzhu419/mine_code/sumo-rl/H2Oplus/bus_h2o/datasets_v2/merged_all_v2.h5 --use_snapshot_reset --p_reset=0.5 --use_ensemble_q --ensemble_ckpt=/home/erzhu419/mine_code/sumo-rl/H2Oplus/experiment_output/offline_ensemble/offline_ensemble_final.pt --pretrain_steps=0 --n_epochs=80 --n_train_step_per_epoch=100 --n_rollout_events_per_epoch=50 --eval_period=10 --eval_n_trajs=2 --checkpoint_period=20 --warmup_episodes=20 --jtt_warmup_epochs=20 --seed=42 --use_contrastive_disc --contrastive_ratio_mode=nce --adaptive_sim_ratio --use_cal_ql --cal_ql_mode=batch_quantile --ess_sim_loss_scale --name_str=h2op_snap_p4_floor_ess_nojtt",
+      "cpu_cores": 2,
+      "duration_s": 1186.524829864502,
+      "est_vram_mb": 384,
+      "project": "H2Oplus",
+      "ram_mb": 5407,
+      "rate_command_s": 0.0008427973649014976,
+      "signature": "H2Oplus/snap_p4_nojtt_s42",
+      "status": "done",
+      "task_id": "t3010",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 8
+  },
+  "total_units_command": 8.0,
+  "vram_counts": {
+    "384": 8
+  },
+  "workload_key": "h2oplus_snapshot_gpu_completed_history"
+}

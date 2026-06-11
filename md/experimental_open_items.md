@@ -242,14 +242,17 @@ candidate_bucket / class_key / regime_key 提供 measured lower-service row。
 Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。Module73 进一步把无 scheduler id、无 log、无可复现 progress unit 的
 external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
-population 外。当前 30 天 `completed_active_production` 视角为：
+population 外。Module92--96 又把剩余非 CPU/SUMO/transit production buckets
+拆成 command-shape-specific strict service certificates。当前 30 天
+`completed_active_production` obligations 视角为：
 
 ```text
-records = 3347
-representative mapped = 2955
-strict mapped = 1911
-measurement_required = 392
-mapped_fraction = 0.882880
+records = 3378
+obligation mapped = 3378
+measurement_required = 0
+obligation mapped_fraction = 1.000000
+strict view mapped = 2349 / 3378
+representative view mapped = 3378 / 3378
 ```
 
 曾经最大的 CPU/SUMO/transit blocker 闭合轨迹是：
@@ -295,18 +298,27 @@ after Module91:  cpu_sumo_transit_eval_or_control = 0 / 3347 completed-active re
 ```
 
 所以 CPU/SUMO/transit production blocker 已经从 Module81 的 43 / 3095
-闭合到 0 / 3347。production-global theorem 的下一步不是继续泛化 q01/q11，
-而是转向剩余的非 CPU/SUMO/transit measurement-required buckets：
+闭合到 0 / 3347。随后 Module92--96 闭合了剩余 non-CPU/SUMO/transit
+measurement-required obligations：
 
 ```text
-1. 抽取 generic_cpu_python / cpu_eval_generic / artifact_io_control / scheduler_control_plane / gpu_rl_unmeasured_variant 的真实任务模板；
-2. 建立 progress-bearing service unit；
-3. 测 profile 1..K 的 service curve 和 capacity boundary；
-4. 加入 service cache 与 taskset/action slice；
-5. 重跑 production coverage + capacity + slack certificate。
+Module92: Asumption Agent unittest / meta-QA / phase2 command certificates.
+Module93: FreqDuet spacectx_screen_ep100_wu10 c3_8 shard certificate.
+Module94: residual CFCMT, Asumption Agent, sensing, Nature, Scheduleurm control-plane, BAPR/RE-SAC eval, H2Oplus command certificates.
+Module95: Transit real-demand c9_16 shards and RE-SAC conda-pack artifact command.
+Module96: RE-SAC review5 JAX train production-fabric burst service certificate.
 ```
 
-在这之前，production-global stability 只能写成 open empirical-theorem bridge。
+注意这不等于可以在论文里写“全生产 strict theorem 已完全闭合”。当前
+Module51 obligations 已经没有 `measurement_required`，Module49 mapped-slice
+capacity 也为 true；但 strict view 里仍有 representative buckets，例如
+`hybrid_rl_resac_ant` 和 `cpu_heavy_local_bench`。论文中应写成：
+
+```text
+completed-active production obligations: fully mapped, no measurement_required bucket;
+mapped-slice capacity certificate: positive/usable;
+full strict measured-bucket theorem: still requires upgrading or justifying representative buckets.
+```
 
 Module53 已经完成第 1 步。Module56 又完成了第一个 production
 sub-bucket 的真实曲线测量。Module57 进一步闭合了一个很窄的 c9_16

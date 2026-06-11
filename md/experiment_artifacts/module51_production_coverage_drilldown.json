@@ -1,13 +1,13 @@
 {
   "completed_active_production_obligations": {
-    "mapped_count": 2955,
-    "mapped_fraction": 0.8828801912160144,
-    "measurement_required_count": 392,
-    "record_count": 3347,
+    "mapped_count": 3378,
+    "mapped_fraction": 1.0,
+    "measurement_required_count": 0,
+    "record_count": 3378,
     "top_buckets": [
       {
         "bucket": "hybrid_rl_resac_ant",
-        "count": 842,
+        "count": 840,
         "examples": [
           {
             "bucket": "hybrid_rl_resac_ant",
@@ -65,11 +65,11 @@
             "task_id": "t2993"
           }
         ],
-        "fraction_of_completed_active_production": 0.2515685688676427,
+        "fraction_of_completed_active_production": 0.24866785079928952,
         "status": "mapped",
         "top_projects": {
           "BAPR": 143,
-          "CS-BAPR": 46,
+          "CS-BAPR": 44,
           "RE-SAC": 208,
           "RE-SAC-JMLR": 340,
           "bapr_v15": 103,
@@ -88,7 +88,7 @@
       },
       {
         "bucket": "bamor_mujoco_c3_8_completed_history",
-        "count": 477,
+        "count": 488,
         "examples": [
           {
             "bucket": "bamor_mujoco_c3_8_completed_history",
@@ -146,32 +146,22 @@
             "task_id": "t7988"
           }
         ],
-        "fraction_of_completed_active_production": 0.14251568568867642,
+        "fraction_of_completed_active_production": 0.14446417998815866,
         "status": "mapped",
         "top_projects": {
-          "BAMOR": 477
+          "BAMOR": 488
         },
         "top_signature_prefixes": {
+          "BAMOR/auto-adopted/p1338684": 1,
           "BAMOR/mujoco/mo-ant-v5": 185,
-          "BAMOR/mujoco/mo-halfcheetah-v5": 69,
+          "BAMOR/mujoco/mo-halfcheetah-v5": 79,
           "BAMOR/mujoco/mo-hopper-v5": 223
         }
       },
       {
         "bucket": "cpu_heavy_local_bench",
-        "count": 202,
+        "count": 189,
         "examples": [
-          {
-            "bucket": "cpu_heavy_local_bench",
-            "cpu_cores": 4,
-            "description": "auto-adopted: CFCMT on local:CPU-only (4 procs)",
-            "est_vram_mb": 0,
-            "project": "CFCMT",
-            "reason": "cpu_heavy_representative",
-            "signature": "CFCMT/auto-adopted/p647817",
-            "status": "done",
-            "task_id": "t3767"
-          },
           {
             "bucket": "cpu_heavy_local_bench",
             "cpu_cores": 13,
@@ -215,13 +205,23 @@
             "signature": "TransitDuet/FreqHRL-trading-promotion-recovery-part1-w56",
             "status": "done",
             "task_id": "t5052"
+          },
+          {
+            "bucket": "cpu_heavy_local_bench",
+            "cpu_cores": 4,
+            "description": "Merge Freq-HRL promotion recovery sweep shards",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "cpu_heavy_representative",
+            "signature": "TransitDuet/FreqHRL-trading-promotion-recovery-merge-results",
+            "status": "done",
+            "task_id": "t5053"
           }
         ],
-        "fraction_of_completed_active_production": 0.06035255452644159,
+        "fraction_of_completed_active_production": 0.05595026642984014,
         "status": "mapped",
         "top_projects": {
-          "BAPR": 165,
-          "CFCMT": 12,
+          "BAPR": 164,
           "TransitDuet": 5,
           "bapr_v15": 2,
           "sensing-compressibility-pems": 13,
@@ -234,13 +234,13 @@
           "BAPR/cpu_eval/id_ood_full_v3gfix_item_direct6_20260610": 40,
           "BAPR/cpu_eval/id_ood_full_v3gfix_item_direct6_ckptsync_20260610": 28,
           "BAPR/cpu_eval/id_ood_full_v3gfix_item_direct6_ckptsync_fill_20260610": 12,
-          "CFCMT/auto-adopted/p647817": 1,
-          "sensing-compressibility-pems/auto-adopted/p4014": 1
+          "sensing-compressibility-pems/auto-adopted/p4014": 1,
+          "sensing-compressibility-v10k/auto-adopted/p192697": 1
         }
       },
       {
         "bucket": "freqduet_cpu_ablation_c17_32",
-        "count": 178,
+        "count": 174,
         "examples": [
           {
             "bucket": "freqduet_cpu_ablation_c17_32",
@@ -298,10 +298,10 @@
             "task_id": "t5140"
           }
         ],
-        "fraction_of_completed_active_production": 0.05318195398864655,
+        "fraction_of_completed_active_production": 0.05150976909413854,
         "status": "mapped",
         "top_projects": {
-          "FreqDuet": 135,
+          "FreqDuet": 131,
           "TransitDuet": 7,
           "freqduet": 36
         },
@@ -317,84 +317,79 @@
         }
       },
       {
-        "bucket": "generic_cpu_python",
-        "count": 163,
+        "bucket": "resac_review5_jax_train_fabric_completed_history",
+        "count": 151,
         "examples": [
           {
-            "bucket": "generic_cpu_python",
-            "cpu_cores": 4,
-            "description": "auto-adopted: sensing-compressibility-v2k on jtl110gpu:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "sensing-compressibility-v2k",
-            "reason": "unmapped_cpu",
-            "signature": "sensing-compressibility-v2k/auto-adopted/p28886",
-            "status": "done",
-            "task_id": "t3111"
-          },
-          {
-            "bucket": "generic_cpu_python",
-            "cpu_cores": 9,
-            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "sensing-compressibility-v10k",
-            "reason": "unmapped_cpu",
-            "signature": "sensing-compressibility-v10k/auto-adopted/p1824577",
-            "status": "done",
-            "task_id": "t3118"
-          },
-          {
-            "bucket": "generic_cpu_python",
+            "bucket": "resac_review5_jax_train_fabric_completed_history",
             "cpu_cores": 1,
             "description": "RE-SAC review5 seed extension: tqc_Hopper-v2_32",
             "est_vram_mb": 0,
             "project": "RE-SAC",
-            "reason": "unmapped_cpu",
+            "reason": "module96_resac_review5_jax_train_fabric_completed_history",
             "signature": "RE-SAC/review5/tqc_Hopper-v2_32",
             "status": "done",
             "task_id": "t3440"
           },
           {
-            "bucket": "generic_cpu_python",
+            "bucket": "resac_review5_jax_train_fabric_completed_history",
             "cpu_cores": 1,
             "description": "RE-SAC review5 seed extension: tqc_HalfCheetah-v2_32",
             "est_vram_mb": 0,
             "project": "RE-SAC",
-            "reason": "unmapped_cpu",
+            "reason": "module96_resac_review5_jax_train_fabric_completed_history",
             "signature": "RE-SAC/review5/tqc_HalfCheetah-v2_32",
             "status": "done",
             "task_id": "t3441"
           },
           {
-            "bucket": "generic_cpu_python",
+            "bucket": "resac_review5_jax_train_fabric_completed_history",
             "cpu_cores": 1,
             "description": "RE-SAC review5 seed extension: ns_redq_Hopper-v2_32",
             "est_vram_mb": 0,
             "project": "RE-SAC",
-            "reason": "unmapped_cpu",
+            "reason": "module96_resac_review5_jax_train_fabric_completed_history",
             "signature": "RE-SAC/review5/ns_redq_Hopper-v2_32",
             "status": "done",
             "task_id": "t3442"
+          },
+          {
+            "bucket": "resac_review5_jax_train_fabric_completed_history",
+            "cpu_cores": 1,
+            "description": "RE-SAC review5 seed extension: ns_redq_Walker2d-v2_32",
+            "est_vram_mb": 0,
+            "project": "RE-SAC",
+            "reason": "module96_resac_review5_jax_train_fabric_completed_history",
+            "signature": "RE-SAC/review5/ns_redq_Walker2d-v2_32",
+            "status": "done",
+            "task_id": "t3443"
+          },
+          {
+            "bucket": "resac_review5_jax_train_fabric_completed_history",
+            "cpu_cores": 1,
+            "description": "RE-SAC review5 seed extension: ns_redq_HalfCheetah-v2_32",
+            "est_vram_mb": 0,
+            "project": "RE-SAC",
+            "reason": "module96_resac_review5_jax_train_fabric_completed_history",
+            "signature": "RE-SAC/review5/ns_redq_HalfCheetah-v2_32",
+            "status": "done",
+            "task_id": "t3444"
           }
         ],
-        "fraction_of_completed_active_production": 0.048700328652524646,
-        "status": "measurement_required",
+        "fraction_of_completed_active_production": 0.04470100651272942,
+        "status": "mapped",
         "top_projects": {
-          "Asumption Agent": 63,
-          "CFCMT": 11,
-          "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1,
-          "RE-SAC": 81,
-          "sensing-compressibility-v10k": 6,
-          "sensing-compressibility-v2k": 1
+          "RE-SAC": 151
         },
         "top_signature_prefixes": {
           "RE-SAC/review5/ns_redq_Ant-v2_32": 1,
           "RE-SAC/review5/ns_redq_HalfCheetah-v2_32": 1,
           "RE-SAC/review5/ns_redq_Hopper-v2_32": 1,
           "RE-SAC/review5/ns_redq_Walker2d-v2_32": 1,
+          "RE-SAC/review5/ns_sacn_HalfCheetah-v2_32": 1,
+          "RE-SAC/review5/ns_sacn_Hopper-v2_32": 1,
           "RE-SAC/review5/tqc_HalfCheetah-v2_32": 1,
-          "RE-SAC/review5/tqc_Hopper-v2_32": 1,
-          "sensing-compressibility-v10k/auto-adopted/p1824577": 1,
-          "sensing-compressibility-v2k/auto-adopted/p28886": 1
+          "RE-SAC/review5/tqc_Hopper-v2_32": 1
         }
       },
       {
@@ -457,7 +452,7 @@
             "task_id": "t5297"
           }
         ],
-        "fraction_of_completed_active_production": 0.03615177771138333,
+        "fraction_of_completed_active_production": 0.03582001184132623,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 101,
@@ -535,7 +530,7 @@
             "task_id": "t7277"
           }
         ],
-        "fraction_of_completed_active_production": 0.031072602330445176,
+        "fraction_of_completed_active_production": 0.03078744819419775,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 104
@@ -549,6 +544,84 @@
           "TransitDuet/native-promotion-amplified-projected-wait-v20-8192-node005-6144-7168-w32": 1,
           "TransitDuet/native-promotion-amplified-projected-wait-v20-8192-node006-7168-8192-w32": 1,
           "TransitDuet/native-promotion-reward-guarded-v21-8192-node001-part0-0-228-w32x6": 1
+        }
+      },
+      {
+        "bucket": "transit_native_promotion_c65p_completed_history",
+        "count": 92,
+        "examples": [
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 71,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6688"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 99,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6689"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6690"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6691"
+          },
+          {
+            "bucket": "transit_native_promotion_c65p_completed_history",
+            "cpu_cores": 81,
+            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
+            "est_vram_mb": 0,
+            "project": "FreqHRLNative",
+            "reason": "module69_transit_native_promotion_c65p_completed_history",
+            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
+            "status": "done",
+            "task_id": "t6692"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.027235050325636473,
+        "status": "mapped",
+        "top_projects": {
+          "FreqHRLNative": 21,
+          "TransitDuet": 66,
+          "freq_hrl": 5
+        },
+        "top_signature_prefixes": {
+          "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-512seed-py310-v8": 5,
+          "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5": 6,
+          "FreqHRLNative/native-promotion-persistent-stress-tightgapcap-512seed-py310-v6": 6,
+          "freq-hrl-native-promotion-v40-promotion-confirmed-wait-credit-512seed": 6,
+          "freq-hrl-native-promotion-v41-risk-banded-wait-credit-512seed": 6,
+          "freq-hrl-native-promotion-v42-odshift-512seed": 6,
+          "freq-hrl-native-promotion-v42-risk-banded-delta-floor-512seed": 6,
+          "freq_hrl_native_promotion_v45_odshift_512seed": 6
         }
       },
       {
@@ -611,7 +684,7 @@
             "task_id": "t4859"
           }
         ],
-        "fraction_of_completed_active_production": 0.0268897520167314,
+        "fraction_of_completed_active_production": 0.02664298401420959,
         "status": "mapped",
         "top_projects": {
           "freq_transitduet": 3,
@@ -688,7 +761,7 @@
             "task_id": "t4844"
           }
         ],
-        "fraction_of_completed_active_production": 0.02599342694950702,
+        "fraction_of_completed_active_production": 0.02575488454706927,
         "status": "mapped",
         "top_projects": {
           "freqduet": 87
@@ -705,241 +778,8 @@
         }
       },
       {
-        "bucket": "cpu_eval_generic",
-        "count": 82,
-        "examples": [
-          {
-            "bucket": "cpu_eval_generic",
-            "cpu_cores": 11,
-            "description": "RE-SAC bus seed extension: aleatoric_only_seed40",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/bus-seed-extension/aleatoric_only_seed40",
-            "status": "done",
-            "task_id": "t3438"
-          },
-          {
-            "bucket": "cpu_eval_generic",
-            "cpu_cores": 11,
-            "description": "RE-SAC bus seed extension: epistemic_only_seed40",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/bus-seed-extension/epistemic_only_seed40",
-            "status": "done",
-            "task_id": "t3439"
-          },
-          {
-            "bucket": "cpu_eval_generic",
-            "cpu_cores": 2,
-            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "CFCMT",
-            "reason": "unmapped_cpu",
-            "signature": "CFCMT/auto-adopted/p88302",
-            "status": "done",
-            "task_id": "t3698"
-          },
-          {
-            "bucket": "cpu_eval_generic",
-            "cpu_cores": 2,
-            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "CFCMT",
-            "reason": "unmapped_cpu",
-            "signature": "CFCMT/auto-adopted/p129504",
-            "status": "done",
-            "task_id": "t3699"
-          },
-          {
-            "bucket": "cpu_eval_generic",
-            "cpu_cores": 2,
-            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
-            "est_vram_mb": 0,
-            "project": "CFCMT",
-            "reason": "unmapped_cpu",
-            "signature": "CFCMT/auto-adopted/p150361",
-            "status": "done",
-            "task_id": "t3700"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.02449955183746639,
-        "status": "measurement_required",
-        "top_projects": {
-          "Asumption Agent": 19,
-          "BAPR": 2,
-          "CFCMT": 59,
-          "RE-SAC": 2
-        },
-        "top_signature_prefixes": {
-          "CFCMT/auto-adopted/p129504": 1,
-          "CFCMT/auto-adopted/p150361": 1,
-          "CFCMT/auto-adopted/p172732": 1,
-          "CFCMT/auto-adopted/p175399": 1,
-          "CFCMT/auto-adopted/p180288": 1,
-          "CFCMT/auto-adopted/p88302": 1,
-          "RE-SAC/bus-seed-extension/aleatoric_only_seed40": 1,
-          "RE-SAC/bus-seed-extension/epistemic_only_seed40": 1
-        }
-      },
-      {
-        "bucket": "artifact_io_control",
-        "count": 77,
-        "examples": [
-          {
-            "bucket": "artifact_io_control",
-            "cpu_cores": 1,
-            "description": "RE-SAC review5 seed extension: abl_ns_B0_Hopper-v2_40",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/review5/abl_ns_B0_Hopper-v2_40",
-            "status": "done",
-            "task_id": "t3457"
-          },
-          {
-            "bucket": "artifact_io_control",
-            "cpu_cores": 1,
-            "description": "RE-SAC review5 seed extension: abl_ns_B0_Walker2d-v2_40",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/review5/abl_ns_B0_Walker2d-v2_40",
-            "status": "done",
-            "task_id": "t3458"
-          },
-          {
-            "bucket": "artifact_io_control",
-            "cpu_cores": 1,
-            "description": "RE-SAC review5 seed extension: abl_ns_B0_Ant-v2_40",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/review5/abl_ns_B0_Ant-v2_40",
-            "status": "done",
-            "task_id": "t3459"
-          },
-          {
-            "bucket": "artifact_io_control",
-            "cpu_cores": 1,
-            "description": "RE-SAC review5 seed extension: sens_anchor_0_HalfCheetah-v2_32",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/review5/sens_anchor_0_HalfCheetah-v2_32",
-            "status": "done",
-            "task_id": "t3488"
-          },
-          {
-            "bucket": "artifact_io_control",
-            "cpu_cores": 1,
-            "description": "RE-SAC review5 seed extension: sens_anchor_0_Ant-v2_32",
-            "est_vram_mb": 0,
-            "project": "RE-SAC",
-            "reason": "unmapped_cpu",
-            "signature": "RE-SAC/review5/sens_anchor_0_Ant-v2_32",
-            "status": "done",
-            "task_id": "t3489"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.023005676725425753,
-        "status": "measurement_required",
-        "top_projects": {
-          "RE-SAC": 72,
-          "sensing-compressibility-pems": 5
-        },
-        "top_signature_prefixes": {
-          "RE-SAC/review5/abl_ns_B0_Ant-v2_40": 1,
-          "RE-SAC/review5/abl_ns_B0_Hopper-v2_40": 1,
-          "RE-SAC/review5/abl_ns_B0_Walker2d-v2_40": 1,
-          "RE-SAC/review5/sens_K_2_HalfCheetah-v2_32": 1,
-          "RE-SAC/review5/sens_anchor_0_Ant-v2_32": 1,
-          "RE-SAC/review5/sens_anchor_0_HalfCheetah-v2_32": 1,
-          "RE-SAC/review5/sens_betaend_-1.5_HalfCheetah-v2_40": 1,
-          "RE-SAC/review5/sens_ratio_0.75_HalfCheetah-v2_40": 1
-        }
-      },
-      {
-        "bucket": "transit_native_promotion_c65p_completed_history",
-        "count": 77,
-        "examples": [
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 71,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6688"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 99,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6689"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6690"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6691"
-          },
-          {
-            "bucket": "transit_native_promotion_c65p_completed_history",
-            "cpu_cores": 81,
-            "description": "Freq-HRL native Transit persistent-stress risk-capped wait-aware promotion validation, 512 seeds on node001-node006",
-            "est_vram_mb": 0,
-            "project": "FreqHRLNative",
-            "reason": "module69_transit_native_promotion_c65p_completed_history",
-            "signature": "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5",
-            "status": "done",
-            "task_id": "t6692"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.023005676725425753,
-        "status": "mapped",
-        "top_projects": {
-          "FreqHRLNative": 21,
-          "TransitDuet": 56
-        },
-        "top_signature_prefixes": {
-          "FreqHRLNative/native-promotion-persistent-stress-candidate-targetguard347-512seed-py310-v8": 5,
-          "FreqHRLNative/native-promotion-persistent-stress-riskcap-512seed-py310-v5": 6,
-          "FreqHRLNative/native-promotion-persistent-stress-samewait812-512seed-py310-v7": 4,
-          "FreqHRLNative/native-promotion-persistent-stress-tightgapcap-512seed-py310-v6": 6,
-          "freq-hrl-native-promotion-v40-promotion-confirmed-wait-credit-512seed": 6,
-          "freq-hrl-native-promotion-v41-risk-banded-wait-credit-512seed": 6,
-          "freq-hrl-native-promotion-v42-odshift-512seed": 6,
-          "freq-hrl-native-promotion-v42-risk-banded-delta-floor-512seed": 6
-        }
-      },
-      {
         "bucket": "transit_native_promotion_c33_64_batch_completed_history",
-        "count": 73,
+        "count": 76,
         "examples": [
           {
             "bucket": "transit_native_promotion_c33_64_batch_completed_history",
@@ -997,12 +837,13 @@
             "task_id": "t6040"
           }
         ],
-        "fraction_of_completed_active_production": 0.021810576635793246,
+        "fraction_of_completed_active_production": 0.022498519834221433,
         "status": "mapped",
         "top_projects": {
           "FreqHRL": 27,
           "FreqHRLNative": 2,
-          "TransitDuet": 42,
+          "TransitDuet": 44,
+          "freq_hrl": 1,
           "transit_hrl": 2
         },
         "top_signature_prefixes": {
@@ -1014,6 +855,82 @@
           "freq_hrl_native_learned_wait_same070_082_cap2_nocap_1024seed_w32": 5,
           "freq_hrl_native_learned_wait_same070_082_cap2_terminalcap15_1024seed_wAuto": 5,
           "freq_hrl_native_learned_wait_same070_cap2_512seed_w16": 6
+        }
+      },
+      {
+        "bucket": "cfcmt_cpu_eval_completed_history",
+        "count": 71,
+        "examples": [
+          {
+            "bucket": "cfcmt_cpu_eval_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_cpu_eval_completed_history",
+            "signature": "CFCMT/auto-adopted/p88302",
+            "status": "done",
+            "task_id": "t3698"
+          },
+          {
+            "bucket": "cfcmt_cpu_eval_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_cpu_eval_completed_history",
+            "signature": "CFCMT/auto-adopted/p129504",
+            "status": "done",
+            "task_id": "t3699"
+          },
+          {
+            "bucket": "cfcmt_cpu_eval_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_cpu_eval_completed_history",
+            "signature": "CFCMT/auto-adopted/p150361",
+            "status": "done",
+            "task_id": "t3700"
+          },
+          {
+            "bucket": "cfcmt_cpu_eval_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_cpu_eval_completed_history",
+            "signature": "CFCMT/auto-adopted/p172732",
+            "status": "done",
+            "task_id": "t3703"
+          },
+          {
+            "bucket": "cfcmt_cpu_eval_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_cpu_eval_completed_history",
+            "signature": "CFCMT/auto-adopted/p175399",
+            "status": "done",
+            "task_id": "t3704"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.021018354055654234,
+        "status": "mapped",
+        "top_projects": {
+          "CFCMT": 71
+        },
+        "top_signature_prefixes": {
+          "CFCMT/auto-adopted/p129504": 1,
+          "CFCMT/auto-adopted/p150361": 1,
+          "CFCMT/auto-adopted/p172732": 1,
+          "CFCMT/auto-adopted/p175399": 1,
+          "CFCMT/auto-adopted/p180288": 1,
+          "CFCMT/auto-adopted/p182139": 1,
+          "CFCMT/auto-adopted/p236749": 1,
+          "CFCMT/auto-adopted/p88302": 1
         }
       },
       {
@@ -1076,7 +993,7 @@
             "task_id": "t5355"
           }
         ],
-        "fraction_of_completed_active_production": 0.01882282641171198,
+        "fraction_of_completed_active_production": 0.018650088809946713,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 54,
@@ -1154,7 +1071,7 @@
             "task_id": "t7158"
           }
         ],
-        "fraction_of_completed_active_production": 0.01732895129967135,
+        "fraction_of_completed_active_production": 0.017169923031379514,
         "status": "mapped",
         "top_projects": {
           "FreqHRL": 4,
@@ -1231,7 +1148,7 @@
             "task_id": "t7546"
           }
         ],
-        "fraction_of_completed_active_production": 0.01732895129967135,
+        "fraction_of_completed_active_production": 0.017169923031379514,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 58
@@ -1248,69 +1165,68 @@
         }
       },
       {
-        "bucket": "scheduler_control_plane",
-        "count": 56,
+        "bucket": "scheduleurm_control_plane_completed_history",
+        "count": 55,
         "examples": [
           {
-            "bucket": "scheduler_control_plane",
-            "cpu_cores": 1,
-            "description": "hpc relay scheduler smoke sched-hpc-e2e-20260522-214808-175687",
-            "est_vram_mb": 0,
-            "project": "sched-hpc-e2e-20260522-214808-175687",
-            "reason": "unmapped_cpu",
-            "signature": "smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687",
-            "status": "done",
-            "task_id": "t4038"
-          },
-          {
-            "bucket": "scheduler_control_plane",
+            "bucket": "scheduleurm_control_plane_completed_history",
             "cpu_cores": 3,
             "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
             "project": "scheduleurm",
-            "reason": "unmapped_cpu",
+            "reason": "module94_scheduleurm_control_plane_completed_history",
             "signature": "scheduleurm/auto-adopted/p257828",
             "status": "done",
             "task_id": "t8056"
           },
           {
-            "bucket": "scheduler_control_plane",
+            "bucket": "scheduleurm_control_plane_completed_history",
             "cpu_cores": 2,
             "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
             "project": "scheduleurm",
-            "reason": "unmapped_cpu",
+            "reason": "module94_scheduleurm_control_plane_completed_history",
             "signature": "scheduleurm/auto-adopted/p350561",
             "status": "done",
             "task_id": "t8078"
           },
           {
-            "bucket": "scheduler_control_plane",
+            "bucket": "scheduleurm_control_plane_completed_history",
             "cpu_cores": 1,
             "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
             "project": "scheduleurm",
-            "reason": "unmapped_cpu",
+            "reason": "module94_scheduleurm_control_plane_completed_history",
             "signature": "scheduleurm/auto-adopted/p398924",
             "status": "done",
             "task_id": "t8098"
           },
           {
-            "bucket": "scheduler_control_plane",
+            "bucket": "scheduleurm_control_plane_completed_history",
             "cpu_cores": 2,
             "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
             "project": "scheduleurm",
-            "reason": "unmapped_cpu",
+            "reason": "module94_scheduleurm_control_plane_completed_history",
             "signature": "scheduleurm/auto-adopted/p398949",
             "status": "done",
             "task_id": "t8099"
+          },
+          {
+            "bucket": "scheduleurm_control_plane_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "scheduleurm",
+            "reason": "module94_scheduleurm_control_plane_completed_history",
+            "signature": "scheduleurm/auto-adopted/p398969",
+            "status": "done",
+            "task_id": "t8100"
           }
         ],
-        "fraction_of_completed_active_production": 0.016731401254855095,
-        "status": "measurement_required",
+        "fraction_of_completed_active_production": 0.016281823564239194,
+        "status": "mapped",
         "top_projects": {
-          "sched-hpc-e2e-20260522-214808-175687": 1,
           "scheduleurm": 55
         },
         "top_signature_prefixes": {
@@ -1321,7 +1237,83 @@
           "scheduleurm/auto-adopted/p398969": 1,
           "scheduleurm/auto-adopted/p423313": 1,
           "scheduleurm/auto-adopted/p423316": 1,
-          "smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687": 1
+          "scheduleurm/auto-adopted/p423319": 1
+        }
+      },
+      {
+        "bucket": "assumption_agent_unittest_completed_history",
+        "count": 51,
+        "examples": [
+          {
+            "bucket": "assumption_agent_unittest_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_unittest_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p89241",
+            "status": "done",
+            "task_id": "t7284"
+          },
+          {
+            "bucket": "assumption_agent_unittest_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_unittest_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p228004",
+            "status": "done",
+            "task_id": "t7289"
+          },
+          {
+            "bucket": "assumption_agent_unittest_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_unittest_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p400415",
+            "status": "done",
+            "task_id": "t7310"
+          },
+          {
+            "bucket": "assumption_agent_unittest_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_unittest_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p406047",
+            "status": "done",
+            "task_id": "t7314"
+          },
+          {
+            "bucket": "assumption_agent_unittest_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_unittest_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p487355",
+            "status": "done",
+            "task_id": "t7421"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.015097690941385435,
+        "status": "mapped",
+        "top_projects": {
+          "Asumption Agent": 51
+        },
+        "top_signature_prefixes": {
+          "Asumption Agent/auto-adopted/p228004": 1,
+          "Asumption Agent/auto-adopted/p400415": 1,
+          "Asumption Agent/auto-adopted/p406047": 1,
+          "Asumption Agent/auto-adopted/p487355": 1,
+          "Asumption Agent/auto-adopted/p510559": 1,
+          "Asumption Agent/auto-adopted/p822999": 1,
+          "Asumption Agent/auto-adopted/p874879": 1,
+          "Asumption Agent/auto-adopted/p89241": 1
         }
       },
       {
@@ -1384,7 +1376,7 @@
             "task_id": "t3895"
           }
         ],
-        "fraction_of_completed_active_production": 0.014938751120406334,
+        "fraction_of_completed_active_production": 0.014801657785671996,
         "status": "mapped",
         "top_projects": {
           "ZSW_platform": 36,
@@ -1403,7 +1395,7 @@
       },
       {
         "bucket": "freqduet_cpu_ablation_c3_8_completed_history",
-        "count": 42,
+        "count": 40,
         "examples": [
           {
             "bucket": "freqduet_cpu_ablation_c3_8_completed_history",
@@ -1461,10 +1453,10 @@
             "task_id": "t4983"
           }
         ],
-        "fraction_of_completed_active_production": 0.01254855094114132,
+        "fraction_of_completed_active_production": 0.011841326228537596,
         "status": "mapped",
         "top_projects": {
-          "FreqDuet": 3,
+          "FreqDuet": 1,
           "TransitDuet": 2,
           "freq_transitduet": 1,
           "freqduet": 36
@@ -1540,7 +1532,7 @@
             "task_id": "t7643"
           }
         ],
-        "fraction_of_completed_active_production": 0.010158350761876307,
+        "fraction_of_completed_active_production": 0.010065127294256957,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 34
@@ -1616,7 +1608,7 @@
             "task_id": "t7639"
           }
         ],
-        "fraction_of_completed_active_production": 0.007469375560203167,
+        "fraction_of_completed_active_production": 0.007400828892835998,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 25
@@ -1630,6 +1622,82 @@
           "BAMOR/diagnostic-shard/diagnostic_v2_contrast_hpc_20260608_092735": 3,
           "BAMOR/diagnostic-shard/diagnostic_v2_proto_hpc_20260608_143710": 3,
           "BAMOR/diagnostic-shard/diagnostic_v2_seq_hpc_20260608_102731": 3
+        }
+      },
+      {
+        "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+        "count": 21,
+        "examples": [
+          {
+            "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_meta_qa_evolution_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p363530",
+            "status": "done",
+            "task_id": "t7308"
+          },
+          {
+            "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_meta_qa_evolution_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p475110",
+            "status": "done",
+            "task_id": "t7406"
+          },
+          {
+            "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_meta_qa_evolution_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p510560",
+            "status": "done",
+            "task_id": "t7428"
+          },
+          {
+            "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_meta_qa_evolution_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p519416",
+            "status": "done",
+            "task_id": "t7435"
+          },
+          {
+            "bucket": "assumption_agent_meta_qa_evolution_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_meta_qa_evolution_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p609391",
+            "status": "done",
+            "task_id": "t7443"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.006216696269982238,
+        "status": "mapped",
+        "top_projects": {
+          "Asumption Agent": 21
+        },
+        "top_signature_prefixes": {
+          "Asumption Agent/auto-adopted/p363530": 1,
+          "Asumption Agent/auto-adopted/p475110": 1,
+          "Asumption Agent/auto-adopted/p510560": 1,
+          "Asumption Agent/auto-adopted/p519416": 1,
+          "Asumption Agent/auto-adopted/p609391": 1,
+          "Asumption Agent/auto-adopted/p624328": 1,
+          "Asumption Agent/auto-adopted/p652878": 1,
+          "Asumption Agent/auto-adopted/p682484": 1
         }
       },
       {
@@ -1692,7 +1760,7 @@
             "task_id": "t5319"
           }
         ],
-        "fraction_of_completed_active_production": 0.005676725425754407,
+        "fraction_of_completed_active_production": 0.005624629958555358,
         "status": "mapped",
         "top_projects": {
           "FreqHRLNative": 1,
@@ -1769,7 +1837,7 @@
             "task_id": "t5873"
           }
         ],
-        "fraction_of_completed_active_production": 0.005676725425754407,
+        "fraction_of_completed_active_production": 0.005624629958555358,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 19
@@ -1845,7 +1913,7 @@
             "task_id": "t5117"
           }
         ],
-        "fraction_of_completed_active_production": 0.00537795040334628,
+        "fraction_of_completed_active_production": 0.0053285968028419185,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 18
@@ -1921,7 +1989,7 @@
             "task_id": "t7952"
           }
         ],
-        "fraction_of_completed_active_production": 0.00537795040334628,
+        "fraction_of_completed_active_production": 0.0053285968028419185,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 18
@@ -1997,7 +2065,7 @@
             "task_id": "t5392"
           }
         ],
-        "fraction_of_completed_active_production": 0.004780400358530027,
+        "fraction_of_completed_active_production": 0.004736530491415038,
         "status": "mapped",
         "top_projects": {
           "freqduet": 16
@@ -2073,7 +2141,7 @@
             "task_id": "t5917"
           }
         ],
-        "fraction_of_completed_active_production": 0.004780400358530027,
+        "fraction_of_completed_active_production": 0.004736530491415038,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 16
@@ -2149,7 +2217,7 @@
             "task_id": "t5571"
           }
         ],
-        "fraction_of_completed_active_production": 0.0044816253361219,
+        "fraction_of_completed_active_production": 0.004440497335701598,
         "status": "mapped",
         "top_projects": {
           "freqduet": 15
@@ -2163,82 +2231,6 @@
           "freqduet/auto-adopted/p472318": 1,
           "freqduet/auto-adopted/p490155": 1,
           "freqduet/auto-adopted/p535312": 1
-        }
-      },
-      {
-        "bucket": "gpu_rl_unmeasured_variant",
-        "count": 14,
-        "examples": [
-          {
-            "bucket": "gpu_rl_unmeasured_variant",
-            "cpu_cores": 2,
-            "description": "H2O+ proxy control baseline: contrastive cosine, no adaptive/JTT/CALQL, seed 42",
-            "est_vram_mb": 384,
-            "project": "H2Oplus",
-            "reason": "unmapped_gpu",
-            "signature": "H2Oplus/proxy_base_s42",
-            "status": "done",
-            "task_id": "t2966"
-          },
-          {
-            "bucket": "gpu_rl_unmeasured_variant",
-            "cpu_cores": 2,
-            "description": "P0 proxy guard: verify disable_is_weighting clean H2O+ path, seed 42",
-            "est_vram_mb": 384,
-            "project": "H2Oplus",
-            "reason": "unmapped_gpu",
-            "signature": "H2Oplus/proxy_p0_guard_s42",
-            "status": "done",
-            "task_id": "t2967"
-          },
-          {
-            "bucket": "gpu_rl_unmeasured_variant",
-            "cpu_cores": 2,
-            "description": "P1 proxy: contrastive NCE real/sim ratio, seed 42",
-            "est_vram_mb": 384,
-            "project": "H2Oplus",
-            "reason": "unmapped_gpu",
-            "signature": "H2Oplus/proxy_p1_ratio_s42",
-            "status": "done",
-            "task_id": "t2968"
-          },
-          {
-            "bucket": "gpu_rl_unmeasured_variant",
-            "cpu_cores": 2,
-            "description": "P2 proxy: NCE ratio + adaptive sim ratio, seed 42",
-            "est_vram_mb": 384,
-            "project": "H2Oplus",
-            "reason": "unmapped_gpu",
-            "signature": "H2Oplus/proxy_p2_adaptive_s42",
-            "status": "done",
-            "task_id": "t2969"
-          },
-          {
-            "bucket": "gpu_rl_unmeasured_variant",
-            "cpu_cores": 2,
-            "description": "P3 proxy: NCE ratio + adaptive sim ratio + JTT, seed 42",
-            "est_vram_mb": 384,
-            "project": "H2Oplus",
-            "reason": "unmapped_gpu",
-            "signature": "H2Oplus/proxy_p3_jtt_s42",
-            "status": "done",
-            "task_id": "t2970"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.004182850313713774,
-        "status": "measurement_required",
-        "top_projects": {
-          "H2Oplus": 14
-        },
-        "top_signature_prefixes": {
-          "H2Oplus/proxy_base_s42": 1,
-          "H2Oplus/proxy_p0_guard_s42": 1,
-          "H2Oplus/proxy_p1_ratio_s42": 1,
-          "H2Oplus/proxy_p2_adaptive_s42": 1,
-          "H2Oplus/proxy_p3_jtt_s42": 1,
-          "H2Oplus/proxy_p4_floor_ess_s42": 1,
-          "H2Oplus/snap_p2_uniform_s42": 1,
-          "H2Oplus/snap_p4_nojtt_s42": 1
         }
       },
       {
@@ -2301,7 +2293,7 @@
             "task_id": "t5007"
           }
         ],
-        "fraction_of_completed_active_production": 0.004182850313713774,
+        "fraction_of_completed_active_production": 0.0041444641799881585,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 14
@@ -2377,7 +2369,7 @@
             "task_id": "t6092"
           }
         ],
-        "fraction_of_completed_active_production": 0.004182850313713774,
+        "fraction_of_completed_active_production": 0.0041444641799881585,
         "status": "mapped",
         "top_projects": {
           "FreqHRL": 9,
@@ -2451,7 +2443,7 @@
             "task_id": "t7609"
           }
         ],
-        "fraction_of_completed_active_production": 0.004182850313713774,
+        "fraction_of_completed_active_production": 0.0041444641799881585,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 14
@@ -2525,7 +2517,7 @@
             "task_id": "t5421"
           }
         ],
-        "fraction_of_completed_active_production": 0.00358530026889752,
+        "fraction_of_completed_active_production": 0.003552397868561279,
         "status": "mapped",
         "top_projects": {
           "freqduet": 12
@@ -2539,6 +2531,82 @@
           "freqduet/auto-adopted/p432269": 1,
           "freqduet/auto-adopted/p469868": 1,
           "freqduet/auto-adopted/p507781": 1
+        }
+      },
+      {
+        "bucket": "cfcmt_pytest_cpu_completed_history",
+        "count": 11,
+        "examples": [
+          {
+            "bucket": "cfcmt_pytest_cpu_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_pytest_cpu_completed_history",
+            "signature": "CFCMT/auto-adopted/p718682",
+            "status": "done",
+            "task_id": "t3499"
+          },
+          {
+            "bucket": "cfcmt_pytest_cpu_completed_history",
+            "cpu_cores": 9,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_pytest_cpu_completed_history",
+            "signature": "CFCMT/auto-adopted/p763499",
+            "status": "done",
+            "task_id": "t3500"
+          },
+          {
+            "bucket": "cfcmt_pytest_cpu_completed_history",
+            "cpu_cores": 6,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_pytest_cpu_completed_history",
+            "signature": "CFCMT/auto-adopted/p781146",
+            "status": "done",
+            "task_id": "t3501"
+          },
+          {
+            "bucket": "cfcmt_pytest_cpu_completed_history",
+            "cpu_cores": 6,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_pytest_cpu_completed_history",
+            "signature": "CFCMT/auto-adopted/p804743",
+            "status": "done",
+            "task_id": "t3502"
+          },
+          {
+            "bucket": "cfcmt_pytest_cpu_completed_history",
+            "cpu_cores": 9,
+            "description": "auto-adopted: CFCMT on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "CFCMT",
+            "reason": "module94_cfcmt_pytest_cpu_completed_history",
+            "signature": "CFCMT/auto-adopted/p826030",
+            "status": "done",
+            "task_id": "t3504"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.003256364712847839,
+        "status": "mapped",
+        "top_projects": {
+          "CFCMT": 11
+        },
+        "top_signature_prefixes": {
+          "CFCMT/auto-adopted/p718682": 1,
+          "CFCMT/auto-adopted/p763499": 1,
+          "CFCMT/auto-adopted/p781146": 1,
+          "CFCMT/auto-adopted/p804743": 1,
+          "CFCMT/auto-adopted/p826030": 1,
+          "CFCMT/auto-adopted/p828256": 1,
+          "CFCMT/auto-adopted/p830703": 1,
+          "CFCMT/auto-adopted/p846021": 1
         }
       },
       {
@@ -2601,7 +2669,7 @@
             "task_id": "t6899"
           }
         ],
-        "fraction_of_completed_active_production": 0.0032865252464893933,
+        "fraction_of_completed_active_production": 0.003256364712847839,
         "status": "mapped",
         "top_projects": {
           "FreqHRLNative": 5,
@@ -2677,7 +2745,7 @@
             "task_id": "t7623"
           }
         ],
-        "fraction_of_completed_active_production": 0.0032865252464893933,
+        "fraction_of_completed_active_production": 0.003256364712847839,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 11
@@ -2753,7 +2821,7 @@
             "task_id": "t5337"
           }
         ],
-        "fraction_of_completed_active_production": 0.002987750224081267,
+        "fraction_of_completed_active_production": 0.002960331557134399,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 10
@@ -2767,6 +2835,157 @@
           "CFCMT/auto-adopted/p771704": 1,
           "CFCMT/auto-adopted/p772561": 1,
           "CFCMT/auto-adopted/p792504": 1
+        }
+      },
+      {
+        "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+        "count": 10,
+        "examples": [
+          {
+            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+            "cpu_cores": 4,
+            "description": "Retry Freq-HRL native real-demand v3 guarded 24 paired AFC/APC on node004",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+            "signature": "TransitDuet/freq-hrl-native-real-demand-v3-reward-floor-throughput-24pair-retry-node004",
+            "status": "done",
+            "task_id": "t7751"
+          },
+          {
+            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "Freq-HRL native real-demand v4 wait-pressure override retry on node006",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+            "signature": "TransitDuet/freqhrl-native-real-demand-v4-wait-pressure-24pair-node006-retry",
+            "status": "done",
+            "task_id": "t7826"
+          },
+          {
+            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "Freq-HRL native real-demand v5 selective reward-wait AFC/APC 24-pair validation",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+            "signature": "TransitDuet/freqhrl-native-real-demand-v5-selective-reward-wait-24pair",
+            "status": "done",
+            "task_id": "t7867"
+          },
+          {
+            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "Freq-HRL native real-demand v6 throughput-damped 24pair",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+            "signature": "TransitDuet/freqhrl-native-real-demand-v6-24pair",
+            "status": "done",
+            "task_id": "t7886"
+          },
+          {
+            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "Freq-HRL native real-demand v7 no-lower-damp 24pair node002",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
+            "signature": "TransitDuet/freqhrl-native-real-demand-v7-24pair-node002",
+            "status": "done",
+            "task_id": "t7891"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.002960331557134399,
+        "status": "mapped",
+        "top_projects": {
+          "TransitDuet": 10
+        },
+        "top_signature_prefixes": {
+          "TransitDuet/freq-hrl-native-real-demand-v3-reward-floor-throughput-24pair-retry-node004": 1,
+          "TransitDuet/freqhrl-native-real-demand-v4-wait-pressure-24pair-node006-retry": 1,
+          "TransitDuet/freqhrl-native-real-demand-v5-selective-reward-wait-24pair": 1,
+          "TransitDuet/freqhrl-native-real-demand-v6-24pair": 1,
+          "TransitDuet/freqhrl-native-real-demand-v7-24pair-node002": 1,
+          "TransitDuet/freqhrl-native-real-demand-v8-24pair-node003": 1,
+          "freq_hrl_native_real_demand_alighting_throughput_v5_24pair": 4
+        }
+      },
+      {
+        "bucket": "h2oplus_snapshot_gpu_completed_history",
+        "count": 8,
+        "examples": [
+          {
+            "bucket": "h2oplus_snapshot_gpu_completed_history",
+            "cpu_cores": 2,
+            "description": "H2O+ snapshot proxy P2: adaptive + uniform snapshot reset",
+            "est_vram_mb": 384,
+            "project": "H2Oplus",
+            "reason": "module94_h2oplus_snapshot_gpu_completed_history",
+            "signature": "H2Oplus/snap_p2_uniform_s42",
+            "status": "done",
+            "task_id": "t3008"
+          },
+          {
+            "bucket": "h2oplus_snapshot_gpu_completed_history",
+            "cpu_cores": 2,
+            "description": "H2O+ snapshot proxy P4 noJTT: CALQL/ESS + uniform snapshot reset",
+            "est_vram_mb": 384,
+            "project": "H2Oplus",
+            "reason": "module94_h2oplus_snapshot_gpu_completed_history",
+            "signature": "H2Oplus/snap_p4_nojtt_s42",
+            "status": "done",
+            "task_id": "t3010"
+          },
+          {
+            "bucket": "h2oplus_snapshot_gpu_completed_history",
+            "cpu_cores": 2,
+            "description": "H2O+ snapshot proxy P3: adaptive + JTT snapshot reset",
+            "est_vram_mb": 384,
+            "project": "H2Oplus",
+            "reason": "module94_h2oplus_snapshot_gpu_completed_history",
+            "signature": "H2Oplus/snap_p3_jtt_s42",
+            "status": "done",
+            "task_id": "t3009"
+          },
+          {
+            "bucket": "h2oplus_snapshot_gpu_completed_history",
+            "cpu_cores": 2,
+            "description": "H2O+ snapshot proxy P4 JTT: CALQL/ESS + JTT snapshot reset",
+            "est_vram_mb": 384,
+            "project": "H2Oplus",
+            "reason": "module94_h2oplus_snapshot_gpu_completed_history",
+            "signature": "H2Oplus/snap_p4_jtt_s42",
+            "status": "done",
+            "task_id": "t3011"
+          },
+          {
+            "bucket": "h2oplus_snapshot_gpu_completed_history",
+            "cpu_cores": 2,
+            "description": "H2O+ snapshot P4 conservative JTT rerun: CPU ckpt load + uniform mix + EMA eval",
+            "est_vram_mb": 384,
+            "project": "H2Oplus",
+            "reason": "module94_h2oplus_snapshot_gpu_completed_history",
+            "signature": "H2Oplus/snap_p4_jtt_cons_ema_mix_s42",
+            "status": "done",
+            "task_id": "t3020"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.002368265245707519,
+        "status": "mapped",
+        "top_projects": {
+          "H2Oplus": 8
+        },
+        "top_signature_prefixes": {
+          "H2Oplus/p2_rescale5_nojtt_s42": 1,
+          "H2Oplus/p3_jtt_late_soft_s42": 1,
+          "H2Oplus/snap_p2_uniform_s42": 1,
+          "H2Oplus/snap_p3_jtt_s42": 1,
+          "H2Oplus/snap_p4_jtt_cons_ema_mix_s42": 1,
+          "H2Oplus/snap_p4_jtt_s42": 1,
+          "H2Oplus/snap_p4_nojtt_s42": 1,
+          "H2Oplus/snap_p4_nojtt_s42_clean": 1
         }
       },
       {
@@ -2829,7 +3048,7 @@
             "task_id": "t5272"
           }
         ],
-        "fraction_of_completed_active_production": 0.0023902001792650133,
+        "fraction_of_completed_active_production": 0.002368265245707519,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 8
@@ -2905,7 +3124,7 @@
             "task_id": "t7827"
           }
         ],
-        "fraction_of_completed_active_production": 0.0023902001792650133,
+        "fraction_of_completed_active_production": 0.002368265245707519,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 8
@@ -2981,7 +3200,7 @@
             "task_id": "t5647"
           }
         ],
-        "fraction_of_completed_active_production": 0.002091425156856887,
+        "fraction_of_completed_active_production": 0.0020722320899940793,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 5,
@@ -3057,7 +3276,7 @@
             "task_id": "t7137"
           }
         ],
-        "fraction_of_completed_active_production": 0.002091425156856887,
+        "fraction_of_completed_active_production": 0.0020722320899940793,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3132,7 +3351,7 @@
             "task_id": "t7480"
           }
         ],
-        "fraction_of_completed_active_production": 0.002091425156856887,
+        "fraction_of_completed_active_production": 0.0020722320899940793,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 7
@@ -3207,7 +3426,7 @@
             "task_id": "t8381"
           }
         ],
-        "fraction_of_completed_active_production": 0.002091425156856887,
+        "fraction_of_completed_active_production": 0.0020722320899940793,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 7
@@ -3220,6 +3439,81 @@
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node004-91_101": 1,
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node005-111_121": 1,
           "TransitDuet/freqhrl-native-real-demand-alighting-safe-v2-24pair-node006-131_141": 1
+        }
+      },
+      {
+        "bucket": "sensing_voltage_cache_completed_history",
+        "count": 6,
+        "examples": [
+          {
+            "bucket": "sensing_voltage_cache_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: sensing-compressibility-v2k on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v2k",
+            "reason": "module94_sensing_voltage_cache_completed_history",
+            "signature": "sensing-compressibility-v2k/auto-adopted/p28886",
+            "status": "done",
+            "task_id": "t3111"
+          },
+          {
+            "bucket": "sensing_voltage_cache_completed_history",
+            "cpu_cores": 6,
+            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v10k",
+            "reason": "module94_sensing_voltage_cache_completed_history",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p1824834",
+            "status": "done",
+            "task_id": "t3119"
+          },
+          {
+            "bucket": "sensing_voltage_cache_completed_history",
+            "cpu_cores": 7,
+            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v10k",
+            "reason": "module94_sensing_voltage_cache_completed_history",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p15115",
+            "status": "done",
+            "task_id": "t3709"
+          },
+          {
+            "bucket": "sensing_voltage_cache_completed_history",
+            "cpu_cores": 7,
+            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v10k",
+            "reason": "module94_sensing_voltage_cache_completed_history",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p3358",
+            "status": "done",
+            "task_id": "t3713"
+          },
+          {
+            "bucket": "sensing_voltage_cache_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: sensing-compressibility-v10k on jtl110gpu2:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-v10k",
+            "reason": "module94_sensing_voltage_cache_completed_history",
+            "signature": "sensing-compressibility-v10k/auto-adopted/p95256",
+            "status": "done",
+            "task_id": "t3748"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0017761989342806395,
+        "status": "mapped",
+        "top_projects": {
+          "sensing-compressibility-v10k": 5,
+          "sensing-compressibility-v2k": 1
+        },
+        "top_signature_prefixes": {
+          "sensing-compressibility-v10k/auto-adopted/p15115": 1,
+          "sensing-compressibility-v10k/auto-adopted/p1824834": 1,
+          "sensing-compressibility-v10k/auto-adopted/p3197505": 1,
+          "sensing-compressibility-v10k/auto-adopted/p3358": 1,
+          "sensing-compressibility-v10k/auto-adopted/p95256": 1,
+          "sensing-compressibility-v2k/auto-adopted/p28886": 1
         }
       },
       {
@@ -3282,7 +3576,7 @@
             "task_id": "t4145"
           }
         ],
-        "fraction_of_completed_active_production": 0.00179265013444876,
+        "fraction_of_completed_active_production": 0.0017761989342806395,
         "status": "mapped",
         "top_projects": {
           "ZSW_platform": 5,
@@ -3295,6 +3589,154 @@
           "ZSW_platform/auto-adopted/p23313": 1,
           "ZSW_platform/auto-adopted/p23983": 1,
           "zsw_tsp_m0_gpu1/auto-adopted/p8925": 1
+        }
+      },
+      {
+        "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+        "count": 6,
+        "examples": [
+          {
+            "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_phase2_v20_framework_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p4057782",
+            "status": "done",
+            "task_id": "t5087"
+          },
+          {
+            "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_phase2_v20_framework_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p4066233",
+            "status": "done",
+            "task_id": "t5090"
+          },
+          {
+            "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_phase2_v20_framework_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p4106541",
+            "status": "done",
+            "task_id": "t5096"
+          },
+          {
+            "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_phase2_v20_framework_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p330602",
+            "status": "done",
+            "task_id": "t5213"
+          },
+          {
+            "bucket": "assumption_agent_phase2_v20_framework_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module92_assumption_agent_phase2_v20_framework_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p361031",
+            "status": "done",
+            "task_id": "t8080"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0017761989342806395,
+        "status": "mapped",
+        "top_projects": {
+          "Asumption Agent": 6
+        },
+        "top_signature_prefixes": {
+          "Asumption Agent/auto-adopted/p330602": 1,
+          "Asumption Agent/auto-adopted/p361031": 1,
+          "Asumption Agent/auto-adopted/p4057782": 1,
+          "Asumption Agent/auto-adopted/p4066233": 1,
+          "Asumption Agent/auto-adopted/p4106541": 1,
+          "Asumption Agent/auto-adopted/p704367": 1
+        }
+      },
+      {
+        "bucket": "assumption_agent_performance_validation_completed_history",
+        "count": 6,
+        "examples": [
+          {
+            "bucket": "assumption_agent_performance_validation_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_performance_validation_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1523659",
+            "status": "done",
+            "task_id": "t5670"
+          },
+          {
+            "bucket": "assumption_agent_performance_validation_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_performance_validation_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1557614",
+            "status": "done",
+            "task_id": "t5704"
+          },
+          {
+            "bucket": "assumption_agent_performance_validation_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_performance_validation_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1623305",
+            "status": "done",
+            "task_id": "t5759"
+          },
+          {
+            "bucket": "assumption_agent_performance_validation_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_performance_validation_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1772872",
+            "status": "done",
+            "task_id": "t5825"
+          },
+          {
+            "bucket": "assumption_agent_performance_validation_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_performance_validation_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1890562",
+            "status": "done",
+            "task_id": "t5841"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0017761989342806395,
+        "status": "mapped",
+        "top_projects": {
+          "Asumption Agent": 6
+        },
+        "top_signature_prefixes": {
+          "Asumption Agent/auto-adopted/p1523659": 1,
+          "Asumption Agent/auto-adopted/p1557614": 1,
+          "Asumption Agent/auto-adopted/p1623305": 1,
+          "Asumption Agent/auto-adopted/p1772872": 1,
+          "Asumption Agent/auto-adopted/p1890562": 1,
+          "Asumption Agent/auto-adopted/p1968019": 1
         }
       },
       {
@@ -3357,7 +3799,7 @@
             "task_id": "t6099"
           }
         ],
-        "fraction_of_completed_active_production": 0.00179265013444876,
+        "fraction_of_completed_active_production": 0.0017761989342806395,
         "status": "mapped",
         "top_projects": {
           "FreqDuet": 6
@@ -3369,80 +3811,6 @@
           "FreqDuet/promoted-ep100-genbase-r1/node004_s3": 1,
           "FreqDuet/promoted-ep100-genbase-r1/node005_s4": 1,
           "FreqDuet/promoted-ep100-genbase-r1/node006_s5": 1
-        }
-      },
-      {
-        "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-        "count": 6,
-        "examples": [
-          {
-            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-            "cpu_cores": 4,
-            "description": "Retry Freq-HRL native real-demand v3 guarded 24 paired AFC/APC on node004",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
-            "signature": "TransitDuet/freq-hrl-native-real-demand-v3-reward-floor-throughput-24pair-retry-node004",
-            "status": "done",
-            "task_id": "t7751"
-          },
-          {
-            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "Freq-HRL native real-demand v4 wait-pressure override retry on node006",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
-            "signature": "TransitDuet/freqhrl-native-real-demand-v4-wait-pressure-24pair-node006-retry",
-            "status": "done",
-            "task_id": "t7826"
-          },
-          {
-            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "Freq-HRL native real-demand v5 selective reward-wait AFC/APC 24-pair validation",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
-            "signature": "TransitDuet/freqhrl-native-real-demand-v5-selective-reward-wait-24pair",
-            "status": "done",
-            "task_id": "t7867"
-          },
-          {
-            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "Freq-HRL native real-demand v6 throughput-damped 24pair",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
-            "signature": "TransitDuet/freqhrl-native-real-demand-v6-24pair",
-            "status": "done",
-            "task_id": "t7886"
-          },
-          {
-            "bucket": "transit_native_real_demand_batch_c3_8_completed_history",
-            "cpu_cores": 8,
-            "description": "Freq-HRL native real-demand v7 no-lower-damp 24pair node002",
-            "est_vram_mb": 0,
-            "project": "TransitDuet",
-            "reason": "module79_transit_native_real_demand_batch_c3_8_completed_history",
-            "signature": "TransitDuet/freqhrl-native-real-demand-v7-24pair-node002",
-            "status": "done",
-            "task_id": "t7891"
-          }
-        ],
-        "fraction_of_completed_active_production": 0.00179265013444876,
-        "status": "mapped",
-        "top_projects": {
-          "TransitDuet": 6
-        },
-        "top_signature_prefixes": {
-          "TransitDuet/freq-hrl-native-real-demand-v3-reward-floor-throughput-24pair-retry-node004": 1,
-          "TransitDuet/freqhrl-native-real-demand-v4-wait-pressure-24pair-node006-retry": 1,
-          "TransitDuet/freqhrl-native-real-demand-v5-selective-reward-wait-24pair": 1,
-          "TransitDuet/freqhrl-native-real-demand-v6-24pair": 1,
-          "TransitDuet/freqhrl-native-real-demand-v7-24pair-node002": 1,
-          "TransitDuet/freqhrl-native-real-demand-v8-24pair-node003": 1
         }
       },
       {
@@ -3505,7 +3873,7 @@
             "task_id": "t7893"
           }
         ],
-        "fraction_of_completed_active_production": 0.00179265013444876,
+        "fraction_of_completed_active_production": 0.0017761989342806395,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 6
@@ -3579,7 +3947,7 @@
             "task_id": "t9442"
           }
         ],
-        "fraction_of_completed_active_production": 0.00179265013444876,
+        "fraction_of_completed_active_production": 0.0017761989342806395,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 6
@@ -3648,7 +4016,7 @@
             "task_id": "t3186"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "offline-sumo": 5
@@ -3721,7 +4089,7 @@
             "task_id": "t3696"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3794,7 +4162,7 @@
             "task_id": "t3697"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3805,6 +4173,79 @@
           "CFCMT/auto-adopted/p69883": 1,
           "CFCMT/auto-adopted/p70340": 1,
           "CFCMT/auto-adopted/p84755": 1
+        }
+      },
+      {
+        "bucket": "sensing_pems_cache_completed_history",
+        "count": 5,
+        "examples": [
+          {
+            "bucket": "sensing_pems_cache_completed_history",
+            "cpu_cores": 5,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "module94_sensing_pems_cache_completed_history",
+            "signature": "sensing-compressibility-pems/auto-adopted/p1347",
+            "status": "done",
+            "task_id": "t3194"
+          },
+          {
+            "bucket": "sensing_pems_cache_completed_history",
+            "cpu_cores": 6,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "module94_sensing_pems_cache_completed_history",
+            "signature": "sensing-compressibility-pems/auto-adopted/p2551",
+            "status": "done",
+            "task_id": "t3739"
+          },
+          {
+            "bucket": "sensing_pems_cache_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "module94_sensing_pems_cache_completed_history",
+            "signature": "sensing-compressibility-pems/auto-adopted/p4456",
+            "status": "done",
+            "task_id": "t3747"
+          },
+          {
+            "bucket": "sensing_pems_cache_completed_history",
+            "cpu_cores": 3,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "module94_sensing_pems_cache_completed_history",
+            "signature": "sensing-compressibility-pems/auto-adopted/p11599",
+            "status": "done",
+            "task_id": "t3910"
+          },
+          {
+            "bucket": "sensing_pems_cache_completed_history",
+            "cpu_cores": 4,
+            "description": "auto-adopted: sensing-compressibility-pems on jtl110gpu:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "sensing-compressibility-pems",
+            "reason": "module94_sensing_pems_cache_completed_history",
+            "signature": "sensing-compressibility-pems/auto-adopted/p2963",
+            "status": "done",
+            "task_id": "t4046"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0014801657785671995,
+        "status": "mapped",
+        "top_projects": {
+          "sensing-compressibility-pems": 5
+        },
+        "top_signature_prefixes": {
+          "sensing-compressibility-pems/auto-adopted/p11599": 1,
+          "sensing-compressibility-pems/auto-adopted/p1347": 1,
+          "sensing-compressibility-pems/auto-adopted/p2551": 1,
+          "sensing-compressibility-pems/auto-adopted/p2963": 1,
+          "sensing-compressibility-pems/auto-adopted/p4456": 1
         }
       },
       {
@@ -3867,7 +4308,7 @@
             "task_id": "t3760"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 5
@@ -3940,7 +4381,7 @@
             "task_id": "t4883"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "freqduet": 5
@@ -4013,7 +4454,7 @@
             "task_id": "t7603"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "freqduet": 4,
@@ -4025,6 +4466,81 @@
           "FreqDuet/hpc-cpu-probe/node001-node006-readonly-20260601": 1,
           "FreqDuet/valueguard-preflight-remote-v2": 1,
           "TransitDuet/freqduet-termfb30-preflight": 1
+        }
+      },
+      {
+        "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+        "count": 5,
+        "examples": [
+          {
+            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: freq_transitduet on local:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "freq_transitduet",
+            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            "signature": "freq_transitduet/auto-adopted/p3482571",
+            "status": "done",
+            "task_id": "t4991"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "FreqDuet promotion cooldown base screen shard 5-10",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            "signature": "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2",
+            "status": "done",
+            "task_id": "t5108"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "cpu_cores": 2,
+            "description": "auto-adopted: freqduet on local:CPU-only (2 procs)",
+            "est_vram_mb": 0,
+            "project": "freqduet",
+            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            "signature": "freqduet/auto-adopted/p244393",
+            "status": "done",
+            "task_id": "t5161"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "FreqDuet config matrix fixedselector_balanced_screen_ep100_wu10 shard 1/6",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            "signature": "FreqDuet/fixedselector_balanced_screen_ep100_wu10/shard_0000_0014",
+            "status": "done",
+            "task_id": "t9463"
+          },
+          {
+            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "cpu_cores": 1,
+            "description": "FreqDuet config matrix spacectx_screen_ep100_wu10 shard 5/6",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10/shard_0108_0135",
+            "status": "done",
+            "task_id": "t9617"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0014801657785671995,
+        "status": "mapped",
+        "top_projects": {
+          "FreqDuet": 2,
+          "freq_transitduet": 1,
+          "freqduet": 2
+        },
+        "top_signature_prefixes": {
+          "FreqDuet/fixedselector_balanced_screen_ep100_wu10/shard_0000_0014": 1,
+          "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2": 1,
+          "FreqDuet/spacectx_screen_ep100_wu10/shard_0108_0135": 1,
+          "freq_transitduet/auto-adopted/p3482571": 1,
+          "freqduet/auto-adopted/p244393": 1
         }
       },
       {
@@ -4087,7 +4603,7 @@
             "task_id": "t6330"
           }
         ],
-        "fraction_of_completed_active_production": 0.0014938751120406335,
+        "fraction_of_completed_active_production": 0.0014801657785671995,
         "status": "mapped",
         "top_projects": {
           "config": 5
@@ -4098,6 +4614,79 @@
           "config/auto-adopted/p113555": 1,
           "config/auto-adopted/p48578": 1,
           "config/auto-adopted/p7754": 1
+        }
+      },
+      {
+        "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+        "count": 5,
+        "examples": [
+          {
+            "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+            "cpu_cores": 4,
+            "description": "FreqDuet config matrix spacectx_screen_ep100_wu10 shard 2/6",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10/shard_0027_0054",
+            "status": "done",
+            "task_id": "t9611"
+          },
+          {
+            "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+            "cpu_cores": 7,
+            "description": "FreqDuet config matrix spacectx_screen_ep100_wu10 shard 3/6",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10/shard_0054_0081",
+            "status": "done",
+            "task_id": "t9613"
+          },
+          {
+            "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+            "cpu_cores": 3,
+            "description": "FreqDuet config matrix spacectx_screen_ep100_wu10 shard 4/6",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10/shard_0081_0108",
+            "status": "done",
+            "task_id": "t9615"
+          },
+          {
+            "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "FreqDuet spacectx repair shard 0000-0027",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10_repair_0000_0027/shard_0000_0027",
+            "status": "running",
+            "task_id": "t9752"
+          },
+          {
+            "bucket": "freqduet_spacectx_ep100_c3_8_completed_history",
+            "cpu_cores": 8,
+            "description": "FreqDuet spacectx repair shard 0135-0160",
+            "est_vram_mb": 0,
+            "project": "FreqDuet",
+            "reason": "module93_freqduet_spacectx_ep100_c3_8_completed_history",
+            "signature": "FreqDuet/spacectx_screen_ep100_wu10_repair_0135_0160/shard_0135_0160",
+            "status": "running",
+            "task_id": "t9754"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0014801657785671995,
+        "status": "mapped",
+        "top_projects": {
+          "FreqDuet": 5
+        },
+        "top_signature_prefixes": {
+          "FreqDuet/spacectx_screen_ep100_wu10/shard_0027_0054": 1,
+          "FreqDuet/spacectx_screen_ep100_wu10/shard_0054_0081": 1,
+          "FreqDuet/spacectx_screen_ep100_wu10/shard_0081_0108": 1,
+          "FreqDuet/spacectx_screen_ep100_wu10_repair_0000_0027/shard_0000_0027": 1,
+          "FreqDuet/spacectx_screen_ep100_wu10_repair_0135_0160/shard_0135_0160": 1
         }
       },
       {
@@ -4149,7 +4738,7 @@
             "task_id": "t3193"
           }
         ],
-        "fraction_of_completed_active_production": 0.0011951000896325067,
+        "fraction_of_completed_active_production": 0.0011841326228537595,
         "status": "mapped",
         "top_projects": {
           "offline-sumo": 4
@@ -4210,7 +4799,7 @@
             "task_id": "t3040"
           }
         ],
-        "fraction_of_completed_active_production": 0.0011951000896325067,
+        "fraction_of_completed_active_production": 0.0011841326228537595,
         "status": "mapped",
         "top_projects": {
           "H2Oplus": 2,
@@ -4272,7 +4861,7 @@
             "task_id": "t5333"
           }
         ],
-        "fraction_of_completed_active_production": 0.0011951000896325067,
+        "fraction_of_completed_active_production": 0.0011841326228537595,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 4
@@ -4333,7 +4922,7 @@
             "task_id": "t5827"
           }
         ],
-        "fraction_of_completed_active_production": 0.0011951000896325067,
+        "fraction_of_completed_active_production": 0.0011841326228537595,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 4
@@ -4346,66 +4935,64 @@
         }
       },
       {
-        "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+        "bucket": "assumption_agent_live_benchmark_completed_history",
         "count": 4,
         "examples": [
           {
-            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "bucket": "assumption_agent_live_benchmark_completed_history",
             "cpu_cores": 2,
-            "description": "auto-adopted: freq_transitduet on local:CPU-only (2 procs)",
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
-            "project": "freq_transitduet",
-            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
-            "signature": "freq_transitduet/auto-adopted/p3482571",
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_live_benchmark_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p12078",
             "status": "done",
-            "task_id": "t4991"
+            "task_id": "t6102"
           },
           {
-            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "bucket": "assumption_agent_live_benchmark_completed_history",
             "cpu_cores": 1,
-            "description": "FreqDuet promotion cooldown base screen shard 5-10",
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
-            "project": "freqduet",
-            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
-            "signature": "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2",
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_live_benchmark_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1316419",
             "status": "done",
-            "task_id": "t5108"
+            "task_id": "t9802"
           },
           {
-            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
-            "cpu_cores": 2,
-            "description": "auto-adopted: freqduet on local:CPU-only (2 procs)",
-            "est_vram_mb": 0,
-            "project": "freqduet",
-            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
-            "signature": "freqduet/auto-adopted/p244393",
-            "status": "done",
-            "task_id": "t5161"
-          },
-          {
-            "bucket": "freqduet_cpu_ablation_c_le2_completed_history",
+            "bucket": "assumption_agent_live_benchmark_completed_history",
             "cpu_cores": 1,
-            "description": "FreqDuet config matrix fixedselector_balanced_screen_ep100_wu10 shard 1/6",
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
             "est_vram_mb": 0,
-            "project": "FreqDuet",
-            "reason": "module76_freqduet_cpu_ablation_c_le2_completed_history",
-            "signature": "FreqDuet/fixedselector_balanced_screen_ep100_wu10/shard_0000_0014",
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_live_benchmark_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1320204",
             "status": "done",
-            "task_id": "t9463"
+            "task_id": "t9806"
+          },
+          {
+            "bucket": "assumption_agent_live_benchmark_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Asumption Agent on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Asumption Agent",
+            "reason": "module94_assumption_agent_live_benchmark_completed_history",
+            "signature": "Asumption Agent/auto-adopted/p1336170",
+            "status": "done",
+            "task_id": "t9826"
           }
         ],
-        "fraction_of_completed_active_production": 0.0011951000896325067,
+        "fraction_of_completed_active_production": 0.0011841326228537595,
         "status": "mapped",
         "top_projects": {
-          "FreqDuet": 1,
-          "freq_transitduet": 1,
-          "freqduet": 2
+          "Asumption Agent": 4
         },
         "top_signature_prefixes": {
-          "FreqDuet/fixedselector_balanced_screen_ep100_wu10/shard_0000_0014": 1,
-          "FreqDuet/promotion_cooldown_base_20260531/jtl110cpu2": 1,
-          "freq_transitduet/auto-adopted/p3482571": 1,
-          "freqduet/auto-adopted/p244393": 1
+          "Asumption Agent/auto-adopted/p12078": 1,
+          "Asumption Agent/auto-adopted/p1316419": 1,
+          "Asumption Agent/auto-adopted/p1320204": 1,
+          "Asumption Agent/auto-adopted/p1336170": 1
         }
       },
       {
@@ -4446,7 +5033,7 @@
             "task_id": "t5255"
           }
         ],
-        "fraction_of_completed_active_production": 0.00089632506722438,
+        "fraction_of_completed_active_production": 0.0008880994671403197,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 3
@@ -4455,6 +5042,55 @@
           "TransitDuet/auto-adopted/p417997": 1,
           "TransitDuet/auto-adopted/p432008": 1,
           "TransitDuet/auto-adopted/p432010": 1
+        }
+      },
+      {
+        "bucket": "bapr_id_ood_merge_cpu_eval_completed_history",
+        "count": 3,
+        "examples": [
+          {
+            "bucket": "bapr_id_ood_merge_cpu_eval_completed_history",
+            "cpu_cores": 4,
+            "description": "BAPR ID/OOD full_v2 merge plot after CPU shards",
+            "est_vram_mb": 0,
+            "project": "BAPR",
+            "reason": "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+            "signature": "BAPR/cpu_eval/id_ood_full_v2_merge",
+            "status": "done",
+            "task_id": "t4055"
+          },
+          {
+            "bucket": "bapr_id_ood_merge_cpu_eval_completed_history",
+            "cpu_cores": 2,
+            "description": "BAPR ID/OOD full_v2 direct5 merge items",
+            "est_vram_mb": 0,
+            "project": "BAPR",
+            "reason": "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+            "signature": "BAPR/cpu_eval/id_ood_full_v2_item_direct5_20260609/merge",
+            "status": "done",
+            "task_id": "t8429"
+          },
+          {
+            "bucket": "bapr_id_ood_merge_cpu_eval_completed_history",
+            "cpu_cores": 2,
+            "description": "BAPR ID/OOD full_v2 direct6 gravityfix merge items",
+            "est_vram_mb": 0,
+            "project": "BAPR",
+            "reason": "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+            "signature": "BAPR/cpu_eval/id_ood_full_v2_item_direct6_gravityfix_20260609/merge",
+            "status": "done",
+            "task_id": "t8496"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0008880994671403197,
+        "status": "mapped",
+        "top_projects": {
+          "BAPR": 3
+        },
+        "top_signature_prefixes": {
+          "BAPR/cpu_eval/id_ood_full_v2_item_direct5_20260609": 1,
+          "BAPR/cpu_eval/id_ood_full_v2_item_direct6_gravityfix_20260609": 1,
+          "BAPR/cpu_eval/id_ood_full_v2_merge": 1
         }
       },
       {
@@ -4495,7 +5131,7 @@
             "task_id": "t7878"
           }
         ],
-        "fraction_of_completed_active_production": 0.00089632506722438,
+        "fraction_of_completed_active_production": 0.0008880994671403197,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4543,7 +5179,7 @@
             "task_id": "t7924"
           }
         ],
-        "fraction_of_completed_active_production": 0.00089632506722438,
+        "fraction_of_completed_active_production": 0.0008880994671403197,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4592,7 +5228,7 @@
             "task_id": "t7934"
           }
         ],
-        "fraction_of_completed_active_production": 0.00089632506722438,
+        "fraction_of_completed_active_production": 0.0008880994671403197,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 3
@@ -4601,6 +5237,43 @@
           "BAMOR/auto-adopted/p3959673": 1,
           "BAMOR/auto-adopted/p3990777": 1,
           "BAMOR/auto-adopted/p3999772": 1
+        }
+      },
+      {
+        "bucket": "resac_bus_seed_extension_cpu_eval_completed_history",
+        "count": 2,
+        "examples": [
+          {
+            "bucket": "resac_bus_seed_extension_cpu_eval_completed_history",
+            "cpu_cores": 11,
+            "description": "RE-SAC bus seed extension: aleatoric_only_seed40",
+            "est_vram_mb": 0,
+            "project": "RE-SAC",
+            "reason": "module94_resac_bus_seed_extension_cpu_eval_completed_history",
+            "signature": "RE-SAC/bus-seed-extension/aleatoric_only_seed40",
+            "status": "done",
+            "task_id": "t3438"
+          },
+          {
+            "bucket": "resac_bus_seed_extension_cpu_eval_completed_history",
+            "cpu_cores": 11,
+            "description": "RE-SAC bus seed extension: epistemic_only_seed40",
+            "est_vram_mb": 0,
+            "project": "RE-SAC",
+            "reason": "module94_resac_bus_seed_extension_cpu_eval_completed_history",
+            "signature": "RE-SAC/bus-seed-extension/epistemic_only_seed40",
+            "status": "done",
+            "task_id": "t3439"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0005920663114268798,
+        "status": "mapped",
+        "top_projects": {
+          "RE-SAC": 2
+        },
+        "top_signature_prefixes": {
+          "RE-SAC/bus-seed-extension/aleatoric_only_seed40": 1,
+          "RE-SAC/bus-seed-extension/epistemic_only_seed40": 1
         }
       },
       {
@@ -4630,7 +5303,7 @@
             "task_id": "t5099"
           }
         ],
-        "fraction_of_completed_active_production": 0.0005975500448162533,
+        "fraction_of_completed_active_production": 0.0005920663114268798,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 2
@@ -4667,7 +5340,7 @@
             "task_id": "t5237"
           }
         ],
-        "fraction_of_completed_active_production": 0.0005975500448162533,
+        "fraction_of_completed_active_production": 0.0005920663114268798,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 2
@@ -4703,7 +5376,7 @@
             "task_id": "t5235"
           }
         ],
-        "fraction_of_completed_active_production": 0.0005975500448162533,
+        "fraction_of_completed_active_production": 0.0005920663114268798,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 2
@@ -4739,7 +5412,7 @@
             "task_id": "t9398"
           }
         ],
-        "fraction_of_completed_active_production": 0.0005975500448162533,
+        "fraction_of_completed_active_production": 0.0005920663114268798,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 2
@@ -4747,6 +5420,42 @@
         "top_signature_prefixes": {
           "TransitDuet/auto-adopted/p597729": 1,
           "TransitDuet/auto-adopted/p873546": 1
+        }
+      },
+      {
+        "bucket": "transit_native_real_demand_batch_c9_16_completed_history",
+        "count": 2,
+        "examples": [
+          {
+            "bucket": "transit_native_real_demand_batch_c9_16_completed_history",
+            "cpu_cores": 10,
+            "description": "Freq-HRL native real-demand alighting throughput v5 24pair",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module95_transit_native_real_demand_batch_c9_16_completed_history",
+            "signature": "freq_hrl_native_real_demand_alighting_throughput_v5_24pair",
+            "status": "done",
+            "task_id": "t9791"
+          },
+          {
+            "bucket": "transit_native_real_demand_batch_c9_16_completed_history",
+            "cpu_cores": 9,
+            "description": "Freq-HRL native real-demand alighting throughput v5 24pair",
+            "est_vram_mb": 0,
+            "project": "TransitDuet",
+            "reason": "module95_transit_native_real_demand_batch_c9_16_completed_history",
+            "signature": "freq_hrl_native_real_demand_alighting_throughput_v5_24pair",
+            "status": "done",
+            "task_id": "t9792"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0005920663114268798,
+        "status": "mapped",
+        "top_projects": {
+          "TransitDuet": 2
+        },
+        "top_signature_prefixes": {
+          "freq_hrl_native_real_demand_alighting_throughput_v5_24pair": 2
         }
       },
       {
@@ -4765,13 +5474,63 @@
             "task_id": "t3756"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 1
         },
         "top_signature_prefixes": {
           "CFCMT/auto-adopted/p540371": 1
+        }
+      },
+      {
+        "bucket": "scheduleurm_hpc_relay_smoke_completed_history",
+        "count": 1,
+        "examples": [
+          {
+            "bucket": "scheduleurm_hpc_relay_smoke_completed_history",
+            "cpu_cores": 1,
+            "description": "hpc relay scheduler smoke sched-hpc-e2e-20260522-214808-175687",
+            "est_vram_mb": 0,
+            "project": "sched-hpc-e2e-20260522-214808-175687",
+            "reason": "module94_scheduleurm_hpc_relay_smoke_completed_history",
+            "signature": "smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687",
+            "status": "done",
+            "task_id": "t4038"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0002960331557134399,
+        "status": "mapped",
+        "top_projects": {
+          "sched-hpc-e2e-20260522-214808-175687": 1
+        },
+        "top_signature_prefixes": {
+          "smoke/hpc-relay/sched-hpc-e2e-20260522-214808-175687": 1
+        }
+      },
+      {
+        "bucket": "resac_conda_pack_completed_history",
+        "count": 1,
+        "examples": [
+          {
+            "bucket": "resac_conda_pack_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: RE-SAC on local:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "RE-SAC",
+            "reason": "module95_resac_conda_pack_completed_history",
+            "signature": "RE-SAC/auto-adopted/p213450",
+            "status": "done",
+            "task_id": "t4049"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0002960331557134399,
+        "status": "mapped",
+        "top_projects": {
+          "RE-SAC": 1
+        },
+        "top_signature_prefixes": {
+          "RE-SAC/auto-adopted/p213450": 1
         }
       },
       {
@@ -4790,7 +5549,7 @@
             "task_id": "t4163"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "ZSW_platform": 1
@@ -4815,7 +5574,7 @@
             "task_id": "t4843"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "freqduet": 1
@@ -4840,7 +5599,7 @@
             "task_id": "t5038"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4865,7 +5624,7 @@
             "task_id": "t5039"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4890,7 +5649,7 @@
             "task_id": "t5047"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4915,7 +5674,7 @@
             "task_id": "t5048"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4940,7 +5699,7 @@
             "task_id": "t5055"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4965,7 +5724,7 @@
             "task_id": "t5111"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -4990,7 +5749,7 @@
             "task_id": "t5112"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -5015,7 +5774,7 @@
             "task_id": "t5136"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -5040,7 +5799,7 @@
             "task_id": "t5622"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 1
@@ -5065,7 +5824,7 @@
             "task_id": "t5639"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "CFCMT": 1
@@ -5090,13 +5849,38 @@
             "task_id": "t6925"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
         },
         "top_signature_prefixes": {
           "TransitDuet/direct-windows-import-smoke-jtl110cpu-v1": 1
+        }
+      },
+      {
+        "bucket": "nature_emissions_routeguard_analysis_completed_history",
+        "count": 1,
+        "examples": [
+          {
+            "bucket": "nature_emissions_routeguard_analysis_completed_history",
+            "cpu_cores": 1,
+            "description": "auto-adopted: Nature_Emissions_gpu1_balanced_p100_20260605_153448 on jtl110gpu:CPU-only (1 procs)",
+            "est_vram_mb": 0,
+            "project": "Nature_Emissions_gpu1_balanced_p100_20260605_153448",
+            "reason": "module94_nature_emissions_routeguard_analysis_completed_history",
+            "signature": "Nature_Emissions_gpu1_balanced_p100_20260605_153448/auto-adopted/p18326",
+            "status": "done",
+            "task_id": "t7937"
+          }
+        ],
+        "fraction_of_completed_active_production": 0.0002960331557134399,
+        "status": "mapped",
+        "top_projects": {
+          "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1
+        },
+        "top_signature_prefixes": {
+          "Nature_Emissions_gpu1_balanced_p100_20260605_153448/auto-adopted/p18326": 1
         }
       },
       {
@@ -5115,7 +5899,7 @@
             "task_id": "t7962"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1
@@ -5140,7 +5924,7 @@
             "task_id": "t8341"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "Nature_Emissions_gpu1_balanced_p100_20260605_153448": 1
@@ -5165,7 +5949,7 @@
             "task_id": "t8933"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "TransitDuet": 1
@@ -5190,7 +5974,7 @@
             "task_id": "t9381"
           }
         ],
-        "fraction_of_completed_active_production": 0.00029877502240812666,
+        "fraction_of_completed_active_production": 0.0002960331557134399,
         "status": "mapped",
         "top_projects": {
           "BAMOR": 1
@@ -5211,37 +5995,45 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.8533494266747134,
+        "mapped_fraction": 0.9337657232704403,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 486,
+          "bamor_mujoco_c3_8_completed_history": 497,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
           "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
-          "cpu_heavy_local_bench": 459,
+          "cpu_heavy_local_bench": 446,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 197,
+          "freqduet_cpu_ablation_c17_32": 193,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 42,
+          "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
           "freqduet_cpu_ablation_c9_16": 133,
-          "freqduet_cpu_ablation_c_le2_completed_history": 5,
+          "freqduet_cpu_ablation_c_le2_completed_history": 6,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 12,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5251,13 +6043,23 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
-          "hybrid_rl_resac_ant": 1547,
+          "h2oplus_snapshot_gpu_completed_history": 8,
+          "hybrid_rl_resac_ant": 1631,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 7,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 4,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
@@ -5269,15 +6071,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
           "transit_native_promotion_c17_32_seedrange_completed_history": 152,
-          "transit_native_promotion_c33_64_batch_completed_history": 170,
+          "transit_native_promotion_c33_64_batch_completed_history": 173,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 12,
-          "transit_native_promotion_c65p_completed_history": 122,
+          "transit_native_promotion_c65p_completed_history": 137,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 8,
           "transit_native_promotion_c9_16_residual_completed_history": 92,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 13,
-          "transit_native_real_demand_batch_c3_8_completed_history": 25,
+          "transit_native_real_demand_batch_c3_8_completed_history": 29,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5294,15 +6097,15 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 4242,
-        "record_count_window": 4971,
-        "representative_mapped_task_count": 2006,
-        "strict_mapped_fraction": 0.4498088915711125,
+        "mapped_task_count": 4751,
+        "record_count_window": 5088,
+        "representative_mapped_task_count": 2077,
+        "strict_mapped_fraction": 0.5255503144654088,
         "unmapped_reasons": {
-          "unmapped_cpu": 714,
-          "unmapped_gpu": 15
+          "unmapped_cpu": 336,
+          "unmapped_gpu": 1
         },
-        "unmapped_task_count": 729,
+        "unmapped_task_count": 337,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -5310,23 +6113,31 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.4498088915711125,
+        "mapped_fraction": 0.5255503144654088,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 486,
+          "bamor_mujoco_c3_8_completed_history": 497,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
@@ -5334,12 +6145,12 @@
           "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 197,
+          "freqduet_cpu_ablation_c17_32": 193,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 42,
+          "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
           "freqduet_cpu_ablation_c9_16": 133,
-          "freqduet_cpu_ablation_c_le2_completed_history": 5,
+          "freqduet_cpu_ablation_c_le2_completed_history": 6,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 12,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5349,12 +6160,22 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
+          "h2oplus_snapshot_gpu_completed_history": 8,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 7,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 4,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
@@ -5366,15 +6187,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
           "transit_native_promotion_c17_32_seedrange_completed_history": 152,
-          "transit_native_promotion_c33_64_batch_completed_history": 170,
+          "transit_native_promotion_c33_64_batch_completed_history": 173,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 12,
-          "transit_native_promotion_c65p_completed_history": 122,
+          "transit_native_promotion_c65p_completed_history": 137,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 8,
           "transit_native_promotion_c9_16_residual_completed_history": 92,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 13,
-          "transit_native_real_demand_batch_c3_8_completed_history": 25,
+          "transit_native_real_demand_batch_c3_8_completed_history": 29,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5391,15 +6213,15 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 2236,
-        "record_count_window": 4971,
+        "mapped_task_count": 2674,
+        "record_count_window": 5088,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.4498088915711125,
+        "strict_mapped_fraction": 0.5255503144654088,
         "unmapped_reasons": {
-          "unmapped_cpu": 1173,
-          "unmapped_gpu": 1562
+          "unmapped_cpu": 782,
+          "unmapped_gpu": 1632
         },
-        "unmapped_task_count": 2735,
+        "unmapped_task_count": 2414,
         "usable_for_global_theorem": false
       }
     },
@@ -5409,37 +6231,45 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.8828801912160144,
+        "mapped_fraction": 1.0,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 477,
+          "bamor_mujoco_c3_8_completed_history": 488,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 58,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
           "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
-          "cpu_heavy_local_bench": 202,
+          "cpu_heavy_local_bench": 189,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 178,
+          "freqduet_cpu_ablation_c17_32": 174,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 42,
+          "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 7,
           "freqduet_cpu_ablation_c9_16": 121,
-          "freqduet_cpu_ablation_c_le2_completed_history": 4,
+          "freqduet_cpu_ablation_c_le2_completed_history": 5,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 5,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5449,13 +6279,23 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
-          "hybrid_rl_resac_ant": 842,
+          "h2oplus_snapshot_gpu_completed_history": 8,
+          "hybrid_rl_resac_ant": 840,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 5,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 2,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
@@ -5467,15 +6307,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 14,
           "transit_native_promotion_c17_32_seedrange_completed_history": 104,
-          "transit_native_promotion_c33_64_batch_completed_history": 73,
+          "transit_native_promotion_c33_64_batch_completed_history": 76,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 11,
-          "transit_native_promotion_c65p_completed_history": 77,
+          "transit_native_promotion_c65p_completed_history": 92,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 7,
           "transit_native_promotion_c9_16_residual_completed_history": 58,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 7,
-          "transit_native_real_demand_batch_c3_8_completed_history": 6,
+          "transit_native_real_demand_batch_c3_8_completed_history": 10,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5492,15 +6333,12 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 2955,
-        "record_count_window": 3347,
-        "representative_mapped_task_count": 1044,
-        "strict_mapped_fraction": 0.5709590678219301,
-        "unmapped_reasons": {
-          "unmapped_cpu": 378,
-          "unmapped_gpu": 14
-        },
-        "unmapped_task_count": 392,
+        "mapped_task_count": 3378,
+        "record_count_window": 3378,
+        "representative_mapped_task_count": 1029,
+        "strict_mapped_fraction": 0.6953818827708703,
+        "unmapped_reasons": {},
+        "unmapped_task_count": 0,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -5508,23 +6346,31 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.5709590678219301,
+        "mapped_fraction": 0.6953818827708703,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 477,
+          "bamor_mujoco_c3_8_completed_history": 488,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 58,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
@@ -5532,12 +6378,12 @@
           "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 178,
+          "freqduet_cpu_ablation_c17_32": 174,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 42,
+          "freqduet_cpu_ablation_c3_8_completed_history": 40,
           "freqduet_cpu_ablation_c65p_completed_history": 7,
           "freqduet_cpu_ablation_c9_16": 121,
-          "freqduet_cpu_ablation_c_le2_completed_history": 4,
+          "freqduet_cpu_ablation_c_le2_completed_history": 5,
           "freqduet_paper_longtrain_c17_32_completed_history": 16,
           "freqduet_preflight_c_le2_completed_history": 5,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5547,12 +6393,22 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 12,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "h2oplus_shell_eval_c_le2_completed_history": 4,
+          "h2oplus_snapshot_gpu_completed_history": 8,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 5,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 2,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 11,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 1,
@@ -5564,15 +6420,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 14,
           "transit_native_promotion_c17_32_seedrange_completed_history": 104,
-          "transit_native_promotion_c33_64_batch_completed_history": 73,
+          "transit_native_promotion_c33_64_batch_completed_history": 76,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 11,
-          "transit_native_promotion_c65p_completed_history": 77,
+          "transit_native_promotion_c65p_completed_history": 92,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 7,
           "transit_native_promotion_c9_16_residual_completed_history": 58,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 7,
-          "transit_native_real_demand_batch_c3_8_completed_history": 6,
+          "transit_native_real_demand_batch_c3_8_completed_history": 10,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5589,15 +6446,15 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 1911,
-        "record_count_window": 3347,
+        "mapped_task_count": 2349,
+        "record_count_window": 3378,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.5709590678219301,
+        "strict_mapped_fraction": 0.6953818827708703,
         "unmapped_reasons": {
-          "unmapped_cpu": 580,
-          "unmapped_gpu": 856
+          "unmapped_cpu": 189,
+          "unmapped_gpu": 840
         },
-        "unmapped_task_count": 1436,
+        "unmapped_task_count": 1029,
         "usable_for_global_theorem": false
       }
     },
@@ -5607,37 +6464,45 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.8056710213776722,
+        "mapped_fraction": 0.8664818327739676,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 497,
+          "bamor_mujoco_c3_8_completed_history": 508,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
           "cfcmt_sumo_generation_c_le2_completed_history": 4,
           "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
-          "cpu_heavy_local_bench": 524,
+          "cpu_heavy_local_bench": 511,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 229,
+          "freqduet_cpu_ablation_c17_32": 227,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 44,
+          "freqduet_cpu_ablation_c3_8_completed_history": 42,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
           "freqduet_cpu_ablation_c9_16": 140,
-          "freqduet_cpu_ablation_c_le2_completed_history": 8,
+          "freqduet_cpu_ablation_c_le2_completed_history": 9,
           "freqduet_paper_longtrain_c17_32_completed_history": 35,
           "freqduet_preflight_c_le2_completed_history": 14,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5647,15 +6512,25 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 13,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "gpu_heavy_jax_matmul": 70,
           "h2oplus_shell_eval_c_le2_completed_history": 5,
-          "hybrid_rl_resac_ant": 2159,
+          "h2oplus_snapshot_gpu_completed_history": 8,
+          "hybrid_rl_resac_ant": 2243,
           "light_control_local": 206,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 15,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 10,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 14,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 2,
@@ -5667,15 +6542,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
           "transit_native_promotion_c17_32_seedrange_completed_history": 167,
-          "transit_native_promotion_c33_64_batch_completed_history": 197,
+          "transit_native_promotion_c33_64_batch_completed_history": 200,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 16,
-          "transit_native_promotion_c65p_completed_history": 169,
+          "transit_native_promotion_c65p_completed_history": 184,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 9,
           "transit_native_promotion_c9_16_residual_completed_history": 100,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 14,
-          "transit_native_real_demand_batch_c3_8_completed_history": 27,
+          "transit_native_real_demand_batch_c3_8_completed_history": 31,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5692,16 +6568,16 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 5427,
-        "record_count_window": 6736,
-        "representative_mapped_task_count": 2152,
-        "strict_mapped_fraction": 0.4861935866983373,
+        "mapped_task_count": 5938,
+        "record_count_window": 6853,
+        "representative_mapped_task_count": 2223,
+        "strict_mapped_fraction": 0.5420983510871151,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 1137,
-          "unmapped_gpu": 17
+          "unmapped_cpu": 759,
+          "unmapped_gpu": 1
         },
-        "unmapped_task_count": 1309,
+        "unmapped_task_count": 915,
         "usable_for_global_theorem": false
       },
       "strict": {
@@ -5709,23 +6585,31 @@
         "global_coverage_usable_for_theorem": false,
         "lambda": null,
         "mapped_capacity_usable_for_theorem": null,
-        "mapped_fraction": 0.4861935866983373,
+        "mapped_fraction": 0.5420983510871151,
         "mapped_key_counts": {
+          "assumption_agent_live_benchmark_completed_history": 4,
+          "assumption_agent_meta_qa_evolution_completed_history": 21,
+          "assumption_agent_performance_validation_completed_history": 6,
+          "assumption_agent_phase2_v20_framework_completed_history": 6,
+          "assumption_agent_unittest_completed_history": 51,
           "bamor_diagnostic_shard_c17_32_completed_history": 14,
           "bamor_diagnostic_shard_c3_8_completed_history": 25,
           "bamor_diagnostic_shard_c9_16_completed_history": 34,
           "bamor_diagnostic_shard_c_le2_completed_history": 3,
           "bamor_mujoco_c17_32_completed_history": 3,
-          "bamor_mujoco_c3_8_completed_history": 497,
+          "bamor_mujoco_c3_8_completed_history": 508,
           "bamor_mujoco_c9_16_completed_history": 3,
           "bamor_mujoco_c_le2_completed_history": 18,
           "bamor_mujoco_policy_union_c3_8_completed_history": 1,
           "bamor_train_compare_c3_8_completed_history": 68,
           "bamor_train_compare_c9_16_completed_history": 6,
           "bamor_train_compare_c_le2_completed_history": 7,
+          "bapr_id_ood_merge_cpu_eval_completed_history": 3,
+          "cfcmt_cpu_eval_completed_history": 71,
           "cfcmt_env_validation_c_le2_completed_history": 5,
           "cfcmt_feed_conversion_c_le2_completed_history": 5,
           "cfcmt_policy_rollout_c_le2_completed_history": 10,
+          "cfcmt_pytest_cpu_completed_history": 11,
           "cfcmt_pytest_sumo_c3_8_completed_history": 4,
           "cfcmt_snapshot_generation_c3_8_completed_history": 1,
           "cfcmt_snapshot_generation_c_le2_completed_history": 5,
@@ -5734,12 +6618,12 @@
           "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
           "cpu_heavy_local_bench": 55,
           "freqduet_baseline_rule_c_le2_completed_history": 5,
-          "freqduet_cpu_ablation_c17_32": 229,
+          "freqduet_cpu_ablation_c17_32": 227,
           "freqduet_cpu_ablation_c33_64_completed_history": 63,
-          "freqduet_cpu_ablation_c3_8_completed_history": 44,
+          "freqduet_cpu_ablation_c3_8_completed_history": 42,
           "freqduet_cpu_ablation_c65p_completed_history": 11,
           "freqduet_cpu_ablation_c9_16": 140,
-          "freqduet_cpu_ablation_c_le2_completed_history": 8,
+          "freqduet_cpu_ablation_c_le2_completed_history": 9,
           "freqduet_paper_longtrain_c17_32_completed_history": 35,
           "freqduet_preflight_c_le2_completed_history": 14,
           "freqduet_promoted_ep100_c65p_completed_history": 6,
@@ -5749,15 +6633,25 @@
           "freqduet_runner_v3_c3_8_completed_history": 87,
           "freqduet_runner_v3_c9_16_residual_completed_history": 13,
           "freqduet_runner_v3_c_le2_completed_history": 90,
+          "freqduet_spacectx_ep100_c3_8_completed_history": 5,
           "gpu_heavy_jax_matmul": 70,
           "h2oplus_shell_eval_c_le2_completed_history": 5,
+          "h2oplus_snapshot_gpu_completed_history": 8,
           "hybrid_rl_resac_ant": 476,
           "light_control_local": 206,
           "nature_emissions_extract_c_le2_completed_history": 1,
+          "nature_emissions_routeguard_analysis_completed_history": 1,
           "nature_emissions_sumo_c_le2_completed_history": 1,
           "offline_sumo_eval_c33_64_completed_history": 15,
           "offline_sumo_eval_c_le2_completed_history": 4,
+          "resac_bus_seed_extension_cpu_eval_completed_history": 2,
+          "resac_conda_pack_completed_history": 1,
+          "resac_review5_jax_train_fabric_completed_history": 151,
           "resco_config_eval_c_le2_completed_history": 5,
+          "scheduleurm_control_plane_completed_history": 55,
+          "scheduleurm_hpc_relay_smoke_completed_history": 1,
+          "sensing_pems_cache_completed_history": 5,
+          "sensing_voltage_cache_completed_history": 6,
           "transit_demand_estimator_c17_32_completed_history": 10,
           "transit_freqhrl_analysis_matrix_c_le2_completed_history": 14,
           "transit_freqhrl_import_smoke_c_le2_completed_history": 2,
@@ -5769,15 +6663,16 @@
           "transit_native_merge_c3_8_completed_history": 1,
           "transit_native_promotion_c17_32_residual_completed_history": 16,
           "transit_native_promotion_c17_32_seedrange_completed_history": 167,
-          "transit_native_promotion_c33_64_batch_completed_history": 197,
+          "transit_native_promotion_c33_64_batch_completed_history": 200,
           "transit_native_promotion_c3_8_persistent_stress_completed_history": 16,
-          "transit_native_promotion_c65p_completed_history": 169,
+          "transit_native_promotion_c65p_completed_history": 184,
           "transit_native_promotion_c9_16_bounded_wait_completed_history": 9,
           "transit_native_promotion_c9_16_residual_completed_history": 100,
           "transit_native_promotion_c9_16_wait_credit_shell_completed_history": 6,
           "transit_native_promotion_c_le2_completed_history": 19,
           "transit_native_real_demand_alighting_c3_8_completed_history": 14,
-          "transit_native_real_demand_batch_c3_8_completed_history": 27,
+          "transit_native_real_demand_batch_c3_8_completed_history": 31,
+          "transit_native_real_demand_batch_c9_16_completed_history": 2,
           "transit_surrogate_c3_8_completed_history": 1,
           "transit_surrogate_validation_c_le2_completed_history": 3,
           "transit_trading_policy_c33_64_completed_history": 1,
@@ -5794,23 +6689,23 @@
           "zsw_metrics_parser_c_le2_completed_history": 1,
           "zsw_tsp_sumo_eval_c_le2_completed_history": 50
         },
-        "mapped_task_count": 3275,
-        "record_count_window": 6736,
+        "mapped_task_count": 3715,
+        "record_count_window": 6853,
         "representative_mapped_task_count": 0,
-        "strict_mapped_fraction": 0.4861935866983373,
+        "strict_mapped_fraction": 0.5420983510871151,
         "unmapped_reasons": {
           "scheduleurmbench_unknown": 155,
-          "unmapped_cpu": 1606,
-          "unmapped_gpu": 1700
+          "unmapped_cpu": 1215,
+          "unmapped_gpu": 1768
         },
-        "unmapped_task_count": 3461,
+        "unmapped_task_count": 3138,
         "usable_for_global_theorem": false
       }
     }
   },
   "window": {
-    "end_ts": 1781136257.6984425,
-    "start_ts": 1778544257.6984425,
+    "end_ts": 1781140761.7717588,
+    "start_ts": 1778548761.7717588,
     "window_s": 2592000.0
   },
   "window_days": 30.0

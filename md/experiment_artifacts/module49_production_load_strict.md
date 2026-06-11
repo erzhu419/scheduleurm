@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = False
-record_count_window = 6736
-mapped_task_count = 3275
+record_count_window = 6853
+mapped_task_count = 3715
 representative_mapped_task_count = 0
-unmapped_task_count = 3461
-mapped_fraction = 0.4861935866983373
+unmapped_task_count = 3138
+mapped_fraction = 0.5420983510871151
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -15,21 +15,29 @@ action_count_evaluated = 1
 
 | Workload | Count | Lambda |
 |---|---:|---:|
+| `assumption_agent_live_benchmark_completed_history` | 4 | 0.000001543 |
+| `assumption_agent_meta_qa_evolution_completed_history` | 21 | 0.000008102 |
+| `assumption_agent_performance_validation_completed_history` | 6 | 0.000002315 |
+| `assumption_agent_phase2_v20_framework_completed_history` | 6 | 0.000002315 |
+| `assumption_agent_unittest_completed_history` | 51 | 0.000019676 |
 | `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
 | `bamor_diagnostic_shard_c_le2_completed_history` | 3 | 0.154320988 |
 | `bamor_mujoco_c17_32_completed_history` | 3 | 0.057870370 |
-| `bamor_mujoco_c3_8_completed_history` | 497 | 9.587191358 |
+| `bamor_mujoco_c3_8_completed_history` | 508 | 9.782407407 |
 | `bamor_mujoco_c9_16_completed_history` | 3 | 0.006944444 |
 | `bamor_mujoco_c_le2_completed_history` | 18 | 0.174537037 |
 | `bamor_mujoco_policy_union_c3_8_completed_history` | 1 | 0.000000386 |
 | `bamor_train_compare_c3_8_completed_history` | 68 | 2.165123457 |
 | `bamor_train_compare_c9_16_completed_history` | 6 | 0.001273148 |
 | `bamor_train_compare_c_le2_completed_history` | 7 | 0.042438272 |
+| `bapr_id_ood_merge_cpu_eval_completed_history` | 3 | 0.000001157 |
+| `cfcmt_cpu_eval_completed_history` | 71 | 0.000027392 |
 | `cfcmt_env_validation_c_le2_completed_history` | 5 | 0.033641975 |
 | `cfcmt_feed_conversion_c_le2_completed_history` | 5 | 0.000001929 |
 | `cfcmt_policy_rollout_c_le2_completed_history` | 10 | 0.054328704 |
+| `cfcmt_pytest_cpu_completed_history` | 11 | 0.000004244 |
 | `cfcmt_pytest_sumo_c3_8_completed_history` | 4 | 0.000001543 |
 | `cfcmt_snapshot_generation_c3_8_completed_history` | 1 | 0.000555556 |
 | `cfcmt_snapshot_generation_c_le2_completed_history` | 5 | 0.000601852 |
@@ -38,12 +46,12 @@ action_count_evaluated = 1
 | `cfcmt_traffic_signal_phase2_c_le2_completed_history` | 1 | 0.000000386 |
 | `cpu_heavy_local_bench` | 55 | 0.021219136 |
 | `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
-| `freqduet_cpu_ablation_c17_32` | 229 | 0.006361111 |
+| `freqduet_cpu_ablation_c17_32` | 227 | 0.006305556 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
-| `freqduet_cpu_ablation_c3_8_completed_history` | 44 | 0.008951775 |
+| `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
 | `freqduet_cpu_ablation_c9_16` | 140 | 0.077044753 |
-| `freqduet_cpu_ablation_c_le2_completed_history` | 8 | 0.001468750 |
+| `freqduet_cpu_ablation_c_le2_completed_history` | 9 | 0.002510417 |
 | `freqduet_paper_longtrain_c17_32_completed_history` | 35 | 0.000013503 |
 | `freqduet_preflight_c_le2_completed_history` | 14 | 0.000005401 |
 | `freqduet_promoted_ep100_c65p_completed_history` | 6 | 0.023148148 |
@@ -53,15 +61,25 @@ action_count_evaluated = 1
 | `freqduet_runner_v3_c3_8_completed_history` | 87 | 0.001068287 |
 | `freqduet_runner_v3_c9_16_residual_completed_history` | 13 | 0.000185185 |
 | `freqduet_runner_v3_c_le2_completed_history` | 90 | 0.001868827 |
+| `freqduet_spacectx_ep100_c3_8_completed_history` | 5 | 0.005131173 |
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
+| `h2oplus_snapshot_gpu_completed_history` | 8 | 0.000003086 |
 | `hybrid_rl_resac_ant` | 476 | 0.014691358 |
 | `light_control_local` | 206 | 0.794753086 |
 | `nature_emissions_extract_c_le2_completed_history` | 1 | 0.000000386 |
+| `nature_emissions_routeguard_analysis_completed_history` | 1 | 0.000000386 |
 | `nature_emissions_sumo_c_le2_completed_history` | 1 | 0.000000386 |
 | `offline_sumo_eval_c33_64_completed_history` | 15 | 0.000005787 |
 | `offline_sumo_eval_c_le2_completed_history` | 4 | 0.000001543 |
+| `resac_bus_seed_extension_cpu_eval_completed_history` | 2 | 0.000000772 |
+| `resac_conda_pack_completed_history` | 1 | 0.000000386 |
+| `resac_review5_jax_train_fabric_completed_history` | 151 | 0.000058256 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
+| `scheduleurm_control_plane_completed_history` | 55 | 0.000021219 |
+| `scheduleurm_hpc_relay_smoke_completed_history` | 1 | 0.000000386 |
+| `sensing_pems_cache_completed_history` | 5 | 0.000001929 |
+| `sensing_voltage_cache_completed_history` | 6 | 0.000002315 |
 | `transit_demand_estimator_c17_32_completed_history` | 10 | 0.024444444 |
 | `transit_freqhrl_analysis_matrix_c_le2_completed_history` | 14 | 0.000005401 |
 | `transit_freqhrl_import_smoke_c_le2_completed_history` | 2 | 0.000000772 |
@@ -73,15 +91,16 @@ action_count_evaluated = 1
 | `transit_native_merge_c3_8_completed_history` | 1 | 0.000000386 |
 | `transit_native_promotion_c17_32_residual_completed_history` | 16 | 0.000505787 |
 | `transit_native_promotion_c17_32_seedrange_completed_history` | 167 | 0.017858410 |
-| `transit_native_promotion_c33_64_batch_completed_history` | 197 | 0.020457562 |
+| `transit_native_promotion_c33_64_batch_completed_history` | 200 | 0.020560185 |
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 16 | 0.000132716 |
-| `transit_native_promotion_c65p_completed_history` | 169 | 0.013414352 |
+| `transit_native_promotion_c65p_completed_history` | 184 | 0.014299383 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
 | `transit_native_promotion_c9_16_residual_completed_history` | 100 | 0.003364969 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |
-| `transit_native_real_demand_batch_c3_8_completed_history` | 27 | 0.000277778 |
+| `transit_native_real_demand_batch_c3_8_completed_history` | 31 | 0.000296296 |
+| `transit_native_real_demand_batch_c9_16_completed_history` | 2 | 0.000009259 |
 | `transit_surrogate_c3_8_completed_history` | 1 | 0.008333333 |
 | `transit_surrogate_validation_c_le2_completed_history` | 3 | 0.019037037 |
 | `transit_trading_policy_c33_64_completed_history` | 1 | 0.008333333 |
@@ -100,7 +119,7 @@ action_count_evaluated = 1
 
 | Quantity | Value |
 |---|---:|
-| `delta` | 0.000011136 |
+| `delta` | 0.000009123 |
 | `mapped_capacity_usable_for_theorem` | true |
 | `global_coverage_usable_for_theorem` | false |
 | `usable_for_global_theorem` | false |
@@ -110,7 +129,7 @@ action_count_evaluated = 1
 | Reason | Count |
 |---|---:|
 | `scheduleurmbench_unknown` | 155 |
-| `unmapped_cpu` | 1606 |
-| `unmapped_gpu` | 1700 |
+| `unmapped_cpu` | 1215 |
+| `unmapped_gpu` | 1768 |
 
 Positive capacity on mapped measured buckets is a load certificate only for those buckets. Global production stability remains open unless unmapped and representative-mapped tasks are eliminated or separately certified by service measurements.

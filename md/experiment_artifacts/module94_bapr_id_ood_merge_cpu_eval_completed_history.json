@@ -1,0 +1,80 @@
+{
+  "completed_record_count": 3,
+  "completed_units_command": 3.0,
+  "cpu_counts": {
+    "2": 2,
+    "4": 1
+  },
+  "duration_s": {
+    "max": 211.6739580631256,
+    "median": 72.0184485912323,
+    "min": 68.59161329269409
+  },
+  "interpretation": "Strict completed-history lower-service certificate for residual BAPR id/ood merge CPU eval commands. The progress unit is one completed command.",
+  "lower_service_command_s": 0.004724246710130393,
+  "parsed_units_command": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "profile_domain": [
+    1
+  ],
+  "realized_command_s": [
+    0.004724246710130393,
+    0.013885331044492152,
+    0.014579041839019015
+  ],
+  "record_count": 3,
+  "run_id": "module94_bapr_id_ood_merge_cpu_eval_completed_history",
+  "scope": "completed_active_production_window",
+  "slowest_12": [
+    {
+      "cmd": "F:\\v\\Scripts\\python.exe -m jax_experiments.analysis.eval_id_ood --merge_shards paper/id_ood_full_v2_shards --envs HalfCheetah-v2 Ant-v2 --algos bapr escp resac sac --output paper/fig_id_ood_full_v2.pdf & if errorlevel 1 exit /b 1",
+      "cpu_cores": 4,
+      "duration_s": 211.6739580631256,
+      "est_vram_mb": 0,
+      "project": "BAPR",
+      "ram_mb": 8000,
+      "rate_command_s": 0.004724246710130393,
+      "signature": "BAPR/cpu_eval/id_ood_full_v2_merge",
+      "status": "done",
+      "task_id": "t4055",
+      "units": 1.0
+    },
+    {
+      "cmd": "bash -lc 'set -euo pipefail; export CUDA_VISIBLE_DEVICES=\"\"; export JAX_PLATFORM_NAME=cpu; export JAX_PLATFORMS=cpu; export PYTHONPATH=\"$PWD:${PYTHONPATH:-}\"; /home/erzhu419/.conda/envs/resac-jax/bin/python -m jax_experiments.analysis.eval_id_ood --merge_shards paper/id_ood_full_v2_items_direct5_20260609/items --envs HalfCheetah-v2 Ant-v2 --algos bapr escp resac sac --output paper/id_ood_full_v2_items_direct5_20260609/merge/fig_id_ood_full_v2.pdf; echo DONE'",
+      "cpu_cores": 2,
+      "duration_s": 72.0184485912323,
+      "est_vram_mb": 0,
+      "project": "BAPR",
+      "ram_mb": 8192,
+      "rate_command_s": 0.013885331044492152,
+      "signature": "BAPR/cpu_eval/id_ood_full_v2_item_direct5_20260609/merge",
+      "status": "done",
+      "task_id": "t8429",
+      "units": 1.0
+    },
+    {
+      "cmd": "bash -lc 'set -euo pipefail; export CUDA_VISIBLE_DEVICES=\"\"; export JAX_PLATFORM_NAME=cpu; export JAX_PLATFORMS=cpu; export PYTHONPATH=\"$PWD:${PYTHONPATH:-}\"; /home/erzhu419/.conda/envs/resac-jax/bin/python -m jax_experiments.analysis.eval_id_ood --merge_shards paper/id_ood_full_v2_items_direct6_gravityfix_20260609/items --envs HalfCheetah-v2 Ant-v2 --algos bapr escp resac sac --output paper/id_ood_full_v2_items_direct6_gravityfix_20260609/merge/fig_id_ood_full_v2.pdf; echo DONE'",
+      "cpu_cores": 2,
+      "duration_s": 68.59161329269409,
+      "est_vram_mb": 0,
+      "project": "BAPR",
+      "ram_mb": 8192,
+      "rate_command_s": 0.014579041839019015,
+      "signature": "BAPR/cpu_eval/id_ood_full_v2_item_direct6_gravityfix_20260609/merge",
+      "status": "done",
+      "task_id": "t8496",
+      "units": 1.0
+    }
+  ],
+  "status_counts": {
+    "done": 3
+  },
+  "total_units_command": 3.0,
+  "vram_counts": {
+    "0": 3
+  },
+  "workload_key": "bapr_id_ood_merge_cpu_eval_completed_history"
+}

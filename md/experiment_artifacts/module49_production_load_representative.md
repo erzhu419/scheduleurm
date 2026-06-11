@@ -3,11 +3,11 @@
 ```text
 window_days = 30.0
 include_representative = True
-record_count_window = 6921
-mapped_task_count = 6000
+record_count_window = 6933
+mapped_task_count = 6012
 representative_mapped_task_count = 1209
 unmapped_task_count = 921
-mapped_fraction = 0.8669267446900737
+mapped_fraction = 0.8671570748593682
 action_generation = dominating_product_action_certificate
 full_action_count = 404352
 action_count_evaluated = 1
@@ -15,11 +15,11 @@ action_count_evaluated = 1
 
 | Workload | Count | Lambda |
 |---|---:|---:|
-| `assumption_agent_live_benchmark_completed_history` | 5 | 0.000001929 |
+| `assumption_agent_live_benchmark_completed_history` | 6 | 0.000002315 |
 | `assumption_agent_meta_qa_evolution_completed_history` | 21 | 0.000008102 |
 | `assumption_agent_performance_validation_completed_history` | 6 | 0.000002315 |
 | `assumption_agent_phase2_v20_framework_completed_history` | 6 | 0.000002315 |
-| `assumption_agent_unittest_completed_history` | 53 | 0.000020448 |
+| `assumption_agent_unittest_completed_history` | 54 | 0.000020833 |
 | `bamor_diagnostic_shard_c17_32_completed_history` | 14 | 11.612654321 |
 | `bamor_diagnostic_shard_c3_8_completed_history` | 25 | 6.442901235 |
 | `bamor_diagnostic_shard_c9_16_completed_history` | 34 | 16.666666667 |
@@ -47,7 +47,7 @@ action_count_evaluated = 1
 | `cpu_heavy_local_bench` | 322 | 0.124228395 |
 | `cpu_heavy_local_fabric_completed_history` | 189 | 0.000072917 |
 | `freqduet_baseline_rule_c_le2_completed_history` | 5 | 0.000038580 |
-| `freqduet_cpu_ablation_c17_32` | 227 | 0.006305556 |
+| `freqduet_cpu_ablation_c17_32` | 235 | 0.006527778 |
 | `freqduet_cpu_ablation_c33_64_completed_history` | 63 | 0.060239198 |
 | `freqduet_cpu_ablation_c3_8_completed_history` | 42 | 0.006945602 |
 | `freqduet_cpu_ablation_c65p_completed_history` | 11 | 0.012048611 |
@@ -66,7 +66,7 @@ action_count_evaluated = 1
 | `gpu_heavy_jax_matmul` | 70 | 0.064814815 |
 | `h2oplus_shell_eval_c_le2_completed_history` | 5 | 0.000001929 |
 | `h2oplus_snapshot_gpu_completed_history` | 8 | 0.000003086 |
-| `hybrid_rl_bapr_project_fabric_completed_history` | 142 | 0.000054784 |
+| `hybrid_rl_bapr_project_fabric_completed_history` | 143 | 0.000055170 |
 | `hybrid_rl_bapr_v15_project_fabric_completed_history` | 103 | 0.000039738 |
 | `hybrid_rl_cs_bapr_project_fabric_completed_history` | 59 | 0.000022762 |
 | `hybrid_rl_resac_ant` | 1418 | 0.043765432 |
@@ -83,7 +83,7 @@ action_count_evaluated = 1
 | `resac_conda_pack_completed_history` | 1 | 0.000000386 |
 | `resac_review5_jax_train_fabric_completed_history` | 151 | 0.000058256 |
 | `resco_config_eval_c_le2_completed_history` | 5 | 0.000001929 |
-| `scheduleurm_control_plane_completed_history` | 56 | 0.000021605 |
+| `scheduleurm_control_plane_completed_history` | 57 | 0.000021991 |
 | `scheduleurm_hpc_relay_smoke_completed_history` | 1 | 0.000000386 |
 | `sensing_pems_cache_completed_history` | 5 | 0.000001929 |
 | `sensing_voltage_cache_completed_history` | 6 | 0.000002315 |
@@ -97,12 +97,12 @@ action_count_evaluated = 1
 | `transit_native_control_c_le2_completed_history` | 21 | 0.000125000 |
 | `transit_native_merge_c3_8_completed_history` | 1 | 0.000000386 |
 | `transit_native_promotion_c17_32_residual_completed_history` | 16 | 0.000505787 |
-| `transit_native_promotion_c17_32_seedrange_completed_history` | 167 | 0.017858410 |
+| `transit_native_promotion_c17_32_seedrange_completed_history` | 170 | 0.017895448 |
 | `transit_native_promotion_c33_64_batch_completed_history` | 208 | 0.020757716 |
 | `transit_native_promotion_c3_8_persistent_stress_completed_history` | 16 | 0.000132716 |
 | `transit_native_promotion_c65p_completed_history` | 184 | 0.014299383 |
 | `transit_native_promotion_c9_16_bounded_wait_completed_history` | 9 | 0.000900463 |
-| `transit_native_promotion_c9_16_residual_completed_history` | 116 | 0.003562500 |
+| `transit_native_promotion_c9_16_residual_completed_history` | 113 | 0.003525463 |
 | `transit_native_promotion_c9_16_wait_credit_shell_completed_history` | 6 | 0.000032407 |
 | `transit_native_promotion_c_le2_completed_history` | 19 | 0.000201389 |
 | `transit_native_real_demand_alighting_c3_8_completed_history` | 14 | 0.000055556 |

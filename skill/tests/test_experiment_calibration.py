@@ -29,6 +29,9 @@ from algorithm.experiments.production_load_certificate import (
     build_production_load_certificate,
     classify_record,
 )
+from algorithm.experiments.production_theorem_oracle_trace import (
+    build_production_theorem_oracle_trace,
+)
 from algorithm.experiments.production_coverage_drilldown import (
     build_coverage_drilldown,
     bucket_obligation,
@@ -3740,6 +3743,39 @@ def test_module99_transit_real_demand_c9_16_profile_extension(check, sch):
           and math.isclose(report["mapped_units"][key], 12.0)
           and report["global_coverage_usable_for_theorem"]
           and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module100_production_theorem_oracle_bridge_uses_completed_active_service_map(check, sch):
+    row = {
+        "id": "module100-cpu-fabric",
+        "project": "LocalCPU",
+        "signature": "production/local/cpu-heavy-analysis",
+        "description": "CPU-heavy analysis stage sweep",
+        "submitted_at": 900.0,
+        "started_at": 910.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 12,
+        "ram_mb": 4096,
+        "cmd": "python analysis/cpu_eval_stage.py --sweep final",
+    }
+    report = build_production_theorem_oracle_trace(
+        records=[row],
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module97_cpu_heavy_local_fabric_completed_history",),
+    )
+    audit = report["oracle_audit"]
+    check("Module100 service-map theorem trace closes alpha0/alpha1 without claiming live scheduler trace",
+          report["status"] == "SERVICE_MAP_THEOREM_ORACLE_PASS"
+          and report["usable_for_service_map_oracle_bridge"]
+          and not report["usable_for_live_scheduler_oracle_trace"]
+          and report["production_load_summary"]["unmapped_task_count"] == 0
+          and audit["status"] == "THEOREM_ORACLE_PASS"
+          and math.isclose(audit["alpha0"], 0.0)
+          and math.isclose(audit["alpha1"], 0.0),
           diag=str(report))
 
 

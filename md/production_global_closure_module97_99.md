@@ -11,8 +11,8 @@ Modules97--99 upgrade those remaining buckets to strict service certificates.
 
 ```text
 Module51 completed_active_production strict view
-record_count = 3411
-mapped_count = 3411
+record_count = 3419
+mapped_count = 3419
 representative_mapped_count = 0
 unmapped_count = 0
 measurement_required_count = 0
@@ -22,6 +22,13 @@ global_theorem_closed = true
 Module49 mapped-slice capacity
 strict mapped_capacity_usable_for_theorem = true
 strict mapped delta = 0.00000912324072761479
+
+Module100 service-map theorem oracle bridge
+status = SERVICE_MAP_THEOREM_ORACLE_PASS
+alpha0 = 0
+alpha1 = 0
+usable_for_service_map_oracle_bridge = true
+usable_for_live_scheduler_oracle_trace = false
 ```
 
 Module49 still reports `global_coverage_usable_for_theorem = false` on its raw
@@ -83,8 +90,9 @@ family.
 md/experiment_artifacts/module49_production_load_strict.json
 md/experiment_artifacts/module49_production_load_representative.json
 md/experiment_artifacts/module51_production_coverage_drilldown.json
+md/experiment_artifacts/module100_production_theorem_oracle_bridge.json
+md/experiment_artifacts/module100_production_theorem_oracle_trace.jsonl
 md/experiment_artifacts/module97_cpu_heavy_local_fabric_completed_history.json
 md/experiment_artifacts/module98_hybrid_rl_cs_bapr_project_fabric_completed_history.json
 md/experiment_artifacts/module99_transit_real_demand_c9_16_profile_extension.json
 ```
-

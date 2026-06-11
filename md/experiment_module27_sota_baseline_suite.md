@@ -2,11 +2,11 @@
 
 Date: 2026-06-05
 
-Update on 2026-06-08: modules39-46 add fresh live replay sanity and a stricter
-q11 robust capacity boundary. The old q11 profile-10 replay point below is now
-historical. Current robust replay excludes q11 profile 10 and above, selects
-profile 2 for standalone q11, and selects profile 3 inside the mixed portfolio;
-see `md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md`.
+Update on 2026-06-11: modules39-46 add fresh live replay sanity and a stricter
+q11 robust capacity boundary. Current robust replay excludes q11 profile 10 and
+above, selects profile 2 for standalone q11, and selects profile 3 inside the
+mixed portfolio; see
+`md/experiment_module39_46_live_replay_sanity_and_q11_robust_boundary.md`.
 
 This module adds a SOTA-style replay baseline suite. It is stronger than
 Scheduleurm legacy comparison, but still not a direct binary-to-binary execution
@@ -66,7 +66,7 @@ endpoint to the guarded knee:
 
 ```text
 q01 GPU-heavy: guarded knee profile 4
-q11 hybrid RL: throughput/support profile 10
+q11 hybrid RL: robust guarded profile 2
 ```
 
 For the mixed portfolio after q10 promotion, the real local CPU bucket remains
@@ -74,7 +74,7 @@ the host-pressure member. The selector spends slack on the hybrid RL job while
 using the same measured local q10 curve as the standalone q10 taskset:
 
 ```text
-hybrid_rl_resac_ant: 10/GPU
+hybrid_rl_resac_ant: 3/GPU
 gpu_heavy_jax_matmul: 1/GPU
 cpu_heavy_local_bench: 8 local CPU workers
 ```
@@ -113,7 +113,7 @@ Standalone quadrants:
 | `q00_light_control` | `light_control_local=13` | not dominated |
 | `q01_gpu_bound_compute` | `gpu_heavy_jax_matmul=4` | not dominated |
 | `q10_cpu_host_bound` | `cpu_heavy_local_bench=8` | not dominated |
-| `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=10` | not dominated |
+| `q11_cpu_gpu_coupled` | `hybrid_rl_resac_ant=2` | not dominated |
 
 q01 details:
 
@@ -134,21 +134,23 @@ q11 details:
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
 | throughput-table goodput | 1.000x | 1.000x |
-| delay oracle | 1.029x | 0.983x |
-| interference guard | 1.000x | 1.000x |
+| delay oracle | 1.000x | 1.000x |
+| interference guard | 0.999x | 1.003x |
 | quadrant composite | 1.000x | 1.000x |
 
-q11 wins makespan against the delay oracle but gives up about 1.7% mean-flow.
-Again, this is a tradeoff between throughput support and finite-batch delay.
+After the live robust boundary, q11 no longer uses the infeasible profile-10
+replay point. It ties the throughput/delay/composite endpoints and has only a
+tiny makespan/flow tradeoff against the interference guard. This is the current
+robust feasible-family result, not the historical module12 profile-10 replay.
 
 Portfolio details:
 
 | Baseline | Candidate vs baseline makespan | Candidate vs baseline mean-flow |
 |---|---:|---:|
-| throughput-table goodput | 1.001x | 0.999x |
-| delay oracle | 1.028x | 0.977x |
-| interference guard | 1.000x | 1.000x |
-| quadrant composite | 1.000x | 1.000x |
+| throughput-table goodput | 1.000x | 1.002x |
+| delay oracle | 1.005x | 0.992x |
+| interference guard | 1.003x | 0.989x |
+| quadrant composite | 1.005x | 0.992x |
 
 The global guarded selector is not Pareto-dominated by any SOTA-style baseline
 on the mixed portfolio.
@@ -157,8 +159,8 @@ Against Scheduleurm legacy on the same portfolio:
 
 | Metric | Legacy | Candidate | Improvement |
 |---|---:|---:|---:|
-| Total makespan | 33043.785 s | 26911.926 s | 1.228x |
-| Weighted mean flow | 7599.635 s | 5924.731 s | 1.283x |
+| Total makespan | 33095.049 s | 28508.245 s | 1.161x |
+| Weighted mean flow | 7599.763 s | 5989.897 s | 1.269x |
 
 ## Module-Correctness Check
 
@@ -167,7 +169,8 @@ boundaries:
 
 ```text
 q01: throughput-only makespan beats the guarded knee, but loses mean-flow.
-q11: delay-only mean-flow beats throughput policy, but loses makespan.
+q11: the current robust profile-2 point removes the infeasible profile-10
+     headline and remains Pareto-valid under the tightened feasible family.
 portfolio: after real q10 promotion, throughput and delay endpoints are
            explicit tradeoffs rather than Pareto dominators.
 ```

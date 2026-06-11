@@ -20,8 +20,10 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import sys
+import importlib.util
 from pathlib import Path
 from typing import Optional
 
@@ -37,6 +39,21 @@ SCHED = os.environ.get(
 QUEUE = Path.home() / ".claude" / "scheduler" / "queue.json"
 
 mcp = FastMCP("scheduler")
+
+
+def _scheduler_module():
+    """Load scheduler.py so MCP log reads honor relay/proxy node routing."""
+    try:
+        sched_path = Path(SCHED).expanduser()
+        spec = importlib.util.spec_from_file_location("scheduleurm_skill_scheduler", sched_path)
+        if spec is None or spec.loader is None:
+            return None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("scheduleurm_skill_scheduler", module)
+        spec.loader.exec_module(module)
+        return module
+    except Exception:
+        return None
 
 
 def _run(args: list[str], timeout: int = 60) -> dict:
@@ -439,7 +456,28 @@ def task_log(task_id: str, tail_lines: int = 50) -> dict:
             return {"ok": True, "log_path": log_path, "tail": "".join(lines[-tail_lines:])}
         except Exception as e:
             return {"ok": False, "stderr": f"could not read {log_path}: {e}"}
-    # Remote node: ssh tail
+    # Remote node: use scheduler.py's node routing when available. This handles
+    # relay-backed HPC nodes such as node001-node006, where direct `ssh node002`
+    # from the MCP host is not valid.
+    sched = _scheduler_module()
+    if sched is not None and hasattr(sched, "run_on"):
+        try:
+            rc, out, err = sched.run_on(
+                node,
+                f"tail -n {int(tail_lines)} {shlex.quote(log_path)}",
+                timeout=20,
+                check=False,
+            )
+            return {
+                "ok": rc == 0,
+                "log_path": f"{node}:{log_path}",
+                "tail": out,
+                "stderr": err,
+            }
+        except Exception as e:
+            return {"ok": False, "stderr": f"scheduler-routed tail failed: {e}"}
+
+    # Remote node fallback: plain ssh tail.
     try:
         r = subprocess.run(
             ["ssh", node, f"tail -n {tail_lines} {log_path}"],

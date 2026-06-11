@@ -25,6 +25,7 @@ BAPR 已经有 piecewise-stationary regime、BOCD belief、frozen-belief contrac
 
 ```text
 md/lean_artifact_map.md
+md/math_code_alignment_2026_06_11.md
 ```
 
 其中最核心的 exact-oracle paper theorem 是：
@@ -850,11 +851,12 @@ M_k\leq 1.02\min_j M_j,
 
 再最小化 \(F_k\)。这会选择 4/GPU 的 Pareto knee，而不是 1/GPU 的 extreme delay endpoint 或 8/GPU 的 extreme throughput endpoint。
 
-### Empirical bucket instantiation after q10/q00 promotion
+### Empirical bucket instantiation after capacity-boundary tightening
 
-modules31+38 没有改变上面的 theorem schema；它们改变的是把两个
+modules31+38+39-46 没有改变上面的 theorem schema；它们改变的是把
 previously-weak empirical buckets 从“待测/稀疏测量”推进到可写进
-support/slack accounting 的 finite action slices。数学上应写成：
+support/slack accounting 的 finite action slices，并把 runtime OOM / invalid
+placement 变成 action-family boundary certificate。数学上应写成：
 
 [
 \mathcal A^{meas}_b
@@ -866,34 +868,41 @@ support/slack accounting 的 finite action slices。数学上应写成：
 \text{measured progress rate for bucket }b\text{ at profile }k.
 ]
 
-对 q00/q10 当前可报告的 bucket：
+对当前 replay / theorem-facing service cache，可报告的 bucket 是：
 
-| Bucket | Valid measured profiles \(K_b^{valid}\) | Measured boundary | Support action used by candidate | Legacy-comparable action |
+| Bucket | Valid measured profiles \(K_b^{valid}\) | Measured boundary | Candidate replay action | Legacy-comparable action |
 |---|---:|---:|---:|---:|
 | q00 `light_control_local` | 1-13 | 14 | 13 | 1 |
+| q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 4 | 3 |
 | q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 | 9 |
+| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 standalone / 3 portfolio | 5 |
 
 这些曲线进入数学路线的方式不是“证明 sweet spot 恒成立”，而是：
 
 1. finite bucket action family 变得可枚举，\(\widehat\mu_b(k)\) 不再靠插值；
 2. boundary profile 作为 infeasible / capacity-boundary certificate，从 exact replay action set 中剔除；
-3. candidate/legacy/SOTA-style baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) 的实证对象一致；
-4. q00/q10 的 support objective 仍是 service/makespan support，不引入额外 queue-scaled guard，所以它们不新增 \(\beta\) 或 \(\alpha_1\) 的理论项；
-5. 这些 measured slices 可以作为 \(\mu,\underline\mu,\epsilon_{est},\delta\) 的输入，但仍不能替代完整 \(L,\rho,\epsilon_{est},\beta,\alpha_1,\delta\) slack certificate。
+3. `ServiceRateCache.profiles()` 使用 first capacity boundary：若最早 boundary 是 \(k_b^\partial\)，则所有 \(k\ge k_b^\partial\) 都不属于当前 robust feasible family；
+4. 同一 profile 有多条有效测量时，cache 先按测量完整度筛选，再在同等完整度下保留更保守的 lower aggregate service row；这把 replay service map 写成 \(\underline\mu\)，而不是乐观 best-run \(\widehat\mu\)；
+5. candidate/legacy/SOTA-style baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；
+6. q01/q11 使用 guarded support + mean-flow tie-break，对应 \(\alpha_0+\alpha_1\|Q\|_1\) approximate-oracle 项；q00/q10 当前 bucket 的动作选择等价于 measured service support/knee，不额外新增 hidden model；
+7. 这些 measured slices 可以作为 \(\mu,\underline\mu,\epsilon_{est},\delta\) 的输入，但仍不能替代完整 \(L,\rho,\epsilon_{est},\beta,\alpha_1,\delta\) slack certificate。
 
-因此 q00/q10 攻下来以后，正文数学部分应该更强地说：
+因此这些 bucket 攻下来以后，正文数学部分应该更强地说：
 
 ```text
-For the q00 and q10 local buckets, the empirical action slices are now closed by
-measured capacity boundaries. The theorem still ranges over the full finite
-configuration-action family; the experiments instantiate two bucket-level
-service maps and remove previously missing profile obligations.
+For the declared q00/q10 local buckets and the q11 robust node bucket, the
+empirical action slices are closed by measured capacity boundaries.  The theorem
+still ranges over the full finite configuration-action family; the experiments
+instantiate bucket-level lower-service maps, remove infeasible profiles from the
+statewise feasible family, and audit the resulting measured slice through the
+same slack-accounting theorem.
 ```
 
 不能写成：
 
 ```text
-q00/q10 throughput improvement alone proves operational stability.
+q00/q10/q11 throughput improvement alone proves operational stability.
+profile 10 remains a valid robust q11 action because old module12 replay used it.
 ```
 
 真正的 stability claim 仍要落在：
@@ -1165,6 +1174,7 @@ raw scheduler history is the theorem population;
 attempted production is the theorem population;
 SOTA-style replay directly beats Gavel/Pollux/Sia/IADeep binaries;
 q00/q10 local buckets cover all CPU/data-loader workloads;
+q11 profile-10 historical replay remains a robust feasible action after live OOM;
 future untraced scheduler dispatches are automatically theorem-grade;
 generalized L,rho fabric calibration is established without a profiling table;
 active-bucket learning and hidden-regime BOCD are main theorem claims.

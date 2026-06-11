@@ -1084,7 +1084,15 @@ Lean 里对应的 active-bucket event 已经不是全体 bucket 的 union bound�
 ```text
 main_active_bucket_lcb_learning_regret
 main_active_bucket_lcb_learning_regret_high_probability
+main_active_bucket_local_failure_union_bound
+main_high_probability_stability_from_certificate_event
 ```
+
+但这仍然是 extension / certificate theorem。除非正文同时给出 Scheduleurm
+当前 sampler 的 selection probability、feedback/censoring model、bucket reset
+规则和 exploration-vs-backlog coupling，否则不能把 Theorem F 写成完整 online
+learning algorithm theorem。安全写法是：structured active-bucket learning can
+lift a sampler confidence event into a high-probability stability certificate.
 
 ---
 
@@ -1135,6 +1143,32 @@ Q_j\Delta_j(S) > \text{switching/rollback risk}.
 [
 \mathcal F_t \rightarrow b_t(z)
 ]
+
+## Claim-scope boundary for the paper draft
+
+正式主稿中，Theorem A-D 是主 theorem decomposition；Theorem E-G 是 extension
+或 calibration-facing theorem。不要把它们写成已经实证闭合的主稳定性 claim。
+
+安全主 claim：
+
+```text
+calibrated/exact measured finite service-action slices
++ robust candidate MaxWeight slack accounting
++ bounded second-moment stochastic model
+-> finite-set Foster recurrence certificate.
+```
+
+需要避免的 claim：
+
+```text
+raw scheduler history is the theorem population;
+attempted production is the theorem population;
+SOTA-style replay directly beats Gavel/Pollux/Sia/IADeep binaries;
+q00/q10 local buckets cover all CPU/data-loader workloads;
+future untraced scheduler dispatches are automatically theorem-grade;
+generalized L,rho fabric calibration is established without a profiling table;
+active-bucket learning and hidden-regime BOCD are main theorem claims.
+```
 
 真正的数学问题是：
 

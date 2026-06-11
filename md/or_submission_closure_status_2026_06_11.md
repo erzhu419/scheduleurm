@@ -5,6 +5,12 @@ Date: 2026-06-11, Asia/Shanghai.
 This note is the current reviewer-facing status after rerunning the production
 coverage, production load, oracle-trace boundary, and Lean artifact checks.
 
+Claim-scope companion:
+
+```text
+md/or_claim_scope_matrix_2026_06_11.md
+```
+
 ## Closed Theorem-Facing Population
 
 The theorem population is the Scheduleurm-controlled
@@ -128,6 +134,12 @@ attempted_production is closed;
 future rolling queue rows are already closed;
 every future scheduler dispatch is automatically theorem-grade without rerunning
 the trace/enrichment/audit pipeline.
+Scheduleurm directly beats Gavel/Pollux/Sia/IADeep binaries;
+q00/q10 local-bucket certificates represent all CPU/data-loader deployments;
+generalized fabric-cover constants L and rho are empirically calibrated beyond
+the declared measured finite slices unless a perturbation profiling table is supplied;
+hidden-regime or active-bucket learning extensions are part of the main
+stability theorem.
 ```
 
 Primary current artifacts:

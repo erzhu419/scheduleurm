@@ -1132,3 +1132,20 @@ The paper can move from "research prototype" to "submission draft" only after:
 5. Lean artifact is freshly repackaged and theorem names match the paper;
 6. the main manuscript exists as a coherent OR paper, not a pile of md notes.
 ```
+
+Current status after Module101 and claim-scope cleanup:
+
+```text
+1. satisfied for the measured hybrid_research_portfolio finite slice by Module48;
+   production mapped-slice capacity is positive in Module49, with Module100
+   service-map oracle bridge over the completed-active population.
+2. satisfied for declared local buckets only: q00 local light-control and q10
+   local CPU-heavy.  No broader CPU/data-loader generalization is claimed.
+3. satisfied in wording: use SOTA-style replay baselines on the same measured
+   Scheduleurm service cache; do not claim direct external binary execution.
+4. satisfied by q01/q11/portfolio live sanity modules; scope is progress-window
+   replay-to-live validation, not full long-run completion of every job.
+5. satisfied by lean_verification_submission.md and ScheduleurmUpload.lean hash
+   af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b.
+6. still open: the coherent OR manuscript has not yet been written.
+```

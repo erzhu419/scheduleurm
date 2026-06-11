@@ -2,6 +2,21 @@
 
 本文档只放目前无法靠 Lean/数学证明单独闭合、必须依赖 scheduleurm 真实运行数据、profiling 或扰动实验校准的部分。其余非实验部分已经放到 proof 里的 Scheduleurm 证明链继续推进。
 
+当前投稿口径的总边界见：
+
+```text
+md/or_claim_scope_matrix_2026_06_11.md
+md/or_submission_closure_status_2026_06_11.md
+```
+
+最新已闭合但仍需按边界表谨慎表述的项目：
+
+```text
+Module51 completed_active_production strict coverage: 3437 / 3437.
+Module100 service-map theorem oracle bridge: SERVICE_MAP_THEOREM_ORACLE_PASS.
+Module101 live scheduler oracle closure: LIVE_SCHEDULER_THEOREM_ORACLE_PASS.
+```
+
 ## 1. 服务率与干扰模型校准
 
 需要从 scheduleurm 运行日志和专门 profiling 得到 regime-dependent service map：
@@ -46,6 +61,18 @@ legacy 和 SOTA-style policies 都使用同一个 measured service cache。它�
 
 Lean 已经证明：如果 candidate set 是 full action space 在 finite-feature fabric metric 下的 \(\rho\)-cover，且服务率对该 metric 是 \(L\)-Lipschitz，则 support loss 和 coordinate capacity-set loss 都至多是 \(L\rho\)。
 
+当前状态要分清两层：
+
+```text
+exact measured finite slices:
+  已经能直接用 measured service cache 做 finite-slice / service-map 证书；
+  Module48 和 Module100 里的 Lrho=0 是 exact enumerated measured slice 口径。
+
+general fabric-cover calibration:
+  Lean theorem 已闭合；
+  但 broad claim 还需要正式 perturbation profiling table 才能把 L 和 rho 写成实测证书。
+```
+
 实验还需要校准：
 
 ```text
@@ -71,6 +98,20 @@ cover 是 fixed family、statewise family、regimewise family，还是 uniform o
 ```
 
 如果某些干扰呈现跳变或非平滑，论文不能硬 claim 小 \(L\rho\)；应把这些区域标成需要 regime split、额外 feature、或 admission guard。
+
+投稿前的 generalized fabric-cover 表至少应有：
+
+| Field | Required content |
+|---|---|
+| `feature_map` | \(\Phi_r(a)\) 的字段来源，如 node/GPU、co-location、VRAM bucket、CPU bucket、NUMA/PCIe class |
+| `weights` | 每个 feature 的 \(w_r\)，以及是工程设定、拟合、还是 worst-case scaling |
+| `cover_population` | fixed/statewise/regimewise；all feasible、sampled feasible、还是 historical observed |
+| `projection` | 每个 full action 到 candidate action 的 \(\pi(a)\) 构造 |
+| `rho` | \(\max_a d_\Phi(a,\pi(a))\)，并列出达到最大值的 action |
+| `sensitivity_samples` | 用于估计 \(|\mu(a)-\mu(a')|/d_\Phi(a,a')\) 的扰动对 |
+| `L` | worst-case envelope 或带 failure probability 的 confidence envelope |
+| `Lrho` | 进入 slack accounting 的 \(L\rho\) |
+| `exclusions` | 不满足 Lipschitz envelope 的区域如何 split、guard 或移出 generalized claim |
 
 ## 3. GPU co-location sweet spot / admission threshold
 
@@ -128,6 +169,19 @@ feature, not a fixed capacity proxy.”
 
 Lean 已经证明 active-bucket event 下 regret 依赖 \(|B_{active}|\)，并证明了 high-probability input event 可以提升为 high-probability regret bound。
 
+当前论文主线只能把 active-bucket 写成 extension / certificate theorem：
+
+```text
+已证明：
+  active-bucket regret event;
+  finite active-bucket union bound;
+  high-probability input event -> high-probability stability certificate.
+
+未实证闭合：
+  当前 Scheduleurm sampler 的 selection probability、feedback model、
+  censoring rule、adaptive bucket creation/reset 和 queue-coupled exploration。
+```
+
 仍需由 scheduleurm 的具体学习/采样机制给出：
 
 ```text
@@ -153,9 +207,30 @@ lower-service domination 也必须按 confidence event 处理：
 如果只对 observed actions 有 lower bound，则主 theorem 只能用于这些 actions 或需要 exploration/cover 证明
 ```
 
+投稿时安全写法：
+
+```text
+We prove a structured active-bucket learning certificate conditional on a
+sampler/feedback confidence event.  The current experiments use measured
+service-cache certificates rather than claiming a complete online learning
+theorem for Scheduleurm's adaptive sampler.
+```
+
 ## 5. Hidden regime / BOCD 检测延迟
 
 Lean 已经有 dwell-time / switching-window backlog budget：检测和切换窗口只要占每个 segment backlog mass 的 \(\theta\) 比例，就把 drift margin 从 \(m\) 降到 \(m-\chi\theta\)。
+
+当前论文主线只能把 hidden-regime 写成 extension：
+
+```text
+已证明：
+  dwell/switching marked-window backlog budget;
+  uniform-in-regime 和 average-regime 口径已经在 math.md 区分。
+
+未实证闭合：
+  BOCD/change-point detector 的 delay tail、false alarm/miss rate、
+  per-segment dwell distribution、switching cost envelope。
+```
 
 还需要实验或具体 detector model 给出：
 
@@ -168,6 +243,14 @@ switching / rollback / migration cost χ
 ```
 
 没有这些量，average-regime stability 和 BOCD delay theorem 只能停在条件式 dwell/switching 证明，不能写成 scheduleurm 的实证闭合定理。
+
+投稿时安全写法：
+
+```text
+Hidden regimes are handled as an extension.  The main stability theorem is not
+an average-regime BOCD theorem; average-regime claims require dwell-time,
+detection-delay, and switching-loss evidence.
+```
 
 ## 6. Penalty 与 slack 消耗
 
@@ -202,20 +285,16 @@ P0                             固定切换/rollback/风险成本
 η = δ-(Lρ+ε_est+β+α1)          最终 drift margin
 ```
 
-当前状态（2026-06-08）：
+当前状态（2026-06-11）：
 
 ```text
 Module50 已补 scheduler candidate-family trace hook；
 SCHEDULEURM_ORACLE_AUDIT_LOG 打开后，pick_placement 会记录真实候选全集、
 chosen action、scheduler sort key、finite bucket/class/regime audit。
 
-这可以验证 selected action 是否为 scheduler-score best。
-但 theorem-grade α0/α1 仍需要每个 candidate 的 lower_service vector、
-queue_vector 和 penalty_units，或者从同一决策状态的 measured service cache
-严格重建这些量。
-
-当前 production trace 状态是 NO_TRACE；历史 selected-only placement_algorithm_audit
-不能冒充 full candidate-set oracle certificate。
+这可以验证 selected action 是否为 scheduler-score best。Module50 当前在一条
+emitted live trace 上是 SCHEDULER_SCORE_PASS，但它本身仍不是 theorem 证书，
+因为 raw trace 使用 scheduler sort-key semantics。
 
 Module55 已补 lower-service enrichment bridge：
   scheduler candidate-family trace
@@ -229,10 +308,18 @@ Module55 已补 lower-service enrichment bridge：
   任意 candidate 缺 lower_service；
   production trace file 不存在。
 
-当前 artifact 仍是 NO_TRACE，因为
-  /home/erzhu419/.claude/scheduler/oracle_trace.jsonl
-不存在。剩余工作是采集真实 production candidate trace，并为每个候选
-candidate_bucket / class_key / regime_key 提供 measured lower-service row。
+Module101 已经把一条 emitted live scheduler trace 闭合：
+  status = LIVE_SCHEDULER_THEOREM_ORACLE_PASS
+  trace_slot_count = 2
+  candidate_count_total = 2
+  alpha0 = 0
+  alpha1 = 0
+
+这解决了之前的 NO_TRACE blocker，但作用域是 per emitted trace。未来任何要写成
+online oracle evidence 的 scheduler dispatch 仍必须重新走：
+  Module50 raw trace
+  -> Module55 lower-service enrichment
+  -> Module52 theorem oracle audit。
 ```
 
 如果估计后 \(\eta\le0\)，理论不是错，而是说明 candidate cover、估计误差、penalty 或 solver error 已经吞掉全部 capacity slack，需要改 candidate generator、降低 penalty、改善 oracle 或加 admission control。
@@ -248,11 +335,10 @@ service certificates。当前 30 天 `completed_active_production` theorem-facin
 视角为：
 
 ```text
-records = 3411
-obligation mapped = 3411
+records = 3437
+strict mapped = 3437
 measurement_required = 0
-obligation mapped_fraction = 1.000000
-strict view mapped = 3411 / 3411
+strict mapped_fraction = 1.000000
 representative mapped = 0
 unmapped = 0
 global_theorem_closed = true
@@ -322,6 +408,8 @@ Module99: Transit real-demand c9_16 throughput_safe_wait_v6 finite-feature profi
 completed-active production theorem population: full strict measured-bucket coverage;
 mapped-slice capacity certificate: positive/usable;
 raw 30-day history: not the theorem population; Module49 raw global flag remains false by design.
+attempted production: not the theorem population.
+future rolling queue rows: not automatically closed until rerun through the classifier/service-certificate pipeline.
 ```
 
 Module53 已经完成第 1 步。Module56 又完成了第一个 production

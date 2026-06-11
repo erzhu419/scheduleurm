@@ -43,6 +43,11 @@ Module27 now turns these references into SOTA-style replay baselines on the
 Scheduleurm measured service cache. They are policy-semantics baselines, not
 direct executions of the external scheduler binaries.
 
+Reviewer-facing claims must keep that distinction.  The current package can say
+that Scheduleurm is compared with Gavel/Pollux/Sia/IADeep-style policy
+semantics under the same measured service cache; it cannot say that the
+external systems' binaries or full stacks were directly beaten.
+
 ## Scheduleurm Tasksets
 
 The tasksets now live in `simulation/tasksets.py`. They use a CPU/GPU pressure
@@ -133,6 +138,9 @@ profile 10 as a capacity boundary. That is now the active q10 benchmark bucket:
 legacy is the highest measured feasible same-bucket cap, profile 9, and the
 calibrated candidate selects profile 8. Do not generalize this result to remote
 CPU-node or data-loader-heavy q10 without a replication run on that bucket.
+
+Likewise, the q00 result is a local light-control bucket certificate, not a
+claim about every low-resource scheduler/control workload.
 
 ## Source Links
 

@@ -21,6 +21,10 @@ traces, then replay policy semantics on the same trace. Gavel/Pollux/Sia-like
 baselines use the measured table; SRPT/Gittins-like baselines use finite-batch
 delay oracles; IADeep/Salus-like baselines use guarded co-location semantics.
 
+This wording is deliberate.  The benchmark compares SOTA-style policy semantics
+on the same measured Scheduleurm service cache.  It does not claim direct
+binary execution of Gavel, Pollux, Sia, IADeep, or Salus.
+
 ## Artifact
 
 The new layer is separate from `scheduler.py`:
@@ -220,3 +224,8 @@ The remaining experimental gap is not benchmark shape. q10 is now real for the
 declared local CPU bucket; remaining breadth is a remote CPU-node/data-loader
 replication, more arrival seeds, and longer stability/load sweeps after the
 module-level policy validations stay passing.
+
+The q00 and q10 tasksets should be cited as declared local-bucket certificates:
+`q00_light_control` for local light-control work and `q10_cpu_host_bound` for
+the local CPU-heavy benchmark bucket.  They are not evidence that every
+CPU-heavy or data-loader-heavy deployment has the same service curve.

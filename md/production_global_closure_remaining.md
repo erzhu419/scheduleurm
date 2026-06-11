@@ -2,6 +2,22 @@
 
 Date: 2026-06-11
 
+Superseded status note:
+
+```text
+This file is a historical Module91 -> Module99 closure log.  The current
+submission-facing production coverage status is:
+  md/or_submission_closure_status_2026_06_11.md
+  md/or_claim_scope_matrix_2026_06_11.md
+  md/experiment_module51_production_coverage_drilldown.md
+
+Current completed_active_production strict coverage after Module101 refresh:
+  records = 3437
+  mapped = 3437
+  unmapped = 0
+  global_theorem_closed = true
+```
+
 This note records the current gap after Module91.  It should be read together
 with:
 
@@ -817,8 +833,8 @@ Module98: project-level hybrid RL production-fabric completed-command classes
 Module99: Transit real-demand c9_16 throughput_safe_wait_v6 finite-feature profile extension
 
 latest Module51 completed_active_production strict view
-record_count = 3411
-mapped_count = 3411
+record_count = 3437
+mapped_count = 3437
 representative_mapped_count = 0
 unmapped_count = 0
 measurement_required_count = 0

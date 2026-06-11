@@ -132,12 +132,15 @@ Module89 closes the c9_16 Transit/FreqHRL pressure-test matrix residual with the
 same pressure unit parser.
 Module90 closes the low-CPU Transit/FreqHRL pytest residual with a separate
 completed-test-job service class.
+Module91 closes the last CPU/SUMO/transit probe-manifest residual by mapping
+the BAMOR c3_8 `aggregate_mujoco_policy_set_union.py` command into its own
+completed-aggregation-command service class.
 
 ```text
-record_count_window = 6694
-mapped_task_count = 3272
-mapped_fraction = 0.488796
-unmapped_task_count = 3422
+record_count_window = 6736
+mapped_task_count = 3275
+mapped_fraction = 0.486194
+unmapped_task_count = 3461
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -147,7 +150,7 @@ action_count_evaluated = 1
 ```
 
 Full estimated-load tables are generated in
-`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83-86
+`md/experiment_artifacts/module49_production_load_strict.md`.  The Module83-91
 strict rows most recently added to the mapped slice are:
 
 | Workload | Count | Lambda |
@@ -168,6 +171,7 @@ strict rows most recently added to the mapped slice are:
 | `transit_trading_pressure_matrix_c33_64_completed_history` | 1 | 0.150000000 |
 | `transit_trading_pressure_matrix_c9_16_completed_history` | 2 | 0.600000000 |
 | `transit_freqhrl_tests_c_le2_completed_history` | 2 | 0.000000772 |
+| `bamor_mujoco_policy_union_c3_8_completed_history` | 1 | 0.000000386 |
 
 Capacity LP:
 
@@ -193,12 +197,12 @@ are diagnostic unless backed by separate equivalence or service-measurement
 certificates.
 
 ```text
-record_count_window = 6694
-mapped_task_count = 5384
-representative_mapped_task_count = 2112
-mapped_fraction = 0.804302
-strict_mapped_fraction = 0.488796
-unmapped_task_count = 1310
+record_count_window = 6736
+mapped_task_count = 5427
+representative_mapped_task_count = 2152
+mapped_fraction = 0.805671
+strict_mapped_fraction = 0.486194
+unmapped_task_count = 1309
 mapped_capacity_usable_for_theorem = true
 global_coverage_usable_for_theorem = false
 usable_for_global_theorem = false
@@ -211,7 +215,7 @@ assignments remain diagnostic, not theorem-grade.
 Module73 does not alter this raw-window LP.  It tightens the separate Module51
 controlled-production population by excluding unobservable external
 auto-adopted stdin/wait-for processes from the theorem-facing arrival stream.
-The representative raw-window artifact has been regenerated after Module90, but
+The representative raw-window artifact has been regenerated after Module91, but
 it remains diagnostic.  Use the strict Module49 artifact above for the current
 proof-facing mapped capacity slice.
 
@@ -305,6 +309,10 @@ Module89 maps c9_16 Transit/FreqHRL pressure-test matrix records with a
 separate completed-history lower-service row.
 Module90 maps low-CPU Transit/FreqHRL pytest records with a completed-test-job
 lower-service row.
+Module91 maps the BAMOR Mujoco policy-set union aggregation command with a
+completed-aggregation-command lower-service row.  This closes the current
+CPU/SUMO/transit probe-manifest residual without charging the aggregation job to
+BAMOR training-step service classes.
 Module78 maps 11 raw-window offline-sumo eval records, 5 H2Oplus/SimpleSAC
 complex shell eval records, 1 ZSW metrics-parser record, 5 RESCO config/main.py
 records, and 2 Nature-emissions records split into extraction and direct SUMO
@@ -330,11 +338,11 @@ It does not close the full production theorem claim.  The remaining blockers
 are empirical coverage blockers:
 
 ```text
-strict unmapped: 3422 / 6694 tasks
-representative unmapped: 1310 / 6694 tasks
-representative-mapped but not theorem-grade: 2112 tasks
+strict unmapped: 3461 / 6736 tasks
+representative unmapped: 1309 / 6736 tasks
+representative-mapped but not theorem-grade: 2152 tasks
 ```
 
 The next global-closure step remains service coverage: add measured buckets for
-the major remaining CPU/SUMO/transit workloads and either prove or measure
-bucket equivalence for the representative GPU RL and CPU mappings.
+the major remaining non-CPU/SUMO/transit production buckets and either prove or
+measure bucket equivalence for the representative GPU RL and CPU mappings.

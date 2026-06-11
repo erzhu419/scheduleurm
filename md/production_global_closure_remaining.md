@@ -2,7 +2,7 @@
 
 Date: 2026-06-11
 
-This note records the current gap after Module90.  It should be read together
+This note records the current gap after Module91.  It should be read together
 with:
 
 ```text
@@ -88,6 +88,7 @@ md/experiment_module88_transit_trading_policy_c33_64_completed_history.md
 md/experiment_module88_transit_trading_pressure_matrix_c33_64_completed_history.md
 md/experiment_module89_transit_trading_pressure_matrix_c9_16_completed_history.md
 md/experiment_module90_transit_freqhrl_tests_c_le2_completed_history.md
+md/experiment_module91_bamor_mujoco_policy_union_c3_8_completed_history.md
 md/experiment_module51_production_coverage_drilldown.md
 md/or_submission_gap_closure.md
 ```
@@ -498,16 +499,22 @@ workload_key = transit_freqhrl_tests_c_le2_completed_history
 completed-active strict mapped count = 2
 feasible profiles = 1
 unit rule = one completed pytest command
+
+completed-history slice = BAMOR c3_8 Mujoco policy-set union aggregation
+workload_key = bamor_mujoco_policy_union_c3_8_completed_history
+completed-active strict mapped count = 1
+feasible profiles = 1
+unit rule = one completed aggregation command
 ```
 
 Not yet closed:
 
 ```text
-completed_active_production records = 3331
-strict completed-active mapped count = 1908
-representative completed-active mapped count = 2938
-measurement_required = 393
-cpu_sumo_transit_eval_or_control remaining = 1 / 3331
+completed_active_production records = 3347
+strict completed-active mapped count = 1911
+representative completed-active mapped count = 2955
+measurement_required = 392
+cpu_sumo_transit_eval_or_control remaining = 0 / 3347
 ```
 
 Module73 changes the production-population boundary, not the service map:
@@ -604,7 +611,8 @@ Module69, 409 / 2797 after Module70, 350 / 2805 after Module71,
 43 / 3095 after Module81, 38 / 3136 after Module82, 26 / 3199 after
 Module83, 20 / 3214 after Module84, 14 / 3211 after Module85, and
 10 / 3255 after Module86, 7 / 3280 after Module87, 5 / 3327 after Module88,
-3 / 3333 after Module89, and 1 / 3331 after Module90.
+3 / 3333 after Module89, 1 / 3331 after Module90, and 0 / 3347 after
+Module91.
 
 Module67 refines the BAMOR c_3_8 CPU-training slice into script-level
 certificates for train-compare, Mujoco, and diagnostic-shard commands.  Module75
@@ -740,6 +748,11 @@ blocker by mapping its two pytest records to a low-CPU completed-history service
 class.  The unit is one completed pytest command because the production command
 does not expose a stable finer-grained progress counter.
 
+Module91 closes the final `cpu_sumo_transit_eval_or_control` residual by mapping
+the BAMOR c3_8 `aggregate_mujoco_policy_set_union.py` command to a separate
+completed-history service class.  The unit is one completed aggregation command;
+the `--preset` count is intentionally not expanded.
+
 ## Interpretation
 
 The mapped capacity slack is positive, but that proves only that the already
@@ -768,13 +781,13 @@ collected and audited.
 
 ## Remaining Probe Order
 
-The next production CPU/SUMO/transit slices should be attacked in this order:
+The regenerated CPU/SUMO/transit probe order is empty:
 
 ```text
-bamor_cpu_training|c_3_8
 ```
 
-For every slice, the required closure pattern is:
+For future non-CPU/SUMO/transit production buckets, the required closure pattern
+remains:
 
 ```text
 1. define a command-shape-specific strict classifier;

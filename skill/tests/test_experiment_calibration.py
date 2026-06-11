@@ -3080,6 +3080,68 @@ def test_module64_bamor_c3_training_completed_history_profile1(check, sch):
           diag=str(report))
 
 
+def test_module91_bamor_mujoco_policy_union_c3_8_completed_history_profile1(check, sch):
+    aggregate = {
+        "id": "bamor-policy-union",
+        "project": "BAMOR",
+        "signature": "BAMOR/auto-adopted/p824600",
+        "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 975.157292842865,
+        "status": "done",
+        "origin": "external",
+        "scheduler_id": None,
+        "log_path": None,
+        "est_vram_mb": 0,
+        "cpu_cores": 7,
+        "ram_mb": 94,
+        "cwd": "/home/erzhu419/mine_code/BAMOR",
+        "cmd": (
+            "python3 /home/erzhu419/mine_code/BAMOR/aggregate_mujoco_policy_set_union.py "
+            "--preset ant20 --preset hopper20 "
+            "--write-json /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_summary.json "
+            "--write-md /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_summary.md "
+            "--write-seed-csv /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_seed_diagnostics.csv"
+        ),
+    }
+    cls = classify_record(aggregate, include_representative=False)
+    check("Module91 maps BAMOR c3_8 policy-union aggregation as its own completed-command class",
+          cls["workload_key"] == "bamor_mujoco_policy_union_c3_8_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and cls["reason"] == "module91_bamor_mujoco_policy_union_c3_8_completed_history"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    profiles = cache.profiles("bamor_mujoco_policy_union_c3_8_completed_history")
+    check("Module91 service cache exposes profile1 policy-union lower service",
+          [record.profile for record in profiles] == [1]
+          and math.isclose(
+              cache.get("bamor_mujoco_policy_union_c3_8_completed_history", 1).aggregate_rate,
+              0.01330542868395684,
+              rel_tol=1e-12,
+          ),
+          diag=str([record.snapshot() for record in profiles]))
+
+    report = build_production_load_certificate(
+        records=[aggregate],
+        window_days=1.0,
+        now_ts=1000.0,
+        taskset_names=("production_bamor_mujoco_policy_union_c3_8_completed_history",),
+    )
+    check("production load certificate sums BAMOR policy-union completed-command units",
+          report["mapped_counts"] == {"bamor_mujoco_policy_union_c3_8_completed_history": 1}
+          and math.isclose(report["mapped_units"]["bamor_mujoco_policy_union_c3_8_completed_history"], 1.0)
+          and math.isclose(
+              report["lambda"]["bamor_mujoco_policy_union_c3_8_completed_history"],
+              1.0 / 86400.0,
+          )
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
 def test_module75_bamor_c9_16_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-c9-compare",
@@ -3726,6 +3788,12 @@ def test_production_bucket_probe_manifest_splits_cpu_sumo_sub_buckets(check, sch
           report["probe_grid"]["task_concurrency_profiles"] == [1, 2, 4, 8]
           and report["theorem_status"] == "measurement_required",
           diag=str(report))
+    empty_report = build_probe_manifest(records=[rows[0]], bucket="gpu_unmeasured_production", window_days=1.0, now_ts=1000.0)
+    check("production bucket probe manifest marks empty buckets as no_remaining_records",
+          empty_report["record_count"] == 0
+          and empty_report["theorem_status"] == "no_remaining_records"
+          and empty_report["probe_grid"]["first_probe_order"] == [],
+          diag=str(empty_report))
 
 
 def test_production_cpu_workload_curve_plan_renders_cpu_only_wrapped_tasks(check, sch):

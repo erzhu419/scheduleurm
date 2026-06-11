@@ -110,6 +110,7 @@ DEFAULT_TASKSETS = (
     "production_bamor_train_compare_c3_8_completed_history",
     "production_bamor_mujoco_c3_8_completed_history",
     "production_bamor_diagnostic_shard_c3_8_completed_history",
+    "production_bamor_mujoco_policy_union_c3_8_completed_history",
     "production_zsw_tsp_sumo_eval_c_le2_completed_history",
     "production_zsw_m21_sumo_eval_c3_8_completed_history",
     "production_sumo_eval_simple_sac_c_le2",
@@ -506,6 +507,19 @@ def classify_record(
                 "module67_bamor_diagnostic_shard_c3_8_completed_history",
                 units=units,
             )
+
+    bamor_policy_union_units = _bamor_mujoco_policy_union_c3_8_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if bamor_policy_union_units is not None:
+        return _mapped(
+            "bamor_mujoco_policy_union_c3_8_completed_history",
+            "strict_measured",
+            "module91_bamor_mujoco_policy_union_c3_8_completed_history",
+            units=bamor_policy_union_units,
+        )
 
     bamor_c9_16_script_units = _bamor_cpu_training_c9_16_script_units(
         row=row,
@@ -1570,6 +1584,27 @@ def _bamor_cpu_training_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
         return None
     _script, units = parsed
     return units if units > 0 else None
+
+
+def _bamor_mujoco_policy_union_c3_8_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> float | None:
+    if est_vram > 0:
+        return None
+    if not (2.0 < float(cpu) <= 8.0):
+        return None
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cmd = str(row.get("cmd") or "")
+    if project != "bamor" and "/bamor" not in cwd and not signature.startswith("bamor/"):
+        return None
+    if _python_script_basename(cmd) != "aggregate_mujoco_policy_set_union.py":
+        return None
+    return 1.0
 
 
 def _bamor_cpu_training_c3_8_script_units(

@@ -1,13 +1,9 @@
 {
   "bucket": "cpu_sumo_transit_eval_or_control",
-  "interpretation": "This manifest extracts real production templates for a missing coverage bucket. It does not certify service until the listed sub-buckets receive progress-bearing service curves.",
+  "interpretation": "No completed/active production records remain in this bucket.",
   "probe_grid": {
-    "cpu_buckets": [
-      "c_3_8"
-    ],
-    "first_probe_order": [
-      "bamor_cpu_training|c_3_8"
-    ],
+    "cpu_buckets": [],
+    "first_probe_order": [],
     "node_targets": [
       "local_cpu",
       "direct_hpc_cpu_node"
@@ -19,92 +15,29 @@
       8
     ]
   },
-  "project_counts": {
-    "BAMOR": 1
-  },
-  "record_count": 1,
+  "project_counts": {},
+  "record_count": 0,
   "resource_summary": {
     "cpu_cores": {
-      "max": 7.0,
-      "median": 7.0,
-      "min": 7.0,
-      "p90": 7.0
+      "max": null,
+      "median": null,
+      "min": null,
+      "p90": null
     },
     "ram_mb": {
-      "max": 94.0,
-      "median": 94.0,
-      "min": 94.0,
-      "p90": 94.0
+      "max": null,
+      "median": null,
+      "min": null,
+      "p90": null
     }
   },
-  "status_counts": {
-    "done": 1
-  },
-  "sub_bucket_count": 1,
-  "sub_buckets": [
-    {
-      "count": 1,
-      "examples": [
-        {
-          "cmd": "python3 /home/erzhu419/mine_code/BAMOR/aggregate_mujoco_policy_set_union.py --preset ant20 --preset hopper20 --write-json /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_summary.json --write-md /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_summary.md --write-seed-csv /home/erzhu419/mine_code/BAMOR/results/mujoco_policy_set_union_3d20_seed_diagnostics.csv",
-          "cpu_cores": 7,
-          "cwd": "/home/erzhu419/mine_code/BAMOR",
-          "description": "auto-adopted: BAMOR on local:CPU-only (1 procs)",
-          "eta_seconds": null,
-          "eta_source": null,
-          "project": "BAMOR",
-          "ram_mb": 94,
-          "signature": "BAMOR/auto-adopted/p824600",
-          "status": "done",
-          "task_id": "t9381"
-        }
-      ],
-      "fraction": 1.0,
-      "project_counts": {
-        "BAMOR": 1
-      },
-      "recommended_probe_profiles": {
-        "representative_cpu_cores_per_task": [
-          7
-        ],
-        "requires_progress_unit": true,
-        "suggested_units": [
-          "completed_seed",
-          "completed_episode",
-          "completed_eval_pair",
-          "completed_training_step"
-        ],
-        "task_concurrency_profiles": [
-          1,
-          2,
-          4,
-          8
-        ]
-      },
-      "resource_summary": {
-        "cpu_cores": {
-          "max": 7.0,
-          "median": 7.0,
-          "min": 7.0,
-          "p90": 7.0
-        },
-        "ram_mb": {
-          "max": 94.0,
-          "median": 94.0,
-          "min": 94.0,
-          "p90": 94.0
-        }
-      },
-      "signature_prefixes": {
-        "BAMOR/auto-adopted/p824600": 1
-      },
-      "sub_bucket": "bamor_cpu_training|c_3_8"
-    }
-  ],
-  "theorem_status": "measurement_required",
+  "status_counts": {},
+  "sub_bucket_count": 0,
+  "sub_buckets": [],
+  "theorem_status": "no_remaining_records",
   "window": {
-    "end_ts": 1781135127.597076,
-    "start_ts": 1778543127.597076,
+    "end_ts": 1781136280.8360338,
+    "start_ts": 1778544280.8360338,
     "window_days": 30.0
   }
 }

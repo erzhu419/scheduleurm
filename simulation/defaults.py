@@ -862,6 +862,15 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module91_bamor_mujoco_policy_union_c3_8_completed_history_reports",
+        workload_key="bamor_mujoco_policy_union_c3_8_completed_history",
+        command_fingerprint="bamor_mujoco_policy_union_c3_8_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module65_zsw_tsp_sumo_eval_c_le2_completed_history_reports",
         workload_key="zsw_tsp_sumo_eval_c_le2_completed_history",
         command_fingerprint="zsw_tsp_sumo_eval_c_le2_completed_history_v1",
@@ -988,6 +997,7 @@ def legacy_policy() -> ReplayPolicy:
             "bamor_train_compare_c3_8_completed_history": 1,
             "bamor_mujoco_c3_8_completed_history": 1,
             "bamor_diagnostic_shard_c3_8_completed_history": 1,
+            "bamor_mujoco_policy_union_c3_8_completed_history": 1,
             "zsw_tsp_sumo_eval_c_le2_completed_history": 1,
             "zsw_m21_sumo_eval_c3_8_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,

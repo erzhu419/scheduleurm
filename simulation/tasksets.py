@@ -1753,6 +1753,44 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="production_bamor_mujoco_policy_union_c3_8_completed_history",
+            purpose=(
+                "A command-shape refinement for the last BAMOR c_3_8 production "
+                "residual. It covers no-GPU aggregate_mujoco_policy_set_union.py "
+                "records requesting 3-8 CPU cores."
+            ),
+            arrival_model=(
+                "30-day Scheduleurm completed/active production arrivals, mapped "
+                "with one completed aggregation command as the conservative unit. "
+                "Only profile 1 is loaded from realized completed-task wall-clock "
+                "history."
+            ),
+            members=(
+                TaskSetMember(
+                    workload_key="bamor_mujoco_policy_union_c3_8_completed_history",
+                    resource_kind="cpu_sumo_transit",
+                    task_count=1,
+                    total_units=1,
+                    resource_count=1,
+                    variation_cv=0.35,
+                    quadrant="high_cpu_low_gpu",
+                    role="production coverage blocker completed-history BAMOR Mujoco policy-union sub-slice",
+                    benchmark_source=(
+                        "Scheduleurm module91 completed-history wall-clock audit for "
+                        "BAMOR c_3_8 aggregate_mujoco_policy_set_union.py records."
+                    ),
+                    required_profiles=(1,),
+                    empirical_status="real",
+                    note=(
+                        "The service unit is one completed aggregation command. "
+                        "Preset counts are intentionally not expanded, because the "
+                        "production artifact generator exposes command completion "
+                        "rather than a stable per-preset progress counter."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="production_bamor_train_compare_c9_16_completed_history",
             purpose=(
                 "A script-level BAMOR c_9_16 closure slice. It covers no-GPU "

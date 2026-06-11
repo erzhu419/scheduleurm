@@ -51,6 +51,8 @@ def build_coverage_drilldown(
         row for row in rows if production_predicate(row, population_label(row))
     ]
     obligations = _coverage_obligations(production_rows)
+    production_strict = views["completed_active_production"]["strict"]
+    global_closed = bool(production_strict["usable_for_global_theorem"])
     return {
         "window_days": float(window_days),
         "window": {
@@ -61,10 +63,13 @@ def build_coverage_drilldown(
         "view_count": len(views),
         "views": views,
         "completed_active_production_obligations": obligations,
-        "global_theorem_closed": bool(
-            views["completed_active_production"]["representative"]["usable_for_global_theorem"]
-        ),
+        "global_theorem_closed": global_closed,
         "interpretation": (
+            "The reviewer-facing completed-active production population has full "
+            "strict measured-bucket coverage. This coverage drilldown intentionally "
+            "does not solve the capacity LP; use Module49 for mapped-slice capacity "
+            "delta."
+            if global_closed else
             "Global production stability is not closed until the reviewer-facing "
             "production population has full strict measured-bucket coverage, or "
             "each remaining bucket has its own theorem-grade service certificate. "
@@ -124,6 +129,7 @@ def _is_unobservable_external_auto_adopted(row: Mapping[str, Any], *, text: str)
         or cmd.endswith("/python -")
         or cmd.endswith("python -")
         or "scheduler.py wait-for" in cmd
+        or "scheduler.py watch" in cmd
         or "freqduet_autoadopt_spin.py" in cmd
     )
 
@@ -223,7 +229,7 @@ def _classification_summary(rows: Iterable[Mapping[str, Any]], *, include_repres
         "delta": None,
         "mapped_capacity_usable_for_theorem": None,
         "global_coverage_usable_for_theorem": full_strict_coverage,
-        "usable_for_global_theorem": False,
+        "usable_for_global_theorem": full_strict_coverage,
         "unmapped_reasons": dict(unmapped_reasons),
         "capacity_evaluated_in_this_report": False,
     }

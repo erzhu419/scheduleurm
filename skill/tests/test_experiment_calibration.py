@@ -3585,6 +3585,188 @@ def test_module96_resac_review5_jax_train_fabric_completed_history_profile1(chec
           diag=str(report))
 
 
+def test_module97_cpu_heavy_local_fabric_completed_history_profile1(check, sch):
+    row = {
+        "id": "module97-cpu-heavy",
+        "project": "BAPR",
+        "signature": "BAPR/audit/cpu-stage",
+        "description": "BAPR CPU audit stage sweep",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 0,
+        "cpu_cores": 8,
+        "ram_mb": 4096,
+        "cmd": "python analysis/cpu_eval_stage.py --sweep final",
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module97 maps residual CPU-heavy local fabric rows as strict completed-history commands",
+          cls["workload_key"] == "cpu_heavy_local_fabric_completed_history"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 1.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    key = "cpu_heavy_local_fabric_completed_history"
+    check("Module97 service cache exposes production-fabric profile1 lower service",
+          [record.profile for record in cache.profiles(key)] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.00011320581045477181, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in cache.profiles(key)]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module97_cpu_heavy_local_fabric_completed_history",),
+    )
+    check("production load certificate sums Module97 completed-command units",
+          report["mapped_counts"] == {"cpu_heavy_local_fabric_completed_history": 1}
+          and math.isclose(report["mapped_units"]["cpu_heavy_local_fabric_completed_history"], 1.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module98_hybrid_rl_project_fabric_completed_history_profile1(check, sch):
+    rows = [
+        {
+            "id": "module98-resac-jmlr",
+            "project": "RE-SAC-JMLR",
+            "signature": "BAPR/jmlr/continuous-gravity",
+            "description": "RE-SAC JMLR Ant-v2 GPU run",
+            "submitted_at": 900.0,
+            "started_at": 900.0,
+            "finished_at": 1000.0,
+            "status": "done",
+            "est_vram_mb": 512,
+            "cpu_cores": 2,
+            "cmd": "python -m jax_experiments.train --algo resac --env Ant-v2 --device gpu",
+        },
+        {
+            "id": "module98-csbapr",
+            "project": "CS-BAPR",
+            "signature": "CS-BAPR-v2-structured/Hopper-v4/bapr/seed0",
+            "description": "CS-BAPR structured Hopper-v4 BAPR GPU run",
+            "submitted_at": 901.0,
+            "started_at": 901.0,
+            "finished_at": 1001.0,
+            "status": "done",
+            "est_vram_mb": 354,
+            "cpu_cores": 2,
+            "cmd": "python scripts/train_csbapr.py --env Hopper-v4 --method bapr --seed 0",
+        },
+    ]
+    classified = {
+        row["id"]: classify_record(row, include_representative=False)
+        for row in rows
+    }
+    check("Module98 maps GPU/RL project families to distinct strict fabric keys",
+          classified["module98-resac-jmlr"]["workload_key"] == "hybrid_rl_resac_jmlr_project_fabric_completed_history"
+          and classified["module98-csbapr"]["workload_key"] == "hybrid_rl_cs_bapr_project_fabric_completed_history"
+          and all(cls["mapping_mode"] == "strict_measured" for cls in classified.values()),
+          diag=str(classified))
+
+    cache = build_default_cache()
+    expected_rates = {
+        "hybrid_rl_resac_jmlr_project_fabric_completed_history": 0.000533640795544505,
+        "hybrid_rl_cs_bapr_project_fabric_completed_history": 0.0004760909658252201,
+    }
+    check("Module98 service cache exposes project-fabric profile1 lower services",
+          all([record.profile for record in cache.profiles(key)] == [1] for key in expected_rates)
+          and all(math.isclose(cache.get(key, 1).aggregate_rate, rate, rel_tol=1e-12)
+                  for key, rate in expected_rates.items()),
+          diag=str({key: [record.snapshot() for record in cache.profiles(key)] for key in expected_rates}))
+
+    report = build_production_load_certificate(
+        records=rows,
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module98_hybrid_rl_project_fabric_completed_history",),
+    )
+    check("production load certificate sums Module98 completed-command units",
+          report["mapped_counts"] == {
+              "hybrid_rl_cs_bapr_project_fabric_completed_history": 1,
+              "hybrid_rl_resac_jmlr_project_fabric_completed_history": 1,
+          }
+          and all(math.isclose(value, 1.0) for value in report["mapped_units"].values())
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module99_transit_real_demand_c9_16_profile_extension(check, sch):
+    row = {
+        "id": "module99-safe-wait",
+        "project": "freq_hrl",
+        "signature": "freq_hrl_native_real_demand_throughput_safe_wait_v6_48seedidx_fixed_noworkers",
+        "description": "Freq-HRL native real-demand throughput-safe wait v6 fixed no-workers",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "status": "running",
+        "est_vram_mb": 0,
+        "cpu_cores": 10,
+        "ram_mb": 4096,
+        "cwd": "/home/erzhu419/mine_code/TransitDuet",
+        "cmd": (
+            "python -m freq_hrl.experiments.transit.native_real_demand_control_validation "
+            "--sources afc apc --seed-index-start 5 --seed-index-end 15 "
+            "--seed-base 31 --seed-step 10 --episodes 1 "
+            "--control-profile throughput_safe_wait_v6"
+        ),
+    }
+    cls = classify_record(row, include_representative=False)
+    check("Module99 maps c9_16 throughput-safe-wait native real-demand rows to profile-extension class",
+          cls["workload_key"] == "transit_native_real_demand_safe_wait_c9_16_profile_extension"
+          and cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(cls["units"]), 12.0),
+          diag=str(cls))
+
+    cache = build_default_cache()
+    key = "transit_native_real_demand_safe_wait_c9_16_profile_extension"
+    check("Module99 service cache exposes finite-feature extension lower service",
+          [record.profile for record in cache.profiles(key)] == [1]
+          and math.isclose(cache.get(key, 1).aggregate_rate, 0.0092741969369456, rel_tol=1e-12),
+          diag=str([record.snapshot() for record in cache.profiles(key)]))
+
+    report = build_production_load_certificate(
+        records=[row],
+        window_days=30.0,
+        now_ts=1000.0,
+        taskset_names=("production_module99_transit_real_demand_c9_16_profile_extension",),
+    )
+    check("production load certificate sums Module99 parsed real-demand units",
+          report["mapped_counts"] == {key: 1}
+          and math.isclose(report["mapped_units"][key], 12.0)
+          and report["global_coverage_usable_for_theorem"]
+          and report["mapped_capacity_usable_for_theorem"],
+          diag=str(report))
+
+
+def test_module51_global_theorem_flag_tracks_strict_completed_active_coverage(check, sch):
+    row = {
+        "id": "module51-strict",
+        "project": "CS-BAPR",
+        "signature": "CS-BAPR-v2-structured/Hopper-v4/bapr/seed0",
+        "description": "CS-BAPR structured Hopper-v4 BAPR GPU run",
+        "submitted_at": 900.0,
+        "started_at": 900.0,
+        "finished_at": 1000.0,
+        "status": "done",
+        "est_vram_mb": 354,
+        "cpu_cores": 2,
+        "cmd": "python scripts/train_csbapr.py --env Hopper-v4 --method bapr --seed 0",
+    }
+    closed = build_coverage_drilldown(records=[row], window_days=1.0, now_ts=1000.0)
+    strict = closed["views"]["completed_active_production"]["strict"]
+    check("Module51 global theorem flag is true exactly when completed-active strict coverage is full",
+          closed["global_theorem_closed"]
+          and strict["usable_for_global_theorem"]
+          and strict["representative_mapped_task_count"] == 0
+          and strict["unmapped_task_count"] == 0,
+          diag=str(closed))
+
+
 def test_module75_bamor_c9_16_training_completed_history_profile1(check, sch):
     compare = {
         "id": "bamor-c9-compare",
@@ -4178,6 +4360,21 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
             "scheduler_id": None,
             "log_path": None,
         },
+        {
+            "id": "external-watch",
+            "project": "scheduleurm",
+            "signature": "scheduleurm/auto-adopted/p1398463",
+            "description": "auto-adopted: scheduleurm on local:CPU-only (1 procs)",
+            "submitted_at": 907.0,
+            "status": "running",
+            "est_vram_mb": 0,
+            "cpu_cores": 1,
+            "cmd": "/usr/bin/python3 /home/erzhu419/.claude/skills/scheduler/scheduler.py watch",
+            "origin": "external",
+            "auto_adopted": True,
+            "scheduler_id": None,
+            "log_path": None,
+        },
     ]
     report = build_coverage_drilldown(records=rows, window_days=1.0, now_ts=1000.0)
     completed = report["views"]["completed_active_production"]["representative"]
@@ -4200,9 +4397,11 @@ def test_production_coverage_drilldown_separates_population_and_obligations(chec
           population_label(rows[4])["label"] == "excluded_external_auto_adopted_unobservable"
           and population_label(rows[5])["label"] == "excluded_external_auto_adopted_unobservable"
           and population_label(rows[6])["label"] == "excluded_external_auto_adopted_unobservable"
+          and population_label(rows[7])["label"] == "excluded_external_auto_adopted_unobservable"
           and not population_label(rows[4])["include_completed_active"]
           and not population_label(rows[5])["include_completed_active"]
-          and not population_label(rows[6])["include_completed_active"],
+          and not population_label(rows[6])["include_completed_active"]
+          and not population_label(rows[7])["include_completed_active"],
           diag=str([population_label(row) for row in rows]))
     check("bucket obligation maps representative RL but not unmeasured transit CPU",
           bucket_obligation(rows[2])["status"] == "mapped"

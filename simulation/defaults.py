@@ -1018,6 +1018,59 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        ARTIFACT_ROOT / "module97_cpu_heavy_local_fabric_completed_history_reports",
+        workload_key="cpu_heavy_local_fabric_completed_history",
+        command_fingerprint="cpu_heavy_local_fabric_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu-fabric",
+    )
+    for artifact_name, workload_key in (
+        (
+            "module98_hybrid_rl_resac_jmlr_project_fabric_completed_history",
+            "hybrid_rl_resac_jmlr_project_fabric_completed_history",
+        ),
+        (
+            "module98_hybrid_rl_resac_project_fabric_completed_history",
+            "hybrid_rl_resac_project_fabric_completed_history",
+        ),
+        (
+            "module98_hybrid_rl_bapr_project_fabric_completed_history",
+            "hybrid_rl_bapr_project_fabric_completed_history",
+        ),
+        (
+            "module98_hybrid_rl_bapr_v15_project_fabric_completed_history",
+            "hybrid_rl_bapr_v15_project_fabric_completed_history",
+        ),
+        (
+            "module98_hybrid_rl_cs_bapr_project_fabric_completed_history",
+            "hybrid_rl_cs_bapr_project_fabric_completed_history",
+        ),
+        (
+            "module98_hybrid_rl_sensing_v10k_project_fabric_completed_history",
+            "hybrid_rl_sensing_v10k_project_fabric_completed_history",
+        ),
+    ):
+        _add_summary_dir(
+            cache,
+            ARTIFACT_ROOT / f"{artifact_name}_reports",
+            workload_key=workload_key,
+            command_fingerprint=f"{workload_key}_v1",
+            resource_kind="hybrid_rl",
+            total_units=1,
+            node_bucket="production-history:gpu-fabric",
+        )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module99_transit_real_demand_c9_16_profile_extension_reports",
+        workload_key="transit_native_real_demand_safe_wait_c9_16_profile_extension",
+        command_fingerprint="transit_native_real_demand_safe_wait_c9_16_profile_extension_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu-fabric",
+    )
+    _add_summary_dir(
+        cache,
         ARTIFACT_ROOT / "module65_zsw_tsp_sumo_eval_c_le2_completed_history_reports",
         workload_key="zsw_tsp_sumo_eval_c_le2_completed_history",
         command_fingerprint="zsw_tsp_sumo_eval_c_le2_completed_history_v1",
@@ -1164,6 +1217,14 @@ def legacy_policy() -> ReplayPolicy:
             "transit_native_real_demand_batch_c9_16_completed_history": 1,
             "resac_conda_pack_completed_history": 1,
             "resac_review5_jax_train_fabric_completed_history": 1,
+            "cpu_heavy_local_fabric_completed_history": 1,
+            "hybrid_rl_resac_jmlr_project_fabric_completed_history": 1,
+            "hybrid_rl_resac_project_fabric_completed_history": 1,
+            "hybrid_rl_bapr_project_fabric_completed_history": 1,
+            "hybrid_rl_bapr_v15_project_fabric_completed_history": 1,
+            "hybrid_rl_cs_bapr_project_fabric_completed_history": 1,
+            "hybrid_rl_sensing_v10k_project_fabric_completed_history": 1,
+            "transit_native_real_demand_safe_wait_c9_16_profile_extension": 1,
             "zsw_tsp_sumo_eval_c_le2_completed_history": 1,
             "zsw_m21_sumo_eval_c3_8_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,

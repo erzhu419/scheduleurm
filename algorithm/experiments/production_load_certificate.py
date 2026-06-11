@@ -112,6 +112,9 @@ DEFAULT_TASKSETS = (
     "production_module94_remaining_completed_history",
     "production_module95_transit_resac_artifact_completed_history",
     "production_module96_resac_review5_jax_train_fabric_completed_history",
+    "production_module97_cpu_heavy_local_fabric_completed_history",
+    "production_module98_hybrid_rl_project_fabric_completed_history",
+    "production_module99_transit_real_demand_c9_16_profile_extension",
     "production_freqduet_cpu_ablation_c9_16",
     "production_freqduet_runner_v3_c_le2_completed_history",
     "production_bamor_train_compare_c3_8_completed_history",
@@ -466,6 +469,15 @@ def classify_record(
         workload_key, units, reason = module95_units
         return _mapped(workload_key, "strict_measured", reason, units=units)
 
+    module99_units = _module99_transit_real_demand_c9_16_profile_extension_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if module99_units is not None:
+        workload_key, units, reason = module99_units
+        return _mapped(workload_key, "strict_measured", reason, units=units)
+
     bamor_c_le2_script_units = _bamor_cpu_training_c_le2_script_units(
         row=row,
         est_vram=est_vram,
@@ -753,6 +765,20 @@ def classify_record(
     module96_units = _module96_resac_review5_jax_train_units(row=row, est_vram=est_vram)
     if module96_units is not None:
         workload_key, reason = module96_units
+        return _mapped(workload_key, "strict_measured", reason, units=1.0)
+
+    module97_units = _module97_cpu_heavy_local_fabric_units(
+        row=row,
+        est_vram=est_vram,
+        cpu=cpu,
+    )
+    if module97_units is not None:
+        workload_key, reason = module97_units
+        return _mapped(workload_key, "strict_measured", reason, units=1.0)
+
+    module98_units = _module98_hybrid_rl_project_fabric_units(row=row, est_vram=est_vram)
+    if module98_units is not None:
+        workload_key, reason = module98_units
         return _mapped(workload_key, "strict_measured", reason, units=1.0)
 
     if include_representative:
@@ -1244,6 +1270,41 @@ def _module95_transit_resac_artifact_units(
             )
 
     return None
+
+
+def _module99_transit_real_demand_c9_16_profile_extension_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, float, str] | None:
+    if est_vram > 0:
+        return None
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    if not (8.0 < float(cpu) <= 16.0):
+        return None
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if not any(token in text for token in ("transitduet", "freq_hrl", "freqhrl")):
+        return None
+    if "native_real_demand_control_validation" not in text:
+        return None
+    if "throughput_safe_wait_v6" not in text:
+        return None
+    tokens = _shlex_tokens(str(row.get("cmd") or ""))
+    source_count = _transit_count_option(tokens, "--sources", 2)
+    units = 2.0 * source_count * _transit_seed_episode_units(tokens, seed_default=3)
+    if units <= 0:
+        return None
+    return (
+        "transit_native_real_demand_safe_wait_c9_16_profile_extension",
+        float(units),
+        "module99_transit_real_demand_c9_16_profile_extension",
+    )
 
 
 def _parse_native_promotion_seedrange_units(cmd: str) -> float | None:
@@ -1859,6 +1920,72 @@ def _module96_resac_review5_jax_train_units(
     return (
         "resac_review5_jax_train_fabric_completed_history",
         "module96_resac_review5_jax_train_fabric_completed_history",
+    )
+
+
+def _module97_cpu_heavy_local_fabric_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+    cpu: float,
+) -> tuple[str, str] | None:
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    if est_vram > 0 or float(cpu) < 4.0:
+        return None
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if not any(
+        token in text
+        for token in ("analysis", "audit", "cpu_eval", "stage", "sweep", "preprocess")
+    ):
+        return None
+    return (
+        "cpu_heavy_local_fabric_completed_history",
+        "module97_cpu_heavy_local_fabric_completed_history",
+    )
+
+
+def _module98_hybrid_rl_project_fabric_units(
+    *,
+    row: Mapping[str, Any],
+    est_vram: float,
+) -> tuple[str, str] | None:
+    status = str(row.get("status") or "").strip().lower()
+    if status in {"cancelled", "failed", "forgotten"}:
+        return None
+    if est_vram <= 0:
+        return None
+    project = str(row.get("project") or "").strip().lower()
+    text = " ".join(
+        str(row.get(key) or "")
+        for key in ("project", "signature", "description", "cmd", "cwd")
+    ).lower()
+    if not any(
+        token in text
+        for token in (
+            "re-sac", "resac", "bapr", "jax_experiments.train",
+            "sac_", "halfcheetah", "walker2d", "hopper", "ant-v2", "humanoid",
+        )
+    ):
+        return None
+    project_keys = {
+        "re-sac-jmlr": "hybrid_rl_resac_jmlr_project_fabric_completed_history",
+        "re-sac": "hybrid_rl_resac_project_fabric_completed_history",
+        "bapr": "hybrid_rl_bapr_project_fabric_completed_history",
+        "bapr_v15": "hybrid_rl_bapr_v15_project_fabric_completed_history",
+        "cs-bapr": "hybrid_rl_cs_bapr_project_fabric_completed_history",
+        "sensing-compressibility-v10k": "hybrid_rl_sensing_v10k_project_fabric_completed_history",
+    }
+    workload_key = project_keys.get(project)
+    if workload_key is None:
+        return None
+    return (
+        workload_key,
+        "module98_hybrid_rl_project_fabric_completed_history",
     )
 
 

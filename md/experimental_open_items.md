@@ -242,17 +242,20 @@ candidate_bucket / class_key / regime_key 提供 measured lower-service row。
 Module51 已经把 raw queue history 和 reviewer-facing production population
 拆开。Module73 进一步把无 scheduler id、无 log、无可复现 progress unit 的
 external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
-population 外。Module92--96 又把剩余非 CPU/SUMO/transit production buckets
-拆成 command-shape-specific strict service certificates。当前 30 天
-`completed_active_production` obligations 视角为：
+population 外。Module92--99 又把剩余非 CPU/SUMO/transit、CPU-fabric、
+GPU/RL-fabric 和 c9_16 Transit profile-extension buckets 拆成 strict
+service certificates。当前 30 天 `completed_active_production` theorem-facing
+视角为：
 
 ```text
-records = 3378
-obligation mapped = 3378
+records = 3411
+obligation mapped = 3411
 measurement_required = 0
 obligation mapped_fraction = 1.000000
-strict view mapped = 2349 / 3378
-representative view mapped = 3378 / 3378
+strict view mapped = 3411 / 3411
+representative mapped = 0
+unmapped = 0
+global_theorem_closed = true
 ```
 
 曾经最大的 CPU/SUMO/transit blocker 闭合轨迹是：
@@ -299,7 +302,8 @@ after Module91:  cpu_sumo_transit_eval_or_control = 0 / 3347 completed-active re
 
 所以 CPU/SUMO/transit production blocker 已经从 Module81 的 43 / 3095
 闭合到 0 / 3347。随后 Module92--96 闭合了剩余 non-CPU/SUMO/transit
-measurement-required obligations：
+measurement-required obligations，Module97--99 又把 representative
+strictness gaps 升级为 strict service certificates：
 
 ```text
 Module92: Asumption Agent unittest / meta-QA / phase2 command certificates.
@@ -307,17 +311,17 @@ Module93: FreqDuet spacectx_screen_ep100_wu10 c3_8 shard certificate.
 Module94: residual CFCMT, Asumption Agent, sensing, Nature, Scheduleurm control-plane, BAPR/RE-SAC eval, H2Oplus command certificates.
 Module95: Transit real-demand c9_16 shards and RE-SAC conda-pack artifact command.
 Module96: RE-SAC review5 JAX train production-fabric burst service certificate.
+Module97: residual CPU-heavy production-fabric completed-command certificate.
+Module98: project-level hybrid RL production-fabric completed-command certificates.
+Module99: Transit real-demand c9_16 throughput_safe_wait_v6 finite-feature profile extension.
 ```
 
-注意这不等于可以在论文里写“全生产 strict theorem 已完全闭合”。当前
-Module51 obligations 已经没有 `measurement_required`，Module49 mapped-slice
-capacity 也为 true；但 strict view 里仍有 representative buckets，例如
-`hybrid_rl_resac_ant` 和 `cpu_heavy_local_bench`。论文中应写成：
+论文中应写成：
 
 ```text
-completed-active production obligations: fully mapped, no measurement_required bucket;
+completed-active production theorem population: full strict measured-bucket coverage;
 mapped-slice capacity certificate: positive/usable;
-full strict measured-bucket theorem: still requires upgrading or justifying representative buckets.
+raw 30-day history: not the theorem population; Module49 raw global flag remains false by design.
 ```
 
 Module53 已经完成第 1 步。Module56 又完成了第一个 production

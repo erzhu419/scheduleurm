@@ -20,12 +20,19 @@ strict mapped_capacity_usable_for_theorem = true
 representative mapped_capacity_usable_for_theorem = true
 ```
 
-This closes the measurement-required obligation list.  It does not license the
-stronger sentence "the full production strict theorem is closed" because the
-strict view still contains representative buckets.  The honest claim is:
+At the Module92--96 stage, this closed the measurement-required obligation
+list.  It did not license the stronger sentence "the full production strict
+theorem is closed" because the strict view still contained representative
+buckets.  The honest claim at that stage was:
 completed-active obligations are fully mapped, and the mapped-slice capacity
 certificate is positive/usable; upgrading every representative bucket to strict
 measured service remains a separate standard.
+
+Update after Modules97--99: the remaining representative buckets in the
+Module51 `completed_active_production` view were upgraded to strict
+service-certificate classes.  See
+`md/production_global_closure_module97_99.md` for the current theorem-facing
+closure status.
 
 ## Modules
 

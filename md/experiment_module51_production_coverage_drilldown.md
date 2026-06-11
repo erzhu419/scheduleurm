@@ -36,18 +36,18 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module91
+## Current Result After Module97--99
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3347
-representative mapped = 2955
-strict mapped = 1911
-unmapped / measurement-required = 392
-representative mapped_fraction = 0.882880
-capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
-global theorem closed = false
+completed_active_production records = 3411
+strict mapped = 3411
+representative mapped = 0
+unmapped / measurement-required = 0
+strict mapped_fraction = 1.000000
+capacity slack on mapped raw-window strict load from Module49 delta = 0.00000912324072761479
+global theorem closed = true
 ```
 
 Module73 is not a service-curve shortcut.  It tightens the theorem-facing
@@ -56,9 +56,15 @@ with no scheduler id and no log are not scheduler-controlled arrivals.  They
 remain operational telemetry/background-load evidence, but they are outside the
 arrival stream that Scheduleurm can assign to service actions.
 
-The generated artifact
+Modules92--96 close the remaining measurement-required command-shape buckets.
+Modules97--99 then upgrade the residual representative CPU-heavy and GPU/RL
+fabric buckets to strict service certificates and close the two c9_16 Transit
+throughput-safe-wait active rows with a finite-feature profile-extension
+certificate.  The generated artifact
 `md/experiment_artifacts/module51_production_coverage_drilldown.md` contains the
-full current strict mapped-key table.  The Module78 additions are:
+full current strict mapped-key table.
+
+The Module78 additions are:
 
 ```text
 offline_sumo_eval_c_le2_completed_history = 9 / 2910 completed-active production records

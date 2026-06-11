@@ -41,6 +41,7 @@ def build_probe_manifest(
         and bucket_obligation(row).get("bucket") == bucket
     ]
     sub_buckets = _sub_bucket_rows(rows)
+    has_remaining_records = bool(rows)
     return {
         "bucket": bucket,
         "window": {"start_ts": start_ts, "end_ts": end_ts, "window_days": float(window_days)},
@@ -51,11 +52,13 @@ def build_probe_manifest(
         "sub_bucket_count": len(sub_buckets),
         "sub_buckets": sub_buckets[:max(1, int(max_groups))],
         "probe_grid": _probe_grid(rows),
-        "theorem_status": "measurement_required",
+        "theorem_status": "measurement_required" if has_remaining_records else "no_remaining_records",
         "interpretation": (
             "This manifest extracts real production templates for a missing "
             "coverage bucket. It does not certify service until the listed "
             "sub-buckets receive progress-bearing service curves."
+            if has_remaining_records
+            else "No completed/active production records remain in this bucket."
         ),
     }
 

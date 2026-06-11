@@ -36,16 +36,16 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module90
+## Current Result After Module91
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3331
-representative mapped = 2938
-strict mapped = 1908
-unmapped / measurement-required = 393
-representative mapped_fraction = 0.882017
+completed_active_production records = 3347
+representative mapped = 2955
+strict mapped = 1911
+unmapped / measurement-required = 392
+representative mapped_fraction = 0.882880
 capacity slack on mapped raw-window strict load from Module49 delta = 0.000011136
 global theorem closed = false
 ```
@@ -157,6 +157,12 @@ Module90 then adds:
 transit_freqhrl_tests_c_le2_completed_history = 2 / 3331 completed-active production records
 ```
 
+Module91 then adds:
+
+```text
+bamor_mujoco_policy_union_c3_8_completed_history = 1 / 3347 completed-active production records
+```
+
 Module51 now intentionally reports coverage only.  The mapped representative
 raw-window load still has positive capacity slack in Module49, but that does
 not close the global theorem because measured coverage is still incomplete.
@@ -165,16 +171,15 @@ not close the global theorem because measured coverage is still incomplete.
 
 | Bucket | Status | Count | Fraction |
 |---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 163 | 0.048934 |
-| `cpu_eval_generic` | measurement required | 82 | 0.024617 |
-| `artifact_io_control` | measurement required | 77 | 0.023116 |
-| `scheduler_control_plane` | measurement required | 56 | 0.016812 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004203 |
-| `cpu_sumo_transit_eval_or_control` | measurement required | 1 | 0.000300 |
+| `generic_cpu_python` | measurement required | 163 | 0.048700 |
+| `cpu_eval_generic` | measurement required | 82 | 0.024500 |
+| `artifact_io_control` | measurement required | 77 | 0.023006 |
+| `scheduler_control_plane` | measurement required | 56 | 0.016731 |
+| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004183 |
 
-The dominant remaining production-coverage blocker is still the
-CPU/SUMO/transit evaluation/control family, but it has been reduced from the
-pre-Module56 count:
+The former dominant CPU/SUMO/transit evaluation/control blocker is now closed
+in the completed-active production view.  Its reduction from the pre-Module56
+count is:
 
 ```text
 before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504
@@ -213,6 +218,7 @@ after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280
 after Module88:  cpu_sumo_transit_eval_or_control = 5 / 3327
 after Module89:  cpu_sumo_transit_eval_or_control = 3 / 3333
 after Module90:  cpu_sumo_transit_eval_or_control = 1 / 3331
+after Module91:  cpu_sumo_transit_eval_or_control = 0 / 3347
 ```
 
 Module67 is a capacity-certification refinement rather than a coverage increase:
@@ -317,6 +323,10 @@ completed-active pytest commands into a separate completed-history service
 class.  The unit is one completed pytest command; individual test cases are not
 expanded because the production command exposes command completion, not a stable
 per-test progress counter.
+Module91 closes the last CPU/SUMO/transit probe-manifest residual by mapping the
+BAMOR c3_8 Mujoco policy-set union aggregation command into its own
+completed-history service class.  The unit is one completed aggregation command,
+not a training step and not a per-preset count.
 
 ## Interpretation
 
@@ -324,14 +334,15 @@ This is not a reason to weaken the math.  It identifies the next empirical
 closure target:
 
 ```text
-measure a theorem-grade service curve for the remaining cpu_sumo_transit_eval_or_control sub-bucket
-then add that bucket to the production load certificate and capacity action slice
+keep the cpu_sumo_transit_eval_or_control bucket closed under strict measured mapping
+then attack the remaining non-CPU/SUMO/transit production buckets separately
 ```
 
 Until the remaining service buckets are measured or otherwise certified, a
 reviewer-facing global production theorem remains open.  The current valid claim
 is narrower: the measured mapped representative production load is inside the
-current measured service slice, the exact `run_freqduet_ablation.py` c17_32
+current measured service slice, the CPU/SUMO/transit probe-manifest bucket has
+no remaining completed-active records, the exact `run_freqduet_ablation.py` c17_32
 production sub-slice is strictly measured, and the exact
 `runner_v3.py --config configs_freqduet/F_allfreq_alllayers_hiro.yaml` c9_16
 sub-slice is strictly measured.  Module58 additionally maps 110 completed-active
@@ -379,6 +390,8 @@ eval-command shards.  Module87 excludes 2 external auto-adopt spin helpers from
 the controlled-arrival population.  Module88 maps 2 completed-active c33_64
 Transit/FreqHRL trading records.  Module89 maps 2 completed-active c9_16
 Transit/FreqHRL pressure-matrix records.  Module90 maps 2 completed-active
-low-CPU Transit/FreqHRL pytest commands.  The next closure target is now the
-single remaining CPU/SUMO/transit residual bucket, `bamor_cpu_training|c_3_8`,
-in the regenerated Module53 manifest.
+low-CPU Transit/FreqHRL pytest commands.  Module91 maps the last completed-active
+BAMOR policy-union aggregation command.  The regenerated Module53 manifest has
+an empty first-probe order for `cpu_sumo_transit_eval_or_control`; global
+production closure now shifts to the remaining non-CPU/SUMO/transit
+measurement-required buckets.

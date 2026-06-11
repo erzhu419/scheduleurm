@@ -245,14 +245,14 @@ external auto-adopted stdin/wait-for 进程排除在 controlled-arrival theorem
 population 外。当前 30 天 `completed_active_production` 视角为：
 
 ```text
-records = 3331
-representative mapped = 2938
-strict mapped = 1908
-measurement_required = 393
-mapped_fraction = 0.882017
+records = 3347
+representative mapped = 2955
+strict mapped = 1911
+measurement_required = 392
+mapped_fraction = 0.882880
 ```
 
-最大未闭合 bucket 是：
+曾经最大的 CPU/SUMO/transit blocker 闭合轨迹是：
 
 ```text
 before Module56: cpu_sumo_transit_eval_or_control = 1245 / 2504 completed-active records
@@ -291,12 +291,15 @@ after Module87:  cpu_sumo_transit_eval_or_control = 7 / 3280 completed-active re
 after Module88:  cpu_sumo_transit_eval_or_control = 5 / 3327 completed-active records
 after Module89:  cpu_sumo_transit_eval_or_control = 3 / 3333 completed-active records
 after Module90:  cpu_sumo_transit_eval_or_control = 1 / 3331 completed-active records
+after Module91:  cpu_sumo_transit_eval_or_control = 0 / 3347 completed-active records
 ```
 
-所以 production-global theorem 的下一步不是继续泛化 q01/q11，而是：
+所以 CPU/SUMO/transit production blocker 已经从 Module81 的 43 / 3095
+闭合到 0 / 3347。production-global theorem 的下一步不是继续泛化 q01/q11，
+而是转向剩余的非 CPU/SUMO/transit measurement-required buckets：
 
 ```text
-1. 抽取 TransitDuet / FreqDuet / BAMOR / SimpleSAC / offline-sumo 的 CPU/SUMO/eval/control 任务模板；
+1. 抽取 generic_cpu_python / cpu_eval_generic / artifact_io_control / scheduler_control_plane / gpu_rl_unmeasured_variant 的真实任务模板；
 2. 建立 progress-bearing service unit；
 3. 测 profile 1..K 的 service curve 和 capacity boundary；
 4. 加入 service cache 与 taskset/action slice；
@@ -704,15 +707,20 @@ workload_key = transit_freqhrl_tests_c_le2_completed_history
 feasible profiles = 1
 completed-active mapped count = 2
 unit rule = one completed pytest command
+
+closed completed-history slice = BAMOR c3_8 Mujoco policy-set union aggregation
+workload_key = bamor_mujoco_policy_union_c3_8_completed_history
+feasible profiles = 1
+completed-active mapped count = 1
+unit rule = one completed aggregation command
 ```
 
-当前剩余 first probe order 是：
+当前 CPU/SUMO/transit first probe order 已为空：
 
 ```text
-bamor_cpu_training|c_3_8
 ```
 
-后续应优先实现这个 sub-bucket 的 progress parser 和 short-run probe，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
+后续应优先攻击剩余非 CPU/SUMO/transit production buckets，而不是再增加没有生产覆盖意义的 GPU-only benchmark。
 
 Module54/56 已经完成第 2-5 步的第一个闭合实例：
 

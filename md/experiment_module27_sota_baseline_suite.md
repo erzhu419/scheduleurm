@@ -14,6 +14,18 @@ of external schedulers. Every baseline uses the same Scheduleurm measured
 service cache, so the comparison isolates policy semantics from hardware,
 profiling, and trace mismatch.
 
+Reviewer-facing wording must remain:
+
+```text
+SOTA-style replay baselines on the same measured Scheduleurm service cache.
+```
+
+It must not be written as:
+
+```text
+direct execution of, or direct binary victory over, Gavel/Pollux/Sia/IADeep.
+```
+
 ## Baselines
 
 No single published scheduler cleanly covers all four Scheduleurm quadrants:
@@ -169,3 +181,8 @@ q10-promotion targeted suite: checks=81 failed=0
 The next unresolved baseline step is direct external-policy reproduction, not
 fixing a failing Scheduleurm module. The reviewer-facing exact task-list matrix
 is recorded in `md/experiment_module29_task_list_benchmark.md`.
+
+The q00 and q10 rows in this suite are local-bucket comparisons only:
+`q00_light_control` is the declared local light-control bucket, and
+`q10_cpu_host_bound` is the declared local CPU-heavy bucket.  They must not be
+used as universal evidence for all CPU-heavy or data-loader-heavy deployments.

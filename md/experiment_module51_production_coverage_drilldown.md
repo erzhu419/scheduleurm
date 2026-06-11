@@ -36,13 +36,13 @@ adopted compiler helper processes, and unobservable external auto-adopted
 stdin/wait-for control processes that have no scheduler id, no scheduler log,
 and no reproducible progress unit.
 
-## Current Result After Module97--99
+## Current Result After Module100--101 Refresh
 
 For the 30-day completed/active production window:
 
 ```text
-completed_active_production records = 3411
-strict mapped = 3411
+completed_active_production records = 3437
+strict mapped = 3437
 representative mapped = 0
 unmapped / measurement-required = 0
 strict mapped_fraction = 1.000000
@@ -169,19 +169,24 @@ Module91 then adds:
 bamor_mujoco_policy_union_c3_8_completed_history = 1 / 3347 completed-active production records
 ```
 
-Module51 now intentionally reports coverage only.  The mapped representative
-raw-window load still has positive capacity slack in Module49, but that does
-not close the global theorem because measured coverage is still incomplete.
+Module51 now intentionally reports coverage only.  The completed-active
+production theorem population has full strict measured-bucket coverage.  Raw
+history and attempted-production views are still reported in the generated
+artifact, but they are not theorem populations and remain incomplete by design.
 
-## Largest Remaining Buckets
+## Remaining Boundary, Not Remaining Buckets
 
-| Bucket | Status | Count | Fraction |
-|---|---|---:|---:|
-| `generic_cpu_python` | measurement required | 163 | 0.048700 |
-| `cpu_eval_generic` | measurement required | 82 | 0.024500 |
-| `artifact_io_control` | measurement required | 77 | 0.023006 |
-| `scheduler_control_plane` | measurement required | 56 | 0.016731 |
-| `gpu_rl_unmeasured_variant` | measurement required | 14 | 0.004183 |
+There are no measurement-required buckets left in the reviewer-facing
+`completed_active_production` strict view.  The remaining boundary is claim
+scope:
+
+```text
+raw_history_all is not closed and is not the theorem population;
+attempted_production is not closed and is not the theorem population;
+future rolling queue rows must be rerun through classifier/service certificates;
+Module100 is a service-map theorem oracle bridge, not a live dispatch trace;
+Module101 closes one emitted live scheduler trace, not every future dispatch.
+```
 
 The former dominant CPU/SUMO/transit evaluation/control blocker is now closed
 in the completed-active production view.  Its reduction from the pre-Module56

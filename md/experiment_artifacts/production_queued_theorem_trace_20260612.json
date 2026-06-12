@@ -1,0 +1,150 @@
+{
+  "algorithm": "theorem_maxweight_v1",
+  "candidate_count_total": 3,
+  "gate": "production_queued_theorem_trace",
+  "max_tasks": 64,
+  "max_tasks_per_gpu": 8,
+  "node_summary": [
+    {
+      "alive": true,
+      "free_cpu": 7,
+      "free_ram_mb": 13258,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 8,
+      "free_ram_mb": 499342,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 6,
+      "free_ram_mb": 501189,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 78810,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 36,
+      "free_ram_mb": 217923,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 491961,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 499720,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 150479,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 154010,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 154936,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 130778,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 182,
+      "free_ram_mb": 132120,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 178777,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 1,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 1,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 1,
+    "rows": [
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 6.934129937147062,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 3,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 6.934129937147062,
+        "oracle_gap": 0.0,
+        "q_norm": 35.0,
+        "slot_id": "slot:t10409:1781212957.5635395:1781216521716"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 1,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "pass": true,
+  "placed_count": 1,
+  "placements": [
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed2",
+      "task_id": "t10409",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "queued_admissible_count": 1,
+  "requested_algorithm": "theorem_maxweight_v1",
+  "scope": "read-only theorem trace over currently queued production tasks; queue is not mutated and no process is launched.",
+  "theorem_slot_count": 1,
+  "trace_path": "md/experiment_artifacts/production_queued_theorem_trace_20260612.jsonl",
+  "trace_slot_count": 1,
+  "unplaced_count": 0
+}

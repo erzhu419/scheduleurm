@@ -584,8 +584,10 @@ def test_module57_freqduet_runner_exact_config_is_strictly_measured(check, sch):
         "F_freqduet_timetable_hiro.yaml",
     )
     other_cls = classify_record(other_config, include_representative=False)
-    check("module57 classifier does not generalize runner_v3 to other configs",
-          other_cls["workload_key"] is None and other_cls["reason"] == "unmapped_cpu",
+    check("module57 exact-config exclusion falls through to Module71 residual strict certificate",
+          other_cls["workload_key"] == "freqduet_runner_v3_c9_16_residual_completed_history"
+          and other_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(other_cls["units"]), 20.0),
           diag=str(other_cls))
 
     cache = build_default_cache()
@@ -1093,8 +1095,10 @@ def test_module60_freqduet_c3_ablation_completed_history_profile1(check, sch):
         "--episodes 20 --seed 123"
     )
     direct_cls = classify_record(direct_runner, include_representative=False)
-    check("module60 classifier does not map direct runner_v3 records",
-          direct_cls["workload_key"] is None and direct_cls["reason"] == "unmapped_cpu",
+    check("module60 ablation exclusion falls through to Module66 direct runner strict certificate",
+          direct_cls["workload_key"] == "freqduet_runner_v3_c3_8_completed_history"
+          and direct_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(direct_cls["units"]), 20.0),
           diag=str(direct_cls))
 
     cache = build_default_cache()
@@ -1160,7 +1164,7 @@ def test_module93_freqduet_spacectx_ep100_c3_completed_history_profile1(check, s
           [record.profile for record in profiles] == [1]
           and math.isclose(
               cache.get("freqduet_spacectx_ep100_c3_8_completed_history", 1).aggregate_rate,
-              0.5456346850150953,
+              0.5607263189353142,
               rel_tol=1e-12,
           ),
           diag=str([record.snapshot() for record in profiles]))
@@ -3311,7 +3315,7 @@ def test_module92_assumption_agent_completed_history_profile1(check, sch):
 
     cache = build_default_cache()
     expected_rates = {
-        "assumption_agent_unittest_completed_history": 0.0025139266853356846,
+        "assumption_agent_unittest_completed_history": 0.009450413669535033,
         "assumption_agent_meta_qa_evolution_completed_history": 0.00032882586875307136,
         "assumption_agent_phase2_v20_framework_completed_history": 0.0020286642669604476,
     }
@@ -3568,7 +3572,7 @@ def test_module95_transit_resac_artifact_completed_history_profile1(check, sch):
 
     cache = build_default_cache()
     expected_rates = {
-        "transit_native_real_demand_batch_c9_16_completed_history": 0.0092741969369456,
+        "transit_native_real_demand_batch_c9_16_completed_history": 0.009302621108951824,
         "resac_conda_pack_completed_history": 0.002949807532151899,
     }
     check("Module95 service cache exposes profile1 lower services",
@@ -4211,8 +4215,10 @@ def test_module82_sumo_c3_8_completed_history_profile1(check, sch):
         "--stage3-report cf_h2o/results/sumo_apc_avl_snapshot_generation_full_day.json"
     )
     local_cls = classify_record(local_validation, include_representative=False)
-    check("Module82 does not overclaim CFCMT local snapshot validation as generation service",
-          local_cls["workload_key"] is None and local_cls["reason"] == "unmapped_cpu",
+    check("Module82 local snapshot validation falls through to Module94 CPU eval certificate",
+          local_cls["workload_key"] == "cfcmt_cpu_eval_completed_history"
+          and local_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(local_cls["units"]), 1.0),
           diag=str(local_cls))
 
     cfcmt_phase1 = dict(cfcmt_snapshot)
@@ -4342,8 +4348,10 @@ def test_module59_simple_sac_sumo_eval_completed_history_profile1(check, sch):
         "bash run_multiseed_eval.sh \"$method\" 1001 0.6; done'"
     )
     complex_cls = classify_record(complex_batch, include_representative=False)
-    check("module59 classifier does not map complex SimpleSAC bash batches",
-          complex_cls["workload_key"] is None and complex_cls["reason"] == "unmapped_cpu",
+    check("module59 clean-SimpleSAC exclusion falls through to Module78 H2Oplus shell certificate",
+          complex_cls["workload_key"] == "h2oplus_shell_eval_c_le2_completed_history"
+          and complex_cls["mapping_mode"] == "strict_measured"
+          and math.isclose(float(complex_cls["units"]), 1.0),
           diag=str(complex_cls))
 
     cache = build_default_cache()

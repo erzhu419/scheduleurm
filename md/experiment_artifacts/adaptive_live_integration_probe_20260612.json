@@ -1,0 +1,287 @@
+{
+  "adaptive_fields_present": true,
+  "adaptive_sampler_rows": 6,
+  "base_oracle_usable": true,
+  "bucket_counts": {
+    "bucket:v1|class:v1|project=q01-gpu-heavy|sig=jax_matmul_size8192_v1/live_theorem/001|kind=gpu_job|res=v1.r1.c0|regime:v1|node=jtl110gpu|gpu=1|n2|m3|u7p|n3|pm3|u7p": 1,
+    "bucket:v1|class:v1|project=q01-gpu-heavy|sig=jax_matmul_size8192_v1/live_theorem/003|kind=gpu_job|res=v1.r1.c0|regime:v1|node=node007-direct|gpu=2|n3|m3|u7p|n4|pm3|u7p": 1,
+    "bucket:v1|class:v1|project=q11-hybrid-rl|sig=resac_ant_real_v1/live_theorem/000|kind=gpu_train|res=v1.r1.c0|regime:v1|node=jtl110gpu2|gpu=0|n3|m3|u7p|n4|pm3|u7p": 1,
+    "bucket:v1|class:v1|project=q11-hybrid-rl|sig=resac_ant_real_v1/live_theorem/002|kind=gpu_train|res=v1.r1.c0|regime:v1|node=jtl110gpu2|gpu=1|n3|m3|u7p|n4|pm3|u7p": 1,
+    "bucket:v1|class:v1|project=q11-hybrid-rl|sig=resac_ant_real_v1/live_theorem/004|kind=gpu_train|res=v1.r1.c0|regime:v1|node=node007-direct|gpu=0|n4|m3|u7p|n5|pm3|u7p": 1,
+    "bucket:v1|class:v1|project=q11-hybrid-rl|sig=resac_ant_real_v1/live_theorem/006|kind=gpu_train|res=v1.r1.c0|regime:v1|node=node007-direct|gpu=0|n5|m3|u7p|n5|pm3|u7p": 1
+  },
+  "forced_exploration_count": 6,
+  "gate": "adaptive_live_integration_probe",
+  "live_scheduler_default_changed": false,
+  "pass": true,
+  "regime_detector_rows": 6,
+  "scope": "optional adaptive_theorem_maxweight_v1 live-state probe. It uses queued production tasks when present and otherwise falls back to measured synthetic q01/q11 live-node probes. The queue is not mutated, no process is launched, and the default scheduler policy is unchanged.",
+  "selected_count": 6,
+  "slot_count": 6,
+  "trace_origin": "synthetic_measured_workload_fallback",
+  "trace_path": "md/experiment_artifacts/adaptive_live_integration_probe_20260612.jsonl",
+  "trace_report": {
+    "algorithm": "adaptive_theorem_maxweight_v1",
+    "candidate_count_total": 23,
+    "gate": "natural_live_theorem_trace",
+    "max_tasks_per_gpu": 8,
+    "node_summary": [
+      {
+        "alive": true,
+        "free_cpu": 12,
+        "free_ram_mb": 2915,
+        "gpu_count": 1,
+        "name": "local"
+      },
+      {
+        "alive": true,
+        "free_cpu": 6,
+        "free_ram_mb": 495549,
+        "gpu_count": 2,
+        "name": "jtl110gpu"
+      },
+      {
+        "alive": true,
+        "free_cpu": 2,
+        "free_ram_mb": 498182,
+        "gpu_count": 2,
+        "name": "jtl110gpu2"
+      },
+      {
+        "alive": true,
+        "free_cpu": 0,
+        "free_ram_mb": 78947,
+        "gpu_count": 0,
+        "name": "zhengliang-hpc"
+      },
+      {
+        "alive": true,
+        "free_cpu": 31,
+        "free_ram_mb": 210464,
+        "gpu_count": 4,
+        "name": "node007-direct"
+      },
+      {
+        "alive": true,
+        "free_cpu": 128,
+        "free_ram_mb": 491939,
+        "gpu_count": 0,
+        "name": "jtl110cpu"
+      },
+      {
+        "alive": true,
+        "free_cpu": 128,
+        "free_ram_mb": 499710,
+        "gpu_count": 0,
+        "name": "jtl110cpu2"
+      },
+      {
+        "alive": true,
+        "free_cpu": 192,
+        "free_ram_mb": 149884,
+        "gpu_count": 0,
+        "name": "node001"
+      },
+      {
+        "alive": true,
+        "free_cpu": 192,
+        "free_ram_mb": 154161,
+        "gpu_count": 0,
+        "name": "node002"
+      },
+      {
+        "alive": true,
+        "free_cpu": 192,
+        "free_ram_mb": 154944,
+        "gpu_count": 0,
+        "name": "node003"
+      },
+      {
+        "alive": true,
+        "free_cpu": 151,
+        "free_ram_mb": 111982,
+        "gpu_count": 0,
+        "name": "node004"
+      },
+      {
+        "alive": true,
+        "free_cpu": 152,
+        "free_ram_mb": 109121,
+        "gpu_count": 0,
+        "name": "node005"
+      },
+      {
+        "alive": true,
+        "free_cpu": 192,
+        "free_ram_mb": 178888,
+        "gpu_count": 0,
+        "name": "node006"
+      }
+    ],
+    "oracle_bridge": {
+      "alpha0": 0.0,
+      "alpha1": 0.05756165217391316,
+      "audited_slot_count": 6,
+      "best_score_exact_over_candidate_set": true,
+      "blocker_count": 0,
+      "blockers": [],
+      "converted_slot_count": 6,
+      "fit_method": "finite_max_envelope",
+      "max_residual_violation": 0.0,
+      "point_count": 6,
+      "rows": [
+        {
+          "best_action_id": "node=jtl110gpu|gpu=1",
+          "best_candidate_score": 9.034448697370046,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 7,
+          "chosen_action_id": "node=jtl110gpu2|gpu=0",
+          "chosen_score": 7.8008961792904445,
+          "oracle_gap": 1.233552518079601,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-000:1781213648.8408637:1781213648846"
+        },
+        {
+          "best_action_id": "node=node007-direct|gpu=2",
+          "best_candidate_score": 35.05375000000001,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 2,
+          "chosen_action_id": "node=jtl110gpu|gpu=1",
+          "chosen_score": 32.405914,
+          "oracle_gap": 2.647836000000005,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-001:1781213648.8418636:1781213649654"
+        },
+        {
+          "best_action_id": "node=jtl110gpu2|gpu=1",
+          "best_candidate_score": 7.8008961792904445,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 5,
+          "chosen_action_id": "node=jtl110gpu2|gpu=1",
+          "chosen_score": 7.8008961792904445,
+          "oracle_gap": 0.0,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-002:1781213648.8428638:1781213649754"
+        },
+        {
+          "best_action_id": "node=node007-direct|gpu=2",
+          "best_candidate_score": 35.05375000000001,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 1,
+          "chosen_action_id": "node=node007-direct|gpu=2",
+          "chosen_score": 35.05375000000001,
+          "oracle_gap": 0.0,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-003:1781213648.8438637:1781213650494"
+        },
+        {
+          "best_action_id": "node=node007-direct|gpu=0",
+          "best_candidate_score": 7.783976387337787,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 4,
+          "chosen_action_id": "node=node007-direct|gpu=0",
+          "chosen_score": 7.783976387337787,
+          "oracle_gap": 0.0,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-004:1781213648.8448637:1781213650521"
+        },
+        {
+          "best_action_id": "node=node007-direct|gpu=0",
+          "best_candidate_score": 8.253592641704852,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 4,
+          "chosen_action_id": "node=node007-direct|gpu=0",
+          "chosen_score": 8.253592641704852,
+          "oracle_gap": 0.0,
+          "q_norm": 46.0,
+          "slot_id": "slot:natural-theorem-006:1781213648.8468637:1781213650649"
+        }
+      ],
+      "status": "THEOREM_ORACLE_PASS",
+      "trace_slot_count": 6,
+      "usable_for_theorem": true,
+      "worst_violation": null
+    },
+    "pass": false,
+    "placed_count": 6,
+    "placements": [
+      {
+        "placement": {
+          "gpu_idx": 0,
+          "node": "jtl110gpu2"
+        },
+        "signature": "resac_ant_real_v1/live_theorem/000",
+        "task_id": "natural-theorem-000",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "placement": {
+          "gpu_idx": 1,
+          "node": "jtl110gpu"
+        },
+        "signature": "jax_matmul_size8192_v1/live_theorem/001",
+        "task_id": "natural-theorem-001",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "placement": {
+          "gpu_idx": 1,
+          "node": "jtl110gpu2"
+        },
+        "signature": "resac_ant_real_v1/live_theorem/002",
+        "task_id": "natural-theorem-002",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "placement": {
+          "gpu_idx": 2,
+          "node": "node007-direct"
+        },
+        "signature": "jax_matmul_size8192_v1/live_theorem/003",
+        "task_id": "natural-theorem-003",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "placement": {
+          "gpu_idx": 0,
+          "node": "node007-direct"
+        },
+        "signature": "resac_ant_real_v1/live_theorem/004",
+        "task_id": "natural-theorem-004",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "placement": null,
+        "signature": "jax_matmul_size8192_v1/live_theorem/005",
+        "task_id": "natural-theorem-005",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "placement": {
+          "gpu_idx": 0,
+          "node": "node007-direct"
+        },
+        "signature": "resac_ant_real_v1/live_theorem/006",
+        "task_id": "natural-theorem-006",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "placement": null,
+        "signature": "jax_matmul_size8192_v1/live_theorem/007",
+        "task_id": "natural-theorem-007",
+        "workload_key": "gpu_heavy_jax_matmul"
+      }
+    ],
+    "requested_algorithm": "adaptive_theorem_maxweight_v1",
+    "requested_workloads": [
+      "hybrid_rl_resac_ant",
+      "gpu_heavy_jax_matmul"
+    ],
+    "scope": "live-node-probe dry run with measured q01/q11 workload records; queue is not mutated and no process is launched. Uncertified candidate profiles are blocked by the theorem policy during this probe.",
+    "task_count": 8,
+    "theorem_slot_count": 6,
+    "trace_path": "md/experiment_artifacts/adaptive_live_integration_probe_20260612.jsonl",
+    "trace_slot_count": 6,
+    "unplaced_count": 2
+  }
+}

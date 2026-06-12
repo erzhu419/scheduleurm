@@ -1,0 +1,128 @@
+{
+  "direct_fullstack_sota_superiority_ready": false,
+  "full_stack_ready_count": 0,
+  "gate": "sota_fullstack_superiority_gate",
+  "gavel_native_microbaseline": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260612.json",
+    "direct_full_stack_performance_ready": false,
+    "ready": true,
+    "usable_samples": 2
+  },
+  "hard_blocker_certificate_ready": true,
+  "missing_tools": [
+    "docker",
+    "go",
+    "kubectl"
+  ],
+  "pass": true,
+  "policy_semantics_comparison_ready": true,
+  "rows": [
+    {
+      "adapter": "gavel_simulation",
+      "blockers": [
+        "Gavel native trace and Scheduleurm trace-seed smoke pass, but service-unit equivalence is not yet a direct performance baseline",
+        "Gavel native simulator microbaseline rows exist, but they still do not certify Scheduleurm measured-service-unit equivalence",
+        "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": false,
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": true,
+      "same_workload_full_stack_ready": false,
+      "strict_reason": "native simulator microbaseline exists, but service-unit equivalence and full-stack production execution are not certified"
+    },
+    {
+      "adapter": "pollux_adaptdl_scheduler",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": false,
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "same_workload_full_stack_ready": false,
+      "strict_reason": "missing required tools: kubectl, docker; AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
+    },
+    {
+      "adapter": "iadeep_kubernetes_extender",
+      "blockers": [
+        "missing required tools: go, kubectl, docker",
+        "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "full_stack_superiority_claim_allowed": false,
+      "missing_required_tools": [
+        "go",
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "same_workload_full_stack_ready": false,
+      "strict_reason": "missing required tools: go, kubectl, docker; IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
+    },
+    {
+      "adapter": "salus_gpu_sharing",
+      "blockers": [
+        "missing required tools: docker",
+        "Salus benchmark seed exists, but Salus server/runtime execution is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "full_stack_superiority_claim_allowed": false,
+      "missing_required_tools": [
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "same_workload_full_stack_ready": false,
+      "strict_reason": "missing required tools: docker; Salus benchmark seed exists, but Salus server/runtime execution is still required"
+    },
+    {
+      "adapter": "decima_simulator",
+      "blockers": [
+        "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": false,
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "same_workload_full_stack_ready": false,
+      "strict_reason": "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+    }
+  ],
+  "scope": "Strict gate for direct full-stack superiority claims.  It confirms the current package has policy-semantics replay, same-workload seeds, and Gavel native simulator microbaseline evidence, while rejecting direct full-stack superiority because the required external runtime stacks are not available or not service-unit equivalent.",
+  "tool_inventory": {
+    "docker": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "go": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "kubectl": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "nvidia-smi": {
+      "available": true,
+      "path": "/usr/lib/wsl/lib/nvidia-smi",
+      "version": "NVIDIA GeForce RTX 4060 Laptop GPU"
+    },
+    "python3": {
+      "available": true,
+      "path": "/usr/bin/python3",
+      "version": "Python 3.10.12"
+    }
+  }
+}

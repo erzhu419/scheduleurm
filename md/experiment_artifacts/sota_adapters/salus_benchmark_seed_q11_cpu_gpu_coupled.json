@@ -1,0 +1,111 @@
+{
+  "format": "scheduleurm_salus_benchmark_seed_v1",
+  "scope": "Benchmark-driver seed metadata for Salus adapter development; Salus server/runtime integration remains required before direct comparison.",
+  "sessions": [
+    {
+      "count": 160,
+      "name": "hybrid_rl_resac_ant",
+      "profiles": [
+        {
+          "aggregate_rate": 0.25305895450000004,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 0.3333333333333333,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 0.3346092110137054,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 0.2889220807144609,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 0.28829542175325135,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 0.305688616359439,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 0.3026219558934524,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 0.3125333948,
+          "capacity_boundary": false,
+          "profile": 8
+        },
+        {
+          "aggregate_rate": 0.31201673370000005,
+          "capacity_boundary": false,
+          "profile": 9
+        },
+        {
+          "aggregate_rate": 0.33413798209999995,
+          "capacity_boundary": true,
+          "profile": 10
+        },
+        {
+          "aggregate_rate": 0.2766582860620802,
+          "capacity_boundary": true,
+          "profile": 13
+        }
+      ],
+      "resource_count": 1,
+      "resource_kind": "hybrid_rl",
+      "total_units": 80.0
+    }
+  ],
+  "taskset": {
+    "arrival_model": "dense static batch; later long trace with bursty arrivals",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm module12 real RE-SAC Ant dense co-location profile",
+        "closed_by_capacity_boundary_profile": 10,
+        "empirical_status": "partial_real",
+        "missing_profiles": [],
+        "note": "Profiles below 10 have exact real measurements used for robust replay; a fresh profile-10 live sanity run hit runtime OOM, so 10/GPU and above are excluded for the current robust node bucket.",
+        "quadrant": "high_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "resource_count": 1,
+        "resource_kind": "hybrid_rl",
+        "role": "coupled interference validation",
+        "task_count": 160,
+        "total_units": 80,
+        "variation_cv": 0.08,
+        "workload_key": "hybrid_rl_resac_ant"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q11_cpu_gpu_coupled",
+    "purpose": "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like RL jobs where several jobs per GPU can retain near-solo ETA."
+  }
+}

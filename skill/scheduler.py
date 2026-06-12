@@ -174,14 +174,14 @@ NODES = {
                        "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
                    }},
     # Campus-only HPC login node. Local Codex cannot reach it directly; route
-    # all SSH/rsync/Slurm control traffic through GPU2, which is on campus net.
+    # SSH/rsync control traffic through GPU2, which is on campus net.
     # Workspaces are staged under the HPC account's home rather than preserving
     # /home/erzhu419, which that account cannot create.
     "zhengliang-hpc": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
                        "ssh_proxy_jump": "jtl110gpu2",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
                        "max_vram_per_task": None, "max_concurrent_running": None,
-                       "slurm_backend": "slurm", "slurm_auto_large": True,
+                       "slurm_backend": "local", "slurm_auto_large": False,
                        "slurm_auto_gpu_count": 4,
                        "slurm_gpu_partition": "gpu",
                        "slurm_cpu_partition": "cpu",
@@ -366,6 +366,8 @@ def _algorithm_runtime_context() -> dict:
         "one_third_pack_rule": ONE_THIRD_PACK_RULE,
         "one_third_pack_grace_mb": ONE_THIRD_PACK_GRACE_MB,
         "gpu_util_saturation_pct": GPU_UTIL_SATURATION_PCT,
+        "state_dir": str(STATE_DIR),
+        "queue_file": str(QUEUE_FILE),
     }
 
 
@@ -6579,7 +6581,13 @@ def _hpc_cpu_pool_soft_require_nodes(task: dict) -> list:
         or "/scheduleurm_work/bamor" in text
         or "bamor/mujoco" in text
     )
-    if not (is_freq_hrl or is_freqduet or is_bamor):
+    project = str((task or {}).get("project") or "").lower()
+    is_scheduleurm = project in {"scheduleurm", "scheduleurmbench"} or (
+        "scheduleurmbench/" in text
+        or "/mine_code/scheduleurm" in text
+        or "/scheduleurm_work/scheduleurm" in text
+    )
+    if not (is_freq_hrl or is_freqduet or is_bamor or is_scheduleurm):
         return []
     # These shards use a shared staged workspace on node001-node006.
     # Treat generated per-node pins as placement hints so full nodes can spill to
@@ -6700,7 +6708,7 @@ def _gpu_fits(task, gpu, node_info):
         return False
     return True
 
-def pick_placement(task, nodes):
+def pick_placement(task, nodes, extra_allowed_nodes=None):
     """Pick (node, gpu_idx) given current per-node free resources. gpu_idx=None for CPU-only tasks.
     preferred_node is a SOFT preference: try it first; if it can't fit, fall back to any other node
     that satisfies all constraints. This prevents tasks from getting stuck when their preferred node
@@ -6712,8 +6720,9 @@ def pick_placement(task, nodes):
         the env is fixed, freeing that node again."""
     cpu_only = task.get("est_vram_mb", DEFAULT_VRAM_MB) <= 0
     allowed_nodes = task.get("allowed_nodes") or []
-    if allowed_nodes:
-        allowed = {str(n) for n in allowed_nodes}
+    extra_allowed = {str(n) for n in (extra_allowed_nodes or []) if str(n)}
+    if allowed_nodes or extra_allowed:
+        allowed = {str(n) for n in allowed_nodes} | extra_allowed
         nodes = [n for n in nodes if n.get("name") in allowed]
     preferred = task.get("preferred_node")
     require = task.get("require_node")  # HARD pin — never falls back
@@ -6776,12 +6785,14 @@ def pick_placement(task, nodes):
             return
         selected_node, selected_gpu_idx = selected
         rows = []
+        audits = []
         for score, node_name, gpu_idx in cands:
             node_state = _node_state_by_name(node_name, search_nodes)
             gpu_state = _gpu_state_by_idx(node_state, gpu_idx)
             audit = {}
             if gpu_state is not None:
                 audit = _algorithm_selected_gpu_audit(task, node_state, gpu_state)
+            audits.append(audit)
             rows.append(_algorithm_trace_candidate_row(
                 node=node_name,
                 gpu_idx=gpu_idx,
@@ -6791,21 +6802,50 @@ def pick_placement(task, nodes):
                     and (gpu_idx is selected_gpu_idx or str(gpu_idx) == str(selected_gpu_idx))
                 ),
                 algorithm_audit=audit,
+                lower_service=audit.get("lower_service") if isinstance(audit, dict) else None,
+                penalty_units=audit.get("penalty_units") if isinstance(audit, dict) else None,
             ))
+        theorem_ready = bool(audits) and all(
+            isinstance(a, dict)
+            and a.get("score_semantics") == "robust_maxweight_lower_service"
+            and a.get("lower_service")
+            for a in audits
+        )
+        selected_audit = {}
+        for row, audit in zip(rows, audits):
+            if row.get("selected"):
+                selected_audit = audit if isinstance(audit, dict) else {}
+                break
         slot = _algorithm_trace_decision_slot(
             slot_id=trace_slot_id,
             task=task,
             algorithm=_algorithm_name(),
             phase=phase,
             candidates=rows,
+            score_semantics=(
+                "robust_maxweight_lower_service"
+                if theorem_ready else
+                "scheduler_sort_key_minimization"
+            ),
+            queue_vector=(
+                selected_audit.get("queue_vector")
+                if isinstance(selected_audit, dict) and theorem_ready else
+                None
+            ),
             hard_constraints={
                 "require_node": require,
                 "preferred_node": preferred,
                 "require_gpu_idx": require_gpu_idx,
                 "allowed_nodes": allowed_nodes,
+                "extra_allowed_nodes": sorted(extra_allowed),
                 "resume_preferred_nodes": resume_preferred,
             },
         )
+        if theorem_ready:
+            slot["best_score_exact_over_candidate_set"] = all(
+                bool(a.get("best_score_exact_over_candidate_set", True))
+                for a in audits if isinstance(a, dict)
+            )
         try:
             _algorithm_log_decision_slot(slot)
         except Exception:
@@ -6865,7 +6905,7 @@ def pick_placement(task, nodes):
                 return []
         if _node_is_windows(n["name"]) and not (cpu_only or cpu_fallback):
             return []
-        if _task_requests_slurm(task):
+        if _task_requests_slurm(task) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
             # The user supplied Slurm-only fields, so do not silently discard
             # them by launching through LocalBackend on a non-Slurm/default-local
             # node. If no Slurm-capable/Slurm-routed node exists, the task stays queued
@@ -12375,6 +12415,14 @@ def cmd_submit(args):
     cpu_parallel_num_shards = int(getattr(args, "cpu_parallel_num_shards", 1) or 1)
     cpu_batch_plan = getattr(args, "cpu_batch_plan", None)
     allowed_nodes = list(getattr(args, "allowed_nodes", None) or [])
+    unknown_allowed = [n for n in allowed_nodes if n not in NODES]
+    if unknown_allowed:
+        print(
+            f"REFUSED: --allowed-node contains unknown node(s): {unknown_allowed}. "
+            f"Known nodes: {list(NODES.keys())}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
     stage_excludes = [str(x).strip() for x in (getattr(args, "stage_excludes", None) or [])
                       if str(x).strip()]
     if test_peak_vram > 0 or test_peak_ram > 0 or test_cpu > 0:
@@ -13173,6 +13221,15 @@ MIGRATION_MAX_CKPT_SIZE_MB = int(os.environ.get("SCHEDULEURM_MIGRATION_MAX_CKPT_
 # task stays on source. Rationale: rsync of a 5+GB ckpt takes minutes, often longer
 # than just letting source's queue drain naturally. User-spec'd default is 2GB.
 
+RESUME_CKPT_MIGRATE_MIN_WAIT_S = int(os.environ.get(
+    "SCHEDULEURM_RESUME_CKPT_MIGRATE_MIN_WAIT_S", str(MIGRATION_MIN_TASK_ETA_S)))
+RESUME_CKPT_MIGRATE_EST_MBPS = max(1.0, float(os.environ.get(
+    "SCHEDULEURM_RESUME_CKPT_MIGRATE_EST_MBPS", "40")))
+RESUME_CKPT_MIGRATE_OVERHEAD_S = int(os.environ.get(
+    "SCHEDULEURM_RESUME_CKPT_MIGRATE_OVERHEAD_S", "60"))
+RESUME_CKPT_MIGRATE_SAFETY_S = int(os.environ.get(
+    "SCHEDULEURM_RESUME_CKPT_MIGRATE_SAFETY_S", "120"))
+
 STAGING_FAIL_COOLDOWN_S = int(os.environ.get("SCHEDULEURM_STAGING_FAIL_COOLDOWN_S", "3600"))
 # Phase 3.0.19 P3 fix: per-(task,target) cooldown after a failed staging attempt.
 # Pre-fix, _identify_migration_candidates always returned the same first
@@ -13538,6 +13595,181 @@ def _resume_checkpoint_stage_check(task: dict, target_node: str,
             msg = fail[1] if isinstance(fail, tuple) and len(fail) > 1 else "unknown"
             return "stage_failed", src, msg
     return "needs_stage", src, "checkpoint not yet staged to target"
+
+
+def _task_wait_eta_seconds(task: dict) -> int:
+    try:
+        return max(0, int(task.get("eta_seconds") or 0))
+    except Exception:
+        return 0
+
+
+def _resume_ckpt_stage_estimate_seconds(stage_state: str, source_loc: Optional[dict]) -> int:
+    if stage_state == "ready":
+        return 0
+    if not source_loc:
+        return 10 ** 9
+    try:
+        size_bytes = max(0, int(source_loc.get("size") or 0))
+    except Exception:
+        size_bytes = 0
+    size_mb = max(1, (size_bytes + 1024 * 1024 - 1) // (1024 * 1024))
+    return int(RESUME_CKPT_MIGRATE_OVERHEAD_S + (size_mb / RESUME_CKPT_MIGRATE_EST_MBPS) + 0.999)
+
+
+def _running_tasks_for_node(state: dict, node_name: str, gpu_idx=None) -> list:
+    out = []
+    for rt in state.get("tasks", []):
+        if rt.get("status") != "running" or rt.get("node") != node_name:
+            continue
+        if gpu_idx is not None:
+            try:
+                if int(rt.get("gpu_idx")) != int(gpu_idx):
+                    continue
+            except Exception:
+                continue
+        out.append(rt)
+    return out
+
+
+def _task_vram_pressure_mb(task: dict) -> int:
+    vals = []
+    for key in ("current_vram_mb", "peak_vram_mb", "est_vram_mb"):
+        try:
+            vals.append(max(0, int(task.get(key) or 0)))
+        except Exception:
+            pass
+    return max(vals or [0])
+
+
+def _estimate_gpu_fit_wait_seconds(task: dict, gpu_state: dict, node_info: dict,
+                                   running_gpu_tasks: list) -> Optional[int]:
+    ordered = [(_task_wait_eta_seconds(rt), rt) for rt in running_gpu_tasks]
+    ordered = [(eta, rt) for eta, rt in ordered if eta > 0]
+    if not ordered:
+        return None
+    ordered.sort(key=lambda x: x[0])
+    synthetic = dict(gpu_state)
+    try:
+        total = max(1, int(synthetic.get("total_mb") or 1))
+        used = max(0, int(synthetic.get("used_mb") or 0))
+    except Exception:
+        total, used = 1, 0
+    running_count = int(synthetic.get("running_task_count") or len(running_gpu_tasks))
+    for eta, rt in ordered:
+        used = max(0, used - _task_vram_pressure_mb(rt))
+        running_count = max(0, running_count - 1)
+        synthetic["used_mb"] = used
+        synthetic["free_mb"] = max(0, total - used)
+        synthetic["running_task_count"] = running_count
+        if _gpu_fits(task, synthetic, node_info):
+            return eta
+    return ordered[-1][0]
+
+
+def _estimate_node_fit_wait_seconds(task: dict, node_state: dict, state: dict) -> Optional[int]:
+    if not node_state or not node_state.get("alive"):
+        return None
+    node_name = node_state.get("name")
+    if not node_name:
+        return None
+    if pick_placement(task, [node_state], extra_allowed_nodes=[node_name]) is not None:
+        return 0
+    node_info = NODES.get(node_name, {}) or {}
+    if int(task.get("est_vram_mb") or 0) > 0 and node_state.get("gpus"):
+        waits = []
+        require_gpu_idx = _task_required_gpu_idx(task)
+        for gpu_state in node_state.get("gpus") or []:
+            try:
+                gpu_idx = int(gpu_state.get("idx"))
+            except Exception:
+                continue
+            if require_gpu_idx is not None and gpu_idx != require_gpu_idx:
+                continue
+            running_gpu_tasks = _running_tasks_for_node(state, node_name, gpu_idx)
+            wait = _estimate_gpu_fit_wait_seconds(
+                task, gpu_state, node_info, running_gpu_tasks)
+            if wait is not None:
+                waits.append(wait)
+        if waits:
+            return min(waits)
+    running_node_tasks = _running_tasks_for_node(state, node_name)
+    waits = [_task_wait_eta_seconds(rt) for rt in running_node_tasks
+             if _task_wait_eta_seconds(rt) > 0]
+    if waits:
+        return min(waits)
+    load = int(compute_node_load_seconds(state).get(node_name) or 0)
+    return load if load > 0 else None
+
+
+def _checkpoint_migration_extra_allowed_nodes(task: dict, nodes: list,
+                                              resume_locations: list,
+                                              state: dict) -> tuple:
+    """Allow staged checkpoint retries to use a faster non-locality node.
+
+    Hard require_node still wins. allowed_nodes remains binding for ordinary
+    tasks; the only automatic escape hatch is local, because remote->local
+    checkpoint rsync is supported and avoids waiting hours for a packed GPU.
+    """
+    if not _task_requires_resume_scan(task) or not resume_locations:
+        return [], None
+    if task.get("require_node"):
+        return [], None
+    resume_nodes = {loc.get("node") for loc in resume_locations if loc.get("node")}
+    if not resume_nodes:
+        return [], None
+    node_by_name = {n.get("name"): n for n in nodes if n.get("name")}
+    wait_candidates = []
+    for node_name in sorted(resume_nodes):
+        wait = _estimate_node_fit_wait_seconds(task, node_by_name.get(node_name), state)
+        if wait is not None:
+            wait_candidates.append(wait)
+    if not wait_candidates:
+        return [], None
+    checkpoint_wait_s = min(wait_candidates)
+    if checkpoint_wait_s < RESUME_CKPT_MIGRATE_MIN_WAIT_S:
+        return [], None
+
+    allowed = {str(n) for n in (task.get("allowed_nodes") or [])}
+    blocked = _blocked_nodes_for_task(task)
+    launch_failed = _launch_failed_nodes_for_task(task)
+    extra = []
+    targets = []
+    for node_state in nodes:
+        node_name = node_state.get("name")
+        if not node_name or node_name in resume_nodes:
+            continue
+        if not node_state.get("alive"):
+            continue
+        if node_name in blocked or node_name in launch_failed:
+            continue
+        if allowed and node_name not in allowed and node_name != "local":
+            continue
+        if pick_placement(task, [node_state], extra_allowed_nodes=[node_name]) is None:
+            continue
+        stage_state, source_loc, stage_msg = _resume_checkpoint_stage_check(
+            task, node_name, resume_locations)
+        if stage_state not in ("ready", "needs_stage"):
+            continue
+        stage_s = _resume_ckpt_stage_estimate_seconds(stage_state, source_loc)
+        if stage_s + RESUME_CKPT_MIGRATE_SAFETY_S >= checkpoint_wait_s:
+            continue
+        extra.append(node_name)
+        targets.append({
+            "node": node_name,
+            "source": (source_loc or {}).get("node"),
+            "stage_state": stage_state,
+            "stage_estimate_s": stage_s,
+            "stage_msg": stage_msg,
+        })
+    if not extra:
+        return [], None
+    targets.sort(key=lambda x: (x.get("stage_estimate_s", 10 ** 9), x.get("node") != "local", x.get("node") or ""))
+    return extra, {
+        "checkpoint_wait_s": int(checkpoint_wait_s),
+        "safety_s": int(RESUME_CKPT_MIGRATE_SAFETY_S),
+        "targets": targets,
+    }
 
 
 def _record_staged_resume_location(task: dict, target_node: str, source_loc: Optional[dict]) -> None:
@@ -14032,7 +14264,7 @@ def _stage_cwd_for_launch(task: dict, target_node: str,
     return (True, f"synced ({cwd_size_mb}MB)")
 
 
-def _stage_launch_candidates_outside_lock():
+def _stage_launch_candidates_outside_lock(task_ids: Optional[set] = None):
     """Phase 3.4.11 P1 fix: pre-launch cwd staging OUTSIDE the global state_lock.
 
     Pre-fix: _stage_cwd_for_launch (added in Phase 3.4.10) was called
@@ -14101,7 +14333,10 @@ def _stage_launch_candidates_outside_lock():
         # So preferred → stage to ALL non-local nodes (preferred + fallbacks).
         # FreqDuet/freq_hrl CPU-pool pins are softened by pick_placement, so
         # stage them to the same node001-node006 pool that can receive them.
+        target_ids = {str(x) for x in (task_ids or set()) if str(x)}
         queued_tasks = [t for t in state.get("tasks", []) if t.get("status") == "queued"]
+        if target_ids:
+            queued_tasks = [t for t in queued_tasks if str(t.get("id") or "") in target_ids]
         high_gpu_tasks = [
             t for t in queued_tasks
             if t.get("priority") == "high" and int(t.get("est_vram_mb") or 0) > 0
@@ -14144,6 +14379,18 @@ def _stage_launch_candidates_outside_lock():
             allowed = set(t.get("allowed_nodes") or [])
             if allowed:
                 tgts = [tn for tn in tgts if tn in allowed]
+            # Checkpoint recovery may be faster by pulling the checkpoint back
+            # to local than waiting for the checkpoint-local GPU to drain.
+            # CWD staging still skips local below; this only exposes local to
+            # the checkpoint-staging loop and the later ETA-gated dispatch path.
+            if (
+                not require
+                and _task_requires_resume_scan(t)
+                and t.get("resume_locations")
+                and "local" in NODES
+                and "local" not in tgts
+            ):
+                tgts.append("local")
             for tn in tgts:
                 node_info = NODES.get(tn, {})
                 if node_info.get("host") is None:
@@ -14181,7 +14428,7 @@ def _stage_launch_candidates_outside_lock():
                 if locs:
                     for tn in tgts:
                         node_info = NODES.get(tn, {})
-                        if node_info.get("host") is None:
+                        if node_info.get("host") is None and tn != "local":
                             continue
                         if node_info.get("skip_launch_staging"):
                             continue
@@ -15860,11 +16107,12 @@ def _preempt_for_high_priority(state, nodes):
         nodes_done.add(node_pin)
     return evicted
 
-def _do_dispatch(state, nodes):
+def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
     """Place every fittable queued task. Mutates state and nodes in place. Returns event list.
     Caller is responsible for state_lock and save_state."""
     events = []
     prio = {"high": 0, "normal": 1, "low": 2}
+    target_ids = {str(x) for x in (target_task_ids or set()) if str(x)}
     repaired = reconcile_requeue_lineage_invariants(state)
     if repaired:
         events.append({
@@ -15877,7 +16125,7 @@ def _do_dispatch(state, nodes):
     # (require_node) are never touched. Capped at MIGRATION_MAX_PER_DISPATCH
     # (default 1) so we don't churn the queue. This runs first so the placement
     # loop sees the new preferred_node assignment.
-    migrated = _consider_migration(state, nodes)
+    migrated = [] if target_ids else _consider_migration(state, nodes)
     if migrated:
         # Phase 3.0.10 P3 fix: enrich payload with from/to pin + eta + reason so
         # cmd_dispatch can print and the watcher's notify loop can log/Feishu
@@ -15895,7 +16143,7 @@ def _do_dispatch(state, nodes):
                 "reason": cand.get("last_block_reason", ""),
             })
     # Preemption pass: free a slot for starved high-prio tasks (one eviction max per dispatch).
-    preempted = _preempt_for_high_priority(state, nodes)
+    preempted = [] if target_ids else _preempt_for_high_priority(state, nodes)
     # Initialize per-node running task count (for max_concurrent_running cap in _node_resources_ok).
     from collections import Counter as _Counter
     running_per_node = _Counter(t.get("node") for t in state["tasks"]
@@ -16030,6 +16278,8 @@ def _do_dispatch(state, nodes):
         [t for t in state["tasks"] if t["status"] == "queued"],
         key=lambda t: (prio.get(t["priority"], 1), t["submitted_at"])
     )
+    if target_ids:
+        queued = [t for t in queued if str(t.get("id") or "") in target_ids]
     resume_scan_cache = {}
     for t in queued:
         if _clear_disallowed_cpu_fallback_selection(t):
@@ -16079,13 +16329,14 @@ def _do_dispatch(state, nodes):
         resume_locations = []
         resume_errors = {}
         resume_nodes = set()
+        extra_allowed_nodes = []
         placement = None
         if _task_requires_resume_scan(t):
             # Cheap capacity gate before slow checkpoint scans. If no node/GPU
             # can accept this task right now, scanning every remote filesystem is
             # pure latency and can starve the few tasks that could launch.
             pre_scan_placement = pick_placement(t, nodes)
-            if pre_scan_placement is not None:
+            if pre_scan_placement is not None or t.get("resume_locations") or t.get("resume_checkpoint_node"):
                 resume_locations, resume_errors = _refresh_resume_locations_for_task(
                     t, nodes, resume_scan_cache)
                 if resume_errors and not resume_locations:
@@ -16133,8 +16384,17 @@ def _do_dispatch(state, nodes):
                         t["last_block_reason"] = reason
                         events.append({"type": "blocked", "task_id": t["id"], "task": t, "reason": reason})
                         continue
-                placement = pick_placement(t, nodes)
+                extra_allowed_nodes, ckpt_migration_plan = _checkpoint_migration_extra_allowed_nodes(
+                    t, nodes, resume_locations, state)
+                if ckpt_migration_plan:
+                    t["resume_checkpoint_migration_plan"] = ckpt_migration_plan
+                else:
+                    t.pop("resume_checkpoint_migration_plan", None)
+                placement = pick_placement(t, nodes, extra_allowed_nodes=extra_allowed_nodes)
+            else:
+                t.pop("resume_checkpoint_migration_plan", None)
         else:
+            t.pop("resume_checkpoint_migration_plan", None)
             placement = pick_placement(t, nodes)
         if placement is None:
             # Build a precise reason by re-checking each candidate node. Helps user see e.g.
@@ -16177,7 +16437,8 @@ def _do_dispatch(state, nodes):
                     else:
                         reasons.append(f"{n['name']}=slurm(deferred but require/prefer mismatch)")
                     continue
-                if _task_requests_slurm(t):
+                node_info = NODES.get(n["name"], {}) or {}
+                if _task_requests_slurm(t) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
                     reasons.append(f"{n['name']}=not-slurm-route")
                     continue
                 cpu_fallback_node = (
@@ -17281,7 +17542,7 @@ def cmd_wait_for(args):
         time.sleep(args.poll)
 
 
-def _preload_docker_images_outside_lock():
+def _preload_docker_images_outside_lock(task_ids: Optional[set] = None):
     """Walk queued tasks, preload required envs (docker images / conda envs) to candidate
     nodes BEFORE the state_lock-protected dispatch loop runs. Without this, an env push
     (docker save: 30min, conda rsync: similar) inside `with state_lock():` blocks
@@ -17304,8 +17565,11 @@ def _preload_docker_images_outside_lock():
     # Build (node, kind, payload) tuples for everything that needs preload
     needed_docker: set[tuple[str, str]] = set()  # (node, image)
     needed_conda: set[tuple[str, str]] = set()   # (node, env_path)
+    target_ids = {str(x) for x in (task_ids or set()) if str(x)}
     for t in state.get("tasks", []):
         if t.get("status") != "queued": continue
+        if target_ids and str(t.get("id") or "") not in target_ids:
+            continue
         spec = t.get("env_spec") or "none"
         if spec == "none": continue
         try:
@@ -17380,6 +17644,7 @@ def _preload_docker_images_outside_lock():
 def cmd_dispatch(args):
     _set_hard_rule_mode(getattr(args, "hard_rule_mode", None))
     _configure_algorithm(getattr(args, "algorithm", None) or None)
+    target_task_ids = {str(x) for x in (getattr(args, "dispatch_task_ids", None) or []) if str(x)}
     recovered_launching = 0
     # Quick pre-flight recovery: make stale WAL launch markers queued BEFORE preload scans.
     # The expensive env push/sync remains outside state_lock; this short lock only rewrites
@@ -17398,7 +17663,7 @@ def cmd_dispatch(args):
     # Now: scan queue for envs that need preload, push/sync outside the lock; dispatch sees
     # them already present and normally never blocks on env delivery itself.
     try:
-        _preload_docker_images_outside_lock()
+        _preload_docker_images_outside_lock(task_ids=target_task_ids or None)
     except Exception as _e:
         notify("preload_error", {"error": str(_e)[:200]}, feishu_enabled=False)
     # Phase 3.0.5 P1 fix: stage migration candidates (rsync cwd/ckpt) BEFORE the main
@@ -17407,17 +17672,18 @@ def cmd_dispatch(args):
     # block submit/cancel/status/watcher for up to 10 min. Now staging side-effects
     # land in the process-local _STAGED_TASKS cache; _consider_migration inside the
     # lock is a fast dict lookup (microseconds).
-    try:
-        _stage_migration_candidates_outside_lock()
-    except Exception as _e:
-        notify("migration_staging_error_outer", {"error": str(_e)[:200]},
-               feishu_enabled=False)
+    if not target_task_ids:
+        try:
+            _stage_migration_candidates_outside_lock()
+        except Exception as _e:
+            notify("migration_staging_error_outer", {"error": str(_e)[:200]},
+                   feishu_enabled=False)
     # Phase 3.4.11 P1 fix: pre-launch cwd staging OUTSIDE state_lock so the
     # 600s rsync timeout never blocks submit/cancel/status/watcher. Helper
     # populates _STAGING_CACHE / _STAGING_CAP_EXCEEDED; _do_dispatch's
     # launch site uses _stage_cwd_check (cache lookup, never rsync).
     try:
-        _stage_launch_candidates_outside_lock()
+        _stage_launch_candidates_outside_lock(task_ids=target_task_ids or None)
     except Exception as _e:
         notify("launch_staging_error_outer", {"error": str(_e)[:200]},
                feishu_enabled=False)
@@ -17426,11 +17692,12 @@ def cmd_dispatch(args):
     # lock for the same reason migration staging is — a multi-GB rsync
     # would otherwise stall every other lock holder. The helper itself
     # uses three short-lock phases (snapshot → rsync → commit markers).
-    try:
-        _sync_completed_results_outside_lock()
-    except Exception as _e:
-        notify("result_sync_error_outer", {"error": str(_e)[:200]},
-               feishu_enabled=False)
+    if not target_task_ids:
+        try:
+            _sync_completed_results_outside_lock()
+        except Exception as _e:
+            notify("result_sync_error_outer", {"error": str(_e)[:200]},
+                   feishu_enabled=False)
     with state_lock():
         state = load_state()
         recovered_launching += recover_stale_launching_tasks(state)
@@ -17441,7 +17708,7 @@ def cmd_dispatch(args):
         _reconcile_aggregate_only_vram(state, nodes)
         _reserve_inflight_vram(state, nodes)
         _print_node_summary(nodes)
-        events, qcount = _do_dispatch(state, nodes)
+        events, qcount = _do_dispatch(state, nodes, target_task_ids=target_task_ids or None)
         save_state(state)
     if recovered_launching:
         notify("launching_state_recovered", {"reverted_count": recovered_launching},
@@ -19891,10 +20158,13 @@ def cmd_edit(args):
     """
     if all(getattr(args, k, None) is None for k in
            ("vram_mb", "ram_mb", "cpu", "description", "preferred_node",
-            "require_node", "require_gpu_idx", "allow_gpu_over_one_third")):
+            "require_node", "require_gpu_idx", "allow_gpu_over_one_third",
+            "allowed_nodes", "clear_allowed_nodes")):
         sys.exit("specify at least one of --vram-mb / --ram-mb / --cpu / "
                  "--description / --preferred-node / --require-node / --require-gpu / "
-                 "--allow-gpu-over-one-third")
+                 "--allow-gpu-over-one-third / --allowed-node / --clear-allowed-nodes")
+    if getattr(args, "allowed_nodes", None) and getattr(args, "clear_allowed_nodes", False):
+        sys.exit("use either --allowed-node or --clear-allowed-nodes, not both")
     with state_lock():
         state = load_state()
         for t in state["tasks"]:
@@ -19954,6 +20224,22 @@ def cmd_edit(args):
                 else:
                     t["require_gpu_idx"] = new_gpu
                 placement_changed = True
+            if args.allowed_nodes is not None:
+                allowed = [str(n) for n in (args.allowed_nodes or [])]
+                unknown_allowed = [n for n in allowed if n not in NODES]
+                if unknown_allowed:
+                    sys.exit(f"--allowed-node contains unknown node(s): {unknown_allowed} "
+                             f"({list(NODES.keys())})")
+                changes.append(("allowed_nodes", t.get("allowed_nodes"), allowed or None))
+                if allowed:
+                    t["allowed_nodes"] = allowed
+                else:
+                    t.pop("allowed_nodes", None)
+                placement_changed = True
+            if getattr(args, "clear_allowed_nodes", False):
+                changes.append(("allowed_nodes", t.get("allowed_nodes"), None))
+                t.pop("allowed_nodes", None)
+                placement_changed = True
             if args.allow_gpu_over_one_third is not None:
                 new_allow = bool(args.allow_gpu_over_one_third)
                 changes.append(("allow_gpu_over_one_third",
@@ -20008,9 +20294,9 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
                     f"gpu={int(split.get('gpu') or 0)}/{gpu_cap})"
                     f"{soft_note}")
         return f"slurm: would route here (gres handles GPU pinning){soft_note}"
-    if _task_requests_slurm(task):
-        return f"not-slurm-route: task has --slurm-* options but this node is default-local/non-slurm{soft_note}"
     node_info = NODES[name]
+    if _task_requests_slurm(task) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
+        return f"not-slurm-route: task has --slurm-* options but this node is default-local/non-slurm{soft_note}"
     ok, why = _node_resources_ok(task, node_state, node_info)
     if not ok:
         return f"node-reject: {why}{soft_note}"
@@ -20219,6 +20505,9 @@ def main():
     s.add_argument("--project", help="Project name (else derived from cwd basename)")
     s.add_argument("--preferred-node", choices=list(NODES.keys()), help="SOFT preference: try this node first, fall back if full")
     s.add_argument("--require-node", dest="require_node", choices=list(NODES.keys()), help="HARD pin: only place on this node, never fall back. Use when the cmd has node-specific paths/env that won't work elsewhere.")
+    s.add_argument("--allowed-node", dest="allowed_nodes", choices=list(NODES.keys()),
+                   action="append",
+                   help="Restrict candidate placement to this node. Repeatable; unlike --require-node, scheduler still chooses among the allowed nodes.")
     s.add_argument("--git-repo", help="Local + remote path of git repo to sync-check before launch")
     s.add_argument("--ckpt-dir", help="Checkpoint directory on TARGET node, for resume detection. Must be a dedicated directory, not equal to --cwd.")
     s.add_argument("--result-dir", dest="result_dir",
@@ -20380,6 +20669,8 @@ def main():
                    help="Placement algorithm policy (default/env: legacy). Examples: legacy, sweetspot_v1")
     s.add_argument("--hard-rule-mode", default="",
                    help="Experiment hard-rule override mode from algorithm.hard_rules, e.g. clean_bench")
+    s.add_argument("--task-id", dest="dispatch_task_ids", action="append",
+                   help="Experimental one-shot dispatch filter: only place this queued task id. Repeatable.")
     s.set_defaults(func=cmd_dispatch)
 
     s = sub.add_parser("wait-for", help="Block until matching tasks reach terminal state; exit fires a task-notification when wrapped in Bash run_in_background. Match by --signature glob or --task-id list (or both).")
@@ -20535,6 +20826,12 @@ def main():
                    help="Set / change hard pin (use empty string to clear)")
     s.add_argument("--require-gpu", dest="require_gpu_idx",
                    help="Set / change hard GPU index pin on the selected node (use empty string to clear)")
+    s.add_argument("--allowed-node", dest="allowed_nodes", choices=list(NODES.keys()),
+                   action="append",
+                   help="Replace placement candidate whitelist with this node. Repeatable.")
+    s.add_argument("--clear-allowed-nodes", dest="clear_allowed_nodes",
+                   action="store_true",
+                   help="Clear the placement candidate whitelist")
     s.add_argument("--allow-gpu-over-one-third", dest="allow_gpu_over_one_third",
                    action="store_true", default=None,
                    help="Allow this queued GPU task to exceed the 1/3 GPU packing guard")

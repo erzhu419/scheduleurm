@@ -1,0 +1,60 @@
+{
+  "format": "scheduleurm_gavel_throughput_seed_v1",
+  "scope": "Measured service-cache export for direct Gavel adapter development; schema validation against Gavel's native throughput JSON remains required.",
+  "taskset": {
+    "arrival_model": "static batch first; later Poisson arrivals at subcritical load",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm modules23+24+38 local CPU-only light-control curve",
+        "closed_by_capacity_boundary_profile": 14,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "Profiles 1-13 are clean local measurements; profile 14 is a measured local scheduling-capacity boundary under the exact light-control workload.",
+        "quadrant": "low_cpu_low_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "resource_count": 1,
+        "resource_kind": "light_control",
+        "role": "control",
+        "task_count": 512,
+        "total_units": 10000,
+        "variation_cv": 0.2,
+        "workload_key": "light_control_local"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q00_light_control",
+    "purpose": "Low-CPU, low-GPU control surface. This catches scheduler overhead, queue churn, and short-task fragmentation before the resource-pressure modules are enabled."
+  },
+  "throughputs": {
+    "light_control_local": {
+      "scheduleurm_profile_1": 51.446729,
+      "scheduleurm_profile_10": 488.40572299999997,
+      "scheduleurm_profile_11": 453.407884,
+      "scheduleurm_profile_12": 556.5801289999999,
+      "scheduleurm_profile_13": 618.6483320000001,
+      "scheduleurm_profile_2": 100.577699,
+      "scheduleurm_profile_3": 148.667625,
+      "scheduleurm_profile_4": 205.816828,
+      "scheduleurm_profile_5": 251.982663,
+      "scheduleurm_profile_6": 303.518782,
+      "scheduleurm_profile_7": 354.609844,
+      "scheduleurm_profile_8": 411.11932649999994,
+      "scheduleurm_profile_9": 410.36250199999995
+    }
+  }
+}

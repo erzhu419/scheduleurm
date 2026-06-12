@@ -360,6 +360,30 @@ def run(check, sch):
             sch.NODES.clear()
             sch.NODES.update(saved_nodes)
 
+    def case_allowed_nodes_limits_candidate_family():
+        saved_nodes = dict(sch.NODES)
+        try:
+            sch.NODES["remote-a"] = {"host": "remote-a", "cpu_cores": 12,
+                                     "ram_mb": 0, "max_vram_per_task": None}
+            sch.NODES["remote-b"] = {"host": "remote-b", "cpu_cores": 12,
+                                     "ram_mb": 0, "max_vram_per_task": None}
+            task = _base_task(est_vram_mb=1000, cpu_cores=1, ram_mb=1000,
+                              allowed_nodes=["remote-b"])
+            nodes = [
+                {"name": "remote-a", "alive": True, "free_cpu": 0,
+                 "total_cpu": 12, "free_ram_mb": 100000, "running_count": 0,
+                 "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
+                           "used_mb": 0, "util_pct": 0}]},
+                {"name": "remote-b", "alive": True, "free_cpu": 0,
+                 "total_cpu": 12, "free_ram_mb": 100000, "running_count": 0,
+                 "gpus": [{"idx": 1, "total_mb": 12000, "free_mb": 12000,
+                           "used_mb": 0, "util_pct": 0}]},
+            ]
+            return sch.pick_placement(task, nodes) == ("remote-b", 1)
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
+
     def case_one_third_override_allows_manual_gpu_packing():
         saved_nodes = dict(sch.NODES)
         try:
@@ -865,6 +889,96 @@ def run(check, sch):
             sch._stage_resume_ckpt_for_launch = saved_stage
             sch._STAGING_CACHE.clear()
 
+    def case_checkpoint_migration_allows_local_when_wait_is_longer():
+        saved_nodes = dict(sch.NODES)
+        try:
+            sch.NODES.clear()
+            sch.NODES.update({
+                "local": {
+                    "host": None,
+                    "cpu_cores": 16,
+                    "ram_mb": 56000,
+                    "max_vram_per_task": None,
+                    "capabilities": ["cuda"],
+                },
+                "jtl110gpu": {
+                    "host": "jtl",
+                    "cpu_cores": 12,
+                    "ram_mb": 512000,
+                    "max_vram_per_task": None,
+                    "capabilities": ["cuda"],
+                },
+            })
+            ckpt = "/tmp/ext/ckpts"
+            task = _base_task(
+                id="tResume",
+                status="queued",
+                est_vram_mb=1000,
+                ram_mb=1024,
+                cpu_cores=1,
+                allowed_nodes=["jtl110gpu"],
+                ckpt_dir=ckpt,
+                resume_managed_by_cmd=True,
+                resume_locations=[{
+                    "node": "jtl110gpu",
+                    "path": ckpt + "/checkpoint.pt",
+                    "mtime": time.time(),
+                    "size": 10 * 1024 * 1024,
+                }],
+                resume_preferred_nodes=["jtl110gpu"],
+                eta_seconds=20000,
+            )
+            nodes = [
+                {
+                    "name": "local", "alive": True,
+                    "free_cpu": 8, "total_cpu": 16,
+                    "free_ram_mb": 40000, "total_ram_mb": 56000,
+                    "running_count": 0,
+                    "gpus": [{
+                        "idx": 0, "used_mb": 0, "free_mb": 8192,
+                        "total_mb": 8192, "util_pct": 0,
+                        "running_task_count": 0,
+                    }],
+                },
+                {
+                    "name": "jtl110gpu", "alive": True,
+                    "free_cpu": 10, "total_cpu": 12,
+                    "free_ram_mb": 500000, "total_ram_mb": 512000,
+                    "running_count": 1,
+                    "gpus": [{
+                        "idx": 0, "used_mb": 3900, "free_mb": 8388,
+                        "total_mb": 12288, "util_pct": 100,
+                        "running_task_count": 1,
+                    }],
+                },
+            ]
+            state = {"tasks": [
+                task,
+                {
+                    "id": "running",
+                    "status": "running",
+                    "node": "jtl110gpu",
+                    "gpu_idx": 0,
+                    "eta_seconds": 7200,
+                    "current_vram_mb": 1200,
+                    "peak_vram_mb": 1200,
+                    "est_vram_mb": 1200,
+                },
+            ]}
+            sch._STAGING_CACHE[(("jtl110gpu", "local", ckpt))] = time.time()
+            extra, plan = sch._checkpoint_migration_extra_allowed_nodes(
+                task, nodes, task["resume_locations"], state)
+            return (
+                sch.pick_placement(task, nodes) is None
+                and "local" in extra
+                and plan and plan.get("checkpoint_wait_s") == 7200
+                and sch.pick_placement(task, nodes, extra_allowed_nodes=extra) == ("local", 0)
+            )
+        finally:
+            sch.NODES.clear()
+            sch.NODES.update(saved_nodes)
+            sch._STAGING_CACHE.clear()
+
     def case_windows_auto_adopt_linux_scans_are_skipped():
         def _inner():
             return (
@@ -1125,6 +1239,7 @@ def run(check, sch):
         ("remote CPU-only still checks CPU pressure", case_remote_cpu_only_still_checks_cpu_pressure),
         ("remote GPU claim omits CPU capacity", case_remote_gpu_claim_omits_cpu_capacity),
         ("require_gpu_idx limits placement", case_require_gpu_idx_limits_placement),
+        ("allowed_nodes limits candidate family", case_allowed_nodes_limits_candidate_family),
         ("one-third override allows manual GPU packing", case_one_third_override_allows_manual_gpu_packing),
         ("slurm bucket missing estimate defaults gpu", case_slurm_bucket_missing_est_defaults_gpu),
         ("format task location slurm cpu and gpu", case_format_task_location_slurm_cpu_and_gpu),
@@ -1159,6 +1274,7 @@ def run(check, sch):
         ("Windows explicit env_spec rejected before network", case_windows_explicit_env_spec_rejected_without_network),
         ("Windows staged resume path maps to F drive", case_record_staged_resume_location_maps_windows_path),
         ("ckpt staging runs even when cwd is already cached", case_ckpt_staging_runs_when_cwd_already_cached),
+        ("checkpoint migration allows local when wait is longer", case_checkpoint_migration_allows_local_when_wait_is_longer),
         ("Windows node skips Linux auto-adopt scans", case_windows_auto_adopt_linux_scans_are_skipped),
         ("Windows log tail uses read-write file share", case_windows_tail_uses_readwrite_share),
         ("Windows probe ignores PowerShell CLIXML noise", case_windows_probe_ignores_powershell_clixml_noise),

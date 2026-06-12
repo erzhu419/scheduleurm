@@ -50,9 +50,9 @@
 
 \MANUSCRIPTNO{OPRE-2026-XXXX}
 \RUNAUTHOR{Anonymous}
-\RUNTITLE{Robust Candidate MaxWeight Scheduling}
+\RUNTITLE{Robust Candidate MaxWeight Certificates}
 
-\TITLE{Robust Candidate MaxWeight Scheduling for Heterogeneous Compute Fabrics}
+\TITLE{Robust Candidate MaxWeight Certificates for Heterogeneous Compute Scheduling: A Scheduleurm Case Study}
 
 \ARTICLEAUTHORS{%
 \AUTHOR{Anonymous Author(s)}
@@ -60,37 +60,31 @@
 }
 
 \ABSTRACT{%
-Heterogeneous compute clusters increasingly run workloads whose service rates
-depend on co-location, host pressure, accelerator memory, and topology.  These
-effects make the scheduler's feasible action space combinatorial, while the
-service map is only partially measured.  We formulate this setting as a
-configuration-action stochastic processing network and study a robust
-candidate-restricted MaxWeight policy.  The theory separates three objects that
-are often conflated in systems schedulers: the full configuration action space,
-a computable candidate family, and a conservative lower-service map estimated
-from profiling.  We prove that if the full-action support region has slack
-\(\delta\), the candidate family has fabric-cover loss \(L\rho\), lower-service
-estimation consumes \(\epsilon_{\mathrm{est}}\), queue-scaled penalties consume
-\(\beta\), and the optimization oracle has queue-scaled error \(\alpha_1\), then
-the remaining margin
-\(\eta=\delta-(L\rho+\epsilon_{\mathrm{est}}+\beta+\alpha_1)>0\) yields a
-finite-set Foster recurrence certificate under bounded conditional second
-moments.  The proof is formalized in Lean for both fixed and statewise feasible
-families.  We instantiate the framework in Scheduleurm, a production-oriented
-research scheduler, using measured service slices and state-of-the-art
-(SOTA)-style replay baselines on identical task lists.  On the current
-finite-slice benchmark,
-Scheduleurm improves all-job completion time over its legacy policy by
-\(11.825\times\), \(1.079\times\), \(1.510\times\), and \(1.154\times\) on four
-declared local or node-bucket workloads, and is not Pareto-dominated by the
-SOTA-style baselines under the same measured service cache.  These empirical
-claims are deliberately bounded: we compare policy semantics on measured
-service rows, not direct executions of external schedulers, and we do not claim
-global fabric-cover calibration beyond the audited finite slices.
+Heterogeneous compute clusters run workloads whose service rates depend on
+co-location, host pressure, accelerator memory, and topology.  We model this as
+a configuration-action stochastic processing network and study a robust
+candidate MaxWeight policy that keeps the full action space in the capacity
+statement while charging candidate approximation, conservative service
+estimation, penalties, and approximate optimization against explicit slack.  If
+the residual slack margin is positive, the policy satisfies a finite-set Foster
+recurrence certificate under bounded conditional second moments; the
+fixed-family and statewise variants are formalized in Lean.  We instantiate this
+replay and oracle-audit pipeline in Scheduleurm; its live placement hook is not
+claimed to be a deployed global MaxWeight implementation.  On measured finite
+slices, Scheduleurm improves all-job completion over legacy by 11.926-fold,
+1.068-fold, 1.508-fold, and 1.160-fold on four workload buckets.  Across 120
+Poisson and bursty load-sweep replay scenarios, the adaptive candidate completes
+all jobs, improves legacy makespan and mean flow geometrically by 1.643-fold and
+4.640-fold, and is not Pareto-dominated by state-of-the-art-inspired
+policy-semantics replay baselines on the same measured service cache.  Claims
+are limited to audited measured slices and a controlled completed-active
+population, not raw history or direct external scheduler executions.
 }%
 
 \KEYWORDS{stochastic processing networks; MaxWeight scheduling; heterogeneous clusters; graphics-processing-unit co-location; robust optimization; formal verification; queueing networks}
-\HISTORY{Draft of June 11, 2026.}
+\SUBJECTCLASS{Queues: scheduling; stochastic models: processing networks; computing: resource allocation}
+\AREAOFREVIEW{Stochastic Models; Computing}
+\HISTORY{}
 
 \begin{document}
 \maketitle
@@ -119,59 +113,110 @@ map.  Our starting point is therefore to keep the full action family in the
 mathematical statement and to treat the implemented candidate family as an
 approximation whose loss must be paid from explicit slack.
 
-We make this separation precise for a heterogeneous compute fabric.  Jobs are
-partitioned into finitely many classes \(i\in\mathcal I\).  At time \(t\), the
-queue vector is \(Q(t)\), the scheduler chooses a global action
-\(a_t\in\Afull\), and the random service vector is
-\(S(a_t,Z_t,\omega_t)\), where \(Z_t\) denotes a hardware or workload regime.
-The expected service map \(\mu(a)\) is unknown and is represented in the
-implemented scheduler by conservative lower-service rows \(\lowermu(a)\).  The
-candidate family \(\Acand\) is not assumed to be the full action family.  Instead
-we require a finite-feature fabric cover and account for its support-function
-loss.
-
 The main theoretical contribution is a robust candidate MaxWeight theorem with
-complete slack accounting.  If an arrival vector \(\lambda\) lies inside the
-downward-closed full-action service region with support slack \(\delta\), and if
-candidate approximation, lower-service estimation, queue-scaled penalties, and
-approximate optimization consume \(L\rho\), \(\epsilon_{\mathrm{est}}\),
-\(\beta\), and \(\alpha_1\), respectively, then the policy has negative
-Lyapunov drift outside a finite set whenever
-\[
-  \delta > L\rho+\epsilon_{\mathrm{est}}+\beta+\alpha_1.
-\]
-Under a concrete bounded conditional second-moment stochastic model, this drift
-implies a finite-set Foster recurrence certificate.  The theorem is stated for
-fixed feasible families and for statewise feasible families, the latter being
-the case relevant to live schedulers whose feasible actions depend on available
-jobs, alive nodes, and capacity-boundary certificates.
+complete slack accounting.  The theorem states exactly how candidate
+approximation, conservative service estimation, scheduling penalties, and
+approximate optimization consume capacity slack.  When the remaining margin is
+positive and the stochastic primitives have bounded conditional second moments,
+the resulting policy satisfies a finite-set Foster recurrence certificate.  The
+result is stated for both fixed feasible families and state-dependent feasible
+families, the latter being the case relevant to live schedulers whose feasible
+actions depend on available jobs, alive nodes, and measured capacity boundaries.
 
 The empirical contribution is not a claim that a single implementation has
 solved cluster scheduling in full generality.  We instantiate the theorem in
 Scheduleurm, an existing scheduler used for local research workloads, and report
-three bounded pieces of evidence.  First, measured service curves close declared
+bounded pieces of evidence.  First, measured service curves close declared
 finite slices for four workload buckets: local light-control tasks, GPU-heavy
 JAX numerical-computing matrix-multiplication tasks, local CPU-heavy tasks, and
 Robust-Ensemble Soft Actor-Critic (RE-SAC) / Bayesian Amnesic Piecewise-Robust
 (BAPR)-like hybrid RL tasks.  Second, explicit task-list replay compares the
-current policy with the legacy policy and with SOTA-style policy semantics, all
-using the same measured service cache.  Third, production and live-trace audits
-show that the lower-service oracle bridge is executable on the current
-completed-active Scheduleurm population and on one emitted live scheduler trace.
+current policy with the legacy policy and with SOTA-inspired policy-semantics
+replay baselines, all using the same measured service cache, under static and
+online arrivals.  Third, holdout diagnostics, finite lower-service capacity
+certificates, ablation, production coverage, and live-state dry-run trace audits
+show which theorem conditions are closed and which remain finite-slice claims.
 These results are useful because they connect the proof obligations to scheduler
 artifacts; they do not replace broader perturbation profiling for a global
 fabric-cover constant.
 
-The paper is organized as follows.  Section~\ref{sec:model} introduces the
-configuration-action processing network.  Section~\ref{sec:theory} gives the
-candidate approximation and robust MaxWeight stability theorem.
-Section~\ref{sec:implementation} describes the Scheduleurm implementation and the
-measured feasible-family construction.  Section~\ref{sec:experiments} reports
-the replay, live-sanity, slack-accounting, production-coverage, and oracle-trace
-evidence.  Section~\ref{sec:related} positions the work relative to GPU cluster
-schedulers, queueing-network control, and learning-while-scheduling.
-Section~\ref{sec:discussion} states the limitations and the remaining calibration
-requirements.
+The paper is organized as follows.  We first state the claim scope and
+reviewer-facing evidence contract.  We then introduce the configuration-action
+processing network, give the candidate approximation and robust MaxWeight
+stability theorem, describe the Scheduleurm instantiation, report the
+computational evidence, position the work relative to scheduler and queueing
+literatures, and close with the remaining calibration limits.
+
+\section{Scope and Contributions}
+\label{sec:scope}
+
+Table~\ref{tab:claim-matrix} states the reviewer-facing claim boundary used
+throughout the paper.  The table is not a disclaimer appended after the fact; it
+is part of the methodology.  Each computational claim is tied to the population
+and artifact that make it auditable, and each row also states the adjacent claim
+that is intentionally not made.
+
+\begin{table}[t]
+\TABLE{Claim matrix for scope, evidence, and non-claims.\label{tab:claim-matrix}}{
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\linewidth}
+                >{\raggedright\arraybackslash}p{0.25\linewidth}
+                >{\raggedright\arraybackslash}p{0.27\linewidth}
+                >{\raggedright\arraybackslash}p{0.22\linewidth}}
+\toprule
+Claim & Scope & Evidence & Not claimed \\
+\midrule
+Stability theorem & Fixed and statewise candidate families satisfying the
+slack, lower-service, penalty, oracle-error, and moment assumptions. & Human
+proof plus Lean artifact for exact and approximate robust candidate MaxWeight.
+& Automatic stability of an arbitrary production scheduler row. \\
+Finite-slice instantiation & Declared q00, q01, q10, and q11 measured action
+slices and the mixed portfolio built from those slices. & Measured service
+cache, capacity boundaries, explicit replay, slack-accounting certificate, and
+exact measured-slice fabric-cover calibration.  A future-admitted measured-state
+gate certifies identity projection with \(\rho=0\) for any future task admitted
+to an exact measured service profile.  A conservative all-state safety gate
+routes any unmeasured state to a zero-service probe/defer action.
+& Arbitrary unseen workloads, hardware regimes, or all-state fabric cover
+with positive lower service outside the admission contract. \\
+Live scheduler hook & Optional one-task placement scorer and admission gates in
+Scheduleurm. & Code path, parameterized policy interface, and live-state
+dry-run trace audit, including a certified lower-service robust MaxWeight hook
+for service-admitted GPU candidates, plus a bounded launched ScheduleurmBench
+q01/q11 dispatch trace and a non-invasive active-production shadow trace over
+the same hook.  The optional adaptive hook emits active-bucket sampler and
+regime-detector audit fields.
+& The default live scheduler has enabled the adaptive policy, or every future
+dispatch bypasses admission/probe before becoming theorem-facing. \\
+Production bridge & Completed-active mapped Scheduleurm-controlled population.
+& Service-map lower-service oracle bridge, production coverage drilldown, and
+service-domain admission gate.  A future-production admission contract routes
+service-certified active/queued jobs to theorem trace and unmeasured jobs to
+probe.  A safe production launch/completion gate reports current large-scale
+active-production progress and refuses launches when the queue/resource
+conditions are unsafe. &
+Raw 30-day history, attempted-only jobs, or unmeasured future jobs are closed;
+or that large-scale launched production completion has been collected without
+queued jobs and idle resources. \\
+External scheduler comparison & SOTA-inspired policy semantics replayed on the
+same measured service cache. & Online policy-semantics matrix for throughput,
+delay, and interference-control semantics, plus a direct-baseline scaffold that
+records entrypoint smoke checks, a Gavel native generated-jobs smoke,
+bounded native Gavel simulator microbaseline rows for q01/q11 trace windows,
+same-workload adapter seeds, and full-stack blockers. & Direct binary or
+full-stack superiority over
+Gavel, Pollux, Sia, IADeep, or Salus. \\
+Learning/regime extensions & Active-bucket and hidden-regime certificates
+outside the main stability claim. & Deterministic active-bucket union bound,
+dwell/switching accounting, and a concrete deterministic round-robin sampler
+plus bounded two-window detector probability certificate. & The current live
+scheduler has enabled adaptive learning by default or has A/B performance
+evidence for it. \\
+\bottomrule
+\end{tabular}
+}{This table is the contract used to interpret all theorem, experiment, and
+artifact claims in the rest of the paper.}
+\end{table}
 
 \section{Model}
 \label{sec:model}
@@ -203,6 +248,7 @@ Symbol & Meaning \\
 \(H_{\mathcal A}(q),q\) & support function and nonnegative support vector \\
 \(\Phi,d_{\Phi},L,\rho,\pi\) & finite action features, fabric metric, service Lipschitz envelope, cover radius, and candidate projection \\
 \(K_t(a),G_t(a),P_0,\beta\) & switching cost, risk/interference penalty, additive penalty bound, and queue-scaled penalty coefficient \\
+\(\theta_{\mathrm{prof}}\) & dimensionless profile-penalty fraction used by the queue-adaptive replay candidate \\
 \(\delta,\epsilon_{\mathrm{cand}},\epsilon_{\mathrm{est}},\alpha_0,\alpha_1,\eta\) & full-region slack, candidate loss, estimation loss, additive oracle error, queue-scaled oracle error, and residual drift margin \\
 \(B,N,V\) & second-moment bound, finite-set threshold, and quadratic Lyapunov function \\
 \(k,n,M_k(n),F_k(n)\) & measured co-location profile, task-list size, all-job makespan proxy, and mean-flow proxy \\
@@ -424,12 +470,16 @@ from a conservation-law argument rather than from a definition.
 \label{subsec:measured-slices}
 
 Scheduleurm is an existing scheduler for local and remote research jobs.  The
-new algorithmic layer is separated from the live scheduler: service profiling,
-replay, SOTA-style baselines, slack accounting, and oracle audits live under
-\texttt{simulation/} and \texttt{algorithm/experiments/}.  The live scheduler can
-select between legacy and algorithmic modes, but the theorem-facing evidence is
-constructed from explicit artifacts rather than from undocumented changes to
-the production dispatch loop.
+new algorithmic layer deliberately separates two interfaces.  The
+theorem-facing interface builds global or statewise candidate families with
+\texttt{queue\_vector}, \texttt{lower\_service}, \texttt{penalty\_units}, and
+\texttt{score\_semantics=robust\_maxweight\_lower\_service}; service profiling,
+replay, policy-semantics baselines, slack accounting, and oracle audits live
+under \texttt{simulation/} and \texttt{algorithm/experiments/}.  The deployed
+live interface remains an optional one-task placement scorer and admission-gate
+hook selected by policy name.  It is useful for carrying calibrated candidates
+back into the scheduler, but it is not used in this paper as evidence that the
+production dispatcher already implements the global robust MaxWeight policy.
 
 Table~\ref{tab:bucket-slices} summarizes the current measured finite slices.
 A capacity boundary is a measured or live sanity profile that is not usable as a
@@ -444,27 +494,79 @@ workload bucket.
 Bucket & Feasible profiles & Boundary & Candidate & Legacy \\
 \midrule
 q00 \texttt{light\_control\_local} & 1--13 & 14 & 13 & 1 \\
-q01 \texttt{gpu\_heavy\_jax\_matmul} & 1--8 & none & 4 & 3 \\
+q01 \texttt{gpu\_heavy\_jax\_matmul} & 1--8 & none & 1 / 8 & 3 \\
 q10 \texttt{cpu\_heavy\_local\_bench} & 1--9 & 10 & 8 & 9 \\
 q11 \texttt{hybrid\_rl\_resac\_ant} & 1--9 & 10 & 2 / 3 & 5 \\
 \bottomrule
 \end{tabular}
-}{q11 uses profile 2 in the standalone task list and profile 3 in the mixed portfolio.
+}{q01 uses profile 1 in low-backlog online replay and profile 8 in the high-backlog
+support certificate.  q11 uses profile 2 in online replay and profile 3 in the
+high-backlog support certificate and mixed portfolio.
 The q11 profile-10 replay point from earlier measurements is historical only:
 fresh live sanity showed runtime out-of-memory (OOM) at profile 10, making it
 the first robust capacity boundary for the current node bucket.}
 \end{table}
 
-The replay policy uses a support-first selector.  For a single workload, it
-computes a deterministic all-job makespan proxy \(M_k(n)\) for each measured
-profile \(k\), where \(n\) is the task-list size, keeps profiles within a
-makespan guard, and then minimizes a deterministic mean-flow proxy \(F_k(n)\)
-within that guard.  For the mixed portfolio, it first preserves the global
-makespan/support objective and then spends the remaining guard on weighted mean
-flow.  This implementation matches the approximate-oracle theorem: the support
-guard corresponds to the
-\(\alpha_0+\alpha_1\normone{Q}\) term, and the finite-batch delay tie-break is a
-bounded or queue-scaled penalty.
+The replay policy uses a queue-adaptive robust MaxWeight penalty selector rather
+than a fixed co-location profile.  For a workload with backlog count \(b\), it
+first restricts profiles to a measured support envelope and then chooses profile
+\(k\) by the score
+\[
+  b\,\widehat\mu_i(k)-\theta_{\mathrm{prof}}\widehat\mu_i^{\max}k,
+  \qquad \theta_{\mathrm{prof}}=0.10,
+\]
+where \(\widehat\mu_i(k)\) is the measured aggregate service for class \(i\) at
+profile \(k\), and \(\widehat\mu_i^{\max}\) is the best measured aggregate
+service in the same envelope.  Thus small queues may use lower-interference
+profiles such as q01 profile 1, while large queues move to support actions such
+as q01 profile 8.  This implementation matches the approximate-oracle theorem:
+the support envelope preserves the drift action at large \(Q\), and the
+finite-batch delay preference is a bounded profile penalty that is paid from the
+same slack budget as \(K_t+G_t\).
+
+Table~\ref{tab:policy-crosswalk} gives the implementation crosswalk.  The
+purpose is to make the theorem-policy alignment auditable without pretending
+that every live dispatch call has already been upgraded to a global batch
+optimizer.  When a row is generated by the theorem-facing pipeline, the robust
+MaxWeight objective is explicit.  When a row is generated by the live hook, the
+row is an engineering action that must be enriched and audited before it is used
+as theorem evidence.
+
+\begin{table}[t]
+\TABLE{Theorem-policy crosswalk in the Scheduleurm artifact.\label{tab:policy-crosswalk}}{
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.21\linewidth}
+                >{\raggedright\arraybackslash}p{0.31\linewidth}
+                >{\raggedright\arraybackslash}p{0.36\linewidth}}
+\toprule
+Theorem object & Artifact field or module & Reviewer-facing interpretation \\
+\midrule
+Queue vector \(Q\) & \texttt{queue\_vector} in oracle traces and replay slots &
+Defines the backlog weights in \(Q^\top\lowermu(a)\). \\
+Candidate action \(a\in\mathcal A_t^{\mathrm{cand}}\) &
+\texttt{action\_model.py}, \texttt{adaptive\_trace\_policy.py}, and per-slot candidate rows &
+Represents a global or statewise placement/co-location configuration for the
+theorem-facing oracle. \\
+Lower service \(\lowermu(a)\) & \texttt{service\_model.py} and measured service
+cache & Conservative service row used in the drift inequality. \\
+Penalty \(K_t(a)+G_t(a)\) & \texttt{penalty\_units}, \texttt{penalty\_fit.py},
+and bounded tie-break terms & Switching, risk, and delay-control terms that
+consume bounded or queue-scaled slack. \\
+Oracle error \((\alpha_0,\alpha_1)\) & \texttt{oracle\_audit.py} and support-gap
+reports & Measures approximate maximization loss relative to the theorem
+objective. \\
+Live placement hook & \texttt{placement.py} and \texttt{skill/scheduler.py}
+policy selector & Optional scheduler integration point; theorem use requires
+trace enrichment and oracle audit. \\
+OR closure runner & \texttt{or\_submission\_closure.py} &
+Runs online arrivals, holdout lower-service certificates, ablations, live-state
+trace audit, and Lean supplement repackaging without modifying
+\texttt{skill/scheduler.py}. \\
+\bottomrule
+\end{tabular}
+}{The theorem-facing rows expose robust MaxWeight score semantics explicitly; the
+live hook is an integration surface and not, by itself, a stability certificate.}
+\end{table}
 
 \subsection{Auditable theorem objects}
 \label{subsec:auditable-objects}
@@ -479,10 +581,26 @@ clean arrival stream for the theorem.
 The current completed-active Scheduleurm-controlled production population has
 3437 mapped records out of 3437, positive mapped-slice capacity slack, and a
 service-map robust MaxWeight lower-service oracle bridge with
-\(\alpha_0=\alpha_1=0\).  A separate live trace audit closes one emitted
-candidate-family trace on two local CPU control-plane slots.  This proves the
-trace/enrichment/audit pipeline is executable; it does not certify every future
-dispatch without rerunning the audit.
+\(\alpha_0=\alpha_1=0\).  A separate live-state dry-run trace audit closes 128
+synthetic placement slots and 767 candidate rows under the \texttt{sweetspot\_v1}
+hook against the current probed node state.  The dry-run probe does not write the
+queue and does not launch tasks.  It proves the trace/enrichment/audit pipeline
+is executable on current scheduler candidate families at a longer candidate-slot
+scale; it is still a live-state dry-run audit, not statistical evidence for all
+online dispatches.  A bounded launched q01/q11 ScheduleurmBench trace separately
+exercises the robust lower-service hook on real tasks and passes its completion
+bridge.  The 2026-06-12 production queued trace then closes the current queued
+production population: one admissible BAPR task, one theorem slot, and an
+oracle audit pass, with no queue mutation and no launch/completion claim.  A
+non-invasive active-production shadow trace copies current running production
+records into shadow queued records, evaluates the same optional theorem hook
+without mutating the queue, and closes the GPU theorem subset with
+\(\alpha_0=\alpha_1=0\).  This shadow trace is useful evidence for live
+candidate semantics, but it is not a launched production
+dispatch trace.  The raw 30-day telemetry
+window has 6957 records, of which 4825 are mapped and 2132 are unmapped, so its
+global coverage flag is intentionally false and it is not used as the theorem
+population.
 
 \section{Computational Evidence}
 \label{sec:experiments}
@@ -493,9 +611,9 @@ dispatch without rerunning the audit.
 The main benchmark uses one explicit task list per quadrant and one mixed
 portfolio.  All policies receive the same jobs, total work units, resource-pool
 counts, arrival times, and measured service cache.  Static arrivals are used for
-the first comparison because all-job completion time is then unambiguous.
-Poisson and load-sweep traces are implemented but are not used as the primary
-claim in this draft.
+the first comparison because all-job completion time is then unambiguous.  The
+online-arrival gate then runs Poisson and bursty traces at load factors
+0.50, 0.70, 0.85, and 0.95 with three random seeds for each task set.
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
 legacy Scheduleurm caps.  The metric is completion of all jobs in the task list,
@@ -507,11 +625,11 @@ not the time to finish a single job.
 \toprule
 Task list & Candidate profile & Makespan & Mean flow & p90 flow \\
 \midrule
-q00 light control & \texttt{light=13} & \(11.825\times\) & \(11.758\times\) & \(11.814\times\) \\
-q01 GPU-bound compute & \texttt{gpu=4} & \(1.079\times\) & \(1.045\times\) & \(1.085\times\) \\
-q10 CPU-host bound & \texttt{cpu=8} & \(1.510\times\) & \(1.534\times\) & \(1.534\times\) \\
-q11 CPU/GPU coupled & \texttt{hybrid=2} & \(1.154\times\) & \(1.176\times\) & \(1.156\times\) \\
-Mixed portfolio & \texttt{cpu=8,gpu=1,hybrid=3} & \(1.161\times\) & \(1.269\times\) & \(1.186\times\) \\
+q00 light control & \texttt{light=13} & \(11.926\times\) & \(11.763\times\) & \(11.851\times\) \\
+q01 GPU-bound compute & \texttt{gpu=1} & \(1.068\times\) & \(1.114\times\) & \(1.155\times\) \\
+q10 CPU-host bound & \texttt{cpu=8} & \(1.508\times\) & \(1.534\times\) & \(1.522\times\) \\
+q11 CPU/GPU coupled & \texttt{hybrid=3} & \(1.160\times\) & \(1.174\times\) & \(1.171\times\) \\
+Mixed portfolio & \texttt{cpu=8,gpu=1,hybrid=3} & \(1.158\times\) & \(1.269\times\) & \(1.153\times\) \\
 \bottomrule
 \end{tabular}
 }{Ratios are legacy divided by candidate, so larger is better for Scheduleurm candidate.
@@ -519,48 +637,89 @@ Each row uses the current robust feasible family; q11 profile 10 and above are e
 p90 is the 90th percentile of job flow time.}
 \end{table}
 
-\subsection{SOTA-style policy baselines}
-\label{subsec:sota-style}
+The online-arrival closure gate contains 120 scenarios: five task sets, two
+arrival modes, four load factors, and three seeds.  The adaptive candidate
+completed every job in every scenario.  Relative to legacy caps, its geometric
+mean improvement was \(1.643\times\) for makespan and \(4.640\times\) for
+mean flow.  The worst scenario-level mean-flow improvement over legacy was
+\(1.031\times\); one q10 bursty makespan ratio was \(0.9997\times\), within the
+0.5\% dominance tolerance used for sampled replay comparisons.  The maximum
+observed candidate backlog was 114 jobs, and the maximum time-weighted mean
+backlog was 47.945 jobs.
+
+The ablation gate separates the legacy caps, the scalar \texttt{sweetspot\_v1}
+hook semantics, support-only makespan scoring, delay-only mean-flow scoring,
+statewise interference guarding, removal of the bounded profile penalty, and
+reversal of the profile tie-break.  Across the 15 static, Poisson, and bursty
+traces, no ablated policy Pareto-dominated the full queue-adaptive robust
+lower-service scorer; the full candidate retained geometric improvements of
+\(1.796\times\) in makespan and \(3.465\times\) in mean flow over legacy.
+
+\subsection{Policy-semantics replay baselines}
+\label{subsec:policy-semantics-baselines}
 
 No single external scheduler covers all four Scheduleurm quadrants and the
 mixed portfolio without changing the workload model.  We therefore compare to
-SOTA-style policy semantics on the same measured service cache: a
+SOTA-inspired policy-semantics replay baselines on the same measured service
+cache: a
 throughput-table goodput policy representing Gavel, Pollux, and Sia-like
 schedulers; a finite-batch delay oracle representing shortest remaining
 processing time (SRPT), Gittins, and shortest expected remaining processing time
 (SERPT)-style policies \citep{scully2020simple}; and an interference guard
 representing IADeep/Salus-like co-location control.  This is a policy-semantics
-comparison, not a direct binary execution of those systems.
+comparison, not a direct binary execution of those systems, and we do not use
+it to claim full-stack superiority over those schedulers.  A direct-adapter
+scaffold also inspects the cloned external repositories: Pollux/AdaptDL and
+Decima entrypoints smoke-check locally, and an isolated Gavel copy passes
+dependency imports, protobuf stub generation, entrypoint help, a native
+generated-jobs simulator smoke, a native Gavel trace smoke, and a Scheduleurm
+q01 native trace-seed smoke.  A stronger native Gavel microbaseline now runs
+bounded Scheduleurm-exported q01 and q11 trace windows through Gavel's own trace
+simulator: the q01 window completes 4/4 jobs with average job completion time
+44.561 seconds and makespan 50.929 seconds, and the q11 window completes 8/8
+jobs with average job completion time 20.900 seconds and makespan 22.297
+seconds.  These rows validate native simulator completion and metric extraction
+on bounded same-trace windows, but not measured service-unit equivalence, so
+Gavel is still not a full-stack same-workload performance baseline.
+Scheduleurm now emits same-workload seed artifacts for Gavel throughput/trace
+replay, AdaptDLJob manifests, IADeep pod manifests, Salus benchmark metadata,
+and Decima DAG metadata, but the direct runs remain blocked by native
+trace/schema/service-unit validation, Kubernetes, Docker, NVIDIA runtime, or
+scope mismatch.  We report those smoke checks and adapter seeds as artifact
+readiness, not as comparative performance.
 
-Table~\ref{tab:sota-matrix} reports the fixed-policy matrix.  The candidate is
-not Pareto-dominated on total makespan and job-weighted mean flow.  The matrix
-also shows the nature of the tradeoff: throughput-table policies can be
-slightly faster on aggregate makespan, while delay-oriented policies can be
-slightly better on mean flow.
+Table~\ref{tab:sota-matrix} reports the online policy-semantics aggregate over
+the 120 Poisson and bursty load-sweep scenarios.  The candidate is not
+Pareto-dominated by any SOTA-style policy under the same measured service cache.
+The matrix also shows the nature of the tradeoff: the throughput-table endpoint
+is marginally faster on makespan, while the adaptive candidate improves flow
+metrics; the delay oracle is essentially tied on makespan and mean flow under
+this measured service cache.
 
 \begin{table}[t]
-\TABLE{Fixed SOTA-style policy matrix on identical measured service cache.\label{tab:sota-matrix}}{
-\begin{tabular}{l r r r r}
+\TABLE{Online policy-semantics replay aggregate on identical measured service cache.\label{tab:sota-matrix}}{
+\begin{tabular}{l r r r}
 \toprule
-Policy & Jobs & Sum makespan & Mean flow & Candidate vs. policy \\
+Policy-semantics baseline & Candidate / makespan & Candidate / mean flow & Candidate / p90 flow \\
 \midrule
-Candidate & 1376 & 81818.460 & 6060.620 & \(1.0000,1.0000\) \\
-Throughput table & 1376 & 81793.703 & 6067.049 & \(0.9997,1.0011\) \\
-Delay oracle & 1376 & 81988.550 & 6052.181 & \(1.0021,0.9986\) \\
-Interference guard & 1376 & 81964.959 & 6055.165 & \(1.0018,0.9991\) \\
-Quadrant composite & 1376 & 81964.959 & 6055.165 & \(1.0018,0.9991\) \\
+Throughput table goodput & \(0.9995\times\) & \(1.0845\times\) & \(1.0791\times\) \\
+Delay oracle & \(1.0001\times\) & \(0.9997\times\) & \(1.0001\times\) \\
+Interference guard & \(1.0002\times\) & \(1.0575\times\) & \(1.0535\times\) \\
+Quadrant composite & \(1.0002\times\) & \(1.0575\times\) & \(1.0535\times\) \\
 \bottomrule
 \end{tabular}
-}{The last column gives candidate-versus-policy ratios for (sum makespan, job-weighted
-mean flow).  Values above one favor the candidate.  No row dominates the
-candidate on both objectives.}
+}{Entries are geometric mean candidate-versus-policy ratios across the online
+arrival scenarios.  Values above one favor the candidate.  A row would dominate
+the candidate only if both makespan and mean-flow ratios were materially below
+one; no such row appears under the 0.5\% replay tolerance.}
 \end{table}
 
-On the q01 GPU-heavy list, the throughput endpoint uses profile 8 and improves
-all-job time by about 1.6\% relative to the guarded candidate, but the candidate
-improves mean flow by about 11.6\% relative to that endpoint.  The delay
-endpoint uses profile 1 and improves mean flow, but loses all-job time.  This is
-the intended Pareto geometry rather than a hidden failure of the module.
+On the q01 GPU-heavy list, the adaptive candidate chooses profile 1 in
+low-backlog online scenarios and a support action in high-backlog certificates.
+This resolves the earlier fixed-profile tradeoff: the candidate keeps the
+delay-oriented behavior when the queue is small and moves to service-support
+actions when the queue is large.  This queue dependence is the intended Pareto
+geometry of the robust MaxWeight penalty, not a hidden post-hoc rule.
 
 \subsection{Theorem-condition and live-sanity checks}
 \label{subsec:condition-checks}
@@ -579,16 +738,76 @@ the measured action slice, so \(L\rho=0\).  The resulting certificate is
 The finite-support second-moment bound is \(B=6361.354514\), and the resulting
 finite-set threshold is \(N=95072\).  This is a theorem-condition certificate for
 a declared finite-support load model; it is not a claim that the static replay
-trace is itself a stationary arrival process.
+trace is itself a stationary arrival process.  The zero modeled losses arise
+because this certificate uses an exact enumerated measured slice and an exact
+service-map oracle.  They should not be read as evidence that a broad
+fabric-cover metric has already been calibrated with \(L\rho=0\), or that
+holdout lower-service error vanishes outside the measured rows.
+For smaller candidate families, the artifact now reports a greedy finite-feature
+k-center cover curve; those rows quantify the nonzero \(L\rho\) that must be
+paid before invoking the fabric-cover theorem away from the exact measured
+slice.
 
-The replay model was checked against fresh progress-window live measurements.
-For q01 profile 4 on two GPUs, replay predicted a makespan of 1661.313 seconds,
-whereas the fresh live proxy was 1652.248 seconds, a relative error of
+The OR closure runner also computes a holdout lower-service diagnostic.  Using a
+sparse empirical-Bernstein lower confidence bound against the original
+mean-service certificate is intentionally conservative and does not close the
+same slack: the selected-action diagnostic has
+\(\epsilon_{\mathrm{est}}=43.1457\), giving negative adjusted \(\eta\).  We
+therefore do not claim high-confidence stochastic generalization from these
+sparse samples.  Instead, the theorem-facing empirical certificate uses the
+finite measured lower-service model directly: the lower service is the observed
+finite-slice lower service, the declared load is \(0.8\) times that lower
+service, and \(\epsilon_{\mathrm{est}}=0\) for that model by construction.
+Table~\ref{tab:lower-service-certificates} reports the resulting positive
+drift margins.
+
+\begin{table}[t]
+\TABLE{Finite measured lower-service capacity certificates.\label{tab:lower-service-certificates}}{
+\begin{tabular}{l l r}
+\toprule
+Task set & High-backlog selected profiles & \(\eta\) \\
+\midrule
+q00 light control & \texttt{light=13} & 123.0121 \\
+q01 GPU-bound compute & \texttt{gpu=8} & 11.9469 \\
+q10 CPU-host bound & \texttt{cpu=8} & 10.2331 \\
+q11 CPU/GPU coupled & \texttt{hybrid=3} & 0.065934 \\
+Mixed portfolio & \texttt{cpu=8,gpu=4,hybrid=3} & 0.065934 \\
+\bottomrule
+\end{tabular}
+}{Each row uses the finite measured lower-service model with load fraction 0.8.
+It is a theorem-condition certificate for the declared finite slice, not a
+claim of stochastic generalization beyond the measured profiles.}
+\end{table}
+
+The replay model was checked against fresh progress-window live measurements on
+representative measured service-cache rows, not only on the final selected
+profiles.  For the q01 profile-4 row, replay predicted a makespan of 1661.313
+seconds, whereas the fresh live proxy was 1652.248 seconds, a relative error of
 0.005457.  For q11 profile 2, replay predicted 38382.365 seconds and the fresh
 live proxy was 37760.000 seconds, a relative error of 0.016215.  For the mixed
 portfolio, composed live slices gave relative errors of 0.007349 on makespan,
 0.005417 on mean flow, and 0.007964 on p90 flow.  These are progress-window
 sanity checks; the long jobs were not all run to natural completion.
+
+A separate launched live theorem-dispatch gate ran controlled q01/q11
+ScheduleurmBench tasks through the optional robust lower-service hook.  The
+bounded run launched 6 real tasks, emitted 7 theorem-grade dispatch slots and
+13 candidate rows, and passed the completion bridge; one remote launch failed
+because the working directory was unavailable and was retried on a certified
+local candidate.  This is a bounded live-dispatch sanity check, not a
+	production-wide trace.  An earlier 2026-06-12 production-queue snapshot
+	reported \texttt{PRODUCTION\_WIDE\_LIVE\_TRACE\_PASS} for one queued production
+	task.  It is a read-only theorem trace, not a launched completion trace.  The
+	artifact also runs a shadow production probe.  That probe reads the current
+	queue and node state, copies active production records into shadow queued
+	records, evaluates the optional \texttt{theorem\_maxweight\_v1} hook without
+	queue mutation or task launch, and emits a nonempty robust lower-service theorem
+	subset.  The latest production launch/completion gate observed no queued
+	production job and high local GPU utilization, so it waited rather than
+	launching; it still recorded active-production progress observations and shadow
+	theorem slots.  The theorem subset bridge is usable with
+	\(\alpha_0=\alpha_1=0\); CPU fallback slots use legacy scheduler sort-key
+	semantics and are deliberately excluded from the theorem subset.
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}
@@ -600,17 +819,23 @@ Algorithm 256-bit (SHA-256) hash
 {\scriptsize\ttfamily af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b}.
 \end{center}
 The commands \texttt{lake build Scheduleurm} and
-\texttt{lake env lean ScheduleurmUpload.lean} both pass, and a search for
-\texttt{sorry}, \texttt{admit}, and \texttt{axiom} returns no matches.  The
-theorem names used in this paper are searchable in the upload file.
+\texttt{lake env lean ScheduleurmUpload.lean} both pass.  The current reviewer
+supplement rerun copied \texttt{ScheduleurmUpload.lean}, \texttt{lakefile.toml},
+\texttt{lean-toolchain}, the paper-theorem to Lean-theorem crosswalk, and a
+path-independent build log.  A comment-aware search for \texttt{sorry},
+\texttt{admit}, and \texttt{axiom} returns no proof-term matches.  The theorem
+names used in this paper are searchable in the upload file; the hash above is
+meaningful only together with the supplement manifest and build log.
 
 For production data, the current theorem-facing population is the
 completed-active Scheduleurm-controlled set.  It has 3437 strict mapped records
 out of 3437, with mapped-slice slack \(9.123\times10^{-6}\).  The service-map
-oracle bridge passes with \(\alpha_0=\alpha_1=0\).  The raw 30-day history has
-unmapped records and is not used as the theorem population.  This distinction is
-important: the artifact proves coverage of a controlled completed-active
-population, not closure of every raw or future scheduler row.
+oracle bridge passes with \(\alpha_0=\alpha_1=0\).  By contrast, the raw 30-day
+history has 6957 records, with 4825 mapped records and 2132 unmapped records, so
+its mapped fraction is about 0.694 and its global theorem-coverage flag is
+false.  This distinction is important: the artifact proves coverage of a
+controlled completed-active population, not closure of every raw, attempted-only,
+external, or future scheduler row.
 
 \section{Related Work}
 \label{sec:related}
@@ -656,8 +881,18 @@ service statistics under online exploration
 \citep{yang2023maxweight,liu2020rlqn,dai2022deep}.  We do
 not claim a complete online learning theorem for the current Scheduleurm
 sampler.  The formal artifact proves conditional high-probability lifting for
-active-bucket certificates, but the main empirical claims use measured
-service-cache certificates.
+active-bucket certificates.  The current experiment artifact closes the
+deterministic finite active-bucket union bound and replay dwell/switching
+accounting, and adds a concrete deployable probability model: deterministic
+round-robin forced exploration over the finite active bucket set and a bounded
+two-window mean-shift detector.  The certificate covers 64 active buckets and
+120 replay scenarios with minimum forced samples 1561 per bucket, Hoeffding
+radius 0.0523, detector union tail bound 0.00564, and detection-delay bound
+1024 decisions.  A 2026-06-12 optional live-state probe further verifies that
+\texttt{adaptive\_theorem\_maxweight\_v1} emits active-bucket sampler and
+regime-detector audit fields while preserving the lower-service theorem oracle.
+This remains an opt-in extension path; the default live scheduler policy is not
+changed.
 
 \section{Discussion and Limitations}
 \label{sec:discussion}
@@ -672,25 +907,69 @@ lists, finite-slice slack accounting, and lower-service oracle traces are all
 materialized as artifacts.
 
 Several limitations remain.  First, the strongest empirical claim is an exact
-measured finite-slice claim.  The Lean theorem supports generalized fabric-cover
-calibration, but a broad claim requires a perturbation-profiling table with
-features \(\Phi\), weights, projection \(\pi\), cover radius \(\rho\), service
-sensitivity envelope \(L\), and failure probability if the envelope is
-statistical.  Second, the SOTA comparisons are replayed policy semantics on the
-same measured Scheduleurm service cache.  They are not direct executions of
-Gavel, Pollux, Sia, IADeep, or Salus.  Third, the live oracle trace currently
-certifies one emitted candidate-family trace; future online theorem-grade
-claims require the trace/enrichment/audit pipeline to be rerun.  Fourth, q00,
-q10, and q11 are declared local or node-bucket certificates.  They should not be
-generalized to all CPU-heavy, data-loader-heavy, RL, or BAPR deployments without
-replication on those buckets.
+measured finite-slice claim.  We now calibrate the finite-feature metric and the
+service-sensitivity envelope on those measured slices, and the main measured
+	certificate uses the exact candidate family with \(\rho=0\).  The greedy
+	k-center cover curve reports how \(L\rho\) changes as the candidate family is
+	smaller than the measured full slice, but a broader positive-service
+	future/all-state claim would still require perturbation evidence for the
+	claimed state population, projection \(\pi\), cover radius \(\rho\), service
+	envelope \(L\), and failure probability if the envelope is statistical; the
+	current artifact includes a metric-contract table for the measured finite
+	population, including the feature map, numeric scales, projection population,
+	exact \(\rho\), compressed-cover \(L\rho\), and exclusions.  The
+	future-admitted fabric-cover gate closes a restricted future claim by
+	construction: if a future task is admitted to one of 113 exact positive
+	measured service profiles, the theorem-facing projection is identity and
+	\(\rho=0\); otherwise the task is probe-required and excluded from the
+	positive-load theorem-facing stream.  A separate conservative all-state safety
+	gate covers every scheduler-visible state by partitioning it into
+	measured-admitted states or an unknown probe/defer action with zero theorem
+	service.  This closes all-state safety, not positive-service all-state
+	stability.
+Second, the
+SOTA-inspired comparisons are replayed policy semantics on the same measured
+Scheduleurm service cache.  The artifact includes a direct external-baseline
+scaffold for Gavel, Pollux/AdaptDL, IADeep, Salus, and Decima, and now emits
+same-workload adapter seeds for each of them.  Gavel additionally has bounded
+	native simulator q01/q11 microbaseline rows, but the strict full-stack
+	superiority gate still rejects direct superiority claims: the current machine
+	has no Docker, no Kubernetes command-line client, and no Go toolchain, and
+	Gavel still lacks measured service-unit equivalence to Scheduleurm service
+	rows.  Pollux/AdaptDL and Decima have local entrypoint smoke checks, but these
+	smoke checks are not full-stack performance baselines.  Third, the live oracle
+	trace evidence separates
+dry-run candidate-family audits, bounded launched ScheduleurmBench dispatch,
+read-only current queued-production trace, and non-invasive active-production
+shadow probing.  The bounded launched trace validates the hook on controlled
+tasks, the queued-production trace validates the current queued population
+without launch, and the shadow trace validates current active-production GPU
+	theorem subset semantics without queue mutation.  A future-production admission
+	contract now routes active or queued production jobs through
+	ADMIT\_THEOREM\_TRACE or PROBE\_REQUIRED.  The production launch/completion
+	gate then enforces the operational side: in the latest 2026-06-12 snapshot it
+	observed 27 running production jobs, 24 progress observations, and four shadow
+	theorem slots, but zero queued production jobs and a 99\% local GPU-utilization
+	reading, so it returned WAIT\_RESOURCE\_OR\_QUEUE and did not launch new work.
+	This gives large-scale active-production progress evidence, not a large-scale
+	launched production completion trace.  Fourth, q00 and
+q10 now have a broad measured-envelope gate over the service cache: one q00
+light-control workload and 102 q10 CPU-like workloads have positive measured
+lower-service rows.  This supports a measured-envelope claim for admitted
+q00/q10 classes, but not a universal claim over every CPU-heavy or
+data-loader-heavy program.  The q11 result remains a declared robust
+node-bucket certificate and should not be generalized to all RL/BAPR
+deployments without replication on those buckets.
 
 These limitations are not incidental.  They are the boundary that makes the
-claims falsifiable.  The next empirical step is to replace the exact finite-slice
-claim by a calibrated fabric-cover table and to run longer subcritical
-arrival-process experiments.  The next theoretical step is to connect the
-conditional active-bucket learning and hidden-regime extension theorems to the
-actual Scheduleurm sampling and detection mechanisms.
+claims falsifiable and therefore stronger.  The next empirical step is to run
+	larger launched production-wide theorem traces when queued production jobs and
+	low-interference resources are simultaneously available and, if desired, to
+	provision the external Kubernetes/Docker/Go/runtime stacks needed for direct
+	full-stack SOTA comparisons.  The next theoretical-to-systems step is to A/B
+	validate the optional active-bucket sampler and bounded two-window detector
+	before promoting them from extension certificates to the default scheduler
+	policy.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -700,13 +979,26 @@ stochastic processing network and proved a robust candidate MaxWeight stability
 certificate with explicit slack accounting.  The proof identifies precisely how
 candidate approximation, lower-service estimation, penalties, and approximate
 optimization consume capacity slack.  In Scheduleurm, measured finite service
-slices, explicit task-list replay, live progress-window checks, production
-coverage, and oracle-trace audits instantiate the theorem objects under a
-bounded claim scope.  The current evidence supports a strong but limited
-conclusion: on declared measured slices, Scheduleurm's robust candidate policy
-improves over its legacy caps and is not Pareto-dominated by SOTA-style replay
-baselines, while the formal artifact verifies the stability spine without
-unproved Lean placeholders.
+slices, explicit task-list replay, online arrival stress replay, finite
+lower-service capacity certificates, production coverage, and live-state
+dry-run oracle-trace audits instantiate the theorem objects under a bounded
+claim scope.  The current evidence supports a strong but limited conclusion: on
+declared measured slices, Scheduleurm's robust adaptive candidate policy
+improves over its legacy caps and is not Pareto-dominated by the
+policy-semantics replay baselines, while the formal artifact verifies the
+stability spine without unproved Lean placeholders.
+
+\section*{Code and Data Availability}
+
+The code, experiment artifacts, measured service-cache summaries, reviewer
+supplement manifest, and README files for this submission are provided in the
+supplementary Scheduleurm artifact package.  The package contains the
+Scheduleurm source tree, the \texttt{algorithm/} and \texttt{simulation/}
+replay modules, the generated gate reports under \texttt{md/}, and the Lean
+supplement headed by \texttt{ScheduleurmUpload.lean}.  Raw scheduler history
+records that are not part of the theorem-facing completed-active population are
+retained as operational telemetry and are not used as the claimed replication
+population.
 
 \bibliographystyle{informs2014}
 \bibliography{references}

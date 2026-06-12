@@ -1,0 +1,19 @@
+apiVersion: adaptdl.petuum.com/v1
+kind: AdaptDLJob
+metadata:
+  name: light-control-local
+  labels:
+    scheduleurm-taskset: q00-light-control
+spec:
+  placement: any
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: trainer
+        image: scheduleurm/adaptdl-placeholder:latest
+        command: ["python", "-m", "scheduleurm_workload_adapter"]
+        args: ["--workload-key", "light_control_local", "--total-units", "10000"]
+        resources:
+          limits:
+            cpu: "1"

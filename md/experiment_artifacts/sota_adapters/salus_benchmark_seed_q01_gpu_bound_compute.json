@@ -1,0 +1,88 @@
+{
+  "format": "scheduleurm_salus_benchmark_seed_v1",
+  "scope": "Benchmark-driver seed metadata for Salus adapter development; Salus server/runtime integration remains required before direct comparison.",
+  "sessions": [
+    {
+      "count": 48,
+      "name": "gpu_heavy_jax_matmul",
+      "profiles": [
+        {
+          "aggregate_rate": 34.484897000000004,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 32.2352685,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 32.405914,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 35.05375000000001,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 35.000623999999995,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 35.104212000000004,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 35.4717315,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 35.632241,
+          "capacity_boundary": false,
+          "profile": 8
+        }
+      ],
+      "resource_count": 2,
+      "resource_kind": "gpu_heavy",
+      "total_units": 2400.0
+    }
+  ],
+  "taskset": {
+    "arrival_model": "static batch plus Gavel-style Poisson seeds after module validation",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm module6; analogous to Gavel/Pollux DNN throughput-table replay",
+        "closed_by_capacity_boundary_profile": null,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "Profiles 1-8 are clean real measurements on jtl110gpu2.",
+        "quadrant": "low_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "resource_count": 2,
+        "resource_kind": "gpu_heavy",
+        "role": "single-bottleneck validation",
+        "task_count": 48,
+        "total_units": 2400,
+        "variation_cv": 0.04,
+        "workload_key": "gpu_heavy_jax_matmul"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q01_gpu_bound_compute",
+    "purpose": "Low-host, high-GPU compute pressure. This is the pure GPU curve that should prefer fewer co-located jobs once aggregate service saturates."
+  }
+}

@@ -1,0 +1,19 @@
+apiVersion: adaptdl.petuum.com/v1
+kind: AdaptDLJob
+metadata:
+  name: cpu-heavy-local-bench
+  labels:
+    scheduleurm-taskset: q10-cpu-host-bound
+spec:
+  placement: any
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: trainer
+        image: scheduleurm/adaptdl-placeholder:latest
+        command: ["python", "-m", "scheduleurm_workload_adapter"]
+        args: ["--workload-key", "cpu_heavy_local_bench", "--total-units", "1000"]
+        resources:
+          limits:
+            cpu: "1"

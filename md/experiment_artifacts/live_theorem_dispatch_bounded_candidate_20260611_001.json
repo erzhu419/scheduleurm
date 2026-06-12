@@ -1,0 +1,168 @@
+{
+  "allowed_nodes": [
+    "local",
+    "node007-direct"
+  ],
+  "candidate_count_total": 4,
+  "dispatch_returncode": 0,
+  "dispatch_stderr_tail": "",
+  "dispatch_stdout_tail": "=== nodes ===\n  local       GPU0=0.08GB/8.00GB(free=7.69GB, mem:1%, util:0%)  cpu=11/16(wsl_load 2.4, host 30%)  ram_free=31.0GB(eff)\n  jtl110gpu   GPU0=5.37GB/12.0GB(free=6.39GB, mem:45%, util:100%), GPU1=5.60GB/12.0GB(free=6.16GB, mem:47%, util:100%)  cpu=6/12(load 6.0)  ram_free=480.4GB  claims(active_claims=2)\n  jtl110gpu2  GPU0=0.50GB/12.0GB(free=11.3GB, mem:4%, util:13%), GPU1=1.05GB/12.0GB(free=10.7GB, mem:9%, util:92%)  cpu=8/12(load 4.2)  ram_free=490.1GB\n  zhengliang-hpc CPU-only  cpu=63/64(load 0.6)  ram_free=79.3GB\n  node007-direct GPU0=0.62GB/11.0GB(free=10.1GB, mem:6%, util:43%), GPU1=0.50GB/11.0GB(free=10.2GB, mem:5%, util:92%), GPU2=0.50GB/11.0GB(free=10.2GB, mem:5%, util:92%), GPU3=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%)  cpu=59/64(load 4.6)  ram_free=219.2GB\n  jtl110cpu   CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=480.6GB\n  jtl110cpu2  CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=488.2GB\n  node001     CPU-only  cpu=85/192(load 106.6)  ram_free=141.3GB\n  node002     CPU-only  cpu=128/192(load 64.2)  ram_free=146.0GB\n  node003     CPU-only  cpu=94/192(load 97.8)  ram_free=129.5GB\n  node004     CPU-only  cpu=94/192(load 98.3)  ram_free=123.2GB\n  node005     CPU-only  cpu=94/192(load 97.9)  ram_free=120.5GB\n  node006     CPU-only  cpu=176/192(load 16.2)  ram_free=156.1GB\n=== dispatch === (2 queued)\n  [t10300] LAUNCH on local:GPU0  pid=1992633  log=/home/erzhu419/.claude/scheduler/logs/t10300.log\n  [t10301] LAUNCH on local:GPU0  pid=1992686  log=/home/erzhu419/.claude/scheduler/logs/t10301.log",
+  "gate": "controlled_live_theorem_dispatch",
+  "markdown_path": "/home/erzhu419/mine_code/scheduleurm/md/live_theorem_dispatch_bounded_candidate_20260611_001.md",
+  "max_gpu_util_pct": 20,
+  "pass": true,
+  "preferred_node": "",
+  "realization": {
+    "completed_task_count": 2,
+    "gate": "live_trace_realization_bridge",
+    "matched_task_record_count": 2,
+    "progress_observation_count": 0,
+    "rows": [
+      {
+        "ended_at": 1781189588.5930014,
+        "flow_s": 100.03864455223083,
+        "gpu_idx": 0,
+        "node": "local",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t10300:1781189488.5543568:1781189524461",
+        "started_at": 1781189527.016747,
+        "task_id": "t10300",
+        "task_record_found": true,
+        "terminal_status": "done"
+      },
+      {
+        "ended_at": 1781189588.7812536,
+        "flow_s": 93.50565099716187,
+        "gpu_idx": 0,
+        "node": "local",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t10301:1781189495.2756026:1781189529009",
+        "started_at": 1781189531.5539145,
+        "task_id": "t10301",
+        "task_record_found": true,
+        "terminal_status": "done"
+      }
+    ],
+    "scope": "matches scheduler-emitted trace task ids to queue/archive records. Dry-run theorem traces intentionally have no realized completion claim until the same trace path is produced by actual dispatch.",
+    "status": "LIVE_COMPLETION_REALIZATION_PASS",
+    "theorem_trace_slot_count": 2,
+    "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/live_theorem_dispatch_bounded_candidate_20260611_001_trace.jsonl",
+    "trace_slot_count": 2,
+    "usable_for_live_completion_claim": true,
+    "usable_for_live_progress_claim": true
+  },
+  "realization_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/live_theorem_dispatch_bounded_candidate_20260611_001_realization.json",
+  "report_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/live_theorem_dispatch_bounded_candidate_20260611_001.json",
+  "require_node": "",
+  "run_id": "live_theorem_dispatch_bounded_candidate_20260611_001",
+  "scheduler_score_audit": {
+    "audited_slot_count": 2,
+    "max_scheduler_score_gap": 0.0,
+    "rows": [
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=local|gpu=0",
+        "best_primary_score": -34.484897000000004,
+        "candidate_count": 2,
+        "phase": "fallback",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=local|gpu=0",
+        "selected_primary_score": -34.484897000000004,
+        "slot_id": "slot:t10300:1781189488.5543568:1781189524461",
+        "task_id": "t10300"
+      },
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=local|gpu=0",
+        "best_primary_score": -8.333333333333332,
+        "candidate_count": 2,
+        "phase": "fallback",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=local|gpu=0",
+        "selected_primary_score": -8.333333333333332,
+        "slot_id": "slot:t10301:1781189495.2756026:1781189529009",
+        "task_id": "t10301"
+      }
+    ],
+    "theorem_blocker": "",
+    "usable_for_scheduler_score_audit": true,
+    "usable_for_theorem": true
+  },
+  "scope": "controlled local live dispatch smoke using scheduler.py dispatch --algorithm theorem_maxweight_v1. The scheduler queue is mutated, tasks are actually launched, candidate-family traces are emitted, and realization is matched against queue/archive records. This is not yet the full global q01/q11 production experiment.",
+  "submitted": [
+    {
+      "description": "q01 GPU-heavy JAX matmul controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/jax_matmul_size8192/controlled_live_theorem/live_theorem_dispatch_bounded_candidate_20260611_001/00",
+      "stdout": "submitted t10300  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q01 GPU-heavy JAX matmul controlled live theorem d\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t10300",
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "description": "q11 RE-SAC/BAPR-like hybrid RL controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/resac_ant_real/controlled_live_theorem/live_theorem_dispatch_bounded_candidate_20260611_001/01",
+      "stdout": "submitted t10301  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q11 RE-SAC/BAPR-like hybrid RL controlled live the\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t10301",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "task_ids": [
+    "t10300",
+    "t10301"
+  ],
+  "theorem_oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 2,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 2,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 2,
+    "rows": [
+      {
+        "best_action_id": "node=local|gpu=0",
+        "best_candidate_score": 34.484897000000004,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=local|gpu=0",
+        "chosen_score": 34.484897000000004,
+        "oracle_gap": 0.0,
+        "q_norm": 29.0,
+        "slot_id": "slot:t10300:1781189488.5543568:1781189524461"
+      },
+      {
+        "best_action_id": "node=local|gpu=0",
+        "best_candidate_score": 8.333333333333332,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=local|gpu=0",
+        "chosen_score": 8.333333333333332,
+        "oracle_gap": 0.0,
+        "q_norm": 28.0,
+        "slot_id": "slot:t10301:1781189495.2756026:1781189529009"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 2,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "theorem_slot_count": 2,
+  "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/live_theorem_dispatch_bounded_candidate_20260611_001_trace.jsonl",
+  "trace_slot_count": 2,
+  "wait_returncode": 0,
+  "wait_stderr_tail": "",
+  "wait_stdout_tail": "[wait-for 2 ids] all 2 terminal: 2 done, 0 failed, 0 cancelled"
+}

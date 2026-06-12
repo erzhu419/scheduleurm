@@ -1,0 +1,182 @@
+{
+  "algorithm": "theorem_maxweight_v1",
+  "candidate_count_total": 50,
+  "gate": "live_trace_dryrun_probe",
+  "hard_rule_mode": "theorem-smoke",
+  "node_summary": [
+    {
+      "alive": true,
+      "free_cpu": 9,
+      "free_ram_mb": 23945,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 6,
+      "free_ram_mb": 491627,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 7,
+      "free_ram_mb": 499864,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 752,
+      "free_ram_mb": 1349551,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 44,
+      "free_ram_mb": 216651,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 125,
+      "free_ram_mb": 490481,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 125,
+      "free_ram_mb": 498432,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 110,
+      "free_ram_mb": 127332,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": true,
+      "free_cpu": 21,
+      "free_ram_mb": 154338,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 131523,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 130454,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 22,
+      "free_ram_mb": 127597,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": true,
+      "free_cpu": 112,
+      "free_ram_mb": 154410,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "pass": true,
+  "placed_count": 8,
+  "placements": [
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "local"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/000",
+      "task_id": "dryrun-oracle-000"
+    },
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/001",
+      "task_id": "dryrun-oracle-001"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/002",
+      "task_id": "dryrun-oracle-002"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/003",
+      "task_id": "dryrun-oracle-003"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/004",
+      "task_id": "dryrun-oracle-004"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/005",
+      "task_id": "dryrun-oracle-005"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/006",
+      "task_id": "dryrun-oracle-006"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/007",
+      "task_id": "dryrun-oracle-007"
+    }
+  ],
+  "requested_algorithm": "theorem_maxweight_v1",
+  "scheduler_path": "/home/erzhu419/mine_code/scheduleurm/skill/scheduler.py",
+  "scope": "synthetic task records against current live node probe; queue is not modified and no task is launched",
+  "task_count": 8,
+  "trace_path": "md/experiment_artifacts/theorem_policy_smoke_trace.jsonl",
+  "trace_slot_count": 8,
+  "unplaced_count": 0
+}

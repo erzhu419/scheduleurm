@@ -14,6 +14,8 @@ from .features import as_float as _as_float
 from .features import as_int as _as_int
 from .features import gpu_candidate_features
 from .scoring import RobustScoreWeights, score_gpu_candidate, weights_from_env
+from .theorem_dispatch import TheoremMaxWeightPlacementPolicy, theorem_policy_config
+from .adaptive_policy import AdaptiveTheoremPlacementPolicy
 
 
 def _optional_int_env(name: str) -> int | None:
@@ -238,7 +240,13 @@ def _sweetspot_config(name: str) -> PlacementPolicyConfig:
 
 
 def available_policies() -> Iterable[str]:
-    return ("legacy", "sweetspot_v1", "interference_v1")
+    return (
+        "legacy",
+        "sweetspot_v1",
+        "interference_v1",
+        "theorem_maxweight_v1",
+        "adaptive_theorem_maxweight_v1",
+    )
 
 
 def load_placement_policy(name: str | None = None) -> BasePlacementPolicy:
@@ -248,5 +256,9 @@ def load_placement_policy(name: str | None = None) -> BasePlacementPolicy:
         return LegacyPlacementPolicy()
     if selected in ("sweetspot_v1", "sweetspot", "interference_v1", "interference"):
         return SweetSpotPlacementPolicy(_sweetspot_config(selected))
+    if selected in ("theorem_maxweight_v1", "theorem_maxweight", "robust_maxweight"):
+        return TheoremMaxWeightPlacementPolicy(theorem_policy_config(selected))
+    if selected in ("adaptive_theorem_maxweight_v1", "adaptive_theorem", "adaptive_maxweight"):
+        return AdaptiveTheoremPlacementPolicy("adaptive_theorem_maxweight_v1")
     choices = ", ".join(available_policies())
     raise ValueError(f"unknown scheduleurm algorithm {raw!r}; choices: {choices}")

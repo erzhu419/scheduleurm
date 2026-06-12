@@ -1,0 +1,155 @@
+{
+  "adapters": [
+    {
+      "adapter": "gavel_simulation",
+      "blockers": [
+        "Gavel native trace and Scheduleurm trace-seed smoke pass, but service-unit equivalence is not yet a direct performance baseline",
+        "Gavel native simulator microbaseline rows exist, but they still do not certify Scheduleurm measured-service-unit equivalence",
+        "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "missing_required_tools": [],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {
+        "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260612.json",
+        "direct_full_stack_performance_ready": false,
+        "native_gavel_simulator_microbaseline_ready": true,
+        "same_workload_trace_schema_ready": true,
+        "service_unit_equivalence_ready": false,
+        "usable_native_performance_sample_count": 2
+      },
+      "native_smoke": {
+        "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_direct_native_smoke_20260612.json",
+        "dependency_import_pass": true,
+        "direct_native_trace_pass": true,
+        "entrypoint_help_pass": true,
+        "native_generated_jobs_pass": true,
+        "native_trace_status": "PASS",
+        "protobuf_stub_generation_pass": true,
+        "scheduleurm_native_trace_seed_pass": true
+      },
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "PASS_ISOLATED_NATIVE"
+    },
+    {
+      "adapter": "pollux_adaptdl_scheduler",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "PASS"
+    },
+    {
+      "adapter": "iadeep_kubernetes_extender",
+      "blockers": [
+        "missing required tools: go, kubectl, docker",
+        "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "missing_required_tools": [
+        "go",
+        "kubectl",
+        "docker"
+      ],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/iadeep",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "ERROR"
+    },
+    {
+      "adapter": "salus_gpu_sharing",
+      "blockers": [
+        "missing required tools: docker",
+        "Salus benchmark seed exists, but Salus server/runtime execution is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "missing_required_tools": [
+        "docker"
+      ],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "FAIL"
+    },
+    {
+      "adapter": "decima_simulator",
+      "blockers": [
+        "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+      ],
+      "entrypoint_smoke_pass": true,
+      "missing_required_tools": [],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "PASS"
+    }
+  ],
+  "direct_full_stack_same_workload_ready": false,
+  "entrypoint_smoke_pass_count": 3,
+  "gate": "direct_sota_fullstack_readiness",
+  "pass": true,
+  "policy_semantics_fallback_available": true,
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "run_smoke": true,
+  "same_workload_full_stack_ready_count": 0,
+  "scaffold_summary": {
+    "any_direct_adapter_smoke_pass": true,
+    "direct_full_stack_ready": false,
+    "fallback_policy_semantics_pass": true
+  },
+  "scope": "read-only readiness audit for direct external-system baselines. It certifies local repo/entrypoint/stack blockers; it does not claim direct full-stack superiority unless direct_full_stack_same_workload_ready is true.",
+  "tool_inventory": {
+    "docker": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "go": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "kubectl": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "nvidia-smi": {
+      "available": true,
+      "path": "/usr/lib/wsl/lib/nvidia-smi",
+      "version": "NVIDIA GeForce RTX 4060 Laptop GPU"
+    },
+    "python3": {
+      "available": true,
+      "path": "/usr/bin/python3",
+      "version": "Python 3.10.12"
+    }
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "blockers": [
+    "Gavel native simulator performance rows are not yet Scheduleurm measured-service-unit equivalence.",
+    "This gate does not run Pollux, Sia, IADeep, or Salus full production stacks."
+  ],
+  "copied_repo": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel",
+  "copy": {
+    "copied_repo": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel",
+    "pass": true,
+    "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"
+  },
+  "dependency_imports": {
+    "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+    "modules": [
+      {
+        "detail": "OK",
+        "module": "grpc",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "grpc_tools",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "func_timeout",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "cvxpy",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "matrix_completion",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "scipy",
+        "ok": true,
+        "returncode": 0
+      }
+    ],
+    "pass": true
+  },
+  "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+  "direct_full_stack_performance_ready": false,
+  "gate": "gavel_native_performance_microbaseline",
+  "native_gavel_simulator_microbaseline_ready": true,
+  "pass": true,
+  "policies": [
+    "fifo"
+  ],
+  "proto_files": [
+    "iterator_to_scheduler.proto",
+    "scheduler_to_worker.proto",
+    "worker_to_scheduler.proto",
+    "common.proto",
+    "enums.proto"
+  ],
+  "protobuf_stubs": {
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/iterator_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler",
+        "proto": "iterator_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/scheduler_to_worker.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler",
+        "proto": "scheduler_to_worker.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/worker_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler",
+        "proto": "worker_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/common.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler",
+        "proto": "common.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/enums.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler",
+        "proto": "enums.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      }
+    ],
+    "pass": true,
+    "rpc_stubs_dir": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/runtime/rpc_stubs"
+  },
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "rows": [
+    {
+      "average_jct_s": 44.561,
+      "cluster_spec": "8:0:0",
+      "cluster_utilization": 0.5,
+      "command": [
+        "/usr/bin/python3",
+        "scripts/drivers/simulate_scheduler_with_trace.py",
+        "-t",
+        "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q01_gpu_bound_compute_4.trace",
+        "-p",
+        "fifo",
+        "--throughputs_file",
+        "simulation_throughputs.json",
+        "-c",
+        "8:0:0",
+        "--num_gpus_per_server",
+        "8:1:1",
+        "--seed",
+        "0",
+        "--time_per_iteration",
+        "60",
+        "-s",
+        "0",
+        "-e",
+        "4"
+      ],
+      "completed_count": 4,
+      "completed_count_tail": [
+        0,
+        0,
+        1,
+        4
+      ],
+      "jct_count": 4,
+      "jct_tail": [
+        25.464,
+        50.928,
+        50.927,
+        50.926
+      ],
+      "job_count": 4,
+      "log_bytes": 3511,
+      "makespan_s": 50.929,
+      "num_gpus_per_server": "8:1:1",
+      "output_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/gavel_micro_q01_gpu_bound_compute_4_fifo.log",
+      "policy": "fifo",
+      "returncode": 0,
+      "status": "PASS",
+      "taskset": "q01_gpu_bound_compute",
+      "timeout": false,
+      "timeout_seconds": 25,
+      "trace_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q01_gpu_bound_compute_4.trace",
+      "usable_native_performance_sample": true
+    },
+    {
+      "average_jct_s": 20.9,
+      "cluster_spec": "8:0:0",
+      "cluster_utilization": 0.5,
+      "command": [
+        "/usr/bin/python3",
+        "scripts/drivers/simulate_scheduler_with_trace.py",
+        "-t",
+        "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q11_cpu_gpu_coupled_8.trace",
+        "-p",
+        "fifo",
+        "--throughputs_file",
+        "simulation_throughputs.json",
+        "-c",
+        "8:0:0",
+        "--num_gpus_per_server",
+        "8:1:1",
+        "--seed",
+        "0",
+        "--time_per_iteration",
+        "60",
+        "-s",
+        "0",
+        "-e",
+        "8"
+      ],
+      "completed_count": 8,
+      "completed_count_tail": [
+        0,
+        0,
+        1,
+        8
+      ],
+      "jct_count": 8,
+      "jct_tail": [
+        11.149,
+        22.296,
+        22.295,
+        22.294,
+        22.293,
+        22.292,
+        22.291,
+        22.29
+      ],
+      "job_count": 8,
+      "log_bytes": 5929,
+      "makespan_s": 22.297,
+      "num_gpus_per_server": "8:1:1",
+      "output_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/gavel_micro_q11_cpu_gpu_coupled_8_fifo.log",
+      "policy": "fifo",
+      "returncode": 0,
+      "status": "PASS",
+      "taskset": "q11_cpu_gpu_coupled",
+      "timeout": false,
+      "timeout_seconds": 25,
+      "trace_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q11_cpu_gpu_coupled_8.trace",
+      "usable_native_performance_sample": true
+    }
+  ],
+  "run_root": "/tmp/scheduleurm_gavel_native_performance_microbaseline",
+  "run_root_removed": false,
+  "same_workload_trace_schema_ready": true,
+  "scope": "Runs Gavel's native trace simulator on bounded Scheduleurm-exported trace windows in an isolated copy.  A pass gives native simulator completion/JCT evidence for those finite windows only.  It does not validate Scheduleurm measured-service units against Gavel's throughput tables, and it is not a direct full-stack production-system comparison.",
+  "service_unit_equivalence_ready": false,
+  "usable_native_performance_sample_count": 2
+}

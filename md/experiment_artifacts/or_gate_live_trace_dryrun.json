@@ -1,0 +1,1262 @@
+{
+  "algorithm": "sweetspot_v1",
+  "candidate_count_total": 767,
+  "gate": "live_trace_dryrun_probe",
+  "hard_rule_mode": "",
+  "node_summary": [
+    {
+      "alive": true,
+      "free_cpu": 8,
+      "free_ram_mb": 3645,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 6,
+      "free_ram_mb": 493270,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 4,
+      "free_ram_mb": 495362,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 720,
+      "free_ram_mb": 1349551,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 38,
+      "free_ram_mb": 211351,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 67,
+      "free_ram_mb": 460828,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 67,
+      "free_ram_mb": 469003,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 110,
+      "free_ram_mb": 114185,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": true,
+      "free_cpu": 21,
+      "free_ram_mb": 153586,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 122924,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 126471,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 22,
+      "free_ram_mb": 127431,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": true,
+      "free_cpu": 111,
+      "free_ram_mb": 143491,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "pass": true,
+  "placed_count": 128,
+  "placements": [
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "local"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/000",
+      "task_id": "dryrun-oracle-000"
+    },
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/001",
+      "task_id": "dryrun-oracle-001"
+    },
+    {
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/002",
+      "task_id": "dryrun-oracle-002"
+    },
+    {
+      "placement": {
+        "gpu_idx": 1,
+        "node": "node007-direct"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/003",
+      "task_id": "dryrun-oracle-003"
+    },
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/004",
+      "task_id": "dryrun-oracle-004"
+    },
+    {
+      "placement": {
+        "gpu_idx": 0,
+        "node": "local"
+      },
+      "resource_kind": "gpu",
+      "signature": "or-live-trace/gpu/005",
+      "task_id": "dryrun-oracle-005"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/006",
+      "task_id": "dryrun-oracle-006"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/007",
+      "task_id": "dryrun-oracle-007"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/008",
+      "task_id": "dryrun-oracle-008"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/009",
+      "task_id": "dryrun-oracle-009"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/010",
+      "task_id": "dryrun-oracle-010"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/011",
+      "task_id": "dryrun-oracle-011"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/012",
+      "task_id": "dryrun-oracle-012"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/013",
+      "task_id": "dryrun-oracle-013"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/014",
+      "task_id": "dryrun-oracle-014"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/015",
+      "task_id": "dryrun-oracle-015"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/016",
+      "task_id": "dryrun-oracle-016"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/017",
+      "task_id": "dryrun-oracle-017"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/018",
+      "task_id": "dryrun-oracle-018"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/019",
+      "task_id": "dryrun-oracle-019"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/020",
+      "task_id": "dryrun-oracle-020"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/021",
+      "task_id": "dryrun-oracle-021"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/022",
+      "task_id": "dryrun-oracle-022"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/023",
+      "task_id": "dryrun-oracle-023"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/024",
+      "task_id": "dryrun-oracle-024"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/025",
+      "task_id": "dryrun-oracle-025"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/026",
+      "task_id": "dryrun-oracle-026"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/027",
+      "task_id": "dryrun-oracle-027"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/028",
+      "task_id": "dryrun-oracle-028"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/029",
+      "task_id": "dryrun-oracle-029"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/030",
+      "task_id": "dryrun-oracle-030"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/031",
+      "task_id": "dryrun-oracle-031"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/032",
+      "task_id": "dryrun-oracle-032"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/033",
+      "task_id": "dryrun-oracle-033"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/034",
+      "task_id": "dryrun-oracle-034"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/035",
+      "task_id": "dryrun-oracle-035"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/036",
+      "task_id": "dryrun-oracle-036"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/037",
+      "task_id": "dryrun-oracle-037"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/038",
+      "task_id": "dryrun-oracle-038"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/039",
+      "task_id": "dryrun-oracle-039"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/040",
+      "task_id": "dryrun-oracle-040"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/041",
+      "task_id": "dryrun-oracle-041"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/042",
+      "task_id": "dryrun-oracle-042"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/043",
+      "task_id": "dryrun-oracle-043"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/044",
+      "task_id": "dryrun-oracle-044"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/045",
+      "task_id": "dryrun-oracle-045"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/046",
+      "task_id": "dryrun-oracle-046"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/047",
+      "task_id": "dryrun-oracle-047"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/048",
+      "task_id": "dryrun-oracle-048"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/049",
+      "task_id": "dryrun-oracle-049"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/050",
+      "task_id": "dryrun-oracle-050"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/051",
+      "task_id": "dryrun-oracle-051"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/052",
+      "task_id": "dryrun-oracle-052"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/053",
+      "task_id": "dryrun-oracle-053"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/054",
+      "task_id": "dryrun-oracle-054"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/055",
+      "task_id": "dryrun-oracle-055"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/056",
+      "task_id": "dryrun-oracle-056"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/057",
+      "task_id": "dryrun-oracle-057"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/058",
+      "task_id": "dryrun-oracle-058"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/059",
+      "task_id": "dryrun-oracle-059"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/060",
+      "task_id": "dryrun-oracle-060"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/061",
+      "task_id": "dryrun-oracle-061"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/062",
+      "task_id": "dryrun-oracle-062"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/063",
+      "task_id": "dryrun-oracle-063"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/064",
+      "task_id": "dryrun-oracle-064"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/065",
+      "task_id": "dryrun-oracle-065"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/066",
+      "task_id": "dryrun-oracle-066"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/067",
+      "task_id": "dryrun-oracle-067"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/068",
+      "task_id": "dryrun-oracle-068"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/069",
+      "task_id": "dryrun-oracle-069"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/070",
+      "task_id": "dryrun-oracle-070"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/071",
+      "task_id": "dryrun-oracle-071"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/072",
+      "task_id": "dryrun-oracle-072"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/073",
+      "task_id": "dryrun-oracle-073"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/074",
+      "task_id": "dryrun-oracle-074"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/075",
+      "task_id": "dryrun-oracle-075"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/076",
+      "task_id": "dryrun-oracle-076"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/077",
+      "task_id": "dryrun-oracle-077"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/078",
+      "task_id": "dryrun-oracle-078"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/079",
+      "task_id": "dryrun-oracle-079"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/080",
+      "task_id": "dryrun-oracle-080"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/081",
+      "task_id": "dryrun-oracle-081"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/082",
+      "task_id": "dryrun-oracle-082"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/083",
+      "task_id": "dryrun-oracle-083"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/084",
+      "task_id": "dryrun-oracle-084"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/085",
+      "task_id": "dryrun-oracle-085"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/086",
+      "task_id": "dryrun-oracle-086"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/087",
+      "task_id": "dryrun-oracle-087"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/088",
+      "task_id": "dryrun-oracle-088"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/089",
+      "task_id": "dryrun-oracle-089"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/090",
+      "task_id": "dryrun-oracle-090"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/091",
+      "task_id": "dryrun-oracle-091"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/092",
+      "task_id": "dryrun-oracle-092"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/093",
+      "task_id": "dryrun-oracle-093"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/094",
+      "task_id": "dryrun-oracle-094"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/095",
+      "task_id": "dryrun-oracle-095"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/096",
+      "task_id": "dryrun-oracle-096"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/097",
+      "task_id": "dryrun-oracle-097"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/098",
+      "task_id": "dryrun-oracle-098"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/099",
+      "task_id": "dryrun-oracle-099"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/100",
+      "task_id": "dryrun-oracle-100"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/101",
+      "task_id": "dryrun-oracle-101"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/102",
+      "task_id": "dryrun-oracle-102"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/103",
+      "task_id": "dryrun-oracle-103"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/104",
+      "task_id": "dryrun-oracle-104"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/105",
+      "task_id": "dryrun-oracle-105"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/106",
+      "task_id": "dryrun-oracle-106"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/107",
+      "task_id": "dryrun-oracle-107"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/108",
+      "task_id": "dryrun-oracle-108"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/109",
+      "task_id": "dryrun-oracle-109"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/110",
+      "task_id": "dryrun-oracle-110"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/111",
+      "task_id": "dryrun-oracle-111"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/112",
+      "task_id": "dryrun-oracle-112"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/113",
+      "task_id": "dryrun-oracle-113"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/114",
+      "task_id": "dryrun-oracle-114"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/115",
+      "task_id": "dryrun-oracle-115"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/116",
+      "task_id": "dryrun-oracle-116"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/117",
+      "task_id": "dryrun-oracle-117"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/118",
+      "task_id": "dryrun-oracle-118"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/119",
+      "task_id": "dryrun-oracle-119"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/120",
+      "task_id": "dryrun-oracle-120"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/121",
+      "task_id": "dryrun-oracle-121"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/122",
+      "task_id": "dryrun-oracle-122"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/123",
+      "task_id": "dryrun-oracle-123"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/124",
+      "task_id": "dryrun-oracle-124"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/125",
+      "task_id": "dryrun-oracle-125"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/126",
+      "task_id": "dryrun-oracle-126"
+    },
+    {
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "resource_kind": "cpu",
+      "signature": "or-live-trace/cpu/127",
+      "task_id": "dryrun-oracle-127"
+    }
+  ],
+  "requested_algorithm": "sweetspot_v1",
+  "scheduler_path": "/home/erzhu419/mine_code/scheduleurm/skill/scheduler.py",
+  "scope": "synthetic task records against current live node probe; queue is not modified and no task is launched",
+  "task_count": 128,
+  "trace_path": "/home/erzhu419/.claude/scheduler/oracle_trace.jsonl",
+  "trace_slot_count": 128,
+  "unplaced_count": 0
+}

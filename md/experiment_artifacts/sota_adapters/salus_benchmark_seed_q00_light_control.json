@@ -1,0 +1,129 @@
+{
+  "format": "scheduleurm_salus_benchmark_seed_v1",
+  "scope": "Benchmark-driver seed metadata for Salus adapter development; Salus server/runtime integration remains required before direct comparison.",
+  "sessions": [
+    {
+      "count": 512,
+      "name": "light_control_local",
+      "profiles": [
+        {
+          "aggregate_rate": 51.446729,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 100.577699,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 148.667625,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 205.816828,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 251.982663,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 303.518782,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 354.609844,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 411.11932649999994,
+          "capacity_boundary": false,
+          "profile": 8
+        },
+        {
+          "aggregate_rate": 410.36250199999995,
+          "capacity_boundary": false,
+          "profile": 9
+        },
+        {
+          "aggregate_rate": 488.40572299999997,
+          "capacity_boundary": false,
+          "profile": 10
+        },
+        {
+          "aggregate_rate": 453.407884,
+          "capacity_boundary": false,
+          "profile": 11
+        },
+        {
+          "aggregate_rate": 556.5801289999999,
+          "capacity_boundary": false,
+          "profile": 12
+        },
+        {
+          "aggregate_rate": 618.6483320000001,
+          "capacity_boundary": false,
+          "profile": 13
+        },
+        {
+          "aggregate_rate": 287.302883,
+          "capacity_boundary": true,
+          "profile": 14
+        },
+        {
+          "aggregate_rate": 564.89721,
+          "capacity_boundary": true,
+          "profile": 16
+        }
+      ],
+      "resource_count": 1,
+      "resource_kind": "light_control",
+      "total_units": 10000.0
+    }
+  ],
+  "taskset": {
+    "arrival_model": "static batch first; later Poisson arrivals at subcritical load",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm modules23+24+38 local CPU-only light-control curve",
+        "closed_by_capacity_boundary_profile": 14,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "Profiles 1-13 are clean local measurements; profile 14 is a measured local scheduling-capacity boundary under the exact light-control workload.",
+        "quadrant": "low_cpu_low_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "resource_count": 1,
+        "resource_kind": "light_control",
+        "role": "control",
+        "task_count": 512,
+        "total_units": 10000,
+        "variation_cv": 0.2,
+        "workload_key": "light_control_local"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q00_light_control",
+    "purpose": "Low-CPU, low-GPU control surface. This catches scheduler overhead, queue churn, and short-task fragmentation before the resource-pressure modules are enabled."
+  }
+}

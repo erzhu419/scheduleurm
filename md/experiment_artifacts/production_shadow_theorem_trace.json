@@ -1,0 +1,570 @@
+{
+  "active_production_shadow_task_count": 24,
+  "algorithm": "theorem_maxweight_v1",
+  "candidate_count_total": 58,
+  "gate": "production_shadow_theorem_trace",
+  "generated_at": "2026-06-12T00:50:55+0800",
+  "hard_rule_mode": "",
+  "launched_dispatch_claim": false,
+  "node_summary_after_shadow": [
+    {
+      "alive": true,
+      "free_cpu": 9,
+      "free_ram_mb": 18110,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 1,
+      "free_ram_mb": 483520,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 1,
+      "free_ram_mb": 495040,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 0,
+      "free_ram_mb": 78928,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 46,
+      "free_ram_mb": 207342,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 492050,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 499870,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 150007,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 153626,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 123160,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 126459,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 123746,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 178893,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "non_theorem_blocker_counts": {
+    "scheduler_sort_key_minimization": 2
+  },
+  "oracle_bridge": {
+    "blocker_count": 2,
+    "blockers": [
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0012-t10263:1781196650.5636685:1781196654692"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0023-t10348:1781196650.578712:1781196654932"
+      }
+    ],
+    "converted_slot_count": 12,
+    "interpretation": "Trace cannot certify alpha0/alpha1 until each slot has robust MaxWeight lower-service semantics.",
+    "status": "NOT_THEOREM_TRACE",
+    "trace_slot_count": 14,
+    "usable_for_theorem": false
+  },
+  "pass": true,
+  "placed_count": 14,
+  "placements": [
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "jtl110gpu2"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0000-t9748",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/resac/seed1",
+      "source_status": "running",
+      "source_task_id": "t9748"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0001-t9749",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/resac/seed2",
+      "source_status": "running",
+      "source_task_id": "t9749"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0002-t9755",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/bapr-context/seed0",
+      "source_status": "running",
+      "source_task_id": "t9755"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0003-t9915",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/csbapr-no-sindy/seed0",
+      "source_status": "running",
+      "source_task_id": "t9915"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0004-t9917",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/csbapr-no-sindy/seed1",
+      "source_status": "running",
+      "source_task_id": "t9917"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0005-t9919",
+      "signature": "CS-BAPR-v2-structured/Hopper-v4/csbapr-no-sindy/seed2",
+      "source_status": "running",
+      "source_task_id": "t9919"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0006-t10086",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm15_ps025/seed0",
+      "source_status": "running",
+      "source_task_id": "t10086"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0007-t10087",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm15_ps025/seed2",
+      "source_status": "running",
+      "source_task_id": "t10087"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0008-t10088",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm15_ps025/seed4",
+      "source_status": "running",
+      "source_task_id": "t10088"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0009-t10089",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm10_ps025/seed0",
+      "source_status": "running",
+      "source_task_id": "t10089"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0010-t10090",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm10_ps025/seed2",
+      "source_status": "running",
+      "source_task_id": "t10090"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "jtl110gpu"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0011-t10091",
+      "signature": "BAPR/v5-ant/paper_v5_ant_bm10_ps025/seed4",
+      "source_status": "running",
+      "source_task_id": "t10091"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "local"
+      },
+      "project": "scheduleurm",
+      "shadow_task_id": "shadow-production-0012-t10263",
+      "signature": "scheduleurm/auto-adopted/p1971510",
+      "source_status": "running",
+      "source_task_id": "t10263"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0013-t10335",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed0/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10335"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0014-t10336",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed1/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10336"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0015-t10337",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed2/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10337"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0016-t10338",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed3/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10338"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0017-t10339",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed4/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10339"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0018-t10340",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed5/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10340"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0019-t10341",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed6/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10341"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0020-t10342",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed7/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10342"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0021-t10343",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed8/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10343"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": null,
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0022-t10344",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v18_coverage_archive_mix/seed9/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10344"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "local"
+      },
+      "project": "Asumption Agent",
+      "shadow_task_id": "shadow-production-0023-t10348",
+      "signature": "Asumption Agent/auto-adopted/p2089389",
+      "source_status": "running",
+      "source_task_id": "t10348"
+    }
+  ],
+  "production_shadow_trace_closed": true,
+  "requested_algorithm": "theorem_maxweight_v1",
+  "reserve_shadow_capacity": true,
+  "scope": "non-invasive shadow trace over current active production tasks. It reads queue/node state and evaluates the optional theorem hook without queue mutation or launch.  It is not a production-wide launched dispatch trace.",
+  "theorem_slot_count": 12,
+  "theorem_subset_oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 12,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 12,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 12,
+    "rows": [
+      {
+        "best_action_id": "node=jtl110gpu2|gpu=1",
+        "best_candidate_score": 3.7559870492879917,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu2|gpu=1",
+        "chosen_score": 3.7559870492879917,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0000-t9748:1781196650.5469828:1781196650561"
+      },
+      {
+        "best_action_id": "node=jtl110gpu2|gpu=0",
+        "best_candidate_score": 3.2897664085000007,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=jtl110gpu2|gpu=0",
+        "chosen_score": 3.2897664085000007,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0001-t9749:1781196650.5483305:1781196651220"
+      },
+      {
+        "best_action_id": "node=jtl110gpu2|gpu=0",
+        "best_candidate_score": 4.333333333333333,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=jtl110gpu2|gpu=0",
+        "chosen_score": 4.333333333333333,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0002-t9755:1781196650.5497863:1781196651309"
+      },
+      {
+        "best_action_id": "node=jtl110gpu2|gpu=0",
+        "best_candidate_score": 4.34991974317817,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 5,
+        "chosen_action_id": "node=jtl110gpu2|gpu=0",
+        "chosen_score": 4.34991974317817,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0003-t9915:1781196650.5512676:1781196651334"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 4.333333333333333,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 5,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 4.333333333333333,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0004-t9917:1781196650.5526297:1781196651490"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 4.34991974317817,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 5,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 4.34991974317817,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0005-t9919:1781196650.5540018:1781196652258"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=1",
+        "best_candidate_score": 4.333333333333333,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 6,
+        "chosen_action_id": "node=node007-direct|gpu=1",
+        "chosen_score": 4.333333333333333,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0006-t10086:1781196650.55547:1781196652429"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=1",
+        "best_candidate_score": 4.34991974317817,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 6,
+        "chosen_action_id": "node=node007-direct|gpu=1",
+        "chosen_score": 4.34991974317817,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0007-t10087:1781196650.556774:1781196652683"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 4.333333333333333,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 6,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 4.333333333333333,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0008-t10088:1781196650.558113:1781196653490"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 4.34991974317817,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 6,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 4.34991974317817,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0009-t10089:1781196650.5594754:1781196653745"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_candidate_score": 3.7559870492879917,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "chosen_score": 3.7559870492879917,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0010-t10090:1781196650.5609353:1781196654556"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=1",
+        "best_candidate_score": 3.7559870492879917,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=jtl110gpu|gpu=1",
+        "chosen_score": 3.7559870492879917,
+        "oracle_gap": 0.0,
+        "q_norm": 25.0,
+        "slot_id": "slot:shadow-production-0011-t10091:1781196650.5624413:1781196654605"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 12,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_shadow_theorem_trace.jsonl",
+  "trace_slot_count": 14,
+  "uncertified_mode": "block",
+  "unplaced_count": 10
+}

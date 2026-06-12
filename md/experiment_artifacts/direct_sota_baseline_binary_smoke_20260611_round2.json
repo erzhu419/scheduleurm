@@ -1,0 +1,543 @@
+{
+  "adapters": [
+    {
+      "blockers": [
+        "requires native validation of the Scheduleurm Gavel trace/throughput seeds"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "scheduler/scripts/sweeps/run_sweep_static.py",
+        "-h"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio"
+      ],
+      "git": {
+        "commit": "c4fa40097339e9608ab71fd64c8bdea96a5e4a4c",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/stanford-futuredata/gavel.git"
+      },
+      "missing_required_files": [],
+      "name": "gavel_simulation",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel",
+      "representative_systems": [
+        "Gavel"
+      ],
+      "required_file_count": 2,
+      "required_file_count_present": 2,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel",
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel/scheduler/scripts/sweeps/run_sweep_static.py\", line 8, in <module>\n    from func_timeout import func_timeout, FunctionTimedOut\nModuleNotFoundError: No module named 'func_timeout'\n",
+        "stdout_tail": ""
+      },
+      "smoke_status": "FAIL"
+    },
+    {
+      "blockers": [
+        "requires Kubernetes/AdaptDL job CRD, container image, and isolated namespace validation"
+      ],
+      "command_cwd": "sched",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "setup.py",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": true,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio"
+      ],
+      "git": {
+        "commit": "542e123e50e98e4a7a7132d36c4af06c9437f6e4",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/petuum/adaptdl.git"
+      },
+      "missing_required_files": [],
+      "name": "pollux_adaptdl_scheduler",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux",
+      "representative_systems": [
+        "Pollux",
+        "AdaptDL"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux/sched",
+        "returncode": 0,
+        "status": "PASS",
+        "stderr_tail": "/home/erzhu419/.local/lib/python3.10/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.\n!!\n\n        ********************************************************************************\n        Please consider removing the following classifiers in favor of a SPDX license expression:\n\n        License :: Other/Proprietary License\n\n        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.\n        ********************************************************************************\n\n!!\n  self._finalize_license_expression()\n",
+        "stdout_tail": "Common commands: (see '--help-commands' for more)\n\n  setup.py build      will build the package underneath 'build/'\n  setup.py install    will install the package\n\nGlobal options:\n  --verbose (-v)      run verbosely (default)\n  --quiet (-q)        run quietly (turns verbosity off)\n  --help (-h)         show detailed help message\n  --no-user-cfg       ignore pydistutils.cfg in your home directory\n  --command-packages  list of packages that provide distutils commands\n\nInformation display options (just display information, ignore any commands)\n  --help-commands     list all available commands\n  --name              print package name\n  --version (-V)      print package version\n  --fullname          print <package name>-<version>\n  --author            print the author's name\n  --author-email      print the author's email address\n  --maintainer        print the maintainer's name\n  --maintainer-email  print the maintainer's email address\n  --contact           print the maintainer's name if known, else the author's\n  --contact-email     print the maintainer's email address if known, else the\n                      author's\n  --url               print the URL for this package\n  --license           print the license of the package\n  --licence           alias for --license\n  --description       print the package description\n  --long-description  print the long package description\n  --platforms         print the list of platforms\n  --classifiers       print the list of classifiers\n  --keywords          print the list of keywords\n  --provides          print the list of packages/modules provided\n  --requires          print the list of packages/modules required\n  --obsoletes         print the list of packages/modules made obsolete\n\nusage: setup.py [global_opts] cmd1 [cmd1_opts] [cmd2 [cmd2_opts] ...]\n   or: setup.py --help [cmd1 cmd2 ...]\n   or: setup.py --help-commands\n   or: setup.py cmd --help\n\n"
+      },
+      "smoke_status": "PASS"
+    },
+    {
+      "blockers": [
+        "requires Kubernetes 1.18+, device plugin, etcd, Docker/NVIDIA runtime, and pod-manifest validation"
+      ],
+      "command_cwd": "iadeep-scheduler-extender",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled"
+      ],
+      "git": {
+        "commit": "78ca7f67d8b04989060454d4d75f1d85af4396b1",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/buzy-coder/IADeep.git"
+      },
+      "missing_required_files": [],
+      "name": "iadeep_kubernetes_extender",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/iadeep",
+      "representative_systems": [
+        "IADeep"
+      ],
+      "required_file_count": 2,
+      "required_file_count_present": 2,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/iadeep/iadeep-scheduler-extender",
+        "returncode": null,
+        "status": "ERROR",
+        "stderr_tail": "[Errno 2] No such file or directory: 'go'",
+        "stdout_tail": ""
+      },
+      "smoke_status": "ERROR"
+    },
+    {
+      "blockers": [
+        "requires Salus server, customized TensorFlow/runtime stack, and benchmark seed validation"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "-m",
+        "benchmarks.driver",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled"
+      ],
+      "git": {
+        "commit": "7b7f5e0651889f7c1242108f1fb6f5e78cbfefec",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/SymbioticLab/Salus.git"
+      },
+      "missing_required_files": [],
+      "name": "salus_gpu_sharing",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+      "representative_systems": [
+        "Salus"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/usr/lib/python3.10/runpy.py\", line 187, in _run_module_as_main\n    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)\n  File \"/usr/lib/python3.10/runpy.py\", line 146, in _get_module_details\n    return _get_module_details(pkg_main_name, error)\n  File \"/usr/lib/python3.10/runpy.py\", line 157, in _get_module_details\n    code = loader.get_code(mod_name)\n  File \"<frozen importlib._bootstrap_external>\", line 1017, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 947, in source_to_code\n  File \"<frozen importlib._bootstrap>\", line 241, in _call_with_frames_removed\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/salus/benchmarks/driver/__main__.py\", line 0\nSyntaxError: unknown encoding: future_fstrings\n",
+        "stdout_tail": ""
+      },
+      "smoke_status": "FAIL"
+    },
+    {
+      "blockers": [
+        "Spark-DAG simulator baseline, not a GPU co-location scheduler"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "compute_baselines.py",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": true,
+      "fallback_tasksets": [
+        "q00_light_control",
+        "q10_cpu_host_bound"
+      ],
+      "git": {
+        "commit": "c010dd74ff4b7566bd0ac989c90a32cfbc630d84",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/hongzimao/decima-sim.git"
+      },
+      "missing_required_files": [],
+      "name": "decima_simulator",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+      "representative_systems": [
+        "Decima"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+        "returncode": 0,
+        "status": "PASS",
+        "stderr_tail": "",
+        "stdout_tail": ""
+      },
+      "smoke_status": "PASS"
+    }
+  ],
+  "any_direct_adapter_smoke_pass": true,
+  "direct_full_stack_ready": false,
+  "fallback_policy_semantics": {
+    "all_candidates_nondominated": true,
+    "all_fallbacks_replayable": true,
+    "tasksets": [
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": []
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 6,
+                "hybrid_rl_resac_ant": 3
+              },
+              "baseline_total_makespan_s": 28695.993033640043,
+              "baseline_weighted_mean_flow_s": 5972.1349526468675,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 3
+              },
+              "candidate_total_makespan_s": 28695.993033640043,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0015459940386562,
+              "candidate_weighted_mean_flow_s": 5962.916319563816,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 6.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 0.9844808286011383,
+                  "mean_flow_improvement": 1.3382128935628839
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": []
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 28815.33319588523,
+              "baseline_weighted_mean_flow_s": 5944.0490016114645,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 3
+              },
+              "candidate_total_makespan_s": 28695.993033640043,
+              "candidate_vs_baseline_makespan": 1.0041587744360436,
+              "candidate_vs_baseline_mean_flow": 0.9968358908726508,
+              "candidate_weighted_mean_flow_s": 5962.916319563816,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0041587744360436,
+                  "mean_flow_improvement": 0.9957014999385285
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "hybrid_rl"
+                  ]
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 3
+              },
+              "baseline_total_makespan_s": 28781.03332058988,
+              "baseline_weighted_mean_flow_s": 5974.525034781508,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 3
+              },
+              "candidate_total_makespan_s": 28695.993033640043,
+              "candidate_vs_baseline_makespan": 1.0029634899496296,
+              "candidate_vs_baseline_mean_flow": 1.001946818401527,
+              "candidate_weighted_mean_flow_s": 5962.916319563816,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0029634899496296,
+                  "mean_flow_improvement": 1.0026447883691192
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": []
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 28815.33319588523,
+              "baseline_weighted_mean_flow_s": 5944.0490016114645,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_heavy_jax_matmul": 1,
+                "hybrid_rl_resac_ant": 3
+              },
+              "candidate_total_makespan_s": 28695.993033640043,
+              "candidate_vs_baseline_makespan": 1.0041587744360436,
+              "candidate_vs_baseline_mean_flow": 0.9968358908726508,
+              "candidate_weighted_mean_flow_s": 5962.916319563816,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0041587744360436,
+                  "mean_flow_improvement": 0.9957014999385285
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8,
+              "gpu_heavy_jax_matmul": 6,
+              "hybrid_rl_resac_ant": 3
+            },
+            "baseline_total_makespan_s": 28695.993033640043,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8,
+              "gpu_heavy_jax_matmul": 1,
+              "hybrid_rl_resac_ant": 2
+            },
+            "baseline_weighted_mean_flow_s": 5944.0490016114645,
+            "name": "delay_oracle",
+            "representative_systems": [
+              "SRPT",
+              "Gittins",
+              "SERPT"
+            ]
+          },
+          "candidate_beats_all_sota_style_makespan": true,
+          "candidate_beats_all_sota_style_mean_flow": false,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "calibrated": false,
+            "calibrated_objective": "makespan",
+            "fixed_profiles": {
+              "cpu_heavy_local_bench": 8,
+              "gpu_heavy_jax_matmul": 1,
+              "hybrid_rl_resac_ant": 3
+            },
+            "guarded_resource_kinds": [],
+            "max_makespan_regret": 0.0,
+            "name": "calibrated_global_guarded",
+            "statewise": false,
+            "statewise_regret_slack": 0.0,
+            "statewise_resource_kinds": []
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "hybrid_research_portfolio"
+      }
+    ]
+  },
+  "gate": "direct_sota_binary_baseline_scaffold",
+  "pass": true,
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "run_smoke": true,
+  "scope": "direct external-system adapters are discovered and checked for local entrypoints. Full-stack superiority claims require the direct adapter status to become runnable with validated same-workload adapter seeds. Until then the paper uses policy-semantics replay baselines on the same measured Scheduleurm service cache."
+}

@@ -1,0 +1,496 @@
+{
+  "active_production_shadow_task_count": 27,
+  "algorithm": "theorem_maxweight_v1",
+  "candidate_count_total": 13,
+  "gate": "production_shadow_theorem_trace",
+  "generated_at": "2026-06-12T07:40:06+0800",
+  "hard_rule_mode": "",
+  "launched_dispatch_claim": false,
+  "node_summary_after_shadow": [
+    {
+      "alive": true,
+      "free_cpu": 13,
+      "free_ram_mb": 10054,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 6,
+      "free_ram_mb": 497709,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 6,
+      "free_ram_mb": 500653,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 64,
+      "free_ram_mb": 81136,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 32,
+      "free_ram_mb": 213237,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 491969,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 499697,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 150374,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 154053,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 155101,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 161,
+      "free_ram_mb": 97669,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 161,
+      "free_ram_mb": 115257,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": true,
+      "free_cpu": 192,
+      "free_ram_mb": 178870,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "non_theorem_blocker_counts": {
+    "scheduler_sort_key_minimization": 3
+  },
+  "oracle_bridge": {
+    "blocker_count": 3,
+    "blockers": [
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0024-t10418:1781221204.0775685:1781221206175"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0025-t10420:1781221204.0787857:1781221206411"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0026-t10422:1781221204.0800295:1781221206459"
+      }
+    ],
+    "converted_slot_count": 4,
+    "interpretation": "Trace cannot certify alpha0/alpha1 until each slot has robust MaxWeight lower-service semantics.",
+    "status": "NOT_THEOREM_TRACE",
+    "trace_slot_count": 7,
+    "usable_for_theorem": false
+  },
+  "pass": true,
+  "placed_count": 7,
+  "placements": [
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0000-t10391",
+      "signature": "BAPR/v6/Ant/mean_nobelief/seed0",
+      "source_status": "running",
+      "source_task_id": "t10391"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0001-t10392",
+      "signature": "BAPR/v6/Ant/context_mean_nobocd/seed0",
+      "source_status": "running",
+      "source_task_id": "t10392"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0002-t10393",
+      "signature": "BAPR/v6/Ant/norctx_mean/seed0",
+      "source_status": "running",
+      "source_task_id": "t10393"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0003-t10394",
+      "signature": "BAPR/v6/Ant/ucb_nobelief/seed0",
+      "source_status": "running",
+      "source_task_id": "t10394"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0004-t10395",
+      "signature": "BAPR/v6/Ant/mean_nobelief/seed2",
+      "source_status": "running",
+      "source_task_id": "t10395"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0005-t10396",
+      "signature": "BAPR/v6/Ant/context_mean_nobocd/seed2",
+      "source_status": "running",
+      "source_task_id": "t10396"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0006-t10397",
+      "signature": "BAPR/v6/Ant/norctx_mean/seed2",
+      "source_status": "running",
+      "source_task_id": "t10397"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0007-t10398",
+      "signature": "BAPR/v6/Ant/ucb_nobelief/seed2",
+      "source_status": "running",
+      "source_task_id": "t10398"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0008-t10399",
+      "signature": "BAPR/v6/Ant/mean_nobelief/seed4",
+      "source_status": "running",
+      "source_task_id": "t10399"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0009-t10400",
+      "signature": "BAPR/v6/Ant/context_mean_nobocd/seed4",
+      "source_status": "running",
+      "source_task_id": "t10400"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0010-t10401",
+      "signature": "BAPR/v6/Ant/norctx_mean/seed4",
+      "source_status": "running",
+      "source_task_id": "t10401"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0011-t10402",
+      "signature": "BAPR/v6/Ant/ucb_nobelief/seed4",
+      "source_status": "running",
+      "source_task_id": "t10402"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0012-t10403",
+      "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed0",
+      "source_status": "running",
+      "source_task_id": "t10403"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0013-t10404",
+      "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed0",
+      "source_status": "running",
+      "source_task_id": "t10404"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0014-t10405",
+      "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed0",
+      "source_status": "running",
+      "source_task_id": "t10405"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0015-t10406",
+      "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed0",
+      "source_status": "running",
+      "source_task_id": "t10406"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0016-t10407",
+      "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed2",
+      "source_status": "running",
+      "source_task_id": "t10407"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0017-t10408",
+      "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed2",
+      "source_status": "running",
+      "source_task_id": "t10408"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0018-t10409",
+      "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed2",
+      "source_status": "running",
+      "source_task_id": "t10409"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0019-t10410",
+      "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed2",
+      "source_status": "running",
+      "source_task_id": "t10410"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "jtl110gpu"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0020-t10411",
+      "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed4",
+      "source_status": "running",
+      "source_task_id": "t10411"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0021-t10412",
+      "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed4",
+      "source_status": "running",
+      "source_task_id": "t10412"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0022-t10413",
+      "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed4",
+      "source_status": "running",
+      "source_task_id": "t10413"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0023-t10414",
+      "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed4",
+      "source_status": "running",
+      "source_task_id": "t10414"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node004"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0024-t10418",
+      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0020_0030",
+      "source_status": "running",
+      "source_task_id": "t10418"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node004"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0025-t10420",
+      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0040_0050",
+      "source_status": "running",
+      "source_task_id": "t10420"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node004"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0026-t10422",
+      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0060_0070",
+      "source_status": "running",
+      "source_task_id": "t10422"
+    }
+  ],
+  "production_shadow_trace_closed": true,
+  "requested_algorithm": "theorem_maxweight_v1",
+  "reserve_shadow_capacity": true,
+  "scope": "non-invasive shadow trace over current active production tasks. It reads queue/node state and evaluates the optional theorem hook without queue mutation or launch.  It is not a production-wide launched dispatch trace.",
+  "theorem_slot_count": 4,
+  "theorem_subset_oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 4,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 4,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 4,
+    "rows": [
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 7.223052017861523,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 3,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 7.223052017861523,
+        "oracle_gap": 0.0,
+        "q_norm": 28.0,
+        "slot_id": "slot:shadow-production-0000-t10391:1781221204.0414853:1781221204062"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=1",
+        "best_candidate_score": 7.223052017861523,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=node007-direct|gpu=1",
+        "chosen_score": 7.223052017861523,
+        "oracle_gap": 0.0,
+        "q_norm": 28.0,
+        "slot_id": "slot:shadow-production-0001-t10392:1781221204.042962:1781221205101"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 7.223052017861523,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 7.223052017861523,
+        "oracle_gap": 0.0,
+        "q_norm": 28.0,
+        "slot_id": "slot:shadow-production-0002-t10393:1781221204.0442553:1781221206032"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=1",
+        "best_candidate_score": 8.365230275342634,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=jtl110gpu|gpu=1",
+        "chosen_score": 8.365230275342634,
+        "oracle_gap": 0.0,
+        "q_norm": 28.0,
+        "slot_id": "slot:shadow-production-0020-t10411:1781221204.071115:1781221206136"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 4,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_large_active_shadow_trace_20260612.jsonl",
+  "trace_slot_count": 7,
+  "uncertified_mode": "block",
+  "unplaced_count": 20
+}

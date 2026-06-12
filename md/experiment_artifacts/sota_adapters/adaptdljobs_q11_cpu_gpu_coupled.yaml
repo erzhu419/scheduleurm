@@ -1,0 +1,19 @@
+apiVersion: adaptdl.petuum.com/v1
+kind: AdaptDLJob
+metadata:
+  name: hybrid-rl-resac-ant
+  labels:
+    scheduleurm-taskset: q11-cpu-gpu-coupled
+spec:
+  placement: any
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: trainer
+        image: scheduleurm/adaptdl-placeholder:latest
+        command: ["python", "-m", "scheduleurm_workload_adapter"]
+        args: ["--workload-key", "hybrid_rl_resac_ant", "--total-units", "80"]
+        resources:
+          limits:
+            cpu: "1"

@@ -1,0 +1,49 @@
+{
+  "format": "scheduleurm_gavel_throughput_seed_v1",
+  "scope": "Measured service-cache export for direct Gavel adapter development; schema validation against Gavel's native throughput JSON remains required.",
+  "taskset": {
+    "arrival_model": "static batch plus Gavel-style Poisson seeds after module validation",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm module6; analogous to Gavel/Pollux DNN throughput-table replay",
+        "closed_by_capacity_boundary_profile": null,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "Profiles 1-8 are clean real measurements on jtl110gpu2.",
+        "quadrant": "low_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "resource_count": 2,
+        "resource_kind": "gpu_heavy",
+        "role": "single-bottleneck validation",
+        "task_count": 48,
+        "total_units": 2400,
+        "variation_cv": 0.04,
+        "workload_key": "gpu_heavy_jax_matmul"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q01_gpu_bound_compute",
+    "purpose": "Low-host, high-GPU compute pressure. This is the pure GPU curve that should prefer fewer co-located jobs once aggregate service saturates."
+  },
+  "throughputs": {
+    "gpu_heavy_jax_matmul": {
+      "scheduleurm_profile_1": 34.484897000000004,
+      "scheduleurm_profile_2": 32.2352685,
+      "scheduleurm_profile_3": 32.405914,
+      "scheduleurm_profile_4": 35.05375000000001,
+      "scheduleurm_profile_5": 35.000623999999995,
+      "scheduleurm_profile_6": 35.104212000000004,
+      "scheduleurm_profile_7": 35.4717315,
+      "scheduleurm_profile_8": 35.632241
+    }
+  }
+}

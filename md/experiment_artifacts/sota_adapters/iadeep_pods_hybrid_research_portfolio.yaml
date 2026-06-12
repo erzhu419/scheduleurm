@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hybrid-rl-resac-ant
+  labels:
+    scheduleurm-taskset: hybrid-research-portfolio
+spec:
+  schedulerName: iadeep-scheduler
+  restartPolicy: Never
+  containers:
+  - name: workload
+    image: scheduleurm/iadeep-placeholder:latest
+    command: ["python", "-m", "scheduleurm_workload_adapter"]
+    args: ["--workload-key", "hybrid_rl_resac_ant", "--total-units", "80"]
+    resources:
+      limits:
+        cpu: "1"
+        nvidia.com/gpu: "1"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-heavy-jax-matmul
+  labels:
+    scheduleurm-taskset: hybrid-research-portfolio
+spec:
+  schedulerName: iadeep-scheduler
+  restartPolicy: Never
+  containers:
+  - name: workload
+    image: scheduleurm/iadeep-placeholder:latest
+    command: ["python", "-m", "scheduleurm_workload_adapter"]
+    args: ["--workload-key", "gpu_heavy_jax_matmul", "--total-units", "2400"]
+    resources:
+      limits:
+        cpu: "2"
+        nvidia.com/gpu: "1"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cpu-heavy-local-bench
+  labels:
+    scheduleurm-taskset: hybrid-research-portfolio
+spec:
+  schedulerName: iadeep-scheduler
+  restartPolicy: Never
+  containers:
+  - name: workload
+    image: scheduleurm/iadeep-placeholder:latest
+    command: ["python", "-m", "scheduleurm_workload_adapter"]
+    args: ["--workload-key", "cpu_heavy_local_bench", "--total-units", "1000"]
+    resources:
+      limits:
+        cpu: "1"
+        nvidia.com/gpu: "0"

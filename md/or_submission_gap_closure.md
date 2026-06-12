@@ -7,6 +7,142 @@ as an OR/Stochastic Systems paper. It is intentionally stricter than an
 engineering experiment checklist: each item states what a reviewer can ask, what
 must be shown, and what artifact should answer it.
 
+## 2026-06-11 OR Gate Update
+
+The GPT_revise_OR empirical/system gates have now been implemented and rerun:
+
+```text
+python3 -m algorithm.experiments.or_submission_closure all
+```
+
+Result:
+
+```text
+all gates PASS
+summary = md/experiment_artifacts/or_submission_closure_2026_06_11.md
+json    = md/experiment_artifacts/or_submission_closure_2026_06_11.json
+```
+
+Closed gates:
+
+```text
+online arrivals:
+  md/or_gate_online_arrivals.md
+  120 Poisson/bursty/load-sweep replay scenarios;
+  candidate completed all jobs and is not Pareto-dominated by SOTA-style
+  policy semantics under the measured cache and 0.5% sampled-replay tolerance.
+
+holdout / lower-service:
+  md/or_gate_holdout_calibration.md
+  sparse empirical-Bernstein holdout residual does not close the original
+  mean-service slack and is not claimed as stochastic generalization;
+  finite measured lower-service capacity certificates close with eta>0.
+
+ablation:
+  md/or_gate_ablation_suite.md
+  full adaptive candidate beats legacy geometrically and is not Pareto-dominated
+  by legacy, sweetspot-hook, support-scorer, delay, statewise-guard,
+  no-profile-penalty, or tie-break ablations.
+
+live-state trace:
+  md/or_gate_live_trace.md
+  trace_origin = synthetic_dryrun_live_node_probe;
+  128 slots, 767 candidates, no queue mutation, no launch.
+
+natural theorem trace and admission/fabric/SOTA scaffold:
+  md/natural_live_theorem_trace.md
+  md/natural_live_theorem_realization_bridge.md
+  md/admission_population_gate.md
+  md/direct_sota_baseline_scaffold.md
+  md/global_fabric_cover_calibration.md
+  theorem-grade live-node candidate trace PASS;
+  realization bridge explicitly reports dry-run/no completion claim;
+  completed-active production service-domain admission PASS;
+  direct external-SOTA scaffold PASS with full-stack blockers reported;
+  exact measured finite-slice fabric cover PASS with rho=0.
+
+post-closure upgrade artifacts:
+  md/production_live_theorem_trace_gate_20260611.md
+  md/direct_sota_baseline_binary_smoke_20260611_round2.md
+  md/global_fabric_cover_calibration_cover_curve_20260611.md
+  md/active_bucket_hidden_regime_certificate_20260611.md
+  md/production_shadow_theorem_trace_20260612.md
+  md/gavel_direct_native_smoke_20260612.md
+  md/gavel_native_performance_microbaseline_20260612.md
+  md/direct_sota_fullstack_readiness_20260612.md
+  md/future_admitted_fabric_cover_gate_20260612.md
+  md/future_production_admission_contract_20260612.md
+  md/q00_q10_broad_envelope_gate_20260612.md
+  md/adaptive_sampler_detector_certificate_20260612.md
+  md/sota_fullstack_superiority_gate_20260612.md
+  md/all_state_conservative_cover_gate_20260612.md
+  md/production_launch_completion_gate_20260612.md
+  production-wide live trace gate closes the current queued-production
+    population with a read-only theorem trace, no launch/completion claim;
+  Pollux/AdaptDL and Decima entrypoint smoke pass; Gavel isolated
+    dependency/stub/help/generated-jobs/native-trace smoke pass; bounded q01/q11
+    native simulator microbaseline rows pass, while service-unit equivalence and
+    full-stack direct baselines remain blocked;
+  greedy k-center finite-feature cover curves quantify candidate-count versus
+    Lrho on the measured slices; future-admitted measured-state fabric cover
+    closes identity projection with rho=0;
+  active-bucket finite union bound and replay dwell/switching accounting close
+    as deterministic extension inputs.
+  non-invasive active-production shadow trace closes the current GPU theorem
+    subset without queue mutation or launch;
+  same-workload adapter seeds exist for the inspected external SOTA repos, but
+    direct full-stack same-workload ready count remains 0;
+  future-production admission contract routes service-certified jobs to theorem
+    trace and unmeasured jobs to probe;
+  q00/q10 broad measured-envelope gate closes admitted measured service-cache
+    rows, not all possible CPU/data-loader programs;
+  strict SOTA full-stack superiority gate records full_stack_ready_count=0 and
+    direct_fullstack_sota_superiority_ready=false, turning the external-stack
+    issue into a hard-blocker certificate rather than an ambiguous omission;
+  conservative all-state fabric-cover gate covers every scheduler-visible state
+    by measured-admitted positive service or zero-service probe/defer; this is
+    all-state safety, not positive-service all-state stability;
+  production launch/completion gate reports 27 running production jobs, 0 queued
+    jobs, 99% local GPU utilization, 24 progress observations, and 4 shadow
+    theorem slots; it refuses launch and therefore does not claim large-scale
+    launched completion;
+  concrete deterministic round-robin sampler and bounded two-window detector
+    probability model closes as a deployable extension certificate, not a live
+    scheduler integration claim.
+
+reviewer supplement:
+  md/or_gate_reviewer_supplement.md
+  ScheduleurmUpload.lean SHA-256 =
+    af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b;
+  lake env lean ScheduleurmUpload.lean = PASS;
+  comment-aware sorry/admit/axiom grep = clean.
+```
+
+Remaining risks are now narrower:
+
+```text
+production-wide live dispatch trace beyond the bounded ScheduleurmBench
+  q01/q11 launched trace, when queued production jobs and safe low-interference
+  resources exist.  The admission contract is ready, but the latest safe-launch
+  gate found 0 queued jobs and 99% local GPU utilization, so larger launched
+  production completion remains a future-resource-dependent claim;
+direct external scheduler binary runs if claiming full-stack SOTA superiority.
+  Current evidence is entrypoint smoke, isolated Gavel native generated-jobs
+  smoke, native trace compatibility, bounded native Gavel microbaseline,
+  same-workload adapter seeds, policy-semantics replay, and a hard-blocker
+  certificate with direct_fullstack_sota_superiority_ready=false;
+generalized positive-service fabric-cover calibration outside exact measured
+  finite slices and future-admitted measured states if claiming arbitrary
+  future/all-state cover.  Current evidence is a finite measured-slice k-center
+  Lrho curve, identity projection for admitted measured profiles, and a
+  conservative all-state safety partition that assigns zero theorem service to
+  unknown states;
+live integration and A/B trace evidence before active-bucket learning or
+  hidden-regime results become deployed-scheduler empirical claims.  Current
+  extension evidence includes deterministic event-level accounting plus a
+  concrete sampler/detector probability model.
+```
+
 ## Current Assessment
 
 The mathematical spine is close to OR-grade:
@@ -31,8 +167,10 @@ statement is:
 main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
 ```
 
-The paper is not yet submission-ready because the remaining work is mostly
-artifact, calibration, and empirical closure, not abstract theorem invention.
+After the 2026-06-11 OR gate update, the finite-slice case-study paper is much
+closer to submission-ready.  The remaining work is no longer the five
+GPT_revise_OR gates; it is manuscript polish and the stronger global-production
+extensions listed above.
 
 ## Gap 1: Theorem-Condition Calibration
 
@@ -982,7 +1120,7 @@ control-plane replication is likewise useful for q00 generalization but not
 required for the declared local q00 comparison.
 ```
 
-## Gap 3: SOTA Wording
+## Gap 3: Policy-Semantics Replay Wording
 
 Reviewer question:
 
@@ -994,17 +1132,24 @@ baselines on the Scheduleurm service cache?
 Required wording:
 
 ```text
-We compare against SOTA-style replay baselines that reproduce policy semantics
-on the same measured Scheduleurm service cache. We do not claim direct binary
-execution of external schedulers unless a later experiment explicitly runs or
-faithfully ports their full allocation semantics.
+We compare against SOTA-inspired policy-semantics replay baselines that
+reproduce policy semantics on the same measured Scheduleurm service cache. We do
+not claim direct binary execution or full-stack superiority over external
+schedulers unless a later experiment explicitly runs or faithfully ports their
+full allocation semantics.
 ```
 
 Current status:
 
 ```text
-module29 has per-taskset SOTA comparisons and fixed-policy matrix;
-no individual fixed SOTA-style policy Pareto-dominates Scheduleurm candidate.
+module29 has per-taskset policy-semantics comparisons and fixed-policy matrix;
+no individual fixed policy-semantics replay baseline Pareto-dominates
+Scheduleurm candidate.
+direct SOTA readiness has advanced from generic scaffold to system-specific
+native smoke for Gavel: isolated dependency imports, protobuf stub generation,
+entrypoint help, and generated-jobs native simulation pass, while bounded
+native trace execution remains TIMEOUT_NON_PROGRESS and therefore cannot be
+used as a direct same-workload baseline.
 ```
 
 ## Gap 4: Replay-to-Live Validation
@@ -1127,7 +1272,7 @@ The paper can move from "research prototype" to "submission draft" only after:
 1. slack accounting table has eta > 0 or clearly explains why the current
    workload/load point is outside certified stability;
 2. q10 and q00 are real for declared buckets, or explicitly removed from theorem-grade claims;
-3. SOTA claims use the honest SOTA-style replay wording;
+3. external-policy claims use the honest policy-semantics replay wording;
 4. at least one small live validation connects replay to real completion/JCT;
 5. Lean artifact is freshly repackaged and theorem names match the paper;
 6. the main manuscript exists as a coherent OR paper, not a pile of md notes.
@@ -1141,8 +1286,9 @@ Current status after Module101 and claim-scope cleanup:
    service-map oracle bridge over the completed-active population.
 2. satisfied for declared local buckets only: q00 local light-control and q10
    local CPU-heavy.  No broader CPU/data-loader generalization is claimed.
-3. satisfied in wording: use SOTA-style replay baselines on the same measured
-   Scheduleurm service cache; do not claim direct external binary execution.
+3. satisfied in wording: use SOTA-inspired policy-semantics replay baselines on
+   the same measured Scheduleurm service cache; do not claim direct external
+   binary execution or full-stack superiority.
 4. satisfied by q01/q11/portfolio live sanity modules; scope is progress-window
    replay-to-live validation, not full long-run completion of every job.
 5. satisfied by lean_verification_submission.md and ScheduleurmUpload.lean hash

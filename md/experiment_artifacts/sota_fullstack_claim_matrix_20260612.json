@@ -1,0 +1,164 @@
+{
+  "all_seed_families_present": true,
+  "direct_fullstack_same_workload_ready_count": 0,
+  "gate": "sota_fullstack_claim_matrix",
+  "pass": true,
+  "rows": [
+    {
+      "adapter": "gavel_simulation",
+      "allowed_claim": "native Gavel trace compatibility and bounded native simulator microbaseline; policy-semantics replay remains the cross-system performance comparison",
+      "blockers": [
+        "Gavel native trace and Scheduleurm trace-seed smoke pass, but service-unit equivalence is not yet a direct performance baseline",
+        "Gavel native simulator microbaseline rows exist, but they still do not certify Scheduleurm measured-service-unit equivalence",
+        "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
+      ],
+      "direct_fullstack_same_workload_ready": false,
+      "entrypoint_smoke_pass": true,
+      "forbidden_claim": "directly outperforms the external system binary or full stack",
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_performance": {
+        "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260612.json",
+        "direct_full_stack_performance_ready": false,
+        "native_gavel_simulator_microbaseline_ready": true,
+        "same_workload_trace_schema_ready": true,
+        "service_unit_equivalence_ready": false,
+        "usable_native_performance_sample_count": 2
+      },
+      "native_smoke": {
+        "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_direct_native_smoke_20260612.json",
+        "dependency_import_pass": true,
+        "direct_native_trace_pass": true,
+        "entrypoint_help_pass": true,
+        "native_generated_jobs_pass": true,
+        "native_trace_status": "PASS",
+        "protobuf_stub_generation_pass": true,
+        "scheduleurm_native_trace_seed_pass": true
+      },
+      "repo_exists": true,
+      "seed_file_count": 15,
+      "seed_files": [
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_static_trace_hybrid_research_portfolio.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_static_trace_q00_light_control.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_static_trace_q01_gpu_bound_compute.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_static_trace_q10_cpu_host_bound.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_static_trace_q11_cpu_gpu_coupled.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_native_trace_hybrid_research_portfolio.trace",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_native_trace_q00_light_control.trace",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_native_trace_q01_gpu_bound_compute.trace",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_native_trace_q10_cpu_host_bound.trace",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_native_trace_q11_cpu_gpu_coupled.trace",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_throughputs_hybrid_research_portfolio.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_throughputs_q00_light_control.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_throughputs_q01_gpu_bound_compute.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_throughputs_q10_cpu_host_bound.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/gavel_throughputs_q11_cpu_gpu_coupled.json"
+      ]
+    },
+    {
+      "adapter": "pollux_adaptdl_scheduler",
+      "allowed_claim": "seed readiness and local entrypoint/tool blocker reporting",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
+      ],
+      "direct_fullstack_same_workload_ready": false,
+      "entrypoint_smoke_pass": true,
+      "forbidden_claim": "directly outperforms the external system binary or full stack",
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "seed_file_count": 5,
+      "seed_files": [
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/adaptdljobs_hybrid_research_portfolio.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/adaptdljobs_q00_light_control.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/adaptdljobs_q01_gpu_bound_compute.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/adaptdljobs_q10_cpu_host_bound.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/adaptdljobs_q11_cpu_gpu_coupled.yaml"
+      ]
+    },
+    {
+      "adapter": "iadeep_kubernetes_extender",
+      "allowed_claim": "seed readiness and local entrypoint/tool blocker reporting",
+      "blockers": [
+        "missing required tools: go, kubectl, docker",
+        "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
+      ],
+      "direct_fullstack_same_workload_ready": false,
+      "entrypoint_smoke_pass": false,
+      "forbidden_claim": "directly outperforms the external system binary or full stack",
+      "missing_required_tools": [
+        "go",
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "seed_file_count": 5,
+      "seed_files": [
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/iadeep_pods_hybrid_research_portfolio.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/iadeep_pods_q00_light_control.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/iadeep_pods_q01_gpu_bound_compute.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/iadeep_pods_q10_cpu_host_bound.yaml",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/iadeep_pods_q11_cpu_gpu_coupled.yaml"
+      ]
+    },
+    {
+      "adapter": "salus_gpu_sharing",
+      "allowed_claim": "seed readiness and local entrypoint/tool blocker reporting",
+      "blockers": [
+        "missing required tools: docker",
+        "Salus benchmark seed exists, but Salus server/runtime execution is still required"
+      ],
+      "direct_fullstack_same_workload_ready": false,
+      "entrypoint_smoke_pass": false,
+      "forbidden_claim": "directly outperforms the external system binary or full stack",
+      "missing_required_tools": [
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "seed_file_count": 5,
+      "seed_files": [
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/salus_benchmark_seed_hybrid_research_portfolio.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/salus_benchmark_seed_q00_light_control.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/salus_benchmark_seed_q01_gpu_bound_compute.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/salus_benchmark_seed_q10_cpu_host_bound.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/salus_benchmark_seed_q11_cpu_gpu_coupled.json"
+      ]
+    },
+    {
+      "adapter": "decima_simulator",
+      "allowed_claim": "Decima seed readiness and entrypoint smoke; scope is Spark-DAG simulator, not GPU co-location baseline",
+      "blockers": [
+        "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+      ],
+      "direct_fullstack_same_workload_ready": false,
+      "entrypoint_smoke_pass": true,
+      "forbidden_claim": "directly outperforms the external system binary or full stack",
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "seed_file_count": 5,
+      "seed_files": [
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/decima_dag_seed_hybrid_research_portfolio.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/decima_dag_seed_q00_light_control.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/decima_dag_seed_q01_gpu_bound_compute.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/decima_dag_seed_q10_cpu_host_bound.json",
+        "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_adapters/decima_dag_seed_q11_cpu_gpu_coupled.json"
+      ]
+    }
+  ],
+  "scope": "Claim matrix for external SOTA systems.  It certifies seed readiness and local smoke status, not full-stack superiority unless an adapter row has direct_fullstack_same_workload_ready=true."
+}

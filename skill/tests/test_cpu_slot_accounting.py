@@ -111,3 +111,85 @@ def test_freqduet_soft_pool_prefers_free_cpu_over_generated_pin(check, sch):
     check("FreqDuet soft CPU pool ignores generated node001 pin and uses free sibling",
           placement == ("node006", None),
           diag=f"placement={placement}")
+
+
+def test_scheduleurm_cpu_pool_softens_generated_node_pin(check, sch):
+    task = {
+        "id": "tscheduler",
+        "status": "queued",
+        "project": "scheduleurm",
+        "signature": "scheduleurm/live-oracle/node001-shard",
+        "description": "Scheduleurm live oracle CPU task",
+        "cmd": "python -u algorithm/experiments/live_scheduler_oracle_closure.py",
+        "cwd": "/home/erzhu419/mine_code/scheduleurm",
+        "est_vram_mb": 0,
+        "cpu_cores": 8,
+        "ram_mb": 512,
+        "require_node": "node001",
+    }
+    nodes = [
+        {
+            "name": "node001",
+            "alive": True,
+            "gpus": [],
+            "free_cpu": 16,
+            "total_cpu": 192,
+            "free_ram_mb": 100000,
+            "total_ram_mb": 192793,
+            "running_count": 4,
+        },
+        {
+            "name": "node002",
+            "alive": True,
+            "gpus": [],
+            "free_cpu": 192,
+            "total_cpu": 192,
+            "free_ram_mb": 160000,
+            "total_ram_mb": 192793,
+            "running_count": 0,
+        },
+    ]
+
+    placement = sch.pick_placement(task, nodes)
+
+    check("scheduleurm CPU pool ignores generated node001 pin and uses free sibling",
+          placement == ("node002", None),
+          diag=f"placement={placement}")
+
+
+def test_zhengliang_hpc_uses_scheduler_backend(check, sch):
+    task = {
+        "id": "tbamor",
+        "status": "queued",
+        "project": "BAMOR",
+        "signature": "BAMOR/mujoco/local-scheduler-route",
+        "cmd": "python -u train_bamor_mujoco.py",
+        "cwd": "/home/erzhu419/mine_code/BAMOR",
+        "est_vram_mb": 0,
+        "cpu_cores": 8,
+        "ram_mb": 8192,
+        "require_node": "zhengliang-hpc",
+        "slurm_partition": "cpu",
+    }
+    node_state = {
+        "name": "zhengliang-hpc",
+        "alive": True,
+        "gpus": [],
+        "free_cpu": 1216,
+        "total_cpu": 1216,
+        "free_ram_mb": 1349551,
+        "total_ram_mb": 1349551,
+        "running_count": 0,
+        "slurm_pending_split": {"cpu": 999, "gpu": 999},
+    }
+
+    local_check = sch._BACKEND.requires_local_capacity_check(
+        "zhengliang-hpc", task, node_state=node_state)
+    placement = sch.pick_placement(task, [node_state])
+
+    check("zhengliang-hpc is scheduler-routed, not Slurm-routed",
+          local_check,
+          diag=f"requires_local_capacity_check={local_check}")
+    check("zhengliang-hpc placement ignores Slurm pending throttle when forced local",
+          placement == ("zhengliang-hpc", None),
+          diag=f"placement={placement}")

@@ -54,9 +54,14 @@ def task_admission_certificate(
     *,
     cache: ServiceRateCache | None = None,
     workload_key: str | None = None,
+    admission_mode: str | None = None,
 ) -> AdmissionCertificate:
     cache = cache or default_service_cache()
-    selected = workload_key or infer_workload_key(task, cache)
+    selected = workload_key or infer_workload_key(
+        task,
+        cache,
+        admission_mode=admission_mode,
+    )
     task_id = str(task.get("id") or task.get("task_id") or "")
     if not selected:
         return AdmissionCertificate(

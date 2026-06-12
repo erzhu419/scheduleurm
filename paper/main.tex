@@ -158,7 +158,8 @@ that is intentionally not made.
 
 \begin{table}[t]
 \TABLE{Claim matrix for scope, evidence, and non-claims.\label{tab:claim-matrix}}{
-\scriptsize
+\tiny
+\renewcommand{\arraystretch}{0.92}
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.18\linewidth}
                 >{\raggedright\arraybackslash}p{0.25\linewidth}
                 >{\raggedright\arraybackslash}p{0.27\linewidth}
@@ -173,10 +174,12 @@ proof plus Lean artifact for exact and approximate robust candidate MaxWeight.
 Finite-slice instantiation & Declared q00, q01, q10, and q11 measured action
 slices and the mixed portfolio built from those slices. & Measured service
 cache, capacity boundaries, explicit replay, slack-accounting certificate, and
-exact measured-slice fabric-cover calibration.  A future-admitted measured-state
-gate certifies identity projection with \(\rho=0\) for any future task admitted
-to an exact measured service profile.  A conservative all-state safety gate
-routes any unmeasured state to a zero-service probe/defer action.
+	exact measured-slice fabric-cover calibration.  A future-admitted measured-state
+	gate certifies identity projection with \(\rho=0\) for any future task admitted
+	to an exact measured service profile.  A declared finite-domain positive-cover
+	gate covers the exact measured service-cache universe, while a conservative
+	all-state safety gate routes any unmeasured state to a zero-service probe/defer
+	action.
 & Arbitrary unseen workloads, hardware regimes, or all-state fabric cover
 with positive lower service outside the admission contract. \\
 Live scheduler hook & Optional one-task placement scorer and admission gates in
@@ -191,20 +194,22 @@ dispatch bypasses admission/probe before becoming theorem-facing. \\
 Production bridge & Completed-active mapped Scheduleurm-controlled population.
 & Service-map lower-service oracle bridge, production coverage drilldown, and
 service-domain admission gate.  A future-production admission contract routes
-service-certified active/queued jobs to theorem trace and unmeasured jobs to
-probe.  A safe production launch/completion gate reports current large-scale
-active-production progress and refuses launches when the queue/resource
-conditions are unsafe. &
+	service-certified active/queued jobs to theorem trace and unmeasured jobs to
+	probe.  A safe production launch/completion gate reports current large-scale
+	active-production progress and refuses launches when the queue/resource
+	conditions are unsafe.  A controlled completion gate recognizes the existing
+	bounded launched completion trace and defines the unmet 32-task and organic
+	production thresholds. &
 Raw 30-day history, attempted-only jobs, or unmeasured future jobs are closed;
 or that large-scale launched production completion has been collected without
 queued jobs and idle resources. \\
 External scheduler comparison & SOTA-inspired policy semantics replayed on the
 same measured service cache. & Online policy-semantics matrix for throughput,
 delay, and interference-control semantics, plus a direct-baseline scaffold that
-records entrypoint smoke checks, a Gavel native generated-jobs smoke,
-bounded native Gavel simulator microbaseline rows for q01/q11 trace windows,
-same-workload adapter seeds, and full-stack blockers. & Direct binary or
-full-stack superiority over
+	records entrypoint smoke checks, a Gavel native generated-jobs smoke,
+	bounded native Gavel simulator microbaseline rows for q01/q11 trace windows,
+	same-workload adapter seeds, a Gavel service-unit equivalence certificate,
+	and full-stack blockers. & Direct binary or full-stack superiority over
 Gavel, Pollux, Sia, IADeep, or Salus. \\
 Learning/regime extensions & Active-bucket and hidden-regime certificates
 outside the main stability claim. & Deterministic active-bucket union bound,
@@ -678,9 +683,15 @@ bounded Scheduleurm-exported q01 and q11 trace windows through Gavel's own trace
 simulator: the q01 window completes 4/4 jobs with average job completion time
 44.561 seconds and makespan 50.929 seconds, and the q11 window completes 8/8
 jobs with average job completion time 20.900 seconds and makespan 22.297
-seconds.  These rows validate native simulator completion and metric extraction
-on bounded same-trace windows, but not measured service-unit equivalence, so
-Gavel is still not a full-stack same-workload performance baseline.
+	seconds.  These rows validate native simulator completion and metric extraction
+	on bounded same-trace windows.  A separate service-unit certificate now checks
+	the Scheduleurm-to-Gavel trace adapter: q01 has 48 native trace rows, q11 has
+	160 native trace rows, both preserve total units and resource counts, and the
+	throughput seed is present.  Exact arrival times differ because the native
+	Gavel trace uses a small deterministic ordering jitter, and no calibration
+	experiment yet proves that a Gavel simulator step is the same service unit as a
+	Scheduleurm measured lower-service unit.  Gavel is therefore still not a
+	full-stack same-workload performance baseline.
 Scheduleurm now emits same-workload seed artifacts for Gavel throughput/trace
 replay, AdaptDLJob manifests, IADeep pod manifests, Salus benchmark metadata,
 and Decima DAG metadata, but the direct runs remain blocked by native
@@ -802,10 +813,11 @@ local candidate.  This is a bounded live-dispatch sanity check, not a
 	queue and node state, copies active production records into shadow queued
 	records, evaluates the optional \texttt{theorem\_maxweight\_v1} hook without
 	queue mutation or task launch, and emits a nonempty robust lower-service theorem
-	subset.  The latest production launch/completion gate observed no queued
-	production job and high local GPU utilization, so it waited rather than
-	launching; it still recorded active-production progress observations and shadow
-	theorem slots.  The theorem subset bridge is usable with
+	subset.  The production launch/completion gate is rerunnable on rolling queue
+	snapshots; recent snapshots found queued or active production work but high
+	local GPU utilization, so the gate waited rather than launching unsafely.  It
+	still records active-production progress observations and shadow theorem slots.
+	The theorem subset bridge is usable with
 	\(\alpha_0=\alpha_1=0\); CPU fallback slots use legacy scheduler sort-key
 	semantics and are deliberately excluded from the theorem subset.
 
@@ -920,24 +932,30 @@ service-sensitivity envelope on those measured slices, and the main measured
 	exact \(\rho\), compressed-cover \(L\rho\), and exclusions.  The
 	future-admitted fabric-cover gate closes a restricted future claim by
 	construction: if a future task is admitted to one of 113 exact positive
-	measured service profiles, the theorem-facing projection is identity and
+	measured workload domains, the theorem-facing projection is identity and
 	\(\rho=0\); otherwise the task is probe-required and excluded from the
-	positive-load theorem-facing stream.  A separate conservative all-state safety
-	gate covers every scheduler-visible state by partitioning it into
-	measured-admitted states or an unknown probe/defer action with zero theorem
-	service.  This closes all-state safety, not positive-service all-state
-	stability.
+	positive-load theorem-facing stream.  A declared finite-domain positive-cover
+	gate formalizes that population as 193 exact service-cache buckets: 187 have
+	positive lower service, six are measured capacity boundaries, and zero are
+	uncovered.  A separate conservative all-state safety gate covers every
+	scheduler-visible state by partitioning it into measured-admitted states or an
+	unknown probe/defer action with zero theorem service.  This closes the declared
+	finite positive domain and all-state safety, not arbitrary positive-service
+	all-state stability.
 Second, the
 SOTA-inspired comparisons are replayed policy semantics on the same measured
 Scheduleurm service cache.  The artifact includes a direct external-baseline
 scaffold for Gavel, Pollux/AdaptDL, IADeep, Salus, and Decima, and now emits
 same-workload adapter seeds for each of them.  Gavel additionally has bounded
-	native simulator q01/q11 microbaseline rows, but the strict full-stack
-	superiority gate still rejects direct superiority claims: the current machine
-	has no Docker, no Kubernetes command-line client, and no Go toolchain, and
-	Gavel still lacks measured service-unit equivalence to Scheduleurm service
-	rows.  Pollux/AdaptDL and Decima have local entrypoint smoke checks, but these
-	smoke checks are not full-stack performance baselines.  Third, the live oracle
+	native simulator q01/q11 microbaseline rows, and the Gavel service-unit
+	certificate closes trace/schema compatibility while keeping
+	\texttt{gavel\_service\_unit\_equivalence\_ready=false}.  The strict
+	full-stack superiority gate still rejects direct superiority claims: the
+	current machine has no Docker, no Kubernetes command-line client, and no Go
+	toolchain, and Gavel still lacks measured service-unit equivalence to
+	Scheduleurm service rows.  Pollux/AdaptDL and Decima have local entrypoint
+	smoke checks, but these smoke checks are not full-stack performance baselines.
+	Third, the live oracle
 	trace evidence separates
 dry-run candidate-family audits, bounded launched ScheduleurmBench dispatch,
 read-only current queued-production trace, and non-invasive active-production
@@ -947,12 +965,16 @@ without launch, and the shadow trace validates current active-production GPU
 	theorem subset semantics without queue mutation.  A future-production admission
 	contract now routes active or queued production jobs through
 	ADMIT\_THEOREM\_TRACE or PROBE\_REQUIRED.  The production launch/completion
-	gate then enforces the operational side: in the latest 2026-06-12 snapshot it
-	observed 27 running production jobs, 24 progress observations, and four shadow
-	theorem slots, but zero queued production jobs and a 99\% local GPU-utilization
-	reading, so it returned WAIT\_RESOURCE\_OR\_QUEUE and did not launch new work.
-	This gives large-scale active-production progress evidence, not a large-scale
-	launched production completion trace.  Fourth, q00 and
+	gate then enforces the operational side: the 2026-06-12 gate snapshots observed
+	dozens of active production jobs, 24 progress observations, and local
+	GPU-utilization readings above the launch threshold, so they returned
+	WAIT-style statuses and did not launch new work.  The controlled
+	production completion gate recognizes the existing bounded launched trace
+	(six submitted controlled tasks, seven theorem slots, 13 candidate rows, and
+	\(\alpha_0=\alpha_1=0\)) but keeps the stronger 32-task controlled threshold
+	and large-scale organic production completion flags false.  This gives bounded
+	controlled completion and large-scale active-production progress evidence, not
+	a large-scale organic launched production completion trace.  Fourth, q00 and
 q10 now have a broad measured-envelope gate over the service cache: one q00
 light-control workload and 102 q10 CPU-like workloads have positive measured
 lower-service rows.  This supports a measured-envelope claim for admitted

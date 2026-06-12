@@ -180,7 +180,7 @@ NODES = {
     "zhengliang-hpc": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
                        "ssh_proxy_jump": "jtl110gpu2",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
-                       "max_vram_per_task": None, "max_concurrent_running": None,
+                       "max_vram_per_task": None, "max_concurrent_running": 0,
                        "slurm_backend": "local", "slurm_auto_large": False,
                        "slurm_auto_gpu_count": 4,
                        "slurm_gpu_partition": "gpu",
@@ -188,6 +188,9 @@ NODES = {
                        "slurm_gpu_details": {
                            "node007": {"model": "GeForce RTX 2080 Ti", "memory_gb": 11},
                        },
+                       "monitor_only": True,
+                       "skip_launch_staging": True,
+                       "disable_auto_adopt": True,
                        "only_when_targeted": True,
                        "stage_only_when_targeted": True,
                        "relay_node": "jtl110gpu2",
@@ -6565,9 +6568,10 @@ def _hpc_cpu_pool_soft_require_nodes(task: dict) -> list:
         return []
     require = (task or {}).get("require_node")
     pool = [f"node{i:03d}" for i in range(1, 7)]
-    if require not in pool:
+    if require not in pool and require != "zhengliang-hpc":
         return []
     text = _task_capability_text(task)
+    project = str((task or {}).get("project") or "").lower()
     is_freq_hrl = "freq_hrl" in text and (
         "/scheduleurm_work/transitduet" in text
         or "transit_hrl/freq_hrl" in text
@@ -6581,15 +6585,25 @@ def _hpc_cpu_pool_soft_require_nodes(task: dict) -> list:
         or "/scheduleurm_work/bamor" in text
         or "bamor/mujoco" in text
     )
-    project = str((task or {}).get("project") or "").lower()
+    is_bapr = project in {"bapr", "cs-bapr", "cs_bapr"} or (
+        ("bapr" in text or "cs-bapr" in text or "cs_bapr" in text)
+        and (
+            "run_seed.sh" in text
+            or "/mine_code/bapr" in text
+            or "/scheduleurm_work/bapr" in text
+            or "bapr/" in text
+        )
+    )
     is_scheduleurm = project in {"scheduleurm", "scheduleurmbench"} or (
         "scheduleurmbench/" in text
         or "/mine_code/scheduleurm" in text
         or "/scheduleurm_work/scheduleurm" in text
     )
-    if not (is_freq_hrl or is_freqduet or is_bamor or is_scheduleurm):
+    if not (is_freq_hrl or is_freqduet or is_bamor or is_bapr or is_scheduleurm):
         return []
-    # These shards use a shared staged workspace on node001-node006.
+    # These shards use a shared staged workspace on node001-node006.  A
+    # zhengliang-hpc pin here means "submit through the HPC entrypoint", not
+    # "execute on the login node".
     # Treat generated per-node pins as placement hints so full nodes can spill to
     # free siblings in the same CPU pool.
     return pool
@@ -6905,7 +6919,11 @@ def pick_placement(task, nodes, extra_allowed_nodes=None):
                 return []
         if _node_is_windows(n["name"]) and not (cpu_only or cpu_fallback):
             return []
-        if _task_requests_slurm(task) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
+        if (
+            _task_requests_slurm(task)
+            and not soft_require_pool
+            and not _slurm_mode_disabled(node_info.get("slurm_backend"))
+        ):
             # The user supplied Slurm-only fields, so do not silently discard
             # them by launching through LocalBackend on a non-Slurm/default-local
             # node. If no Slurm-capable/Slurm-routed node exists, the task stays queued
@@ -16402,10 +16420,17 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
             blocked = _blocked_nodes_for_task(t)
             require = t.get("require_node")
             prefer = t.get("preferred_node")
+            soft_require_pool = _hpc_cpu_pool_soft_require_nodes(t)
             reasons = []
             for n in nodes:
                 if not n.get("alive"):
                     reasons.append(f"{n['name']}=DOWN"); continue
+                if (NODES.get(n["name"], {}) or {}).get("monitor_only"):
+                    reasons.append(f"{n['name']}=login-node-disabled")
+                    continue
+                if soft_require_pool and n["name"] not in soft_require_pool:
+                    reasons.append(f"{n['name']}=outside-cpu-pool(node001-node006)")
+                    continue
                 node_evict_cooldown = _evict_node_cooldown_block_reason(t, n["name"], node_state=n)
                 if node_evict_cooldown:
                     reasons.append(f"{n['name']}={node_evict_cooldown}"); continue
@@ -16438,7 +16463,11 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
                         reasons.append(f"{n['name']}=slurm(deferred but require/prefer mismatch)")
                     continue
                 node_info = NODES.get(n["name"], {}) or {}
-                if _task_requests_slurm(t) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
+                if (
+                    _task_requests_slurm(t)
+                    and not soft_require_pool
+                    and not _slurm_mode_disabled(node_info.get("slurm_backend"))
+                ):
                     reasons.append(f"{n['name']}=not-slurm-route")
                     continue
                 cpu_fallback_node = (
@@ -20273,6 +20302,12 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
     name = node_state["name"]
     if not node_state.get("alive"):
         return f"DOWN ({node_state.get('error', '?')})"
+    node_info = NODES.get(name, {})
+    if node_info.get("monitor_only"):
+        return "login-node-disabled: monitor/control node, scheduler will never launch tasks here"
+    soft_require_pool = _hpc_cpu_pool_soft_require_nodes(task)
+    if soft_require_pool and name not in soft_require_pool:
+        return "outside-cpu-pool: scheduler routes this CPU shard to node001-node006"
     if name in _blocked_nodes_for_task(task):
         return "BLOCKED: pending env_missing/python_import escalation against this signature/cwd/project"
     soft_blocked = name in _launch_failed_nodes_for_task(task)
@@ -20295,7 +20330,11 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
                     f"{soft_note}")
         return f"slurm: would route here (gres handles GPU pinning){soft_note}"
     node_info = NODES[name]
-    if _task_requests_slurm(task) and not _slurm_mode_disabled(node_info.get("slurm_backend")):
+    if (
+        _task_requests_slurm(task)
+        and not soft_require_pool
+        and not _slurm_mode_disabled(node_info.get("slurm_backend"))
+    ):
         return f"not-slurm-route: task has --slurm-* options but this node is default-local/non-slurm{soft_note}"
     ok, why = _node_resources_ok(task, node_state, node_info)
     if not ok:

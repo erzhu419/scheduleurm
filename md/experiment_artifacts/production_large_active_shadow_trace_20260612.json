@@ -1,157 +1,196 @@
 {
-  "active_production_shadow_task_count": 27,
+  "active_production_shadow_task_count": 48,
   "algorithm": "theorem_maxweight_v1",
-  "candidate_count_total": 13,
+  "candidate_count_total": 63,
   "gate": "production_shadow_theorem_trace",
-  "generated_at": "2026-06-12T07:40:06+0800",
+  "generated_at": "2026-06-12T09:12:54+0800",
   "hard_rule_mode": "",
   "launched_dispatch_claim": false,
   "node_summary_after_shadow": [
     {
       "alive": true,
-      "free_cpu": 13,
-      "free_ram_mb": 10054,
+      "free_cpu": 11,
+      "free_ram_mb": 26912,
       "gpu_count": 1,
       "name": "local"
     },
     {
       "alive": true,
-      "free_cpu": 6,
-      "free_ram_mb": 497709,
+      "free_cpu": 4,
+      "free_ram_mb": 495246,
       "gpu_count": 2,
       "name": "jtl110gpu"
     },
     {
       "alive": true,
-      "free_cpu": 6,
-      "free_ram_mb": 500653,
+      "free_cpu": 4,
+      "free_ram_mb": 498661,
       "gpu_count": 2,
       "name": "jtl110gpu2"
     },
     {
       "alive": true,
-      "free_cpu": 64,
-      "free_ram_mb": 81136,
+      "free_cpu": 63,
+      "free_ram_mb": 80865,
       "gpu_count": 0,
       "name": "zhengliang-hpc"
     },
     {
       "alive": true,
-      "free_cpu": 32,
-      "free_ram_mb": 213237,
+      "free_cpu": 17,
+      "free_ram_mb": 206431,
       "gpu_count": 4,
       "name": "node007-direct"
     },
     {
       "alive": true,
-      "free_cpu": 128,
-      "free_ram_mb": 491969,
+      "free_cpu": 127,
+      "free_ram_mb": 491150,
       "gpu_count": 0,
       "name": "jtl110cpu"
     },
     {
       "alive": true,
-      "free_cpu": 128,
-      "free_ram_mb": 499697,
+      "free_cpu": 127,
+      "free_ram_mb": 498676,
       "gpu_count": 0,
       "name": "jtl110cpu2"
     },
     {
       "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 150374,
+      "free_cpu": 176,
+      "free_ram_mb": 149152,
       "gpu_count": 0,
       "name": "node001"
     },
     {
       "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 154053,
+      "free_cpu": 176,
+      "free_ram_mb": 154042,
       "gpu_count": 0,
       "name": "node002"
     },
     {
       "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 155101,
+      "free_cpu": 176,
+      "free_ram_mb": 154398,
       "gpu_count": 0,
       "name": "node003"
     },
     {
       "alive": true,
-      "free_cpu": 161,
-      "free_ram_mb": 97669,
+      "free_cpu": 111,
+      "free_ram_mb": 58999,
       "gpu_count": 0,
       "name": "node004"
     },
     {
       "alive": true,
-      "free_cpu": 161,
-      "free_ram_mb": 115257,
+      "free_cpu": 111,
+      "free_ram_mb": 72698,
       "gpu_count": 0,
       "name": "node005"
     },
     {
       "alive": true,
-      "free_cpu": 192,
-      "free_ram_mb": 178870,
+      "free_cpu": 176,
+      "free_ram_mb": 178101,
       "gpu_count": 0,
       "name": "node006"
     }
   ],
   "non_theorem_blocker_counts": {
-    "scheduler_sort_key_minimization": 3
+    "scheduler_sort_key_minimization": 14
   },
   "oracle_bridge": {
-    "blocker_count": 3,
+    "blocker_count": 14,
     "blockers": [
       {
         "detail": "scheduler_sort_key_minimization",
         "reason": "score_semantics_not_robust_maxweight_lower_service",
-        "slot_id": "slot:shadow-production-0024-t10418:1781221204.0775685:1781221206175"
+        "slot_id": "slot:shadow-production-0020-t10428:1781226759.6125126:1781226760518"
       },
       {
         "detail": "scheduler_sort_key_minimization",
         "reason": "score_semantics_not_robust_maxweight_lower_service",
-        "slot_id": "slot:shadow-production-0025-t10420:1781221204.0787857:1781221206411"
+        "slot_id": "slot:shadow-production-0021-t10430:1781226759.6137192:1781226768517"
       },
       {
         "detail": "scheduler_sort_key_minimization",
         "reason": "score_semantics_not_robust_maxweight_lower_service",
-        "slot_id": "slot:shadow-production-0026-t10422:1781221204.0800295:1781221206459"
+        "slot_id": "slot:shadow-production-0022-t10432:1781226759.61493:1781226769048"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0023-t10435:1781226759.616136:1781226767873"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0024-t10440:1781226759.6173468:1781226768401"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0025-t10441:1781226759.6186192:1781226768688"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0026-t10442:1781226759.6198812:1781226768758"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0027-t10443:1781226759.62114:1781226769030"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0028-t10444:1781226759.6223953:1781226769090"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0029-t10445:1781226759.6236448:1781226769368"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0030-t10446:1781226759.6249518:1781226769434"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0031-t10447:1781226759.6262445:1781226769738"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0042-t10470:1781226759.6467144:1781226773150"
+      },
+      {
+        "detail": "scheduler_sort_key_minimization",
+        "reason": "score_semantics_not_robust_maxweight_lower_service",
+        "slot_id": "slot:shadow-production-0047-t10476:1781226759.653811:1781226774176"
       }
     ],
-    "converted_slot_count": 4,
+    "converted_slot_count": 8,
     "interpretation": "Trace cannot certify alpha0/alpha1 until each slot has robust MaxWeight lower-service semantics.",
     "status": "NOT_THEOREM_TRACE",
-    "trace_slot_count": 7,
+    "trace_slot_count": 22,
     "usable_for_theorem": false
   },
   "pass": true,
-  "placed_count": 7,
+  "placed_count": 22,
   "placements": [
     {
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": {
-        "gpu_idx": 0,
-        "node": "node007-direct"
-      },
+      "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0000-t10391",
-      "signature": "BAPR/v6/Ant/mean_nobelief/seed0",
-      "source_status": "running",
-      "source_task_id": "t10391"
-    },
-    {
-      "admitted": true,
-      "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": {
-        "gpu_idx": 1,
-        "node": "node007-direct"
-      },
-      "project": "BAPR",
-      "shadow_task_id": "shadow-production-0001-t10392",
+      "shadow_task_id": "shadow-production-0000-t10392",
       "signature": "BAPR/v6/Ant/context_mean_nobocd/seed0",
       "source_status": "running",
       "source_task_id": "t10392"
@@ -159,12 +198,9 @@
     {
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": {
-        "gpu_idx": 2,
-        "node": "node007-direct"
-      },
+      "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0002-t10393",
+      "shadow_task_id": "shadow-production-0001-t10393",
       "signature": "BAPR/v6/Ant/norctx_mean/seed0",
       "source_status": "running",
       "source_task_id": "t10393"
@@ -174,7 +210,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0003-t10394",
+      "shadow_task_id": "shadow-production-0002-t10394",
       "signature": "BAPR/v6/Ant/ucb_nobelief/seed0",
       "source_status": "running",
       "source_task_id": "t10394"
@@ -184,7 +220,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0004-t10395",
+      "shadow_task_id": "shadow-production-0003-t10395",
       "signature": "BAPR/v6/Ant/mean_nobelief/seed2",
       "source_status": "running",
       "source_task_id": "t10395"
@@ -194,7 +230,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0005-t10396",
+      "shadow_task_id": "shadow-production-0004-t10396",
       "signature": "BAPR/v6/Ant/context_mean_nobocd/seed2",
       "source_status": "running",
       "source_task_id": "t10396"
@@ -204,7 +240,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0006-t10397",
+      "shadow_task_id": "shadow-production-0005-t10397",
       "signature": "BAPR/v6/Ant/norctx_mean/seed2",
       "source_status": "running",
       "source_task_id": "t10397"
@@ -214,27 +250,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0007-t10398",
-      "signature": "BAPR/v6/Ant/ucb_nobelief/seed2",
-      "source_status": "running",
-      "source_task_id": "t10398"
-    },
-    {
-      "admitted": true,
-      "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": null,
-      "project": "BAPR",
-      "shadow_task_id": "shadow-production-0008-t10399",
-      "signature": "BAPR/v6/Ant/mean_nobelief/seed4",
-      "source_status": "running",
-      "source_task_id": "t10399"
-    },
-    {
-      "admitted": true,
-      "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": null,
-      "project": "BAPR",
-      "shadow_task_id": "shadow-production-0009-t10400",
+      "shadow_task_id": "shadow-production-0006-t10400",
       "signature": "BAPR/v6/Ant/context_mean_nobocd/seed4",
       "source_status": "running",
       "source_task_id": "t10400"
@@ -244,7 +260,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0010-t10401",
+      "shadow_task_id": "shadow-production-0007-t10401",
       "signature": "BAPR/v6/Ant/norctx_mean/seed4",
       "source_status": "running",
       "source_task_id": "t10401"
@@ -254,7 +270,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0011-t10402",
+      "shadow_task_id": "shadow-production-0008-t10402",
       "signature": "BAPR/v6/Ant/ucb_nobelief/seed4",
       "source_status": "running",
       "source_task_id": "t10402"
@@ -264,7 +280,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0012-t10403",
+      "shadow_task_id": "shadow-production-0009-t10403",
       "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed0",
       "source_status": "running",
       "source_task_id": "t10403"
@@ -274,7 +290,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0013-t10404",
+      "shadow_task_id": "shadow-production-0010-t10404",
       "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed0",
       "source_status": "running",
       "source_task_id": "t10404"
@@ -284,7 +300,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0014-t10405",
+      "shadow_task_id": "shadow-production-0011-t10405",
       "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed0",
       "source_status": "running",
       "source_task_id": "t10405"
@@ -294,7 +310,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0015-t10406",
+      "shadow_task_id": "shadow-production-0012-t10406",
       "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed0",
       "source_status": "running",
       "source_task_id": "t10406"
@@ -304,17 +320,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0016-t10407",
-      "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed2",
-      "source_status": "running",
-      "source_task_id": "t10407"
-    },
-    {
-      "admitted": true,
-      "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": null,
-      "project": "BAPR",
-      "shadow_task_id": "shadow-production-0017-t10408",
+      "shadow_task_id": "shadow-production-0013-t10408",
       "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed2",
       "source_status": "running",
       "source_task_id": "t10408"
@@ -324,7 +330,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0018-t10409",
+      "shadow_task_id": "shadow-production-0014-t10409",
       "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed2",
       "source_status": "running",
       "source_task_id": "t10409"
@@ -334,7 +340,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0019-t10410",
+      "shadow_task_id": "shadow-production-0015-t10410",
       "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed2",
       "source_status": "running",
       "source_task_id": "t10410"
@@ -347,7 +353,7 @@
         "node": "jtl110gpu"
       },
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0020-t10411",
+      "shadow_task_id": "shadow-production-0016-t10411",
       "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed4",
       "source_status": "running",
       "source_task_id": "t10411"
@@ -357,7 +363,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0021-t10412",
+      "shadow_task_id": "shadow-production-0017-t10412",
       "signature": "BAPR/v6/HalfCheetah/context_mean_nobocd/seed4",
       "source_status": "running",
       "source_task_id": "t10412"
@@ -367,7 +373,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0022-t10413",
+      "shadow_task_id": "shadow-production-0018-t10413",
       "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed4",
       "source_status": "running",
       "source_task_id": "t10413"
@@ -377,23 +383,62 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": null,
       "project": "BAPR",
-      "shadow_task_id": "shadow-production-0023-t10414",
+      "shadow_task_id": "shadow-production-0019-t10414",
       "signature": "BAPR/v6/HalfCheetah/ucb_nobelief/seed4",
       "source_status": "running",
       "source_task_id": "t10414"
     },
     {
       "admitted": true,
-      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
       "placement": {
         "gpu_idx": null,
-        "node": "node004"
+        "node": "node001"
       },
-      "project": "FreqDuet",
-      "shadow_task_id": "shadow-production-0024-t10418",
-      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0020_0030",
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0020-t10428",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v20_hier_archive_mix/seed2/steps50000/switch25000/hidden64",
       "source_status": "running",
-      "source_task_id": "t10418"
+      "source_task_id": "t10428"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node006"
+      },
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0021-t10430",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v20_hier_archive_mix/seed4/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10430"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node003"
+      },
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0022-t10432",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v20_hier_archive_mix/seed6/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10432"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "bamor_mujoco_c3_8_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node001"
+      },
+      "project": "BAMOR",
+      "shadow_task_id": "shadow-production-0023-t10435",
+      "signature": "BAMOR/mujoco/mo-halfcheetah-v5/bamor_v20_hier_archive_mix/seed9/steps50000/switch25000/hidden64",
+      "source_status": "running",
+      "source_task_id": "t10435"
     },
     {
       "admitted": true,
@@ -403,10 +448,23 @@
         "node": "node004"
       },
       "project": "FreqDuet",
-      "shadow_task_id": "shadow-production-0025-t10420",
-      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0040_0050",
+      "shadow_task_id": "shadow-production-0024-t10440",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0000_0010",
       "source_status": "running",
-      "source_task_id": "t10420"
+      "source_task_id": "t10440"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node005"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0025-t10441",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0010_0020",
+      "source_status": "running",
+      "source_task_id": "t10441"
     },
     {
       "admitted": true,
@@ -416,81 +474,377 @@
         "node": "node004"
       },
       "project": "FreqDuet",
-      "shadow_task_id": "shadow-production-0026-t10422",
-      "signature": "FreqDuet/termvalselector_screen_ep100_wu10/shard_0060_0070",
+      "shadow_task_id": "shadow-production-0026-t10442",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0020_0030",
       "source_status": "running",
-      "source_task_id": "t10422"
+      "source_task_id": "t10442"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node005"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0027-t10443",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0030_0040",
+      "source_status": "running",
+      "source_task_id": "t10443"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node004"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0028-t10444",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0040_0050",
+      "source_status": "running",
+      "source_task_id": "t10444"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node005"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0029-t10445",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0050_0060",
+      "source_status": "running",
+      "source_task_id": "t10445"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node004"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0030-t10446",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0060_0070",
+      "source_status": "running",
+      "source_task_id": "t10446"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "freqduet_cpu_ablation_c9_16",
+      "placement": {
+        "gpu_idx": null,
+        "node": "node005"
+      },
+      "project": "FreqDuet",
+      "shadow_task_id": "shadow-production-0031-t10447",
+      "signature": "FreqDuet/headwayplanner_screen_ep100_wu10/shard_0070_0080",
+      "source_status": "running",
+      "source_task_id": "t10447"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0032-t10460",
+      "signature": "CS-BAPR-v2-load/Pendulum-v1/resac/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10460"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 1,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0033-t10461",
+      "signature": "CS-BAPR-v2-load/Pendulum-v1/bapr/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10461"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0034-t10462",
+      "signature": "CS-BAPR-v2-load/Pendulum-v1/csbapr-no-sindy/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10462"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0035-t10463",
+      "signature": "CS-BAPR-v2-load/Pendulum-v1/bapr-stable-context/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10463"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 2,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0036-t10464",
+      "signature": "CS-BAPR-v2-load/Pendulum-v1/csbapr-stable-context/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10464"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 3,
+        "node": "node007-direct"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0037-t10465",
+      "signature": "CS-BAPR-v2-load/Hopper-v4/resac/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10465"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0038-t10466",
+      "signature": "CS-BAPR-v2-load/Hopper-v4/bapr/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10466"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0039-t10467",
+      "signature": "CS-BAPR-v2-load/Hopper-v4/csbapr-no-sindy/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10467"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0040-t10468",
+      "signature": "CS-BAPR-v2-load/Hopper-v4/bapr-stable-context/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10468"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0041-t10469",
+      "signature": "CS-BAPR-v2-load/Hopper-v4/csbapr-stable-context/seed0/markov-i50-s200/r1",
+      "source_status": "running",
+      "source_task_id": "t10469"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu2"
+      },
+      "project": "CS-BAPR",
+      "shadow_task_id": "shadow-production-0042-t10470",
+      "signature": "CS-BAPR/auto-adopted/p193029",
+      "source_status": "running",
+      "source_task_id": "t10470"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": {
+        "gpu_idx": 0,
+        "node": "jtl110gpu"
+      },
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0043-t10471",
+      "signature": "BAPR/v6/Ant/ucb_nobelief/seed2",
+      "source_status": "queued",
+      "source_task_id": "t10471"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0044-t10472",
+      "signature": "BAPR/v6/HalfCheetah/mean_nobelief/seed2",
+      "source_status": "queued",
+      "source_task_id": "t10472"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0045-t10473",
+      "signature": "BAPR/v6/Ant/mean_nobelief/seed0",
+      "source_status": "queued",
+      "source_task_id": "t10473"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "placement": null,
+      "project": "BAPR",
+      "shadow_task_id": "shadow-production-0046-t10474",
+      "signature": "BAPR/v6/Ant/mean_nobelief/seed4",
+      "source_status": "queued",
+      "source_task_id": "t10474"
+    },
+    {
+      "admitted": true,
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "placement": {
+        "gpu_idx": null,
+        "node": "jtl110cpu"
+      },
+      "project": "Asumption Agent",
+      "shadow_task_id": "shadow-production-0047-t10476",
+      "signature": "Asumption Agent/auto-adopted/p2637368",
+      "source_status": "running",
+      "source_task_id": "t10476"
     }
   ],
   "production_shadow_trace_closed": true,
   "requested_algorithm": "theorem_maxweight_v1",
   "reserve_shadow_capacity": true,
   "scope": "non-invasive shadow trace over current active production tasks. It reads queue/node state and evaluates the optional theorem hook without queue mutation or launch.  It is not a production-wide launched dispatch trace.",
-  "theorem_slot_count": 4,
+  "theorem_slot_count": 8,
   "theorem_subset_oracle_bridge": {
     "alpha0": 0.0,
     "alpha1": 0.0,
-    "audited_slot_count": 4,
+    "audited_slot_count": 8,
     "best_score_exact_over_candidate_set": true,
     "blocker_count": 0,
     "blockers": [],
-    "converted_slot_count": 4,
+    "converted_slot_count": 8,
     "fit_method": "finite_max_envelope",
     "max_residual_violation": 0.0,
-    "point_count": 4,
+    "point_count": 8,
     "rows": [
       {
-        "best_action_id": "node=node007-direct|gpu=0",
-        "best_candidate_score": 7.223052017861523,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 3,
-        "chosen_action_id": "node=node007-direct|gpu=0",
-        "chosen_score": 7.223052017861523,
-        "oracle_gap": 0.0,
-        "q_norm": 28.0,
-        "slot_id": "slot:shadow-production-0000-t10391:1781221204.0414853:1781221204062"
-      },
-      {
-        "best_action_id": "node=node007-direct|gpu=1",
-        "best_candidate_score": 7.223052017861523,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 2,
-        "chosen_action_id": "node=node007-direct|gpu=1",
-        "chosen_score": 7.223052017861523,
-        "oracle_gap": 0.0,
-        "q_norm": 28.0,
-        "slot_id": "slot:shadow-production-0001-t10392:1781221204.042962:1781221205101"
-      },
-      {
-        "best_action_id": "node=node007-direct|gpu=2",
-        "best_candidate_score": 7.223052017861523,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 1,
-        "chosen_action_id": "node=node007-direct|gpu=2",
-        "chosen_score": 7.223052017861523,
-        "oracle_gap": 0.0,
-        "q_norm": 28.0,
-        "slot_id": "slot:shadow-production-0002-t10393:1781221204.0442553:1781221206032"
-      },
-      {
         "best_action_id": "node=jtl110gpu|gpu=1",
-        "best_candidate_score": 8.365230275342634,
+        "best_candidate_score": 12.045931596493395,
         "best_score_exact_over_candidate_set": true,
         "candidate_count": 1,
         "chosen_action_id": "node=jtl110gpu|gpu=1",
-        "chosen_score": 8.365230275342634,
+        "chosen_score": 12.045931596493395,
         "oracle_gap": 0.0,
-        "q_norm": 28.0,
-        "slot_id": "slot:shadow-production-0020-t10411:1781221204.071115:1781221206136"
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0016-t10411:1781226759.606002:1781226759722"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 12.045931596493395,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 3,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 12.045931596493395,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0032-t10460:1781226759.6282926:1781226769798"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=1",
+        "best_candidate_score": 11.004790188939804,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 3,
+        "chosen_action_id": "node=node007-direct|gpu=1",
+        "chosen_score": 11.004790188939804,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0033-t10461:1781226759.630177:1781226770854"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 10.401194905720592,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 10.401194905720592,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0034-t10462:1781226759.6321185:1781226771859"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 10.378635183117048,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 10.378635183117048,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0035-t10463:1781226759.6340647:1781226771908"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=2",
+        "best_candidate_score": 11.004790188939804,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=node007-direct|gpu=2",
+        "chosen_score": 11.004790188939804,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0036-t10464:1781226759.6360865:1781226772853"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=3",
+        "best_candidate_score": 10.378635183117048,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=node007-direct|gpu=3",
+        "chosen_score": 10.378635183117048,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0037-t10465:1781226759.6380274:1781226773102"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_candidate_score": 12.045931596493395,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 1,
+        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "chosen_score": 12.045931596493395,
+        "oracle_gap": 0.0,
+        "q_norm": 49.0,
+        "slot_id": "slot:shadow-production-0043-t10471:1781226759.6481779:1781226773420"
       }
     ],
     "status": "THEOREM_ORACLE_PASS",
-    "trace_slot_count": 4,
+    "trace_slot_count": 8,
     "usable_for_theorem": true,
     "worst_violation": null
   },
   "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_large_active_shadow_trace_20260612.jsonl",
-  "trace_slot_count": 7,
+  "trace_slot_count": 22,
   "uncertified_mode": "block",
-  "unplaced_count": 20
+  "unplaced_count": 26
 }

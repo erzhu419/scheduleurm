@@ -17,6 +17,7 @@ _CACHE: dict[str, Any] = {
     "mtime_ns": None,
     "loaded_at": 0.0,
     "ttl_s": 1.0,
+    "admission_mode": "",
     "vector": {},
     "active_task_ids": set(),
     "error": "",
@@ -27,6 +28,7 @@ def load_queue_vector(
     path: str | Path | None = None,
     *,
     ttl_s: float = 1.0,
+    admission_mode: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
     """Return active-task counts keyed by measured workload class."""
 
@@ -47,6 +49,7 @@ def load_queue_vector(
     if (
         _CACHE.get("path") == str(p)
         and _CACHE.get("mtime_ns") == mtime_ns
+        and str(_CACHE.get("admission_mode") or "") == str(admission_mode or "")
         and now - float(_CACHE.get("loaded_at") or 0.0) <= max(0.0, float(ttl_s))
     ):
         return dict(_CACHE.get("vector") or {}), {
@@ -85,7 +88,7 @@ def load_queue_vector(
         row_id = str(row.get("id") or row.get("task_id") or "").strip()
         if row_id:
             active_ids.add(row_id)
-        key = infer_workload_key(row)
+        key = infer_workload_key(row, admission_mode=admission_mode)
         if not key:
             unclassified += 1
             continue
@@ -96,6 +99,7 @@ def load_queue_vector(
         "mtime_ns": mtime_ns,
         "loaded_at": now,
         "ttl_s": float(ttl_s),
+        "admission_mode": str(admission_mode or ""),
         "vector": dict(vector),
         "active_task_ids": set(active_ids),
         "active_task_count": active_count,
@@ -118,8 +122,13 @@ def queue_vector_for_task(
     *,
     queue_path: str | Path | None = None,
     ttl_s: float = 1.0,
+    admission_mode: str | None = None,
 ) -> tuple[dict[str, float], dict[str, Any]]:
-    vector, meta = load_queue_vector(queue_path, ttl_s=ttl_s)
+    vector, meta = load_queue_vector(
+        queue_path,
+        ttl_s=ttl_s,
+        admission_mode=admission_mode,
+    )
     if workload_key:
         task_id = str(task.get("id") or task.get("task_id") or "")
         if task_id and task_id not in set(_CACHE.get("active_task_ids") or set()):

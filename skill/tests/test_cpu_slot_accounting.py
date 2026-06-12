@@ -157,7 +157,7 @@ def test_scheduleurm_cpu_pool_softens_generated_node_pin(check, sch):
           diag=f"placement={placement}")
 
 
-def test_zhengliang_hpc_uses_scheduler_backend(check, sch):
+def test_zhengliang_hpc_cpu_tasks_route_to_worker_pool(check, sch):
     task = {
         "id": "tbamor",
         "status": "queued",
@@ -171,7 +171,7 @@ def test_zhengliang_hpc_uses_scheduler_backend(check, sch):
         "require_node": "zhengliang-hpc",
         "slurm_partition": "cpu",
     }
-    node_state = {
+    login_state = {
         "name": "zhengliang-hpc",
         "alive": True,
         "gpus": [],
@@ -182,14 +182,28 @@ def test_zhengliang_hpc_uses_scheduler_backend(check, sch):
         "running_count": 0,
         "slurm_pending_split": {"cpu": 999, "gpu": 999},
     }
+    worker_state = {
+        "name": "node006",
+        "alive": True,
+        "gpus": [],
+        "free_cpu": 176,
+        "total_cpu": 192,
+        "free_ram_mb": 178000,
+        "total_ram_mb": 192793,
+        "running_count": 0,
+    }
 
     local_check = sch._BACKEND.requires_local_capacity_check(
-        "zhengliang-hpc", task, node_state=node_state)
-    placement = sch.pick_placement(task, [node_state])
+        "zhengliang-hpc", task, node_state=login_state)
+    placement = sch.pick_placement(task, [login_state, worker_state])
+    login_explain = sch._explain_node_fit(task, login_state)
 
-    check("zhengliang-hpc is scheduler-routed, not Slurm-routed",
+    check("zhengliang-hpc backend remains scheduler-routed, not Slurm-routed",
           local_check,
           diag=f"requires_local_capacity_check={local_check}")
-    check("zhengliang-hpc placement ignores Slurm pending throttle when forced local",
-          placement == ("zhengliang-hpc", None),
+    check("zhengliang-hpc CPU training tag routes to node001-node006 workers",
+          placement == ("node006", None),
           diag=f"placement={placement}")
+    check("zhengliang-hpc is not an execution candidate for the CPU pool",
+          "login-node-disabled" in login_explain,
+          diag=login_explain)

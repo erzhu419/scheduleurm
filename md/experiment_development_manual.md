@@ -29,12 +29,12 @@ main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_se
 
 ```text
 工程回归 baseline: Scheduleurm legacy fixed caps
-论文 replay baseline: module27 SOTA-style policy suite
+论文 replay baseline: module27 SOTA-inspired policy-semantics replay suite
 ```
 
-SOTA-style suite 使用同一份 measured service cache 复现 Gavel/Pollux/Sia、
-IADeep/Salus、SRPT/Gittins/SERPT 等 policy semantics。直接外部 SOTA 仍然
-只是 reference/future baseline，除非某个实验明确做到：
+SOTA-inspired policy-semantics replay suite 使用同一份 measured service cache
+复现 Gavel/Pollux/Sia、IADeep/Salus、SRPT/Gittins/SERPT 等 policy semantics。
+直接外部 SOTA 仍然只是 reference/future baseline，除非某个实验明确做到：
 
 ```text
 同一批 trace；
@@ -43,8 +43,35 @@ IADeep/Salus、SRPT/Gittins/SERPT 等 policy semantics。直接外部 SOTA 仍�
 外部 policy 语义被复现或直接运行。
 ```
 
-在这些条件满足前，报告可以写“not Pareto-dominated by SOTA-style replay
-baselines”，但不能写“directly beats external SOTA implementation”。
+在这些条件满足前，报告可以写“not Pareto-dominated by fixed
+policy-semantics replay baselines”，但不能写“directly beats external SOTA
+implementation”。
+
+当前 OR closure gate 的统一入口是：
+
+```bash
+python3 -m algorithm.experiments.or_submission_closure all
+```
+
+它会生成：
+
+```text
+md/or_gate_online_arrivals.md
+md/or_gate_holdout_calibration.md
+md/or_gate_ablation_suite.md
+md/or_gate_live_trace.md
+md/or_gate_reviewer_supplement.md
+md/experiment_artifacts/or_submission_closure_2026_06_11.md
+```
+
+`md/or_gate_ablation_suite.md` 必须显式列出 reviewer-axis coverage：
+legacy caps、scalar sweetspot hook、support-only scorer、delay-only scorer、
+statewise guard、no profile penalty、tie-break direction，以及 full
+queue-adaptive robust lower-service scorer。
+
+这些 runner 都在 `algorithm/experiments/` 和 `simulation/` 层工作。不要把
+queue-adaptive replay policy、closure runner 或 dry-run trace 逻辑塞进
+`skill/scheduler.py`；那个文件保留 legacy scheduler 和已有可选 hook。
 
 ---
 

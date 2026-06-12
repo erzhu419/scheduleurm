@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hybrid-rl-resac-ant
+  labels:
+    scheduleurm-taskset: q11-cpu-gpu-coupled
+spec:
+  schedulerName: iadeep-scheduler
+  restartPolicy: Never
+  containers:
+  - name: workload
+    image: scheduleurm/iadeep-placeholder:latest
+    command: ["python", "-m", "scheduleurm_workload_adapter"]
+    args: ["--workload-key", "hybrid_rl_resac_ant", "--total-units", "80"]
+    resources:
+      limits:
+        cpu: "1"
+        nvidia.com/gpu: "1"

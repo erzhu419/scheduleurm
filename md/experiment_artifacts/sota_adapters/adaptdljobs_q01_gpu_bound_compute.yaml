@@ -1,0 +1,19 @@
+apiVersion: adaptdl.petuum.com/v1
+kind: AdaptDLJob
+metadata:
+  name: gpu-heavy-jax-matmul
+  labels:
+    scheduleurm-taskset: q01-gpu-bound-compute
+spec:
+  placement: any
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: trainer
+        image: scheduleurm/adaptdl-placeholder:latest
+        command: ["python", "-m", "scheduleurm_workload_adapter"]
+        args: ["--workload-key", "gpu_heavy_jax_matmul", "--total-units", "2400"]
+        resources:
+          limits:
+            cpu: "2"

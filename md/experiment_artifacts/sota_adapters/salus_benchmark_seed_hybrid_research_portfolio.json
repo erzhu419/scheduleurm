@@ -1,0 +1,259 @@
+{
+  "format": "scheduleurm_salus_benchmark_seed_v1",
+  "scope": "Benchmark-driver seed metadata for Salus adapter development; Salus server/runtime integration remains required before direct comparison.",
+  "sessions": [
+    {
+      "count": 120,
+      "name": "hybrid_rl_resac_ant",
+      "profiles": [
+        {
+          "aggregate_rate": 0.25305895450000004,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 0.3333333333333333,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 0.3346092110137054,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 0.2889220807144609,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 0.28829542175325135,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 0.305688616359439,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 0.3026219558934524,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 0.3125333948,
+          "capacity_boundary": false,
+          "profile": 8
+        },
+        {
+          "aggregate_rate": 0.31201673370000005,
+          "capacity_boundary": false,
+          "profile": 9
+        },
+        {
+          "aggregate_rate": 0.33413798209999995,
+          "capacity_boundary": true,
+          "profile": 10
+        },
+        {
+          "aggregate_rate": 0.2766582860620802,
+          "capacity_boundary": true,
+          "profile": 13
+        }
+      ],
+      "resource_count": 1,
+      "resource_kind": "hybrid_rl",
+      "total_units": 80.0
+    },
+    {
+      "count": 24,
+      "name": "gpu_heavy_jax_matmul",
+      "profiles": [
+        {
+          "aggregate_rate": 34.484897000000004,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 32.2352685,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 32.405914,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 35.05375000000001,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 35.000623999999995,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 35.104212000000004,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 35.4717315,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 35.632241,
+          "capacity_boundary": false,
+          "profile": 8
+        }
+      ],
+      "resource_count": 2,
+      "resource_kind": "gpu_heavy",
+      "total_units": 2400.0
+    },
+    {
+      "count": 256,
+      "name": "cpu_heavy_local_bench",
+      "profiles": [
+        {
+          "aggregate_rate": 6.881652,
+          "capacity_boundary": false,
+          "profile": 1
+        },
+        {
+          "aggregate_rate": 13.190345,
+          "capacity_boundary": false,
+          "profile": 2
+        },
+        {
+          "aggregate_rate": 21.299104,
+          "capacity_boundary": false,
+          "profile": 3
+        },
+        {
+          "aggregate_rate": 26.196447,
+          "capacity_boundary": false,
+          "profile": 4
+        },
+        {
+          "aggregate_rate": 30.930518,
+          "capacity_boundary": false,
+          "profile": 5
+        },
+        {
+          "aggregate_rate": 42.83685,
+          "capacity_boundary": false,
+          "profile": 6
+        },
+        {
+          "aggregate_rate": 50.301283000000005,
+          "capacity_boundary": false,
+          "profile": 7
+        },
+        {
+          "aggregate_rate": 54.77960350000001,
+          "capacity_boundary": false,
+          "profile": 8
+        },
+        {
+          "aggregate_rate": 35.830256500000004,
+          "capacity_boundary": false,
+          "profile": 9
+        },
+        {
+          "aggregate_rate": 0.0,
+          "capacity_boundary": true,
+          "profile": 10
+        }
+      ],
+      "resource_count": 1,
+      "resource_kind": "cpu_heavy",
+      "total_units": 1000.0
+    }
+  ],
+  "taskset": {
+    "arrival_model": "static portfolio now; Poisson and production-like bursts after service cache expansion",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm module12 real RE-SAC Ant service curve",
+        "closed_by_capacity_boundary_profile": null,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "",
+        "quadrant": "high_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "resource_count": 1,
+        "resource_kind": "hybrid_rl",
+        "role": "dominant Scheduleurm research workload",
+        "task_count": 120,
+        "total_units": 80,
+        "variation_cv": 0.08,
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "benchmark_source": "Scheduleurm module6 real JAX matmul service curve",
+        "closed_by_capacity_boundary_profile": null,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "",
+        "quadrant": "low_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3
+        ],
+        "resource_count": 2,
+        "resource_kind": "gpu_heavy",
+        "role": "pure GPU counterexample class",
+        "task_count": 24,
+        "total_units": 2400,
+        "variation_cv": 0.04,
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      {
+        "benchmark_source": "Scheduleurm modules25+33 local CPU-heavy service curve",
+        "closed_by_capacity_boundary_profile": 10,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "",
+        "quadrant": "high_cpu_low_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "resource_count": 1,
+        "resource_kind": "cpu_heavy",
+        "role": "host saturation validation",
+        "task_count": 256,
+        "total_units": 1000,
+        "variation_cv": 0.1,
+        "workload_key": "cpu_heavy_local_bench"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "hybrid_research_portfolio",
+    "purpose": "Mixed workload portfolio used after individual modules pass. This is the closest Scheduleurm analogue of Gavel/Pollux/Sia trace replay."
+  }
+}

@@ -2389,23 +2389,37 @@ def _freqduet_runner_v3_c3_8_units(*, row: Mapping[str, Any], est_vram: float, c
         return None
     if not (2.0 < float(cpu) <= 8.0):
         return None
-    project = str(row.get("project") or "").lower()
-    cwd = str(row.get("cwd") or "").lower()
-    signature = str(row.get("signature") or "").lower()
-    description = str(row.get("description") or "").lower()
     cmd = str(row.get("cmd") or "")
     cmd_lower = cmd.lower()
-    text = " ".join((project, cwd, signature, description, cmd_lower))
-    if project == "bamor" or "/bamor" in cwd:
+    if _is_bamor_project(row):
         return None
     if "runner_v3.py" not in cmd_lower:
         return None
     if "run_freqduet_ablation.py" in cmd_lower:
         return None
-    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+    if not _has_freqduet_identity_evidence(row):
         return None
     units = _parse_runner_v3_episode_units(cmd)
     return units if units is not None and units > 0 else None
+
+
+def _is_bamor_project(row: Mapping[str, Any]) -> bool:
+    project = str(row.get("project") or "").lower()
+    cwd = str(row.get("cwd") or "").lower().replace("\\", "/")
+    return project == "bamor" or "/bamor" in cwd
+
+
+def _has_freqduet_identity_evidence(row: Mapping[str, Any]) -> bool:
+    project = str(row.get("project") or "").lower()
+    signature = str(row.get("signature") or "").lower()
+    cwd = str(row.get("cwd") or "").lower().replace("\\", "/")
+    return (
+        project == "freqduet"
+        or signature.startswith("freqduet/")
+        or "/transitduet/freqduet/" in cwd
+        or cwd.endswith("/freqduet")
+        or "/freqduet/" in cwd
+    )
 
 
 def _freqduet_runner_v3_c17_32_units(
@@ -2418,20 +2432,15 @@ def _freqduet_runner_v3_c17_32_units(
         return None
     if not (16.0 < float(cpu) <= 32.0):
         return None
-    project = str(row.get("project") or "").lower()
-    cwd = str(row.get("cwd") or "").lower()
-    signature = str(row.get("signature") or "").lower()
-    description = str(row.get("description") or "").lower()
     cmd = str(row.get("cmd") or "")
     cmd_lower = cmd.lower()
-    text = " ".join((project, cwd, signature, description, cmd_lower))
-    if project == "bamor" or "/bamor" in cwd:
+    if _is_bamor_project(row):
         return None
     if "runner_v3.py" not in cmd_lower:
         return None
     if "run_freqduet_ablation.py" in cmd_lower:
         return None
-    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+    if not _has_freqduet_identity_evidence(row):
         return None
     units = _parse_runner_v3_episode_units(cmd)
     return units if units is not None and units > 0 else None
@@ -2447,20 +2456,15 @@ def _freqduet_runner_v3_c33_64_units(
         return None
     if not (32.0 < float(cpu) <= 64.0):
         return None
-    project = str(row.get("project") or "").lower()
-    cwd = str(row.get("cwd") or "").lower()
-    signature = str(row.get("signature") or "").lower()
-    description = str(row.get("description") or "").lower()
     cmd = str(row.get("cmd") or "")
     cmd_lower = cmd.lower()
-    text = " ".join((project, cwd, signature, description, cmd_lower))
-    if project == "bamor" or "/bamor" in cwd:
+    if _is_bamor_project(row):
         return None
     if "runner_v3.py" not in cmd_lower:
         return None
     if "run_freqduet_ablation.py" in cmd_lower:
         return None
-    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+    if not _has_freqduet_identity_evidence(row):
         return None
     units = _parse_runner_v3_episode_units(cmd)
     return units if units is not None and units > 0 else None
@@ -2504,20 +2508,15 @@ def _freqduet_runner_v3_c9_16_residual_units(
         return None
     if not (8.0 < float(cpu) <= 16.0):
         return None
-    project = str(row.get("project") or "").lower()
-    cwd = str(row.get("cwd") or "").lower()
-    signature = str(row.get("signature") or "").lower()
-    description = str(row.get("description") or "").lower()
     cmd = str(row.get("cmd") or "")
     cmd_lower = cmd.lower()
-    text = " ".join((project, cwd, signature, description, cmd_lower))
-    if project == "bamor" or "/bamor" in cwd:
+    if _is_bamor_project(row):
         return None
     if "runner_v3.py" not in cmd_lower:
         return None
     if "configs_freqduet/f_allfreq_alllayers_hiro.yaml" in cmd_lower:
         return None
-    if "freqduet" not in text and "/transitduet/freqduet/" not in cwd:
+    if not _has_freqduet_identity_evidence(row):
         return None
     units = _parse_runner_v3_episode_units(cmd)
     return units if units is not None and units > 0 else None
@@ -2938,17 +2937,14 @@ def _is_freqduet_runner_v3_allfreq_alllayers_c9_16(
         return False
     if not (8.0 < float(cpu) <= 16.0):
         return False
-    project = str(row.get("project") or "").lower()
-    cwd = str(row.get("cwd") or "").lower()
     cmd = str(row.get("cmd") or "").lower()
-    text = " ".join(str(row.get(key) or "") for key in ("project", "signature", "description", "cmd", "cwd")).lower()
-    if project == "bamor" or "/bamor" in cwd:
+    if _is_bamor_project(row):
         return False
     if "runner_v3.py" not in cmd:
         return False
     if "configs_freqduet/f_allfreq_alllayers_hiro.yaml" not in cmd:
         return False
-    return "freqduet" in text or "/transitduet/freqduet/" in cwd
+    return _has_freqduet_identity_evidence(row)
 
 
 def _transit_freqhrl_c_le2_units(
@@ -3254,7 +3250,12 @@ def _transit_trading_policy_entry_units(tokens: list[str]) -> float:
         steps = _transit_int_option(tokens, "--steps", 360)
         assets = _transit_int_option(tokens, "--assets", 3)
         return float(eval_seeds * steps * assets)
-    if policy == "pg_linear":
+    if "--generations" in tokens or "--population" in tokens:
+        iterations = (
+            _transit_int_option(tokens, "--generations", 8)
+            * _transit_int_option(tokens, "--population", 12)
+        )
+    elif policy == "pg_linear":
         iterations = _transit_int_option(tokens, "--pg-iterations", 12)
     elif policy == "ac_linear":
         iterations = _transit_int_option(tokens, "--ac-iterations", 20)

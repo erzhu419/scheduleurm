@@ -14,7 +14,213 @@ md/or_submission_closure_status_2026_06_11.md
 ```text
 Module51 completed_active_production strict coverage: 3437 / 3437.
 Module100 service-map theorem oracle bridge: SERVICE_MAP_THEOREM_ORACLE_PASS.
-Module101 live scheduler oracle closure: LIVE_SCHEDULER_THEOREM_ORACLE_PASS.
+OR closure gate 2026-06-11: online / holdout lower-service / ablation /
+  live-state dry-run trace / reviewer supplement all PASS.
+Extended closure gate 2026-06-11: theorem-grade natural live-node trace /
+  service-domain admission population / direct SOTA scaffold / exact measured
+  finite-slice fabric-cover calibration all PASS.
+Post-closure upgrade artifacts 2026-06-11:
+	  production-wide live trace gate =
+	    md/production_live_theorem_trace_gate_20260612.md
+	    status PRODUCTION_WIDE_LIVE_TRACE_PASS for an earlier one-task queued
+	    production snapshot, using a read-only theorem trace with oracle audit
+	    PASS.  This is not a launched completion trace and not a future-queue claim.
+  production shadow theorem trace =
+    md/production_shadow_theorem_trace_20260612.md
+    non-invasive active-production probe over current running production tasks;
+    GPU theorem subset closes with alpha0=alpha1=0, but this is not launched
+    production-wide dispatch.
+  direct SOTA binary smoke round2 =
+    md/direct_sota_baseline_binary_smoke_20260611_round2.md
+    Pollux/AdaptDL and Decima entrypoints smoke-pass; Gavel, IADeep, and Salus
+    remain blocked by dependency/full-stack requirements.
+  Gavel direct native smoke =
+    md/gavel_direct_native_smoke_20260612.md
+    in an isolated copy, dependency imports, protobuf stub generation,
+    entrypoint help, generated-jobs native simulation, native Gavel trace, and
+    Scheduleurm q01 native trace-seed smoke pass.  This is native-stack and
+    trace-compatibility evidence, not measured service-unit equivalence.
+  Gavel native performance microbaseline =
+    md/gavel_native_performance_microbaseline_20260612.md
+    bounded Scheduleurm-exported q01/q11 windows complete in Gavel's native
+    trace simulator: q01 4/4 jobs and q11 8/8 jobs.  This is a native simulator
+    microbaseline, not measured service-unit equivalence and not full-stack
+    external-system superiority.
+  direct SOTA full-stack readiness =
+    md/direct_sota_fullstack_readiness_20260612.md
+    same-workload adapter seeds now exist for Gavel, Pollux/AdaptDL, IADeep,
+    Salus, and Decima; Gavel native microbaseline exists, but direct full-stack
+    same-workload ready count remains 0 because Gavel service-unit equivalence
+    and other systems' Kubernetes,
+    Docker, runtime, or scope requirements are not satisfied.
+  SOTA claim matrix =
+    md/sota_fullstack_claim_matrix_20260612.md
+    all seed families are present; direct full-stack same-workload ready count
+    remains 0.
+  fabric-cover k-center curve =
+    md/global_fabric_cover_calibration_cover_curve_20260611.md
+    exact measured finite slices still use rho=0; smaller candidate families
+    must spend the reported Lrho.
+  fabric-cover metric contract =
+    md/fabric_cover_contract_certificate_20260612.md
+    feature map, numeric scales, projection population, exact rho, compressed
+    Lrho, and exclusions are explicit; future/all-state ready is false.
+  future-admitted fabric-cover gate =
+    md/future_admitted_fabric_cover_gate_20260612.md
+    future tasks admitted to exact positive measured profiles use identity
+    projection with rho=0.  Arbitrary all-state fabric cover remains false.
+  future-production admission contract =
+    md/future_production_admission_contract_20260612.md
+    active/future production tasks route to ADMIT_THEOREM_TRACE only with a
+    service-domain certificate; otherwise they are PROBE_REQUIRED.
+  active-bucket / hidden-regime event certificate =
+    md/active_bucket_hidden_regime_certificate_20260611.md
+    deterministic event-level accounting closes.
+  adaptive sampler / detector probability certificate =
+    md/adaptive_sampler_detector_certificate_20260612.md
+    concrete deterministic round-robin sampler and bounded two-window detector
+    model closes as a deployable extension certificate.
+  adaptive live integration probe =
+    md/adaptive_live_integration_probe_20260612.md
+    optional adaptive_theorem_maxweight_v1 emits sampler/detector audit fields
+    over live-state theorem trace; default scheduler remains unchanged.
+  q00/q10 generalization gate =
+    md/q00_q10_generalization_gate_20260612.md
+    local q00/q10 buckets are closed and remote CPU evidence is inventoried;
+    broad all-CPU/data-loader generalization remains false.
+	  q00/q10 broad measured-envelope gate =
+	    md/q00_q10_broad_envelope_gate_20260612.md
+	    1 q00 and 102 q10 CPU-like service-cache workloads have positive
+	    lower-service rows for admission-facing measured-envelope claims; all
+	    possible CPU/data-loader programs remain out of scope.
+	  SOTA full-stack superiority gate =
+	    md/sota_fullstack_superiority_gate_20260612.md
+	    executable strict gate records direct_fullstack_sota_superiority_ready =
+	    false, full_stack_ready_count = 0, and hard blockers from missing
+	    Docker/Go/Kubernetes tooling, missing service-unit equivalence, or scope
+	    mismatch.  This closes the review risk by forbidding direct full-stack
+	    superiority language under the current environment.
+	  all-state conservative fabric-cover gate =
+	    md/all_state_conservative_cover_gate_20260612.md
+	    every scheduler-visible state is covered conservatively as either an exact
+	    measured admitted positive-service profile or a zero-service probe/defer
+	    action.  This is all-state safety, not positive-service all-state
+	    stability.
+	  production launch/completion gate =
+	    md/production_launch_completion_gate_20260612.md
+	    latest safe-launch snapshot reports 27 running production jobs, 0 queued
+	    production jobs, local GPU utilization at 99%, 24 progress observations,
+	    and 4 shadow theorem slots.  It returns WAIT_RESOURCE_OR_QUEUE, closes
+	    large-scale active-production progress evidence, and does not claim
+	    large-scale launched production completion.
+	```
+
+## 0. OR reviewer gate after GPT_revise_OR.md
+
+`md/GPT_revise_OR.md` 的核心意见不是要求把理论路线降级，而是要求把
+proof object、live scheduler hook、finite-slice replay、production bridge 和
+external-baseline comparison 系统对齐。当前论文可以 claim 的是：
+
+```text
+robust candidate MaxWeight theorem with explicit slack accounting;
+exact measured finite-slice instantiation on declared q00/q01/q10/q11 buckets;
+online Poisson/bursty/load-sweep policy-semantics replay comparison on the same
+  measured service cache;
+finite measured lower-service capacity certificates for declared slices;
+completed-active mapped production service-map oracle bridge;
+synthetic dry-run live-node-state trace enrichment/audit pipeline closure;
+theorem_maxweight_v1 certified live-node candidate trace with queue_vector,
+  lower_service, penalty_units, and robust_maxweight_lower_service semantics;
+service-domain admission closure for the completed-active production population;
+exact measured finite-slice fabric-cover calibration with rho=0;
+direct external-SOTA adapter scaffold plus policy-semantics fallback replay;
+reviewer Lean supplement repackaged with build log and comment-aware
+  no-sorry/admit/axiom grep.
+```
+
+当前不能 claim 的是：
+
+```text
+the deployed live scheduler already implements global robust MaxWeight for all dispatches;
+raw 30-day history is a clean theorem population;
+attempted-only / cancelled / external jobs are closed by the production theorem;
+	direct binary or full-stack superiority over Gavel, Pollux, Sia, IADeep, or Salus;
+	Lrho=0 or epsilon_est=0 outside exact enumerated measured slices;
+	all future online dispatches are theorem-grade without rerunning trace audit;
+	all-state safety via zero-service probe/defer is the same as all-state
+	  positive-service stability;
+	active-production progress observations are the same as a launched production
+	  completion trace.
+	```
+
+2026-06-11 已完成的 OR reviewer gate：
+
+```text
+online arrival experiment:
+  Poisson, bursty, and load-sweep arrivals;
+  artifact = md/or_gate_online_arrivals.md
+  scenario_count = 120
+  candidate completed all jobs
+  candidate not Pareto-dominated by SOTA-style policy semantics under 0.5%
+  sampled-replay tolerance.
+
+holdout calibration:
+  artifact = md/or_gate_holdout_calibration.md
+  sparse empirical-Bernstein diagnostic does NOT close the original mean-service
+  slack, and this is intentionally not claimed.
+  theorem-facing finite measured lower-service certificates do close with eta>0.
+
+ablation:
+  artifact = md/or_gate_ablation_suite.md
+  full adaptive candidate beats legacy on geometric makespan and mean flow, and
+  no legacy, sweetspot-hook, support-scorer, delay, statewise-guard,
+  no-profile-penalty, or tie-break ablation policy Pareto-dominates it.
+
+longer live trace:
+  artifact = md/or_gate_live_trace.md
+  trace_origin = synthetic_dryrun_live_node_probe
+  trace_slot_count = 128
+  min_required_slots = 96
+  candidate_count_total = 767
+  no queue mutation and no task launch.
+
+reviewer artifact:
+  artifact = md/or_gate_reviewer_supplement.md
+  ScheduleurmUpload.lean sha256 =
+    af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b
+  lake env lean ScheduleurmUpload.lean = PASS
+  comment-aware sorry/admit/axiom grep = clean.
+```
+
+要把 paper 从 current finite-slice OR case study 推到 stronger OR production
+claim，仍必须补：
+
+```text
+larger production-wide live dispatch trace with actual queued production jobs
+  and safe low-interference resources.  The bounded ScheduleurmBench live
+  dispatch is already launched and completion bridged; an earlier 2026-06-12
+  production queued trace closed one queued-production snapshot; the latest
+  launch/completion gate found 0 queued jobs and 99% local GPU utilization, so it
+  correctly refused launch and reported active-progress evidence only.
+direct external-system execution if claiming full-stack superiority over Gavel,
+  Pollux, Sia, IADeep, or Salus.  Current evidence verifies local entrypoints
+  for Pollux/AdaptDL and Decima, verifies isolated Gavel dependency/stub/help,
+  generated-jobs, native trace, Scheduleurm trace-seed execution, and bounded
+  q01/q11 native simulator microbaseline, emits same-workload adapter seeds for
+  all inspected systems, and records Gavel service-unit-equivalence /
+  Kubernetes / Docker / Go / runtime blockers.  The strict superiority gate
+  makes this a hard-blocker certificate, not an unresolved ambiguity.
+generalized perturbation-profiled fabric-cover evidence outside exact measured
+  and future-admitted measured states, if the paper wants to claim arbitrary
+  positive-service future/all-state cover.  The k-center curve quantifies finite
+  measured-slice Lrho tradeoffs; the future-admitted gate closes identity
+  projection for measured-profile admission only; the all-state conservative
+  gate closes safety by routing unknown states to zero-service probe/defer.
+live integration and A/B trace evidence before promoting active-bucket learning
+  or hidden-regime results into deployed-scheduler empirical claims.  The
+  deterministic active-bucket union bound, replay dwell/switching accounting,
+  and deployable sampler/detector probability model are now executable and
+  certified as extension inputs.
 ```
 
 ## 1. 服务率与干扰模型校准
@@ -53,7 +259,7 @@ q10 cpu_heavy_local_bench: profiles 1-9 measured; profile 10 measured capacity b
 ```
 
 这些结果已经足够支持 reviewer-facing q00/q10 replay comparison：candidate、
-legacy 和 SOTA-style policies 都使用同一个 measured service cache。它们仍然
+legacy 和 SOTA-inspired policy-semantics replay policies 都使用同一个 measured service cache。它们仍然
 不是完整 stability theorem certificate；还需要把这些 measured slices 接到
 `epsilon_est`, `B`, `delta` 和负载点的 slack accounting 表。
 
@@ -310,12 +516,20 @@ Module55 已补 lower-service enrichment bridge：
   任意 candidate 缺 lower_service；
   production trace file 不存在。
 
-Module101 已经把一条 emitted live scheduler trace 闭合：
+Module101 的早期 smoke trace 曾把一条 emitted live scheduler trace 闭合：
   status = LIVE_SCHEDULER_THEOREM_ORACLE_PASS
   trace_slot_count = 2
   candidate_count_total = 2
   alpha0 = 0
   alpha1 = 0
+
+2026-06-11 OR gate 已经把这条路径提升为更长的 live-state dry-run audit：
+  artifact = md/or_gate_live_trace.md
+  trace_slot_count = 128
+  min_required_slots = 96
+  candidate_count_total = 767
+  trace_origin = synthetic_dryrun_live_node_probe
+  no queue mutation and no task launch.
 
 这解决了之前的 NO_TRACE blocker，但作用域是 per emitted trace。未来任何要写成
 online oracle evidence 的 scheduler dispatch 仍必须重新走：

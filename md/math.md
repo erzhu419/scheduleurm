@@ -809,27 +809,30 @@ B+P_0+\alpha_0
 
 ### Implementation selector used by the replay layer
 
-当前 `simulation/` 里的默认 candidate policy 不是无惩罚的纯 makespan argmin。为了和上面的 approximate-oracle theorem 对齐，module26 使用两层 selector：
-
-1. 先守 support/service 目标：对每个 measured co-location profile \(k\)，计算 deterministic all-task makespan proxy \(M_k(n)\)，只允许
+当前 OR closure runner 里的 candidate policy 不是无惩罚的纯 makespan argmin，也不是固定 profile。为了和上面的 approximate-oracle theorem 对齐，`algorithm/experiments/adaptive_trace_policy.py` 使用 queue-adaptive robust MaxWeight penalty：
 
 [
-M_k(n)\leq (1+\varepsilon_{guard}(n))\min_j M_j(n)
+k_t \in \arg\max_{k\in\mathcal K_i^{env}}
+\left\{
+b_t\,\widehat\mu_i(k)-\theta_{prof}\widehat\mu_i^{max}k
+\right\},
 ]
 
-的 profile 进入 tie-break set。
+其中 \(b_t\) 是 resource-local backlog count，\(\mathcal K_i^{env}\) 是 measured support envelope，\(\widehat\mu_i(k)\) 是 profile \(k\) 的 measured aggregate service，\(\widehat\mu_i^{max}\) 是 envelope 内最大 measured aggregate service，当前 OR closure runner 用 \(\theta_{prof}=0.10\)。小 backlog 时 profile penalty 可以选择低干扰/低 mean-flow 的 profile；大 backlog 时 \(b_t\widehat\mu_i(k)\) 支配 bounded penalty，策略回到 service-support action。
 
-2. 再消耗 bounded delay/interference penalty：在 tie-break set 里最小化 deterministic mean-flow proxy \(F_k(n)\)，再按 \(M_k(n)\) 和 profile id 打破平局。
+默认实现对完全同分的 profile 使用 low-profile tie-break；OR ablation gate
+另外显式测试 no-profile-penalty 和 high-profile tie-break 版本，确认 full
+queue-adaptive robust lower-service scorer 没有被这些拆分策略 Pareto 支配。
 
-纯 GPU-heavy bucket 使用 statewise queue-scaled guard：
+这和 theorem 的关系是：
 
-[
-\varepsilon_{guard}(n)=0.02+\frac{0.6}{n},
-]
+```text
+support envelope          -> candidate/support loss ε_cand
+bounded profile penalty   -> K_t+G_t, consumed by P0/beta
+finite sampled replay     -> approximate-oracle audit / alpha terms
+```
 
-其中 \(n\) 是当前 resource-local remaining queue count。hybrid RL、real local CPU bucket、light-control bucket 默认保留 service/makespan support objective。这个区别是 finite resource-regime bucket 的实现，不是按 workload name 偷换结论。
-
-数学口径是：\(M_k\) guard 对应 \(\alpha_0+\alpha_1\|Q\|_1\) 形式的 approximate support loss；\(F_k\) tie-break 是 bounded/queue-scaled penalty，只在 guard 内作用。这不是弱化理论；相反，它把实现层的 finite-batch delay objective 放进已经证明的 support-plus-penalty 框架里。稳定性主张仍然使用更强的 statewise approximate-oracle theorem，而不是把实验用 mean-flow tie-break 误写成一个独立的新 throughput theorem：
+它不是弱化理论；相反，它把实现层的 finite-batch delay objective 放进已经证明的 support-plus-penalty 框架里。稳定性主张仍然使用更强的 statewise approximate-oracle theorem，而不是把实验用 profile-penalty tie-break 误写成一个独立的新 throughput theorem：
 
 ```text
 main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle
@@ -841,7 +844,7 @@ main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_b
 \delta>\epsilon_{cand}+\epsilon_{est}+\beta+\alpha_1.
 ]
 
-module27 的 multi-workload global guarded selector 是同一思想的 portfolio 版本：先保持全局 support/makespan guard，再在 guard 内最小化 weighted mean-flow。它不改变 Theorem C/D 的 slack accounting，只改变实现中如何估计和消耗 bounded penalty。
+早期 module27 的 multi-workload global guarded selector 是同一思想的 fixed-profile portfolio 版本；2026-06-11 OR gate 使用 queue-adaptive replay candidate 作为主实验口径。两者都不改变 Theorem C/D 的 slack accounting，只改变实现中如何估计和消耗 bounded/queue-scaled penalty。
 
 module28 的 q01 standalone 默认点使用同一个 guard 原理：在 measured q01 service curve 上先要求
 
@@ -873,9 +876,9 @@ placement 变成 action-family boundary certificate。数学上应写成：
 | Bucket | Valid measured profiles \(K_b^{valid}\) | Measured boundary | Candidate replay action | Legacy-comparable action |
 |---|---:|---:|---:|---:|
 | q00 `light_control_local` | 1-13 | 14 | 13 | 1 |
-| q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 4 | 3 |
+| q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 1 low-backlog/static; 8 high-backlog support certificate | 3 |
 | q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 | 9 |
-| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 standalone / 3 portfolio | 5 |
+| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 online low-backlog; 3 static/portfolio/high-backlog | 5 |
 
 这些曲线进入数学路线的方式不是“证明 sweet spot 恒成立”，而是：
 
@@ -883,8 +886,8 @@ placement 变成 action-family boundary certificate。数学上应写成：
 2. boundary profile 作为 infeasible / capacity-boundary certificate，从 exact replay action set 中剔除；
 3. `ServiceRateCache.profiles()` 使用 first capacity boundary：若最早 boundary 是 \(k_b^\partial\)，则所有 \(k\ge k_b^\partial\) 都不属于当前 robust feasible family；
 4. 同一 profile 有多条有效测量时，cache 先按测量完整度筛选，再在同等完整度下保留更保守的 lower aggregate service row；这把 replay service map 写成 \(\underline\mu\)，而不是乐观 best-run \(\widehat\mu\)；
-5. candidate/legacy/SOTA-style baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；
-6. q01/q11 使用 guarded support + mean-flow tie-break，对应 \(\alpha_0+\alpha_1\|Q\|_1\) approximate-oracle 项；q00/q10 当前 bucket 的动作选择等价于 measured service support/knee，不额外新增 hidden model；
+5. candidate/legacy/SOTA-inspired policy-semantics replay baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；
+6. q01/q11 使用 queue-adaptive support envelope + bounded profile penalty；tie-break 和 no-penalty 版本只作为 ablation policy，对应 \(\alpha_0+\alpha_1\|Q\|_1\) approximate-oracle / implementation audit 项；q00/q10 当前 bucket 的动作选择等价于 measured service support/knee，不额外新增 hidden model；
 7. 这些 measured slices 可以作为 \(\mu,\underline\mu,\epsilon_{est},\delta\) 的输入，但仍不能替代完整 \(L,\rho,\epsilon_{est},\beta,\alpha_1,\delta\) slack certificate。
 
 因此这些 bucket 攻下来以后，正文数学部分应该更强地说：
@@ -1172,7 +1175,7 @@ calibrated/exact measured finite service-action slices
 ```text
 raw scheduler history is the theorem population;
 attempted production is the theorem population;
-SOTA-style replay directly beats Gavel/Pollux/Sia/IADeep binaries;
+policy-semantics replay proves direct binary/full-stack superiority over Gavel/Pollux/Sia/IADeep/Salus;
 q00/q10 local buckets cover all CPU/data-loader workloads;
 q11 profile-10 historical replay remains a robust feasible action after live OOM;
 future untraced scheduler dispatches are automatically theorem-grade;

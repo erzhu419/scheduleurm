@@ -1,0 +1,58 @@
+{
+  "format": "scheduleurm_gavel_throughput_seed_v1",
+  "scope": "Measured service-cache export for direct Gavel adapter development; schema validation against Gavel's native throughput JSON remains required.",
+  "taskset": {
+    "arrival_model": "dense static batch; later long trace with bursty arrivals",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm module12 real RE-SAC Ant dense co-location profile",
+        "closed_by_capacity_boundary_profile": 10,
+        "empirical_status": "partial_real",
+        "missing_profiles": [],
+        "note": "Profiles below 10 have exact real measurements used for robust replay; a fresh profile-10 live sanity run hit runtime OOM, so 10/GPU and above are excluded for the current robust node bucket.",
+        "quadrant": "high_cpu_high_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "resource_count": 1,
+        "resource_kind": "hybrid_rl",
+        "role": "coupled interference validation",
+        "task_count": 160,
+        "total_units": 80,
+        "variation_cv": 0.08,
+        "workload_key": "hybrid_rl_resac_ant"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q11_cpu_gpu_coupled",
+    "purpose": "High-CPU, high-GPU coupled pressure. This is the class matching RE-SAC/BAPR-like RL jobs where several jobs per GPU can retain near-solo ETA."
+  },
+  "throughputs": {
+    "hybrid_rl_resac_ant": {
+      "scheduleurm_profile_1": 0.25305895450000004,
+      "scheduleurm_profile_2": 0.3333333333333333,
+      "scheduleurm_profile_3": 0.3346092110137054,
+      "scheduleurm_profile_4": 0.2889220807144609,
+      "scheduleurm_profile_5": 0.28829542175325135,
+      "scheduleurm_profile_6": 0.305688616359439,
+      "scheduleurm_profile_7": 0.3026219558934524,
+      "scheduleurm_profile_8": 0.3125333948,
+      "scheduleurm_profile_9": 0.31201673370000005
+    }
+  }
+}

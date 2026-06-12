@@ -1,0 +1,91 @@
+{
+  "admissible_queued_production": [
+    {
+      "admitted": true,
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "project": "BAPR",
+      "reason": "",
+      "signature": "BAPR/v6/HalfCheetah/norctx_mean/seed2",
+      "status": "queued",
+      "submitted_at": 1781212957.5635395,
+      "task_id": "t10409",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "gate": "production_wide_live_theorem_trace_gate",
+  "generated_at": "2026-06-12T06:22:18+0800",
+  "now_ts": 1781216538.1621227,
+  "pass": true,
+  "production_wide_live_trace_closed": true,
+  "queue_summary": {
+    "active_count": 35,
+    "active_project_counts": {
+      "BAMOR": 10,
+      "BAPR": 24,
+      "scheduleurm": 1
+    },
+    "admissible_production_queued_count": 1,
+    "production_queued_count": 1,
+    "queued_count": 1,
+    "status_counts": {
+      "cancelled": 2266,
+      "done": 5091,
+      "failed": 2287,
+      "forgotten": 364,
+      "queued": 1,
+      "running": 34
+    }
+  },
+  "queued_production_blockers": [],
+  "ready_to_launch_when_admissible_queue_exists": false,
+  "scope": "This is a gate for production-wide live theorem trace claims. Controlled ScheduleurmBench traces and completed-history service-map bridges are not counted as production-wide live traces.  If no admissible queued production task exists, the correct status is WAIT, not a theorem-grade production dispatch claim.",
+  "status": "PRODUCTION_WIDE_LIVE_TRACE_PASS",
+  "trace_report": {
+    "audit": {
+      "alpha0": 0.0,
+      "alpha1": 0.0,
+      "audited_slot_count": 1,
+      "best_score_exact_over_candidate_set": true,
+      "blocker_count": 0,
+      "blockers": [],
+      "converted_slot_count": 1,
+      "fit_method": "finite_max_envelope",
+      "max_residual_violation": 0.0,
+      "point_count": 1,
+      "rows": [
+        {
+          "best_action_id": "node=node007-direct|gpu=0",
+          "best_candidate_score": 6.934129937147062,
+          "best_score_exact_over_candidate_set": true,
+          "candidate_count": 3,
+          "chosen_action_id": "node=node007-direct|gpu=0",
+          "chosen_score": 6.934129937147062,
+          "oracle_gap": 0.0,
+          "q_norm": 35.0,
+          "slot_id": "slot:t10409:1781212957.5635395:1781216521716"
+        }
+      ],
+      "status": "THEOREM_ORACLE_PASS",
+      "trace_slot_count": 1,
+      "usable_for_theorem": true,
+      "worst_violation": null
+    },
+    "enough_slots": true,
+    "exists": true,
+    "min_trace_slots": 1,
+    "oracle_usable_for_theorem": true,
+    "slot_count": 1,
+    "theorem_slot_count": 1,
+    "trace_path": "md/experiment_artifacts/production_queued_theorem_trace_20260612.jsonl"
+  }
+}

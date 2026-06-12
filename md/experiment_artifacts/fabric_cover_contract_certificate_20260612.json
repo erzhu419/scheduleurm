@@ -1,0 +1,361 @@
+{
+  "calibration_artifact": "md/experiment_artifacts/global_fabric_cover_calibration.json",
+  "exact_measured_population_ready": true,
+  "exclusions": [
+    "future unseen node/GPU regimes outside the measured finite action population",
+    "unprofiled topology jumps where the finite metric has no sensitivity sample",
+    "candidate generators claiming smaller covers without spending the reported Lrho",
+    "statistical envelopes over future perturbation samples without a failure-probability table"
+  ],
+  "feature_map": {
+    "finite_keys": [
+      "class_key",
+      "regime_key",
+      "post_count_bucket",
+      "post_vram_bucket",
+      "util_bucket",
+      "resource_bucket",
+      "task_kind"
+    ],
+    "metric": "Hamming distance over finite keys plus clipped scaled l1 distance over numeric features, as implemented by algorithm.features.finite_feature_metric",
+    "numeric_scales": {
+      "legacy_runtime_s": 3600.0,
+      "post_task_count": 8.0,
+      "post_vram_frac": 1.0,
+      "running_task_count": 8.0,
+      "used_vram_frac": 1.0,
+      "util_pct": 100.0
+    }
+  },
+  "gate": "fabric_cover_metric_contract_certificate",
+  "general_future_population_ready": false,
+  "pass": true,
+  "projection_contract": {
+    "compressed_projection": "greedy k-center nearest-center projection on the same metric",
+    "cover_population": "declared q00/q01/q10/q11/hybrid measured action populations, not all future feasible states",
+    "exact_projection": "pi(a)=a on the declared measured finite action slice"
+  },
+  "rows": [
+    {
+      "best_nontrivial_cover": {
+        "Lrho": 368.68104195000006,
+        "candidate_count": 8,
+        "center_action_ids": [
+          "profile_combo:light_control_local=13",
+          "profile_combo:light_control_local=1",
+          "profile_combo:light_control_local=7",
+          "profile_combo:light_control_local=4",
+          "profile_combo:light_control_local=10",
+          "profile_combo:light_control_local=2",
+          "profile_combo:light_control_local=3",
+          "profile_combo:light_control_local=5"
+        ],
+        "rho": 3.25,
+        "worst_action_id": "profile_combo:light_control_local=6"
+      },
+      "cover_population": "declared_measured_finite_action_slice",
+      "exact_measured_slice_usable_for_theorem": true,
+      "full_action_count": 13,
+      "pair_count": 78,
+      "profile_domains": {
+        "light_control_local": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ]
+      },
+      "projection_exact": {
+        "L": 113.44032060000002,
+        "Lrho": 0.0,
+        "candidate_count": 13,
+        "projection": "identity_on_measured_action",
+        "rho": 0.0,
+        "slack_ready": true
+      },
+      "projection_single_representative": {
+        "L": 113.44032060000002,
+        "Lrho": 567.2016030000001,
+        "candidate_count": 1,
+        "projection": "nearest_to_calibrated_candidate_profile",
+        "rho": 5.0,
+        "worst_action_id": "profile_combo:light_control_local=1"
+      },
+      "taskset": "q00_light_control",
+      "worst_perturbation": {
+        "distance": 5.0,
+        "left_profile": 1,
+        "ratio": 113.44032060000002,
+        "right_profile": 13,
+        "service_gap": 567.2016030000001,
+        "workload_key": "light_control_local"
+      },
+      "zero_metric_violation_count": 0
+    },
+    {
+      "best_nontrivial_cover": {
+        "Lrho": 5.29567200000001,
+        "candidate_count": 4,
+        "center_action_ids": [
+          "profile_combo:gpu_heavy_jax_matmul=4",
+          "profile_combo:gpu_heavy_jax_matmul=8",
+          "profile_combo:gpu_heavy_jax_matmul=1",
+          "profile_combo:gpu_heavy_jax_matmul=6"
+        ],
+        "rho": 3.25,
+        "worst_action_id": "profile_combo:gpu_heavy_jax_matmul=2"
+      },
+      "cover_population": "declared_measured_finite_action_slice",
+      "exact_measured_slice_usable_for_theorem": true,
+      "full_action_count": 8,
+      "pair_count": 28,
+      "profile_domains": {
+        "gpu_heavy_jax_matmul": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "projection_exact": {
+        "L": 1.6294375384615416,
+        "Lrho": 0.0,
+        "candidate_count": 8,
+        "projection": "identity_on_measured_action",
+        "rho": 0.0,
+        "slack_ready": true
+      },
+      "projection_single_representative": {
+        "L": 1.6294375384615416,
+        "Lrho": 6.517750153846166,
+        "candidate_count": 1,
+        "projection": "nearest_to_calibrated_candidate_profile",
+        "rho": 4.0,
+        "worst_action_id": "profile_combo:gpu_heavy_jax_matmul=8"
+      },
+      "taskset": "q01_gpu_bound_compute",
+      "worst_perturbation": {
+        "distance": 3.25,
+        "left_profile": 3,
+        "ratio": 1.6294375384615416,
+        "right_profile": 4,
+        "service_gap": 5.29567200000001,
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      "zero_metric_violation_count": 0
+    },
+    {
+      "best_nontrivial_cover": {
+        "Lrho": 32.77228260526316,
+        "candidate_count": 4,
+        "center_action_ids": [
+          "profile_combo:cpu_heavy_local_bench=8",
+          "profile_combo:cpu_heavy_local_bench=1",
+          "profile_combo:cpu_heavy_local_bench=4",
+          "profile_combo:cpu_heavy_local_bench=6"
+        ],
+        "rho": 3.25,
+        "worst_action_id": "profile_combo:cpu_heavy_local_bench=2"
+      },
+      "cover_population": "declared_measured_finite_action_slice",
+      "exact_measured_slice_usable_for_theorem": true,
+      "full_action_count": 9,
+      "pair_count": 36,
+      "profile_domains": {
+        "cpu_heavy_local_bench": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "projection_exact": {
+        "L": 10.083779263157895,
+        "Lrho": 0.0,
+        "candidate_count": 9,
+        "projection": "identity_on_measured_action",
+        "rho": 0.0,
+        "slack_ready": true
+      },
+      "projection_single_representative": {
+        "L": 10.083779263157895,
+        "Lrho": 47.897951500000005,
+        "candidate_count": 1,
+        "projection": "nearest_to_calibrated_candidate_profile",
+        "rho": 4.75,
+        "worst_action_id": "profile_combo:cpu_heavy_local_bench=1"
+      },
+      "taskset": "q10_cpu_host_bound",
+      "worst_perturbation": {
+        "distance": 4.75,
+        "left_profile": 1,
+        "ratio": 10.083779263157895,
+        "right_profile": 8,
+        "service_gap": 47.897951500000005,
+        "workload_key": "cpu_heavy_local_bench"
+      },
+      "zero_metric_violation_count": 0
+    },
+    {
+      "best_nontrivial_cover": {
+        "Lrho": 0.08027437883333327,
+        "candidate_count": 4,
+        "center_action_ids": [
+          "profile_combo:hybrid_rl_resac_ant=2",
+          "profile_combo:hybrid_rl_resac_ant=9",
+          "profile_combo:hybrid_rl_resac_ant=5",
+          "profile_combo:hybrid_rl_resac_ant=7"
+        ],
+        "rho": 3.25,
+        "worst_action_id": "profile_combo:hybrid_rl_resac_ant=1"
+      },
+      "cover_population": "declared_measured_finite_action_slice",
+      "exact_measured_slice_usable_for_theorem": true,
+      "full_action_count": 9,
+      "pair_count": 36,
+      "profile_domains": {
+        "hybrid_rl_resac_ant": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "projection_exact": {
+        "L": 0.024699808871794852,
+        "Lrho": 0.0,
+        "candidate_count": 9,
+        "projection": "identity_on_measured_action",
+        "rho": 0.0,
+        "slack_ready": true
+      },
+      "projection_single_representative": {
+        "L": 0.024699808871794852,
+        "Lrho": 0.11732409214102554,
+        "candidate_count": 1,
+        "projection": "nearest_to_calibrated_candidate_profile",
+        "rho": 4.75,
+        "worst_action_id": "profile_combo:hybrid_rl_resac_ant=9"
+      },
+      "taskset": "q11_cpu_gpu_coupled",
+      "worst_perturbation": {
+        "distance": 3.25,
+        "left_profile": 1,
+        "ratio": 0.024699808871794852,
+        "right_profile": 2,
+        "service_gap": 0.08027437883333327,
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      "zero_metric_violation_count": 0
+    },
+    {
+      "best_nontrivial_cover": {
+        "Lrho": 20.16755852631579,
+        "candidate_count": 16,
+        "center_action_ids": [
+          "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3",
+          "profile_combo:cpu_heavy_local_bench=1,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=4,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=6,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=2,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=3,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=5,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=7,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=9,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=1,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=2,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=3,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=4,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=5,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1",
+          "profile_combo:cpu_heavy_local_bench=6,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1"
+        ],
+        "rho": 2.0,
+        "worst_action_id": "profile_combo:cpu_heavy_local_bench=7,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=1"
+      },
+      "cover_population": "declared_measured_finite_action_slice",
+      "exact_measured_slice_usable_for_theorem": true,
+      "full_action_count": 243,
+      "pair_count": 75,
+      "profile_domains": {
+        "cpu_heavy_local_bench": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "gpu_heavy_jax_matmul": [
+          1,
+          2,
+          3
+        ],
+        "hybrid_rl_resac_ant": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "projection_exact": {
+        "L": 10.083779263157895,
+        "Lrho": 0.0,
+        "candidate_count": 243,
+        "projection": "identity_on_measured_action",
+        "rho": 0.0,
+        "slack_ready": true
+      },
+      "projection_single_representative": {
+        "L": 10.083779263157895,
+        "Lrho": 47.897951500000005,
+        "candidate_count": 1,
+        "projection": "nearest_to_calibrated_candidate_profile",
+        "rho": 4.75,
+        "worst_action_id": "profile_combo:cpu_heavy_local_bench=1,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=1"
+      },
+      "taskset": "hybrid_research_portfolio",
+      "worst_perturbation": {
+        "distance": 4.75,
+        "left_profile": 1,
+        "ratio": 10.083779263157895,
+        "right_profile": 8,
+        "service_gap": 47.897951500000005,
+        "workload_key": "cpu_heavy_local_bench"
+      },
+      "zero_metric_violation_count": 0
+    }
+  ],
+  "scope": "Submission-facing metric contract for the measured finite fabric-cover claim. It closes exact measured-slice rho=0 and reports compressed-cover Lrho. It intentionally does not certify all future feasible cluster states."
+}

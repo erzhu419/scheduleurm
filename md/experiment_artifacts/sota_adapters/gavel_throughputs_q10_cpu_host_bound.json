@@ -1,0 +1,52 @@
+{
+  "format": "scheduleurm_gavel_throughput_seed_v1",
+  "scope": "Measured service-cache export for direct Gavel adapter development; schema validation against Gavel's native throughput JSON remains required.",
+  "taskset": {
+    "arrival_model": "static local CPU-heavy batch; then Poisson rate sweep for host saturation",
+    "members": [
+      {
+        "benchmark_source": "Scheduleurm modules25+33 local CPU-heavy progress-bearing curve",
+        "closed_by_capacity_boundary_profile": 10,
+        "empirical_status": "real",
+        "missing_profiles": [],
+        "note": "Profiles 1-9 are real local measurements; profile 10 is a clean local capacity boundary. This closes q10 for the declared local CPU bucket, not for a remote CPU-node bucket.",
+        "quadrant": "high_cpu_low_gpu",
+        "required_profiles": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "resource_count": 1,
+        "resource_kind": "cpu_heavy",
+        "role": "single-bottleneck validation",
+        "task_count": 256,
+        "total_units": 1000,
+        "variation_cv": 0.1,
+        "workload_key": "cpu_heavy_local_bench"
+      }
+    ],
+    "missing_measurements": {},
+    "name": "q10_cpu_host_bound",
+    "purpose": "High-CPU/host pressure with low GPU pressure. This separates scheduler CPU/RAM packing from GPU-placement decisions on a real local CPU-heavy bucket."
+  },
+  "throughputs": {
+    "cpu_heavy_local_bench": {
+      "scheduleurm_profile_1": 6.881652,
+      "scheduleurm_profile_2": 13.190345,
+      "scheduleurm_profile_3": 21.299104,
+      "scheduleurm_profile_4": 26.196447,
+      "scheduleurm_profile_5": 30.930518,
+      "scheduleurm_profile_6": 42.83685,
+      "scheduleurm_profile_7": 50.301283000000005,
+      "scheduleurm_profile_8": 54.77960350000001,
+      "scheduleurm_profile_9": 35.830256500000004
+    }
+  }
+}

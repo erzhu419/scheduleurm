@@ -100,6 +100,18 @@ Post-closure upgrade artifacts 2026-06-11:
 	    Docker/Go/Kubernetes tooling, missing service-unit equivalence, or scope
 	    mismatch.  This closes the review risk by forbidding direct full-stack
 	    superiority language under the current environment.
+	  Gavel service-unit equivalence certificate =
+	    md/gavel_service_unit_equivalence_certificate_20260612.md
+	    trace/schema compatibility, throughput seed readiness, and bounded native
+	    microbaseline readiness are true for q01/q11; exact arrival times are not
+	    identical because native Gavel trace rows use a small ordering jitter, and
+	    gavel_service_unit_equivalence_ready remains false.
+	  declared finite-domain positive-cover gate =
+	    md/declared_finite_domain_positive_cover_gate_20260612.md
+	    declared service-cache universe has 193 buckets: 187 positive lower-service
+	    rows, 6 capacity boundaries, and 0 uncovered buckets.  This closes the
+	    declared finite positive domain, not arbitrary positive-service all-state
+	    stability.
 	  all-state conservative fabric-cover gate =
 	    md/all_state_conservative_cover_gate_20260612.md
 	    every scheduler-visible state is covered conservatively as either an exact
@@ -108,11 +120,16 @@ Post-closure upgrade artifacts 2026-06-11:
 	    stability.
 	  production launch/completion gate =
 	    md/production_launch_completion_gate_20260612.md
-	    latest safe-launch snapshot reports 27 running production jobs, 0 queued
-	    production jobs, local GPU utilization at 99%, 24 progress observations,
-	    and 4 shadow theorem slots.  It returns WAIT_RESOURCE_OR_QUEUE, closes
-	    large-scale active-production progress evidence, and does not claim
+	    rolling safe-launch snapshots report active-production progress and
+	    high-utilization/no-safe-launch conditions.  It returns WAIT_RESOURCE_OR_QUEUE,
+	    closes large-scale active-production progress evidence, and does not claim
 	    large-scale launched production completion.
+	  controlled production completion gate =
+	    md/controlled_production_completion_gate_20260612.md
+	    bounded controlled completion is true for the existing launched trace
+	    (6 submitted tasks, 7 theorem slots, 13 candidates, alpha0=alpha1=0);
+	    controlled_32_task_completion_ready and large_scale_organic_launched_completion_ready
+	    remain false until safe resources allow more launches.
 	```
 
 ## 0. OR reviewer gate after GPT_revise_OR.md
@@ -150,7 +167,9 @@ attempted-only / cancelled / external jobs are closed by the production theorem;
 	all-state safety via zero-service probe/defer is the same as all-state
 	  positive-service stability;
 	active-production progress observations are the same as a launched production
-	  completion trace.
+	  completion trace;
+	bounded controlled completion is the same as 32-task or organic production
+	  completion.
 	```
 
 2026-06-11 已完成的 OR reviewer gate：
@@ -199,9 +218,10 @@ claim，仍必须补：
 larger production-wide live dispatch trace with actual queued production jobs
   and safe low-interference resources.  The bounded ScheduleurmBench live
   dispatch is already launched and completion bridged; an earlier 2026-06-12
-  production queued trace closed one queued-production snapshot; the latest
-  launch/completion gate found 0 queued jobs and 99% local GPU utilization, so it
-  correctly refused launch and reported active-progress evidence only.
+  production queued trace closed one queued-production snapshot; the rolling
+  launch/completion and controlled-completion gates correctly refuse launch under
+  high-utilization/no-safe-launch conditions and report active-progress or bounded
+  controlled evidence only.
 direct external-system execution if claiming full-stack superiority over Gavel,
   Pollux, Sia, IADeep, or Salus.  Current evidence verifies local entrypoints
   for Pollux/AdaptDL and Decima, verifies isolated Gavel dependency/stub/help,

@@ -7,13 +7,13 @@
 | `pass` | true |
 | `launch_status` | `WAIT_RESOURCE_OR_QUEUE` |
 | `launch_safe` | false |
-| `active_production_count` | 27 |
-| `queued_production_count` | 0 |
-| `running_production_count` | 27 |
-| `local_gpu_max_util_pct` | 99.0 |
-| `shadow_theorem_slot_count` | 4 |
+| `active_production_count` | 53 |
+| `queued_production_count` | 4 |
+| `running_production_count` | 49 |
+| `local_gpu_max_util_pct` | 98.0 |
+| `shadow_theorem_slot_count` | 8 |
 | `shadow_trace_closed` | true |
-| `progress_observation_count` | 24 |
+| `progress_observation_count` | 20 |
 | `large_scale_launched_completion_ready` | false |
 | `large_scale_active_progress_ready` | true |
 
@@ -21,8 +21,10 @@
 
 | Project | Count |
 |---|---:|
-| `BAPR` | 24 |
-| `FreqDuet` | 3 |
+| `BAMOR` | 10 |
+| `BAPR` | 20 |
+| `CS-BAPR` | 11 |
+| `FreqDuet` | 8 |
 
 ## Scope
 

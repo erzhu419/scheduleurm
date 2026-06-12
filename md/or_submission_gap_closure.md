@@ -77,6 +77,9 @@ post-closure upgrade artifacts:
   md/sota_fullstack_superiority_gate_20260612.md
   md/all_state_conservative_cover_gate_20260612.md
   md/production_launch_completion_gate_20260612.md
+  md/gavel_service_unit_equivalence_certificate_20260612.md
+  md/declared_finite_domain_positive_cover_gate_20260612.md
+  md/controlled_production_completion_gate_20260612.md
   production-wide live trace gate closes the current queued-production
     population with a read-only theorem trace, no launch/completion claim;
   Pollux/AdaptDL and Decima entrypoint smoke pass; Gavel isolated
@@ -99,13 +102,19 @@ post-closure upgrade artifacts:
   strict SOTA full-stack superiority gate records full_stack_ready_count=0 and
     direct_fullstack_sota_superiority_ready=false, turning the external-stack
     issue into a hard-blocker certificate rather than an ambiguous omission;
+  Gavel service-unit certificate closes q01/q11 trace/schema compatibility and
+    throughput seed readiness while keeping service-unit equivalence false;
+  declared finite-domain positive-cover gate closes the exact measured
+    service-cache universe: 193 buckets, 187 positive, 6 boundary, 0 uncovered;
   conservative all-state fabric-cover gate covers every scheduler-visible state
     by measured-admitted positive service or zero-service probe/defer; this is
     all-state safety, not positive-service all-state stability;
-  production launch/completion gate reports 27 running production jobs, 0 queued
-    jobs, 99% local GPU utilization, 24 progress observations, and 4 shadow
-    theorem slots; it refuses launch and therefore does not claim large-scale
-    launched completion;
+  production launch/completion gate reports active-production progress and
+    high-utilization/no-safe-launch conditions; it refuses unsafe launch and
+    therefore does not claim large-scale launched completion;
+  controlled production completion gate recognizes bounded launched completion
+    and canary readiness while keeping controlled_32_task_completion_ready=false
+    and large_scale_organic_launched_completion_ready=false;
   concrete deterministic round-robin sampler and bounded two-window detector
     probability model closes as a deployable extension certificate, not a live
     scheduler integration claim.
@@ -123,20 +132,21 @@ Remaining risks are now narrower:
 ```text
 production-wide live dispatch trace beyond the bounded ScheduleurmBench
   q01/q11 launched trace, when queued production jobs and safe low-interference
-  resources exist.  The admission contract is ready, but the latest safe-launch
-  gate found 0 queued jobs and 99% local GPU utilization, so larger launched
-  production completion remains a future-resource-dependent claim;
+  resources exist.  The admission contract and canary contract are ready, but
+  the safe-launch gates still report no safe launch condition, so larger
+  launched production completion remains a future-resource-dependent claim;
 direct external scheduler binary runs if claiming full-stack SOTA superiority.
   Current evidence is entrypoint smoke, isolated Gavel native generated-jobs
   smoke, native trace compatibility, bounded native Gavel microbaseline,
-  same-workload adapter seeds, policy-semantics replay, and a hard-blocker
-  certificate with direct_fullstack_sota_superiority_ready=false;
+  Gavel trace/schema service-unit certificate, same-workload adapter seeds,
+  policy-semantics replay, and a hard-blocker certificate with
+  direct_fullstack_sota_superiority_ready=false;
 generalized positive-service fabric-cover calibration outside exact measured
   finite slices and future-admitted measured states if claiming arbitrary
   future/all-state cover.  Current evidence is a finite measured-slice k-center
-  Lrho curve, identity projection for admitted measured profiles, and a
-  conservative all-state safety partition that assigns zero theorem service to
-  unknown states;
+  Lrho curve, identity projection for admitted measured profiles, a declared
+  finite-domain positive cover, and a conservative all-state safety partition
+  that assigns zero theorem service to unknown states;
 live integration and A/B trace evidence before active-bucket learning or
   hidden-regime results become deployed-scheduler empirical claims.  Current
   extension evidence includes deterministic event-level accounting plus a

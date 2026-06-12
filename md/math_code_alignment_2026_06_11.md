@@ -23,12 +23,15 @@ tightening.
 | Active-bucket sampler / detector model | `algorithm/adaptive_learning.py`, `algorithm/experiments/adaptive_sampler_detector_certificate.py` | Provides concrete deterministic round-robin forced exploration and bounded two-window detector probability certificate; not enabled in the live scheduler by default. |
 | Optional adaptive live hook | `algorithm/adaptive_policy.py`, `algorithm/experiments/adaptive_live_integration_probe.py` | Registers opt-in `adaptive_theorem_maxweight_v1`; live-state probe verifies sampler/detector audit fields while the default scheduler remains unchanged. |
 | Direct SOTA workload adapters | `algorithm/experiments/sota_adapters/`, `algorithm/experiments/gavel_direct_native_smoke.py`, `algorithm/experiments/gavel_native_performance_microbaseline.py`, `algorithm/experiments/direct_sota_fullstack_readiness.py` | Same-workload seed artifacts now exist.  Gavel isolated dependency/stub/help/generated-jobs/native-trace smoke and bounded q01/q11 native simulator microbaseline pass, but measured service-unit equivalence remains open; external full-stack superiority still requires native runner/stack validation. |
+| Gavel service-unit certificate | `algorithm/experiments/gavel_service_unit_equivalence_certificate.py` | Closes q01/q11 Gavel trace/schema compatibility and throughput seed readiness while keeping `gavel_service_unit_equivalence_ready=false`; prevents native simulator rows from being misread as full-stack superiority. |
 | Direct full-stack SOTA superiority gate | `algorithm/experiments/sota_fullstack_superiority_gate.py` | Converts full-stack superiority into an executable reviewer gate.  Current output is a hard-blocker certificate: policy-semantics comparison is ready, but direct full-stack superiority is false because full-stack-ready count is 0. |
 | Fabric-cover metric contract | `algorithm/experiments/fabric_cover_contract_certificate.py` | Reviewer-facing feature map, numeric scales, projection population, exact rho, compressed-cover Lrho, and exclusions are explicit for the measured finite population. |
 | Future-admitted fabric cover | `algorithm/experiments/future_admitted_fabric_cover_gate.py` | Future admitted measured states use exact positive service-cache profiles and identity projection with rho=0; arbitrary all-state fabric cover remains false. |
+| Declared finite-domain positive cover | `algorithm/experiments/declared_finite_domain_positive_cover_gate.py` | Defines the positive theorem population as the declared measured service-cache universe: 193 buckets, 187 positive lower-service rows, 6 capacity boundaries, and 0 uncovered buckets. |
 | All-state conservative fabric cover | `algorithm/experiments/all_state_conservative_cover_gate.py` | Covers every scheduler-visible state by measured-admitted positive service or unknown zero-service probe/defer.  This aligns with safety/admission semantics, not positive-service all-state stability. |
 | Future production admission contract | `algorithm/experiments/future_production_admission_contract.py` | Future production tasks route to theorem trace only with a service certificate; otherwise they are probe-required and excluded from theorem-facing claims. |
-| Production launch/completion gate | `algorithm/experiments/production_launch_completion_gate.py` | Enforces the launch-side safety contract before any production launch.  Latest snapshot closes active-production progress/shadow-trace evidence and refuses launch because there are no queued production jobs and the local GPU is busy. |
+| Production launch/completion gate | `algorithm/experiments/production_launch_completion_gate.py` | Enforces the launch-side safety contract before any production launch.  Rolling snapshots close active-production progress/shadow-trace evidence and refuse launch when queue/resource conditions are unsafe. |
+| Controlled/canary production completion gate | `algorithm/experiments/controlled_production_completion_gate.py` | Recognizes bounded launched completion evidence, defines the 32-task controlled threshold and organic production threshold, and refuses additional launch unless resources are safe. |
 | q00/q10 scope gate | `algorithm/experiments/q00_q10_generalization_gate.py` | Declared local q00/q10 buckets close; remote CPU evidence is inventoried; broad all-CPU/data-loader generalization remains false. |
 | q00/q10 broad measured envelope | `algorithm/experiments/q00_q10_broad_envelope_gate.py` | Admitted measured q00/q10 service-cache rows have positive lower-service rows; all possible CPU/data-loader programs remain out of scope. |
 
@@ -91,6 +94,7 @@ production shadow trace:
 direct SOTA adapters:
   provide Scheduleurm workload seeds for the inspected external repositories;
   Gavel isolated native generated-jobs/native-trace/Scheduleurm trace-seed smoke and bounded q01/q11 native simulator microbaseline pass, but measured service-unit equivalence is still not a same-workload performance baseline;
+  Gavel service-unit certificate closes trace/schema compatibility while keeping service-unit equivalence false;
   do not make Gavel/Pollux/IADeep/Salus/Decima direct full-stack baselines;
   strict full-stack superiority gate reports full_stack_ready_count=0 and records hard blockers.
 
@@ -99,12 +103,14 @@ future admission contracts:
   future production tasks without service certificates are probe-required before theorem use.
 
 all-state conservative cover:
+  declared finite-domain positive cover closes the exact measured service-cache universe;
   all scheduler-visible states are covered safely by measured-admitted or zero-service probe/defer;
   positive-service all-state stability remains explicitly false.
 
 production launch/completion gate:
   closes large-scale active-production progress plus shadow theorem slots in the latest snapshot;
-  refuses launched production work when queued jobs are absent or resources are unsafe.
+  refuses launched production work when queued jobs are absent or resources are unsafe;
+  controlled completion gate recognizes bounded launched completion but keeps 32-task and organic completion claims false.
 
 q00/q10 broad measured envelope:
   closes admitted measured service-cache rows, not all CPU/data-loader workloads.

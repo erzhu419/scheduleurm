@@ -13,6 +13,16 @@ from algorithm.experiments.all_state_conservative_cover_gate import (
 from algorithm.experiments.sota_fullstack_superiority_gate import (
     build_sota_fullstack_superiority_gate,
 )
+from algorithm.experiments.gavel_service_unit_equivalence_certificate import (
+    build_gavel_service_unit_equivalence_certificate,
+)
+from algorithm.experiments.declared_finite_domain_positive_cover_gate import (
+    build_declared_finite_domain_positive_cover_gate,
+)
+from algorithm.experiments.controlled_production_completion_gate import (
+    build_controlled_production_completion_gate,
+)
+from algorithm.theorem_dispatch.service_registry import infer_workload_key
 
 
 def test_future_admitted_fabric_cover_is_measured_state_not_all_state():
@@ -75,3 +85,48 @@ def test_sota_fullstack_superiority_gate_does_not_promote_scaffold_to_claim():
     assert report["hard_blocker_certificate_ready"] is True
     assert report["direct_fullstack_sota_superiority_ready"] is False
     assert report["policy_semantics_comparison_ready"] is True
+
+
+def test_gavel_service_unit_certificate_keeps_unit_blocker_visible():
+    report = build_gavel_service_unit_equivalence_certificate()
+
+    assert report["trace_schema_compatibility_ready"] is True
+    assert report["throughput_seed_ready"] is True
+    assert report["gavel_native_bounded_microbaseline_ready"] is True
+    assert report["gavel_service_unit_equivalence_ready"] is False
+    assert report["direct_full_stack_same_workload_ready"] is False
+
+
+def test_declared_finite_domain_cover_is_not_arbitrary_all_state():
+    report = build_declared_finite_domain_positive_cover_gate()
+
+    assert report["declared_finite_positive_cover_ready"] is True
+    assert report["positive_service_all_state_cover_ready"] is False
+    assert report["uncovered_bucket_count"] == 0
+    assert report["positive_bucket_count"] > 0
+
+
+def test_strict_theorem_admission_disables_token_overlap_fallback():
+    fuzzy_task = {
+        "project": "future",
+        "signature": "freqduet cpu ablation unknown",
+        "cmd": "python totally_new.py --freqduet --cpu --ablation",
+    }
+    explicit_task = {
+        "project": "future",
+        "workload_key": "gpu_heavy_jax_matmul",
+        "cmd": "python totally_new.py",
+    }
+
+    assert infer_workload_key(fuzzy_task)
+    assert infer_workload_key(fuzzy_task, admission_mode="strict") == ""
+    assert infer_workload_key(explicit_task, admission_mode="strict") == "gpu_heavy_jax_matmul"
+
+
+def test_controlled_completion_gate_separates_bounded_from_32_task_claim():
+    report = build_controlled_production_completion_gate(allow_launch=False)
+
+    assert report["bounded_controlled_completion_ready"] is True
+    assert report["organic_production_canary_recorder_ready"] is True
+    assert report["controlled_32_task_completion_ready"] is False
+    assert report["large_scale_organic_launched_completion_ready"] is False

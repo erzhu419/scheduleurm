@@ -8,6 +8,7 @@ uncertified result instead of an interpolated service rate.
 from __future__ import annotations
 
 import math
+import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -81,13 +82,30 @@ def default_service_cache() -> ServiceRateCache:
     return build_default_cache()
 
 
-def infer_workload_key(task: Mapping[str, Any], cache: ServiceRateCache | None = None) -> str:
+def infer_workload_key(
+    task: Mapping[str, Any],
+    cache: ServiceRateCache | None = None,
+    *,
+    admission_mode: str | None = None,
+) -> str:
     """Infer the measured workload key for a scheduler task.
 
     The first block covers the controlled benchmark families used in the paper.
     The second block scores production-history keys by token overlap so a new
     production task can be admitted only when it resembles a measured family.
     """
+
+    cache = cache or default_service_cache()
+    explicit = _explicit_workload_key(task, cache)
+    if explicit:
+        return explicit
+
+    fingerprint = str(task.get("command_fingerprint") or "").strip()
+    if fingerprint:
+        for key in cache.available_workloads():
+            for record in cache.profiles(key, include_boundaries=True):
+                if fingerprint and fingerprint == str(record.command_fingerprint or ""):
+                    return key
 
     text = _task_text(task)
     lower = text.lower()
@@ -137,7 +155,9 @@ def infer_workload_key(task: Mapping[str, Any], cache: ServiceRateCache | None =
     if any(tok in lower for tok in ("cpu_heavy_local", "cpu-heavy", "cpu_heavy", "prime_sieve")):
         return "cpu_heavy_local_bench"
 
-    cache = cache or default_service_cache()
+    if _strict_admission_mode(admission_mode):
+        return ""
+
     text_tokens = set(_tokens(text))
     best_key = ""
     best_score = 0
@@ -158,9 +178,14 @@ def bind_service(
     *,
     cache: ServiceRateCache | None = None,
     workload_key: str | None = None,
+    admission_mode: str | None = None,
 ) -> ServiceBinding:
     cache = cache or default_service_cache()
-    selected_key = workload_key or infer_workload_key(task, cache)
+    selected_key = workload_key or infer_workload_key(
+        task,
+        cache,
+        admission_mode=admission_mode,
+    )
     profile = max(1, as_int(features.get("post_task_count"), 1))
     if not selected_key:
         return _uncertified("", profile, "workload_key_not_inferred")
@@ -212,6 +237,19 @@ def _uncertified(workload_key: str, profile: int, reason: str) -> ServiceBinding
         reason=reason,
         source="",
     )
+
+
+def _explicit_workload_key(task: Mapping[str, Any], cache: ServiceRateCache) -> str:
+    for field in ("theorem_workload_key", "workload_key", "service_workload_key"):
+        value = str(task.get(field) or "").strip()
+        if value and value in set(cache.available_workloads()):
+            return value
+    return ""
+
+
+def _strict_admission_mode(admission_mode: str | None = None) -> bool:
+    mode = str(admission_mode or os.environ.get("SCHEDULEURM_THEOREM_ADMISSION_MODE") or "").strip().lower()
+    return mode in {"strict", "manifest", "fingerprint"}
 
 
 def _task_text(task: Mapping[str, Any]) -> str:

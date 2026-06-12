@@ -44,6 +44,7 @@ class TheoremPolicyConfig:
     queue_ttl_s: float = 1.0
     penalty_per_extra_profile: float = 0.0
     profile_penalty_reference: int = 1
+    admission_mode: str = ""
 
     def snapshot(self) -> Dict[str, Any]:
         return {
@@ -56,6 +57,7 @@ class TheoremPolicyConfig:
             "queue_ttl_s": self.queue_ttl_s,
             "penalty_per_extra_profile": self.penalty_per_extra_profile,
             "profile_penalty_reference": self.profile_penalty_reference,
+            "admission_mode": self.admission_mode,
         }
 
 
@@ -112,7 +114,12 @@ class TheoremMaxWeightPlacementPolicy:
 
         if self.config.uncertified_mode == "block":
             features = self._features(task, {}, gpu, context)
-            binding = bind_service(task, features, cache=self._cache)
+            binding = bind_service(
+                task,
+                features,
+                cache=self._cache,
+                admission_mode=self.config.admission_mode,
+            )
             if not binding.certified:
                 return f"algorithm:{self.name}: service_certificate_required:{binding.reason}"
         return ""
@@ -157,12 +164,18 @@ class TheoremMaxWeightPlacementPolicy:
         legacy_score: Tuple[Any, ...] | None,
     ) -> Dict[str, Any]:
         features = self._features(task, node_state, gpu, context, legacy_score)
-        binding = bind_service(task, features, cache=self._cache)
+        binding = bind_service(
+            task,
+            features,
+            cache=self._cache,
+            admission_mode=self.config.admission_mode,
+        )
         queue, queue_meta = queue_vector_for_task(
             task,
             binding.workload_key,
             queue_path=context.get("queue_file"),
             ttl_s=self.config.queue_ttl_s,
+            admission_mode=self.config.admission_mode,
         )
         penalty = self._penalty_units(binding)
         lower_vec = binding.lower_service_vector()
@@ -255,4 +268,5 @@ def theorem_policy_config(name: str = "theorem_maxweight_v1") -> TheoremPolicyCo
             1,
             _optional_int_env("SCHEDULEURM_THEOREM_PROFILE_PENALTY_REFERENCE") or 1,
         ),
+        admission_mode=str(os.environ.get("SCHEDULEURM_THEOREM_ADMISSION_MODE") or ""),
     )

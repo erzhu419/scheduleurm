@@ -44,6 +44,8 @@ class TheoremPolicyConfig:
     queue_ttl_s: float = 1.0
     penalty_per_extra_profile: float = 0.0
     profile_penalty_reference: int = 1
+    backlog_penalty_reference: float = 0.0
+    backlog_penalty_min_fraction: float = 0.25
     admission_mode: str = ""
 
     def snapshot(self) -> Dict[str, Any]:
@@ -57,6 +59,8 @@ class TheoremPolicyConfig:
             "queue_ttl_s": self.queue_ttl_s,
             "penalty_per_extra_profile": self.penalty_per_extra_profile,
             "profile_penalty_reference": self.profile_penalty_reference,
+            "backlog_penalty_reference": self.backlog_penalty_reference,
+            "backlog_penalty_min_fraction": self.backlog_penalty_min_fraction,
             "admission_mode": self.admission_mode,
         }
 
@@ -155,6 +159,28 @@ class TheoremMaxWeightPlacementPolicy:
             return cached
         return self._audit(task, node_state, gpu, context, None)
 
+    def global_batch_select(
+        self,
+        tasks: list[Dict[str, Any]],
+        nodes: list[Dict[str, Any]],
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        from .batch_policy import select_global_batch_placements
+
+        result = select_global_batch_placements(
+            tasks,
+            nodes,
+            context=context,
+            policy=self,
+            max_batch_size=int(context.get("global_batch_size") or 4),
+            max_configurations=int(
+                context.get("global_batch_max_configurations")
+                or context.get("global_max_configurations")
+                or 10000
+            ),
+        )
+        return result.snapshot()
+
     def _audit(
         self,
         task: Mapping[str, Any],
@@ -177,9 +203,9 @@ class TheoremMaxWeightPlacementPolicy:
             ttl_s=self.config.queue_ttl_s,
             admission_mode=self.config.admission_mode,
         )
-        penalty = self._penalty_units(binding)
         lower_vec = binding.lower_service_vector()
         q_weight = max(0.0, float(queue.get(binding.workload_key, 0.0))) if binding.workload_key else 0.0
+        penalty = self._penalty_units(binding, q_weight=q_weight)
         robust_score = q_weight * float(binding.lower_service) - penalty
         theorem_ready = bool(binding.certified and lower_vec and queue)
         return {
@@ -227,12 +253,20 @@ class TheoremMaxWeightPlacementPolicy:
             ctx["legacy_score"] = legacy_score
         return gpu_candidate_features(task, node_state, gpu, ctx)
 
-    def _penalty_units(self, binding: ServiceBinding) -> float:
+    def _penalty_units(self, binding: ServiceBinding, *, q_weight: float = 0.0) -> float:
         if not binding.certified:
             return 0.0
         reference = max(1, int(self.config.profile_penalty_reference or 1))
         extra = max(0, int(binding.profile) - reference)
-        return max(0.0, float(self.config.penalty_per_extra_profile)) * float(extra)
+        base = max(0.0, float(self.config.penalty_per_extra_profile)) * float(extra)
+        backlog_ref = max(0.0, float(self.config.backlog_penalty_reference or 0.0))
+        if base <= 0.0 or backlog_ref <= 0.0:
+            return base
+        min_fraction = min(1.0, max(0.0, float(self.config.backlog_penalty_min_fraction)))
+        if q_weight <= backlog_ref:
+            return base
+        scale = max(min_fraction, backlog_ref / max(1e-12, float(q_weight)))
+        return base * scale
 
     def _audit_key(
         self,
@@ -267,6 +301,17 @@ def theorem_policy_config(name: str = "theorem_maxweight_v1") -> TheoremPolicyCo
         profile_penalty_reference=max(
             1,
             _optional_int_env("SCHEDULEURM_THEOREM_PROFILE_PENALTY_REFERENCE") or 1,
+        ),
+        backlog_penalty_reference=max(
+            0.0,
+            _optional_float_env("SCHEDULEURM_THEOREM_BACKLOG_PENALTY_REFERENCE") or 0.0,
+        ),
+        backlog_penalty_min_fraction=min(
+            1.0,
+            max(
+                0.0,
+                _optional_float_env("SCHEDULEURM_THEOREM_BACKLOG_PENALTY_MIN_FRACTION") or 0.25,
+            ),
         ),
         admission_mode=str(os.environ.get("SCHEDULEURM_THEOREM_ADMISSION_MODE") or ""),
     )

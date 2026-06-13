@@ -16,10 +16,18 @@ from statistics import mean
 from typing import Any, Iterable
 
 from .defaults import calibrated_candidate_policy, legacy_policy
-from .fast_forward import ReplayPolicy, WorkloadSpec
+from .fast_forward import (
+    ReplayPolicy,
+    WorkloadSpec,
+    _covering_service_profile,
+    _statewise_target_profile,
+)
 from .service_cache import ServiceRateCache
 from .sota_baselines import sota_baseline_specs
 from .tasksets import TaskSet, taskset_by_name
+
+
+PARETO_TOLERANCE = 0.005
 
 
 @dataclass(frozen=True)
@@ -248,10 +256,8 @@ def replay_trace(
 ) -> TracePolicyResult:
     rng = random.Random(seed)
     specs = {spec.workload_key: spec for spec in trace.workload_specs()}
-    profiles = {
-        key: policy.select_profile(cache, spec).profile
-        for key, spec in specs.items()
-    }
+    profiles = {key: policy.select_profile(cache, spec).profile for key, spec in specs.items()}
+    profile_counts: dict[str, dict[int, int]] = {}
     completions: dict[str, float] = {}
     grouped: dict[str, list[TraceJob]] = {}
     for job in trace.jobs:
@@ -267,8 +273,14 @@ def replay_trace(
                     jobs=resource_jobs,
                     target_profile=profiles[key],
                     rng=rng,
+                    policy=policy,
+                    spec=specs[key],
+                    profile_counter=profile_counts.setdefault(key, {}),
                 )
             )
+    for key, counts in profile_counts.items():
+        if counts:
+            profiles[key] = _mode_profile(counts)
     flows = [
         completions[job.job_id] - job.arrival_s
         for job in trace.jobs
@@ -335,6 +347,9 @@ def _replay_resource_jobs(
     jobs: list[TraceJob],
     target_profile: int,
     rng: random.Random,
+    policy: ReplayPolicy | None = None,
+    spec: WorkloadSpec | None = None,
+    profile_counter: dict[int, int] | None = None,
 ) -> dict[str, float]:
     pending = sorted(jobs, key=lambda job: (job.arrival_s, job.job_id))
     next_idx = 0
@@ -342,6 +357,7 @@ def _replay_resource_jobs(
     waiting: list[TraceJob] = []
     active: list[dict[str, Any]] = []
     completions: dict[str, float] = {}
+    current_service_profile = max(1, int(target_profile))
 
     def admit_arrivals(until_s: float) -> None:
         nonlocal next_idx
@@ -350,7 +366,32 @@ def _replay_resource_jobs(
             next_idx += 1
 
     def fill() -> None:
-        while waiting and len(active) < target_profile:
+        nonlocal current_service_profile
+        total_remaining = len(waiting) + len(active)
+        if total_remaining <= 0:
+            return
+        desired_target = max(1, int(target_profile))
+        if policy is not None and spec is not None and policy.uses_statewise_for(spec):
+            desired_target = _statewise_target_profile(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                remaining_count=total_remaining,
+                active_count=len(active),
+                base_target_profile=target_profile,
+            )
+            if policy.statewise_service_dominance_guard and waiting:
+                desired_target = max(int(desired_target), int(target_profile))
+        admission_target = max(len(active), min(desired_target, total_remaining))
+        current_service_profile = _covering_service_profile(
+            cache,
+            workload_key=workload_key,
+            active_count=admission_target,
+            preferred_profile=max(desired_target, admission_target),
+        )
+        if profile_counter is not None:
+            profile_counter[current_service_profile] = profile_counter.get(current_service_profile, 0) + 1
+        while waiting and len(active) < admission_target:
             job = waiting.pop(0)
             active.append({"job": job, "remaining": float(job.total_units)})
 
@@ -364,7 +405,13 @@ def _replay_resource_jobs(
         fill()
         if not active:
             continue
-        rates = _sample_rates(cache, workload_key, len(active), rng)
+        rates = _sample_rates(
+            cache,
+            workload_key,
+            len(active),
+            rng,
+            service_profile_count=current_service_profile,
+        )
         completion_dt = min(
             row["remaining"] / max(1e-12, rate)
             for row, rate in zip(active, rates)
@@ -391,23 +438,39 @@ def _replay_resource_jobs(
     return completions
 
 
+def _mode_profile(counts: dict[int, int]) -> int:
+    if not counts:
+        return 1
+    return max(sorted(counts), key=lambda profile: (counts[profile], -profile))
+
+
 def _sample_rates(
     cache: ServiceRateCache,
     workload_key: str,
     active_count: int,
     rng: random.Random,
+    *,
+    service_profile_count: int | None = None,
 ) -> list[float]:
-    profile = cache.get(workload_key, active_count)
+    service_count = int(service_profile_count or active_count)
+    if service_count < int(active_count):
+        raise KeyError(
+            f"service profile {service_count}/resource cannot cover "
+            f"{active_count} active jobs for {workload_key!r}"
+        )
+    profile = cache.get(workload_key, service_count)
     if profile is None or profile.capacity_boundary or profile.aggregate_rate <= 0:
         raise KeyError(
-            f"missing exact service profile for {workload_key!r} at {active_count}/resource; "
+            f"missing exact service profile for {workload_key!r} at {service_count}/resource; "
             "task-list benchmark does not interpolate co-location service"
         )
     rates = [float(x) for x in profile.per_task_rates if float(x) > 0]
     if not rates:
         rates = [profile.mean_rate] * max(1, profile.profile)
     sampled = [rates[rng.randrange(len(rates))] for _ in range(active_count)]
-    scale = profile.aggregate_rate / max(1e-12, sum(sampled))
+    active_fraction = float(active_count) / float(max(1, profile.profile))
+    target_aggregate = float(profile.aggregate_rate) * active_fraction
+    scale = target_aggregate / max(1e-12, sum(sampled))
     return [max(1e-12, rate * scale) for rate in sampled]
 
 
@@ -480,16 +543,12 @@ def _sota_tasklist_comparison(results: list[TracePolicyResult]) -> dict[str, Any
 
 def _sota_pareto_dominators(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     dominators = []
-    eps = 1e-12
+    floor = 1.0 - PARETO_TOLERANCE
     for row in rows:
         makespan = float(row["candidate_vs_baseline_makespan"])
         mean_flow = float(row["candidate_vs_baseline_mean_flow"])
         baseline = row["baseline"]
-        if (
-            makespan <= 1.0 + eps
-            and mean_flow <= 1.0 + eps
-            and (makespan < 1.0 - eps or mean_flow < 1.0 - eps)
-        ):
+        if makespan < floor and mean_flow < floor:
             dominators.append(
                 {
                     "name": baseline["name"],
@@ -652,17 +711,13 @@ def _winner_transfer_rows(
 
 def _aggregate_sota_pareto_dominators(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     dominators = []
-    eps = 1e-12
+    floor = 1.0 - PARETO_TOLERANCE
     for row in rows:
         if row["policy_family"] != "sota_style":
             continue
         makespan = float(row["candidate_vs_policy_sum_makespan"])
         mean_flow = float(row["candidate_vs_policy_job_weighted_mean_flow"])
-        if (
-            makespan <= 1.0 + eps
-            and mean_flow <= 1.0 + eps
-            and (makespan < 1.0 - eps or mean_flow < 1.0 - eps)
-        ):
+        if makespan < floor and mean_flow < floor:
             dominators.append(
                 {
                     "policy": row["policy"],

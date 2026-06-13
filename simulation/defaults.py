@@ -106,6 +106,76 @@ def build_default_cache() -> ServiceRateCache:
     )
     _add_summary_dir(
         cache,
+        RUN_ROOT / "cnn_jax_convstack_jtl110gpu_profile1_20260612_002" / "reports",
+        workload_key="gpu_cnn_jax_convstack",
+        command_fingerprint="jax_cnn_convstack_b16_i128_d4_c64_v1",
+        resource_kind="gpu_cnn",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "cnn_jax_convstack_jtl110gpu_profiles2_3_20260612_001" / "reports",
+        workload_key="gpu_cnn_jax_convstack",
+        command_fingerprint="jax_cnn_convstack_b16_i128_d4_c64_v1",
+        resource_kind="gpu_cnn",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "cnn_torch_resnet50_jtl110gpu_profile1_20260612_002" / "reports",
+        workload_key="gpu_cnn_torch_resnet50",
+        command_fingerprint="torch_resnet50_train_b16_i224_fp32_v1",
+        resource_kind="gpu_cnn",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "cnn_torch_resnet50_jtl110gpu_profiles2_3_20260612_001" / "reports",
+        workload_key="gpu_cnn_torch_resnet50",
+        command_fingerprint="torch_resnet50_train_b16_i224_fp32_v1",
+        resource_kind="gpu_cnn",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "cnn_torch_resnet50_jtl110gpu_profiles4_5_20260612_001" / "reports",
+        workload_key="gpu_cnn_torch_resnet50",
+        command_fingerprint="torch_resnet50_train_b16_i224_fp32_v1",
+        resource_kind="gpu_cnn",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    _add_summary_dir(
+        cache,
+        RUN_ROOT / "llm_torch_distilgpt2_jtl110gpu_profile1_20260612_003" / "reports",
+        workload_key="gpu_llm_distilgpt2",
+        command_fingerprint="torch_distilgpt2_forward_b2_s128_fp16_v1",
+        resource_kind="gpu_llm",
+        total_units=80,
+        node_bucket="jtl110gpu:12gb",
+    )
+    for run_name in (
+        "llm_torch_distilgpt2_jtl110gpu_profiles2_3_20260612_001",
+        "llm_torch_distilgpt2_jtl110gpu_profiles4_5_20260612_001",
+        "llm_torch_distilgpt2_jtl110gpu_profiles6_8_20260612_001",
+        "llm_torch_distilgpt2_jtl110gpu_profiles10_12_20260612_001",
+        "llm_torch_distilgpt2_jtl110gpu_profile11_20260612_001",
+    ):
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key="gpu_llm_distilgpt2",
+            command_fingerprint="torch_distilgpt2_forward_b2_s128_fp16_v1",
+            resource_kind="gpu_llm",
+            total_units=80,
+            node_bucket="jtl110gpu:12gb",
+        )
+    _add_summary_dir(
+        cache,
         RUN_ROOT / "module23_q00_light_control_local_profiles1_16_20260604_001" / "reports",
         workload_key="light_control_local",
         command_fingerprint="cpu_light_sleep_20ms_v1",
@@ -1117,6 +1187,9 @@ def legacy_policy() -> ReplayPolicy:
         fixed_profiles={
             "hybrid_rl_resac_ant": 5,
             "gpu_heavy_jax_matmul": 3,
+            "gpu_cnn_jax_convstack": 3,
+            "gpu_cnn_torch_resnet50": 3,
+            "gpu_llm_distilgpt2": 3,
             "light_control_local": 1,
             "cpu_heavy_protocol": 32,
             "cpu_heavy_local_bench": 9,
@@ -1254,6 +1327,23 @@ def calibrated_delay_statewise_policy() -> ReplayPolicy:
     )
 
 
+def calibrated_backlog_aware_policy() -> ReplayPolicy:
+    return ReplayPolicy(
+        name="calibrated_backlog_aware_guarded",
+        calibrated=True,
+        calibrated_objective="guarded_mean_flow",
+        max_makespan_regret=0.05,
+        min_makespan_regret=0.0,
+        statewise_regret_slack=0.6,
+        statewise=True,
+        backlog_aware_guard=True,
+        backlog_reference_tasks=64,
+        statewise_service_dominance_guard=True,
+        guarded_resource_kinds=("gpu_heavy", "gpu_cnn", "gpu_llm", "hybrid_rl", "cpu_heavy"),
+        statewise_resource_kinds=("gpu_heavy", "gpu_llm"),
+    )
+
+
 def calibrated_makespan_policy() -> ReplayPolicy:
     return ReplayPolicy(
         name="calibrated_fast_forward_makespan",
@@ -1263,6 +1353,10 @@ def calibrated_makespan_policy() -> ReplayPolicy:
 
 
 def calibrated_candidate_policy(cache: ServiceRateCache, specs: list[WorkloadSpec]) -> ReplayPolicy:
+    return calibrated_backlog_aware_policy()
+
+
+def calibrated_scalar_candidate_policy(cache: ServiceRateCache, specs: list[WorkloadSpec]) -> ReplayPolicy:
     if len(specs) <= 1:
         return calibrated_policy()
     return calibrated_global_guarded_policy(cache, specs)

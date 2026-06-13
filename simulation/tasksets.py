@@ -156,6 +156,125 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="q01_gpu_bound_cnn_resnet50",
+            purpose=(
+                "Low-host, high-GPU convolutional neural network training pressure. "
+                "This adds a standard PyTorch ResNet-50 training kernel to the q01 "
+                "family so the pure-GPU claim is not tied to a synthetic matmul only."
+            ),
+            arrival_model="static batch plus Poisson/bursty load sweep on measured jtl110gpu service cache",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_cnn_torch_resnet50",
+                    resource_kind="gpu_cnn",
+                    task_count=64,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.05,
+                    quadrant="low_cpu_high_gpu",
+                    role="standard CNN training q01 validation",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-12 jtl110gpu PyTorch ResNet-50 FP32 "
+                        "batch-16 image-size-224 profile curve; profile 4 is the "
+                        "measured capacity boundary for this node/workload bucket."
+                    ),
+                    required_profiles=(1, 2, 3, 4, 5),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1-3 are clean real measurements. Profiles 4-5 "
+                        "were probed and marked as placement-invalid capacity "
+                        "boundary evidence, so replay never interpolates them as "
+                        "usable service points."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="q01_gpu_bound_llm_inference",
+            purpose=(
+                "Low-host, high-GPU transformer inference pressure. This stresses "
+                "the high-concurrency region where small language-model forward "
+                "passes keep improving until a measured memory boundary."
+            ),
+            arrival_model="static batch plus Poisson/bursty load sweep on measured jtl110gpu service cache",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_llm_distilgpt2",
+                    resource_kind="gpu_llm",
+                    task_count=160,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.06,
+                    quadrant="low_cpu_high_gpu",
+                    role="small-LLM GPU inference q01 validation",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-12 jtl110gpu DistilGPT-2 FP16 "
+                        "forward-pass profile curve from HuggingFace mirror; "
+                        "profile 11 is the measured capacity boundary."
+                    ),
+                    required_profiles=(1, 2, 3, 4, 5, 6, 8, 10, 11, 12),
+                    empirical_status="real",
+                    note=(
+                        "Profiles 1,2,3,4,5,6,8,10 are clean real measurements. "
+                        "Profiles 11-12 were probed and are recorded as boundary "
+                        "evidence rather than usable actions."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="q01_gpu_model_portfolio",
+            purpose=(
+                "Heterogeneous low-host/high-GPU portfolio combining synthetic "
+                "matrix compute, CNN training, and small-LLM inference. This is "
+                "the q01 stress test for whether the policy can choose different "
+                "co-location profiles by workload instead of applying one fixed "
+                "GPU occupancy rule."
+            ),
+            arrival_model="mixed static, Poisson, and bursty arrivals on exact measured service points",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_heavy_jax_matmul",
+                    resource_kind="gpu_heavy",
+                    task_count=32,
+                    total_units=2400,
+                    resource_count=2,
+                    variation_cv=0.04,
+                    quadrant="low_cpu_high_gpu",
+                    role="compute-saturation component",
+                    benchmark_source="Scheduleurm module6/module22 JAX matmul q01 curve",
+                    required_profiles=(1, 2, 3, 4, 5, 6, 7, 8),
+                    empirical_status="real",
+                ),
+                TaskSetMember(
+                    workload_key="gpu_cnn_torch_resnet50",
+                    resource_kind="gpu_cnn",
+                    task_count=48,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.05,
+                    quadrant="low_cpu_high_gpu",
+                    role="CNN training component",
+                    benchmark_source="Scheduleurm 2026-06-12 PyTorch ResNet-50 jtl110gpu curve",
+                    required_profiles=(1, 2, 3, 4, 5),
+                    empirical_status="real",
+                ),
+                TaskSetMember(
+                    workload_key="gpu_llm_distilgpt2",
+                    resource_kind="gpu_llm",
+                    task_count=96,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.06,
+                    quadrant="low_cpu_high_gpu",
+                    role="small-LLM inference component",
+                    benchmark_source="Scheduleurm 2026-06-12 DistilGPT-2 jtl110gpu curve",
+                    required_profiles=(1, 2, 3, 4, 5, 6, 8, 10, 11, 12),
+                    empirical_status="real",
+                ),
+            ),
+        ),
+        TaskSet(
             name="q10_cpu_host_bound",
             purpose=(
                 "High-CPU/host pressure with low GPU pressure. This separates scheduler CPU/RAM "
@@ -3716,6 +3835,34 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
                     benchmark_source="Scheduleurm module6 real JAX matmul service curve",
                     required_profiles=(1, 2, 3),
                     empirical_status="real",
+                ),
+                TaskSetMember(
+                    workload_key="gpu_cnn_torch_resnet50",
+                    resource_kind="gpu_cnn",
+                    task_count=32,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.05,
+                    quadrant="low_cpu_high_gpu",
+                    role="standard CNN component",
+                    benchmark_source="Scheduleurm 2026-06-12 PyTorch ResNet-50 jtl110gpu curve",
+                    required_profiles=(1, 2, 3, 4, 5),
+                    empirical_status="real",
+                    note="Profiles 4-5 are measured capacity-boundary probes.",
+                ),
+                TaskSetMember(
+                    workload_key="gpu_llm_distilgpt2",
+                    resource_kind="gpu_llm",
+                    task_count=64,
+                    total_units=80,
+                    resource_count=2,
+                    variation_cv=0.06,
+                    quadrant="low_cpu_high_gpu",
+                    role="small-LLM inference component",
+                    benchmark_source="Scheduleurm 2026-06-12 DistilGPT-2 jtl110gpu curve",
+                    required_profiles=(1, 2, 3, 4, 5, 6, 8, 10, 11, 12),
+                    empirical_status="real",
+                    note="Profiles 11-12 are measured capacity-boundary probes.",
                 ),
                 TaskSetMember(
                     workload_key="cpu_heavy_local_bench",

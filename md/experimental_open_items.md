@@ -35,24 +35,67 @@ Post-closure upgrade artifacts 2026-06-11:
     Pollux/AdaptDL and Decima entrypoints smoke-pass; Gavel, IADeep, and Salus
     remain blocked by dependency/full-stack requirements.
   Gavel direct native smoke =
-    md/gavel_direct_native_smoke_20260612.md
+    md/gavel_direct_native_smoke_20260613.md
     in an isolated copy, dependency imports, protobuf stub generation,
     entrypoint help, generated-jobs native simulation, native Gavel trace, and
     Scheduleurm q01 native trace-seed smoke pass.  This is native-stack and
     trace-compatibility evidence, not measured service-unit equivalence.
   Gavel native performance microbaseline =
-    md/gavel_native_performance_microbaseline_20260612.md
+    md/gavel_native_performance_microbaseline_20260613.md
     bounded Scheduleurm-exported q01/q11 windows complete in Gavel's native
     trace simulator: q01 4/4 jobs and q11 8/8 jobs.  This is a native simulator
     microbaseline, not measured service-unit equivalence and not full-stack
     external-system superiority.
+  Gavel service-unit calibration gate =
+    md/gavel_service_unit_calibration_gate_20260612.md
+    computes q01/q11 implied Scheduleurm/Gavel scale diagnostics and now reads
+    paired calibration/holdout rows.  The scoped profile-aware same-workload
+    native Gavel simulator model passes with holdout p95 relative error 0 on
+    both bounded tasksets; scalar service-unit equivalence remains false because
+    the single-scale q01/q11 p95 relative errors are about 0.5.
+  selected-profile holdout LCB gate =
+    md/selected_profile_holdout_lcb_gate_20260612.md
+    all 11 selected aggregate-window targets now meet the 20-sample threshold
+    after CNN, LLM, RL, CPU, and control probes.  Absolute mean-service eta
+    remains negative (-738.9938) and diagonal mean-service eta remains negative
+    (-0.5587), but the theorem-facing LCB lower-service capacity certificate
+    passes with delta_LCB = 0.020993.
   direct SOTA full-stack readiness =
-    md/direct_sota_fullstack_readiness_20260612.md
-    same-workload adapter seeds now exist for Gavel, Pollux/AdaptDL, IADeep,
-    Salus, and Decima; Gavel native microbaseline exists, but direct full-stack
-    same-workload ready count remains 0 because Gavel service-unit equivalence
-    and other systems' Kubernetes,
-    Docker, runtime, or scope requirements are not satisfied.
+    md/direct_sota_fullstack_readiness_20260613.md
+    same-workload adapter seeds now exist for Gavel, Pollux/AdaptDL, Sia,
+    IADeep, Salus, and Decima; Gavel native microbaseline exists, Pollux
+    optimizer-policy tests pass locally, Decima's simulator entrypoint runs,
+    and the official Sia artifact is cloned, but Sia's simulator entrypoint
+    still needs the official cvxpy CBC/GLPK + pymoo environment.  Direct
+    full-stack same-workload ready count remains 0 because Gavel service-unit
+    equivalence and other systems' Kubernetes, Docker, solver/runtime, or scope
+    requirements are not satisfied.
+  SOTA candidate-union gate =
+    md/sota_candidate_union_gate_20260613.md
+    SOTA policy-family actions are now formally included in the measured-cache
+    candidate action set.  The metric-specific union rows beat the SOTA
+    makespan and mean-flow envelopes on every replay scenario within 0.5%
+    tolerance, and the single guarded union is not Pareto-dominated.  This is a
+    stronger policy-semantics result, not direct external binary/full-stack
+    superiority.
+  SOTA-facing algorithm upgrade gate =
+    md/sota_algorithm_upgrade_gate_20260613.md
+    closes five opt-in algorithm axes: adaptive scalarized Scheduleurm+SOTA
+    single policy is not Pareto-dominated, state-dependent marginal service
+    rows certify empty/high-VRAM/CPU-resident opportunities, bounded global
+    batch lookahead changes equal-score choices toward short-ETA work without
+    oracle slack, reusable ETA/LCB avoids repeated probes for identical
+    state keys, and the SOTA action family set is expanded to finish-time
+    fairness, Sia/Pollux-style resource-adaptive goodput, and Salus/IADeep/
+    Gandiva-style packing guards.  This is replay/certificate evidence, not
+    production-default dispatch or direct full-stack SOTA superiority.
+  SOTA native execution attempts =
+    md/sota_native_execution_attempts_20260613.md
+    records current-host native execution evidence: Gavel native simulator
+    rows, Pollux/AdaptDL optimizer-policy pytest 9/9, Decima entrypoint help,
+    and the official Sia artifact probe; Sia and Salus remain runtime-blocked.
+    Native execution ready count is 3, but direct full-stack ready count is
+    still 0.
   SOTA claim matrix =
     md/sota_fullstack_claim_matrix_20260612.md
     all seed families are present; direct full-stack same-workload ready count
@@ -94,18 +137,69 @@ Post-closure upgrade artifacts 2026-06-11:
 	    lower-service rows for admission-facing measured-envelope claims; all
 	    possible CPU/data-loader programs remain out of scope.
 	  SOTA full-stack superiority gate =
-	    md/sota_fullstack_superiority_gate_20260612.md
+	    md/sota_fullstack_superiority_gate_20260613.md
 	    executable strict gate records direct_fullstack_sota_superiority_ready =
 	    false, full_stack_ready_count = 0, and hard blockers from missing
 	    Docker/Go/Kubernetes tooling, missing service-unit equivalence, or scope
 	    mismatch.  This closes the review risk by forbidding direct full-stack
 	    superiority language under the current environment.
+	  SOTA candidate-union gate =
+	    md/sota_candidate_union_gate_20260613.md
+	    closes the stronger finite-action-family policy-semantics claim:
+	    SOTA-style policy actions are admitted into the candidate family and
+	    metric-specific union selectors beat the SOTA envelopes within replay
+	    tolerance.  The single guarded union remains a throughput-delay tradeoff,
+	    so it is not a universal two-metric dominator.
+	  SOTA-facing algorithm upgrade gate =
+	    md/sota_algorithm_upgrade_gate_20260613.md
+	    closes the next algorithm layer above policy-union: one adaptive
+	    scalarized union policy is Pareto-safe, exact state-dependent marginal
+	    service rows are exposed, global lookahead dispatch and ETA reuse are
+	    certified, and more SOTA policy families are admitted to the finite
+	    candidate set.  It remains opt-in and does not claim direct external
+	    full-stack superiority.
+	  SOTA native execution attempts =
+	    md/sota_native_execution_attempts_20260613.md
+	    records Gavel native simulator, Pollux optimizer-policy, Sia official
+	    artifact, and Decima simulator-entrypoint execution attempts.  It keeps
+	    direct full-stack superiority false until same-workload external systems
+	    run end-to-end in comparable units.
+	  Gavel resident-delay/JCT holdout gate =
+	    md/gavel_resident_delay_jct_holdout_20260613.md
+	    scoped measured-service holdout now passes on three controlled
+	    resident co-location rows.  Immediate co-location beats defer even when
+	    the defer baseline uses the fastest observed resident-alone rate.  This
+	    is not direct full-stack Gavel superiority.
+	  Corner-case lower-service gate =
+	    md/corner_case_lower_service_gate_20260613.md
+	    five stable node007/node001 corner-case rows are admitted to a
+	    standalone service cache with positive row-level lower-service slack.
+	    The default replay cache remains unchanged; future/organic states still
+	    need strict admission or probe.
+	  Optional OR algorithm upgrade gate =
+	    md/or_algorithm_upgrade_gate_20260613.md
+	    global batch candidate construction, state-dependent marginal service
+	    cache, online LCB/ETA, backlog-aware guarded replay, and q01
+	    CNN/LLM/co-location validation all pass as an opt-in algorithm-layer
+	    certificate.  The gate reports 0 regressions and 4 improving tasksets
+	    under 0.5% replay tolerance.  The statewise replay rule is lower-service
+	    no-upshift: it cannot raise the base action and only lowers a profile
+	    when service and waiting-backlog guards pass.  The scheduler integration
+	    is only an opt-in `global_theorem_maxweight_v1` soft-hint A/B hook; final
+	    placement still runs through legacy checks.  It does not claim the
+	    production default is a launched global batch dispatcher.
 	  Gavel service-unit equivalence certificate =
 	    md/gavel_service_unit_equivalence_certificate_20260612.md
 	    trace/schema compatibility, throughput seed readiness, and bounded native
-	    microbaseline readiness are true for q01/q11; exact arrival times are not
-	    identical because native Gavel trace rows use a small ordering jitter, and
+	    microbaseline readiness are true for q01/q11; exact arrival times are now
+	    preserved with zero adapter jitter, while
 	    gavel_service_unit_equivalence_ready remains false.
+	  Gavel service-unit calibration gate =
+	    md/gavel_service_unit_calibration_gate_20260612.md
+	    scoped profile-aware same-workload native Gavel simulator calibration is
+	    ready on q01/q11 paired holdout rows; scalar service-unit equivalence
+	    remains false because a single-scale map fails the p95 relative-error
+	    threshold.
 	  declared finite-domain positive-cover gate =
 	    md/declared_finite_domain_positive_cover_gate_20260612.md
 	    declared service-cache universe has 193 buckets: 187 positive lower-service
@@ -124,12 +218,17 @@ Post-closure upgrade artifacts 2026-06-11:
 	    high-utilization/no-safe-launch conditions.  It returns WAIT_RESOURCE_OR_QUEUE,
 	    closes large-scale active-production progress evidence, and does not claim
 	    large-scale launched production completion.
-	  controlled production completion gate =
+	  controlled launched completion gate =
 	    md/controlled_production_completion_gate_20260612.md
-	    bounded controlled completion is true for the existing launched trace
-	    (6 submitted tasks, 7 theorem slots, 13 candidates, alpha0=alpha1=0);
-	    controlled_32_task_completion_ready and large_scale_organic_launched_completion_ready
-	    remain false until safe resources allow more launches.
+	    controlled_32_task_completion_ready is true for
+	    controlled_jtl110gpu_32_20260613 (32 completed launched tasks, 32 theorem
+	    slots, 56 candidates, alpha0=alpha1=0); large_scale_organic_launched_completion_ready
+	    remains false until natural production thresholds close.
+	  organic production canary recorder gate =
+	    md/organic_production_canary_recorder_gate_20260612.md
+	    strict admission/trace recording is ready, but large-scale organic
+	    launched completion remains false until natural launch/completion
+	    thresholds are met.
 	```
 
 ## 0. OR reviewer gate after GPT_revise_OR.md
@@ -168,7 +267,7 @@ attempted-only / cancelled / external jobs are closed by the production theorem;
 	  positive-service stability;
 	active-production progress observations are the same as a launched production
 	  completion trace;
-	bounded controlled completion is the same as 32-task or organic production
+	controlled 32-task completion is the same as organic production-wide
 	  completion.
 	```
 
@@ -206,7 +305,7 @@ longer live trace:
 reviewer artifact:
   artifact = md/or_gate_reviewer_supplement.md
   ScheduleurmUpload.lean sha256 =
-    af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b
+    25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2
   lake env lean ScheduleurmUpload.lean = PASS
   comment-aware sorry/admit/axiom grep = clean.
 ```
@@ -215,13 +314,12 @@ reviewer artifact:
 claim，仍必须补：
 
 ```text
-larger production-wide live dispatch trace with actual queued production jobs
-  and safe low-interference resources.  The bounded ScheduleurmBench live
-  dispatch is already launched and completion bridged; an earlier 2026-06-12
-  production queued trace closed one queued-production snapshot; the rolling
-  launch/completion and controlled-completion gates correctly refuse launch under
-  high-utilization/no-safe-launch conditions and report active-progress or bounded
-  controlled evidence only.
+	larger production-wide live dispatch trace with actual queued production jobs
+	  and safe low-interference resources.  The ScheduleurmBench controlled live
+	  dispatch is already closed at 32 launched completions; an earlier 2026-06-12
+	  production queued trace closed one queued-production snapshot; the rolling
+	  launch/completion and canary gates still require organic production thresholds
+	  before claiming production-wide launched completion.
 direct external-system execution if claiming full-stack superiority over Gavel,
   Pollux, Sia, IADeep, or Salus.  Current evidence verifies local entrypoints
   for Pollux/AdaptDL and Decima, verifies isolated Gavel dependency/stub/help,

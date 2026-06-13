@@ -26,10 +26,14 @@ class ReplayPolicy:
     calibrated: bool = False
     calibrated_objective: str = "makespan"
     max_makespan_regret: float = 0.0
+    min_makespan_regret: float = 0.0
     statewise_regret_slack: float = 0.0
     statewise: bool = False
     guarded_resource_kinds: tuple[str, ...] = ()
     statewise_resource_kinds: tuple[str, ...] = ()
+    backlog_aware_guard: bool = False
+    backlog_reference_tasks: int = 64
+    statewise_service_dominance_guard: bool = False
 
     def select_profile(self, cache: ServiceRateCache, spec: WorkloadSpec) -> ProfileRecord:
         if self.calibrated:
@@ -88,10 +92,14 @@ class ReplayPolicy:
             "calibrated": self.calibrated,
             "calibrated_objective": self.calibrated_objective,
             "max_makespan_regret": self.max_makespan_regret,
+            "min_makespan_regret": self.min_makespan_regret,
             "statewise_regret_slack": self.statewise_regret_slack,
             "statewise": self.statewise,
             "guarded_resource_kinds": list(self.guarded_resource_kinds),
             "statewise_resource_kinds": list(self.statewise_resource_kinds),
+            "backlog_aware_guard": self.backlog_aware_guard,
+            "backlog_reference_tasks": self.backlog_reference_tasks,
+            "statewise_service_dominance_guard": self.statewise_service_dominance_guard,
         }
 
 
@@ -291,8 +299,10 @@ def _replay_one_resource(
     active: list[int] = []
     completions: list[float] = []
     profile_trace: list[int] = []
+    current_service_profile = max(1, int(target_profile))
 
     def fill() -> None:
+        nonlocal current_service_profile
         total_remaining = len(waiting) + len(active)
         if total_remaining <= 0:
             return
@@ -304,16 +314,32 @@ def _replay_one_resource(
                 policy=policy,
                 remaining_count=total_remaining,
                 active_count=len(active),
+                base_target_profile=target_profile,
             )
-        target = max(len(active), min(max(1, int(target)), total_remaining))
-        profile_trace.append(target)
-        while waiting and len(active) < target:
+            if policy.statewise_service_dominance_guard and waiting:
+                target = max(int(target), int(target_profile))
+        desired_target = max(1, int(target))
+        admission_target = max(len(active), min(desired_target, total_remaining))
+        current_service_profile = _covering_service_profile(
+            cache,
+            workload_key=spec.workload_key,
+            active_count=admission_target,
+            preferred_profile=max(desired_target, admission_target),
+        )
+        profile_trace.append(current_service_profile)
+        while waiting and len(active) < admission_target:
             active.append(waiting.pop(0))
 
     fill()
     while active:
         m = len(active)
-        rates = _sample_rates(cache, spec.workload_key, m, rng)
+        rates = _sample_rates(
+            cache,
+            spec.workload_key,
+            m,
+            rng,
+            service_profile_count=current_service_profile,
+        )
         event_times = []
         for tid, rate in zip(active, rates):
             event_times.append(tasks[tid]["remaining"] / max(1e-12, rate))
@@ -339,6 +365,7 @@ def _statewise_target_profile(
     policy: ReplayPolicy,
     remaining_count: int,
     active_count: int,
+    base_target_profile: int | None = None,
 ) -> int:
     local_spec = WorkloadSpec(
         workload_key=spec.workload_key,
@@ -354,14 +381,90 @@ def _statewise_target_profile(
             task_count=local_spec.task_count,
             total_units=local_spec.total_units,
             resource_count=local_spec.resource_count,
-            max_makespan_regret=(
-                policy.max_makespan_regret
-                + max(0.0, float(policy.statewise_regret_slack)) / float(max(1, remaining_count))
-            ),
+            max_makespan_regret=_effective_guard_regret(policy, remaining_count),
         )
-        return max(int(active_count), int(record.profile))
+        return _statewise_service_guarded_profile(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            active_count=active_count,
+            candidate_profile=record.profile,
+            base_target_profile=base_target_profile,
+        )
     record = policy.select_profile(cache, local_spec)
-    return max(int(active_count), int(record.profile))
+    return _statewise_service_guarded_profile(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        active_count=active_count,
+        candidate_profile=record.profile,
+        base_target_profile=base_target_profile,
+    )
+
+
+def _statewise_service_guarded_profile(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    active_count: int,
+    candidate_profile: int,
+    base_target_profile: int | None,
+) -> int:
+    active = max(1, int(active_count))
+    candidate = max(active, int(candidate_profile))
+    if not policy.statewise_service_dominance_guard or base_target_profile is None:
+        return candidate
+    baseline = max(active, int(base_target_profile))
+    candidate = min(candidate, baseline)
+    candidate_rate = _effective_profile_rate_for_active(
+        cache,
+        workload_key=spec.workload_key,
+        active_count=active,
+        preferred_profile=candidate,
+    )
+    baseline_rate = _effective_profile_rate_for_active(
+        cache,
+        workload_key=spec.workload_key,
+        active_count=active,
+        preferred_profile=baseline,
+    )
+    if candidate_rate + 1e-12 >= baseline_rate:
+        return candidate
+    return baseline
+
+
+def _effective_profile_rate_for_active(
+    cache: ServiceRateCache,
+    *,
+    workload_key: str,
+    active_count: int,
+    preferred_profile: int,
+) -> float:
+    active = max(1, int(active_count))
+    service_profile = _covering_service_profile(
+        cache,
+        workload_key=workload_key,
+        active_count=active,
+        preferred_profile=max(active, int(preferred_profile)),
+    )
+    record = cache.get(workload_key, service_profile)
+    if record is None or record.capacity_boundary:
+        return 0.0
+    return float(record.aggregate_rate) * float(active) / float(max(1, int(record.profile)))
+
+
+def _effective_guard_regret(policy: ReplayPolicy, remaining_count: int) -> float:
+    base = max(0.0, float(policy.max_makespan_regret))
+    slack = max(0.0, float(policy.statewise_regret_slack)) / float(max(1, remaining_count))
+    if not policy.backlog_aware_guard:
+        return base + slack
+    floor = max(0.0, float(policy.min_makespan_regret))
+    ceiling = max(floor, base)
+    reference = max(1.0, float(policy.backlog_reference_tasks or 1))
+    pressure = min(1.0, max(0.0, float(remaining_count)) / reference)
+    dynamic = floor + (ceiling - floor) * (1.0 - pressure)
+    return dynamic + slack
 
 
 def _profile_trace_counts(trace: tuple[int, ...]) -> dict[str, int]:
@@ -372,18 +475,65 @@ def _profile_trace_counts(trace: tuple[int, ...]) -> dict[str, int]:
     return counts
 
 
-def _sample_rates(cache: ServiceRateCache, workload_key: str, active_count: int, rng: random.Random) -> list[float]:
-    profile = cache.get(workload_key, active_count)
+def _covering_service_profile(
+    cache: ServiceRateCache,
+    *,
+    workload_key: str,
+    active_count: int,
+    preferred_profile: int,
+) -> int:
+    active = max(1, int(active_count))
+    preferred = max(1, int(preferred_profile))
+    preferred_record = cache.get(workload_key, preferred)
+    if (
+        preferred >= active
+        and preferred_record is not None
+        and not preferred_record.capacity_boundary
+        and float(preferred_record.aggregate_rate) > 0.0
+    ):
+        return preferred
+    feasible = [
+        record.profile
+        for record in cache.profiles(workload_key)
+        if int(record.profile) >= active
+        and not record.capacity_boundary
+        and float(record.aggregate_rate) > 0.0
+    ]
+    if not feasible:
+        raise KeyError(
+            f"no measured feasible service profile for {workload_key!r} "
+            f"covering {active}/resource active jobs"
+        )
+    return min(feasible)
+
+
+def _sample_rates(
+    cache: ServiceRateCache,
+    workload_key: str,
+    active_count: int,
+    rng: random.Random,
+    *,
+    service_profile_count: int | None = None,
+) -> list[float]:
+    service_count = int(service_profile_count or active_count)
+    if service_count < int(active_count):
+        raise KeyError(
+            f"service profile {service_count}/resource cannot cover "
+            f"{active_count} active jobs for {workload_key!r}"
+        )
+    profile = cache.get(workload_key, service_count)
     if profile is None or profile.capacity_boundary or profile.aggregate_rate <= 0:
         raise KeyError(
-            f"missing exact service profile for {workload_key!r} at {active_count}/resource; "
+            f"missing exact service profile for {workload_key!r} at {service_count}/resource; "
             "multi-task co-location rates must be measured in the real environment"
         )
     rates = [float(x) for x in profile.per_task_rates if float(x) > 0]
     if not rates:
         rates = [profile.mean_rate] * max(1, profile.profile)
     sampled = [rates[rng.randrange(len(rates))] for _ in range(active_count)]
-    scale = profile.aggregate_rate / max(1e-12, sum(sampled))
+    active_fraction = float(active_count) / float(max(1, profile.profile))
+    target_aggregate = float(profile.aggregate_rate) * active_fraction
+    scale = target_aggregate / max(1e-12, sum(sampled))
     return [max(1e-12, rate * scale) for rate in sampled]
 
 

@@ -148,16 +148,18 @@ Post-closure upgrade artifacts 2026-06-11:
 	    closes the stronger finite-action-family policy-semantics claim:
 	    SOTA-style policy actions are admitted into the candidate family and
 	    metric-specific union selectors beat the SOTA envelopes within replay
-	    tolerance.  The single guarded union remains a throughput-delay tradeoff,
-	    so it is not a universal two-metric dominator.
+	    tolerance.  The fixed Pareto-slack online union policy also closes both
+	    SOTA-style envelopes on the same measured-cache replay; this remains a
+	    policy-semantics result, not direct full-stack external binary
+	    superiority.
 	  SOTA-facing algorithm upgrade gate =
 	    md/sota_algorithm_upgrade_gate_20260613.md
-	    closes the next algorithm layer above policy-union: one adaptive
-	    scalarized union policy is Pareto-safe, exact state-dependent marginal
-	    service rows are exposed, global lookahead dispatch and ETA reuse are
-	    certified, and more SOTA policy families are admitted to the finite
-	    candidate set.  It remains opt-in and does not claim direct external
-	    full-stack superiority.
+	    closes the next algorithm layer above policy-union: the fixed
+	    Pareto-slack union policy is certified, adaptive scalarization is kept
+	    as an ablation, exact state-dependent marginal service rows are exposed,
+	    global lookahead dispatch and ETA reuse are certified, and more SOTA
+	    policy families are admitted to the finite candidate set.  It remains
+	    opt-in and does not claim direct external full-stack superiority.
 	  SOTA native execution attempts =
 	    md/sota_native_execution_attempts_20260613.md
 	    records Gavel native simulator, Pollux optimizer-policy, Sia official

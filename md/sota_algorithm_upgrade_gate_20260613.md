@@ -5,6 +5,8 @@
 | `pass` | true |
 | `status` | `SOTA_ALGORITHM_UPGRADE_PASS` |
 | `adaptive_scalarized_ready` | true |
+| `pareto_slack_ready` | true |
+| `fixed_online_policy_pareto_dominates_sota_style_all` | true |
 | `state_dependent_marginal_cache_ready` | true |
 | `lookahead_global_batch_ready` | true |
 | `eta_reuse_ready` | true |
@@ -14,7 +16,13 @@
 
 | Policy | Sum makespan | Weighted mean flow | vs best SOTA makespan envelope | vs best SOTA flow envelope |
 |---|---:|---:|---:|---:|
-| `scheduleurm_sota_union_adaptive_scalarized` | 174302 | 3575.57 | 0.969797 | 0.999476 |
+| `scheduleurm_sota_union_adaptive_scalarized` | 173487 | 3569.5 | 0.994907 | 0.999476 |
+
+## Pareto-Slack Fixed Policy
+
+| Policy | Sum makespan | Weighted mean flow | Worst vs best SOTA makespan | Worst vs best SOTA flow |
+|---|---:|---:|---:|---:|
+| `scheduleurm_sota_union_pareto_slack` | 173216 | 3573.49 | 0.998727 | 0.995784 |
 
 ## Marginal Service States
 

@@ -43,6 +43,7 @@ def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
     union = build_sota_candidate_union_gate()
     aggregate = union.get("aggregate") or {}
     adaptive = _adaptive_scalarized_certificate(union)
+    pareto_slack = _pareto_slack_certificate(union)
     state_cache = _state_cache_certificate()
     global_batch = _global_batch_lookahead_certificate()
     eta_reuse = _eta_reuse_certificate()
@@ -50,6 +51,7 @@ def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
     gate_pass = all(
         (
             adaptive["adaptive_scalarized_ready"],
+            pareto_slack["pareto_slack_ready"],
             state_cache["state_dependent_marginal_cache_ready"],
             global_batch["lookahead_global_batch_ready"],
             eta_reuse["eta_reuse_ready"],
@@ -69,8 +71,12 @@ def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
             "union_mean_flow_beats_sota_envelope_all": aggregate.get("union_mean_flow_beats_sota_envelope_all"),
             "adaptive_scalarized_union_not_pareto_dominated_all": aggregate.get("adaptive_scalarized_union_not_pareto_dominated_all"),
             "adaptive_scalarized_union_beats_both_envelopes_all": aggregate.get("adaptive_scalarized_union_beats_both_envelopes_all"),
+            "pareto_slack_union_not_pareto_dominated_all": aggregate.get("pareto_slack_union_not_pareto_dominated_all"),
+            "pareto_slack_union_beats_both_envelopes_all": aggregate.get("pareto_slack_union_beats_both_envelopes_all"),
+            "fixed_online_policy_pareto_dominates_sota_style_all": aggregate.get("fixed_online_policy_pareto_dominates_sota_style_all"),
         },
         "adaptive_scalarized_single_policy": adaptive,
+        "pareto_slack_fixed_online_policy": pareto_slack,
         "state_dependent_marginal_cache": state_cache,
         "global_batch_lookahead": global_batch,
         "eta_reuse": eta_reuse,
@@ -86,6 +92,7 @@ def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
 
 def markdown_report(report: Mapping[str, Any]) -> str:
     adaptive = report.get("adaptive_scalarized_single_policy") or {}
+    pareto_slack = report.get("pareto_slack_fixed_online_policy") or {}
     state = report.get("state_dependent_marginal_cache") or {}
     batch = report.get("global_batch_lookahead") or {}
     eta = report.get("eta_reuse") or {}
@@ -98,6 +105,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
         f"| `status` | `{report.get('status')}` |",
         f"| `adaptive_scalarized_ready` | {str(bool(adaptive.get('adaptive_scalarized_ready'))).lower()} |",
+        f"| `pareto_slack_ready` | {str(bool(pareto_slack.get('pareto_slack_ready'))).lower()} |",
+        f"| `fixed_online_policy_pareto_dominates_sota_style_all` | {str(bool(pareto_slack.get('fixed_online_policy_pareto_dominates_sota_style_all'))).lower()} |",
         f"| `state_dependent_marginal_cache_ready` | {str(bool(state.get('state_dependent_marginal_cache_ready'))).lower()} |",
         f"| `lookahead_global_batch_ready` | {str(bool(batch.get('lookahead_global_batch_ready'))).lower()} |",
         f"| `eta_reuse_ready` | {str(bool(eta.get('eta_reuse_ready'))).lower()} |",
@@ -116,6 +125,23 @@ def markdown_report(report: Mapping[str, Any]) -> str:
             flow=float(row.get("job_weighted_mean_flow_s") or 0.0),
             ms=float(adaptive.get("worst_vs_sota_makespan_envelope") or 0.0),
             mf=float(adaptive.get("worst_vs_sota_mean_flow_envelope") or 0.0),
+        )
+    )
+    lines.extend([
+        "",
+        "## Pareto-Slack Fixed Policy",
+        "",
+        "| Policy | Sum makespan | Weighted mean flow | Worst vs best SOTA makespan | Worst vs best SOTA flow |",
+        "|---|---:|---:|---:|---:|",
+    ])
+    pareto_row = pareto_slack.get("aggregate_row") or {}
+    lines.append(
+        "| `{policy}` | {makespan:.6g} | {flow:.6g} | {ms:.6g} | {mf:.6g} |".format(
+            policy=pareto_row.get("policy") or "",
+            makespan=float(pareto_row.get("sum_makespan_s") or 0.0),
+            flow=float(pareto_row.get("job_weighted_mean_flow_s") or 0.0),
+            ms=float(pareto_slack.get("worst_vs_sota_makespan_envelope") or 0.0),
+            mf=float(pareto_slack.get("worst_vs_sota_mean_flow_envelope") or 0.0),
         )
     )
     lines.extend([
@@ -183,6 +209,57 @@ def _adaptive_scalarized_certificate(union_report: Mapping[str, Any]) -> dict[st
         ),
         "not_pareto_dominated_all": bool(
             (union_report.get("aggregate") or {}).get("adaptive_scalarized_union_not_pareto_dominated_all")
+        ),
+    }
+
+
+def _pareto_slack_certificate(union_report: Mapping[str, Any]) -> dict[str, Any]:
+    scenarios = [row for row in union_report.get("scenarios") or [] if row.get("replayable", True)]
+    aggregate_rows = (union_report.get("aggregate") or {}).get("policy_aggregate") or []
+    pareto_row = next(
+        (
+            row for row in aggregate_rows
+            if row.get("policy") == "scheduleurm_sota_union_pareto_slack"
+        ),
+        {},
+    )
+    worst_ms = min(
+        (
+            float(row.get("pareto_slack_union_vs_sota_best_makespan") or 0.0)
+            for row in scenarios
+        ),
+        default=0.0,
+    )
+    worst_flow = min(
+        (
+            float(row.get("pareto_slack_union_vs_sota_best_mean_flow") or 0.0)
+            for row in scenarios
+        ),
+        default=0.0,
+    )
+    dominated = [
+        row for row in scenarios
+        if row.get("pareto_slack_union_pareto_dominated_by_sota")
+    ]
+    aggregate = union_report.get("aggregate") or {}
+    return {
+        "pareto_slack_ready": bool(
+            pareto_row
+            and not dominated
+            and aggregate.get("pareto_slack_union_beats_both_envelopes_all")
+        ),
+        "aggregate_row": pareto_row,
+        "dominated_scenario_count": len(dominated),
+        "worst_vs_sota_makespan_envelope": worst_ms,
+        "worst_vs_sota_mean_flow_envelope": worst_flow,
+        "beats_both_envelopes_all": bool(
+            aggregate.get("pareto_slack_union_beats_both_envelopes_all")
+        ),
+        "not_pareto_dominated_all": bool(
+            aggregate.get("pareto_slack_union_not_pareto_dominated_all")
+        ),
+        "fixed_online_policy_pareto_dominates_sota_style_all": bool(
+            aggregate.get("fixed_online_policy_pareto_dominates_sota_style_all")
         ),
     }
 

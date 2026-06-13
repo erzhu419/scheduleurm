@@ -764,11 +764,14 @@ set.  The selector evaluates the Scheduleurm candidate action together with the
 throughput-table, delay-oracle, interference-guard, and quadrant-composite
 actions under the same measured service units.  Table~\ref{tab:sota-union}
 shows that the metric-specific action unions match or beat the SOTA envelopes
-on every measured task-list scenario within the 0.5\% replay tolerance.  A
-single guarded union policy is not Pareto-dominated by any SOTA policy, but it
-does not simultaneously dominate both the makespan and mean-flow envelopes on
-the q01 JAX/portfolio rows; those rows expose a real throughput-delay tradeoff
-between high-concurrency profiles and profile-1 delay.
+on every measured task-list scenario within the 0.5\% replay tolerance.  The
+fixed Pareto-slack union policy goes one step further: for each visible queue
+portfolio it enumerates the finite measured Scheduleurm+SOTA action family and
+chooses the configuration maximizing the smaller of the normalized makespan and
+mean-flow slack.  This single online rule is not Pareto-dominated by any
+SOTA-style policy and simultaneously closes both SOTA envelopes on the measured
+cache; the guarded and adaptive-scalarized rows remain useful ablations rather
+than the main dominance certificate.
 
 \begin{table}[t]
 \TABLE{SOTA policy-family action-union gate on identical measured service cache.\label{tab:sota-union}}{
@@ -776,29 +779,30 @@ between high-concurrency profiles and profile-1 delay.
 \toprule
 Policy family & Sum makespan (s) & Job-weighted mean flow (s) & Gate meaning \\
 \midrule
-Current Scheduleurm candidate & 174674.240 & 3576.040 & Baseline candidate. \\
-SOTA best fixed policy & 174150.386 & 3575.888 & Best aggregate fixed SOTA-style row, interference guard. \\
-Scheduleurm+SOTA guarded union & 174265.459 & 3578.296 & Not Pareto-dominated by any SOTA row. \\
-Scheduleurm+SOTA makespan union & 173961.617 & 3585.774 & Beats the SOTA makespan envelope in every scenario within tolerance. \\
-Scheduleurm+SOTA mean-flow union & 174301.884 & 3575.573 & Beats the SOTA mean-flow envelope in every scenario within tolerance. \\
+Current Scheduleurm candidate & 173859.316 & 3569.971 & Baseline candidate. \\
+SOTA best makespan fixed policy & 173215.623 & 3573.490 & Salus/IADeep/Gandiva-style packing guard. \\
+SOTA best flow fixed policy & 173486.961 & 3569.503 & Gavel/Themis-style finish-time fairness. \\
+Scheduleurm+SOTA guarded union & 173486.961 & 3569.503 & Not Pareto-dominated by any SOTA row. \\
+Scheduleurm+SOTA Pareto-slack union & 173215.623 & 3573.490 & Single fixed online policy closes both SOTA envelopes within tolerance. \\
+Scheduleurm+SOTA mean-flow union & 173486.961 & 3569.503 & Metric-specific mean-flow envelope certificate. \\
 \bottomrule
 \end{tabular}
 }{The action-union rows are policy-semantics selectors over measured service
 actions, not direct executions of Gavel, Pollux, Sia, IADeep, or Salus.  The
-worst per-scenario envelope ratios are 0.9984 for makespan and 0.9995 for mean
-flow, both inside the 0.5\% replay tolerance.}
+Pareto-slack policy's worst per-scenario ratios are 0.9987 for makespan and
+0.9958 for mean flow, both inside the 0.5\% replay tolerance.}
 \end{table}
 
 The follow-on SOTA-facing algorithm-upgrade gate closes the corresponding
 implementation layer without changing the default production scheduler.  It
-adds an adaptive scalarized single Scheduleurm+SOTA union policy, a
-state-dependent marginal service cache, bounded global batch lookahead,
-reusable online lower-confidence-bound (LCB) ETA estimates, and three additional
-SOTA-style action families: finish-time fairness, Sia/Pollux-style
-resource-adaptive goodput, and Salus/IADeep/Gandiva-style packing guards.  The
-adaptive scalarized single policy is not Pareto-dominated on the measured
-service cache, while the metric-specific union rows remain the envelope
-certificates.  The marginal-service rows explicitly record the observed
+adds the fixed Pareto-slack Scheduleurm+SOTA union policy, the adaptive
+scalarized ablation, a state-dependent marginal service cache, bounded global
+batch lookahead, reusable online lower-confidence-bound (LCB) ETA estimates,
+and three additional SOTA-style action families: finish-time fairness,
+Sia/Pollux-style resource-adaptive goodput, and Salus/IADeep/Gandiva-style
+packing guards.  The Pareto-slack policy closes the measured-cache
+policy-semantics SOTA envelope; the metric-specific union rows remain diagnostic
+envelope certificates.  The marginal-service rows explicitly record the observed
 non-monotonic opportunities: high-VRAM-resident small-CUDA service is
 \(1.095\times\) the empty reference in the controlled slice, and CPU-resident
 marginal rows are \(1.001\times\)--\(1.091\times\) the empty CPU reference.
@@ -806,10 +810,10 @@ These additions strengthen the finite-action candidate-set claim; they remain
 replay/certificate evidence, not launched production default dispatch or direct
 full-stack superiority over external systems.
 
-On the q01 GPU-heavy list, the adaptive candidate chooses profile 1 in the
-online replay because profile 1 stays inside the calibrated support slack while
-substantially reducing flow time.  Higher-throughput support actions remain in
-the separate capacity and selected-profile LCB certificates.  The implemented
+On the q01 GPU-heavy list, the node007 profile-1 measurement now lies on the
+measured service envelope, so the candidate and the table-goodput/delay
+SOTA-style rows all select profile 1 on the single-workload q01 replay.  The
+implemented
 statewise logic is a lower-service no-upshift drain, not a hidden post-hoc rule:
 it cannot raise the base action and it only lowers a profile after service and
 waiting-backlog guards pass.
@@ -1146,15 +1150,15 @@ local native execution evidence: Pollux's optimizer-policy pytest suite passes
 	and its physical-cluster path requires AdaptDL/Kubernetes.  These rows still
 	are not full-stack performance baselines.  The
 	separate SOTA action-union gate closes a stronger policy-semantics claim:
-	when SOTA policy-family actions are included in the candidate set, the
-	metric-specific Scheduleurm+SOTA union rows beat the makespan and mean-flow
-	SOTA envelopes within replay tolerance, while the single guarded union remains
-	a throughput-delay tradeoff rather than a universal two-metric dominator.
+	when SOTA policy-family actions are included in the candidate set, the fixed
+	Pareto-slack Scheduleurm+SOTA union policy is not Pareto-dominated and beats
+	both SOTA-style envelopes within replay tolerance on the measured cache.
 	The SOTA-facing algorithm-upgrade gate then closes the opt-in implementation
-	layer: adaptive scalarized union is Pareto-safe, state-dependent marginal
-	service rows are certified, bounded global lookahead and ETA reuse are
-	available, and additional finish-time-fairness/resource-adaptive/packing
-	SOTA families are admitted to the measured finite action set.
+	layer: the Pareto-slack union is certified, adaptive scalarization remains as
+	an ablation, state-dependent marginal service rows are certified, bounded
+	global lookahead and ETA reuse are available, and additional
+	finish-time-fairness/resource-adaptive/packing SOTA families are admitted to
+	the measured finite action set.
 	Third, the live oracle
 	trace evidence separates
 dry-run candidate-family audits, bounded launched ScheduleurmBench dispatch,

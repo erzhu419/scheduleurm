@@ -112,14 +112,14 @@
     {
       "artifact_exists": true,
       "artifact_path": "md/experiment_artifacts/sota_candidate_union_gate_20260613.json",
-      "blocker": "Metric-specific makespan and mean-flow envelopes are closed; a single guarded objective still exposes a q01 makespan/flow tradeoff and is not an external binary run.",
+      "blocker": "The fixed Pareto-slack union closes the policy-semantics measured-cache envelopes, but this is still not an external binary/full-stack run.",
       "gate": "sota_candidate_union_gate",
-      "next_threshold": "Keep SOTA policy-family union as the main theory-facing dominance claim; promote direct-system language only after full-stack same-workload execution.",
+      "next_threshold": "Use Pareto-slack policy-semantics dominance for the theory-facing claim; promote direct-system language only after full-stack same-workload execution.",
       "raw_evidence_path": "md/sota_candidate_union_gate_20260613.md",
-      "scoped_claim": "Scheduleurm can evaluate a candidate set that explicitly contains SOTA-style policy-family actions and beat the metric-specific SOTA envelopes on the measured service cache.",
+      "scoped_claim": "Scheduleurm can evaluate a candidate set that explicitly contains SOTA-style policy-family actions; the fixed Pareto-slack online union policy closes both SOTA-style measured-cache envelopes within tolerance.",
       "scoped_claim_ready": true,
       "status": "SOTA_CANDIDATE_UNION_PASS",
-      "strong_claim": "A single scalar objective simultaneously dominates every external full-stack system on every metric.",
+      "strong_claim": "The measured-cache Pareto-slack replay result directly dominates every external full-stack system on every metric.",
       "strong_claim_ready": false
     },
     {

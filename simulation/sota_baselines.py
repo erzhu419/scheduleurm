@@ -7,6 +7,7 @@ candidate so the comparison isolates scheduling logic from profiling mismatch.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import product
 from typing import Any
 
 from .defaults import calibrated_candidate_policy, calibrated_policy
@@ -54,6 +55,7 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
     """
 
     policy_families: tuple[ReplayPolicy, ...] = ()
+    portfolio_specs: tuple[WorkloadSpec, ...] = ()
     selection_objective: str = "guarded_mean_flow"
     max_union_makespan_regret: float = 0.02
     scalarization_delay_weight: float = 0.35
@@ -91,6 +93,8 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                     row["profile"],
                 ),
             )["record"]
+        if self.selection_objective == "pareto_slack":
+            return self._portfolio_pareto_slack_record(cache, spec, rows)
         best_makespan = min(float(row["makespan_s"]) for row in rows)
         guard = best_makespan * (1.0 + max(0.0, float(self.max_union_makespan_regret)))
         guarded = [row for row in rows if float(row["makespan_s"]) <= guard] or rows
@@ -172,11 +176,103 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             + float(self.scalarization_uncertainty_weight) * uncertainty
         )
 
+    def _portfolio_pareto_slack_record(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        fallback_rows: list[dict[str, Any]],
+    ) -> ProfileRecord:
+        """Select the fixed batch action with the largest two-metric slack.
+
+        The selector is still a fixed online rule: it enumerates the finite
+        measured-cache action union for the currently visible queue portfolio,
+        computes each configuration's predicted batch makespan and job-weighted
+        mean-flow proxy, and maximizes the smaller normalized slack against the
+        best configuration in each metric.  It does not inspect external SOTA
+        outcomes; SOTA-style policies only contribute candidate actions.
+        """
+
+        specs = tuple(self.portfolio_specs or (spec,))
+        specs = tuple(
+            spec if item.workload_key == spec.workload_key else item
+            for item in specs
+        )
+        if not any(item.workload_key == spec.workload_key for item in specs):
+            specs = (*specs, spec)
+        rowsets: list[tuple[WorkloadSpec, list[dict[str, Any]]]] = []
+        for item in specs:
+            rows = self.candidate_rows(cache, item)
+            if item.workload_key == spec.workload_key and not rows:
+                rows = fallback_rows
+            if rows:
+                rowsets.append((item, rows))
+        if not rowsets:
+            return fallback_rows[0]["record"]
+
+        combinations = []
+        for combo in product(*(rows for _, rows in rowsets)):
+            completed_jobs = sum(max(0, int(item.task_count)) for item, _ in rowsets)
+            weighted_flow = (
+                sum(float(row["mean_flow_s"]) * max(0, int(item.task_count))
+                    for (item, _), row in zip(rowsets, combo))
+                / max(1, completed_jobs)
+            )
+            combinations.append(
+                {
+                    "rows": combo,
+                    "makespan_s": max(float(row["makespan_s"]) for row in combo),
+                    "mean_flow_s": float(weighted_flow),
+                }
+            )
+        best_makespan = min(float(row["makespan_s"]) for row in combinations)
+        best_flow = min(float(row["mean_flow_s"]) for row in combinations)
+
+        selected = max(
+            combinations,
+            key=lambda row: self._portfolio_pareto_slack_key(
+                row,
+                best_makespan=best_makespan,
+                best_flow=best_flow,
+            ),
+        )
+        for (item, _), row in zip(rowsets, selected["rows"]):
+            if item.workload_key == spec.workload_key:
+                return row["record"]
+        return fallback_rows[0]["record"]
+
+    @staticmethod
+    def _portfolio_pareto_slack_key(
+        row: dict[str, Any],
+        *,
+        best_makespan: float,
+        best_flow: float,
+    ) -> tuple[float, float, float, float]:
+        makespan_slack = best_makespan / max(1e-12, float(row["makespan_s"]))
+        flow_slack = best_flow / max(1e-12, float(row["mean_flow_s"]))
+        worst_slack = min(makespan_slack, flow_slack)
+        return (
+            worst_slack,
+            makespan_slack,
+            flow_slack,
+            -float(row["makespan_s"]),
+        )
+
     def snapshot(self) -> dict[str, Any]:
         out = super().snapshot()
         out.update(
             {
                 "policy_families": [policy.snapshot() for policy in self.policy_families],
+                "portfolio_specs": [
+                    {
+                        "workload_key": spec.workload_key,
+                        "resource_kind": spec.resource_kind,
+                        "task_count": spec.task_count,
+                        "total_units": spec.total_units,
+                        "resource_count": spec.resource_count,
+                        "variation_cv": spec.variation_cv,
+                    }
+                    for spec in self.portfolio_specs
+                ],
                 "selection_objective": self.selection_objective,
                 "max_union_makespan_regret": self.max_union_makespan_regret,
                 "scalarization_delay_weight": self.scalarization_delay_weight,
@@ -446,6 +542,7 @@ def sota_candidate_union_policy(
         backlog_reference_tasks=64,
         statewise_service_dominance_guard=True,
         policy_families=families,
+        portfolio_specs=tuple(specs),
         selection_objective=selection_objective,
         max_union_makespan_regret=max_union_makespan_regret,
     )
@@ -458,6 +555,7 @@ def sota_candidate_union_policies(
     return (
         sota_candidate_union_policy(cache, specs, selection_objective="guarded_mean_flow"),
         sota_candidate_union_policy(cache, specs, selection_objective="adaptive_scalarized"),
+        sota_candidate_union_policy(cache, specs, selection_objective="pareto_slack"),
         sota_candidate_union_policy(cache, specs, selection_objective="makespan"),
         sota_candidate_union_policy(cache, specs, selection_objective="mean_flow"),
     )
@@ -516,7 +614,13 @@ def _union_summary(
             specs,
             selection_objective=objective,
         )
-        for objective in ("guarded_mean_flow", "adaptive_scalarized", "makespan", "mean_flow")
+        for objective in (
+            "guarded_mean_flow",
+            "adaptive_scalarized",
+            "pareto_slack",
+            "makespan",
+            "mean_flow",
+        )
     ]
     rows = []
     for policy in policies:

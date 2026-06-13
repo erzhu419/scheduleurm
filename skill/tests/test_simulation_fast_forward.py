@@ -126,8 +126,10 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
               row.workload_key: row.selected_profile
               for row in comparison.candidate.workloads
           } == {
-              "hybrid_rl_resac_ant": 3,
+              "hybrid_rl_resac_ant": 2,
               "gpu_heavy_jax_matmul": 1,
+              "gpu_cnn_torch_resnet50": 3,
+              "gpu_llm_distilgpt2": 10,
               "cpu_heavy_local_bench": 8,
           },
           diag=str(comparison.snapshot()))
@@ -159,9 +161,9 @@ def test_sota_style_baselines_do_not_pareto_dominate_candidate(check, sch):
               diag=str(report))
     portfolio = compare_against_sota_suite(cache, default_workload_specs(), trials=31, seed=42)
     delay = next(row for row in portfolio["baselines"] if row["baseline"]["name"] == "delay_oracle")
-    check("real-q10 portfolio keeps expected makespan/flow tradeoff against delay oracle",
-          delay["candidate_vs_baseline_makespan"] > 1.0
-          and delay["candidate_vs_baseline_mean_flow"] < 1.0,
+    check("real-q10 portfolio is not materially worse than delay oracle under replay tolerance",
+          delay["candidate_vs_baseline_makespan"] >= 0.995
+          and delay["candidate_vs_baseline_mean_flow"] >= 0.995,
           diag=str(portfolio))
 
 
@@ -175,16 +177,16 @@ def test_q01_default_candidate_uses_pareto_knee(check, sch):
     )
     throughput = next(row for row in report["baselines"] if row["baseline"]["name"] == "throughput_table_goodput")
     delay = next(row for row in report["baselines"] if row["baseline"]["name"] == "delay_oracle")
-    check("q01 default candidate selects the guarded Pareto knee",
-          throughput["candidate_profiles"] == {"gpu_heavy_jax_matmul": 4},
+    check("q01 default candidate selects the backlog-aware low-concurrency action",
+          throughput["candidate_profiles"] == {"gpu_heavy_jax_matmul": 1},
           diag=str(report))
-    check("q01 knee trades less than 2% makespan for more than 10% mean-flow vs throughput SOTA",
-          throughput["candidate_vs_baseline_makespan"] > 0.98
+    check("q01 backlog-aware action improves both makespan and mean-flow vs throughput SOTA",
+          throughput["candidate_vs_baseline_makespan"] > 1.04
           and throughput["candidate_vs_baseline_mean_flow"] > 1.10,
           diag=str(report))
-    check("q01 knee is a real tradeoff against the delay oracle",
-          delay["candidate_vs_baseline_makespan"] > 1.0
-          and delay["candidate_vs_baseline_mean_flow"] < 1.0,
+    check("q01 backlog-aware action matches the delay oracle on the measured q01 slice",
+          delay["candidate_vs_baseline_makespan"] >= 0.995
+          and delay["candidate_vs_baseline_mean_flow"] >= 0.995,
           diag=str(report))
 
 

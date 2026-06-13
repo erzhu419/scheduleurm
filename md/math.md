@@ -818,7 +818,7 @@ b_t\,\widehat\mu_i(k)-\theta_{prof}\widehat\mu_i^{max}k
 \right\},
 ]
 
-其中 \(b_t\) 是 resource-local backlog count，\(\mathcal K_i^{env}\) 是 measured support envelope，\(\widehat\mu_i(k)\) 是 profile \(k\) 的 measured aggregate service，\(\widehat\mu_i^{max}\) 是 envelope 内最大 measured aggregate service，当前 OR closure runner 用 \(\theta_{prof}=0.10\)。小 backlog 时 profile penalty 可以选择低干扰/低 mean-flow 的 profile；大 backlog 时 \(b_t\widehat\mu_i(k)\) 支配 bounded penalty，策略回到 service-support action。
+其中 \(b_t\) 是 resource-local backlog count，\(\mathcal K_i^{env}\) 是 measured support envelope，\(\widehat\mu_i(k)\) 是 profile \(k\) 的 measured aggregate service，\(\widehat\mu_i^{max}\) 是 envelope 内最大 measured aggregate service，当前 OR closure runner 用 \(\theta_{prof}=0.10\)。小 backlog 时 profile penalty 可以选择低干扰/低 mean-flow 的 profile；大 backlog 时 \(b_t\widehat\mu_i(k)\) 支配 bounded penalty，策略回到 service-support action。当前实现又加了一条 lower-service no-upshift guard：statewise drain 不能把 base action 上跳到更高 co-location profile，只能在 measured lower-service 和 waiting-backlog 检查都通过时下调 profile。这样 q01/CNN 这类 tail profile 看似更快、但会增加已等待任务 flow time 的场景不会被 statewise 副作用误收。
 
 默认实现对完全同分的 profile 使用 low-profile tie-break；OR ablation gate
 另外显式测试 no-profile-penalty 和 high-profile tie-break 版本，确认 full
@@ -849,10 +849,10 @@ main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_b
 module28 的 q01 standalone 默认点使用同一个 guard 原理：在 measured q01 service curve 上先要求
 
 [
-M_k\leq 1.02\min_j M_j,
+M_k\leq 1.05\min_j M_j,
 ]
 
-再最小化 \(F_k\)。这会选择 4/GPU 的 Pareto knee，而不是 1/GPU 的 extreme delay endpoint 或 8/GPU 的 extreme throughput endpoint。
+再最小化 \(F_k\)。在当前 JAX q01 service curve 上，1/GPU 与 support max-rate endpoint 的 makespan 差距约为 3.3%，仍在 5% support slack 内，因此 replay candidate 选择 1/GPU；4/GPU 和 8/GPU 保留为 high-backlog support / LCB capacity certificate 中会出现的动作，而不是 online replay 的默认点。
 
 ### Empirical bucket instantiation after capacity-boundary tightening
 
@@ -876,9 +876,9 @@ placement 变成 action-family boundary certificate。数学上应写成：
 | Bucket | Valid measured profiles \(K_b^{valid}\) | Measured boundary | Candidate replay action | Legacy-comparable action |
 |---|---:|---:|---:|---:|
 | q00 `light_control_local` | 1-13 | 14 | 13 | 1 |
-| q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 1 low-backlog/static; 8 high-backlog support certificate | 3 |
+| q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 1 replay/static; 4-8 high-backlog support certificates | 3 |
 | q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 | 9 |
-| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 online low-backlog; 3 static/portfolio/high-backlog | 5 |
+| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 online/static/portfolio; 3 high-backlog support certificate | 5 |
 
 这些曲线进入数学路线的方式不是“证明 sweet spot 恒成立”，而是：
 
@@ -886,7 +886,35 @@ placement 变成 action-family boundary certificate。数学上应写成：
 2. boundary profile 作为 infeasible / capacity-boundary certificate，从 exact replay action set 中剔除；
 3. `ServiceRateCache.profiles()` 使用 first capacity boundary：若最早 boundary 是 \(k_b^\partial\)，则所有 \(k\ge k_b^\partial\) 都不属于当前 robust feasible family；
 4. 同一 profile 有多条有效测量时，cache 先按测量完整度筛选，再在同等完整度下保留更保守的 lower aggregate service row；这把 replay service map 写成 \(\underline\mu\)，而不是乐观 best-run \(\widehat\mu\)；
-5. candidate/legacy/SOTA-inspired policy-semantics replay baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；
+5. candidate/legacy/SOTA-inspired policy-semantics replay baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；进一步，2026-06-13 的 SOTA candidate-union gate 把 SOTA-style policy actions 正式并入有限候选族：
+   \[
+   \mathcal A^{cand,+}_s
+   =
+   \mathcal A^{sched}_s
+   \cup
+   \mathcal A^{goodput}_s
+   \cup
+   \mathcal A^{delay}_s
+   \cup
+   \mathcal A^{interference}_s
+   \cup
+   \mathcal A^{quadrant}_s .
+   \]
+   这是 candidate-set theorem 的直接实例：只要每个新增 action 都有同一 measured-cache lower-service row 和 bounded penalty，robust MaxWeight 可以在并集上取最大值。实证 gate 证明 metric-specific union selectors 在所有 replay scenario 上击败 SOTA makespan / mean-flow envelopes（0.5% tolerance 内），guarded union 不被 Pareto dominate；但这不是 Gavel/Pollux/Sia/IADeep/Salus 的 direct full-stack binary run；
+8. 2026-06-13 的 SOTA-facing algorithm upgrade gate 把上面的有限动作并集再往前推进一层：
+   \[
+   \pi^{adapt}(s)
+   \in
+   \arg\min_{a\in \mathcal A^{cand,+}_s}
+   \left[
+   w_M(s)\frac{M(a)}{\min_{a'}M(a')}
+   +
+   w_F(s)\frac{F(a)}{\min_{a'}F(a')}
+   +
+   \gamma U(a)
+   \right],
+   \]
+   其中 \(M(a)\) 是 measured-cache makespan proxy，\(F(a)\) 是 mean-flow proxy，\(U(a)\) 是 bounded uncertainty/provenance penalty，\(w_M(s)+w_F(s)=1\)。该策略作为 single adaptive scalarized union 不被 SOTA-style policy Pareto dominate；同时 metric-specific union 仍保留为 envelope certificate。state-dependent marginal cache 把 \(\underline\mu\) 细化为 \(\underline\mu(w,k,\ell)\)，其中 \(\ell\in\{\text{empty},\text{high-vram-resident},\text{cpu-half},\text{cpu-full},\ldots\}\)。global batch lookahead 只在 bounded score 中加入可审计的 short-ETA tie/near-tie bonus，不改变 lower-service MaxWeight 主项；ETA reuse 使用完整 key \((w,k,\ell,\text{node},\text{command},\text{mode})\)，未命中则 probe-required。这些都是 bounded implementation penalty / finite candidate family 的实现加强，不是 production default 或 direct full-stack SOTA claim；
 6. q01/q11 使用 queue-adaptive support envelope + bounded profile penalty；tie-break 和 no-penalty 版本只作为 ablation policy，对应 \(\alpha_0+\alpha_1\|Q\|_1\) approximate-oracle / implementation audit 项；q00/q10 当前 bucket 的动作选择等价于 measured service support/knee，不额外新增 hidden model；
 7. 这些 measured slices 可以作为 \(\mu,\underline\mu,\epsilon_{est},\delta\) 的输入，但仍不能替代完整 \(L,\rho,\epsilon_{est},\beta,\alpha_1,\delta\) slack certificate。
 
@@ -992,6 +1020,48 @@ main_high_probability_stability_from_certificate_event
 ```
 
 也就是说：sampler-specific 部分要证明 lower-service domination event；一旦该 event 成立，稳定性 certificate 的概率提升是 Lean theorem。
+
+### D.1 diagonal-scaled LCB lower service
+
+最新 proof spine 还补了一个 heterogeneity 必须要有的数学层：不同 workload 的 service unit 不能共用一个绝对误差尺度。CPU、CNN、LLM、JAX matmul、hybrid RL 的吞吐量纲差几个数量级时，把所有坐标的 LCB gap 直接塞进一个全局 absolute \(\epsilon_{\mathrm{est}}\) 会让高吞吐 LLM/CNN 的绝对误差吞掉全部 slack。
+
+Lean 新增：
+
+```text
+Scheduleurm.DiagonalScaling
+main_diagonal_scaled_lcb_support_loss
+main_diagonal_scaled_lcb_support_loss_l1
+```
+
+数学对象是 diagonal scale \(s_i>0\)。若 confidence event 给出逐坐标 lower-service domination
+
+\[
+\mu_i(a)
+\le
+\ell_i(a)+\epsilon s_i,
+\]
+
+则 support loss 不是错误地写成单一绝对单位，而是：
+
+\[
+H_{\mu}^{cand}(Q)
+\le
+H_{\ell}^{cand}(Q)
++
+\epsilon \sum_i s_i Q_i.
+\]
+
+若还要接回普通 \(\|Q\|_1\) drift margin，则必须额外证明 \(s_i\le C\)，得到 \(\epsilon C\|Q\|_1\)。这不是弱化，而是多类 stochastic processing network 的正确量纲处理。
+
+实证 gate 因此分三层，不能混写：
+
+```text
+absolute mean-service eta: still false
+diagonal-normalized mean-service eta: still false
+LCB lower-service capacity: true for the current selected-profile population
+```
+
+当前 selected-profile stochastic LCB certificate 用 profile-level aggregate service windows，而不是单个 co-located task 的 rate。11/11 target 已达到 20 aggregate-window threshold；LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.0209930156\)。但是这只支持“arrival load 按 LCB lower service 的 0.8 缩放”的 stochastic lower-service capacity claim；不能说 0.8 mean-service load 已由 holdout LCB 证明。
 
 operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。Operational stabilizability 也不能只是“存在某个稳定 Markov model”；Lean 里已经把它改成 load-certified finite-support arrival/service model：
 
@@ -1176,6 +1246,9 @@ calibrated/exact measured finite service-action slices
 raw scheduler history is the theorem population;
 attempted production is the theorem population;
 policy-semantics replay proves direct binary/full-stack superiority over Gavel/Pollux/Sia/IADeep/Salus;
+SOTA candidate-action union proves direct binary/full-stack superiority over external systems;
+SOTA-facing algorithm upgrade gate proves production default dispatch or direct full-stack superiority;
+Gavel profile-aware same-workload calibration proves scalar service-unit equivalence;
 q00/q10 local buckets cover all CPU/data-loader workloads;
 q11 profile-10 historical replay remains a robust feasible action after live OOM;
 future untraced scheduler dispatches are automatically theorem-grade;

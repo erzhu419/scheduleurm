@@ -133,10 +133,13 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `single_guarded_union_beats_both_envelopes_all` | {str(bool(aggregate.get('single_guarded_union_beats_both_envelopes_all'))).lower()} |",
         f"| `adaptive_scalarized_union_not_pareto_dominated_all` | {str(bool(aggregate.get('adaptive_scalarized_union_not_pareto_dominated_all'))).lower()} |",
         f"| `adaptive_scalarized_union_beats_both_envelopes_all` | {str(bool(aggregate.get('adaptive_scalarized_union_beats_both_envelopes_all'))).lower()} |",
+        f"| `pareto_slack_union_not_pareto_dominated_all` | {str(bool(aggregate.get('pareto_slack_union_not_pareto_dominated_all'))).lower()} |",
+        f"| `pareto_slack_union_beats_both_envelopes_all` | {str(bool(aggregate.get('pareto_slack_union_beats_both_envelopes_all'))).lower()} |",
+        f"| `fixed_online_policy_pareto_dominates_sota_style_all` | {str(bool(aggregate.get('fixed_online_policy_pareto_dominates_sota_style_all'))).lower()} |",
         "",
         "## Scenario Envelope",
         "",
-        "| Taskset | Arrival | Best SOTA makespan | Union makespan | Ratio | Best SOTA flow | Union flow | Ratio | Guarded union Pareto dominated |",
+        "| Taskset | Arrival | Best SOTA makespan | Pareto-slack makespan | Ratio | Best SOTA flow | Pareto-slack flow | Ratio | Pareto-slack dominated |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in report.get("scenarios") or []:
@@ -150,12 +153,12 @@ def markdown_report(report: Mapping[str, Any]) -> str:
                 taskset=row.get("taskset"),
                 arrival=row.get("arrival_mode"),
                 best_ms=float(row.get("best_sota_makespan_s") or 0.0),
-                union_ms=float(row.get("union_makespan_s") or 0.0),
-                ms_ratio=float(row.get("union_vs_sota_envelope_makespan") or 0.0),
+                union_ms=float(row.get("pareto_slack_union_makespan_s") or 0.0),
+                ms_ratio=float(row.get("pareto_slack_union_vs_sota_best_makespan") or 0.0),
                 best_flow=float(row.get("best_sota_mean_flow_s") or 0.0),
-                union_flow=float(row.get("union_mean_flow_s") or 0.0),
-                flow_ratio=float(row.get("union_vs_sota_envelope_mean_flow") or 0.0),
-                dom=str(bool(row.get("guarded_union_pareto_dominated_by_sota"))).lower(),
+                union_flow=float(row.get("pareto_slack_union_mean_flow_s") or 0.0),
+                flow_ratio=float(row.get("pareto_slack_union_vs_sota_best_mean_flow") or 0.0),
+                dom=str(bool(row.get("pareto_slack_union_pareto_dominated_by_sota"))).lower(),
             )
         )
     lines.extend([
@@ -195,6 +198,7 @@ def _scenario_row(
     candidate = _first_policy(results, "calibrated_")
     guarded_union = results["scheduleurm_sota_union_guarded_mean_flow"]
     adaptive_union = results["scheduleurm_sota_union_adaptive_scalarized"]
+    pareto_slack_union = results["scheduleurm_sota_union_pareto_slack"]
     union_makespan = results["scheduleurm_sota_union_makespan"]
     union_mean_flow = results["scheduleurm_sota_union_mean_flow"]
     sota_rows = [
@@ -205,6 +209,7 @@ def _scenario_row(
     best_sota_flow = min(sota_rows, key=lambda result: result.mean_flow_s)
     dominated_by = []
     adaptive_dominated_by = []
+    pareto_slack_dominated_by = []
     floor = 1.0 - PARETO_TOLERANCE
     for result in sota_rows:
         ms = _ratio(result.makespan_s, guarded_union.makespan_s)
@@ -231,6 +236,18 @@ def _scenario_row(
                     "adaptive_union_profiles": adaptive_union.profiles,
                 }
             )
+        pareto_slack_ms = _ratio(result.makespan_s, pareto_slack_union.makespan_s)
+        pareto_slack_flow = _ratio(result.mean_flow_s, pareto_slack_union.mean_flow_s)
+        if pareto_slack_ms < floor and pareto_slack_flow < floor:
+            pareto_slack_dominated_by.append(
+                {
+                    "policy": result.policy,
+                    "pareto_slack_union_vs_policy_makespan": pareto_slack_ms,
+                    "pareto_slack_union_vs_policy_mean_flow": pareto_slack_flow,
+                    "sota_profiles": result.profiles,
+                    "pareto_slack_union_profiles": pareto_slack_union.profiles,
+                }
+            )
     return {
         "taskset": taskset_name,
         "arrival_mode": arrival,
@@ -246,6 +263,8 @@ def _scenario_row(
         "guarded_union_mean_flow_s": guarded_union.mean_flow_s,
         "adaptive_union_makespan_s": adaptive_union.makespan_s,
         "adaptive_union_mean_flow_s": adaptive_union.mean_flow_s,
+        "pareto_slack_union_makespan_s": pareto_slack_union.makespan_s,
+        "pareto_slack_union_mean_flow_s": pareto_slack_union.mean_flow_s,
         "union_makespan_s": union_makespan.makespan_s,
         "union_mean_flow_s": union_mean_flow.mean_flow_s,
         "union_vs_sota_envelope_makespan": _ratio(
@@ -272,6 +291,14 @@ def _scenario_row(
             best_sota_flow.mean_flow_s,
             adaptive_union.mean_flow_s,
         ),
+        "pareto_slack_union_vs_sota_best_makespan": _ratio(
+            best_sota_makespan.makespan_s,
+            pareto_slack_union.makespan_s,
+        ),
+        "pareto_slack_union_vs_sota_best_mean_flow": _ratio(
+            best_sota_flow.mean_flow_s,
+            pareto_slack_union.mean_flow_s,
+        ),
         "single_guarded_union_beats_both_envelopes": (
             _ratio(best_sota_makespan.makespan_s, guarded_union.makespan_s)
             >= 1.0 - PARETO_TOLERANCE
@@ -284,13 +311,22 @@ def _scenario_row(
             and _ratio(best_sota_flow.mean_flow_s, adaptive_union.mean_flow_s)
             >= 1.0 - PARETO_TOLERANCE
         ),
+        "pareto_slack_union_beats_both_envelopes": (
+            _ratio(best_sota_makespan.makespan_s, pareto_slack_union.makespan_s)
+            >= 1.0 - PARETO_TOLERANCE
+            and _ratio(best_sota_flow.mean_flow_s, pareto_slack_union.mean_flow_s)
+            >= 1.0 - PARETO_TOLERANCE
+        ),
         "guarded_union_pareto_dominated_by_sota": bool(dominated_by),
         "guarded_union_dominated_by": dominated_by,
         "adaptive_union_pareto_dominated_by_sota": bool(adaptive_dominated_by),
         "adaptive_union_dominated_by": adaptive_dominated_by,
+        "pareto_slack_union_pareto_dominated_by_sota": bool(pareto_slack_dominated_by),
+        "pareto_slack_union_dominated_by": pareto_slack_dominated_by,
         "candidate_profiles": candidate.profiles,
         "guarded_union_profiles": guarded_union.profiles,
         "adaptive_union_profiles": adaptive_union.profiles,
+        "pareto_slack_union_profiles": pareto_slack_union.profiles,
         "union_makespan_profiles": union_makespan.profiles,
         "union_mean_flow_profiles": union_mean_flow.profiles,
     }
@@ -409,6 +445,14 @@ def _aggregate_rows(
         bool(row.get("adaptive_scalarized_union_beats_both_envelopes"))
         for row in replayable
     )
+    pareto_slack_not_dominated = all(
+        not bool(row.get("pareto_slack_union_pareto_dominated_by_sota"))
+        for row in replayable
+    )
+    pareto_slack_both = all(
+        bool(row.get("pareto_slack_union_beats_both_envelopes"))
+        for row in replayable
+    )
     return {
         "policy_aggregate": policy_aggregate,
         "candidate_aggregate": candidate_aggregate,
@@ -418,7 +462,18 @@ def _aggregate_rows(
         "single_guarded_union_beats_both_envelopes_all": single_guarded_both,
         "adaptive_scalarized_union_not_pareto_dominated_all": adaptive_not_dominated,
         "adaptive_scalarized_union_beats_both_envelopes_all": adaptive_both,
-        "gate_pass": union_makespan_beats and union_flow_beats and guarded_not_dominated,
+        "pareto_slack_union_not_pareto_dominated_all": pareto_slack_not_dominated,
+        "pareto_slack_union_beats_both_envelopes_all": pareto_slack_both,
+        "fixed_online_policy_pareto_dominates_sota_style_all": (
+            pareto_slack_not_dominated and pareto_slack_both
+        ),
+        "gate_pass": (
+            union_makespan_beats
+            and union_flow_beats
+            and guarded_not_dominated
+            and pareto_slack_not_dominated
+            and pareto_slack_both
+        ),
     }
 
 
@@ -510,7 +565,7 @@ def _write_csv(path: str | Path, rows: Sequence[Mapping[str, Any]]) -> None:
         "profiles",
     ]
     with p.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(

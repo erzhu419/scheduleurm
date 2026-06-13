@@ -1,0 +1,152 @@
+{
+  "adapter_certificate_ready": true,
+  "blocker": "none for the scoped profile-aware same-workload native Gavel simulator baseline; scalar service-unit equivalence remains false because the single-scale q01/q11 p95 relative errors exceed the threshold",
+  "direct_full_stack_same_workload_ready": true,
+  "gate": "gavel_service_unit_calibration_gate",
+  "gate_pass": true,
+  "gavel_service_unit_equivalence_ready": false,
+  "min_holdout_rows_per_taskset": 3,
+  "next_threshold": "To promote the adjacent scalar-equivalence claim, replace the profile-aware service-curve model by a single service-unit scale whose q01/q11 holdout p95 relative error is <= 0.05 with at least 3 holdout rows per taskset.",
+  "paired_holdout_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_service_unit_paired_holdout_20260612.json",
+  "paired_source_row_count": 12,
+  "pass": true,
+  "pass_meaning": "q01/q11 native Gavel simulator calibration against paired Scheduleurm measured holdout windows; gate_pass=true means the scoped profile-aware same-workload model is calibrated, while scalar service-unit equivalence requires gavel_service_unit_equivalence_ready=true",
+  "profile_aware_model_calibration_ready": true,
+  "relative_error_threshold": 0.05,
+  "rows": [
+    {
+      "gavel_average_jct_s": 25.464,
+      "gavel_makespan_s": 25.464,
+      "holdout_relative_errors": [
+        0.5,
+        0.33332024295737767,
+        0.49174216324106695
+      ],
+      "implied_makespan_scale_scheduleurm_over_gavel": 4.02689326634641,
+      "native_job_count": 4,
+      "p95_relative_error": 0.5,
+      "paired_calibration_row_count": 3,
+      "paired_holdout_ready": false,
+      "paired_holdout_required_rows": 3,
+      "paired_holdout_row_count": 3,
+      "paired_holdout_rows": [
+        {
+          "gavel_observed_s": 25.464,
+          "predicted_scheduleurm_s": 69.595684162838,
+          "profile_aware_predicted_scheduleurm_s": 139.191368325676,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.5,
+          "scheduleurm_observed_s": 139.191368325676,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q01_gpu_bound_compute_4_fifo.log"
+        },
+        {
+          "gavel_observed_s": 50.929,
+          "predicted_scheduleurm_s": 139.19410142668775,
+          "profile_aware_predicted_scheduleurm_s": 208.787052488514,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.33332024295737767,
+          "scheduleurm_observed_s": 208.787052488514,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q01_gpu_bound_compute_6_fifo.log"
+        },
+        {
+          "gavel_observed_s": 50.929,
+          "predicted_scheduleurm_s": 139.19410142668775,
+          "profile_aware_predicted_scheduleurm_s": 273.86513568448447,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.49174216324106695,
+          "scheduleurm_observed_s": 273.86513568448447,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q01_gpu_bound_compute_8_fifo.log"
+        }
+      ],
+      "paired_source_row_count": 6,
+      "profile_aware_holdout_relative_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "profile_aware_model_calibration_ready": true,
+      "profile_aware_p95_relative_error": 0.0,
+      "reason_if_false": "scalar_service_unit_map_not_within_threshold",
+      "relative_error_threshold": 0.05,
+      "scheduleurm_best_profile": 1,
+      "scheduleurm_best_profile_source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+      "scheduleurm_predicted_makespan_s": 102.54081013424498,
+      "scheduleurm_predicted_mean_flow_s": 76.90560760068374,
+      "service_unit_calibration_ready": false,
+      "service_unit_scale_scheduleurm_over_gavel": 2.7331010117357053,
+      "taskset": "q01_gpu_bound_compute",
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "gavel_average_jct_s": 11.149,
+      "gavel_makespan_s": 11.149,
+      "holdout_relative_errors": [
+        0.49999999999999994,
+        0.33081159045900166,
+        0.500022423535743
+      ],
+      "implied_makespan_scale_scheduleurm_over_gavel": 172.2127545071307,
+      "native_job_count": 8,
+      "p95_relative_error": 0.500022423535743,
+      "paired_calibration_row_count": 3,
+      "paired_holdout_ready": false,
+      "paired_holdout_required_rows": 3,
+      "paired_holdout_row_count": 3,
+      "paired_holdout_rows": [
+        {
+          "gavel_observed_s": 11.149,
+          "predicted_scheduleurm_s": 960.0000000000001,
+          "profile_aware_predicted_scheduleurm_s": 1920.0,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.49999999999999994,
+          "scheduleurm_observed_s": 1920.0,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q11_cpu_gpu_coupled_8_fifo.log"
+        },
+        {
+          "gavel_observed_s": 22.297,
+          "predicted_scheduleurm_s": 1919.9138936227469,
+          "profile_aware_predicted_scheduleurm_s": 2869.018450184502,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.33081159045900166,
+          "scheduleurm_observed_s": 2869.018450184502,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q11_cpu_gpu_coupled_12_fifo.log"
+        },
+        {
+          "gavel_observed_s": 22.297,
+          "predicted_scheduleurm_s": 1919.9138936227469,
+          "profile_aware_predicted_scheduleurm_s": 3840.0,
+          "profile_aware_relative_error": 0.0,
+          "relative_error": 0.500022423535743,
+          "scheduleurm_observed_s": 3840.0,
+          "source": "/tmp/scheduleurm_gavel_service_unit_paired_holdout/gavel/scheduler/gavel_paired_q11_cpu_gpu_coupled_16_fifo.log"
+        }
+      ],
+      "paired_source_row_count": 6,
+      "profile_aware_holdout_relative_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "profile_aware_model_calibration_ready": true,
+      "profile_aware_p95_relative_error": 0.0,
+      "reason_if_false": "scalar_service_unit_map_not_within_threshold",
+      "relative_error_threshold": 0.05,
+      "scheduleurm_best_profile": 2,
+      "scheduleurm_best_profile_source": "/home/erzhu419/.claude/scheduler/experiments/runs/module12_resac_ant_real_dense_jtl110gpu2_gpu1_20260603_002/reports/profile_2_per_gpu_summary.json",
+      "scheduleurm_predicted_makespan_s": 1920.0,
+      "scheduleurm_predicted_mean_flow_s": 1200.0,
+      "service_unit_calibration_ready": false,
+      "service_unit_scale_scheduleurm_over_gavel": 86.10637725356536,
+      "taskset": "q11_cpu_gpu_coupled",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "scope": "Audit gate for Gavel calibration.  The scalar service-unit equivalence claim is ready only when gavel_service_unit_equivalence_ready=true.  The profile-aware model claim is a narrower same-workload native Gavel simulator baseline on Scheduleurm measured service curves.",
+  "scoped_claim_ready": true,
+  "status": "GAVEL_PROFILE_AWARE_MODEL_CALIBRATION_PASS_SCALAR_PENDING",
+  "strong_claim_ready": false,
+  "tasksets": [
+    "q01_gpu_bound_compute",
+    "q11_cpu_gpu_coupled"
+  ]
+}

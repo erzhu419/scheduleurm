@@ -1,6 +1,7 @@
 """Default trace-cache assembly for Scheduleurm replay experiments."""
 from __future__ import annotations
 
+import json
 from itertools import product
 from pathlib import Path
 
@@ -103,6 +104,15 @@ def build_default_cache() -> ServiceRateCache:
         resource_kind="gpu_heavy",
         total_units=2400,
         node_bucket="jtl110gpu2:12gb",
+    )
+    _add_summary_file(
+        cache,
+        ARTIFACT_ROOT / "node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+        workload_key="gpu_heavy_jax_matmul",
+        command_fingerprint="jax_matmul_size8192_v1",
+        resource_kind="gpu_heavy",
+        total_units=2400,
+        node_bucket="node007:11gb",
     )
     _add_summary_dir(
         cache,
@@ -1446,6 +1456,30 @@ def _add_summary_dir(
     paths = sorted(reports_dir.glob("profile_*_per_gpu_summary.json"))
     paths += sorted(reports_dir.glob("profile_*_per_resource_summary.json"))
     for path in paths:
+        _add_summary_file(
+            cache,
+            path,
+            workload_key=workload_key,
+            command_fingerprint=command_fingerprint,
+            resource_kind=resource_kind,
+            total_units=total_units,
+            node_bucket=node_bucket,
+        )
+
+
+def _add_summary_file(
+    cache: ServiceRateCache,
+    path: Path,
+    *,
+    workload_key: str,
+    command_fingerprint: str,
+    resource_kind: str,
+    total_units: float,
+    node_bucket: str,
+) -> None:
+    if not path.exists():
+        return
+    try:
         for record in records_from_summary_file(
             path,
             workload_key=workload_key,
@@ -1455,3 +1489,5 @@ def _add_summary_dir(
             node_bucket=node_bucket,
         ):
             cache.add(record)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return

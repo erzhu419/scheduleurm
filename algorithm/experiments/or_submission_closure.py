@@ -131,6 +131,12 @@ def build_online_arrival_experiments(
                     suite = replay_trace_suite_with_backlog(cache, trace, seed=seed + 1000)
                     scenarios.append(_online_scenario_row(trace, suite, load_factor=float(load)))
     aggregate = _aggregate_online_scenarios(scenarios)
+    scoped_pass = (
+        aggregate["candidate_completes_all"]
+        and aggregate["candidate_vs_legacy_geomean_makespan"] >= 1.0
+        and aggregate["candidate_vs_legacy_geomean_mean_flow"] >= 1.0
+    )
+    strong_sota_frontier_pass = aggregate["candidate_not_pareto_dominated_all"]
     return {
         "gate": "online_arrival_experiments",
         "tasksets": list(taskset_names),
@@ -141,14 +147,19 @@ def build_online_arrival_experiments(
         "scenario_count": len(scenarios),
         "scenarios": scenarios,
         "aggregate": aggregate,
-        "pass": aggregate["candidate_completes_all"]
-        and aggregate["candidate_not_pareto_dominated_all"]
-        and aggregate["candidate_vs_legacy_geomean_makespan"] >= 1.0
-        and aggregate["candidate_vs_legacy_geomean_mean_flow"] >= 1.0,
+        "scoped_claim_ready": scoped_pass,
+        "strong_claim_ready": strong_sota_frontier_pass,
+        "adjacent_strong_claim": (
+            "the online-replay candidate is not Pareto dominated by any "
+            "SOTA-style policy in every scenario"
+        ),
+        "strong_claim_reference": "md/sota_strict_dominance_frontier_20260613.md",
+        "pass": scoped_pass,
         "scope": (
             "rate-controlled replay on the same measured service cache; this is "
             "an online-arrival stress certificate, not a direct execution of "
-            "external scheduler binaries"
+            "external scheduler binaries.  Per-scenario SOTA Pareto-frontier "
+            "language is reported by the separate strict/frontier gate."
         ),
     }
 
@@ -1943,6 +1954,8 @@ def _markdown_online(report: Mapping[str, Any]) -> str:
         "| Quantity | Value |",
         "|---|---:|",
         f"| pass | {str(bool(report.get('pass'))).lower()} |",
+        f"| scoped_claim_ready | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
+        f"| strong_claim_ready | {str(bool(report.get('strong_claim_ready'))).lower()} |",
         f"| scenario_count | {report.get('scenario_count', 0)} |",
         f"| candidate_completes_all | {str(bool(agg.get('candidate_completes_all'))).lower()} |",
         f"| candidate_not_pareto_dominated_all | {str(bool(agg.get('candidate_not_pareto_dominated_all'))).lower()} |",

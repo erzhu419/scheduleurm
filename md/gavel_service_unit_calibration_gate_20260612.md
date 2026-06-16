@@ -24,7 +24,7 @@ This artifact is reproducible, but the calibration claim is ready only when `gat
 | Taskset | Native jobs | Native avg JCT | Native makespan | Scheduleurm best profile | Scheduleurm makespan | Implied makespan scale | Calibration rows | Holdout rows | Scalar p95 | Profile-aware p95 | Scalar ready | Profile ready |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `q01_gpu_bound_compute` | 4 | 25.464 | 25.464 | 1 | 102.541 | 4.02689 | 3 | 3 | 0.5 | 0 | false | true |
-| `q11_cpu_gpu_coupled` | 8 | 11.149 | 11.149 | 2 | 1920 | 172.213 | 3 | 3 | 0.500022 | 0 | false | true |
+| `q11_cpu_gpu_coupled` | 8 | 11.149 | 11.149 | 2 | 1624.83 | 145.737 | 3 | 3 | 0.500022 | 0 | false | true |
 
 ## Blocker
 

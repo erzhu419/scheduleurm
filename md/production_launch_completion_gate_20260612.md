@@ -16,7 +16,7 @@
 | `queued_production_count` | 0 |
 | `running_production_count` | 11 |
 | `local_gpu_max_util_pct` | 0.0 |
-| `shadow_theorem_slot_count` | 22 |
+| `shadow_theorem_slot_count` | 10 |
 | `shadow_trace_closed` | true |
 | `progress_observation_count` | 4 |
 | `large_scale_launched_completion_ready` | true |

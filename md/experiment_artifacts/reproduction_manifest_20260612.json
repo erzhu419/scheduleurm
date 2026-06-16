@@ -1,109 +1,220 @@
 {
-  "generated_at_end": "2026-06-13T06:32:32.341452+08:00",
-  "generated_at_start": "2026-06-13T06:30:02+08:00",
+  "artifact_regeneration_modes": {
+    "ablation_gate": "safe_rerun",
+    "controlled_launched_completion_gate": "precomputed_live_run",
+    "decima_same_domain_benchmark_gate": "requires_external_stack",
+    "declared_finite_domain_cover": "safe_rerun",
+    "future_production_admission_contract": "safe_readonly",
+    "gate_status_dashboard": "safe_rerun",
+    "gavel_dependency_refresh": "safe_rerun",
+    "gavel_service_unit_calibration_gate": "safe_rerun",
+    "gavel_service_unit_certificate": "safe_rerun",
+    "gavel_service_unit_paired_holdout": "safe_rerun",
+    "global_theorem_dispatcher_prototype_gate": "safe_rerun",
+    "latex_log_scan": "safe_rerun",
+    "lean_build": "safe_rerun",
+    "lean_no_sorry_audit": "safe_rerun",
+    "multinode_history_completion_gate": "safe_readonly",
+    "multinode_original_deployment_gate": "safe_readonly",
+    "named_external_runtime_probe_gate": "requires_external_stack",
+    "online_ablation_summary_ci": "safe_rerun",
+    "online_arrival_gate": "safe_rerun",
+    "organic_history_completion_gate": "safe_readonly",
+    "organic_production_canary_recorder_gate": "safe_readonly",
+    "paper_pdf": "safe_rerun",
+    "production_launch_completion_gate": "safe_readonly",
+    "registered_sota_adapter_closure_gate": "safe_rerun",
+    "registered_sota_universe_gate": "safe_rerun",
+    "reviewer_environment_manifest_gate": "safe_rerun",
+    "selected_profile_holdout_lcb_gate": "safe_rerun",
+    "sota_admitted_universe_closure_gate": "safe_rerun",
+    "targeted_tests": "safe_rerun"
+  },
+  "generated_at_end": "2026-06-16T12:59:09.858408+08:00",
+  "generated_at_start": "2026-06-16T12:42:27+08:00",
   "pass": true,
+  "regeneration_mode_legend": {
+    "not_rerun": "Included only as historical evidence and not used by this script.",
+    "precomputed_live_run": "Summarizes previously launched controlled/live rows; do not rerun as a launch command from the reproduction script.",
+    "requires_external_stack": "Requires external scheduler/runtime dependencies or previously mirrored containers; packaged evidence is the submission artifact.",
+    "safe_readonly": "Reads current queue/history/resource state only; may change with live production state but will not launch work.",
+    "safe_rerun": "Deterministic or non-invasive local command; safe for reviewers to rerun."
+  },
   "repo_root": "/home/erzhu419/mine_code/scheduleurm",
   "safe_launch_policy": "No reproduction step passes --allow-launch; live production gates are read-only/safe.",
   "steps": [
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_gavel_service_unit_certificate.log",
       "name": "gavel_service_unit_certificate",
+      "regeneration_mode": "safe_rerun",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_gavel_dependency_refresh.log",
+      "name": "gavel_dependency_refresh",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_gavel_service_unit_paired_holdout.log",
       "name": "gavel_service_unit_paired_holdout",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_gavel_service_unit_calibration_gate.log",
       "name": "gavel_service_unit_calibration_gate",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_declared_finite_domain_cover.log",
       "name": "declared_finite_domain_cover",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_future_production_admission_contract.log",
       "name": "future_production_admission_contract",
+      "regeneration_mode": "safe_readonly",
       "status": "PASS"
     },
     {
-      "exit_code": 2,
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_production_launch_completion_gate.log",
       "name": "production_launch_completion_gate",
-      "status": "PENDING"
+      "regeneration_mode": "safe_readonly",
+      "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_controlled_launched_completion_gate.log",
       "name": "controlled_launched_completion_gate",
+      "regeneration_mode": "precomputed_live_run",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_organic_production_canary_recorder_gate.log",
       "name": "organic_production_canary_recorder_gate",
+      "regeneration_mode": "safe_readonly",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_online_arrival_gate.log",
       "name": "online_arrival_gate",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_ablation_gate.log",
       "name": "ablation_gate",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_online_ablation_summary_ci.log",
       "name": "online_ablation_summary_ci",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_selected_profile_holdout_lcb_gate.log",
       "name": "selected_profile_holdout_lcb_gate",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_global_theorem_dispatcher_prototype_gate.log",
       "name": "global_theorem_dispatcher_prototype_gate",
+      "regeneration_mode": "safe_rerun",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_named_external_runtime_probe_gate.log",
+      "name": "named_external_runtime_probe_gate",
+      "regeneration_mode": "requires_external_stack",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_registered_sota_universe_gate.log",
+      "name": "registered_sota_universe_gate",
+      "regeneration_mode": "safe_rerun",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_registered_sota_adapter_closure_gate.log",
+      "name": "registered_sota_adapter_closure_gate",
+      "regeneration_mode": "safe_rerun",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_sota_admitted_universe_closure_gate.log",
+      "name": "sota_admitted_universe_closure_gate",
+      "regeneration_mode": "safe_rerun",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_organic_history_completion_gate.log",
+      "name": "organic_history_completion_gate",
+      "regeneration_mode": "safe_readonly",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_multinode_history_completion_gate.log",
+      "name": "multinode_history_completion_gate",
+      "regeneration_mode": "safe_readonly",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_multinode_original_deployment_gate.log",
+      "name": "multinode_original_deployment_gate",
+      "regeneration_mode": "safe_readonly",
+      "status": "PASS"
+    },
+    {
+      "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_decima_same_domain_benchmark_gate.log",
+      "name": "decima_same_domain_benchmark_gate",
+      "regeneration_mode": "requires_external_stack",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_reviewer_environment_manifest_gate.log",
       "name": "reviewer_environment_manifest_gate",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_gate_status_dashboard.log",
       "name": "gate_status_dashboard",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_lean_no_sorry_audit.log",
       "name": "lean_no_sorry_audit",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_lean_build.log",
       "name": "lean_build",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_targeted_tests.log",
       "name": "targeted_tests",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_paper_pdf.log",
       "name": "paper_pdf",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     },
     {
       "log": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/reproduce_latex_log_scan.log",
       "name": "latex_log_scan",
+      "regeneration_mode": "safe_rerun",
       "status": "PASS"
     }
   ]

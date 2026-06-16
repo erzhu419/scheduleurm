@@ -101,13 +101,13 @@
       "workload_key": "cpu_heavy_local_bench"
     }
   ],
-  "epsilon_gap_to_positive_eta": 738.9938419178069,
+  "epsilon_gap_to_positive_eta": 738.9819860499097,
   "gate": "selected_profile_holdout_lcb_gate",
   "gate_pass": true,
-  "holdout_adjusted_eta": -738.9938419178069,
+  "holdout_adjusted_eta": -738.9819860499097,
   "holdout_adjusted_eta_positive": false,
   "lcb_lower_service_capacity_ready": true,
-  "maximum_allowed_epsilon_est": 0.06692184220274106,
+  "maximum_allowed_epsilon_est": 0.07877771009999993,
   "min_samples_per_selected_profile": 20,
   "pass": true,
   "pass_meaning": "readiness tracker for selected-profile stochastic LCB certificates; gate_pass=true means either diagonal-normalized eta is positive or the LCB lower-service capacity certificate is positive after sample thresholds are met",
@@ -123,7 +123,7 @@
     "alpha1": 0.0,
     "beta": 0.0,
     "condition": "absolute eta = delta - (Lrho + epsilon_est + beta + alpha1) > 0; diagonal eta uses normalized service coordinates; lower-service capacity uses LCB service vectors directly; samples are profile-level aggregate service windows, not individual co-located task rates",
-    "delta": 0.06692184220274106,
+    "delta": 0.07877771009999993,
     "diagonal_normalized_certificate": {
       "Lrho": 0.0,
       "alpha1": 0.0,
@@ -131,22 +131,22 @@
       "capacity_status": "optimal",
       "certificate": "diagonal_normalized_lcb_eta",
       "condition": "eta_norm = delta_norm - (Lrho_norm + epsilon_norm + beta + alpha1) > 0",
-      "delta": 0.19999999999999996,
+      "delta": 0.19999999999999962,
       "epsilon_est_normalized": 0.7586603810675311,
-      "eta": -0.5586603810675311,
+      "eta": -0.5586603810675315,
       "normalized_lambda": {
         "cpu_heavy_local_bench": 0.8,
         "gpu_cnn_torch_resnet50": 0.8000000000000002,
-        "gpu_heavy_jax_matmul": 0.8,
+        "gpu_heavy_jax_matmul": 0.7999999999999999,
         "gpu_llm_distilgpt2": 0.8,
         "hybrid_rl_resac_ant": 0.8
       },
       "selected_service_normalizers": {
         "cpu_heavy_local_bench": 54.77960350000001,
         "gpu_cnn_torch_resnet50": 102.11041047,
-        "gpu_heavy_jax_matmul": 68.96979400000001,
+        "gpu_heavy_jax_matmul": 93.6212615,
         "gpu_llm_distilgpt2": 6484.650515,
-        "hybrid_rl_resac_ant": 0.3346092110137054
+        "hybrid_rl_resac_ant": 0.39388855049999993
       },
       "service_coordinate": "service_i / selected_service_i",
       "usable_for_theorem": false
@@ -251,26 +251,26 @@
       }
     ],
     "epsilon_est_selected_actions": 739.0607637600096,
-    "epsilon_gap_to_positive_eta": 738.9938419178069,
-    "eta": -738.9938419178069,
+    "epsilon_gap_to_positive_eta": 738.9819860499097,
+    "eta": -738.9819860499097,
     "lcb_lower_service_capacity_certificate": {
       "capacity_status": "optimal",
       "certificate": "selected_profile_lcb_lower_service_capacity",
-      "delta": 0.020993015640359297,
+      "delta": 0.024712136513379668,
       "lambda": {
         "cpu_heavy_local_bench": 15.600712357666508,
         "gpu_cnn_torch_resnet50": 47.73146945916983,
-        "gpu_heavy_jax_matmul": 43.48483613590493,
+        "gpu_heavy_jax_matmul": 59.02736515588555,
         "gpu_llm_distilgpt2": 4548.854063794946,
-        "hybrid_rl_resac_ant": 0.08397206256143722
+        "hybrid_rl_resac_ant": 0.09884854605351871
       },
       "load_fraction": 0.8,
       "lower_service_vector": {
         "cpu_heavy_local_bench": 19.500890447083133,
         "gpu_cnn_torch_resnet50": 59.66433682396229,
-        "gpu_heavy_jax_matmul": 54.356045169881156,
+        "gpu_heavy_jax_matmul": 73.78420644485693,
         "gpu_llm_distilgpt2": 5686.0675797436825,
-        "hybrid_rl_resac_ant": 0.10496507820179651
+        "hybrid_rl_resac_ant": 0.12356068256689838
       },
       "positive_lcb_by_workload": {
         "cpu_heavy_local_bench": true,
@@ -341,7 +341,7 @@
       },
       "usable_for_theorem": true
     },
-    "maximum_allowed_epsilon_est": 0.06692184220274106,
+    "maximum_allowed_epsilon_est": 0.07877771009999993,
     "row_count": 11,
     "rows": [
       {

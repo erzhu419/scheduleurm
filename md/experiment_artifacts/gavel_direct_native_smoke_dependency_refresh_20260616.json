@@ -1,0 +1,251 @@
+{
+  "blockers": [
+    "Gavel bounded native trace smoke is not a usable direct baseline",
+    "Scheduleurm-to-Gavel native trace seed smoke does not pass",
+    "Scheduleurm-to-Gavel native trace seed is a compatibility mapping; measured service-unit and policy-semantics equivalence still require validation before direct SOTA comparison"
+  ],
+  "copied_repo": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel",
+  "copy": {
+    "copied_repo": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel",
+    "pass": true,
+    "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"
+  },
+  "dependency_import_pass": true,
+  "dependency_imports": {
+    "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+    "modules": [
+      {
+        "detail": "OK",
+        "module": "grpc",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "grpc_tools",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "func_timeout",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "cvxpy",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "matrix_completion",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "scipy",
+        "ok": true,
+        "returncode": 0
+      }
+    ],
+    "pass": true
+  },
+  "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+  "direct_native_trace_pass": false,
+  "entrypoint_help": {
+    "command": [
+      "/usr/bin/python3",
+      "scripts/sweeps/run_sweep_static.py",
+      "-h"
+    ],
+    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+    "pass": true,
+    "returncode": 0,
+    "status": "PASS",
+    "stderr_tail": "",
+    "stdout_tail": "usage: run_sweep_static.py [-h] [-l LOG_DIR] [-t TIMEOUT] [-j PROCESSES]\n                           [-p POLICIES [POLICIES ...]]\n                           [-c CLUSTER_SPEC [CLUSTER_SPEC ...]]\n                           [--num_gpus_per_server NUM_GPUS_PER_SERVER]\n                           [--seeds SEEDS [SEEDS ...]] [-i INTERVAL]\n                           [-f FIXED_JOB_DURATION]\n                           [--throughputs-file THROUGHPUTS_FILE] [-m]\n                           [--solver {ECOS,GUROBI,SCS}] [-v]\n                           [--per_instance_type_prices_dir PER_INSTANCE_TYPE_PRICES_DIR]\n                           [--available_clouds {aws,gcp,azure} [{aws,gcp,azure} ...]]\n                           [--assign_SLOs] [--enable_global_queue] [--ideal]\n                           [-a NUM_TOTAL_JOBS_LOWER_BOUND]\n                           [-b NUM_TOTAL_JOBS_UPPER_BOUND]\n                           [-n NUM_DATA_POINTS]\n\nSweep through lambda values\n\noptions:\n  -h, --help            show this help message and exit\n  -l LOG_DIR, --log-dir LOG_DIR\n                        Log directory\n  -t TIMEOUT, --timeout TIMEOUT\n                        Timeout (in seconds) for each run\n  -j PROCESSES, --processes PROCESSES\n                        Number of processes to use in pool (use as many as\n                        available if not specified)\n  -p POLICIES [POLICIES ...], --policies POLICIES [POLICIES ...]\n                        List of policies to sweep\n  -c CLUSTER_SPEC [CLUSTER_SPEC ...], --cluster-spec CLUSTER_SPEC [CLUSTER_SPEC ...]\n                        Cluster specification in the form of\n                        #v100s:#p100s:#k80s\n  --num_gpus_per_server NUM_GPUS_PER_SERVER\n                        Cluster specification in the form of\n                        #v100s:#p100s:#k80s\n  --seeds SEEDS [SEEDS ...]\n                        List of random seeds\n  -i INTERVAL, --interval INTERVAL\n                        Interval length (in seconds)\n  -f FIXED_JOB_DURATION, --fixed-job-duration FIXED_JOB_DURATION\n                        If set, fixes the duration of all jobs to the\n                        specified value (in seconds)\n  --throughputs-file THROUGHPUTS_FILE\n                        Oracle throughputs file\n  -m, --generate-multi-gpu-jobs\n                        If set, generates multi-GPU jobs according to a pre-\n                        defined distribution\n  --solver {ECOS,GUROBI,SCS}\n                        CVXPY solver\n  -v, --verbose         Verbose\n  --per_instance_type_prices_dir PER_INSTANCE_TYPE_PRICES_DIR\n                        Per-instance-type prices directory\n  --available_clouds {aws,gcp,azure} [{aws,gcp,azure} ...]\n                        Clouds available to rent machines from\n  --assign_SLOs         If set, assigns SLOs to each job\n  --enable_global_queue\n                        If set, schedules jobs regardless of worker type\n  --ideal               Run allocations 100% ideally\n\nSweep over fixed range:\n  -a NUM_TOTAL_JOBS_LOWER_BOUND, --num-total-jobs-lower-bound NUM_TOTAL_JOBS_LOWER_BOUND\n                        Lower bound for num_total_jobs to sweep\n  -b NUM_TOTAL_JOBS_UPPER_BOUND, --num-total-jobs-upper-bound NUM_TOTAL_JOBS_UPPER_BOUND\n                        Upper bound for num_total_jobs to sweep\n  -n NUM_DATA_POINTS, --num-data-points NUM_DATA_POINTS\n                        Number of data points to sweep through\n",
+    "timeout": false,
+    "timeout_seconds": 120
+  },
+  "entrypoint_help_pass": true,
+  "gate": "gavel_direct_native_smoke",
+  "install_deps": true,
+  "install_result": {
+    "command": [
+      "/usr/bin/python3",
+      "-m",
+      "pip",
+      "install",
+      "--target",
+      "/tmp/scheduleurm_gavel_pydeps",
+      "grpcio",
+      "grpcio-tools",
+      "func_timeout",
+      "cvxpy",
+      "matrix_completion",
+      "scipy"
+    ],
+    "cwd": "/home/erzhu419/mine_code/scheduleurm",
+    "returncode": 0,
+    "stderr_tail": "ready exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/joblib-1.5.3.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/markupsafe already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/markupsafe-3.0.3.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/matrix_completion already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/matrix_completion-0.0.2.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/numpy already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/numpy-2.2.6.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/numpy.libs already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/osqp already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/osqp-1.1.3.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/protobuf-6.33.6.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/pycparser already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/pycparser-3.0.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scipy already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scipy-1.15.3.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scipy.libs already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scs already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scs-3.2.11.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/scs.libs already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/setup already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/setuptools already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/setuptools-82.0.1.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/typing_extensions-4.15.0.dist-info already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/typing_extensions.py already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/_cffi_backend.cpython-310-x86_64-linux-gnu.so already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/_cvxcore.cpython-310-x86_64-linux-gnu.so already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/_cvxpy_sparsecholesky.cpython-310-x86_64-linux-gnu.so already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/_distutils_hack already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/__pycache__ already exists. Specify --upgrade to force replacement.\nWARNING: Target directory /tmp/scheduleurm_gavel_pydeps/bin already exists. Specify --upgrade to force replacement.\n",
+    "stdout_tail": "Collecting grpcio\n  Using cached grpcio-1.81.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.8 MB)\nCollecting grpcio-tools\n  Using cached grpcio_tools-1.81.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.7 MB)\nCollecting func_timeout\n  Using cached func_timeout-4.3.5-py3-none-any.whl\nCollecting cvxpy\n  Using cached cvxpy-1.7.5-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (1.2 MB)\nCollecting matrix_completion\n  Using cached matrix_completion-0.0.2-py3-none-any.whl (12 kB)\nCollecting scipy\n  Using cached scipy-1.15.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (37.7 MB)\nCollecting typing-extensions~=4.12\n  Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)\nCollecting setuptools>=77.0.1\n  Using cached setuptools-82.0.1-py3-none-any.whl (1.0 MB)\nCollecting protobuf<7.0.0,>=6.33.5\n  Using cached protobuf-6.33.6-cp39-abi3-manylinux2014_x86_64.whl (323 kB)\nCollecting scs>=3.2.4.post1\n  Using cached scs-3.2.11-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (12.1 MB)\nCollecting numpy>=1.22.4\n  Using cached numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)\nCollecting clarabel>=0.5.0\n  Using cached clarabel-0.11.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.2 MB)\nCollecting osqp>=1.0.0\n  Using cached osqp-1.1.3-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (350 kB)\nCollecting cffi\n  Using cached cffi-2.0.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (216 kB)\nCollecting joblib\n  Using cached joblib-1.5.3-py3-none-any.whl (309 kB)\nCollecting jinja2\n  Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)\nCollecting pycparser\n  Using cached pycparser-3.0-py3-none-any.whl (48 kB)\nCollecting MarkupSafe>=2.0\n  Using cached markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (20 kB)\nInstalling collected packages: matrix_completion, func_timeout, typing-extensions, setuptools, pycparser, protobuf, numpy, MarkupSafe, joblib, scipy, jinja2, grpcio, cffi, scs, osqp, grpcio-tools, clarabel, cvxpy\nSuccessfully installed MarkupSafe-3.0.3 cffi-2.0.0 clarabel-0.11.1 cvxpy-1.7.5 func_timeout-4.3.5 grpcio-1.81.1 grpcio-tools-1.81.1 jinja2-3.1.6 joblib-1.5.3 matrix_completion-0.0.2 numpy-2.2.6 osqp-1.1.3 protobuf-6.33.6 pycparser-3.0 scipy-1.15.3 scs-3.2.11 setuptools-82.0.1 typing-extensions-4.15.0\n",
+    "timeout": false,
+    "timeout_seconds": 720
+  },
+  "native_generated_jobs_pass": true,
+  "native_generated_jobs_smoke": {
+    "command": [
+      "/usr/bin/python3",
+      "scripts/drivers/simulate_scheduler_with_generated_jobs.py",
+      "-c",
+      "1:0:0",
+      "--num_gpus_per_server",
+      "1:1:1",
+      "-s",
+      "0",
+      "-e",
+      "2",
+      "-p",
+      "fifo",
+      "--seed",
+      "0",
+      "-i",
+      "60",
+      "-l",
+      "0",
+      "-f",
+      "60",
+      "--throughputs_file",
+      "simulation_throughputs.json",
+      "-v"
+    ],
+    "completed_two_jobs": true,
+    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+    "pass": true,
+    "returncode": 0,
+    "status": "PASS",
+    "stderr_tail": "scheduler:INFO [0] Running scheduler in simulation with the following args: policy=FIFO, seed=0, time_per_iteration=60, profiling_percentage=1.0, num_reference_models=26\n[2026-06-16 12:44:58.775704] Configuration: cluster_spec=v100:1|p100:0|k80:0, policy=FIFO, seed=0, lam=0.000000\nscheduler:INFO [0] Number of completed jobs: 0\nscheduler:INFO [0] [Job dispatched]\tJob ID: 0\nscheduler:INFO [0] [Job dispatched]\tJob ID: 1\nscheduler:DEBUG [0] Resetting time run so far\nscheduler:INFO [0] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0\tPriority: 2.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [0] Number of completed jobs: 0\nscheduler:DEBUG [59.97230318543036] Current active completion events: dict_keys([])\nscheduler:INFO [59.97230318543036] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [59.97230318543036] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.33\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [59.97230318543036] Number of completed jobs: 0\nscheduler:DEBUG [60.0] Current active completion events: dict_keys([])\nscheduler:INFO [60.0] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [60.0] [Job succeeded]\tJob ID: 0\tStart timestamp: 0.00\tEnd timestamp: 60.00\tDuration: 60.00\nscheduler:INFO [60.0] Remaining active jobs: 1\nscheduler:DEBUG [60.0] Resetting time run so far\nscheduler:INFO [60.0] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [60.0] Number of completed jobs: 1\nscheduler:DEBUG [119.99239483071614] Current active completion events: dict_keys([])\nscheduler:INFO [119.99239483071614] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [119.99239483071614] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [119.99239483071614] Number of completed jobs: 1\nscheduler:DEBUG [120.0] Current active completion events: dict_keys([])\nscheduler:INFO [120.0] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [120.0] [Job succeeded]\tJob ID: 1\tStart timestamp: 0.00\tEnd timestamp: 120.00\tDuration: 120.00\nscheduler:INFO [120.0] Remaining active jobs: 0\nscheduler:WARNING [120.0] 1 GPUs of type v100 left unused. Number of active jobs: 0\nscheduler:INFO [120.0] Number of completed jobs: 2\n[2026-06-16 12:44:58.778003] Results: average JCT=90.000000, utilization=1.000000, total_cost=$0.00, num_SLO_violations=0, lease_extension_frequency=100.00%\n",
+    "stdout_tail": "Window start time: 0.000000\nWindow duration: 120.000 seconds (0.03 hours)\nTotal duration: 120.000 seconds (0.03 hours)\nJob completion times:\nJob 0: 60.000\nJob 1: 120.000\nAverage job completion time: 90.000 seconds (0.03 hours)\nAverage job completion time (low priority): 90.000 seconds (0.03 hours)\nCluster utilization: 1.000\nTotal cost: $0.00\nNumber of SLO violations: 0\nExtended leases 100.00% of the time (2/2)\n",
+    "timeout": false,
+    "timeout_seconds": 120,
+    "trace_scope": "Native Gavel generated-jobs simulator smoke only; not a Scheduleurm same-workload comparison."
+  },
+  "native_trace_smoke": {
+    "blocker": "native trace smoke disabled",
+    "pass": false,
+    "status": "NOT_RUN"
+  },
+  "pass": true,
+  "protobuf_stub_generation_pass": true,
+  "protobuf_stubs": {
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/iterator_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+        "proto": "iterator_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/scheduler_to_worker.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+        "proto": "scheduler_to_worker.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/worker_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+        "proto": "worker_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/common.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+        "proto": "common.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/enums.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
+        "proto": "enums.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      }
+    ],
+    "pass": true,
+    "rpc_stubs_dir": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/runtime/rpc_stubs"
+  },
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "run_root": "/tmp/scheduleurm_gavel_direct_native_smoke",
+  "run_root_removed": false,
+  "same_workload_direct_baseline_ready": false,
+  "scheduleurm_native_trace_seed_pass": false,
+  "scheduleurm_native_trace_seed_smoke": {
+    "blocker": "native trace smoke disabled",
+    "pass": false,
+    "status": "NOT_RUN"
+  },
+  "scope": "Isolated Gavel native-stack smoke audit.  A pass means the local clone can be prepared and its entrypoint can start in a temporary copy.  It does not mean Gavel has been run as a same-workload full-stack Scheduleurm baseline.",
+  "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"
+}

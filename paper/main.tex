@@ -1922,10 +1922,12 @@ rows satisfy them.}
 
 \section*{Appendix: Gate Ladder}
 
-Tables~\ref{tab:gate-dashboard} and~\ref{tab:gate-dashboard-continued} are the
-compact printed version of \texttt{md/gate\_status\_dashboard.md}.  Each row
-distinguishes the scoped claim from the adjacent strong claim and lists the
-threshold required to promote the stronger statement.
+Table~\ref{tab:claim-matrix} is the main-text claim dashboard.  The longer
+ledger in Tables~\ref{tab:gate-dashboard} and~\ref{tab:gate-dashboard-continued}
+is an artifact index, not an additional layer of main claims.  It is a compact
+printed version of \texttt{md/gate\_status\_dashboard.md}: each row separates the
+scoped claim from the adjacent strong claim and lists the threshold required to
+promote the stronger statement.
 
 \begin{table}[t]
 \TABLE{Reviewer gate ladder for scoped and adjacent strong claims.\label{tab:gate-dashboard}}{
@@ -2040,17 +2042,21 @@ Organic canary recorder & true & true & Live-trace completion counters remain
 false, but strict history completion passes with 4,058 launched rows, 4,047
 completed rows, 35 domains, 13 nodes, and no strict unadmitted launches. & Do
 not read this as raw-history or future-workload closure. \\
-Production launch/completion & true & true & The rolling safe-launch gate now
-has active progress plus shadow trace and the strict scheduler-history
-launched-completion certificate. & Keep live oracle trace closure separate from
-history completion. \\
+Production launch/completion & true & true & The rolling safe-launch gate has
+active progress plus shadow trace and a strict scheduler-history
+launched-completion certificate. & Use this as history-backed completion
+evidence; use live-oracle language only after the live-oracle subgate closes. \\
+Production live-oracle subgate & true & false & Current production closure is
+history-backed; the large-scale live oracle trace flag is not closed. & Collect
+a naturally accumulated admitted live oracle trace with enough slots,
+realized progress/completions, and zero unadmitted launched rows. \\
 Multi-node theorem shadow & true & false & Cross-node theorem-candidate shadow
 sees two reachable GPU nodes, 18 certified candidate rows, 626 configurations,
 and a selected two-node robust-MaxWeight configuration. & This is read-only
 candidate-family evidence, not launched original multi-node full-stack
 superiority. \\
 Production organic readiness bridge & true & true & Strict admission, canary
-recorder, active-production theorem shadow, queued theorem trace, and
+recorder, active-production theorem shadow, queued readonly theorem trace, and
 history-completion snapshot are closed. & Do not claim every live slot has an
 emitted oracle trace row. \\
 Global dispatcher prototype & true & false & Prototype is wired only as an

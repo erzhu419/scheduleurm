@@ -74,7 +74,7 @@ post-closure upgrade artifacts:
   md/future_production_admission_contract_20260612.md
   md/q00_q10_broad_envelope_gate_20260612.md
   md/adaptive_sampler_detector_certificate_20260612.md
-  md/sota_fullstack_superiority_gate_20260612.md
+  md/sota_fullstack_superiority_gate_20260613.md
   md/all_state_conservative_cover_gate_20260612.md
   md/production_launch_completion_gate_20260612.md
   md/gavel_service_unit_equivalence_certificate_20260612.md

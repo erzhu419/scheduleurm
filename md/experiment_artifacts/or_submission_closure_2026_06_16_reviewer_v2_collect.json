@@ -211019,8 +211019,8 @@
       "arbitrary_future_workload_superiority_ready": false,
       "arbitrary_sota_superiority_ready": false,
       "artifact_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_fullstack_superiority_gate_20260613.json",
-      "direct_fullstack_named_sota_superiority_ready": true,
-      "direct_fullstack_sota_superiority_ready": true,
+      "direct_fullstack_named_sota_superiority_ready": false,
+      "direct_fullstack_sota_superiority_ready": false,
       "full_stack_ready_count": 5,
       "gate": "sota_fullstack_superiority_gate",
       "gate_pass": true,
@@ -211132,7 +211132,10 @@
         "sia_goodput_scheduler"
       ],
       "named_sota_fullstack_ready_count": 5,
-      "named_sota_fullstack_superiority_count": 5,
+      "named_sota_fullstack_superiority_count": 0,
+      "named_same_host_runtime_probe_native_better_count": 5,
+      "named_same_host_runtime_probe_ready": true,
+      "named_same_host_runtime_probe_ready_count": 5,
       "native_execution_attempts": {
         "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_native_execution_attempts_20260613.json",
         "direct_full_stack_ready_count": 0,
@@ -211140,7 +211143,7 @@
         "ready_count": 3
       },
       "pass": true,
-      "pass_meaning": "named five same-host same-workload full-stack rows with paired native superiority are closed; arbitrary SOTA, registered-universe external binary, original multi-node, and production-wide trace superiority are not claimed",
+      "pass_meaning": "named five same-host same-workload runtime probes with paired native-better rows are closed; direct full-stack SOTA superiority, registered-universe external-binary superiority, original multi-node superiority, and production-wide trace superiority are not claimed",
       "policy_semantics_comparison_ready": true,
       "pollux_fullstack_same_workload": {
         "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_same_workload_gate_20260613.json",
@@ -211201,7 +211204,9 @@
             "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
           ],
           "entrypoint_smoke_pass": true,
-          "full_stack_superiority_claim_allowed": true,
+          "full_stack_superiority_claim_allowed": false,
+          "scoped_runtime_probe_native_better": true,
+          "scoped_runtime_probe_ready": true,
           "gavel_physical_same_workload_fullstack_ready": true,
           "gavel_physical_same_workload_superiority_ready": true,
           "gavel_resident_delay_jct_holdout_ready": true,
@@ -211227,7 +211232,9 @@
             "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
           ],
           "entrypoint_smoke_pass": true,
-          "full_stack_superiority_claim_allowed": true,
+          "full_stack_superiority_claim_allowed": false,
+          "scoped_runtime_probe_native_better": true,
+          "scoped_runtime_probe_ready": true,
           "gavel_physical_same_workload_fullstack_ready": false,
           "gavel_physical_same_workload_superiority_ready": false,
           "gavel_resident_delay_jct_holdout_ready": false,
@@ -211256,7 +211263,9 @@
             "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping"
           ],
           "entrypoint_smoke_pass": false,
-          "full_stack_superiority_claim_allowed": true,
+          "full_stack_superiority_claim_allowed": false,
+          "scoped_runtime_probe_native_better": true,
+          "scoped_runtime_probe_ready": true,
           "gavel_physical_same_workload_fullstack_ready": false,
           "gavel_physical_same_workload_superiority_ready": false,
           "gavel_resident_delay_jct_holdout_ready": false,
@@ -211285,7 +211294,9 @@
             "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
           ],
           "entrypoint_smoke_pass": false,
-          "full_stack_superiority_claim_allowed": true,
+          "full_stack_superiority_claim_allowed": false,
+          "scoped_runtime_probe_native_better": true,
+          "scoped_runtime_probe_ready": true,
           "gavel_physical_same_workload_fullstack_ready": false,
           "gavel_physical_same_workload_superiority_ready": false,
           "gavel_resident_delay_jct_holdout_ready": false,
@@ -211315,7 +211326,9 @@
             "Salus benchmark seed exists, but Salus server/runtime execution is still required"
           ],
           "entrypoint_smoke_pass": false,
-          "full_stack_superiority_claim_allowed": true,
+          "full_stack_superiority_claim_allowed": false,
+          "scoped_runtime_probe_native_better": true,
+          "scoped_runtime_probe_ready": true,
           "gavel_physical_same_workload_fullstack_ready": false,
           "gavel_physical_same_workload_superiority_ready": false,
           "gavel_resident_delay_jct_holdout_ready": false,

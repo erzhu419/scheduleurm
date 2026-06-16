@@ -1,19 +1,23 @@
-# SOTA Full-Stack Superiority Gate
+# Superseded Named External Runtime Probe Snapshot
 
 ## Summary
 
 | Quantity | Value |
 |---|---:|
 | `pass` | true |
-| `direct_fullstack_sota_superiority_ready` | true |
-| `direct_fullstack_named_sota_superiority_ready` | true |
+| `status` | `SUPERSEDED_BY_20260613_NAMED_RUNTIME_PROBE_DIRECT_SOTA_FALSE` |
+| `superseded_by` | `md/sota_fullstack_superiority_gate_20260613.md` |
+| `direct_fullstack_sota_superiority_ready` | false |
+| `direct_fullstack_named_sota_superiority_ready` | false |
 | `registered_sota_universe_superiority_ready` | false |
 | `arbitrary_sota_superiority_ready` | false |
 | `multinode_original_deployment_superiority_ready` | false |
 | `production_wide_organic_trace_superiority_ready` | false |
 | `full_stack_ready_count` | 5 |
 | `named_sota_fullstack_ready_count` | 5 |
-| `named_sota_fullstack_superiority_count` | 5 |
+| `named_sota_fullstack_superiority_count` | 0 |
+| `named_same_host_runtime_probe_ready_count` | 5 |
+| `named_same_host_runtime_probe_native_better_count` | 5 |
 | `policy_semantics_comparison_ready` | true |
 | `hard_blocker_certificate_ready` | true |
 | `native_execution_ready_count` | 3 |
@@ -53,4 +57,10 @@
 
 ## Scope
 
-Strict gate for direct full-stack superiority claims over the named systems Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped same-host same-workload test substrate.  It does not claim superiority over arbitrary SOTA systems, arbitrary future workloads, or production-wide online traces outside this measured gate.
+This 20260612 snapshot is superseded by the 20260613 named external runtime-probe
+gate.  It should be read only as scoped same-host same-workload runtime-probe
+evidence for Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus.  It does not claim
+direct full-stack SOTA superiority, registered-universe external-binary
+superiority, arbitrary SOTA superiority, arbitrary future-workload superiority,
+original multi-node deployment superiority, or production-wide online trace
+superiority.

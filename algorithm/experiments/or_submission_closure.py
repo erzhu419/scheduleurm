@@ -979,7 +979,7 @@ def collect_existing_closure_gates(
         "sota_fullstack_superiority_gate": _load_existing_report(
             "sota_fullstack_superiority_gate",
             ARTIFACT_ROOT / "sota_fullstack_superiority_gate_20260613.json",
-            "direct full-stack named-system scope gate",
+            "named external runtime-probe scope gate; direct full-stack superiority remains false",
         ),
         "measured_cache_external_policy_frontier": _load_existing_report(
             "measured_cache_external_policy_frontier",

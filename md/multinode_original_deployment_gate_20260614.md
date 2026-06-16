@@ -4,7 +4,8 @@
 |---|---:|
 | `pass` | true |
 | `probe_remotes` | false |
-| `same_host_named_fullstack_ready` | true |
+| `same_host_named_runtime_probe_ready` | true |
+| `same_host_named_fullstack_ready` | false |
 | `reachable_node_count` | 0 |
 | `reachable_gpu_node_count` | 0 |
 | `reachable_cpu_node_count` | 0 |
@@ -30,4 +31,4 @@
 
 ## Scope
 
-Scheduleurm-native multi-node launched/completion history is certified separately from external SOTA original-deployment superiority.  Same-host external full-stack rows and Scheduleurm multi-node history do not imply that every external scheduler has been run through its original multi-node worker/control-plane path.
+Scheduleurm-native multi-node launched/completion history is certified separately from external SOTA original-deployment superiority.  Same-host external runtime-probe rows and Scheduleurm multi-node history do not imply that every external scheduler has been run through its original multi-node worker/control-plane path.

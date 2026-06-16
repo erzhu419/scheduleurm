@@ -1,10 +1,12 @@
 {
   "arbitrary_sota_superiority_ready": false,
   "gate": "sota_universe_registry_gate",
-  "named_direct_fullstack_ready_count": 5,
-  "named_direct_superiority_ready_count": 5,
+  "named_direct_native_better_ready_count": 5,
+  "named_direct_runtime_probe_ready_count": 5,
   "named_direct_system_count": 5,
-  "named_five_fullstack_superiority_ready": true,
+  "named_five_fullstack_superiority_ready": false,
+  "named_five_runtime_probe_ready": true,
+  "named_runtime_probe_system_count": 5,
   "pass": true,
   "registered_extension_entrypoint_smoke_ready_count": 0,
   "registered_extension_runtime_inventory_ready": true,
@@ -16,8 +18,8 @@
     {
       "adapter": "gavel_simulation",
       "adjacent_simulator_only": false,
-      "blocker": "none for the scoped same-host same-workload named row",
-      "class": "named_direct_fullstack",
+      "blocker": "none for the scoped same-host same-workload runtime-probe row",
+      "class": "named_runtime_probe",
       "comparable_gpu_scheduler_claim_ready": true,
       "domain": "heterogeneous deep-learning cluster scheduling",
       "entrypoint_smoke_ready": false,
@@ -25,14 +27,15 @@
       "paired_native_superiority_ready": true,
       "repo_present": true,
       "runtime_inventory_ready": false,
-      "same_host_same_workload_fullstack_ready": true,
+      "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": true,
       "system": "Gavel"
     },
     {
       "adapter": "pollux_adaptdl_scheduler",
       "adjacent_simulator_only": false,
-      "blocker": "none for the scoped same-host same-workload named row",
-      "class": "named_direct_fullstack",
+      "blocker": "none for the scoped same-host same-workload runtime-probe row",
+      "class": "named_runtime_probe",
       "comparable_gpu_scheduler_claim_ready": true,
       "domain": "goodput-aware elastic deep-learning scheduling",
       "entrypoint_smoke_ready": false,
@@ -40,14 +43,15 @@
       "paired_native_superiority_ready": true,
       "repo_present": true,
       "runtime_inventory_ready": false,
-      "same_host_same_workload_fullstack_ready": true,
+      "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": true,
       "system": "Pollux/AdaptDL"
     },
     {
       "adapter": "sia_goodput_scheduler",
       "adjacent_simulator_only": false,
-      "blocker": "none for the scoped same-host same-workload named row",
-      "class": "named_direct_fullstack",
+      "blocker": "none for the scoped same-host same-workload runtime-probe row",
+      "class": "named_runtime_probe",
       "comparable_gpu_scheduler_claim_ready": true,
       "domain": "goodput-aware multi-cluster deep-learning scheduling",
       "entrypoint_smoke_ready": false,
@@ -55,14 +59,15 @@
       "paired_native_superiority_ready": true,
       "repo_present": true,
       "runtime_inventory_ready": false,
-      "same_host_same_workload_fullstack_ready": true,
+      "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": true,
       "system": "Sia"
     },
     {
       "adapter": "iadeep_kubernetes_extender",
       "adjacent_simulator_only": false,
-      "blocker": "none for the scoped same-host same-workload named row",
-      "class": "named_direct_fullstack",
+      "blocker": "none for the scoped same-host same-workload runtime-probe row",
+      "class": "named_runtime_probe",
       "comparable_gpu_scheduler_claim_ready": true,
       "domain": "Kubernetes GPU-sharing scheduler/extender",
       "entrypoint_smoke_ready": false,
@@ -70,14 +75,15 @@
       "paired_native_superiority_ready": true,
       "repo_present": true,
       "runtime_inventory_ready": false,
-      "same_host_same_workload_fullstack_ready": true,
+      "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": true,
       "system": "IADeep"
     },
     {
       "adapter": "salus_gpu_sharing",
       "adjacent_simulator_only": false,
-      "blocker": "none for the scoped same-host same-workload named row",
-      "class": "named_direct_fullstack",
+      "blocker": "none for the scoped same-host same-workload runtime-probe row",
+      "class": "named_runtime_probe",
       "comparable_gpu_scheduler_claim_ready": true,
       "domain": "GPU-sharing execution service",
       "entrypoint_smoke_ready": false,
@@ -85,13 +91,14 @@
       "paired_native_superiority_ready": true,
       "repo_present": true,
       "runtime_inventory_ready": false,
-      "same_host_same_workload_fullstack_ready": true,
+      "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": true,
       "system": "Salus"
     },
     {
       "adapter": "decima_simulator",
       "adjacent_simulator_only": true,
-      "blocker": "adjacent simulator domain; needs a Spark-DAG comparison protocol, not a GPU co-location full-stack row",
+      "blocker": "adjacent simulator domain; needs a Spark-DAG comparison protocol, not a GPU co-location runtime-probe row",
       "class": "adjacent_simulator",
       "comparable_gpu_scheduler_claim_ready": false,
       "domain": "Spark DAG scheduling simulator",
@@ -101,6 +108,7 @@
       "repo_present": true,
       "runtime_inventory_ready": false,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Decima"
     },
     {
@@ -116,6 +124,7 @@
       "repo_present": true,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Tiresias"
     },
     {
@@ -131,6 +140,7 @@
       "repo_present": false,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Themis"
     },
     {
@@ -146,6 +156,7 @@
       "repo_present": false,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Gandiva"
     },
     {
@@ -161,6 +172,7 @@
       "repo_present": true,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Shockwave"
     },
     {
@@ -176,6 +188,7 @@
       "repo_present": true,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "AlloX"
     },
     {
@@ -191,11 +204,12 @@
       "repo_present": true,
       "runtime_inventory_ready": true,
       "same_host_same_workload_fullstack_ready": false,
+      "same_host_same_workload_runtime_probe_ready": false,
       "system": "Optimus"
     }
   ],
-  "scope": "The named five direct full-stack claim is ready when Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus have same-host same-workload rows.  The registered-universe claim additionally requires comparable full-stack rows for every registered GPU/DL scheduler.  The unbounded 'arbitrary SOTA' claim is not a finite experimental statement.",
+  "scope": "The named five runtime-probe claim is ready when Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus have scoped same-host same-workload rows with paired native-better evidence.  The registered-universe claim additionally requires comparable adapter rows for every registered GPU/DL scheduler.  The unbounded 'arbitrary SOTA' claim is not a finite experimental statement.",
   "scoped_claim_ready": true,
-  "status": "NAMED_FIVE_FULLSTACK_READY_REGISTERED_UNIVERSE_PENDING",
+  "status": "NAMED_FIVE_RUNTIME_PROBE_READY_REGISTERED_UNIVERSE_PENDING",
   "strong_claim_ready": false
 }

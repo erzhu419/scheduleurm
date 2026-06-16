@@ -1,24 +1,26 @@
-# SOTA Full-Stack Superiority Gate
+# Named External Runtime Probe Gate
 
 ## Summary
 
 | Quantity | Value |
 |---|---:|
 | `pass` | true |
-| `status` | `NAMED_SAME_HOST_FULLSTACK_SUPERIORITY_PASS_REGISTERED_ARBITRARY_FALSE` |
+| `status` | `NAMED_SAME_HOST_RUNTIME_PROBE_PASS_DIRECT_SOTA_FALSE` |
 | `gate_pass` | true |
 | `scoped_claim_ready` | true |
 | `strong_claim_ready` | false |
-| `pass_meaning` | named five same-host same-workload full-stack rows with paired native superiority are closed; arbitrary SOTA, registered-universe external binary, original multi-node, and production-wide trace superiority are not claimed |
-| `direct_fullstack_sota_superiority_ready` | true |
-| `direct_fullstack_named_sota_superiority_ready` | true |
+| `pass_meaning` | named five same-host same-workload runtime probes with paired native-better rows are closed; direct full-stack SOTA superiority, registered-universe external-binary superiority, original multi-node superiority, and production-wide trace superiority are not claimed |
+| `named_same_host_runtime_probe_ready` | true |
+| `named_same_host_runtime_probe_native_better` | true |
+| `direct_fullstack_sota_superiority_ready` | false |
+| `direct_fullstack_named_sota_superiority_ready` | false |
 | `registered_sota_universe_superiority_ready` | false |
 | `arbitrary_sota_superiority_ready` | false |
 | `multinode_original_deployment_superiority_ready` | false |
 | `production_wide_organic_trace_superiority_ready` | false |
 | `full_stack_ready_count` | 5 |
-| `named_sota_fullstack_ready_count` | 5 |
-| `named_sota_fullstack_superiority_count` | 5 |
+| `named_same_host_runtime_probe_ready_count` | 5 |
+| `named_same_host_runtime_probe_native_better_count` | 5 |
 | `policy_semantics_comparison_ready` | true |
 | `hard_blocker_certificate_ready` | true |
 | `native_execution_ready_count` | 3 |
@@ -47,7 +49,7 @@
 
 ## System Rows
 
-| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux full-stack pair | Sia full-stack pair | IADeep full-stack pair | Salus full-stack pair | Full-stack ready | Superiority allowed | Reason |
+| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
 | `gavel_simulation` | true | true | true | true | true | false | false | false | false | true | true | Gavel completed the same temporary CUDA probe through its physical scheduler/worker/RPC/dispatcher/GavelIterator path, and the same script run directly on the same host has lower JCT in the scoped run; this is a Gavel-scoped physical full-stack row, not an all-workload Gavel claim |
 | `pollux_adaptdl_scheduler` | true | false | false | false | false | true | false | false | false | true | true | Pollux/AdaptDL completed the same CUDA binary through its Kubernetes controller/allocator/supervisor stack, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Pollux-scoped full-stack row, not an all-SOTA superiority certificate |
@@ -58,4 +60,4 @@
 
 ## Scope
 
-Strict gate for direct full-stack superiority claims over the named systems Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped same-host same-workload test substrate.  It does not claim superiority over arbitrary SOTA systems, arbitrary future workloads, or production-wide online traces outside this measured gate.
+Scoped named-system same-host runtime-probe evidence for Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus.  The gate does not claim direct full-stack SOTA superiority, arbitrary SOTA superiority, future-workload superiority, original multi-node deployment superiority, or production-wide online trace superiority.

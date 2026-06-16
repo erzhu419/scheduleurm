@@ -12,6 +12,7 @@
 | `pass_meaning` | classification and positive-cover certificate over the declared finite service-cache domain, not arbitrary all-state positive service |
 | `declared_finite_positive_cover_ready` | true |
 | `positive_service_all_state_cover_ready` | false |
+| `service_cache_v2_metadata_ready` | true |
 | `declared_universe_bucket_count` | 225 |
 | `workload_domain_count` | 120 |
 | `positive_bucket_count` | 215 |
@@ -22,6 +23,12 @@
 | `positive_service_fraction` | 0.955556 |
 | `boundary_fraction` | 0.044444 |
 | `uncovered_fraction` | 0.000000 |
+| `measurement_first_seen` | `2026-06-03T02:45:26+0800` |
+| `measurement_last_seen` | `2026-06-14T06:45:59+0800` |
+| `measurement_window_s` | 964833.0 |
+| `timestamped_bucket_count` | 193 |
+| `untimestamped_bucket_count` | 32 |
+| `source_run_id_count` | 112 |
 
 This gate passes the scoped certificate. It does not make the adjacent strong claim.
 

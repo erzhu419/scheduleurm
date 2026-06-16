@@ -4,8 +4,8 @@ This note supersedes the older pending statements below for production-wide
 organic completion and Scheduleurm-native multi-node history.
 
 - `organic_history_completion_gate_20260614` is now closed under strict
-  exact/signature service admission: 4,020 strict organic launched rows, 3,992
-  completed rows, completion fraction 0.9930, 35 workload domains, 13 nodes, and
+  exact/signature service admission: 4,058 strict organic launched rows, 4,047
+  completed rows, completion fraction 0.9973, 35 workload domains, 13 nodes, and
   zero strict unadmitted launched rows.
 - `production_wide_organic_trace_gate_20260614` is now strong-ready through the
   strict scheduler-history path:
@@ -70,7 +70,7 @@ organic completion and Scheduleurm-native multi-node history.
 
 现在状态是：**named five direct full-stack same-workload strong claim 已闭合，但 universal/all-future claim 没闭合，也不应该写成任意 SOTA 全栈通吃。**
 
-当前最新 artifact 很清楚：direct SOTA full-stack gate 已从 6 月 12 日的 read-only readiness audit 推进到 named 5/5 same-workload rows。Gavel physical scheduler/worker/RPC/GavelIterator、Pollux/AdaptDL、Sia、IADeep extender/device-plugin、Salus server/zrpc 都有 scoped same-host same-workload row，并且每个 row 都有 paired native superiority。`direct_fullstack_named_sota_superiority_ready=true`，但 scope 只覆盖 named five measured probes。
+当前最新 artifact 已收紧：历史入口 `sota_fullstack_superiority_gate.py` 现在生成的是 named external runtime-probe gate。Gavel physical scheduler/worker/RPC/GavelIterator、Pollux/AdaptDL、Sia、IADeep extender/device-plugin、Salus server/zrpc 都有 scoped same-host same-workload runtime-probe row，并且每个 row 都有 paired native-better evidence。`named_same_host_runtime_probe_ready=true`，但 `direct_fullstack_named_sota_superiority_ready=false`，scope 只覆盖 named five measured probes。
 
 论文现在写法应分成两层：policy-semantics replay 是广覆盖在线比较；direct full-stack superiority 只对 Gavel/Pollux/AdaptDL/Sia/IADeep/Salus 五个 named same-host same-workload rows 成立。Gavel scalar simulator service-unit equivalence 仍未证明，这一点和 Gavel physical same-workload row 要分开写。
 

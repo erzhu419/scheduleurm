@@ -5,12 +5,12 @@ finite action universe.  It distinguishes two adapter layers:
 
 * policy/service-unit adapters, which place a registered SOTA family inside the
   finite measured-cache action union; and
-* direct external-binary adapters, which run the registered system's own code on
-  the same workload and metric substrate.
+* scoped runtime-probe adapters, which run a named external system on the same
+  host and measured probe substrate.
 
 The first layer can be closed for the registered non-adjacent SOTA universe.
-The second layer remains closed only for the named systems that already have
-same-host same-workload full-stack rows.
+The second layer remains a finite runtime-probe diagnostic.  It is not promoted
+to registered-system direct external-binary superiority.
 """
 from __future__ import annotations
 
@@ -58,19 +58,20 @@ def build_registered_sota_adapter_closure_gate() -> dict[str, Any]:
     for system in systems:
         arow = admitted_rows.get(system) or {}
         rrow = runtime_rows.get(system) or {}
-        named_direct = _named_direct_ready(system, fullstack_rows)
+        named_runtime_probe = _named_runtime_probe_ready(system, fullstack_rows)
         extra = _system_extra(system)
         policy_adapter_ready = bool(
             arow.get("policy_semantics_admitted")
             and arow.get("action_union_dominance_ready")
-        ) or named_direct
-        direct_binary_adapter_ready = bool(named_direct)
+        ) or named_runtime_probe
+        direct_binary_adapter_ready = bool(named_runtime_probe)
         rows.append(
             {
                 "system": system,
                 "policy_service_unit_adapter_ready": policy_adapter_ready,
                 "direct_external_binary_adapter_ready": direct_binary_adapter_ready,
-                "direct_fullstack_superiority_ready": direct_binary_adapter_ready,
+                "scoped_runtime_probe_adapter_ready": direct_binary_adapter_ready,
+                "direct_fullstack_superiority_ready": False,
                 "runtime_inventory_ready": bool(
                     rrow.get("repo_or_paper_inventory_ready")
                     or system in {"Gavel", "Pollux/AdaptDL", "Sia", "IADeep", "Salus"}
@@ -112,6 +113,8 @@ def build_registered_sota_adapter_closure_gate() -> dict[str, Any]:
         "registered_policy_adapter_universe_ready": policy_closed,
         "registered_direct_external_binary_superiority_ready": False,
         "registered_direct_external_binary_adapter_ready": direct_ready_count == len(rows),
+        "registered_direct_fullstack_superiority_ready": False,
+        "scoped_runtime_probe_adapter_ready_count": direct_ready_count,
         "rows": rows,
         "runtime_snapshot": {
             "status": runtime.get("status"),
@@ -127,8 +130,11 @@ def build_registered_sota_adapter_closure_gate() -> dict[str, Any]:
         },
         "fullstack_snapshot": {
             "status": fullstack.get("status"),
-            "direct_fullstack_named_sota_superiority_ready": fullstack.get(
-                "direct_fullstack_named_sota_superiority_ready"
+            "named_same_host_runtime_probe_ready": fullstack.get(
+                "named_same_host_runtime_probe_ready"
+            ),
+            "direct_fullstack_sota_superiority_ready": fullstack.get(
+                "direct_fullstack_sota_superiority_ready"
             ),
         },
         "blocker": (
@@ -167,7 +173,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         "## Rows",
         "",
-        "| System | Policy/service-unit adapter | Direct binary adapter | Runtime inventory | Entrypoint smoke | Evidence | Blocker |",
+        "| System | Policy/service-unit adapter | Scoped runtime-probe adapter | Runtime inventory | Entrypoint smoke | Evidence | Blocker |",
         "|---|---:|---:|---:|---:|---|---|",
     ]
     for row in report.get("rows") or []:
@@ -187,7 +193,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _named_direct_ready(system: str, fullstack_rows: Mapping[str, Mapping[str, Any]]) -> bool:
+def _named_runtime_probe_ready(system: str, fullstack_rows: Mapping[str, Mapping[str, Any]]) -> bool:
     aliases = {
         "Gavel": ("gavel_simulation", "Gavel"),
         "Pollux/AdaptDL": ("pollux_adaptdl_scheduler", "Pollux/AdaptDL"),
@@ -197,7 +203,7 @@ def _named_direct_ready(system: str, fullstack_rows: Mapping[str, Mapping[str, A
     }
     for alias in aliases.get(system, (system,)):
         row = fullstack_rows.get(alias) or {}
-        if row.get("same_workload_full_stack_ready") and row.get("full_stack_superiority_claim_allowed"):
+        if row.get("scoped_runtime_probe_ready") and row.get("scoped_runtime_probe_native_better"):
             return True
     return False
 
@@ -233,7 +239,7 @@ def _system_extra(system: str) -> dict[str, Any]:
             "summary": f"{system} is represented by policy-semantics action family; no official runtime row is present in this package.",
             "paper_semantics_adapter": True,
         }
-    return {"summary": "Named system direct full-stack row is closed in the named-five gate."}
+    return {"summary": "Named system has a scoped same-host runtime-probe row in the named-five gate; this is not direct SOTA superiority."}
 
 
 def _allox_log_summary() -> dict[str, Any]:
@@ -292,9 +298,9 @@ def _blocker(
     extra: Mapping[str, Any],
 ) -> str:
     if direct_ready:
-        return "none for named same-host same-workload direct binary row"
+        return "none for the scoped same-host same-workload runtime-probe adapter row"
     if policy_ready:
-        base = "none for policy/service-unit adapter; direct binary row remains separate"
+        base = "none for policy/service-unit adapter; runtime-probe row remains separate"
     else:
         base = "policy/service-unit adapter missing"
     runtime_blocker = str(runtime_row.get("blocker") or "")

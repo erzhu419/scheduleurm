@@ -1528,8 +1528,9 @@ theorem assumptions 之间的桥接推进了一层：
 
 1. `organic_history_completion_gate_20260614` 把 production-wide organic
    completion 从 rolling snapshot / live trace pending，提升为 strict
-   scheduler-history theorem-facing population：4,020 launched、3,992
-   completed、35 workload domains、13 nodes、0 strict unadmitted launched rows。
+   scheduler-history theorem-facing population：4,058 launched、4,047
+   completed、completion fraction 0.9973、35 workload domains、13 nodes、0 strict
+   unadmitted launched rows。
    这里的 admission mode 是 exact/signature service certificate，不使用
    token-overlap fallback。
 2. `production_wide_organic_trace_gate_20260614` 把 live oracle trace 子口径和

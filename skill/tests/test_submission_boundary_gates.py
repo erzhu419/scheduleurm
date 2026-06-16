@@ -162,21 +162,23 @@ def test_all_state_conservative_cover_keeps_positive_unknown_load_out_of_claim()
     assert report["all_state_stability_for_unknown_positive_arrivals_ready"] is False
 
 
-def test_sota_fullstack_superiority_gate_closes_named_same_workload_claim():
+def test_sota_fullstack_gate_is_named_runtime_probe_not_sota_superiority():
     report = build_sota_fullstack_superiority_gate()
 
     assert report["hard_blocker_certificate_ready"] is True
-    assert report["direct_fullstack_sota_superiority_ready"] is True
-    assert report["direct_fullstack_named_sota_superiority_ready"] is True
+    assert report["named_same_host_runtime_probe_ready"] is True
+    assert report["named_same_host_runtime_probe_native_better"] is True
+    assert report["direct_fullstack_sota_superiority_ready"] is False
+    assert report["direct_fullstack_named_sota_superiority_ready"] is False
     assert report["registered_sota_universe_superiority_ready"] is False
     assert report["arbitrary_sota_superiority_ready"] is False
     assert report["multinode_original_deployment_superiority_ready"] is False
     assert report["production_wide_organic_trace_superiority_ready"] is False
-    assert report["named_sota_fullstack_ready_count"] == 5
-    assert report["named_sota_fullstack_superiority_count"] == 5
+    assert report["named_same_host_runtime_probe_ready_count"] == 5
+    assert report["named_same_host_runtime_probe_native_better_count"] == 5
     assert report["policy_semantics_comparison_ready"] is True
     assert report["gavel_resident_delay_jct_holdout"]["ready"] is True
-    assert "arbitrary future workloads" in report["scope"]
+    assert "direct full-stack SOTA superiority" in report["scope"]
 
 
 def test_sota_candidate_union_beats_policy_envelopes_without_fullstack_claim():
@@ -400,7 +402,8 @@ def test_reviewer_environment_manifest_is_not_container_claim():
 def test_sota_universe_gate_closes_named_not_arbitrary_sota():
     report = build_sota_universe_registry_gate()
 
-    assert report["named_five_fullstack_superiority_ready"] is True
+    assert report["named_five_runtime_probe_ready"] is True
+    assert report["named_five_fullstack_superiority_ready"] is False
     assert report["scoped_claim_ready"] is True
     assert report["registered_extension_runtime_inventory_ready"] is True
     assert report["registered_sota_universe_superiority_ready"] is False
@@ -470,7 +473,8 @@ def test_future_workload_protocol_routes_unknown_future_jobs_to_probe():
 def test_multinode_original_deployment_gate_is_not_same_host_claim():
     report = build_multinode_original_deployment_gate(probe_remotes=False)
 
-    assert report["same_host_named_fullstack_ready"] is True
+    assert report["same_host_named_runtime_probe_ready"] is True
+    assert report["same_host_named_fullstack_ready"] is False
     assert report["scoped_claim_ready"] is True
     assert report["scheduleurm_multinode_history_completion_ready"] is True
     assert report["original_multinode_deployment_rows_ready"] is True
@@ -569,6 +573,7 @@ def test_non_future_claim_closure_gate_closes_finite_nonfuture_scope():
 
     assert report["pass"] is True
     assert report["non_future_scoped_closure_ready"] is True
+    assert report["strong_claim_ready"] is False
     assert report["excluded_direction"] == "arbitrary_future_workload"
     assert report["ready_count"] == report["row_count"]
     rows = {row["name"]: row for row in report["rows"]}

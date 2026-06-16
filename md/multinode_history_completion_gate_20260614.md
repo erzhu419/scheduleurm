@@ -5,8 +5,8 @@
 | `pass` | true |
 | `status` | `SCHEDULEURM_MULTINODE_HISTORY_COMPLETION_PASS` |
 | `scheduleurm_multinode_launched_completion_ready` | true |
-| `strict_launched_count` | 4020 |
-| `strict_completed_count` | 3992 |
+| `strict_launched_count` | 4058 |
+| `strict_completed_count` | 4047 |
 | `strict_unadmitted_count` | 0 |
 | `node_count` | 13 |
 | `gpu_node_count` | 3 |
@@ -16,11 +16,11 @@
 
 | Node | Launched count |
 |---|---:|
-| `local` | 677 |
-| `gpu_b` | 421 |
-| `gpu_a` | 340 |
+| `local` | 679 |
+| `gpu_b` | 431 |
+| `node007-direct` | 354 |
+| `gpu_a` | 344 |
 | `node006` | 337 |
-| `node007-direct` | 332 |
 | `node005` | 323 |
 | `node002` | 315 |
 | `node004` | 311 |
@@ -34,9 +34,9 @@
 
 | Node | Launched count |
 |---|---:|
-| `gpu_b` | 421 |
-| `gpu_a` | 340 |
-| `node007-direct` | 332 |
+| `gpu_b` | 431 |
+| `node007-direct` | 354 |
+| `gpu_a` | 344 |
 
 ## Blocker
 

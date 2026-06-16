@@ -112,6 +112,51 @@ run_step global_theorem_dispatcher_prototype_gate \
     --output "$ART/global_theorem_dispatcher_prototype_gate_20260612.json" \
     --markdown-output "$ROOT/md/global_theorem_dispatcher_prototype_gate_20260612.md"
 
+run_step declared_finite_domain_positive_cover_gate \
+  python3 -m algorithm.experiments.declared_finite_domain_positive_cover_gate build \
+    --output "$ART/declared_finite_domain_positive_cover_gate_20260612.json" \
+    --markdown-output "$ROOT/md/declared_finite_domain_positive_cover_gate_20260612.md"
+
+run_step named_external_runtime_probe_gate \
+  python3 -m algorithm.experiments.sota_fullstack_superiority_gate build \
+    --output "$ART/sota_fullstack_superiority_gate_20260613.json" \
+    --markdown-output "$ROOT/md/sota_fullstack_superiority_gate_20260613.md"
+
+run_step registered_sota_universe_gate \
+  python3 -m algorithm.experiments.sota_universe_registry_gate build \
+    --output "$ART/sota_universe_registry_gate_20260614.json" \
+    --markdown-output "$ROOT/md/sota_universe_registry_gate_20260614.md"
+
+run_step registered_sota_adapter_closure_gate \
+  python3 -m algorithm.experiments.registered_sota_adapter_closure_gate build \
+    --output "$ART/registered_sota_adapter_closure_gate_20260614.json" \
+    --markdown-output "$ROOT/md/registered_sota_adapter_closure_gate_20260614.md"
+
+run_step sota_admitted_universe_closure_gate \
+  python3 -m algorithm.experiments.sota_admitted_universe_closure_gate build \
+    --output "$ART/sota_admitted_universe_closure_gate_20260614.json" \
+    --markdown-output "$ROOT/md/sota_admitted_universe_closure_gate_20260614.md"
+
+run_step organic_history_completion_gate \
+  python3 -m algorithm.experiments.organic_history_completion_gate build \
+    --output "$ART/organic_history_completion_gate_20260614.json" \
+    --markdown-output "$ROOT/md/organic_history_completion_gate_20260614.md"
+
+run_step multinode_history_completion_gate \
+  python3 -m algorithm.experiments.multinode_history_completion_gate build \
+    --output "$ART/multinode_history_completion_gate_20260614.json" \
+    --markdown-output "$ROOT/md/multinode_history_completion_gate_20260614.md"
+
+run_step multinode_original_deployment_gate \
+  python3 -m algorithm.experiments.multinode_original_deployment_gate build \
+    --output "$ART/multinode_original_deployment_gate_20260614.json" \
+    --markdown-output "$ROOT/md/multinode_original_deployment_gate_20260614.md"
+
+run_step decima_same_domain_benchmark_gate \
+  python3 -m algorithm.experiments.decima_same_domain_benchmark_gate build \
+    --output "$ART/decima_same_domain_benchmark_gate_20260614.json" \
+    --markdown-output "$ROOT/md/decima_same_domain_benchmark_gate_20260614.md"
+
 run_step reviewer_environment_manifest_gate \
   python3 -m algorithm.experiments.reviewer_environment_manifest_gate build \
     --output "$ART/reviewer_environment_manifest_gate_20260612.json" \

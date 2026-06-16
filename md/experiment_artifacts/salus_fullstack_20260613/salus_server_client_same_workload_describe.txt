@@ -1,0 +1,117 @@
+Name:             salus-fullstack-same-workload-smoke
+Namespace:        salus-baseline
+Priority:         0
+Service Account:  default
+Node:             huiwei-super-server/192.168.1.105
+Start Time:       Sun, 14 Jun 2026 00:14:54 +0800
+Labels:           app=salus-fullstack-same-workload-smoke
+Annotations:      <none>
+Status:           Running
+IP:               10.42.0.37
+IPs:
+  IP:  10.42.0.37
+Containers:
+  salus-server:
+    Container ID:   docker://7396dd8c72859a77c93738f1a11bdf118fc151ca11a0aa14294ed9488c9bea36
+    Image:          registry.gitlab.com/salus/salus:latest
+    Image ID:       docker://sha256:3ccae0598837bf1c5639aaf8fd99a4f413a50bd8cab7d40e2fc42c46cdc1378f
+    Port:           5501/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sun, 14 Jun 2026 00:14:55 +0800
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      nvidia.com/gpu:  1
+    Requests:
+      nvidia.com/gpu:  1
+    Environment:
+      NVIDIA_VISIBLE_DEVICES:  all
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6hrgq (ro)
+  salus-client:
+    Container ID:  docker://dab611aba4c2e09bf46800b5e21fc71de71e2e81c48c52158292befed7654899
+    Image:         registry.gitlab.com/salus/tensorflow-salus:latest
+    Image ID:      docker://sha256:cfc4472a7db13c6bf59be8d5b16569a9fa76d2e3ff3acbd4143415086856cf50
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      bash
+      -lc
+      set -euo pipefail
+      python - <<'PYWAIT'
+      from __future__ import print_function
+      import socket, time
+      deadline = time.time() + 180
+      while True:
+          try:
+              s = socket.create_connection(('127.0.0.1', 5501), 2)
+              s.close()
+              print('SALUS_SERVER_PORT_READY')
+              break
+          except Exception as exc:
+              if time.time() > deadline:
+                  raise
+              time.sleep(2)
+      PYWAIT
+      python - <<'PY'
+      from __future__ import print_function
+      import json, time
+      import tensorflow as tf
+      target = 'zrpc://tcp://127.0.0.1:5501'
+      marker = 'SALUS_CLIENT_RESULT'
+      steps = 24
+      start = time.time()
+      with tf.Graph().as_default():
+          with tf.device('/device:GPU:0'):
+              x = tf.ones([256, 256], dtype=tf.float32)
+              y = tf.matmul(x, x)
+              z = tf.reduce_sum(y)
+          sess = tf.Session(target=target) if target else tf.Session()
+          with sess:
+              sess.run(z)
+              total = 0.0
+              for _ in range(steps):
+                  total += float(sess.run(z))
+      wall = time.time() - start
+      print(marker, json.dumps({'ok': True, 'steps': steps, 'wall_s': wall, 'checksum': total}))
+      PY
+      
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Sun, 14 Jun 2026 00:14:56 +0800
+      Finished:     Sun, 14 Jun 2026 00:18:18 +0800
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-6hrgq (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-6hrgq:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  3m26s  default-scheduler  Successfully assigned salus-baseline/salus-fullstack-same-workload-smoke to huiwei-super-server
+  Normal  Pulled     3m26s  kubelet            spec.containers{salus-server}: Container image "registry.gitlab.com/salus/salus:latest" already present on machine
+  Normal  Created    3m26s  kubelet            spec.containers{salus-server}: Created container: salus-server
+  Normal  Started    3m26s  kubelet            spec.containers{salus-server}: Started container salus-server
+  Normal  Pulled     3m26s  kubelet            spec.containers{salus-client}: Container image "registry.gitlab.com/salus/tensorflow-salus:latest" already present on machine
+  Normal  Created    3m26s  kubelet            spec.containers{salus-client}: Created container: salus-client
+  Normal  Started    3m25s  kubelet            spec.containers{salus-client}: Started container salus-client

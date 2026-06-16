@@ -1,0 +1,276 @@
+{
+  "admitted_scenario_count": 5,
+  "cache_roundtrip_ready": true,
+  "canonical_scenario_count": 5,
+  "co_location_lower_service_capacity_ready": true,
+  "co_location_lower_service_ready_count": 3,
+  "co_location_scenario_count": 3,
+  "corner_case_lower_service_capacity_ready": true,
+  "corner_case_service_cache_ready": true,
+  "gate": "corner_case_lower_service_gate",
+  "live_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613",
+  "offered_load_fraction": 0.8,
+  "pass": true,
+  "pass_meaning": "standalone service-cache admission plus row-level lower-service capacity slack for the canonical corner-case probe slice",
+  "rows": [
+    {
+      "admitted_to_corner_case_service_cache": true,
+      "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/node007_empty_small_remote_corner_case_probe.json",
+      "capacity_slack": {
+        "classes": [
+          "corner_gpu_node007_empty_marginal_cuda"
+        ],
+        "delta": 1706.9389259999998,
+        "mix": {
+          "admit_node007_empty_small": 1.0
+        },
+        "status": "optimal",
+        "usable_for_theorem": true
+      },
+      "drift_margin": {
+        "B": 0.0,
+        "L": 0.0,
+        "Lrho": 0.0,
+        "N_claimed": null,
+        "P0": 0.0,
+        "alpha": 1.0,
+        "alpha0": 0.0,
+        "alpha1": 0.0,
+        "beta": 0.0,
+        "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+        "delta": 1706.9389259999998,
+        "drift_additive_constant": 0.0,
+        "epsilon_est": 0.0,
+        "eta": 1706.9389259999998,
+        "finite_set_threshold_N": 1,
+        "rho": 0.0,
+        "usable_for_theorem": true
+      },
+      "lambda_step_s": 6827.755704,
+      "lower_service_rate_step_s": 8534.69463,
+      "lower_service_rule": "min(last three stable ETA rate windows)",
+      "node_bucket": "node007-direct:4x12gb",
+      "probe_last_rate_step_s": 8534.69463,
+      "probe_steps": 60,
+      "resource_kind": "gpu_corner_empty",
+      "role": "empty_baseline",
+      "row_lower_service_capacity_ready": true,
+      "scenario_id": "node007_empty_small",
+      "stable_tail_rates_step_s": [
+        9075.8751,
+        8729.01929,
+        8534.69463
+      ],
+      "workload_key": "corner_gpu_node007_empty_marginal_cuda"
+    },
+    {
+      "admitted_to_corner_case_service_cache": true,
+      "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/node007_30gb_add_small_stable_remote_corner_case_probe.json",
+      "capacity_slack": {
+        "classes": [
+          "corner_gpu_node007_30gb_resident_marginal_cuda"
+        ],
+        "delta": 1868.9144699999997,
+        "mix": {
+          "admit_node007_30gb_add_small_stable": 1.0
+        },
+        "status": "optimal",
+        "usable_for_theorem": true
+      },
+      "drift_margin": {
+        "B": 0.0,
+        "L": 0.0,
+        "Lrho": 0.0,
+        "N_claimed": null,
+        "P0": 0.0,
+        "alpha": 1.0,
+        "alpha0": 0.0,
+        "alpha1": 0.0,
+        "beta": 0.0,
+        "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+        "delta": 1868.9144699999997,
+        "drift_additive_constant": 0.0,
+        "epsilon_est": 0.0,
+        "eta": 1868.9144699999997,
+        "finite_set_threshold_N": 1,
+        "rho": 0.0,
+        "usable_for_theorem": true
+      },
+      "lambda_step_s": 7475.657880000001,
+      "lower_service_rate_step_s": 9344.57235,
+      "lower_service_rule": "min(last three stable ETA rate windows)",
+      "node_bucket": "node007-direct:30gb-resident",
+      "probe_last_rate_step_s": 9367.45183,
+      "probe_steps": 60,
+      "resource_kind": "gpu_corner_resident_vram",
+      "role": "co_location",
+      "row_lower_service_capacity_ready": true,
+      "scenario_id": "node007_30gb_add_small_stable",
+      "stable_tail_rates_step_s": [
+        9412.22827,
+        9344.57235,
+        9367.45183
+      ],
+      "workload_key": "corner_gpu_node007_30gb_resident_marginal_cuda"
+    },
+    {
+      "admitted_to_corner_case_service_cache": true,
+      "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/cpu_empty_node001_single_remote_corner_case_probe.json",
+      "capacity_slack": {
+        "classes": [
+          "corner_cpu_node001_empty_single"
+        ],
+        "delta": 4.088435999999998,
+        "mix": {
+          "admit_cpu_empty_node001_single": 1.0
+        },
+        "status": "optimal",
+        "usable_for_theorem": true
+      },
+      "drift_margin": {
+        "B": 0.0,
+        "L": 0.0,
+        "Lrho": 0.0,
+        "N_claimed": null,
+        "P0": 0.0,
+        "alpha": 1.0,
+        "alpha0": 0.0,
+        "alpha1": 0.0,
+        "beta": 0.0,
+        "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+        "delta": 4.088435999999998,
+        "drift_additive_constant": 0.0,
+        "epsilon_est": 0.0,
+        "eta": 4.088435999999998,
+        "finite_set_threshold_N": 1,
+        "rho": 0.0,
+        "usable_for_theorem": true
+      },
+      "lambda_step_s": 16.353744000000003,
+      "lower_service_rate_step_s": 20.44218,
+      "lower_service_rule": "min(last three stable ETA rate windows)",
+      "node_bucket": "node001:192c",
+      "probe_last_rate_step_s": 20.476326,
+      "probe_steps": 12,
+      "resource_kind": "cpu_corner_empty",
+      "role": "empty_baseline",
+      "row_lower_service_capacity_ready": true,
+      "scenario_id": "cpu_empty_node001_single",
+      "stable_tail_rates_step_s": [
+        20.44218,
+        20.459502,
+        20.476326
+      ],
+      "workload_key": "corner_cpu_node001_empty_single"
+    },
+    {
+      "admitted_to_corner_case_service_cache": true,
+      "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/cpu_half_node001_add_single_v2_remote_corner_case_probe.json",
+      "capacity_slack": {
+        "classes": [
+          "corner_cpu_node001_96worker_resident_single"
+        ],
+        "delta": 4.462365800000001,
+        "mix": {
+          "admit_cpu_half_node001_add_single_v2": 1.0
+        },
+        "status": "optimal",
+        "usable_for_theorem": true
+      },
+      "drift_margin": {
+        "B": 0.0,
+        "L": 0.0,
+        "Lrho": 0.0,
+        "N_claimed": null,
+        "P0": 0.0,
+        "alpha": 1.0,
+        "alpha0": 0.0,
+        "alpha1": 0.0,
+        "beta": 0.0,
+        "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+        "delta": 4.462365800000001,
+        "drift_additive_constant": 0.0,
+        "epsilon_est": 0.0,
+        "eta": 4.462365800000001,
+        "finite_set_threshold_N": 1,
+        "rho": 0.0,
+        "usable_for_theorem": true
+      },
+      "lambda_step_s": 17.8494632,
+      "lower_service_rate_step_s": 22.311829,
+      "lower_service_rule": "min(last three stable ETA rate windows)",
+      "node_bucket": "node001:96worker-resident",
+      "probe_last_rate_step_s": 22.311829,
+      "probe_steps": 12,
+      "resource_kind": "cpu_corner_resident",
+      "role": "co_location",
+      "row_lower_service_capacity_ready": true,
+      "scenario_id": "cpu_half_node001_add_single_v2",
+      "stable_tail_rates_step_s": [
+        22.321205,
+        22.315361,
+        22.311829
+      ],
+      "workload_key": "corner_cpu_node001_96worker_resident_single"
+    },
+    {
+      "admitted_to_corner_case_service_cache": true,
+      "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613/cpu_full_node001_add_single_v2_remote_corner_case_probe.json",
+      "capacity_slack": {
+        "classes": [
+          "corner_cpu_node001_180worker_resident_single"
+        ],
+        "delta": 4.093962599999998,
+        "mix": {
+          "admit_cpu_full_node001_add_single_v2": 1.0
+        },
+        "status": "optimal",
+        "usable_for_theorem": true
+      },
+      "drift_margin": {
+        "B": 0.0,
+        "L": 0.0,
+        "Lrho": 0.0,
+        "N_claimed": null,
+        "P0": 0.0,
+        "alpha": 1.0,
+        "alpha0": 0.0,
+        "alpha1": 0.0,
+        "beta": 0.0,
+        "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
+        "delta": 4.093962599999998,
+        "drift_additive_constant": 0.0,
+        "epsilon_est": 0.0,
+        "eta": 4.093962599999998,
+        "finite_set_threshold_N": 1,
+        "rho": 0.0,
+        "usable_for_theorem": true
+      },
+      "lambda_step_s": 16.3758504,
+      "lower_service_rate_step_s": 20.469813,
+      "lower_service_rule": "min(last three stable ETA rate windows)",
+      "node_bucket": "node001:180worker-resident",
+      "probe_last_rate_step_s": 20.469813,
+      "probe_steps": 12,
+      "resource_kind": "cpu_corner_resident",
+      "role": "co_location",
+      "row_lower_service_capacity_ready": true,
+      "scenario_id": "cpu_full_node001_add_single_v2",
+      "stable_tail_rates_step_s": [
+        20.47731,
+        20.472866,
+        20.469813
+      ],
+      "workload_key": "corner_cpu_node001_180worker_resident_single"
+    }
+  ],
+  "scope": "The gate admits the controlled node007/node001 corner-case rows into a standalone service-cache snapshot and certifies positive row-level capacity slack under a conservative offered-load fraction.  It is not a production-wide queueing theorem, a full fabric-cover proof, or a direct external full-stack SOTA comparison.",
+  "scoped_claim_ready": true,
+  "service_cache_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_service_cache_20260613.json",
+  "service_cache_record_count": 5,
+  "status": "CORNER_CASE_LOWER_SERVICE_PASS",
+  "strong_claim_ready": false,
+  "summary_all_required_pass": true,
+  "summary_all_required_stable_eta": true,
+  "summary_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/corner_case_live_20260613_summary.json"
+}

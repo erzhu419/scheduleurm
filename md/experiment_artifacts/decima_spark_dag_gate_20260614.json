@@ -1,0 +1,66 @@
+{
+  "baseline_entrypoint_smoke": {
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  "blockers": [
+    "Decima learned-policy entrypoint is not runnable in the local environment; TensorFlow is the expected blocker if absent",
+    "Decima is a Spark-DAG simulator; a Scheduleurm-vs-Decima claim needs a Spark-DAG workload and metric bridge, not a GPU co-location probe"
+  ],
+  "direct_fullstack_gpu_sota_claim_ready": false,
+  "file_rows": [
+    {
+      "path": "compute_baselines.py",
+      "present": true
+    },
+    {
+      "path": "test.py",
+      "present": true
+    },
+    {
+      "path": "spark_env/env.py",
+      "present": true
+    },
+    {
+      "path": "spark_env/job_generator.py",
+      "present": true
+    },
+    {
+      "path": "spark_env/job_dag.py",
+      "present": true
+    },
+    {
+      "path": "spark_env/task.py",
+      "present": true
+    }
+  ],
+  "gate": "decima_spark_dag_gate",
+  "heuristic_spark_dag_benchmark": {
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "{\"done\": true, \"finished_jobs\": 3, \"steps\": 29, \"total_reward\": -1.4020200000000005, \"wall_s\": 0.008051}\n"
+  },
+  "learned_policy_entrypoint_smoke": {
+    "returncode": 1,
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim/test.py\", line 2, in <module>\n    import tensorflow as tf\nModuleNotFoundError: No module named 'tensorflow'\n",
+    "stdout_tail": ""
+  },
+  "learned_policy_runtime_ready": false,
+  "pass": true,
+  "repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+  "repo_ready": true,
+  "scheduleurm_gpu_colocation_comparable_ready": false,
+  "scope": "Decima evidence is Spark-DAG simulator evidence.  A Decima claim needs a Spark-DAG benchmark and metric bridge.  It should not be mixed into the GPU co-location full-stack superiority gate.",
+  "scoped_claim_ready": true,
+  "simulator_import_smoke": {
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "DECIMA_IMPORT_SMOKE_READY\n"
+  },
+  "spark_dag_heuristic_benchmark_ready": true,
+  "spark_dag_metric_bridge_ready": true,
+  "spark_dag_simulator_smoke_ready": true,
+  "status": "DECIMA_SIMULATOR_SMOKE_READY_GPU_COMPARISON_FALSE",
+  "strong_claim_ready": false
+}

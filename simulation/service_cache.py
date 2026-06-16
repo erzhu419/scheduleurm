@@ -410,6 +410,8 @@ def _profile_from_summary(path: Path, summary: dict[str, Any]) -> int:
 
 def _aggregate_rate(summary: dict[str, Any]) -> float:
     for key in (
+        "aggregate_stable_rate_unit_s",
+        "aggregate_stable_rate_step_s",
         "measurement_aggregate_rate_unit_s_median",
         "measurement_aggregate_rate_step_s_median",
         "aggregate_active_rate_unit_s",
@@ -421,7 +423,7 @@ def _aggregate_rate(summary: dict[str, Any]) -> float:
 
 
 def _per_task_rates(summary: dict[str, Any]) -> tuple[float, ...]:
-    for key in ("rates_unit_s", "rates_step_s"):
+    for key in ("stable_rates_unit_s", "stable_rates_step_s", "rates_unit_s", "rates_step_s"):
         rates = [float(x) for x in (summary.get(key) or []) if float(x) > 0]
         if rates:
             return tuple(rates)

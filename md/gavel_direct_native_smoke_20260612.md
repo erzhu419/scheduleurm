@@ -4,13 +4,13 @@
 
 | Quantity | Value |
 |---|---:|
-| `pass` | true |
-| `dependency_import_pass` | true |
-| `protobuf_stub_generation_pass` | true |
-| `entrypoint_help_pass` | true |
-| `native_generated_jobs_pass` | true |
-| `direct_native_trace_pass` | true |
-| `scheduleurm_native_trace_seed_pass` | true |
+| `pass` | false |
+| `dependency_import_pass` | false |
+| `protobuf_stub_generation_pass` | false |
+| `entrypoint_help_pass` | false |
+| `native_generated_jobs_pass` | false |
+| `direct_native_trace_pass` | false |
+| `scheduleurm_native_trace_seed_pass` | false |
 | `same_workload_direct_baseline_ready` | false |
 
 ## Dependency Imports
@@ -18,40 +18,46 @@
 | Module | Importable | Detail |
 |---|---:|---|
 | `grpc` | true | `OK` |
-| `grpc_tools` | true | `OK` |
-| `func_timeout` | true | `OK` |
-| `cvxpy` | true | `OK` |
-| `matrix_completion` | true | `OK` |
+| `grpc_tools` | false | `Traceback (most recent call last):   File "<string>", line 1, in <module> ModuleNotFoundError: No module named 'grpc_tools'` |
+| `func_timeout` | false | `Traceback (most recent call last):   File "<string>", line 1, in <module> ModuleNotFoundError: No module named 'func_timeout'` |
+| `cvxpy` | false | `Traceback (most recent call last):   File "<string>", line 1, in <module> ModuleNotFoundError: No module named 'cvxpy'` |
+| `matrix_completion` | false | `Traceback (most recent call last):   File "<string>", line 1, in <module> ModuleNotFoundError: No module named 'matrix_completion'` |
 | `scipy` | true | `OK` |
 
 ## Generated-Jobs Native Smoke
 
 | Field | Value |
 |---|---|
-| status | `PASS` |
-| returncode | `0` |
-| command | `/usr/bin/python3 scripts/drivers/simulate_scheduler_with_generated_jobs.py -c 1:0:0 --num_gpus_per_server 1:1:1 -s 0 -e 2 -p fifo --seed 0 -i 60 -l 0 -f 60 --throughputs_file simulation_throughputs.json -v` |
+| status | `NOT_RUN` |
+| returncode | `None` |
+| command | `` |
 
 ## Scheduleurm Native Trace Seed Smoke
 
 | Field | Value |
 |---|---|
-| status | `PASS` |
-| returncode | `0` |
-| command | `/usr/bin/python3 scripts/drivers/simulate_scheduler_with_trace.py -t /tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/scheduleurm_q01_native_trace_seed.trace -p fifo --throughputs_file simulation_throughputs.json -c 2:0:0 --num_gpus_per_server 2:1:1 --seed 0 --time_per_iteration 60 -s 0 -e 2` |
-| trace file | `/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/scheduleurm_q01_native_trace_seed.trace` |
+| status | `NOT_RUN` |
+| returncode | `None` |
+| command | `` |
+| trace file | `` |
 
 ## Native Trace Smoke
 
 | Field | Value |
 |---|---|
-| status | `PASS` |
-| returncode | `0` |
-| command | `/usr/bin/python3 scripts/drivers/simulate_scheduler_with_trace.py -t traces/physical_cluster/small_test.trace -p fifo --throughputs_file simulation_throughputs.json -c 2:0:0 --num_gpus_per_server 2:1:1 --seed 0 --time_per_iteration 60 -s 0 -e 2` |
-| classifier | `PASS` |
+| status | `NOT_RUN` |
+| returncode | `None` |
+| command | `` |
+| classifier | `` |
 
 ## Blockers
 
+- isolated Gavel dependency imports are incomplete
+- Gavel protobuf stubs cannot be generated in the isolated copy
+- Gavel native entrypoint help smoke does not pass
+- Gavel generated-jobs native simulator smoke does not pass
+- Gavel bounded native trace smoke is not a usable direct baseline
+- Scheduleurm-to-Gavel native trace seed smoke does not pass
 - Scheduleurm-to-Gavel native trace seed is a compatibility mapping; measured service-unit and policy-semantics equivalence still require validation before direct SOTA comparison
 
 ## Scope

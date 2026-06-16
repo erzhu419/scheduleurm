@@ -1,0 +1,250 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "ALIYUN_COM_GPU_MEM_ASSIGNED": "true",
+                    "ALIYUN_COM_GPU_MEM_ASSUME_TIME": "1781358195612803262",
+                    "ALIYUN_COM_GPU_MEM_DEV": "11",
+                    "ALIYUN_COM_GPU_MEM_IDX": "0",
+                    "ALIYUN_COM_GPU_MEM_POD": "1",
+                    "POD_NAME": "iadeep-cuda-probe-xzj2v"
+                },
+                "creationTimestamp": "2026-06-13T13:43:15Z",
+                "generateName": "iadeep-cuda-probe-",
+                "labels": {
+                    "app": "iadeep-cuda-probe",
+                    "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+                    "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "job-name": "iadeep-cuda-probe"
+                },
+                "name": "iadeep-cuda-probe-xzj2v",
+                "namespace": "iadeep",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "iadeep-cuda-probe",
+                        "uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+                    }
+                ],
+                "resourceVersion": "4645",
+                "uid": "e6d8d589-66a8-4611-9837-fc94a9f0f0a4"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "80",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "iadeep_fullstack_cuda_probe"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/iadeep_cuda_probe.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/iadeep_cuda_probe.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "gpushare/gpu-mem": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "gpushare/gpu-mem": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-568w9",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "huiwei-super-server",
+                "nodeSelector": {
+                    "gpushare": "true"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "iadeep-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-iadeep-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    },
+                    {
+                        "name": "kube-api-access-568w9",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:19Z",
+                        "status": "False",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59",
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imageID": "docker://sha256:e961f8f5ca92d5151350411ea52c24e1bf45884ed1e4119ee0fe48dd9849d217",
+                        "lastState": {},
+                        "name": "main",
+                        "ready": false,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59",
+                                "exitCode": 0,
+                                "finishedAt": "2026-06-13T13:43:17Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-06-13T13:43:16Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "192.168.1.105",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.105"
+                    }
+                ],
+                "phase": "Succeeded",
+                "podIP": "10.42.0.28",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.28"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-06-13T13:43:15Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

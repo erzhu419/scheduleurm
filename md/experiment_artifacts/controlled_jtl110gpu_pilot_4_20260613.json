@@ -1,0 +1,278 @@
+{
+  "allowed_nodes": [
+    "jtl110gpu"
+  ],
+  "candidate_count_total": 8,
+  "dispatch_returncode": 0,
+  "dispatch_stderr_tail": "--- dispatch pass 1 ---\n",
+  "dispatch_stdout_tail": "--- dispatch pass 1 ---\n=== nodes ===\n  local       GPU0=0.01GB/8.00GB(free=7.76GB, mem:0%, util:0%)  cpu=12/16(wsl_load 1.0, host 25%)  ram_free=9.34GB(eff)\n  jtl110gpu   GPU0=0.01GB/12.0GB(free=11.8GB, mem:0%, util:0%), GPU1=0.24GB/12.0GB(free=11.5GB, mem:2%, util:0%)  cpu=12/12(load 0.1)  ram_free=497.8GB\n  jtl110gpu2  GPU0=0.15GB/12.0GB(free=11.6GB, mem:1%, util:0%), GPU1=0.39GB/12.0GB(free=11.4GB, mem:3%, util:41%)  cpu=11/12(load 1.1)  ram_free=495.9GB\n  zhengliang-hpc slurm gpu: node007 gpu=4/4(11GB/card GeForce RTX 2080 Ti) cpu=64/64 mem=188.3GB/188.3GB state=idle:1 ; cpu: 6 nodes cpu=832/1152 mem=1129.6GB/1129.6GB state=idle:1,mixed:5\n  node007-direct GPU0=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU1=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU2=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU3=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%)  cpu=64/64(load 0.0)  ram_free=228.6GB\n  jtl110cpu   CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=481.0GB\n  jtl110cpu2  CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=487.7GB\n  node001     CPU-only  cpu=192/192(load 0.0)  ram_free=180.4GB\n  node002     CPU-only  cpu=176/192(load 16.4)  ram_free=176.0GB\n  node003     CPU-only  cpu=94/192(load 97.8)  ram_free=124.9GB\n  node004     CPU-only  cpu=93/192(load 99.3)  ram_free=127.3GB\n  node005     CPU-only  cpu=95/192(load 97.2)  ram_free=124.3GB\n  node006     CPU-only  cpu=176/192(load 16.2)  ram_free=174.6GB\n=== dispatch === (4 queued)\n  [t11157] LAUNCH on jtl110gpu:GPU0  pid=20941  log=/tmp/sched_t11157.log\n  [t11158] LAUNCH on jtl110gpu:GPU0  pid=21025  log=/tmp/sched_t11158.log\n  [t11159] LAUNCH on jtl110gpu:GPU1  pid=21096  log=/tmp/sched_t11159.log\n  [t11160] LAUNCH on jtl110gpu:GPU0  pid=21177  log=/tmp/sched_t11160.log",
+  "dispatches": [
+    {
+      "pass_index": 1,
+      "returncode": 0,
+      "stderr_tail": "",
+      "stdout_tail": "=== nodes ===\n  local       GPU0=0.01GB/8.00GB(free=7.76GB, mem:0%, util:0%)  cpu=12/16(wsl_load 1.0, host 25%)  ram_free=9.34GB(eff)\n  jtl110gpu   GPU0=0.01GB/12.0GB(free=11.8GB, mem:0%, util:0%), GPU1=0.24GB/12.0GB(free=11.5GB, mem:2%, util:0%)  cpu=12/12(load 0.1)  ram_free=497.8GB\n  jtl110gpu2  GPU0=0.15GB/12.0GB(free=11.6GB, mem:1%, util:0%), GPU1=0.39GB/12.0GB(free=11.4GB, mem:3%, util:41%)  cpu=11/12(load 1.1)  ram_free=495.9GB\n  zhengliang-hpc slurm gpu: node007 gpu=4/4(11GB/card GeForce RTX 2080 Ti) cpu=64/64 mem=188.3GB/188.3GB state=idle:1 ; cpu: 6 nodes cpu=832/1152 mem=1129.6GB/1129.6GB state=idle:1,mixed:5\n  node007-direct GPU0=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU1=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU2=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%), GPU3=0.00GB/11.0GB(free=10.8GB, mem:0%, util:0%)  cpu=64/64(load 0.0)  ram_free=228.6GB\n  jtl110cpu   CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=481.0GB\n  jtl110cpu2  CPU-only  cpu=128/128(load 0.0, queue_cpu_live_ram)  ram_free=487.7GB\n  node001     CPU-only  cpu=192/192(load 0.0)  ram_free=180.4GB\n  node002     CPU-only  cpu=176/192(load 16.4)  ram_free=176.0GB\n  node003     CPU-only  cpu=94/192(load 97.8)  ram_free=124.9GB\n  node004     CPU-only  cpu=93/192(load 99.3)  ram_free=127.3GB\n  node005     CPU-only  cpu=95/192(load 97.2)  ram_free=124.3GB\n  node006     CPU-only  cpu=176/192(load 16.2)  ram_free=174.6GB\n=== dispatch === (4 queued)\n  [t11157] LAUNCH on jtl110gpu:GPU0  pid=20941  log=/tmp/sched_t11157.log\n  [t11158] LAUNCH on jtl110gpu:GPU0  pid=21025  log=/tmp/sched_t11158.log\n  [t11159] LAUNCH on jtl110gpu:GPU1  pid=21096  log=/tmp/sched_t11159.log\n  [t11160] LAUNCH on jtl110gpu:GPU0  pid=21177  log=/tmp/sched_t11160.log",
+      "task_statuses": {
+        "t11157": "running",
+        "t11158": "running",
+        "t11159": "running",
+        "t11160": "running"
+      }
+    }
+  ],
+  "gate": "controlled_live_theorem_dispatch",
+  "markdown_path": "/home/erzhu419/mine_code/scheduleurm/md/controlled_jtl110gpu_pilot_4_20260613.md",
+  "max_dispatch_passes": 4,
+  "max_gpu_util_pct": 25,
+  "pass": false,
+  "preferred_node": "",
+  "realization": {
+    "completed_task_count": 0,
+    "gate": "live_trace_realization_bridge",
+    "matched_task_record_count": 4,
+    "progress_observation_count": 0,
+    "rows": [
+      {
+        "ended_at": 1781300931.7112248,
+        "flow_s": 56.08467173576355,
+        "gpu_idx": 0,
+        "node": "jtl110gpu",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t11157:1781300875.626553:1781300906476",
+        "started_at": 1781300909.7667258,
+        "task_id": "t11157",
+        "task_record_found": true,
+        "terminal_status": "failed"
+      },
+      {
+        "ended_at": 1781300932.6235049,
+        "flow_s": 49.65585207939148,
+        "gpu_idx": 0,
+        "node": "jtl110gpu",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t11158:1781300882.9676528:1781300912064",
+        "started_at": 1781300915.3018353,
+        "task_id": "t11158",
+        "task_record_found": true,
+        "terminal_status": "failed"
+      },
+      {
+        "ended_at": 1781300933.9121633,
+        "flow_s": 45.83471965789795,
+        "gpu_idx": 1,
+        "node": "jtl110gpu",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t11159:1781300888.0774436:1781300917578",
+        "started_at": 1781300920.789278,
+        "task_id": "t11159",
+        "task_record_found": true,
+        "terminal_status": "failed"
+      },
+      {
+        "ended_at": 1781300935.7145185,
+        "flow_s": 44.013914823532104,
+        "gpu_idx": 0,
+        "node": "jtl110gpu",
+        "progress_current": null,
+        "progress_rate_per_s": 0.0,
+        "progress_total": null,
+        "progress_unit": "",
+        "score_semantics": "robust_maxweight_lower_service",
+        "slot_id": "slot:t11160:1781300891.7006037:1781300923112",
+        "started_at": 1781300925.3424683,
+        "task_id": "t11160",
+        "task_record_found": true,
+        "terminal_status": "failed"
+      }
+    ],
+    "scope": "matches scheduler-emitted trace task ids to queue/archive records. Dry-run theorem traces intentionally have no realized completion claim until the same trace path is produced by actual dispatch.",
+    "status": "LIVE_RECORDS_NO_PROGRESS_YET",
+    "theorem_trace_slot_count": 4,
+    "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_pilot_4_20260613_trace.jsonl",
+    "trace_slot_count": 4,
+    "usable_for_live_completion_claim": false,
+    "usable_for_live_progress_claim": false
+  },
+  "realization_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_pilot_4_20260613_realization.json",
+  "report_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_pilot_4_20260613.json",
+  "require_node": "jtl110gpu",
+  "run_id": "controlled_jtl110gpu_pilot_4_20260613",
+  "scheduler_score_audit": {
+    "audited_slot_count": 4,
+    "max_scheduler_score_gap": 0.0,
+    "rows": [
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_primary_score": -68.96979400000001,
+        "candidate_count": 2,
+        "phase": "require_node",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=jtl110gpu|gpu=0",
+        "selected_primary_score": -68.96979400000001,
+        "slot_id": "slot:t11157:1781300875.626553:1781300906476",
+        "task_id": "t11157"
+      },
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_primary_score": -1.0,
+        "candidate_count": 2,
+        "phase": "require_node",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=jtl110gpu|gpu=0",
+        "selected_primary_score": -1.0,
+        "slot_id": "slot:t11158:1781300882.9676528:1781300912064",
+        "task_id": "t11158"
+      },
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=jtl110gpu|gpu=1",
+        "best_primary_score": -68.96979400000001,
+        "candidate_count": 2,
+        "phase": "require_node",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=jtl110gpu|gpu=1",
+        "selected_primary_score": -68.96979400000001,
+        "slot_id": "slot:t11159:1781300888.0774436:1781300917578",
+        "task_id": "t11159"
+      },
+      {
+        "algorithm": "theorem_maxweight_v1",
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_primary_score": -1.0038276330411162,
+        "candidate_count": 2,
+        "phase": "require_node",
+        "scheduler_score_gap": 0.0,
+        "score_semantics": "robust_maxweight_lower_service",
+        "selected_action_id": "node=jtl110gpu|gpu=0",
+        "selected_primary_score": -1.0038276330411162,
+        "slot_id": "slot:t11160:1781300891.7006037:1781300923112",
+        "task_id": "t11160"
+      }
+    ],
+    "theorem_blocker": "",
+    "usable_for_scheduler_score_audit": true,
+    "usable_for_theorem": true
+  },
+  "scope": "controlled local live dispatch smoke using scheduler.py dispatch --algorithm theorem_maxweight_v1. The scheduler queue is mutated, tasks are actually launched, candidate-family traces are emitted, and realization is matched against queue/archive records. This is not yet the full global q01/q11 production experiment.",
+  "submitted": [
+    {
+      "description": "q01 GPU-heavy JAX matmul controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/jax_matmul_size8192/controlled_live_theorem/controlled_jtl110gpu_pilot_4_20260613/00",
+      "stdout": "submitted t11157  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q01 GPU-heavy JAX matmul controlled live theorem d\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t11157",
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "description": "q11 RE-SAC/BAPR-like hybrid RL controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/resac_ant_real/controlled_live_theorem/controlled_jtl110gpu_pilot_4_20260613/01",
+      "stdout": "submitted t11158  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q11 RE-SAC/BAPR-like hybrid RL controlled live the\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t11158",
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "description": "q01 GPU-heavy JAX matmul controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/jax_matmul_size8192/controlled_live_theorem/controlled_jtl110gpu_pilot_4_20260613/02",
+      "stdout": "submitted t11159  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q01 GPU-heavy JAX matmul controlled live theorem d\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t11159",
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "description": "q11 RE-SAC/BAPR-like hybrid RL controlled live theorem dispatch",
+      "signature": "ScheduleurmBench/resac_ant_real/controlled_live_theorem/controlled_jtl110gpu_pilot_4_20260613/03",
+      "stdout": "submitted t11160  cpu=1 ram=768MB vram=512MB  prio=high  (vram=explicit,ram=explicit,cpu=explicit)  q11 RE-SAC/BAPR-like hybrid RL controlled live the\n  run `dispatch` to launch (resource-aware: respects 1/3 VRAM rule, CPU/RAM headroom).\n",
+      "task_id": "t11160",
+      "workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "task_ids": [
+    "t11157",
+    "t11158",
+    "t11159",
+    "t11160"
+  ],
+  "theorem_oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 4,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 4,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 4,
+    "rows": [
+      {
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_candidate_score": 68.96979400000001,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "chosen_score": 68.96979400000001,
+        "oracle_gap": 0.0,
+        "q_norm": 5.0,
+        "slot_id": "slot:t11157:1781300875.626553:1781300906476"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_candidate_score": 1.0,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "chosen_score": 1.0,
+        "oracle_gap": 0.0,
+        "q_norm": 5.0,
+        "slot_id": "slot:t11158:1781300882.9676528:1781300912064"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=1",
+        "best_candidate_score": 68.96979400000001,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu|gpu=1",
+        "chosen_score": 68.96979400000001,
+        "oracle_gap": 0.0,
+        "q_norm": 5.0,
+        "slot_id": "slot:t11159:1781300888.0774436:1781300917578"
+      },
+      {
+        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_candidate_score": 1.0038276330411162,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 2,
+        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "chosen_score": 1.0038276330411162,
+        "oracle_gap": 0.0,
+        "q_norm": 5.0,
+        "slot_id": "slot:t11160:1781300891.7006037:1781300923112"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 4,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "theorem_slot_count": 4,
+  "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_pilot_4_20260613_trace.jsonl",
+  "trace_slot_count": 4,
+  "wait_returncode": 0,
+  "wait_stderr_tail": "",
+  "wait_stdout_tail": "[wait-for 4 ids] all 4 terminal: 0 done, 4 failed, 0 cancelled"
+}

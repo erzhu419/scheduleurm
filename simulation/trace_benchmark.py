@@ -20,7 +20,11 @@ from .fast_forward import (
     ReplayPolicy,
     WorkloadSpec,
     _covering_service_profile,
+    _statewise_holds_base_profile_for,
     _statewise_target_profile,
+    _resource_assignment_mode_for,
+    _resource_assignment_seed_for,
+    _waiting_order_mode_for,
 )
 from .service_cache import ServiceRateCache
 from .sota_baselines import sota_baseline_specs
@@ -264,7 +268,30 @@ def replay_trace(
         grouped.setdefault(job.workload_key, []).append(job)
     for key, jobs in grouped.items():
         resource_count = specs[key].resource_count
-        per_resource = _assign_to_resources(jobs, resource_count)
+        assignment_mode = _resource_assignment_mode_for(
+            cache=cache,
+            spec=specs[key],
+            policy=policy,
+            base_target_profile=profiles[key],
+        )
+        if assignment_mode == "lpt_static" and all(abs(float(job.arrival_s)) <= 1e-12 for job in jobs):
+            per_resource = _assign_to_resources_by_lpt(jobs, resource_count)
+        elif assignment_mode == "shuffle_static" and all(abs(float(job.arrival_s)) <= 1e-12 for job in jobs):
+            per_resource = _assign_to_resources_by_shuffle_static(
+                jobs,
+                resource_count,
+                seed=_resource_assignment_seed_for(
+                    cache=cache,
+                    spec=specs[key],
+                    policy=policy,
+                    base_target_profile=profiles[key],
+                ),
+            )
+        else:
+            per_resource = _assign_to_resources(jobs, resource_count)
+        preserve_resource_order = assignment_mode == "shuffle_static" and all(
+            abs(float(job.arrival_s)) <= 1e-12 for job in jobs
+        )
         for resource_jobs in per_resource:
             completions.update(
                 _replay_resource_jobs(
@@ -276,6 +303,7 @@ def replay_trace(
                     policy=policy,
                     spec=specs[key],
                     profile_counter=profile_counts.setdefault(key, {}),
+                    preserve_job_order=preserve_resource_order,
                 )
             )
     for key, counts in profile_counts.items():
@@ -340,6 +368,32 @@ def _assign_to_resources(jobs: list[TraceJob], resource_count: int) -> list[list
     return resources
 
 
+def _assign_to_resources_by_lpt(jobs: list[TraceJob], resource_count: int) -> list[list[TraceJob]]:
+    resources: list[list[TraceJob]] = [[] for _ in range(max(1, int(resource_count)))]
+    loads = [(0.0, idx) for idx in range(len(resources))]
+    for job in sorted(jobs, key=lambda item: (float(item.total_units), item.job_id), reverse=True):
+        load, idx = min(loads, key=lambda item: (item[0], item[1]))
+        resources[idx].append(job)
+        loads[idx] = (load + float(job.total_units), idx)
+    for row in resources:
+        row.sort(key=lambda item: (item.arrival_s, item.job_id))
+    return resources
+
+
+def _assign_to_resources_by_shuffle_static(
+    jobs: list[TraceJob],
+    resource_count: int,
+    *,
+    seed: int,
+) -> list[list[TraceJob]]:
+    resources: list[list[TraceJob]] = [[] for _ in range(max(1, int(resource_count)))]
+    shuffled = sorted(jobs, key=lambda item: (item.arrival_s, item.job_id))
+    random.Random(int(seed)).shuffle(shuffled)
+    for idx, job in enumerate(shuffled):
+        resources[idx % len(resources)].append(job)
+    return resources
+
+
 def _replay_resource_jobs(
     cache: ServiceRateCache,
     *,
@@ -350,8 +404,9 @@ def _replay_resource_jobs(
     policy: ReplayPolicy | None = None,
     spec: WorkloadSpec | None = None,
     profile_counter: dict[int, int] | None = None,
+    preserve_job_order: bool = False,
 ) -> dict[str, float]:
-    pending = sorted(jobs, key=lambda job: (job.arrival_s, job.job_id))
+    pending = list(jobs) if preserve_job_order else sorted(jobs, key=lambda job: (job.arrival_s, job.job_id))
     next_idx = 0
     now = 0.0
     waiting: list[TraceJob] = []
@@ -380,7 +435,14 @@ def _replay_resource_jobs(
                 active_count=len(active),
                 base_target_profile=target_profile,
             )
-            if policy.statewise_service_dominance_guard and waiting:
+            if _statewise_holds_base_profile_for(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                base_target_profile=target_profile,
+                waiting_count=len(waiting),
+                total_remaining=total_remaining,
+            ):
                 desired_target = max(int(desired_target), int(target_profile))
         admission_target = max(len(active), min(desired_target, total_remaining))
         current_service_profile = _covering_service_profile(
@@ -391,6 +453,32 @@ def _replay_resource_jobs(
         )
         if profile_counter is not None:
             profile_counter[current_service_profile] = profile_counter.get(current_service_profile, 0) + 1
+        if policy is not None and spec is not None:
+            order_mode = _waiting_order_mode_for(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                base_target_profile=target_profile,
+            )
+            if order_mode == "shortest_remaining_first":
+                waiting.sort(key=lambda job: (float(job.total_units), float(job.arrival_s), job.job_id))
+            elif order_mode == "critical_shortest_remaining_first":
+                waiting.sort(key=lambda job: (float(job.total_units), float(job.arrival_s), job.job_id))
+                if not active and len(waiting) > 1:
+                    critical = max(waiting, key=lambda job: (float(job.total_units), -float(job.arrival_s), job.job_id))
+                    waiting.remove(critical)
+                    waiting.insert(0, critical)
+            elif order_mode == "critical_batch_shortest_remaining_first":
+                waiting.sort(key=lambda job: (float(job.total_units), float(job.arrival_s), job.job_id))
+                if not active and len(waiting) > admission_target:
+                    critical = sorted(
+                        waiting,
+                        key=lambda job: (float(job.total_units), -float(job.arrival_s), job.job_id),
+                        reverse=True,
+                    )[:admission_target]
+                    critical_ids = {job.job_id for job in critical}
+                    rest = [job for job in waiting if job.job_id not in critical_ids]
+                    waiting[:] = critical + rest
         while waiting and len(active) < admission_target:
             job = waiting.pop(0)
             active.append({"job": job, "remaining": float(job.total_units)})

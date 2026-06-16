@@ -381,7 +381,7 @@ skill/tests/test_experiment_calibration.py
   "scheduleurm_dirty": true,
   "proof_repo": "/home/erzhu419/mine_code/proof",
   "proof_commit": "<git rev-parse HEAD>",
-  "proof_upload_sha256": "af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b",
+  "proof_upload_sha256": "25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2",
   "theorem_target": "main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle",
   "slot_policy": {
     "source": "watcher_cycle",

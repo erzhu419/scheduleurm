@@ -1,0 +1,94 @@
+{
+  "ablation_candidate_dominated_scenario_count": 0,
+  "ablation_candidate_dominated_scenarios": [],
+  "ablation_scenario_count": 24,
+  "ablation_source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/or_gate_ablation_suite.json",
+  "candidate_loss_gt_tolerance_count": 3,
+  "candidate_loss_gt_tolerance_rows": [
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "relative_loss": 0.0056912609589412355,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "relative_loss": 0.0056912609589412355,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_quadrant_composite",
+      "relative_loss": 0.0056912609589412355,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    }
+  ],
+  "gate": "online_ablation_summary_ci",
+  "gate_pass": true,
+  "online_candidate_dominated_scenario_count": 0,
+  "online_candidate_dominated_scenarios": [],
+  "online_scenario_count": 192,
+  "online_source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/or_gate_online_arrivals.json",
+  "online_summary": {
+    "candidate_max_backlog_jobs": {
+      "geomean": 23.492882639538617,
+      "max": 90.0,
+      "median": 25.0,
+      "min": 4.0,
+      "n": 192,
+      "p05": 6.0,
+      "p95": 67.0,
+      "worst": 4.0
+    },
+    "candidate_mean_backlog_jobs": {
+      "geomean": 7.398333393586614,
+      "max": 48.112034119829104,
+      "median": 8.299709217192099,
+      "min": 0.9413190441724893,
+      "n": 192,
+      "p05": 1.658715404270119,
+      "p95": 27.757495296616035,
+      "worst": 0.9413190441724893
+    },
+    "candidate_vs_legacy_makespan": {
+      "geomean": 1.6701592663826965,
+      "max": 11.801096051970816,
+      "median": 1.3293266551277287,
+      "min": 1.003521008053737,
+      "n": 192,
+      "p05": 1.0201112957155785,
+      "p95": 9.834592536473986,
+      "worst": 1.003521008053737
+    },
+    "candidate_vs_legacy_mean_flow": {
+      "geomean": 4.9982901479400095,
+      "max": 206.00601160582107,
+      "median": 3.6286531032854676,
+      "min": 0.9988093520134255,
+      "n": 192,
+      "p05": 1.040006565303226,
+      "p95": 179.17776704905484,
+      "worst": 0.9988093520134255
+    }
+  },
+  "pareto_tolerance": 0.005,
+  "pass": true,
+  "pass_meaning": "distributional summary of existing replay and ablation artifacts, not new live execution or stochastic generalization",
+  "scope": "Summarizes policy-semantics replay on the same measured service cache. Rows are scenario-level replay summaries, not direct external binary runs.",
+  "scoped_claim_ready": true,
+  "status": "ONLINE_ABLATION_DISTRIBUTIONAL_SUMMARY_PASS",
+  "strong_claim_ready": false
+}

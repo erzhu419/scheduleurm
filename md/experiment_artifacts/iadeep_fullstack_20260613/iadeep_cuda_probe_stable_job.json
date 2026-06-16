@@ -1,0 +1,132 @@
+{
+    "apiVersion": "batch/v1",
+    "kind": "Job",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"batch/v1\",\"kind\":\"Job\",\"metadata\":{\"annotations\":{},\"name\":\"iadeep-cuda-probe\",\"namespace\":\"iadeep\"},\"spec\":{\"backoffLimit\":0,\"template\":{\"metadata\":{\"labels\":{\"app\":\"iadeep-cuda-probe\"}},\"spec\":{\"containers\":[{\"args\":[\"--n\",\"67108864\",\"--iters\",\"80\",\"--warmup\",\"8\",\"--inner\",\"64\"],\"env\":[{\"name\":\"SCHEDULEURM_RUN_LABEL\",\"value\":\"iadeep_fullstack_cuda_probe\"},{\"name\":\"SCHEDULEURM_RESULT_JSON\",\"value\":\"/results/iadeep_cuda_probe.json\"},{\"name\":\"SCHEDULEURM_RESULT_LOG\",\"value\":\"/results/iadeep_cuda_probe.log\"}],\"image\":\"scheduleurm/cuda-probe:local\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"main\",\"resources\":{\"limits\":{\"gpushare/gpu-mem\":\"1\"},\"requests\":{\"cpu\":\"1\",\"gpushare/gpu-mem\":\"1\",\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"mountPath\":\"/results\",\"name\":\"results\"}]}],\"nodeSelector\":{\"gpushare\":\"true\"},\"restartPolicy\":\"Never\",\"schedulerName\":\"iadeep-scheduler\",\"volumes\":[{\"hostPath\":{\"path\":\"/tmp/scheduleurm-iadeep-results\",\"type\":\"DirectoryOrCreate\"},\"name\":\"results\"}]}}}}\n"
+        },
+        "creationTimestamp": "2026-06-13T13:43:15Z",
+        "generation": 1,
+        "labels": {
+            "app": "iadeep-cuda-probe",
+            "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+            "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+            "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+            "job-name": "iadeep-cuda-probe"
+        },
+        "name": "iadeep-cuda-probe",
+        "namespace": "iadeep",
+        "resourceVersion": "4646",
+        "uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+    },
+    "spec": {
+        "backoffLimit": 0,
+        "completionMode": "NonIndexed",
+        "completions": 1,
+        "manualSelector": false,
+        "parallelism": 1,
+        "podReplacementPolicy": "TerminatingOrFailed",
+        "selector": {
+            "matchLabels": {
+                "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+            }
+        },
+        "suspend": false,
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "iadeep-cuda-probe",
+                    "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+                    "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "job-name": "iadeep-cuda-probe"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "80",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "iadeep_fullstack_cuda_probe"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/iadeep_cuda_probe.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/iadeep_cuda_probe.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "gpushare/gpu-mem": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "gpushare/gpu-mem": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "nodeSelector": {
+                    "gpushare": "true"
+                },
+                "restartPolicy": "Never",
+                "schedulerName": "iadeep-scheduler",
+                "securityContext": {},
+                "terminationGracePeriodSeconds": 30,
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-iadeep-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "completionTime": "2026-06-13T13:43:20Z",
+        "conditions": [
+            {
+                "lastProbeTime": "2026-06-13T13:43:20Z",
+                "lastTransitionTime": "2026-06-13T13:43:20Z",
+                "status": "True",
+                "type": "Complete"
+            }
+        ],
+        "ready": 0,
+        "startTime": "2026-06-13T13:43:15Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+    }
+}

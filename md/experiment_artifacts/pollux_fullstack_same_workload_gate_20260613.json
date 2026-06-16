@@ -1,0 +1,74 @@
+{
+  "artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613",
+  "cases": [
+    {
+      "jct_ratio_native_over_pollux_crd": 0.36224344579022766,
+      "label": "cuda_probe_short",
+      "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+      "native_steps_per_s": 302.014335,
+      "native_total_s": 0.264888,
+      "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+      "native_wall_s": 1.425377607345581,
+      "pollux_completion_timestamp": "2026-06-13T12:12:35.934861+00:00",
+      "pollux_crd_jct_s": 3.934861,
+      "pollux_creation_timestamp": "2026-06-13T12:12:32Z",
+      "pollux_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_adaptdljob.json",
+      "pollux_observed_wall_s": null,
+      "pollux_phase": "Succeeded",
+      "pollux_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe.json",
+      "pollux_steps_per_s": 302.027281,
+      "pollux_total_s": 0.264877,
+      "ready": true,
+      "workload_steps_per_s_ratio_native_over_pollux": 0.9999571363223974
+    },
+    {
+      "jct_ratio_native_over_pollux_crd": 0.775794688000164,
+      "label": "cuda_probe_long",
+      "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long.json",
+      "native_steps_per_s": 332.768032,
+      "native_total_s": 9.015289,
+      "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long_wall.json",
+      "native_wall_s": 10.308755159378052,
+      "pollux_completion_timestamp": "2026-06-13T12:15:23.287994+00:00",
+      "pollux_crd_jct_s": 13.287994,
+      "pollux_creation_timestamp": "2026-06-13T12:15:10Z",
+      "pollux_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_long_adaptdljob.json",
+      "pollux_observed_wall_s": 20.590999126434326,
+      "pollux_phase": "Succeeded",
+      "pollux_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_long.json",
+      "pollux_steps_per_s": 301.795277,
+      "pollux_total_s": 9.940513,
+      "ready": true,
+      "workload_steps_per_s_ratio_native_over_pollux": 1.1026283622059467
+    }
+  ],
+  "compatibility_fixes": [
+    {
+      "component": "Pollux/AdaptDL scheduler image",
+      "fix": "pin sched NumPy dependency to numpy>=1.17,<1.24",
+      "reason": "upstream Pollux code uses np.int, removed by NumPy 1.24",
+      "semantics_changed": false
+    },
+    {
+      "component": "Pollux/AdaptDL supervisor",
+      "fix": "cast ADAPTDL_SUPERVISOR_SERVICE_PORT to int",
+      "reason": "Kubernetes service environment variables are strings and aiohttp requires an integer port",
+      "semantics_changed": false
+    }
+  ],
+  "direct_fullstack_sota_superiority_ready": false,
+  "gate": "pollux_fullstack_same_workload_gate",
+  "gpu": "NVIDIA GeForce RTX 3080 Ti",
+  "host": "jtl110gpu",
+  "native_pair_completed": true,
+  "pass": true,
+  "pollux_adapter": "pollux_adaptdl_scheduler",
+  "pollux_fullstack_completed": true,
+  "same_service_scale_ready": true,
+  "same_workload_binary": "scheduleurm/cuda-probe:local",
+  "scope": "Scoped same-host same-binary full-stack evidence for Pollux/AdaptDL. It supports a claim that the Pollux/AdaptDL runtime can be run and compared on this cluster, and that the native Scheduleurm-controlled Docker path has lower JCT on these two CUDA probe cases.  It does not by itself prove direct full-stack superiority over Gavel, Sia, IADeep, Salus, or arbitrary future workloads.",
+  "scoped_pollux_fullstack_same_workload_ready": true,
+  "scoped_pollux_same_workload_superiority_ready": true,
+  "strong_all_sota_claim_ready": false,
+  "workload": "cuda_saxpy_loop"
+}

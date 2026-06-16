@@ -101,6 +101,14 @@ class BasePlacementPolicy:
     ) -> Dict[str, Any]:
         return {}
 
+    def global_batch_select(
+        self,
+        tasks: Iterable[Dict[str, Any]],
+        nodes: Iterable[Dict[str, Any]],
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return {}
+
 
 class LegacyPlacementPolicy(BasePlacementPolicy):
     def __init__(self):
@@ -245,6 +253,7 @@ def available_policies() -> Iterable[str]:
         "sweetspot_v1",
         "interference_v1",
         "theorem_maxweight_v1",
+        "global_theorem_maxweight_v1",
         "adaptive_theorem_maxweight_v1",
     )
 
@@ -257,6 +266,8 @@ def load_placement_policy(name: str | None = None) -> BasePlacementPolicy:
     if selected in ("sweetspot_v1", "sweetspot", "interference_v1", "interference"):
         return SweetSpotPlacementPolicy(_sweetspot_config(selected))
     if selected in ("theorem_maxweight_v1", "theorem_maxweight", "robust_maxweight"):
+        return TheoremMaxWeightPlacementPolicy(theorem_policy_config(selected))
+    if selected in ("global_theorem_maxweight_v1", "global_theorem_maxweight", "global_robust_maxweight"):
         return TheoremMaxWeightPlacementPolicy(theorem_policy_config(selected))
     if selected in ("adaptive_theorem_maxweight_v1", "adaptive_theorem", "adaptive_maxweight"):
         return AdaptiveTheoremPlacementPolicy("adaptive_theorem_maxweight_v1")

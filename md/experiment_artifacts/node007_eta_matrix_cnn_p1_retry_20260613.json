@@ -1,0 +1,61 @@
+{
+  "cases": [
+    "single_gpu_single_task"
+  ],
+  "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
+  "gate": "node007_eta_matrix",
+  "node": "node007-direct",
+  "pass": true,
+  "results": [
+    {
+      "case": "single_gpu_single_task",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "node007_eta_matrix_cnn_p1_retry_20260613_cnn_torch_gpu_single_gpu_single_task",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_p1_retry_20260613_cnn_torch_gpu_single_gpu_single_task/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "cnn_torch_gpu"
+    }
+  ],
+  "rows": [
+    {
+      "aggregate_stable_rate": 31.67,
+      "case": "single_gpu_single_task",
+      "elapsed_wall_s": 9.626105785369873,
+      "error": "",
+      "expected_task_count": 1,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "Torch CNN fallback/resnet workload",
+      "max_seconds_per_unit": 0.031575623618566466,
+      "mean_stable_rate": 31.67,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.031575623618566466,
+      "profile": 1,
+      "running_count": 1,
+      "stable_rate_ready_count": 1,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_p1_retry_20260613_cnn_torch_gpu_single_gpu_single_task/reports/profile_1_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "cnn_torch_gpu"
+    }
+  ],
+  "run_id": "node007_eta_matrix_cnn_p1_retry_20260613",
+  "workloads": [
+    "cnn_torch_gpu"
+  ]
+}

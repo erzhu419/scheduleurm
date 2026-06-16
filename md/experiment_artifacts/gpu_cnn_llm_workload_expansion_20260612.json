@@ -1,0 +1,362 @@
+{
+  "date": "2026-06-12",
+  "gate": "gpu_cnn_llm_workload_expansion",
+  "node": "jtl110gpu",
+  "rows": [
+    {
+      "actual": {
+        "0": 1,
+        "1": 1
+      },
+      "aggregate_rate": 182.0515345,
+      "benchmark": "gpu_cnn_jax_convstack",
+      "expected": {
+        "0": 1,
+        "1": 1
+      },
+      "issues": [],
+      "mean_rate": 91.02576725,
+      "name": "jax_cnn_p1",
+      "placement_valid": true,
+      "profile": 1,
+      "rate_count": 2,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_jax_convstack_jtl110gpu_profile1_20260612_002/reports/profile_1_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 2,
+        "1": 2
+      },
+      "aggregate_rate": 241.69045219999998,
+      "benchmark": "gpu_cnn_jax_convstack",
+      "expected": {
+        "0": 2,
+        "1": 2
+      },
+      "issues": [],
+      "mean_rate": 60.422613049999995,
+      "name": "jax_cnn_p2",
+      "placement_valid": true,
+      "profile": 2,
+      "rate_count": 4,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_jax_convstack_jtl110gpu_profiles2_3_20260612_001/reports/profile_2_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 3,
+        "1": 3
+      },
+      "aggregate_rate": 364.4259127,
+      "benchmark": "gpu_cnn_jax_convstack",
+      "expected": {
+        "0": 3,
+        "1": 3
+      },
+      "issues": [],
+      "mean_rate": 60.737652116666666,
+      "name": "jax_cnn_p3",
+      "placement_valid": true,
+      "profile": 3,
+      "rate_count": 6,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_jax_convstack_jtl110gpu_profiles2_3_20260612_001/reports/profile_3_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 1,
+        "1": 1
+      },
+      "aggregate_rate": 58.1404303,
+      "benchmark": "gpu_cnn_torch_resnet50",
+      "expected": {
+        "0": 1,
+        "1": 1
+      },
+      "issues": [],
+      "mean_rate": 29.07021515,
+      "name": "torch_cnn_p1",
+      "placement_valid": true,
+      "profile": 1,
+      "rate_count": 2,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_torch_resnet50_jtl110gpu_profile1_20260612_002/reports/profile_1_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 2,
+        "1": 2
+      },
+      "aggregate_rate": 85.0772338,
+      "benchmark": "gpu_cnn_torch_resnet50",
+      "expected": {
+        "0": 2,
+        "1": 2
+      },
+      "issues": [],
+      "mean_rate": 21.26930845,
+      "name": "torch_cnn_p2",
+      "placement_valid": true,
+      "profile": 2,
+      "rate_count": 4,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_torch_resnet50_jtl110gpu_profiles2_3_20260612_001/reports/profile_2_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 3,
+        "1": 3
+      },
+      "aggregate_rate": 102.11041047,
+      "benchmark": "gpu_cnn_torch_resnet50",
+      "expected": {
+        "0": 3,
+        "1": 3
+      },
+      "issues": [],
+      "mean_rate": 17.018401745,
+      "name": "torch_cnn_p3",
+      "placement_valid": true,
+      "profile": 3,
+      "rate_count": 6,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_torch_resnet50_jtl110gpu_profiles2_3_20260612_001/reports/profile_3_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 3,
+        "1": 3
+      },
+      "aggregate_rate": 84.39217962,
+      "benchmark": "gpu_cnn_torch_resnet50",
+      "expected": {
+        "0": 4,
+        "1": 4
+      },
+      "issues": [
+        "actual per-GPU running {'0': 3, '1': 3} != expected {'0': 4, '1': 4}"
+      ],
+      "mean_rate": 14.065363269999999,
+      "name": "torch_cnn_p4",
+      "placement_valid": false,
+      "profile": 4,
+      "rate_count": 6,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_torch_resnet50_jtl110gpu_profiles4_5_20260612_001/reports/profile_4_per_gpu_summary.json"
+    },
+    {
+      "actual": {},
+      "aggregate_rate": 0.0,
+      "benchmark": "gpu_cnn_torch_resnet50",
+      "expected": {
+        "0": 5,
+        "1": 5
+      },
+      "issues": [
+        "actual per-GPU running {} != expected {'0': 5, '1': 5}"
+      ],
+      "mean_rate": 0.0,
+      "name": "torch_cnn_p5",
+      "placement_valid": false,
+      "profile": 5,
+      "rate_count": 0,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/cnn_torch_resnet50_jtl110gpu_profiles4_5_20260612_001/reports/profile_5_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 1,
+        "1": 1
+      },
+      "aggregate_rate": 757.506341,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 1,
+        "1": 1
+      },
+      "issues": [],
+      "mean_rate": 378.7531705,
+      "name": "llm_p1",
+      "placement_valid": true,
+      "profile": 1,
+      "rate_count": 2,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profile1_20260612_003/reports/profile_1_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 2,
+        "1": 2
+      },
+      "aggregate_rate": 1492.028437,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 2,
+        "1": 2
+      },
+      "issues": [],
+      "mean_rate": 373.00710925,
+      "name": "llm_p2",
+      "placement_valid": true,
+      "profile": 2,
+      "rate_count": 4,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles2_3_20260612_001/reports/profile_2_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 3,
+        "1": 3
+      },
+      "aggregate_rate": 2255.322443,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 3,
+        "1": 3
+      },
+      "issues": [],
+      "mean_rate": 375.8870738333333,
+      "name": "llm_p3",
+      "placement_valid": true,
+      "profile": 3,
+      "rate_count": 6,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles2_3_20260612_001/reports/profile_3_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 4,
+        "1": 4
+      },
+      "aggregate_rate": 2875.92587,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 4,
+        "1": 4
+      },
+      "issues": [],
+      "mean_rate": 359.49073375,
+      "name": "llm_p4",
+      "placement_valid": true,
+      "profile": 4,
+      "rate_count": 8,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles4_5_20260612_001/reports/profile_4_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 5,
+        "1": 5
+      },
+      "aggregate_rate": 3398.8115479999997,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 5,
+        "1": 5
+      },
+      "issues": [],
+      "mean_rate": 339.8811548,
+      "name": "llm_p5",
+      "placement_valid": true,
+      "profile": 5,
+      "rate_count": 10,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles4_5_20260612_001/reports/profile_5_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 6,
+        "1": 6
+      },
+      "aggregate_rate": 4060.7824100000007,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 6,
+        "1": 6
+      },
+      "issues": [],
+      "mean_rate": 338.39853416666665,
+      "name": "llm_p6",
+      "placement_valid": true,
+      "profile": 6,
+      "rate_count": 12,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles6_8_20260612_001/reports/profile_6_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 8,
+        "1": 8
+      },
+      "aggregate_rate": 5097.993888000001,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 8,
+        "1": 8
+      },
+      "issues": [],
+      "mean_rate": 318.624618,
+      "name": "llm_p8",
+      "placement_valid": true,
+      "profile": 8,
+      "rate_count": 16,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles6_8_20260612_001/reports/profile_8_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 10,
+        "1": 10
+      },
+      "aggregate_rate": 6484.650515,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 10,
+        "1": 10
+      },
+      "issues": [],
+      "mean_rate": 324.23252575,
+      "name": "llm_p10",
+      "placement_valid": true,
+      "profile": 10,
+      "rate_count": 20,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles10_12_20260612_001/reports/profile_10_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 11,
+        "1": 10
+      },
+      "aggregate_rate": 6189.222365000001,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 11,
+        "1": 11
+      },
+      "issues": [
+        "actual per-GPU running {'0': 11, '1': 10} != expected {'0': 11, '1': 11}"
+      ],
+      "mean_rate": 294.72487452380955,
+      "name": "llm_p11",
+      "placement_valid": false,
+      "profile": 11,
+      "rate_count": 21,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profile11_20260612_001/reports/profile_11_per_gpu_summary.json"
+    },
+    {
+      "actual": {
+        "0": 12
+      },
+      "aggregate_rate": 3804.298328,
+      "benchmark": "gpu_llm_distilgpt2",
+      "expected": {
+        "0": 12,
+        "1": 12
+      },
+      "issues": [
+        "actual per-GPU running {'0': 12} != expected {'0': 12, '1': 12}"
+      ],
+      "mean_rate": 317.02486066666665,
+      "name": "llm_p12",
+      "placement_valid": false,
+      "profile": 12,
+      "rate_count": 12,
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profiles10_12_20260612_001/reports/profile_12_per_gpu_summary.json"
+    }
+  ],
+  "scope": "Additional non-RL GPU workload probes. These do not alter the existing selected-profile theorem targets unless promoted through a later service-map admission step.",
+  "selected_profile_lcb": {
+    "epsilon_est_selected_actions": 65.99851667784168,
+    "eta": -65.93159483563893,
+    "gate_pass": false,
+    "sample_pending_count": 0,
+    "sample_ready_count": 7,
+    "supplemental_rate_count": 79
+  }
+}

@@ -8,6 +8,7 @@ whenever a task-native counter/rate can be parsed.
 from __future__ import annotations
 
 import argparse
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -71,11 +72,68 @@ def _normalize_child_line(
     command: Sequence[str],
     total_override: int | None,
     unit_override: str | None,
-) -> str | None:
+) -> tuple[str | None, ProgressObservation | None]:
     obs = parse_progress_line(line, cmd=_command_for_parser(command))
     if obs is None:
-        return None
-    return build_progress_line(obs, total_override=total_override, unit_override=unit_override)
+        return None, None
+    return build_progress_line(obs, total_override=total_override, unit_override=unit_override), obs
+
+
+def _stable_rate_decision(
+    rates: Sequence[float],
+    *,
+    windows: int,
+    min_samples: int,
+    max_cv: float,
+    max_last_two_rel_delta: float,
+    skip_samples: int,
+) -> dict[str, object]:
+    usable = [float(x) for x in rates[int(max(0, skip_samples)):] if float(x) > 0.0]
+    needed = max(int(min_samples), int(windows), 1)
+    if len(usable) < needed:
+        return {
+            "ready": False,
+            "reason": f"need_at_least_{needed}_positive_rate_samples",
+            "usable_samples": len(usable),
+            "tail": usable[-int(max(1, windows)):],
+        }
+    tail = usable[-int(max(1, windows)):]
+    avg = sum(tail) / len(tail)
+    var = sum((x - avg) ** 2 for x in tail) / len(tail)
+    cv = math.sqrt(var) / max(abs(avg), 1e-12)
+    rel = (
+        abs(tail[-1] - tail[-2]) / max(abs(tail[-2]), 1e-12)
+        if len(tail) >= 2
+        else 0.0
+    )
+    return {
+        "ready": cv <= float(max_cv) and rel <= float(max_last_two_rel_delta),
+        "tail": tail,
+        "mean_rate": avg,
+        "last_rate": tail[-1],
+        "cv": cv,
+        "last_two_relative_delta": rel,
+        "usable_samples": len(usable),
+        "rule": (
+            f"{len(tail)} windows after {int(max(0, skip_samples))} skipped samples, "
+            f"cv<={float(max_cv):.6g}, last-two relative delta<={float(max_last_two_rel_delta):.6g}"
+        ),
+    }
+
+
+def _stable_rate_line(decision: dict[str, object], *, unit: str) -> str:
+    tail = ",".join(f"{float(x):.9g}" for x in decision.get("tail", []) or [])
+    return (
+        "ScheduleurmStableRate "
+        f"unit={canonical_unit(unit)} "
+        f"mean_rate={float(decision.get('mean_rate') or 0.0):.9g} "
+        f"last_rate={float(decision.get('last_rate') or 0.0):.9g} "
+        f"cv={float(decision.get('cv') or 0.0):.9g} "
+        f"last_two_relative_delta={float(decision.get('last_two_relative_delta') or 0.0):.9g} "
+        f"samples={int(decision.get('usable_samples') or 0)} "
+        f"tail={tail} "
+        f"rule={str(decision.get('rule') or '').replace(' ', '_')}"
+    )
 
 
 def _child_return_code_for_shell(returncode: int) -> int:
@@ -84,7 +142,29 @@ def _child_return_code_for_shell(returncode: int) -> int:
     return int(returncode)
 
 
-def run_wrapped_command(command: Sequence[str], *, total: int | None, unit: str) -> int:
+def _terminate_child(proc: subprocess.Popen[str]) -> None:
+    if proc.poll() is not None:
+        return
+    proc.terminate()
+    try:
+        proc.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait(timeout=10)
+
+
+def run_wrapped_command(
+    command: Sequence[str],
+    *,
+    total: int | None,
+    unit: str,
+    terminate_on_stable: bool = False,
+    stable_windows: int = 3,
+    min_rate_samples: int = 3,
+    stable_cv: float = 0.08,
+    stable_rel_delta: float = 0.05,
+    stable_skip_samples: int = 0,
+) -> int:
     if not command:
         raise ValueError("wrapped command is empty")
 
@@ -101,26 +181,51 @@ def run_wrapped_command(command: Sequence[str], *, total: int | None, unit: str)
         env=env,
     )
     assert proc.stdout is not None
-    try:
-        for raw in proc.stdout:
-            line = raw.rstrip("\n")
-            print(line, flush=True)
-            progress_line = _normalize_child_line(
-                line,
-                command=command,
-                total_override=total,
-                unit_override=unit,
-            )
-            if progress_line:
-                print(progress_line, flush=True)
-    finally:
-        return _child_return_code_for_shell(proc.wait())
+    rates: list[float] = []
+    stopped_on_stable = False
+    for raw in proc.stdout:
+        line = raw.rstrip("\n")
+        print(line, flush=True)
+        progress_line, obs = _normalize_child_line(
+            line,
+            command=command,
+            total_override=total,
+            unit_override=unit,
+        )
+        if progress_line:
+            print(progress_line, flush=True)
+        if obs is None or obs.rate_per_s is None or float(obs.rate_per_s) <= 0.0:
+            continue
+        rates.append(float(obs.rate_per_s))
+        if not terminate_on_stable:
+            continue
+        decision = _stable_rate_decision(
+            rates,
+            windows=stable_windows,
+            min_samples=min_rate_samples,
+            max_cv=stable_cv,
+            max_last_two_rel_delta=stable_rel_delta,
+            skip_samples=stable_skip_samples,
+        )
+        if bool(decision.get("ready")):
+            print(_stable_rate_line(decision, unit=unit), flush=True)
+            _terminate_child(proc)
+            stopped_on_stable = True
+            break
+    rc = _child_return_code_for_shell(proc.wait())
+    return 0 if stopped_on_stable else rc
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--unit", default="iter")
     parser.add_argument("--total", type=int, default=0)
+    parser.add_argument("--terminate-on-stable", action="store_true")
+    parser.add_argument("--stable-windows", type=int, default=3)
+    parser.add_argument("--min-rate-samples", type=int, default=3)
+    parser.add_argument("--stable-cv", type=float, default=0.08)
+    parser.add_argument("--stable-rel-delta", type=float, default=0.05)
+    parser.add_argument("--stable-skip-samples", type=int, default=0)
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
 
@@ -130,7 +235,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not command:
         parser.error("missing command after --")
     total = int(args.total) if int(args.total or 0) > 0 else None
-    return run_wrapped_command(command, total=total, unit=args.unit)
+    return run_wrapped_command(
+        command,
+        total=total,
+        unit=args.unit,
+        terminate_on_stable=bool(args.terminate_on_stable),
+        stable_windows=args.stable_windows,
+        min_rate_samples=args.min_rate_samples,
+        stable_cv=args.stable_cv,
+        stable_rel_delta=args.stable_rel_delta,
+        stable_skip_samples=args.stable_skip_samples,
+    )
 
 
 if __name__ == "__main__":

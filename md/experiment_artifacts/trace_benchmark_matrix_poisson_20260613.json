@@ -1,0 +1,1669 @@
+{
+  "aggregate_by_policy": [
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 2.0843348711397813,
+      "candidate_vs_policy_geom_mean_flow": 4.989337603455154,
+      "candidate_vs_policy_job_weighted_mean_flow": 7.103935257124722,
+      "candidate_vs_policy_sum_makespan": 2.626310516045053,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 20678.544571364757,
+      "policies": [
+        "legacy_fixed_caps"
+      ],
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "representative_systems": [],
+      "sum_makespan_s": 190509.78653263074,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 1.0,
+      "candidate_vs_policy_geom_mean_flow": 1.0,
+      "candidate_vs_policy_job_weighted_mean_flow": 1.0,
+      "candidate_vs_policy_sum_makespan": 1.0,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2910.8576898453157,
+      "policies": [
+        "calibrated_backlog_aware_guarded"
+      ],
+      "policy": "scheduleurm_candidate",
+      "policy_family": "candidate",
+      "representative_systems": [],
+      "sum_makespan_s": 72538.94212765,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9987477608235942,
+      "candidate_vs_policy_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_policy_sum_makespan": 0.9978362962230197,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2910.1822070982466,
+      "policies": [
+        "sota_gavel_finish_time_fairness"
+      ],
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "sum_makespan_s": 72381.98934459026,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9990812757415537,
+      "candidate_vs_policy_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_policy_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_policy_sum_makespan": 0.9984579850143982,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2911.292509355911,
+      "policies": [
+        "sota_gavel_pollux_sia_table_goodput"
+      ],
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "sum_makespan_s": 72427.08599184947,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9987477608235942,
+      "candidate_vs_policy_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_policy_sum_makespan": 0.9978362962230197,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2910.1822070982466,
+      "policies": [
+        "sota_iadeep_salus_interference_guard"
+      ],
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "sum_makespan_s": 72381.98934459026,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9990812757415537,
+      "candidate_vs_policy_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_policy_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_policy_sum_makespan": 0.9984579850143982,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2911.292509355911,
+      "policies": [
+        "sota_quadrant_composite"
+      ],
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "sum_makespan_s": 72427.08599184947,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9987477608235942,
+      "candidate_vs_policy_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_policy_sum_makespan": 0.9978362962230197,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2910.1822070982466,
+      "policies": [
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "sum_makespan_s": 72381.98934459026,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9987477608235942,
+      "candidate_vs_policy_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_policy_sum_makespan": 0.9978362962230197,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2910.1822070982466,
+      "policies": [
+        "sota_sia_pollux_resource_adaptive"
+      ],
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "sum_makespan_s": 72381.98934459026,
+      "taskset_count": 5
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_job_weighted_mean_flow_s": 2910.8576898453157,
+      "candidate_sum_makespan_s": 72538.94212765,
+      "candidate_vs_policy_geom_makespan": 0.9990812757415537,
+      "candidate_vs_policy_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_policy_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_policy_sum_makespan": 0.9984579850143982,
+      "completed_jobs": 1472,
+      "job_weighted_mean_flow_s": 2911.292509355911,
+      "policies": [
+        "sota_srpt_gittins_mean_flow_oracle"
+      ],
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "sum_makespan_s": 72427.08599184947,
+      "taskset_count": 5
+    }
+  ],
+  "aggregate_candidate_not_pareto_dominated": true,
+  "aggregate_candidate_pareto_dominated_by": [],
+  "arrival_mode": "poisson",
+  "pass": true,
+  "policy_matrix": [
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 11.81863685077841,
+      "candidate_vs_policy_mean_flow": 110.93801820915596,
+      "candidate_vs_policy_p90_flow": 147.13694018875844,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 100850.96856993494,
+      "mean_flow_s": 47067.377515230044,
+      "p90_flow_s": 83920.58657580888,
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "policy_key": "legacy_fixed_caps",
+      "profiles": {
+        "light_control_local": 1
+      },
+      "representative_systems": [],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "calibrated_backlog_aware_guarded",
+      "policy_family": "candidate",
+      "policy_key": "scheduleurm_candidate",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_pollux_sia_table_goodput",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "policy_key": "sota_srpt_gittins_mean_flow_oracle",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_iadeep_salus_interference_guard",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "policy_key": "sota_quadrant_composite",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_finish_time_fairness",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "policy_key": "sota_sia_pollux_resource_adaptive",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_makespan_s": 8533.214942067756,
+      "candidate_mean_flow_s": 424.2673366175697,
+      "candidate_p90_flow_s": 570.357018897832,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 512,
+      "job_count": 512,
+      "makespan_s": 8533.214942067756,
+      "mean_flow_s": 424.2673366175697,
+      "p90_flow_s": 570.357018897832,
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_salus_iadeep_packing_guard",
+      "profiles": {
+        "light_control_local": 13
+      },
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "taskset": "q00_light_control"
+    },
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.099026201099373,
+      "candidate_vs_policy_mean_flow": 3.711045819559113,
+      "candidate_vs_policy_p90_flow": 2.940336848696053,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2749.616581407206,
+      "mean_flow_s": 238.55065428069022,
+      "p90_flow_s": 283.54772289551613,
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "policy_key": "legacy_fixed_caps",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 3
+      },
+      "representative_systems": [],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "calibrated_backlog_aware_guarded",
+      "policy_family": "candidate",
+      "policy_key": "scheduleurm_candidate",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_pollux_sia_table_goodput",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "policy_key": "sota_srpt_gittins_mean_flow_oracle",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_iadeep_salus_interference_guard",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "policy_key": "sota_quadrant_composite",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_finish_time_fairness",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "policy_key": "sota_sia_pollux_resource_adaptive",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_makespan_s": 2501.866269117808,
+      "candidate_mean_flow_s": 64.28124735712129,
+      "candidate_p90_flow_s": 96.43375486766445,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 48,
+      "job_count": 48,
+      "makespan_s": 2501.866269117808,
+      "mean_flow_s": 64.28124735712129,
+      "p90_flow_s": 96.43375486766445,
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_salus_iadeep_packing_guard",
+      "profiles": {
+        "gpu_heavy_jax_matmul": 1
+      },
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "taskset": "q01_gpu_bound_compute"
+    },
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.5408307051913013,
+      "candidate_vs_policy_mean_flow": 3.281242256813829,
+      "candidate_vs_policy_p90_flow": 3.693498189703637,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 7407.1170095597845,
+      "mean_flow_s": 1869.6651557033588,
+      "p90_flow_s": 3017.3110325338844,
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "policy_key": "legacy_fixed_caps",
+      "profiles": {
+        "cpu_heavy_local_bench": 9
+      },
+      "representative_systems": [],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "calibrated_backlog_aware_guarded",
+      "policy_family": "candidate",
+      "policy_key": "scheduleurm_candidate",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_pollux_sia_table_goodput",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "policy_key": "sota_srpt_gittins_mean_flow_oracle",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_iadeep_salus_interference_guard",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "policy_key": "sota_quadrant_composite",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_finish_time_fairness",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "policy_key": "sota_sia_pollux_resource_adaptive",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_makespan_s": 4807.22313269332,
+      "candidate_mean_flow_s": 569.804058758786,
+      "candidate_p90_flow_s": 816.9250064736029,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 256,
+      "job_count": 256,
+      "makespan_s": 4807.22313269332,
+      "mean_flow_s": 569.804058758786,
+      "p90_flow_s": 816.9250064736029,
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_salus_iadeep_packing_guard",
+      "profiles": {
+        "cpu_heavy_local_bench": 8
+      },
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "taskset": "q10_cpu_host_bound"
+    },
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.4035788171665071,
+      "candidate_vs_policy_mean_flow": 1.4201429397717458,
+      "candidate_vs_policy_p90_flow": 1.415961376194614,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 45337.75302883855,
+      "mean_flow_s": 21559.110494658707,
+      "p90_flow_s": 38254.949043891815,
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "policy_key": "legacy_fixed_caps",
+      "profiles": {
+        "hybrid_rl_resac_ant": 5
+      },
+      "representative_systems": [],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32301.536952776707,
+      "mean_flow_s": 15180.944038016218,
+      "p90_flow_s": 27016.943884939657,
+      "policy": "calibrated_backlog_aware_guarded",
+      "policy_family": "candidate",
+      "policy_key": "scheduleurm_candidate",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32301.536952776707,
+      "mean_flow_s": 15180.944038016218,
+      "p90_flow_s": 27016.943884939657,
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_pollux_sia_table_goodput",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32301.536952776707,
+      "mean_flow_s": 15180.944038016218,
+      "p90_flow_s": 27016.943884939657,
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "policy_key": "sota_srpt_gittins_mean_flow_oracle",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9994291649135164,
+      "candidate_vs_policy_mean_flow": 0.9997511182484552,
+      "candidate_vs_policy_p90_flow": 0.9998633018675378,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32283.098102136715,
+      "mean_flow_s": 15177.165778073933,
+      "p90_flow_s": 27013.25071916575,
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_iadeep_salus_interference_guard",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32301.536952776707,
+      "mean_flow_s": 15180.944038016218,
+      "p90_flow_s": 27016.943884939657,
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "policy_key": "sota_quadrant_composite",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9994291649135164,
+      "candidate_vs_policy_mean_flow": 0.9997511182484552,
+      "candidate_vs_policy_p90_flow": 0.9998633018675378,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32283.098102136715,
+      "mean_flow_s": 15177.165778073933,
+      "p90_flow_s": 27013.25071916575,
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_finish_time_fairness",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9994291649135164,
+      "candidate_vs_policy_mean_flow": 0.9997511182484552,
+      "candidate_vs_policy_p90_flow": 0.9998633018675378,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32283.098102136715,
+      "mean_flow_s": 15177.165778073933,
+      "p90_flow_s": 27013.25071916575,
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "policy_key": "sota_sia_pollux_resource_adaptive",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_makespan_s": 32301.536952776707,
+      "candidate_mean_flow_s": 15180.944038016218,
+      "candidate_p90_flow_s": 27016.943884939657,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9994291649135164,
+      "candidate_vs_policy_mean_flow": 0.9997511182484552,
+      "candidate_vs_policy_p90_flow": 0.9998633018675378,
+      "completed_jobs": 160,
+      "job_count": 160,
+      "makespan_s": 32283.098102136715,
+      "mean_flow_s": 15177.165778073933,
+      "p90_flow_s": 27013.25071916575,
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_salus_iadeep_packing_guard",
+      "profiles": {
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "taskset": "q11_cpu_gpu_coupled"
+    },
+    {
+      "baseline_name": "Scheduleurm legacy",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.4004587060154265,
+      "candidate_vs_policy_mean_flow": 1.6116375680388813,
+      "candidate_vs_policy_p90_flow": 1.414716758037154,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 34164.33134289029,
+      "mean_flow_s": 4840.278086371394,
+      "p90_flow_s": 19047.82342534268,
+      "policy": "legacy_fixed_caps",
+      "policy_family": "legacy",
+      "policy_key": "legacy_fixed_caps",
+      "profiles": {
+        "cpu_heavy_local_bench": 9,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 3,
+        "gpu_llm_distilgpt2": 3,
+        "hybrid_rl_resac_ant": 5
+      },
+      "representative_systems": [],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "Scheduleurm candidate",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 1.0,
+      "candidate_vs_policy_mean_flow": 1.0,
+      "candidate_vs_policy_p90_flow": 1.0,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24395.10083099441,
+      "mean_flow_s": 3003.3291494075056,
+      "p90_flow_s": 13464.054424413935,
+      "policy": "calibrated_backlog_aware_guarded",
+      "policy_family": "candidate",
+      "policy_key": "scheduleurm_candidate",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "throughput_table_goodput",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9954148114994292,
+      "candidate_vs_policy_mean_flow": 1.000429667223193,
+      "candidate_vs_policy_p90_flow": 1.003067968526405,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24283.244695193873,
+      "mean_flow_s": 3004.6195815034657,
+      "p90_flow_s": 13505.36171962584,
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_pollux_sia_table_goodput",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "delay_oracle",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9954148114994292,
+      "candidate_vs_policy_mean_flow": 1.000429667223193,
+      "candidate_vs_policy_p90_flow": 1.003067968526405,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24283.244695193873,
+      "mean_flow_s": 3004.6195815034657,
+      "p90_flow_s": 13505.36171962584,
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "policy_family": "sota_style",
+      "policy_key": "sota_srpt_gittins_mean_flow_oracle",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "interference_guard",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9943220594422068,
+      "candidate_vs_policy_mean_flow": 0.9997383353917241,
+      "candidate_vs_policy_p90_flow": 0.9967549034193518,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24256.586898574653,
+      "mean_flow_s": 3002.5432844621023,
+      "p90_flow_s": 13420.362267439608,
+      "policy": "sota_iadeep_salus_interference_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_iadeep_salus_interference_guard",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "quadrant_composite",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9954148114994292,
+      "candidate_vs_policy_mean_flow": 1.000429667223193,
+      "candidate_vs_policy_p90_flow": 1.003067968526405,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24283.244695193873,
+      "mean_flow_s": 3004.6195815034657,
+      "p90_flow_s": 13505.36171962584,
+      "policy": "sota_quadrant_composite",
+      "policy_family": "sota_style",
+      "policy_key": "sota_quadrant_composite",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 3,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 10,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "finish_time_fairness",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9943220594422068,
+      "candidate_vs_policy_mean_flow": 0.9997383353917241,
+      "candidate_vs_policy_p90_flow": 0.9967549034193518,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24256.586898574653,
+      "mean_flow_s": 3002.5432844621023,
+      "p90_flow_s": 13420.362267439608,
+      "policy": "sota_gavel_finish_time_fairness",
+      "policy_family": "sota_style",
+      "policy_key": "sota_gavel_finish_time_fairness",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Gavel",
+        "Themis"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "resource_adaptive_goodput",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9943220594422068,
+      "candidate_vs_policy_mean_flow": 0.9997383353917241,
+      "candidate_vs_policy_p90_flow": 0.9967549034193518,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24256.586898574653,
+      "mean_flow_s": 3002.5432844621023,
+      "p90_flow_s": 13420.362267439608,
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "policy_family": "sota_style",
+      "policy_key": "sota_sia_pollux_resource_adaptive",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Sia",
+        "Pollux"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    },
+    {
+      "baseline_name": "packing_guard",
+      "candidate_makespan_s": 24395.10083099441,
+      "candidate_mean_flow_s": 3003.3291494075056,
+      "candidate_p90_flow_s": 13464.054424413935,
+      "candidate_policy": "calibrated_backlog_aware_guarded",
+      "candidate_vs_policy_makespan": 0.9943220594422068,
+      "candidate_vs_policy_mean_flow": 0.9997383353917241,
+      "candidate_vs_policy_p90_flow": 0.9967549034193518,
+      "completed_jobs": 496,
+      "job_count": 496,
+      "makespan_s": 24256.586898574653,
+      "mean_flow_s": 3002.5432844621023,
+      "p90_flow_s": 13420.362267439608,
+      "policy": "sota_salus_iadeep_packing_guard",
+      "policy_family": "sota_style",
+      "policy_key": "sota_salus_iadeep_packing_guard",
+      "profiles": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      },
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva"
+      ],
+      "taskset": "hybrid_research_portfolio"
+    }
+  ],
+  "replay_seed": 7,
+  "tasksets": [
+    {
+      "job_count": 512,
+      "name": "q00_light_control",
+      "trace_name": "q00_light_control_poisson_seed42"
+    },
+    {
+      "job_count": 48,
+      "name": "q01_gpu_bound_compute",
+      "trace_name": "q01_gpu_bound_compute_poisson_seed42"
+    },
+    {
+      "job_count": 256,
+      "name": "q10_cpu_host_bound",
+      "trace_name": "q10_cpu_host_bound_poisson_seed42"
+    },
+    {
+      "job_count": 160,
+      "name": "q11_cpu_gpu_coupled",
+      "trace_name": "q11_cpu_gpu_coupled_poisson_seed42"
+    },
+    {
+      "job_count": 496,
+      "name": "hybrid_research_portfolio",
+      "trace_name": "hybrid_research_portfolio_poisson_seed42"
+    }
+  ],
+  "trace_seed": 42,
+  "winner_transfer": [
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9987477608235942,
+      "candidate_vs_winner_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_winner_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_winner_sum_makespan": 0.9978362962230197,
+      "objective": "best_all_job_makespan",
+      "source_metric_s": 24256.586898574653,
+      "source_taskset": "hybrid_research_portfolio",
+      "tied_winner_policies": [
+        "sota_iadeep_salus_interference_guard",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "interference_guard",
+      "winner_policy": "sota_iadeep_salus_interference_guard",
+      "winner_profiles_on_source": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9987477608235942,
+      "candidate_vs_winner_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_winner_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_winner_sum_makespan": 0.9978362962230197,
+      "objective": "best_mean_flow",
+      "source_metric_s": 3002.5432844621023,
+      "source_taskset": "hybrid_research_portfolio",
+      "tied_winner_policies": [
+        "sota_iadeep_salus_interference_guard",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "interference_guard",
+      "winner_policy": "sota_iadeep_salus_interference_guard",
+      "winner_profiles_on_source": {
+        "cpu_heavy_local_bench": 8,
+        "gpu_cnn_torch_resnet50": 1,
+        "gpu_heavy_jax_matmul": 1,
+        "gpu_llm_distilgpt2": 1,
+        "hybrid_rl_resac_ant": 2
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_all_job_makespan",
+      "source_metric_s": 8533.214942067756,
+      "source_taskset": "q00_light_control",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "light_control_local": 13
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_mean_flow",
+      "source_metric_s": 424.2673366175697,
+      "source_taskset": "q00_light_control",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "light_control_local": 13
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_all_job_makespan",
+      "source_metric_s": 2501.866269117808,
+      "source_taskset": "q01_gpu_bound_compute",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "gpu_heavy_jax_matmul": 1
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_mean_flow",
+      "source_metric_s": 64.28124735712129,
+      "source_taskset": "q01_gpu_bound_compute",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "gpu_heavy_jax_matmul": 1
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_all_job_makespan",
+      "source_metric_s": 4807.22313269332,
+      "source_taskset": "q10_cpu_host_bound",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "cpu_heavy_local_bench": 8
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9990812757415537,
+      "candidate_vs_winner_geom_mean_flow": 1.0000859186793312,
+      "candidate_vs_winner_job_weighted_mean_flow": 1.0001493784846,
+      "candidate_vs_winner_sum_makespan": 0.9984579850143982,
+      "objective": "best_mean_flow",
+      "source_metric_s": 569.804058758786,
+      "source_taskset": "q10_cpu_host_bound",
+      "tied_winner_policies": [
+        "sota_gavel_pollux_sia_table_goodput",
+        "sota_srpt_gittins_mean_flow_oracle",
+        "sota_iadeep_salus_interference_guard",
+        "sota_quadrant_composite",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "throughput_table_goodput",
+      "winner_policy": "sota_gavel_pollux_sia_table_goodput",
+      "winner_profiles_on_source": {
+        "cpu_heavy_local_bench": 8
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9987477608235942,
+      "candidate_vs_winner_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_winner_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_winner_sum_makespan": 0.9978362962230197,
+      "objective": "best_all_job_makespan",
+      "source_metric_s": 32283.098102136715,
+      "source_taskset": "q11_cpu_gpu_coupled",
+      "tied_winner_policies": [
+        "sota_iadeep_salus_interference_guard",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "interference_guard",
+      "winner_policy": "sota_iadeep_salus_interference_guard",
+      "winner_profiles_on_source": {
+        "hybrid_rl_resac_ant": 2
+      }
+    },
+    {
+      "aggregate_completed_jobs": 1472,
+      "candidate_vs_winner_geom_makespan": 0.9987477608235942,
+      "candidate_vs_winner_geom_mean_flow": 0.9998978828990701,
+      "candidate_vs_winner_job_weighted_mean_flow": 0.9997679437406283,
+      "candidate_vs_winner_sum_makespan": 0.9978362962230197,
+      "objective": "best_mean_flow",
+      "source_metric_s": 15177.165778073933,
+      "source_taskset": "q11_cpu_gpu_coupled",
+      "tied_winner_policies": [
+        "sota_iadeep_salus_interference_guard",
+        "sota_gavel_finish_time_fairness",
+        "sota_sia_pollux_resource_adaptive",
+        "sota_salus_iadeep_packing_guard"
+      ],
+      "winner_baseline_name": "interference_guard",
+      "winner_policy": "sota_iadeep_salus_interference_guard",
+      "winner_profiles_on_source": {
+        "hybrid_rl_resac_ant": 2
+      }
+    }
+  ]
+}

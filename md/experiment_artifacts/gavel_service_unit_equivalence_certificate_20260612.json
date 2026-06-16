@@ -1,7 +1,8 @@
 {
   "direct_full_stack_same_workload_ready": false,
-  "exact_arrival_times_ready": false,
+  "exact_arrival_times_ready": true,
   "gate": "gavel_service_unit_equivalence_certificate",
+  "gate_pass": true,
   "gavel_native_bounded_microbaseline_ready": true,
   "gavel_native_unit": "Gavel simulator template steps interpreted through simulation throughput tables",
   "gavel_service_unit_equivalence_ready": false,
@@ -9,16 +10,35 @@
   "microbaseline_summary": {
     "direct_full_stack_performance_ready": false,
     "native_gavel_simulator_microbaseline_ready": true,
+    "rows": [
+      {
+        "avg_jct_s": 25.464,
+        "completed_jobs": 4,
+        "makespan_s": 25.464,
+        "policy": "fifo",
+        "status": "PASS",
+        "taskset": "q01_gpu_bound_compute"
+      },
+      {
+        "avg_jct_s": 11.149,
+        "completed_jobs": 8,
+        "makespan_s": 11.149,
+        "policy": "fifo",
+        "status": "PASS",
+        "taskset": "q11_cpu_gpu_coupled"
+      }
+    ],
     "service_unit_equivalence_ready": false,
     "usable_native_performance_sample_count": 2
   },
   "pass": true,
+  "pass_meaning": "bounded same-trace Gavel adapter compatibility and native microbaseline readiness, not measured service-unit equivalence",
   "reason_if_false": "Gavel native trace rows use Gavel template job types and simulator throughput tables, while Scheduleurm theorem rows use measured aggregate lower-service rates from the Scheduleurm service cache.  The trace schema, job counts, arrival times, resource counts, and total_units are aligned, but no calibration experiment currently proves that one Gavel simulator step has the same service-unit meaning as one Scheduleurm measured service unit.",
   "rows": [
     {
       "arrival_order_equivalence_ready": true,
       "job_count": 48,
-      "max_arrival_jitter_s": 0.047,
+      "max_arrival_jitter_s": 0.0,
       "native_resource_count_values": [
         2
       ],
@@ -27,7 +47,7 @@
       "resource_count_values": [
         2
       ],
-      "same_arrival_times": false,
+      "same_arrival_times": true,
       "same_gpu_count": true,
       "same_job_count": true,
       "same_resource_count": true,
@@ -41,7 +61,7 @@
     {
       "arrival_order_equivalence_ready": true,
       "job_count": 160,
-      "max_arrival_jitter_s": 0.159,
+      "max_arrival_jitter_s": 0.0,
       "native_resource_count_values": [
         1
       ],
@@ -50,7 +70,7 @@
       "resource_count_values": [
         1
       ],
-      "same_arrival_times": false,
+      "same_arrival_times": true,
       "same_gpu_count": true,
       "same_job_count": true,
       "same_resource_count": true,
@@ -62,13 +82,16 @@
       "trace_schema_compatibility_ready": true
     }
   ],
-  "same_arrival_times": false,
+  "same_arrival_times": true,
   "same_gpu_count": true,
   "same_job_count": true,
   "same_resource_count": true,
   "same_total_units": true,
   "scheduleurm_unit": "Scheduleurm task total_units divided by measured aggregate_rate",
   "scope": "Certifies bounded same-trace Gavel adapter compatibility and records the remaining service-unit blocker.  It intentionally does not promote Gavel native simulator rows to full-stack SOTA superiority.",
+  "scoped_claim_ready": true,
+  "status": "GAVEL_NATIVE_ADAPTER_COMPATIBILITY_PASS_SERVICE_UNIT_EQUIV_FALSE",
+  "strong_claim_ready": false,
   "tasksets": [
     "q01_gpu_bound_compute",
     "q11_cpu_gpu_coupled"

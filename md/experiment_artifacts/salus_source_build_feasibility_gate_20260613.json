@@ -1,0 +1,84 @@
+{
+  "blockers": [
+    "protoc is not available in the current local environment",
+    "docker is not available in the current local environment",
+    "kubectl is not available in the current local environment",
+    "TensorFlow-Salus source repository is not present under reference/repos/tensorflow-salus",
+    "TensorFlow_DIR does not point to a TensorFlow-Salus bazel source tree",
+    "TensorFlow-Salus libtensorflow_kernels.so artifact is absent",
+    "Salus requires Protobuf 3.4.0 exactly; the current environment has no verified matching protoc",
+    "Salus requires Boost 1.66 exactly; no verified matching local Boost tree is present",
+    "upstream production image is pinned to CUDA 9.1/cuDNN7, so source-build substitution still needs old-runtime compatibility evidence"
+  ],
+  "direct_fullstack_salus_superiority_ready": false,
+  "gate": "salus_source_build_feasibility_gate",
+  "local_tensorflow_salus_repo": {
+    "exists": false,
+    "path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/tensorflow-salus"
+  },
+  "pass": true,
+  "required_contracts": {
+    "official_prod_image_pinned_cuda91": true,
+    "requires_boost_1_66_exact": true,
+    "requires_custom_tensorflow_salus": true,
+    "requires_gperftools_when_tcmalloc": true,
+    "requires_libtensorflow_kernels": true,
+    "requires_protobuf_3_4_exact": true,
+    "requires_tensorflow_bazel_tree": true,
+    "requires_zeromq": true
+  },
+  "salus_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+  "scope": "Strict feasibility certificate for replacing the official Salus image with a local source build.  A source build is not a valid full-stack Salus baseline unless it includes TensorFlow-Salus and the pinned native dependency contract required by upstream Salus.",
+  "source_build_ready": false,
+  "tensorflow_dir": "",
+  "tensorflow_tree": {
+    "exists": false,
+    "has_bazel_tensorflow": false,
+    "has_libtensorflow_framework": false,
+    "has_libtensorflow_kernels": false,
+    "path": ""
+  },
+  "tools": {
+    "cmake": {
+      "available": true,
+      "path": "/usr/bin/cmake",
+      "version": "cmake version 3.22.1"
+    },
+    "docker": {
+      "available": false,
+      "path": "",
+      "version": ""
+    },
+    "g++": {
+      "available": true,
+      "path": "/usr/bin/g++",
+      "version": "g++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0"
+    },
+    "gcc": {
+      "available": true,
+      "path": "/usr/bin/gcc",
+      "version": "gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0"
+    },
+    "kubectl": {
+      "available": false,
+      "path": "",
+      "version": ""
+    },
+    "nvidia-smi": {
+      "available": true,
+      "path": "/usr/lib/wsl/lib/nvidia-smi",
+      "version": "NVIDIA-SMI version  : 610.43.02"
+    },
+    "pkg-config": {
+      "available": true,
+      "path": "/usr/bin/pkg-config",
+      "version": "0.29.2"
+    },
+    "protoc": {
+      "available": false,
+      "path": "",
+      "version": ""
+    }
+  },
+  "valid_fullstack_substitute_ready": false
+}

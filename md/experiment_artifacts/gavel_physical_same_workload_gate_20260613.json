@@ -1,0 +1,287 @@
+{
+  "blockers": [],
+  "copied_repo": "/tmp/scheduleurm_gavel_physical_same_workload/gavel",
+  "copy": {
+    "copied_repo": "/tmp/scheduleurm_gavel_physical_same_workload/gavel",
+    "pass": true,
+    "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"
+  },
+  "dependency_imports": {
+    "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+    "modules": [
+      {
+        "detail": "OK",
+        "module": "grpc",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "grpc_tools",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "func_timeout",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "cvxpy",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "matrix_completion",
+        "ok": true,
+        "returncode": 0
+      },
+      {
+        "detail": "OK",
+        "module": "scipy",
+        "ok": true,
+        "returncode": 0
+      }
+    ],
+    "pass": true
+  },
+  "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
+  "direct_fullstack_binary_superiority_ready": true,
+  "evidence_artifacts": {
+    "checkpoint_dir": "/tmp/scheduleurm_gavel_physical_same_workload/checkpoints",
+    "native_log": "/tmp/scheduleurm_gavel_physical_same_workload/logs/native_probe.log",
+    "scheduler_log": "/tmp/scheduleurm_gavel_physical_same_workload/logs/gavel_scheduler.log",
+    "throughputs_file": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_throughputs.json",
+    "timeline_dir": "/tmp/scheduleurm_gavel_physical_same_workload/timelines",
+    "trace_file": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_physical.trace",
+    "worker_log": "/tmp/scheduleurm_gavel_physical_same_workload/logs/gavel_worker.log"
+  },
+  "extended_imports": {
+    "modules": [
+      {
+        "detail": "ok",
+        "module": "torch",
+        "ok": true
+      },
+      {
+        "detail": "ok",
+        "module": "filelock",
+        "ok": true
+      },
+      {
+        "detail": "ok",
+        "module": "numa",
+        "ok": true
+      },
+      {
+        "detail": "ok",
+        "module": "psutil",
+        "ok": true
+      }
+    ],
+    "pass": true
+  },
+  "gate": "gavel_physical_same_workload_gate",
+  "gavel_jct_s": 2.996,
+  "gavel_physical_same_workload": {
+    "completed_steps": 12,
+    "gavel_jct_s": 2.996,
+    "gavel_total_time_taken_s": 10.0,
+    "iterator_duration_s": 0.12677550315856934,
+    "iterator_log_count": 1,
+    "iterator_progress_ready": true,
+    "pass": true,
+    "scheduler_command": [
+      "/usr/bin/python3",
+      "scripts/drivers/run_scheduler_with_trace.py",
+      "-t",
+      "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_physical.trace",
+      "-p",
+      "fifo",
+      "--seed",
+      "0",
+      "--solver",
+      "SCS",
+      "--throughputs_file",
+      "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_throughputs.json",
+      "--time_per_iteration",
+      "8",
+      "--expected_num_workers",
+      "1",
+      "--timeline_dir",
+      "/tmp/scheduleurm_gavel_physical_same_workload/timelines"
+    ],
+    "scheduler_log": "/tmp/scheduleurm_gavel_physical_same_workload/logs/gavel_scheduler.log",
+    "scheduler_log_tail": "scheduler:INFO [2026-06-13 22:23:45.279286] [Job dispatched]\tJob ID: 0\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:45] Starting server at 127.0.1.1:50160\nscheduler:DEBUG [2026-06-13 22:23:46.047995] Adding worker 0 back to queue...\nscheduler:DEBUG [2026-06-13 22:23:46.048107] Added worker 0 back to queue\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:46] Successfully registered v100 worker with id(s) [0]\nscheduler:DEBUG [2026-06-13 22:23:46.048972] Resetting time run so far\nscheduler:DEBUG [2026-06-13 22:23:46.292553] Removing worker 0 from the queue...\nscheduler:DEBUG [2026-06-13 22:23:46.292707] Removed worker 0 from the queue\nscheduler:DEBUG [2026-06-13 22:23:46.292777] Finished re-dispatching jobs\nscheduler:INFO [2026-06-13 22:23:46.292801] *** START ROUND 0 ***\nscheduler:INFO [2026-06-13 22:23:46.292841] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.00\tDeficit: 1781360626.05\tAllocation:  [v100 1.00]\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:47] Received job initialization request from job 0\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:47] Initialized job 0 with initial lease max_steps=12, max_duration=6.55, extra_time=0.00\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:47] Received lease update request: job_id=0, worker_id=0, steps=9, duration=0.12, max_steps=12, max_duration=6.55\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:47] Sending new lease to job 0 (worker 0) with max_steps=12, max_duration=6.54\nruntime.rpc.scheduler_server:INFO [2026-06-13 22:23:48] Received completion notification: Job ID: 0, Worker ID: 0, Num steps: [12], Execution time: [0.12677550315856934]\nscheduler:DEBUG [2026-06-13 22:23:48.274708] Adding worker 0 back to queue...\nscheduler:DEBUG [2026-06-13 22:23:48.274766] Added worker 0 back to queue\nscheduler:DEBUG [2026-06-13 22:23:48.274797] Current active completion events: dict_keys([])\nscheduler:INFO [2026-06-13 22:23:48.274835] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [2026-06-13 22:23:48.274867] [Job succeeded]\tJob ID: 0\tStart timestamp: 1781360625.28\tEnd timestamp: 1781360628.27\tDuration: 3.00\nscheduler:INFO [2026-06-13 22:23:48.275084] Job 0 throughput on worker type v100: [100.0] -> [97.32775536686508]\nscheduler:INFO [2026-06-13 22:23:48.275133] Remaining active jobs: 0\nscheduler:DEBUG [2026-06-13 22:23:50.297311] Waiting for following jobs to complete: []\nscheduler:DEBUG [2026-06-13 22:23:50.297442] All jobs in round 0 have completed!\nscheduler:DEBUG [2026-06-13 22:23:50.297468] Reset extended leases\nscheduler:DEBUG [2026-06-13 22:23:50.297492] Waiting 4.00 seconds before starting round 1...\nscheduler:INFO [2026-06-13 22:23:54.296950] *** END ROUND 0 ***\nscheduler:DEBUG [2026-06-13 22:23:54.297150] Finished re-dispatching jobs\nscheduler:INFO [2026-06-13 22:23:54.297190] *** START ROUND 1 ***\nscheduler:WARNING [2026-06-13 22:23:54.297237] 1 GPUs of type v100 left unused. Number of active jobs: 0\nJob completion times:\nJob 0: 2.996\nAverage job completion time: 2.996 seconds (0.00 hours)\nAverage job completion time (low priority): 2.996 seconds (0.00 hours)\nCompleted steps:\nJob 0: 12 steps\nCluster utilization: 0.014\nNo lease extension opportunities\nTotal time taken: 10 seconds",
+    "scheduler_returncode": 0,
+    "scheduler_wall_s": 16.060343265533447,
+    "server_ready": true,
+    "status": "PASS",
+    "worker_command": [
+      "/usr/bin/python3",
+      "worker.py",
+      "-t",
+      "v100",
+      "-i",
+      "127.0.1.1",
+      "-s",
+      "50160",
+      "-w",
+      "50161",
+      "-g",
+      "1",
+      "--run_dir",
+      "/tmp/scheduleurm_gavel_physical_same_workload/gavel/workloads/pytorch",
+      "--data_dir",
+      "/tmp/scheduleurm_gavel_physical_same_workload/data",
+      "--checkpoint_dir",
+      "/tmp/scheduleurm_gavel_physical_same_workload/checkpoints/gavel"
+    ],
+    "worker_log": "/tmp/scheduleurm_gavel_physical_same_workload/logs/gavel_worker.log",
+    "worker_log_tail": "runtime.rpc.worker_server:INFO [2026-06-13 22:23:46] Starting server at port 50161\nruntime.rpc.worker_client:DEBUG [2026-06-13 22:23:46] Trying to register worker...\nruntime.rpc.worker_client:INFO [2026-06-13 22:23:46] Succesfully registered worker with id(s) [0], round_duration=8\nruntime.rpc.worker_server:DEBUG [2026-06-13 22:23:46] Received run job request from server\nworker:DEBUG [2026-06-13 22:23:46] Dispatching run request\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:46] Requesting GPU for job(s) [0] (worker 0, round 0)...\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:46] Using GPU 0 for job(s) [0] (worker 0, round 0)\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:46] Constructing commands for worker 0...\nruntime.rpc.dispatcher:INFO [2026-06-13 22:23:46] Running job 0 (worker 0, round 0) on GPU 0, prefix: N/A, command: \"python3 main.py --local_rank 0 --steps 12 --checkpoint_dir /tmp/scheduleurm_gavel_physical_same_workload/checkpoints/gavel/job_id=0 --enable_gavel_iterator\"\nruntime.rpc.dispatcher:INFO [2026-06-13 22:23:48] Job ID: 0, Worker ID: 0, Round: 0, Num steps: 12, Execution time: 0.13 seconds, Output:\n{\"completed_steps\": 11, \"device\": \"NVIDIA GeForce RTX 4060 Laptop GPU\", \"enable_gavel_iterator\": true, \"pid\": 393415, \"wall_s\": 0.1268453598022461}\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:48] Job 0 has completed, notifying scheduler...\nruntime.rpc.worker_client:DEBUG [2026-06-13 22:23:48] Notified scheduler that job 0 has completed\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:55] Shutting down dispatcher...\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:55] Killing all jobs!\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:55] Finished killing job(s)\nruntime.rpc.dispatcher:DEBUG [2026-06-13 22:23:55] Finished shutting down dispatcher",
+    "worker_registered": true,
+    "worker_returncode": 0
+  },
+  "gavel_total_scheduler_wall_s": 16.060343265533447,
+  "host": "FATHERSUCKERMSI",
+  "native_same_workload": {
+    "command": [
+      "/usr/bin/python3",
+      "main.py",
+      "--local_rank",
+      "0",
+      "--steps",
+      "12",
+      "--checkpoint_dir",
+      "/tmp/scheduleurm_gavel_physical_same_workload/checkpoints/native"
+    ],
+    "completed_steps": 12,
+    "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "output_file": "/tmp/scheduleurm_gavel_physical_same_workload/logs/native_probe.log",
+    "pass": true,
+    "returncode": 0,
+    "status": "PASS",
+    "timed_out": false,
+    "wall_s": 2.01660418510437
+  },
+  "native_wall_s": 2.01660418510437,
+  "pass": true,
+  "preparation": {
+    "pass": true,
+    "scheduler_port_patch": 50160,
+    "status": "PREPARED",
+    "throughputs_file": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_throughputs.json",
+    "trace_file": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/scheduleurm_probe_physical.trace",
+    "workload_dir": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/workloads/pytorch/scheduleurm_probe"
+  },
+  "protobuf_stubs": {
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/iterator_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler",
+        "proto": "iterator_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/scheduler_to_worker.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler",
+        "proto": "scheduler_to_worker.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/worker_to_scheduler.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler",
+        "proto": "worker_to_scheduler.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/common.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler",
+        "proto": "common.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      },
+      {
+        "command": [
+          "/usr/bin/python3",
+          "-m",
+          "grpc_tools.protoc",
+          "-Iruntime/protobuf",
+          "--python_out=runtime/rpc_stubs",
+          "--grpc_python_out=runtime/rpc_stubs",
+          "runtime/protobuf/enums.proto"
+        ],
+        "cwd": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler",
+        "proto": "enums.proto",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timeout": false,
+        "timeout_seconds": 20
+      }
+    ],
+    "pass": true,
+    "rpc_stubs_dir": "/tmp/scheduleurm_gavel_physical_same_workload/gavel/scheduler/runtime/rpc_stubs"
+  },
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "run_root": "/tmp/scheduleurm_gavel_physical_same_workload",
+  "run_root_removed": false,
+  "same_service_scale_ready": true,
+  "scheduler_port": 50160,
+  "scheduleurm_native_to_gavel_jct_ratio": 0.673098860181699,
+  "scope": "Runs Gavel's physical scheduler/worker/RPC/dispatcher/GavelIterator path on a temporary same-host workload and compares it with the same script run directly.  This is a scoped Gavel physical-runtime row.  It does not certify every Gavel paper workload or a multi-node Gavel cluster.",
+  "scoped_gavel_physical_fullstack_ready": true,
+  "scoped_gavel_physical_same_workload_superiority_ready": true,
+  "steps": 12,
+  "worker_port": 50161
+}

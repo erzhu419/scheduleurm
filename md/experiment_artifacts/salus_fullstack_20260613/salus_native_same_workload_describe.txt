@@ -1,0 +1,86 @@
+Name:             salus-native-same-workload-smoke
+Namespace:        salus-baseline
+Priority:         0
+Service Account:  default
+Node:             huiwei-super-server/192.168.1.105
+Start Time:       Sun, 14 Jun 2026 00:11:27 +0800
+Labels:           app=salus-native-same-workload-smoke
+Annotations:      <none>
+Status:           Succeeded
+IP:               10.42.0.36
+IPs:
+  IP:  10.42.0.36
+Containers:
+  native-client:
+    Container ID:  docker://e61a9e8afc03170ccecd33c4f09699710a5c2b06a50bc51973f4c64fbacdf02d
+    Image:         registry.gitlab.com/salus/tensorflow-salus:latest
+    Image ID:      docker://sha256:cfc4472a7db13c6bf59be8d5b16569a9fa76d2e3ff3acbd4143415086856cf50
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      bash
+      -lc
+      set -euo pipefail
+      python - <<'PY'
+      from __future__ import print_function
+      import json, time
+      import tensorflow as tf
+      target = ''
+      marker = 'SALUS_NATIVE_RESULT'
+      steps = 24
+      start = time.time()
+      with tf.Graph().as_default():
+          with tf.device('/device:GPU:0'):
+              x = tf.ones([256, 256], dtype=tf.float32)
+              y = tf.matmul(x, x)
+              z = tf.reduce_sum(y)
+          sess = tf.Session(target=target) if target else tf.Session()
+          with sess:
+              sess.run(z)
+              total = 0.0
+              for _ in range(steps):
+                  total += float(sess.run(z))
+      wall = time.time() - start
+      print(marker, json.dumps({'ok': True, 'steps': steps, 'wall_s': wall, 'checksum': total}))
+      PY
+      
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Sun, 14 Jun 2026 00:11:28 +0800
+      Finished:     Sun, 14 Jun 2026 00:14:48 +0800
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      nvidia.com/gpu:  1
+    Requests:
+      nvidia.com/gpu:  1
+    Environment:
+      NVIDIA_VISIBLE_DEVICES:  all
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-drfhk (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-drfhk:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  3m25s  default-scheduler  Successfully assigned salus-baseline/salus-native-same-workload-smoke to huiwei-super-server
+  Normal  Pulled     3m25s  kubelet            spec.containers{native-client}: Container image "registry.gitlab.com/salus/tensorflow-salus:latest" already present on machine
+  Normal  Created    3m25s  kubelet            spec.containers{native-client}: Created container: native-client
+  Normal  Started    3m25s  kubelet            spec.containers{native-client}: Started container native-client

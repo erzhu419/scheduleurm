@@ -1,0 +1,115 @@
+{
+  "direct_full_stack_ready_count": 0,
+  "direct_fullstack_sota_superiority_ready": false,
+  "gate": "sota_native_execution_attempts",
+  "native_execution_ready_count": 3,
+  "pass": true,
+  "rows": [
+    {
+      "adapter": "gavel_simulation",
+      "blocker": "service-unit equivalence and live full-stack Gavel cluster execution are not certified",
+      "details": {
+        "direct_native_smoke_pass": true,
+        "direct_native_trace_pass": true,
+        "native_generated_jobs_pass": true,
+        "native_microbaseline_ready": true,
+        "scheduleurm_native_trace_seed_pass": true,
+        "service_unit_equivalence_ready": false,
+        "usable_native_performance_sample_count": 2
+      },
+      "direct_full_stack_ready": false,
+      "native_execution_ready": true,
+      "native_execution_scope": "isolated generated-jobs, native trace, and bounded same-trace simulator microbaseline"
+    },
+    {
+      "adapter": "pollux_adaptdl_scheduler",
+      "blocker": "local Pollux optimizer policy tests pass; direct full stack still requires Kubernetes/Docker/AdaptDLJob execution",
+      "details": {
+        "command": [
+          "python3",
+          "-m",
+          "pytest",
+          "-q",
+          "adaptdl_sched/policy/pollux_test.py",
+          "adaptdl_sched/policy/speedup_test.py"
+        ],
+        "compat_root": "/tmp/scheduleurm_pollux_compat",
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux/sched",
+        "full_policy_optimizer_tests_ready": true,
+        "numpy126_root_exists": true,
+        "observed_blocker": ".........                                                                [100%]\n9 passed in 32.06s\n\n",
+        "policy_layer_import_and_partial_tests_ready": true,
+        "pymoo05_root_exists": true,
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": ".........                                                                [100%]\n9 passed in 32.06s\n",
+        "timed_out": false
+      },
+      "direct_full_stack_ready": false,
+      "native_execution_ready": true,
+      "native_execution_scope": "local Pollux policy-layer pytest with compatibility paths, no Kubernetes cluster"
+    },
+    {
+      "adapter": "sia_goodput_scheduler",
+      "blocker": "Sia official artifact is cloned, but simulator entrypoint needs the official cvxpy CBC/GLPK and pymoo environment; physical run also requires AdaptDL/Kubernetes",
+      "details": {
+        "command": [
+          "python3",
+          "sia.py",
+          "--help"
+        ],
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/sia_artifacts/sia-simulator",
+        "returncode": 1,
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/sia_artifacts/sia-simulator/sia.py\", line 5, in <module>\n    import cvxpy as cp\nModuleNotFoundError: No module named 'cvxpy'\n",
+        "stdout_tail": "",
+        "timed_out": false
+      },
+      "direct_full_stack_ready": false,
+      "native_execution_ready": false,
+      "native_execution_scope": "official Sia simulator entrypoint probe, no AdaptDL/Kubernetes cluster"
+    },
+    {
+      "adapter": "decima_simulator",
+      "blocker": "Decima is a Spark-DAG simulator, not a GPU co-location scheduler baseline for Scheduleurm",
+      "details": {
+        "command": [
+          "python3",
+          "compute_baselines.py",
+          "--help"
+        ],
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "",
+        "timed_out": false
+      },
+      "direct_full_stack_ready": false,
+      "native_execution_ready": true,
+      "native_execution_scope": "local simulator entrypoint help"
+    },
+    {
+      "adapter": "salus_gpu_sharing",
+      "blocker": "Salus driver requires old future-fstrings/TensorFlow/C++ runtime and server stack; direct full-stack run is not available here",
+      "details": {
+        "command": [
+          "python3",
+          "-m",
+          "benchmarks.driver",
+          "--help"
+        ],
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+        "returncode": 1,
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/usr/lib/python3.10/runpy.py\", line 187, in _run_module_as_main\n    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)\n  File \"/usr/lib/python3.10/runpy.py\", line 146, in _get_module_details\n    return _get_module_details(pkg_main_name, error)\n  File \"/usr/lib/python3.10/runpy.py\", line 157, in _get_module_details\n    code = loader.get_code(mod_name)\n  File \"<frozen importlib._bootstrap_external>\", line 1017, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 947, in source_to_code\n  File \"<frozen importlib._bootstrap>\", line 241, in _call_with_frames_removed\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/salus/benchmarks/driver/__main__.py\", line 0\nSyntaxError: unknown encoding: future_fstrings\n",
+        "stdout_tail": "",
+        "timed_out": false
+      },
+      "direct_full_stack_ready": false,
+      "native_execution_ready": false,
+      "native_execution_scope": "local Python driver entrypoint probe"
+    }
+  ],
+  "scope": "Native execution ledger for cloned external repositories on the current host.  Passing native rows do not imply direct full-stack SOTA superiority unless direct_full_stack_ready is true.",
+  "scoped_claim_ready": true,
+  "status": "SOTA_NATIVE_EXECUTION_ATTEMPTS_RECORDED",
+  "strong_claim_ready": false
+}

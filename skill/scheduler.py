@@ -43,6 +43,35 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
+SCHEDULER_CONTROL_SUBCOMMANDS = {
+    "adopt",
+    "cancel",
+    "claims",
+    "clear-queue",
+    "dispatch",
+    "doctor",
+    "forget",
+    "history",
+    "install-slurm",
+    "profile-local",
+    "rebalance-pending",
+    "record-vram",
+    "repair-queued",
+    "results",
+    "show",
+    "status",
+    "submit",
+    "submit-cpu-batch",
+    "wait-for",
+    "watch",
+}
+SCHEDULER_CONTROL_PATH_MARKERS = (
+    "/.claude/skills/scheduler/",
+    "/scheduleurm/skill/",
+    "/sched-slurm-src/",
+    "/tmp/sched-slurm-src/",
+)
+
 # Optional sibling module for docker / conda env deployment. Loaded lazily; if missing,
 # all env-spec branches collapse to the legacy "none" path (assume conda env on target).
 try:
@@ -111,6 +140,8 @@ JTL110GPU_RE_SAC_JAX_PATH = (
     f"{JTL110GPU_RE_SAC_JAX_SITE}/nvidia/cuda_nvcc/bin:"
     "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 )
+NODE007_RESAC_JAX_ENV = "/tmp/scheduleurm_envs/resac-jax-535-py310-final"
+NODE007_SCOMP_ENV = "/home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310"
 OFFLINE_SUMO_ENV = "/home/erzhu419/.conda/envs/offline-sumo"
 OFFLINE_SUMO_PYTHON = f"{OFFLINE_SUMO_ENV}/bin/python"
 BUS_TORCH_CMD_REWRITES = [
@@ -181,7 +212,8 @@ NODES = {
                        "ssh_proxy_jump": "jtl110gpu2",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
                        "max_vram_per_task": None, "max_concurrent_running": 0,
-                       "slurm_backend": "local", "slurm_auto_large": False,
+                       "slurm_backend": "local", "probe_slurm_cluster": True,
+                       "slurm_auto_large": False,
                        "slurm_auto_gpu_count": 4,
                        "slurm_gpu_partition": "gpu",
                        "slurm_cpu_partition": "cpu",
@@ -214,7 +246,7 @@ NODES = {
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
                        "max_vram_per_task": None, "max_concurrent_running": 16,
                        "max_tasks_per_gpu": 4,
-                       "small_vram_task_threshold_mb": 768,
+                       "small_vram_task_threshold_mb": 1536,
                        "small_vram_max_concurrent_running": 24,
                        "small_vram_max_tasks_per_gpu": 6,
                        "allow_gpu_over_one_third": True,
@@ -237,15 +269,18 @@ NODES = {
                        "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
                            ("/home/erzhu419/miniconda3/envs/csbapr/bin/python",
                             "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310/bin/python"),
+                           ("/home/erzhu419/.venvs/scheduleurm-torch-bench/bin/python",
+                            f"{NODE007_SCOMP_ENV}/bin/python"),
                            ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
-                            "/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin/python"),
+                            f"{NODE007_RESAC_JAX_ENV}/bin/python"),
                        ],
                        "launch_extra_env": {
-                           "PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/bin:/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin:/usr/local/bin:/usr/bin:/bin",
+                           "PATH": f"/cm/local/apps/cuda-driver/libs/535.261.03/bin:{NODE007_RESAC_JAX_ENV}/bin:/usr/local/bin:/usr/bin:/bin",
                            "LD_LIBRARY_PATH": "/cm/local/apps/cuda-driver/libs/535.261.03/lib64",
+                           "BAPR_PYTHON": f"{NODE007_RESAC_JAX_ENV}/bin/python",
                            "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
                        },
-                       "resume_scan_python": "/home/zhengliang01/scheduleurm_work/conda_envs/resac-jax-535-py310-final/bin/python",
+                       "resume_scan_python": f"{NODE007_RESAC_JAX_ENV}/bin/python",
                        "nvidia_smi_path": "/cm/local/apps/cuda-driver/libs/535.261.03/bin/nvidia-smi",
                        "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"]},
     # Windows CPU-only box. It has 256 logical / 128 physical cores split across
@@ -431,6 +466,69 @@ def _algorithm_selected_gpu_audit(task: dict, node_state: dict, gpu: dict) -> di
         return {"error": str(e)[:120], "algorithm": _algorithm_name()}
 
 
+def _algorithm_global_batch_hook_enabled() -> bool:
+    raw = str(os.environ.get("SCHEDULEURM_GLOBAL_BATCH_HOOK") or "").strip().lower()
+    if raw in ("0", "false", "no", "off"):
+        return False
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    return str(_algorithm_name()).startswith("global_theorem")
+
+
+def _algorithm_global_batch_plan(tasks: list, nodes: list) -> tuple[dict, dict]:
+    policy = _PLACEMENT_POLICY
+    if (
+        policy is None
+        or not _algorithm_global_batch_hook_enabled()
+        or not hasattr(policy, "global_batch_select")
+    ):
+        return {}, {}
+    limit = max(1, int(os.environ.get("SCHEDULEURM_GLOBAL_BATCH_TASK_LIMIT", "32")))
+    ctx = dict(_algorithm_runtime_context())
+    ctx["global_batch_size"] = max(1, int(os.environ.get("SCHEDULEURM_GLOBAL_BATCH_SIZE", "4")))
+    ctx["global_batch_max_configurations"] = max(
+        1, int(os.environ.get("SCHEDULEURM_GLOBAL_BATCH_MAX_CONFIGURATIONS", "10000"))
+    )
+    node_rows = []
+    for node in nodes:
+        row = dict(node)
+        row["node_info"] = dict(NODES.get(node.get("name"), {}) or {})
+        node_rows.append(row)
+    try:
+        report = policy.global_batch_select(list(tasks[:limit]), node_rows, ctx) or {}
+    except Exception as e:
+        return {}, {
+            "type": "algorithm_global_batch_plan_error",
+            "algorithm": _algorithm_name(),
+            "reason": str(e)[:220],
+        }
+    placements = report.get("placements") if isinstance(report, dict) else {}
+    if not isinstance(placements, dict):
+        placements = {}
+    plan = {}
+    for task_id, placement in placements.items():
+        if not isinstance(placement, dict):
+            continue
+        node = str(placement.get("node") or "")
+        if not node:
+            continue
+        plan[str(task_id)] = {
+            "node": node,
+            "gpu_idx": placement.get("gpu_idx"),
+            "algorithm": _algorithm_name(),
+        }
+    event = {
+        "type": "algorithm_global_batch_plan",
+        "algorithm": _algorithm_name(),
+        "candidate_tasks": min(len(tasks), limit),
+        "planned_tasks": len(plan),
+        "scheduler_hook_ready": bool(report.get("scheduler_hook_ready")) if isinstance(report, dict) else False,
+        "oracle_gap_alpha0": ((report.get("action") or {}).get("oracle_gap_alpha0") if isinstance(report, dict) else None),
+        "oracle_gap_alpha1": ((report.get("action") or {}).get("oracle_gap_alpha1") if isinstance(report, dict) else None),
+    }
+    return plan, event
+
+
 def _hard_rule_bypassed(rule: str, task: Optional[dict] = None,
                         node_info: Optional[dict] = None,
                         node_state: Optional[dict] = None,
@@ -520,6 +618,14 @@ SLURM_AUTO_LARGE_TASK_CPU_CORES = int(os.environ.get("SCHEDULEURM_SLURM_AUTO_LAR
 # Failure classification — drives whether to retry or escalate to /scheduler-heal.
 ENV_MISSING_PATTERNS = ("没有那个文件或目录", "no such file or directory", "command not found", "未找到命令")
 PYTHON_IMPORT_PATTERNS = ("ModuleNotFoundError", "ImportError")
+CUDA_RUNTIME_PATTERNS = (
+    "gpusolverDnCreate",
+    "cuSolver internal error",
+    "no supported devices found for platform CUDA",
+    "Unable to initialize backend 'cuda'",
+)
+PROJECT_WIDE_ENV_BLOCK_TTL_S = int(os.environ.get(
+    "SCHEDULEURM_PROJECT_ENV_BLOCK_TTL_S", str(6 * 3600)))
 DISK_FULL_PATTERNS = (
     "No space left on device",
     "[Errno 28]",       # OSError: [Errno 28] No space left on device
@@ -1652,6 +1758,7 @@ def _claim_resource_record_for_task(task: dict) -> dict:
     """
     pids = task.get("remote_pids") or []
     current_vram = int(task.get("current_vram_mb") or 0)
+    peak_vram = int(task.get("peak_vram_mb") or 0)
     est_vram = int(task.get("est_vram_mb") or 0)
     current_ram = int(task.get("current_ram_mb") or 0)
     est_ram = int(task.get("ram_mb") or DEFAULT_RAM_MB)
@@ -1660,9 +1767,18 @@ def _claim_resource_record_for_task(task: dict) -> dict:
         task, node_info=NODES.get(node or "", {}), node_name=node,
         gpu_idx=task.get("gpu_idx"))
     ignore_one_third = _task_ignores_one_third_pack_rule(task, NODES.get(node or "", {}))
+    observed_vram = max(0, current_vram, peak_vram)
+    if observed_vram >= 100:
+        vram_budget = observed_vram
+    elif task.get("last_progress_line") or int(task.get("runtime_current_unit") or 0) > 0:
+        vram_budget = observed_vram
+    elif est_vram > 0:
+        vram_budget = min(est_vram, STARTUP_FLOOR_MB)
+    else:
+        vram_budget = observed_vram
     return {
         "gpu_idx": task.get("gpu_idx"),
-        "vram_mb": max(0, est_vram, current_vram),
+        "vram_mb": vram_budget,
         "cpu_cores": 0 if ignore_cpu else max(0, int(task.get("cpu_cores") or DEFAULT_CPU_CORES)),
         "ram_mb": max(0, est_ram, current_ram),
         "ignore_cpu_capacity": bool(ignore_cpu),
@@ -5080,7 +5196,7 @@ def _detect_oom_kills_local(state):
     return flipped
 
 def _classify_failure(diag):
-    """Categorize a crash diag for routing: ENV_MISSING / PYTHON_IMPORT / INVALID_FLAG / OOM / APP_BUG / UNKNOWN.
+    """Categorize a crash diag for routing: ENV_MISSING / PYTHON_IMPORT / CUDA_RUNTIME / INVALID_FLAG / OOM / APP_BUG / UNKNOWN.
     Looked at by _requeue_after_crash to decide retry-vs-escalate, and by pick_placement to skip nodes
     where this signature already failed for environment reasons."""
     if not diag or not diag.get("is_crash"):
@@ -5094,6 +5210,9 @@ def _classify_failure(diag):
     for p in PYTHON_IMPORT_PATTERNS:
         if p.lower() in haystack:
             return "PYTHON_IMPORT"
+    for p in CUDA_RUNTIME_PATTERNS:
+        if p.lower() in haystack:
+            return "CUDA_RUNTIME"
     # INVALID_FLAG before OOM: argparse / absl rejection happens at startup before any allocation,
     # so the tail will not contain memory-pressure noise. Retry of an invalid-flag cmd is wasted CPU
     # — the cmd will fail identically every time. Surface immediately as an escalation.
@@ -5229,17 +5348,24 @@ def _blocked_nodes_for_task(task):
     for rec in latest.values():
         if rec.get("status") != "pending":
             continue
-        if rec.get("category") not in ("ENV_MISSING", "PYTHON_IMPORT"):
+        if rec.get("category") not in ("ENV_MISSING", "PYTHON_IMPORT", "CUDA_RUNTIME"):
             continue
         if not rec.get("node"):
             continue
-        # Match on ANY of: same signature / same cwd / same project. cwd is the strongest
-        # indicator (same conda env / sumo build); project is a fallback when cwd metadata is
-        # missing (e.g. older tasks). Sig match preserves prior precise behavior.
+        # Match exact task families strongly, but keep project-only matches time-bounded.
+        # A stale project-wide env escalation can otherwise remove half the CPU pool long
+        # after the shared conda env has been repaired.
         same_sig = sig and rec.get("signature") == sig
         same_cwd = cwd and rec.get("cwd") == cwd
         same_proj = project and rec.get("project") == project
-        if same_sig or same_cwd or same_proj:
+        age_s = time.time() - float(rec.get("ts") or 0)
+        project_block_active = (
+            same_proj
+            and not (same_sig or same_cwd)
+            and PROJECT_WIDE_ENV_BLOCK_TTL_S > 0
+            and age_s <= PROJECT_WIDE_ENV_BLOCK_TTL_S
+        )
+        if same_sig or same_cwd or project_block_active:
             blocked.add(rec["node"])
     return blocked
 
@@ -5263,7 +5389,7 @@ def _requeue_after_crash(parent, state):
     Returns the new task id, or None if ineligible (no real cmd captured, retry cap reached).
     Preserves submitted_at so the re-queue sorts to the head of its priority class.
 
-    HARD-FAIL categories (ENV_MISSING / PYTHON_IMPORT / OOM): write an escalation INSTEAD of retry.
+    HARD-FAIL categories (ENV_MISSING / PYTHON_IMPORT / CUDA_RUNTIME / OOM): write an escalation INSTEAD of retry.
     SOFT-FAIL categories (APP_BUG / UNKNOWN): retry up to MAX_AUTO_RETRY, then escalate as APP_BUG_CAP.
 
     Auto-adopted tasks are eligible IF we captured a real cmdline at adopt time (`task.cmd`
@@ -5299,7 +5425,7 @@ def _requeue_after_crash(parent, state):
     diag = parent.get("_diagnosis") or {}
     category = _classify_failure(diag)
     parent["failure_category"] = category
-    if category in ("ENV_MISSING", "PYTHON_IMPORT", "INVALID_FLAG", "OOM", "DISK_FULL"):
+    if category in ("ENV_MISSING", "PYTHON_IMPORT", "CUDA_RUNTIME", "INVALID_FLAG", "OOM", "DISK_FULL"):
         _write_escalation(parent, category, diag)
         return None
     retry_n = parent.get("retry_count", 0) + 1
@@ -9395,10 +9521,13 @@ class SlurmBackend(Backend):
             lines.append(f"#SBATCH --mem={ram}M")
         vram = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0)
         if vram > 0:
-            # Request 1 GPU; slurm's gres pinning sets CUDA_VISIBLE_DEVICES for us. We don't
-            # request `gpu:N` for >1 GPU because scheduleurm tasks are single-GPU by design;
-            # multi-GPU is the user's launcher's responsibility.
-            lines.append("#SBATCH --gres=gpu:1")
+            # Slurm's gres pinning sets CUDA_VISIBLE_DEVICES for us.  Ordinary
+            # Scheduleurm GPU tasks remain single-GPU, but large LLM/torchrun
+            # jobs can declare gpu_count/num_gpus/nproc_per_node and must get a
+            # matching gres request; otherwise a 30GB multi-GPU job is silently
+            # squeezed into one physical card.
+            requested_gpus = max(1, _task_requested_gpu_count(task))
+            lines.append(f"#SBATCH --gres=gpu:{requested_gpus}")
         lines.append(f"#SBATCH --time={self._format_walltime(self._walltime_for(task))}")
         node_info = NODES.get(task.get("node"), {}) or {}
         default_partition = (
@@ -13003,10 +13132,12 @@ def _apply_node_cmd_rewrites(node, cmd):
 
 def _task_needs_jax_launch_env(task: dict) -> bool:
     cmd = task.get("cmd") or ""
-    project = task.get("project") or ""
+    project = str(task.get("project") or "").lower()
     is_gpu = int(task.get("est_vram_mb", DEFAULT_VRAM_MB) or 0) > 0 and not _task_launch_cpu_mode(task)
     return bool(is_gpu and (
-        project == "RE-SAC"
+        project == "re-sac"
+        or project == "bapr"
+        or "run_seed.sh" in cmd
         or "jax_experiments" in cmd
         or "jax" in cmd.lower()
     ))
@@ -14448,8 +14579,11 @@ def _stage_launch_candidates_outside_lock(task_ids: Optional[set] = None):
                         node_info = NODES.get(tn, {})
                         if node_info.get("host") is None and tn != "local":
                             continue
-                        if node_info.get("skip_launch_staging"):
-                            continue
+                        # `skip_launch_staging` means the target already has a
+                        # usable workspace checkout; it must not suppress
+                        # small resume-checkpoint staging. Otherwise a task
+                        # evicted from local can see node007 as FITS forever
+                        # while refusing to copy a tiny checkpoint there.
                         task_needs_gpu = int(t.get("est_vram_mb") or 0) > 0
                         if gpu_staging_pending and task_needs_gpu and _node_is_windows(tn):
                             continue
@@ -15929,21 +16063,17 @@ def _evict_to_queue(victim, state, reason, eviction_kind: str = "preempt"):
     now = time.time()
     victim["last_evicted_at"] = now
     victim["last_eviction_kind"] = eviction_kind
+    victim.pop("evict_cooldown_until", None)
     if eviction_kind == "local_cpu_budget":
-        victim.pop("evict_cooldown_until", None)
-        node_cooldown = max(0, int(LOCAL_CPU_EVICT_NODE_COOLDOWN_S))
-        if old_node and node_cooldown > 0:
-            raw = victim.get("evict_node_cooldowns")
-            if not isinstance(raw, dict):
-                raw = {}
-                victim["evict_node_cooldowns"] = raw
-            raw[str(old_node)] = now + node_cooldown
-        return
-    cooldown = max(0, int(EVICT_RELAUNCH_COOLDOWN_S))
-    if cooldown > 0:
-        victim["evict_cooldown_until"] = now + cooldown
+        cooldown = max(0, int(LOCAL_CPU_EVICT_NODE_COOLDOWN_S))
     else:
-        victim.pop("evict_cooldown_until", None)
+        cooldown = max(0, int(EVICT_RELAUNCH_COOLDOWN_S))
+    if old_node and cooldown > 0:
+        raw = victim.get("evict_node_cooldowns")
+        if not isinstance(raw, dict):
+            raw = {}
+        raw[str(old_node)] = now + cooldown
+        victim["evict_node_cooldowns"] = raw
 
 
 def _eviction_cooldown_block_reason(task: dict, now: Optional[float] = None) -> str:
@@ -15952,6 +16082,16 @@ def _eviction_cooldown_block_reason(task: dict, now: Optional[float] = None) -> 
         return ""
     now = time.time() if now is None else now
     if until <= now:
+        task.pop("evict_cooldown_until", None)
+        return ""
+    ev = task.get("last_resource_eviction")
+    evicted_node = ev.get("node") if isinstance(ev, dict) else None
+    if evicted_node:
+        raw = task.get("evict_node_cooldowns")
+        if not isinstance(raw, dict):
+            raw = {}
+        raw.setdefault(str(evicted_node), until)
+        task["evict_node_cooldowns"] = raw
         task.pop("evict_cooldown_until", None)
         return ""
     remain = int(max(0, until - now))
@@ -16298,7 +16438,28 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
     )
     if target_ids:
         queued = [t for t in queued if str(t.get("id") or "") in target_ids]
+    global_batch_plan, global_batch_event = _algorithm_global_batch_plan(queued, nodes)
+    if global_batch_event:
+        events.append(global_batch_event)
     resume_scan_cache = {}
+
+    def _global_batch_hint_for(task: dict) -> Optional[dict]:
+        return global_batch_plan.get(str(task.get("id") or ""))
+
+    def _pick_placement_with_global_batch_hint(task: dict, search_nodes: list, extra_allowed_nodes=None):
+        hint = _global_batch_hint_for(task)
+        if (
+            hint
+            and hint.get("node")
+            and not task.get("require_node")
+            and not task.get("preferred_node")
+        ):
+            hinted = dict(task)
+            hinted["preferred_node"] = hint.get("node")
+            hinted["global_batch_hint"] = hint
+            return pick_placement(hinted, search_nodes, extra_allowed_nodes=extra_allowed_nodes)
+        return pick_placement(task, search_nodes, extra_allowed_nodes=extra_allowed_nodes)
+
     for t in queued:
         if _clear_disallowed_cpu_fallback_selection(t):
             t["last_block_reason"] = (
@@ -16353,7 +16514,7 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
             # Cheap capacity gate before slow checkpoint scans. If no node/GPU
             # can accept this task right now, scanning every remote filesystem is
             # pure latency and can starve the few tasks that could launch.
-            pre_scan_placement = pick_placement(t, nodes)
+            pre_scan_placement = _pick_placement_with_global_batch_hint(t, nodes)
             if pre_scan_placement is not None or t.get("resume_locations") or t.get("resume_checkpoint_node"):
                 resume_locations, resume_errors = _refresh_resume_locations_for_task(
                     t, nodes, resume_scan_cache)
@@ -16408,12 +16569,12 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
                     t["resume_checkpoint_migration_plan"] = ckpt_migration_plan
                 else:
                     t.pop("resume_checkpoint_migration_plan", None)
-                placement = pick_placement(t, nodes, extra_allowed_nodes=extra_allowed_nodes)
+                placement = _pick_placement_with_global_batch_hint(t, nodes, extra_allowed_nodes=extra_allowed_nodes)
             else:
                 t.pop("resume_checkpoint_migration_plan", None)
         else:
             t.pop("resume_checkpoint_migration_plan", None)
-            placement = pick_placement(t, nodes)
+            placement = _pick_placement_with_global_batch_hint(t, nodes)
         if placement is None:
             # Build a precise reason by re-checking each candidate node. Helps user see e.g.
             # "GPU 1/3 locked + cpu insufficient on require_node" instead of generic "no fit".
@@ -16421,6 +16582,8 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
             require = t.get("require_node")
             prefer = t.get("preferred_node")
             soft_require_pool = _hpc_cpu_pool_soft_require_nodes(t)
+            allowed_for_reason = {str(n) for n in (t.get("allowed_nodes") or []) if str(n)}
+            allowed_for_reason.update(str(n) for n in (extra_allowed_nodes or []) if str(n))
             reasons = []
             for n in nodes:
                 if not n.get("alive"):
@@ -16430,6 +16593,12 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
                     continue
                 if soft_require_pool and n["name"] not in soft_require_pool:
                     reasons.append(f"{n['name']}=outside-cpu-pool(node001-node006)")
+                    continue
+                if not soft_require_pool and allowed_for_reason and n["name"] not in allowed_for_reason:
+                    reasons.append(f"{n['name']}=outside-allowed-nodes")
+                    continue
+                if not soft_require_pool and require and require != n["name"]:
+                    reasons.append(f"{n['name']}=require!={require}")
                     continue
                 node_evict_cooldown = _evict_node_cooldown_block_reason(t, n["name"], node_state=n)
                 if node_evict_cooldown:
@@ -16551,6 +16720,21 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
         t["node"], t["gpu_idx"] = placement
         t["placement_algorithm"] = _algorithm_name()
         t["placement_algorithm_config"] = _algorithm_config_snapshot()
+        batch_hint = _global_batch_hint_for(t)
+        if batch_hint:
+            t["placement_algorithm_global_batch_hint"] = {
+                "node": batch_hint.get("node"),
+                "gpu_idx": batch_hint.get("gpu_idx"),
+                "matched": (
+                    str(batch_hint.get("node") or "") == str(t.get("node") or "")
+                    and (
+                        batch_hint.get("gpu_idx") is None
+                        or str(batch_hint.get("gpu_idx")) == str(t.get("gpu_idx"))
+                    )
+                ),
+            }
+        else:
+            t.pop("placement_algorithm_global_batch_hint", None)
         selected_info = NODES.get(t.get("node"), {})
         selected_cpu_fallback = (
             int(t.get("est_vram_mb") or 0) > 0
@@ -18186,6 +18370,30 @@ def _infer_adopt_cwd_from_cmdline(cmdline: str, roots: list[str]) -> str:
     return ""
 
 
+def _is_scheduler_control_cmdline(cmdline: str) -> bool:
+    """True for scheduler CLI/control processes, which are not user workloads."""
+    if not cmdline:
+        return False
+    try:
+        parts = shlex.split(cmdline)
+    except Exception:
+        parts = cmdline.split()
+    if len(parts) < 2:
+        return False
+    self_path = os.path.normpath(__file__)
+    for i, part in enumerate(parts[:-1]):
+        if os.path.basename(part) != "scheduler.py":
+            continue
+        norm = os.path.normpath(part)
+        known_scheduler_path = (
+            norm == self_path
+            or any(marker in norm for marker in SCHEDULER_CONTROL_PATH_MARKERS)
+        )
+        if known_scheduler_path and parts[i + 1] in SCHEDULER_CONTROL_SUBCOMMANDS:
+            return True
+    return False
+
+
 def _node_cpu_processes(name):
     """Find user-owned CPU-burning python processes NOT in nvidia-smi compute-apps. Catches CPU-only
     workloads (eval scripts, multi-worker batches, etc.) that the GPU-only probe misses.
@@ -18359,6 +18567,13 @@ def _reconcile_external_tasks(state):
     for t in state["tasks"]:
         if t.get("status") != "running" or not t.get("auto_adopted") or not t.get("node"):
             continue
+        if _is_scheduler_control_cmdline(t.get("cmd") or ""):
+            t["status"] = "forgotten"
+            t["finished_at"] = time.time()
+            t["last_block_reason"] = (
+                "auto-forgotten: scheduler control process was misclassified by auto-adopt"
+            )
+            continue
         pids = set(int(p) for p in _task_pids(t))
         try:
             pgid = int(t.get("process_group") or 0)
@@ -18403,6 +18618,7 @@ def _reconcile_external_tasks(state):
             continue
         if p.get("is_slurm"): continue  # Phase 2.2: don't shadow slurm-managed work
         if p["owner"] not in adopt_owners_by_node.get(p["node"], {me}): continue
+        if _is_scheduler_control_cmdline(p.get("cmdline") or ""): continue
         roots = adopt_roots_by_node.get(p["node"], [])
         adopt_cwd = p.get("cwd") or _infer_adopt_cwd_from_cmdline(p.get("cmdline") or "", roots)
         if not _path_under_roots(adopt_cwd, roots): continue
@@ -19793,7 +20009,7 @@ def cmd_install_slurm(args):
         scheduler.py install-slurm                    # all nodes (default)
         scheduler.py install-slurm --node jtl110gpu   # single node
         scheduler.py install-slurm --tag slurm-23.11.10-1
-        scheduler.py install-slurm --sudo-pass cshw2406  # for ssh+sudo on remotes
+        scheduler.py install-slurm --sudo-pass <password>  # for ssh+sudo on remotes
 
     Side effects: creates ~/.cache/scheduleurm/slurm-src/ as the local source cache.
     """
@@ -20308,6 +20524,12 @@ def _explain_node_fit(task: dict, node_state: dict) -> str:
     soft_require_pool = _hpc_cpu_pool_soft_require_nodes(task)
     if soft_require_pool and name not in soft_require_pool:
         return "outside-cpu-pool: scheduler routes this CPU shard to node001-node006"
+    allowed_nodes = {str(n) for n in (task.get("allowed_nodes") or []) if str(n)}
+    if not soft_require_pool and allowed_nodes and name not in allowed_nodes:
+        return "outside-allowed-nodes: task is restricted by allowed_nodes"
+    require = task.get("require_node")
+    if not soft_require_pool and require and require != name:
+        return f"require-node-mismatch: task requires {require}"
     if name in _blocked_nodes_for_task(task):
         return "BLOCKED: pending env_missing/python_import escalation against this signature/cwd/project"
     soft_blocked = name in _launch_failed_nodes_for_task(task)

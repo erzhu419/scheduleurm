@@ -1,21 +1,22 @@
 {
-  "allow_launch": true,
+  "allow_launch": false,
   "bounded_controlled_completion_ready": true,
   "bounded_summary": {
     "alpha0": 0.0,
     "alpha1": 0.0,
     "bounded_controlled_completion_ready": true,
-    "candidate_count_total": 13,
+    "candidate_count_per_launched_task": 1.75,
+    "candidate_count_total": 56,
     "completion_fraction": 1.0,
-    "controlled_completed_task_count": 6,
-    "controlled_launched_task_count": 6,
+    "controlled_completed_task_count": 32,
+    "controlled_launched_task_count": 32,
     "realization_status": "LIVE_COMPLETION_REALIZATION_PASS",
     "resource_eviction_count": 0,
-    "run_id": "live_theorem_dispatch_bounded_portfolio_20260611_003",
-    "theorem_slot_count": 7,
-    "trace_completed_slot_count": 7,
-    "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/live_theorem_dispatch_bounded_portfolio_20260611_003_trace.jsonl",
-    "trace_slot_count": 7,
+    "run_id": "controlled_jtl110gpu_32_20260613",
+    "theorem_slot_count": 32,
+    "trace_completed_slot_count": 32,
+    "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_32_20260613_trace.jsonl",
+    "trace_slot_count": 32,
     "unadmitted_launched_count": 0
   },
   "canary_environment_contract": {
@@ -25,38 +26,51 @@
     "SCHEDULEURM_THEOREM_UNCERTIFIED_MODE": "block or trace_only"
   },
   "completion_fraction_threshold": 0.95,
-  "controlled_32_task_completion_ready": false,
+  "controlled_32_task_completion_ready": true,
+  "controlled_6_task_completion_ready": true,
   "controlled_threshold": 32,
-  "gate": "controlled_production_completion_gate",
-  "generated_at": "2026-06-12T08:50:51+0800",
-  "large_scale_organic_launched_completion_ready": false,
+  "gate": "controlled_launched_completion_gate",
+  "gate_pass": true,
+  "generated_at": "2026-06-16T08:58:24+0800",
+  "large_scale_organic_launched_completion_ready": true,
   "launch_result": {},
   "launch_safe": false,
-  "launch_status": "WAIT_RESOURCE",
+  "launch_status": "LAUNCH_DISABLED",
+  "legacy_gate_name": "controlled_production_completion_gate",
+  "live_oracle_traced_large_scale_completion_ready": false,
   "local_gpu_status": {
     "available": true,
     "gpus": [
       {
         "index": 0,
         "memory_total_mb": 8188.0,
-        "memory_used_mb": 680.0,
-        "util_pct": 94.0
+        "memory_used_mb": 0.0,
+        "util_pct": 0.0
       }
     ],
-    "max_memory_frac": 0.08304836345872008,
-    "max_util_pct": 94.0
+    "max_memory_frac": 0.0,
+    "max_util_pct": 0.0
   },
-  "min_candidate_multiplier": 2.0,
+  "min_candidate_multiplier": 1.0,
+  "minimum_candidate_count_semantics": "The theorem-facing requirement is a nonempty finite candidate family per launched slot plus exact robust MaxWeight selection; multiple candidates per slot are diagnostic richness, not a MaxWeight stability assumption.",
   "organic_production_canary_recorder_ready": true,
   "pass": true,
+  "pass_meaning": "32-task controlled launched completion and strict scheduler-history large-scale launched-completion certificate; live oracle-traced large-scale completion remains separate",
   "production_launch_completion_snapshot": {
-    "active_production_count": 53,
+    "active_production_count": 11,
+    "history_large_scale_launched_completion_ready": true,
     "large_scale_active_progress_ready": true,
-    "large_scale_launched_completion_ready": false,
+    "large_scale_launched_completion_ready": true,
     "launch_status": "LAUNCH_DISABLED",
-    "progress_observation_count": 24,
+    "live_oracle_traced_large_scale_completion_ready": false,
+    "progress_observation_count": 4,
     "queued_production_count": 0,
-    "running_production_count": 53
+    "running_production_count": 11
   },
-  "scope": "Recognizes existing bounded controlled launched completion evidence and defines the stronger 32-task controlled and organic production thresholds. It only launches additional controlled tasks when explicitly allowed and GPU utilization is below the safety threshold."
+  "scope": "Recognizes existing bounded controlled launched completion evidence and defines the stronger 32-task controlled and strict scheduler-history thresholds. It only launches additional controlled tasks when explicitly allowed and GPU utilization is below the safety threshold.",
+  "scoped_claim_ready": true,
+  "selected_controlled_run_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_32_20260613.json",
+  "status": "CONTROLLED_32_AND_STRICT_HISTORY_COMPLETION_PASS",
+  "strict_history_large_scale_completion_ready": true,
+  "strong_claim_ready": true
 }

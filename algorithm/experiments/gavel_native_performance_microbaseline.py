@@ -39,6 +39,7 @@ DEFAULT_CASES = (
     ("q11_cpu_gpu_coupled", 8, "8:0:0", "8:1:1"),
 )
 DEFAULT_POLICIES = ("fifo",)
+DEFAULT_SOLVER = "SCS"
 
 
 @dataclass(frozen=True)
@@ -55,6 +56,8 @@ def build_gavel_native_performance_microbaseline(
     dependency_target: str | Path = DEFAULT_DEP_TARGET,
     run_root: str | Path = DEFAULT_RUN_ROOT,
     policies: tuple[str, ...] = DEFAULT_POLICIES,
+    solver: str = DEFAULT_SOLVER,
+    cases: tuple[GavelMicroCase, ...] | None = None,
     timeout_seconds: int = 25,
     keep_run_dir: bool = True,
 ) -> dict[str, Any]:
@@ -72,7 +75,7 @@ def build_gavel_native_performance_microbaseline(
         {"pass": False, "commands": [], "blocker": "copy failed"}
     )
 
-    cases = [
+    selected_cases = cases or tuple(
         GavelMicroCase(
             taskset=name,
             job_count=int(count),
@@ -80,10 +83,10 @@ def build_gavel_native_performance_microbaseline(
             num_gpus_per_server=num_gpus_per_server,
         )
         for name, count, cluster_spec, num_gpus_per_server in DEFAULT_CASES
-    ]
+    )
     rows = []
     if import_result.get("pass") and stub_result.get("pass"):
-        for case in cases:
+        for case in selected_cases:
             trace_file = _write_short_trace(scheduler_dir, case)
             for policy in policies:
                 rows.append(_run_case(
@@ -91,6 +94,7 @@ def build_gavel_native_performance_microbaseline(
                     dependency_target=dependency_target,
                     case=case,
                     policy=policy,
+                    solver=solver,
                     trace_file=trace_file,
                     timeout_seconds=timeout_seconds,
                 ))
@@ -117,6 +121,16 @@ def build_gavel_native_performance_microbaseline(
         "protobuf_stubs": stub_result,
         "proto_files": list(PROTO_FILES),
         "policies": list(policies),
+        "solver": solver,
+        "cases": [
+            {
+                "taskset": case.taskset,
+                "job_count": case.job_count,
+                "cluster_spec": case.cluster_spec,
+                "num_gpus_per_server": case.num_gpus_per_server,
+            }
+            for case in selected_cases
+        ],
         "rows": rows,
         "usable_native_performance_sample_count": len(usable_rows),
         "native_gavel_simulator_microbaseline_ready": len(usable_rows) == len(rows) and bool(rows),
@@ -195,6 +209,7 @@ def _run_case(
     dependency_target: Path,
     case: GavelMicroCase,
     policy: str,
+    solver: str,
     trace_file: Path,
     timeout_seconds: int,
 ) -> dict[str, Any]:
@@ -214,6 +229,8 @@ def _run_case(
         case.num_gpus_per_server,
         "--seed",
         "0",
+        "--solver",
+        solver,
         "--time_per_iteration",
         "60",
         "-s",
@@ -238,6 +255,7 @@ def _run_case(
     return {
         "taskset": case.taskset,
         "policy": policy,
+        "solver": solver,
         "job_count": case.job_count,
         "cluster_spec": case.cluster_spec,
         "num_gpus_per_server": case.num_gpus_per_server,
@@ -335,11 +353,14 @@ def _write_json(path: str | Path, data: Mapping[str, Any]) -> None:
 
 def _cmd_build(args: argparse.Namespace) -> int:
     policies = tuple(x.strip() for x in args.policies.split(",") if x.strip())
+    cases = _parse_cases(args.cases) if args.cases else None
     report = build_gavel_native_performance_microbaseline(
         reference_root=args.reference_root,
         dependency_target=args.dependency_target,
         run_root=args.run_root,
         policies=policies,
+        solver=args.solver,
+        cases=cases,
         timeout_seconds=args.timeout_seconds,
         keep_run_dir=not args.clean,
     )
@@ -360,12 +381,45 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--dependency-target", default=str(DEFAULT_DEP_TARGET))
     build.add_argument("--run-root", default=str(DEFAULT_RUN_ROOT))
     build.add_argument("--policies", default=",".join(DEFAULT_POLICIES))
+    build.add_argument("--solver", default=DEFAULT_SOLVER)
+    build.add_argument(
+        "--cases",
+        default="",
+        help=(
+            "Comma-separated taskset:jobs:cluster_spec:num_gpus_per_server cases, "
+            "for example q01_gpu_bound_cnn_resnet50:64:2:0:0:2:1:1. "
+            "Use semicolon separators if cluster specs contain colons."
+        ),
+    )
     build.add_argument("--timeout-seconds", type=int, default=25)
     build.add_argument("--clean", action="store_true")
     build.add_argument("--output", default=str(ARTIFACT_ROOT / "gavel_native_performance_microbaseline_20260612.json"))
     build.add_argument("--markdown-output", default=str(REPO_ROOT / "md" / "gavel_native_performance_microbaseline_20260612.md"))
     build.set_defaults(func=_cmd_build)
     return parser
+
+
+def _parse_cases(raw: str) -> tuple[GavelMicroCase, ...]:
+    """Parse case strings while allowing colon-bearing Gavel cluster specs."""
+    cases: list[GavelMicroCase] = []
+    chunks = [chunk.strip() for chunk in raw.replace(";", ",").split(",") if chunk.strip()]
+    for chunk in chunks:
+        parts = chunk.split(":")
+        if len(parts) != 8:
+            raise ValueError(
+                "case must have 8 colon-separated fields: "
+                "taskset:jobs:v100:p100:k80:v100_per_server:p100_per_server:k80_per_server"
+            )
+        taskset = parts[0]
+        cases.append(
+            GavelMicroCase(
+                taskset=taskset,
+                job_count=int(parts[1]),
+                cluster_spec=":".join(parts[2:5]),
+                num_gpus_per_server=":".join(parts[5:8]),
+            )
+        )
+    return tuple(cases)
 
 
 def main(argv: list[str] | None = None) -> int:

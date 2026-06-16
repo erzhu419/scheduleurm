@@ -1,0 +1,35 @@
+{
+  "algorithm_mode": "theorem_maxweight_v1",
+  "background_cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u cpu_parallel_progress_benchmark.py --workers 96 --steps 12 --work-items 50000 --log-interval 1 --label cpu_half_bg",
+  "background_last_rate_step_s": 12.5229702,
+  "background_rate_count": 13,
+  "gate": "remote_corner_case_probe",
+  "hard_rule_mode": "clean_bench",
+  "node": "node001",
+  "pass": true,
+  "probe_cmd": "/home/zhengliang01/scheduleurm_work/conda_envs/freqduet-cpu-py310/bin/python -u cpu_progress_benchmark.py --mode cpu --steps 12 --work-items 200000 --label cpu_half_add_single",
+  "probe_eta_count": 12,
+  "probe_last_rate_step_s": 20.73854,
+  "probe_mean_rate_step_s": 20.70890825,
+  "probe_rate_count": 12,
+  "raw_paths": {
+    "background": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/cpu_half_node001_add_single/background.log",
+    "combined": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/cpu_half_node001_add_single/remote_combined.log",
+    "probe": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/cpu_half_node001_add_single/probe.log"
+  },
+  "remote_dir": "/tmp/scheduleurm_corner_case_probe",
+  "remote_wrapper_returncode": 0,
+  "run_id": "corner_case_live_20260613",
+  "scenario_id": "cpu_half_node001_add_single",
+  "stable_eta": {
+    "cv": 4.0603212474393525e-05,
+    "last_two_relative_delta": 2.4640721642325992e-05,
+    "ready": true,
+    "rule": "3 windows, cv<=0.08, last-two relative delta<=0.05",
+    "tail": [
+      20.736554,
+      20.738029,
+      20.73854
+    ]
+  }
+}

@@ -31,6 +31,8 @@ class ReplayPolicy:
     statewise: bool = False
     guarded_resource_kinds: tuple[str, ...] = ()
     statewise_resource_kinds: tuple[str, ...] = ()
+    statewise_workload_keys: tuple[str, ...] = ()
+    statewise_excluded_workload_keys: tuple[str, ...] = ()
     backlog_aware_guard: bool = False
     backlog_reference_tasks: int = 64
     statewise_service_dominance_guard: bool = False
@@ -81,9 +83,71 @@ class ReplayPolicy:
     def uses_statewise_for(self, spec: WorkloadSpec) -> bool:
         if not self.statewise:
             return False
+        if spec.workload_key in set(self.statewise_excluded_workload_keys):
+            return False
+        if spec.workload_key in set(self.statewise_workload_keys):
+            return True
         if not self.statewise_resource_kinds:
             return True
         return spec.resource_kind in set(self.statewise_resource_kinds)
+
+    def trajectory_policy_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        base_target_profile: int | None = None,
+    ) -> "ReplayPolicy | None":
+        """Return the policy that owns this action's statewise trajectory.
+
+        Ordinary policies are self-contained and return ``None``.  Candidate-set
+        policies can use this hook to select over finite actions that share the
+        same measured co-location profile but use different admission/drain
+        semantics.
+        """
+
+        return None
+
+    def statewise_target_profile_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        remaining_count: int,
+        active_count: int,
+        base_target_profile: int | None = None,
+    ) -> int | None:
+        """Optional custom statewise target for finite trajectory actions."""
+
+        return None
+
+    def statewise_holds_base_profile_for(
+        self,
+        *,
+        waiting_count: int,
+        total_remaining: int,
+    ) -> bool | None:
+        """Optional custom base-profile hold rule for trajectory actions."""
+
+        return None
+
+    def uses_shortest_remaining_first_for(self, spec: WorkloadSpec) -> bool:
+        """Whether this finite trajectory action orders admissions by ETA."""
+
+        return False
+
+    def waiting_order_mode_for(self, spec: WorkloadSpec) -> str:
+        if self.uses_shortest_remaining_first_for(spec):
+            return "shortest_remaining_first"
+        return "fifo"
+
+    def resource_assignment_mode_for(self, spec: WorkloadSpec) -> str:
+        """How queued jobs are partitioned across identical resources."""
+
+        return "round_robin_count"
+
+    def resource_assignment_seed_for(self, spec: WorkloadSpec) -> int:
+        return 0
 
     def snapshot(self) -> dict[str, Any]:
         return {
@@ -97,6 +161,8 @@ class ReplayPolicy:
             "statewise": self.statewise,
             "guarded_resource_kinds": list(self.guarded_resource_kinds),
             "statewise_resource_kinds": list(self.statewise_resource_kinds),
+            "statewise_workload_keys": list(self.statewise_workload_keys),
+            "statewise_excluded_workload_keys": list(self.statewise_excluded_workload_keys),
             "backlog_aware_guard": self.backlog_aware_guard,
             "backlog_reference_tasks": self.backlog_reference_tasks,
             "statewise_service_dominance_guard": self.statewise_service_dominance_guard,
@@ -255,8 +321,24 @@ def replay_workload(
     completion_times: list[float] = []
     profile_trace: list[int] = []
     resource_times = [0.0 for _ in range(max(1, int(spec.resource_count)))]
-    for resource_idx in range(len(resource_times)):
-        local_waiting = waiting[resource_idx::len(resource_times)]
+    per_resource_waiting = _assign_task_ids_to_resources(
+        waiting,
+        tasks,
+        resource_count=len(resource_times),
+        mode=_resource_assignment_mode_for(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            base_target_profile=profile.profile,
+        ),
+        seed=_resource_assignment_seed_for(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            base_target_profile=profile.profile,
+        ),
+    )
+    for local_waiting in per_resource_waiting:
         local_completions, local_trace = _replay_one_resource(
             cache=cache,
             spec=spec,
@@ -316,7 +398,14 @@ def _replay_one_resource(
                 active_count=len(active),
                 base_target_profile=target_profile,
             )
-            if policy.statewise_service_dominance_guard and waiting:
+            if _statewise_holds_base_profile_for(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                base_target_profile=target_profile,
+                waiting_count=len(waiting),
+                total_remaining=total_remaining,
+            ):
                 target = max(int(target), int(target_profile))
         desired_target = max(1, int(target))
         admission_target = max(len(active), min(desired_target, total_remaining))
@@ -327,6 +416,31 @@ def _replay_one_resource(
             preferred_profile=max(desired_target, admission_target),
         )
         profile_trace.append(current_service_profile)
+        order_mode = _waiting_order_mode_for(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            base_target_profile=target_profile,
+        )
+        if order_mode == "shortest_remaining_first":
+            waiting.sort(key=lambda tid: (float(tasks[tid]["remaining"]), int(tid)))
+        elif order_mode == "critical_shortest_remaining_first":
+            waiting.sort(key=lambda tid: (float(tasks[tid]["remaining"]), int(tid)))
+            if not active and len(waiting) > 1:
+                critical = max(waiting, key=lambda tid: (float(tasks[tid]["remaining"]), -int(tid)))
+                waiting.remove(critical)
+                waiting.insert(0, critical)
+        elif order_mode == "critical_batch_shortest_remaining_first":
+            waiting.sort(key=lambda tid: (float(tasks[tid]["remaining"]), int(tid)))
+            if not active and len(waiting) > admission_target:
+                critical = sorted(
+                    waiting,
+                    key=lambda tid: (float(tasks[tid]["remaining"]), -int(tid)),
+                    reverse=True,
+                )[:admission_target]
+                critical_set = set(critical)
+                rest = [tid for tid in waiting if tid not in critical_set]
+                waiting[:] = critical + rest
         while waiting and len(active) < admission_target:
             active.append(waiting.pop(0))
 
@@ -375,31 +489,211 @@ def _statewise_target_profile(
         resource_count=1,
         variation_cv=spec.variation_cv,
     )
-    if policy.calibrated and policy.uses_guarded_objective(local_spec):
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    custom = effective_policy.statewise_target_profile_for(
+        cache,
+        spec,
+        remaining_count=remaining_count,
+        active_count=active_count,
+        base_target_profile=base_target_profile,
+    )
+    if custom is not None:
+        return int(custom)
+    if not effective_policy.uses_statewise_for(spec):
+        return int(base_target_profile or effective_policy.select_profile(cache, spec).profile)
+    if effective_policy.calibrated and effective_policy.uses_guarded_objective(local_spec):
         record = cache.best_profile_for_guarded_mean_flow(
             local_spec.workload_key,
             task_count=local_spec.task_count,
             total_units=local_spec.total_units,
             resource_count=local_spec.resource_count,
-            max_makespan_regret=_effective_guard_regret(policy, remaining_count),
+            max_makespan_regret=_effective_guard_regret(effective_policy, remaining_count),
         )
         return _statewise_service_guarded_profile(
             cache=cache,
             spec=spec,
-            policy=policy,
+            policy=effective_policy,
+            remaining_count=remaining_count,
             active_count=active_count,
             candidate_profile=record.profile,
             base_target_profile=base_target_profile,
         )
-    record = policy.select_profile(cache, local_spec)
+    record = effective_policy.select_profile(cache, local_spec)
     return _statewise_service_guarded_profile(
         cache=cache,
         spec=spec,
-        policy=policy,
+        policy=effective_policy,
+        remaining_count=remaining_count,
         active_count=active_count,
         candidate_profile=record.profile,
         base_target_profile=base_target_profile,
     )
+
+
+def _statewise_holds_base_profile(
+    policy: ReplayPolicy,
+    *,
+    waiting_count: int,
+    total_remaining: int,
+) -> bool:
+    if not policy.statewise_service_dominance_guard or int(waiting_count) <= 0:
+        return False
+    threshold = int(getattr(policy, "statewise_drain_remaining_threshold", 0) or 0)
+    if threshold > 0 and int(total_remaining) <= threshold:
+        return False
+    return True
+
+
+def _statewise_holds_base_profile_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+    waiting_count: int,
+    total_remaining: int,
+) -> bool:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    custom = effective_policy.statewise_holds_base_profile_for(
+        waiting_count=waiting_count,
+        total_remaining=total_remaining,
+    )
+    if custom is not None:
+        return bool(custom)
+    return _statewise_holds_base_profile(
+        effective_policy,
+        waiting_count=waiting_count,
+        total_remaining=total_remaining,
+    )
+
+
+def _trajectory_policy_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+) -> ReplayPolicy:
+    delegated = policy.trajectory_policy_for(
+        cache,
+        spec,
+        base_target_profile=base_target_profile,
+    )
+    if delegated is None or delegated is policy:
+        return policy
+    return delegated
+
+
+def _uses_shortest_remaining_first_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+) -> bool:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    return bool(effective_policy.uses_shortest_remaining_first_for(spec))
+
+
+def _waiting_order_mode_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+) -> str:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    mode = str(effective_policy.waiting_order_mode_for(spec) or "fifo")
+    if mode not in {
+        "fifo",
+        "shortest_remaining_first",
+        "critical_shortest_remaining_first",
+        "critical_batch_shortest_remaining_first",
+    }:
+        return "fifo"
+    return mode
+
+
+def _resource_assignment_mode_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+) -> str:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    mode = str(effective_policy.resource_assignment_mode_for(spec) or "round_robin_count")
+    if mode not in {"round_robin_count", "lpt_static", "shuffle_static"}:
+        return "round_robin_count"
+    return mode
+
+
+def _resource_assignment_seed_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+) -> int:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    return int(effective_policy.resource_assignment_seed_for(spec))
+
+
+def _assign_task_ids_to_resources(
+    task_ids: list[int],
+    tasks: list[dict[str, float]],
+    *,
+    resource_count: int,
+    mode: str,
+    seed: int = 0,
+) -> list[list[int]]:
+    resources: list[list[int]] = [[] for _ in range(max(1, int(resource_count)))]
+    if mode == "shuffle_static" and len(resources) > 1:
+        shuffled = list(task_ids)
+        random.Random(int(seed)).shuffle(shuffled)
+        for idx, task_id in enumerate(shuffled):
+            resources[idx % len(resources)].append(task_id)
+        return resources
+    if mode != "lpt_static" or len(resources) <= 1:
+        for idx, task_id in enumerate(task_ids):
+            resources[idx % len(resources)].append(task_id)
+        return resources
+    loads = [(0.0, idx) for idx in range(len(resources))]
+    for task_id in sorted(task_ids, key=lambda tid: (float(tasks[tid]["remaining"]), -int(tid)), reverse=True):
+        load, idx = min(loads, key=lambda item: (item[0], item[1]))
+        resources[idx].append(task_id)
+        loads[idx] = (load + float(tasks[task_id]["remaining"]), idx)
+    return resources
 
 
 def _statewise_service_guarded_profile(
@@ -407,6 +701,7 @@ def _statewise_service_guarded_profile(
     cache: ServiceRateCache,
     spec: WorkloadSpec,
     policy: ReplayPolicy,
+    remaining_count: int,
     active_count: int,
     candidate_profile: int,
     base_target_profile: int | None,
@@ -414,6 +709,9 @@ def _statewise_service_guarded_profile(
     active = max(1, int(active_count))
     candidate = max(active, int(candidate_profile))
     if not policy.statewise_service_dominance_guard or base_target_profile is None:
+        return candidate
+    threshold = int(getattr(policy, "statewise_drain_remaining_threshold", 0) or 0)
+    if threshold > 0 and int(remaining_count) <= threshold:
         return candidate
     baseline = max(active, int(base_target_profile))
     candidate = min(candidate, baseline)

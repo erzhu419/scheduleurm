@@ -1,3 +1,65 @@
+## 2026-06-14 final non-future closure update
+
+This note supersedes the older pending statements below for production-wide
+organic completion and Scheduleurm-native multi-node history.
+
+- `organic_history_completion_gate_20260614` is now closed under strict
+  exact/signature service admission: 4,020 strict organic launched rows, 3,992
+  completed rows, completion fraction 0.9930, 35 workload domains, 13 nodes, and
+  zero strict unadmitted launched rows.
+- `production_wide_organic_trace_gate_20260614` is now strong-ready through the
+  strict scheduler-history path:
+  `production_wide_history_completion_closed=true` and
+  `large_scale_organic_launched_completion_ready=true`.  The live oracle-trace
+  subclaim remains separate:
+  `production_wide_live_trace_closed=false`.
+- `production_launch_completion_gate_20260612` has been regenerated and now
+  reports `HISTORY_COMPLETION_AND_ACTIVE_PROGRESS_SHADOW_TRACE_PASS`, with 12
+  active progress observations plus the same history completion certificate.
+- `multinode_history_completion_gate_20260614` closes Scheduleurm-native
+  multi-node launched/completed production history: 13 nodes, 3 GPU nodes, 35
+  workload domains, and zero strict unadmitted rows.  This still does not claim
+  that every external SOTA system has been run through its original multi-node
+  control plane.
+- `non_future_claim_closure_gate_20260614` reports 5/5 finite non-future scoped
+  rows ready: named external SOTA full-stack, registered SOTA policy-semantics
+  universe, production-wide organic completion, Scheduleurm-native multi-node
+  history, and Decima Spark-DAG bridge.  The excluded direction remains
+  arbitrary future workload, and the forbidden extensions remain arbitrary SOTA,
+  future unknown jobs, external original multi-node superiority, and
+  Decima-as-GPU-co-location superiority.
+
+## 2026-06-13 status update
+
+- Latest direct SOTA full-stack status: the older zero-ready / 4-of-5
+  same-workload statements below are superseded.  The strict 2026-06-13 gate is
+  now **NAMED 5/5 PASS**: Gavel physical scheduler/worker/RPC/GavelIterator,
+  Pollux/AdaptDL, Sia, IADeep, and Salus all have scoped same-host
+  same-workload full-stack rows, each with paired native superiority on its
+  measured probe.  Salus closed after local image mirroring, remote Docker load,
+  and a completed TensorFlow-Salus native-vs-server/zrpc run on jtl110gpu
+  (native \(199.055\)s, Salus \(201.744\)s).  See
+  `md/sota_fullstack_superiority_gate_20260613.md`,
+  `md/gavel_physical_same_workload_gate_20260613.md`, and
+  `md/salus_fullstack_same_workload_gate_20260613.md`.
+- Direct full-stack superiority can now be claimed only for the **named five
+  systems on the scoped same-host same-workload probes**.  It still must not be
+  generalized to arbitrary external systems, future workloads, multi-node
+  original deployments, Decima's Spark-DAG simulator setting, or
+  production-wide organic traces.
+- Arbitrary all-state fabric cover 仍不能 claim positive service for every future state，但 controlled corner-case rows 已由 `corner_case_lower_service_gate` 纳入独立 service cache 并得到 positive row-level lower-service slack。unknown/future states 仍按 strict admission/probe 进入。
+- 大规模 organic production launched completion 仍未闭合。最新 `production_launch_completion_gate` 快照为 `WAIT_RESOURCE_OR_QUEUE`：1 running production、0 queued、0 progress observations；safe gate 正确保持 `large_scale_launched_completion_ready=false`。
+
+## 2026-06-12 execution update
+
+这份文件下面保留的是上一轮对三个未完全闭合方向的推进计划。当前已经执行了两条能在不影响线上 scheduler 的前提下推进的闭合：
+
+1. **Selected-profile stochastic LCB** 已从旧的 absolute-unit pending 改成 theorem-facing lower-service pass。新增 Lean 文件 `/home/erzhu419/mine_code/proof/Scheduleurm/DiagonalScaling.lean`，并在 `MainTheorems.lean` 暴露 `main_diagonal_scaled_lcb_support_loss` 和 `main_diagonal_scaled_lcb_support_loss_l1`。实验上 11/11 个 aggregate-window selected targets 达到 20-sample threshold；absolute eta = -738.9820、diagonal eta = -0.5587 仍不能作为 mean-service claim，但 LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.024712\)，因此主论文使用 lower-service capacity certificate。
+2. **Gavel baseline** 已从“只有 microbaseline / scalar pending”推进到 scoped profile-aware same-workload native Gavel simulator calibration 和 physical scheduler/worker/RPC row。`md/gavel_service_unit_calibration_gate_20260612.md` 仍报告单一 scalar service-unit equivalence 为 false；`md/sota_fullstack_superiority_gate_20260613.md` 则单独报告 named-system same-host full-stack row。
+3. **Production launch/completion 与 arbitrary positive all-state cover** 仍按 gate 管理：没有自然 queued production 或全状态 positive service profile 时不强行 claim。unknown state 继续走 zero-service probe/defer，production launch 继续由 safe gate 控制。
+
+---
+
 可以。重新看了一遍最新 push 后，我的判断变了不少：**你现在已经从“强 claim 没证明完”变成了“强 claim 被拆成了可审稿的 gate / certificate 体系”**。这对 OR reviewer 很关键。现在最大问题不再是“不诚实夸大”，而是：**哪些 gate 还能从 blocker / safety certificate 往 theorem-facing positive evidence 再推进一档。**
 
 总评：现在稿子比上一版强很多，尤其是 claim matrix、policy crosswalk、online replay、ablation、live-state dryrun、future admission contract、SOTA readiness gate 都补上了。论文摘要已经明确说 live placement hook **not claimed to be a deployed global MaxWeight implementation**，并把 claim 限定到 measured slices、controlled completed-active population，而不是 raw history 或 direct external scheduler execution。 这比之前安全得多。
@@ -6,17 +68,17 @@
 
 ### 1. Direct full-stack SOTA superiority
 
-现在状态是：**审稿边界闭合了，但 strong claim 没闭合，也不建议硬闭合成“击败全部 SOTA 全栈”。**
+现在状态是：**named five direct full-stack same-workload strong claim 已闭合，但 universal/all-future claim 没闭合，也不应该写成任意 SOTA 全栈通吃。**
 
-当前 artifact 很清楚：direct SOTA full-stack readiness gate 通过的是 read-only readiness audit，不是 superiority claim。它显示 `entrypoint_smoke_pass_count=3`，但 `same_workload_full_stack_ready_count=0`，`direct_full_stack_same_workload_ready=false`，只能 fallback 到 policy-semantics comparison。 具体 blocker 也很清楚：Gavel 有 native trace 和 microbaseline，但还缺 service-unit equivalence；Pollux/IADeep/Salus 分别缺 Kubernetes、Docker、Go/NVIDIA runtime 等全栈条件。
+当前最新 artifact 很清楚：direct SOTA full-stack gate 已从 6 月 12 日的 read-only readiness audit 推进到 named 5/5 same-workload rows。Gavel physical scheduler/worker/RPC/GavelIterator、Pollux/AdaptDL、Sia、IADeep extender/device-plugin、Salus server/zrpc 都有 scoped same-host same-workload row，并且每个 row 都有 paired native superiority。`direct_fullstack_named_sota_superiority_ready=true`，但 scope 只覆盖 named five measured probes。
 
-论文现在写法是对的：SOTA 部分明确说是 **policy-semantics replay**，不是 direct binary execution，也不 claim full-stack superiority；Gavel 已有 q01/q11 native simulator microbaseline，但仍未证明 measured service-unit equivalence，所以还不能算 full-stack same-workload baseline。
+论文现在写法应分成两层：policy-semantics replay 是广覆盖在线比较；direct full-stack superiority 只对 Gavel/Pollux/AdaptDL/Sia/IADeep/Salus 五个 named same-host same-workload rows 成立。Gavel scalar simulator service-unit equivalence 仍未证明，这一点和 Gavel physical same-workload row 要分开写。
 
-**还能不能更闭合？能，但建议只闭合 Gavel 一条，不要试图一次性闭合 Gavel/Pollux/Sia/IADeep/Salus 全部。**
+**这条已经比原计划更闭合：五个 named rows 都闭合了。后续只能继续扩大 workload/cluster universe，不能把现有 gate 误写成 universal theorem。**
 
-最现实方案是把 strong claim 改成：
+历史方案曾建议把 strong claim 改成：
 
-> direct native Gavel simulator compatibility and bounded same-trace microbaseline, not full-stack superiority over all SOTA systems.
+> direct named-system same-host same-workload full-stack evidence, not universal full-stack superiority over all SOTA systems and future workloads.
 
 具体推进路线：
 
@@ -34,7 +96,7 @@
 3. **保留 `direct_full_stack_same_workload_ready=false`，但新增 `gavel_native_bounded_microbaseline_ready=true`。**
    这样 reviewer 会看到：你没有 claim all-SOTA superiority，但你确实把最容易审的 Gavel 路径往前推进了一步。
 
-不建议你现在花大力气闭合 Pollux/IADeep/Salus。它们需要 Kubernetes/Docker/Go/NVIDIA runtime 等真实系统栈，当前 gate 已经把 blocker 列得很清楚。 对 OR 稿来说，强行做这些全栈反而会偏题。
+Pollux/IADeep/Salus 的真实系统栈已经在 scoped gate 下跑通；后续若继续扩大，只应扩大 measured workload/cluster universe，而不是把这个 scoped gate 外推。
 
 ---
 
@@ -114,7 +176,7 @@
 
 现在状态是：**production admission / progress / shadow theorem trace 很强，但 launched production completion 仍没闭合。**
 
-最新 production launch/completion gate 给出的状态非常具体：`launch_status=WAIT_RESOURCE_OR_QUEUE`，`launch_safe=false`，`active_production_count=27`，`queued_production_count=0`，`running_production_count=27`，local GPU util 99%，shadow theorem slots 4，progress observations 24，`large_scale_active_progress_ready=true`，但 `large_scale_launched_completion_ready=false`。 JSON 里也能看到 gate 的原因：本地 GPU max util 99%，min launch slots 8，而 queued production count 是 0。
+当时 production launch/completion gate 给出的状态非常具体：`launch_status=WAIT_RESOURCE_OR_QUEUE`，`launch_safe=false`，`active_production_count=27`，`queued_production_count=0`，`running_production_count=27`，local GPU util 99%，shadow theorem slots 4，progress observations 24，`large_scale_active_progress_ready=true`，但 `large_scale_launched_completion_ready=false`。后续刷新快照中 GPU 已空闲，但仍没有 queued theorem-admitted production launch set，且当前 progress-observation subset 不足，所以 organic production-wide completion 依然不能 claim。JSON 里也能看到 gate 的原因由“资源/队列”滚动变化，但 `large_scale_launched_completion_ready=false` 的边界不变。
 
 代码本身也安全：只有 `allow_launch`、queued 数量达到 `min_launch_slots`、GPU available 且 max util 小于阈值时才 `launch_safe`；否则 `WAIT_RESOURCE_OR_QUEUE`。 这很好，不能为了闭合 claim 把这个安全阈值绕过去。
 

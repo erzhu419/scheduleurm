@@ -1,0 +1,66 @@
+{
+  "candidate_rows": [
+    {
+      "action_id": "node=a|gpu=0",
+      "lower_service": {
+        "gpu_heavy_jax_matmul": 2.0
+      },
+      "penalty_units": 0.0,
+      "resource_id": "a:0",
+      "score_semantics": "robust_maxweight_lower_service",
+      "task_id": "q01-0",
+      "theorem_ready": true
+    },
+    {
+      "action_id": "node=a|gpu=1",
+      "lower_service": {
+        "hybrid_rl_resac_ant": 1.5
+      },
+      "penalty_units": 0.0,
+      "resource_id": "a:1",
+      "score_semantics": "robust_maxweight_lower_service",
+      "task_id": "q11-0",
+      "theorem_ready": true
+    },
+    {
+      "action_id": "node=cpu|legacy",
+      "lower_service": {},
+      "penalty_units": 0.0,
+      "resource_id": "cpu",
+      "score_semantics": "scheduler_sort_key_minimization",
+      "task_id": "fallback-0",
+      "theorem_ready": false
+    }
+  ],
+  "gate": "global_theorem_dispatcher_prototype_gate",
+  "gate_pass": true,
+  "global_action_dispatch_ready": true,
+  "live_scheduler_default_global_dispatcher_ready": false,
+  "pass": true,
+  "pass_meaning": "pure bounded global action selector prototype with exact oracle gap over the enumerated family, not deployed live scheduler default",
+  "queue_vector": {
+    "gpu_heavy_jax_matmul": 5.0,
+    "hybrid_rl_resac_ant": 3.0
+  },
+  "result": {
+    "candidate_configuration_count": 3,
+    "fallback_legacy_rows_excluded": true,
+    "global_action_dispatch_ready": true,
+    "oracle_gap_alpha0": 0.0,
+    "oracle_gap_alpha1": 0.0,
+    "score": 14.5,
+    "score_semantics": "robust_maxweight_lower_service",
+    "selected_action_ids": [
+      "node=a|gpu=0",
+      "node=a|gpu=1"
+    ],
+    "selected_task_ids": [
+      "q01-0",
+      "q11-0"
+    ]
+  },
+  "scope": "Prototype-only theorem dispatcher.  It enumerates bounded global configurations from theorem-ready rows and excludes legacy fallback rows.",
+  "scoped_claim_ready": true,
+  "status": "GLOBAL_THEOREM_DISPATCHER_PROTOTYPE_PASS_NOT_LIVE_DEFAULT",
+  "strong_claim_ready": false
+}

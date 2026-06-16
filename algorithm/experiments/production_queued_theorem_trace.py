@@ -41,7 +41,10 @@ def generate_production_queued_theorem_trace(
     output_path: str | Path | None = None,
     max_tasks: int = 64,
     max_tasks_per_gpu: int = 8,
+    max_post_vram_frac: float = 0.95,
     algorithm: str = "theorem_maxweight_v1",
+    hard_rule_mode: str = "clean_bench",
+    allow_all_hard_rule_scope: bool = True,
     append: bool = False,
 ) -> dict[str, Any]:
     trace = Path(trace_path).expanduser()
@@ -53,15 +56,20 @@ def generate_production_queued_theorem_trace(
     old_env = {
         "SCHEDULEURM_ORACLE_TRACE_PATH": os.environ.get("SCHEDULEURM_ORACLE_TRACE_PATH"),
         "SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU": os.environ.get("SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU"),
+        "SCHEDULEURM_ALGO_MAX_POST_VRAM_FRAC": os.environ.get("SCHEDULEURM_ALGO_MAX_POST_VRAM_FRAC"),
         "SCHEDULEURM_THEOREM_UNCERTIFIED_MODE": os.environ.get("SCHEDULEURM_THEOREM_UNCERTIFIED_MODE"),
+        "SCHEDULEURM_AB_ALLOW_ALL_TASKS": os.environ.get("SCHEDULEURM_AB_ALLOW_ALL_TASKS"),
     }
     os.environ["SCHEDULEURM_ORACLE_TRACE_PATH"] = str(trace)
     os.environ["SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU"] = str(max(1, int(max_tasks_per_gpu)))
+    os.environ["SCHEDULEURM_ALGO_MAX_POST_VRAM_FRAC"] = str(float(max_post_vram_frac))
     os.environ["SCHEDULEURM_THEOREM_UNCERTIFIED_MODE"] = "block"
+    if allow_all_hard_rule_scope:
+        os.environ["SCHEDULEURM_AB_ALLOW_ALL_TASKS"] = "1"
 
     scheduler = _load_scheduler_module()
     try:
-        _configure_scheduler(scheduler, algorithm=algorithm, hard_rule_mode="production-queued")
+        _configure_scheduler(scheduler, algorithm=algorithm, hard_rule_mode=hard_rule_mode)
         state = scheduler.load_state()
         nodes = scheduler.probe_all()
         _prepare_probe_nodes(scheduler, state, nodes)
@@ -90,7 +98,10 @@ def generate_production_queued_theorem_trace(
             "queued_admissible_count": len(queued_rows),
             "max_tasks": int(max_tasks),
             "max_tasks_per_gpu": int(max_tasks_per_gpu),
+            "max_post_vram_frac": float(max_post_vram_frac),
             "requested_algorithm": algorithm,
+            "hard_rule_mode": hard_rule_mode,
+            "allow_all_hard_rule_scope": bool(allow_all_hard_rule_scope),
             "placed_count": sum(1 for row in placements if row.get("placement")),
             "unplaced_count": sum(1 for row in placements if not row.get("placement")),
             "trace_slot_count": len(slots),
@@ -129,6 +140,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
         f"| `algorithm` | `{report.get('algorithm', '')}` |",
+        f"| `hard_rule_mode` | `{report.get('hard_rule_mode', '')}` |",
+        f"| `allow_all_hard_rule_scope` | {str(bool(report.get('allow_all_hard_rule_scope'))).lower()} |",
         f"| `queued_admissible_count` | {report.get('queued_admissible_count', 0)} |",
         f"| `placed_count` | {report.get('placed_count', 0)} |",
         f"| `unplaced_count` | {report.get('unplaced_count', 0)} |",
@@ -178,6 +191,7 @@ def _trace_task(row: Mapping[str, Any]) -> dict[str, Any]:
     task["id"] = str(row.get("id") or row.get("task_id") or "")
     task["status"] = "queued"
     task["workload_key"] = workload
+    task["theorem_workload_key"] = workload
     task.setdefault("description", "production queued theorem trace probe")
     task.setdefault("cwd", str(REPO_ROOT))
     task.setdefault("cmd", row.get("cmd") or row.get("command") or _default_cmd(workload))
@@ -215,7 +229,10 @@ def _cmd_probe(args: argparse.Namespace) -> int:
         output_path=args.output,
         max_tasks=args.max_tasks,
         max_tasks_per_gpu=args.max_tasks_per_gpu,
+        max_post_vram_frac=args.max_post_vram_frac,
         algorithm=args.algorithm,
+        hard_rule_mode=args.hard_rule_mode,
+        allow_all_hard_rule_scope=not args.keep_hard_rule_scope,
         append=args.append,
     )
     if args.markdown_output:
@@ -235,7 +252,10 @@ def build_parser() -> argparse.ArgumentParser:
     probe.add_argument("--markdown-output", default=str(REPO_ROOT / "md" / "production_queued_theorem_trace.md"))
     probe.add_argument("--max-tasks", type=int, default=64)
     probe.add_argument("--max-tasks-per-gpu", type=int, default=8)
+    probe.add_argument("--max-post-vram-frac", type=float, default=0.95)
     probe.add_argument("--algorithm", default="theorem_maxweight_v1")
+    probe.add_argument("--hard-rule-mode", default="clean_bench")
+    probe.add_argument("--keep-hard-rule-scope", action="store_true")
     probe.add_argument("--append", action="store_true")
     probe.set_defaults(func=_cmd_probe)
     return parser

@@ -42,8 +42,9 @@
 \newcommand{\Ameas}{\mathcal A^{\mathrm{meas}}}
 \newcommand{\Real}{\mathbb R}
 \newcommand{\E}{\mathbb E}
-\newcommand{\lowermu}{\underline{\mu}}
+\newcommand{\lowermu}{\mu^{\mathrm L}}
 \newcommand{\normone}[1]{\left\|#1\right\|_1}
+\newcommand{\norminf}[1]{\left\|#1\right\|_\infty}
 
 \MANUSCRIPTNO{OPRE-2026-XXXX}
 \RUNAUTHOR{Anonymous}
@@ -282,24 +283,24 @@ general theorem it is enough to assume bounded conditional second moments.
 \label{subsec:capacity-support}
 
 For a finite action family \(\mathcal A\), define the service region
-\[
+\begin{equation}
   \mathcal C(\mathcal A)
   =
   \left\{\sum_{a\in\mathcal A}x_a\mu(a):x\in\operatorname{Mix}(\mathcal A)\right\},
-\]
+\end{equation}
 and its downward closure
-\[
+\begin{equation}
   \Lambda(\mathcal A)
   =
   \left\{ \lambda\in\Real_+^{|\mathcal I|}:
     \exists v\in\mathcal C(\mathcal A)\ \text{with}\ \lambda\le v
   \right\}.
-\]
+\end{equation}
 The support function in the nonnegative orthant is
-\[
+\begin{equation}
   H_{\mathcal A}(q)=\max_{a\in\mathcal A}q^\top \mu(a),
   \qquad q\in\Real_+^{|\mathcal I|}.
-\]
+\end{equation}
 Here \(\operatorname{Mix}(\mathcal A)\) is the probability simplex over the action family
 \(\mathcal A\), and \(x_a\) is the stationary mixing mass assigned to action
 \(a\).  The vector \(q\) is a nonnegative support weight; it is not the queue
@@ -321,9 +322,9 @@ drift; it is not an operational stability ``if and only if'' by itself.
 The implemented scheduler optimizes over \(\Acand\subseteq\Afull\).  To avoid
 turning this computational restriction into an unaccounted model change, define
 a finite feature map \(\Phi:\Afull\to\Real^d\) and weighted \(\ell_1\) fabric metric
-\[
+\begin{equation}
   d_{\Phi}(a,a')=\sum_{r=1}^d w_r|\Phi_r(a)-\Phi_r(a')|.
-\]
+\end{equation}
 The features may include co-location profile, node bucket, CPU bucket, memory
 pressure bucket, placement locality, and other scheduler-visible fabric
 attributes.  We say that \(\Acand\) is a \(\rho\)-cover of \(\Afull\) if for each
@@ -386,14 +387,61 @@ We state the assumptions explicitly because each one corresponds to a
 measurable artifact in Scheduleurm.  All constants below are nonnegative and
 are fixed over the horizon under consideration.
 
+\begin{table}[t]
+\TABLE{Proof roadmap and slack accounting for Theorem~\ref{thm:main}.\label{tab:proof-roadmap}}{
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\linewidth}
+                >{\raggedright\arraybackslash}p{0.42\linewidth}
+                >{\raggedright\arraybackslash}p{0.28\linewidth}}
+\toprule
+Step & Human-readable statement & Slack or condition consumed \\
+\midrule
+Capacity support & A full-action stationary mixture with coordinate slack
+\(\delta\) implies
+\(q^\top\lambda+\delta\normone{q}\le H_{\Afull}(q)\) for all
+nonnegative support vectors \(q\). & No implementation loss; converts
+capacity slack into a support-function margin. \\
+Candidate cover & The candidate family approximates the full family, giving
+\(H_{\Afull}(q)\le H_{\Acand_t}(q)+\epsilon_{\mathrm{cand}}\normone{q}\);
+under a calibrated fabric metric \(\epsilon_{\mathrm{cand}}=L\rho\). &
+Candidate-set or fabric-cover loss \(L\rho\). \\
+Lower service & Conservative service rows satisfy
+\(H_{\Acand_t}(q)\le\max_{a\in\Acand_t}q^\top\lowermu_t(a)
++\epsilon_{\mathrm{est}}\normone{q}\). & Service-estimation or LCB loss
+\(\epsilon_{\mathrm{est}}\). \\
+Penalty and oracle & Bounded penalties and approximate optimization imply that
+the selected action loses at most \(P_0+\alpha_0+(\beta+\alpha_1)\normone{Q}\)
+relative to the lower-service support. & Bounded penalty
+\((P_0,\beta)\) and oracle error \((\alpha_0,\alpha_1)\). \\
+Drift margin & The selected action provides
+\(Q^\top\lowermu_t(a_t)\ge Q^\top\lambda+\eta\normone{Q}-(P_0+\alpha_0)\)
+with \(\eta=\delta-(\epsilon_{\mathrm{cand}}+\epsilon_{\mathrm{est}}+\beta+\alpha_1)\). &
+Requires residual margin \(\eta>0\). \\
+Foster certificate & The quadratic Lyapunov inequality and bounded second
+moments give
+\(\E[\Delta V\mid Q]\le B+P_0+\alpha_0-\eta\normone{Q}\), hence negative
+drift outside a finite set. & Moment bound \(B\), finite sublevel set, and
+local-return condition for positive recurrence. \\
+\bottomrule
+\end{tabular}
+}{The table is the human-readable proof spine.  The Lean artifact checks the
+same algebraic implications, while the service, cover, oracle, and moment
+assumptions are certified by experiment gates rather than by Lean.}
+\end{table}
+
+Table~\ref{tab:proof-roadmap} is the proof spine used below.  The numbered
+lemmas give the main-text derivation; Appendix ``Conventional Proof Details''
+then expands the same chain in electronic-companion style so that the reader can
+check the theorem without opening the Lean files.
+
 \begin{assumption}[Load slack]
 \label{ass:load-slack}
 The arrival mean vector \(\lambda\) has full-action support slack
 \(\delta>0\):
-\[
+\begin{equation}
   q^\top\lambda+\delta\normone{q}\le H_{\Afull}(q),
   \qquad q\in\Real_+^{|\mathcal I|}.
-\]
+\end{equation}
 This is the support-function form of belonging to the interior of the
 full-action capacity base.  It is a sufficient stability hypothesis; the
 operational necessity direction requires a separate conservation law.
@@ -403,16 +451,16 @@ operational necessity direction requires a separate conservation law.
 \label{ass:candidate-lower-service}
 For every scheduler-visible state \(t\) and every
 \(q\in\Real_+^{|\mathcal I|}\),
-\[
+\begin{equation}
   H_{\Afull}(q)\le
   H_{\Acand_t}(q)+\epsilon_{\mathrm{cand}}\normone{q},
-\]
+\end{equation}
 and
-\[
+\begin{equation}
   H_{\Acand_t}(q)\le
   \max_{a\in\Acand_t}q^\top\lowermu_t(a)
   +\epsilon_{\mathrm{est}}\normone{q}.
-\]
+\end{equation}
 When the fabric metric in Section~\ref{subsec:candidate-cover} is certified,
 \(\epsilon_{\mathrm{cand}}=L\rho\).  For an exact measured finite slice,
 \(\epsilon_{\mathrm{cand}}=0\).
@@ -421,12 +469,12 @@ When the fabric metric in Section~\ref{subsec:candidate-cover} is certified,
 \begin{assumption}[Penalty growth and approximate oracle]
 \label{ass:penalty-oracle}
 Let \(P_t(a)=K_t(a)+G_t(a)\).  For all \(a\in\Acand_t\),
-\[
+\begin{equation}
   0\le P_t(a)\le P_0+\beta\normone{Q(t)}.
-\]
+\end{equation}
 The selected action \(a_t\in\Acand_t\) satisfies the approximate-oracle
 condition
-\[
+\begin{equation}
   \begin{aligned}
   &\max_{a\in\Acand_t}
   \left\{Q(t)^\top\lowermu_t(a)-P_t(a)\right\}\\
@@ -434,7 +482,7 @@ condition
   \left\{Q(t)^\top\lowermu_t(a_t)-P_t(a_t)\right\}
   \le \alpha_0+\alpha_1\normone{Q(t)}.
   \end{aligned}
-\]
+\end{equation}
 Exact robust MaxWeight is the special case
 \(\alpha_0=\alpha_1=0\).
 \end{assumption}
@@ -442,22 +490,22 @@ Exact robust MaxWeight is the special case
 \begin{assumption}[Stochastic domination and bounded second moments]
 \label{ass:stochastic-moments}
 Conditional on \(Q(t)=Q\),
-\[
+\begin{equation}
   \E[A_i(t)\mid Q(t)=Q]\le\lambda_i,
-\]
+\end{equation}
 and
-\[
+\begin{equation}
   \lowermu_{t,i}(a_t)
   \le \E[S_i(t)\mid Q(t)=Q]
-\]
+\end{equation}
 for every class \(i\), and
-\[
+\begin{equation}
   \E\!\left[
     \frac12\sum_i\{A_i(t)^2+S_i(t)^2\}
     \,\middle|\, Q(t)=Q
   \right]
   \le B.
-\]
+\end{equation}
 \end{assumption}
 
 \begin{assumption}[Countable-state recurrence condition]
@@ -476,7 +524,7 @@ assumption we claim only the finite-set negative-drift certificate.
 \label{lem:support-after-losses}
 Under Assumptions~\ref{ass:load-slack}--\ref{ass:candidate-lower-service}, for
 every \(t\) and \(q\in\Real_+^{|\mathcal I|}\),
-\[
+\begin{equation}
   \begin{aligned}
   \max_{a\in\Acand_t} q^\top\lowermu_t(a)
   &\ge q^\top\lambda\\
@@ -484,16 +532,16 @@ every \(t\) and \(q\in\Real_+^{|\mathcal I|}\),
   +(\delta-\epsilon_{\mathrm{cand}}
   -\epsilon_{\mathrm{est}})\normone{q}.
   \end{aligned}
-\]
+\end{equation}
 \end{lemma}
 
 \proof{Proof.}
 By Assumption~\ref{ass:load-slack},
-\[
+\begin{equation}
 q^\top\lambda+\delta\normone{q}\le H_{\Afull}(q).
-\]
+\end{equation}
 Assumption~\ref{ass:candidate-lower-service} gives
-\[
+\begin{equation}
   \begin{aligned}
   H_{\Afull}(q)
   &\le H_{\Acand_t}(q)
@@ -503,7 +551,7 @@ Assumption~\ref{ass:candidate-lower-service} gives
   &\quad{}+
   (\epsilon_{\mathrm{cand}}+\epsilon_{\mathrm{est}})\normone{q}.
   \end{aligned}
-\]
+\end{equation}
 Rearranging proves the claim.
 \endproof
 
@@ -511,7 +559,7 @@ Rearranging proves the claim.
 \label{lem:selected-margin}
 Under Assumptions~\ref{ass:load-slack}--\ref{ass:penalty-oracle}, for
 \(Q=Q(t)\),
-\[
+\begin{equation}
   \begin{aligned}
   Q^\top\lowermu_t(a_t)
   &\ge Q^\top\lambda\\
@@ -521,27 +569,27 @@ Under Assumptions~\ref{ass:load-slack}--\ref{ass:penalty-oracle}, for
   -\beta-\alpha_1\bigr)\normone{Q}\\
   &\quad{}-(P_0+\alpha_0).
   \end{aligned}
-\]
+\end{equation}
 \end{lemma}
 
 \proof{Proof.}
 Let \(M(Q)=\max_{a\in\Acand_t}Q^\top\lowermu_t(a)\).  Since
 \(P_t(a)\le P_0+\beta\normone{Q}\) for every candidate,
-\[
+\begin{equation}
   \begin{aligned}
   &\max_{a\in\Acand_t}
   \{Q^\top\lowermu_t(a)-P_t(a)\}\\
   &\quad{}\ge M(Q)-P_0-\beta\normone{Q}.
   \end{aligned}
-\]
+\end{equation}
 The approximate-oracle condition therefore implies
-\[
+\begin{equation}
   \begin{aligned}
   Q^\top\lowermu_t(a_t)-P_t(a_t)
   &\ge M(Q)-P_0-\beta\normone{Q}\\
   &\quad{}-\alpha_0-\alpha_1\normone{Q}.
   \end{aligned}
-\]
+\end{equation}
 Because \(P_t(a_t)\ge0\), the left-hand side is at most
 \(Q^\top\lowermu_t(a_t)\).  Applying
 Lemma~\ref{lem:support-after-losses} with \(q=Q\) gives the stated inequality.
@@ -550,26 +598,26 @@ Lemma~\ref{lem:support-after-losses} with \(q=Q\) gives the stated inequality.
 \begin{lemma}[Quadratic one-step bound]
 \label{lem:quadratic-step}
 For \(V(Q)=\frac12\sum_iQ_i^2\) and nonnegative vectors \(Q,A,S\),
-\[
+\begin{equation}
   \begin{aligned}
   &V([Q-S]^+ + A)-V(Q)\\
   &\quad\le
   \frac12\sum_i(A_i^2+S_i^2)
   +Q^\top A-Q^\top S.
   \end{aligned}
-\]
+\end{equation}
 \end{lemma}
 
 \proof{Proof.}
 It is enough to prove the coordinate inequality.  For \(q,a,s\ge0\),
 \(([q-s]^+)^2\le(q-s)^2\) and \([q-s]^+\le q\).  Hence
-\[
+\begin{equation}
   \begin{aligned}
   ([q-s]^++a)^2
   &\le ([q-s]^+)^2+a^2+2a[q-s]^+\\
   &\le q^2+s^2+a^2+2q(a-s).
   \end{aligned}
-\]
+\end{equation}
 Subtracting \(q^2\), dividing by two, and summing over coordinates gives the
 result.
 \endproof
@@ -579,22 +627,22 @@ result.
 Consider a finite system with job classes \(\mathcal I\) and queue
 dynamics~\eqref{eq:queue-dynamics}.  Suppose
 Assumptions~\ref{ass:load-slack}--\ref{ass:stochastic-moments} hold.  If
-\[
+\begin{equation}
   \eta=\delta-(\epsilon_{\mathrm{cand}}+\epsilon_{\mathrm{est}}+\beta+\alpha_1)>0,
-\]
+\end{equation}
 then for \(V(Q)=\frac12\sum_i Q_i^2\) and
 \(\Delta V(t)=V(Q(t+1))-V(Q(t))\),
-\[
+\begin{equation}
   \begin{aligned}
   \E[\Delta V(t)\mid Q(t)=Q]
   &\le B+P_0+\alpha_0\\
   &\quad{}-\eta\normone{Q}.
   \end{aligned}
-\]
+\end{equation}
 Consequently, for any \(N\) satisfying
-\[
+\begin{equation}
   B+P_0+\alpha_0+\gamma \le \eta N
-\]
+\end{equation}
 for some \(\gamma>0\), the process has a negative expected drift outside
 \(\{Q:\normone{Q}\le N\}\).  If Assumption~\ref{ass:foster-state} also holds,
 the standard countable-state Foster criterion gives positive recurrence of the
@@ -605,7 +653,7 @@ corresponding closed communicating class.
 Apply Lemma~\ref{lem:quadratic-step} with
 \((Q,A,S)=(Q(t),A(t),S(t))\) and condition on \(Q(t)=Q\).  Using
 Assumption~\ref{ass:stochastic-moments},
-\[
+\begin{equation}
   \begin{aligned}
   \E[\Delta V(t)\mid Q(t)=Q]
   &\le B
@@ -614,10 +662,10 @@ Assumption~\ref{ass:stochastic-moments},
   &\le B+Q^\top\lambda
        -Q^\top\lowermu_t(a_t).
   \end{aligned}
-\]
+\end{equation}
 Write \(D(Q)=Q^\top\lambda-Q^\top\lowermu_t(a_t)\).
 Lemma~\ref{lem:selected-margin} gives
-\[
+\begin{equation}
   \begin{aligned}
   D(Q)&\le P_0+\alpha_0\\
   &\quad{}-
@@ -625,15 +673,15 @@ Lemma~\ref{lem:selected-margin} gives
   -\epsilon_{\mathrm{est}}
   -\beta-\alpha_1\bigr)\normone{Q}.
   \end{aligned}
-\]
+\end{equation}
 Combining the two displays proves
-\[
+\begin{equation}
   \begin{aligned}
   \E[\Delta V(t)\mid Q(t)=Q]
   &\le B+P_0+\alpha_0\\
   &\quad{}-\eta\normone{Q}.
   \end{aligned}
-\]
+\end{equation}
 If \(B+P_0+\alpha_0+\gamma\le\eta N\), the drift is at most
 \(-\gamma\) whenever \(\normone{Q}>N\).  This is the finite-set Foster drift
 certificate.  Under Assumption~\ref{ass:foster-state}, the usual
@@ -746,10 +794,10 @@ The replay policy uses a queue-adaptive robust MaxWeight penalty selector rather
 than a fixed co-location profile.  For a workload with backlog count \(b\), it
 first restricts profiles to a measured support envelope and then chooses profile
 \(k\) by the score
-\[
+\begin{equation}
   b\,\widehat\mu_i(k)-\theta_{\mathrm{prof}}\widehat\mu_i^{\max}k,
   \qquad \theta_{\mathrm{prof}}=0.10,
-\]
+\end{equation}
 where \(\widehat\mu_i(k)\) is the measured aggregate service for class \(i\) at
 profile \(k\), and \(\widehat\mu_i^{\max}\) is the best measured aggregate
 service in the same envelope.  Thus the replay candidate uses lower-interference
@@ -1069,17 +1117,18 @@ Scheduleurm+external mean-flow union & 152822.320 & 3171.385 & Metric-specific m
 }{Times are in seconds.  The action-union rows are policy-semantics selectors over measured service
 actions, not direct executions of Gavel, Pollux, Sia, IADeep, or Salus.  The
 Pareto-slack policy is not Pareto-dominated by any external-policy diagnostic row and
-closes both measured-cache external-policy envelopes; the strict-frontier artifact reports
-zero remaining below-envelope rows.}
+closes both measured-cache external-policy envelopes; the measured-cache
+external-policy frontier artifact reports zero remaining below-envelope rows.}
 \end{table}
 
-We keep the strict claim separate.  The final strict-frontier gate reports the
-literal artifact flag
-\[
-  \texttt{SOTA\_STRICT\_FRONTIER\_CLOSED},
-\]
+We keep the strict measured-cache claim separate from any direct-system claim.
+The final measured-cache external-policy frontier gate reports the literal
+artifact flag
+\path{MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_CLOSED},
 meaning that every measured-cache scenario is strictly noninferior to the
-external-policy envelope in both makespan and mean flow.
+external-policy envelope in both makespan and mean flow.  This flag is not a
+direct full-stack superiority claim over Gavel, Pollux, Sia, IADeep, or Salus;
+that stronger claim is governed by the separate full-stack gate.
 The closing action is a finite ResNet-50 trajectory bridge, not a new service
 rate: for static queues it applies a deterministic hash partition with seed 30
 across the two GPUs, runs the measured profile-3 action, and drains the last two
@@ -1132,13 +1181,13 @@ The measured portfolio finite slice also instantiates the slack inequality in
 Theorem~\ref{thm:main}.  With load
 \(\lambda_i=0.8\,\mu_i(a_{\mathrm{selected}})\), the candidate family equals
 the measured action slice, so \(L\rho=0\).  The resulting certificate is
-\[
+\begin{equation}
   \begin{aligned}
   \delta &= 0.078777710,\\
   \epsilon_{\mathrm{est}}=\beta=\alpha_1 &= 0,\\
   \eta &= 0.078777710.
   \end{aligned}
-\]
+\end{equation}
 The finite-support second-moment bound is \(B=34499765.4854296\), and the resulting
 finite-set threshold is \(N=437938174\).  This certificate enumerates 5832
 measured actions after adding the ResNet-50 and DistilGPT-2 q01 profiles to the
@@ -1197,9 +1246,13 @@ q11 CPU/GPU coupled & \texttt{hybrid=2} & 0.067943 \\
 Mixed portfolio & \texttt{cpu=8,gpu=1,cnn=3,llm=10,hybrid=3} & 0.066922 \\
 \bottomrule
 \end{tabular}
-}{Each row uses the finite measured lower-service model with load fraction 0.8.
-It is a theorem-condition certificate for the declared finite slice, not a
-claim of stochastic generalization beyond the measured profiles.}
+}{Each row is a stability certificate, not a replay-performance estimate: the
+finite-slice rows use the finite measured lower-service model at load fraction
+0.8, and the selected-profile stochastic row uses the LCB lower-service model
+described in the text.  Performance replay tables elsewhere use empirical
+measured means on the same service cache.  The certificates here support the
+declared finite slice and do not claim stochastic generalization beyond the
+measured or LCB-admitted profiles.}
 \end{table}
 
 The replay model was checked against fresh progress-window live measurements on
@@ -1273,48 +1326,48 @@ execution.}
 
 A separate launched live theorem-dispatch gate ran controlled q01/q11
 ScheduleurmBench tasks through the optional robust lower-service hook.  The
-bounded run launched 6 real tasks, emitted 7 theorem-grade dispatch slots and
-13 candidate rows, and passed the completion bridge; one remote launch failed
-because the working directory was unavailable and was retried on a certified
-local candidate.  This is a bounded live-dispatch sanity check, not a
-production-wide trace.  An earlier 2026-06-12 production-queue snapshot
-reported the literal artifact flag
-\texttt{PRODUCTION\_WIDE\_LIVE\_TRACE\_PASS} for one queued production task.  It
-is a read-only theorem trace, not a launched completion trace.  The
-artifact also runs a shadow production probe.  That probe reads the current
-queue and node state, copies active production records into shadow queued
-records, evaluates the optional \texttt{theorem\_maxweight\_v1} hook without
-queue mutation or task launch, and emits a nonempty robust lower-service theorem
-subset.  The production launch/completion gate is rerunnable on rolling queue
-snapshots; it now has two evidence paths: active-production progress plus
-non-invasive shadow trace, and the strict scheduler-history launched-completion
-certificate.  The latest regenerated artifact reports
-\texttt{HISTORY\_COMPLETION\_AND\_ACTIVE\_PROGRESS\_SHADOW\_TRACE\_PASS}: 12
-active progress observations are present and the history certificate closes
-large-scale launched completion.  For closed shadow-subset snapshots, the
-theorem bridge is usable with \(\alpha_0=\alpha_1=0\); CPU fallback slots use
-legacy scheduler sort-key semantics and are deliberately excluded from the
-theorem subset.  A controlled 32-task ScheduleurmBench run on an available
-two-GPU node launched 32 theorem-admitted tasks, emitted 32 robust
+reviewer-facing completion artifacts report four flags rather than one
+collapsed production claim.  First, the bounded controlled run
+(\texttt{md/controlled\_production\_completion\_gate\_20260612.md}) has
+\texttt{controlled\_6\_task\_completion\_ready=true}: it launched 6 real tasks,
+emitted 7 theorem-grade dispatch slots and 13 candidate rows, and passed the
+completion bridge; one remote launch failed because the working directory was
+unavailable and was retried on a certified local candidate.  Second, the
+controlled 32-task ScheduleurmBench run
+(\texttt{md/controlled\_jtl110gpu\_32\_20260613.md}) has
+\texttt{controlled\_32\_task\_completion\_ready=true}: it launched 32
+theorem-admitted tasks on an available two-GPU node, emitted 32 robust
 lower-service theorem slots and 56 candidate rows, and completed all 32 tasks
-with \(\alpha_0=\alpha_1=0\).  This closes the controlled launched-completion
-gate at the 32-task scale.
-A separate organic production canary recorder gate verifies the strict
-admission/trace contract.  Its live-trace counter remains separate from its
-strict history counter: \texttt{trace\_large\_scale\_organic\_launched\_completion\_ready=false},
-but \texttt{history\_large\_scale\_organic\_launched\_completion\_ready=true}.
-The production-wide organic trace wrapper reports the same split in one
-artifact: recorder/admission readiness, queued live-trace closure, active
-progress, and strict history completion are reported separately.  A read-only
-multi-node inventory sees two reachable GPU nodes, \texttt{jtl110gpu} and
-\texttt{jtl110gpu2}; the Scheduleurm-native multi-node history gate is closed,
-but external systems have still not been run through their native multi-node
-control-plane and worker paths on a shared workload.
+with \(\alpha_0=\alpha_1=0\).  These controlled runs are live launched
+sanity checks, not production-wide traces.
+
+The rolling production evidence is separated in the same way.  The strict
+scheduler-history gate
+(\texttt{md/organic\_history\_completion\_gate\_20260614.md}) reports
+\texttt{strict\_history\_large\_scale\_completion\_ready=true}: 4,020 strict
+theorem-facing organic launches, 3,992 completions, 35 admitted workload
+domains, 13 nodes, and zero strict unadmitted launched rows.  The
+production-launch wrapper
+(\texttt{md/production\_launch\_completion\_gate\_20260612.md}) remains
+rerunnable on rolling queue snapshots and reports active-production progress
+and non-invasive shadow trace separately from this strict history counter.
+Its live oracle-traced large-scale completion flag is
+\texttt{live\_oracle\_traced\_large\_scale\_completion\_ready=false}; this is
+intentional because the large-scale production evidence is scheduler-history
+completion, not a large launched live-oracle trace.  For closed shadow-subset
+snapshots, the theorem bridge is usable with \(\alpha_0=\alpha_1=0\); CPU
+fallback slots use legacy scheduler sort-key semantics and are deliberately
+excluded from the theorem subset.  A read-only multi-node inventory sees two
+reachable GPU nodes, \texttt{jtl110gpu} and \texttt{jtl110gpu2}; the
+Scheduleurm-native multi-node history gate is closed, but external systems
+have still not been run through their native multi-node control-plane and
+worker paths on a shared workload.
 \emph{Claim boundary.}  The live evidence certifies bounded controlled
 completion, non-invasive production shadow semantics, strict scheduler-history
 organic completion, and Scheduleurm-native multi-node history.  It does not
-certify raw history, future unknown workloads, every live oracle slot, or
-external SOTA original multi-node superiority.
+certify raw history, future unknown workloads, every live oracle slot, a
+large-scale live oracle-traced production completion trace, or external SOTA
+original multi-node superiority.
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}
@@ -1428,15 +1481,15 @@ current artifact includes a metric-contract table for the measured finite
 population, including the feature map, numeric scales, projection population,
 exact \(\rho\), compressed-cover \(L\rho\), and exclusions.  The
 future-admitted fabric-cover gate closes a restricted future claim by
-construction: if a future task is admitted to one of 113 exact positive
+construction: if a future task is admitted to one of 120 exact measured
 measured workload domains, the theorem-facing projection is identity and
 \(\rho=0\); otherwise the task is probe-required and excluded from the
 positive-load theorem-facing stream.  A declared finite-domain positive-cover
-gate formalizes that population as 193 exact service-cache buckets: 187 have
-positive lower service, six are measured capacity boundaries, and zero are
+gate formalizes that population as 225 exact service-cache buckets: 215 have
+positive lower service, 10 are measured capacity boundaries, and zero are
 uncovered, so the declared-domain classification fraction is \(1.0\), the
-positive-service fraction is \(187/193\), and the boundary fraction is
-\(6/193\).  A separate conservative all-state safety gate covers every
+positive-service fraction is \(215/225\), and the boundary fraction is
+\(10/225\).  A separate conservative all-state safety gate covers every
 scheduler-visible state by partitioning it into measured-admitted states or an
 unknown probe/defer action with zero theorem service.  This closes the declared
 finite positive domain and all-state safety, not arbitrary positive-service
@@ -1515,6 +1568,310 @@ real scheduler can produce the objects required by that certificate.  Policy
 replay and adapter audits are included to check the finite candidate model, not
 to claim exhaustive superiority over external scheduler systems.
 
+\section*{Appendix: Conventional Proof Details}
+\label{app:conventional-proof}
+
+This appendix gives the conventional, paper-readable proof chain behind
+Theorem~\ref{thm:main}.  It is intentionally redundant with the main text:
+the purpose is to make clear which part is mathematics, which part is a
+measured Scheduleurm certificate, and which part is checked by Lean.  The Lean
+artifact is a formal audit of the algebraic and recurrence implications; it is
+not a substitute for empirical certificates of service rows, lower confidence
+bounds, candidate admission, oracle gaps, or moment bounds.
+
+\subsection*{EC.1. Capacity Slack as a Support-Function Margin}
+
+Let \(M(a)\in\Real_+^{|\mathcal I|}\) denote the true mean service vector of
+full action \(a\in\Afull\), and let \(H_{\Afull}(q)=\max_{a\in\Afull}q^\top
+M(a)\) be the full-action support function for nonnegative backlog weights
+\(q\in\Real_+^{|\mathcal I|}\).  A stationary randomized policy over full
+actions is a probability vector \(x\in\Delta(\Afull)\).  If it has coordinate
+slack \(\delta>0\) against the arrival mean \(\lambda\), then
+\begin{equation}
+  \lambda_i+\delta \le \sum_{a\in\Afull}x_a M_i(a),
+  \qquad i\in\mathcal I.
+\end{equation}
+Multiplying each coordinate by \(q_i\ge0\) and summing gives
+\begin{equation}
+  q^\top\lambda+\delta\normone{q}
+  \le
+  \sum_{a\in\Afull}x_a q^\top M(a).
+\end{equation}
+Because \(x\) is a convex combination, the right-hand side is at most the
+maximum full-action support:
+\begin{equation}
+  \sum_{a\in\Afull}x_a q^\top M(a)
+  \le
+  H_{\Afull}(q).
+\end{equation}
+Hence full-action capacity slack implies
+\begin{equation}
+  \label{eq:ec-capacity-support}
+  q^\top\lambda+\delta\normone{q}\le H_{\Afull}(q).
+\end{equation}
+This is the only place where the capacity-region hypothesis enters the drift
+proof.  It converts an interior capacity statement into a MaxWeight support
+margin that can be compared to candidate actions.  The paper uses the
+support-function statement as Assumption~\ref{ass:load-slack}; the operational
+necessity direction is separate and requires a load-certified stochastic model
+and a conservation law.
+
+\subsection*{EC.2. Candidate Fabric Cover and Support Loss}
+
+The scheduler cannot enumerate every full configuration.  It evaluates an
+admitted candidate family \(\Acand_t\subseteq\Afull\), possibly depending on
+the observed state \(t\).  The finite-candidate theorem needs a support loss
+certificate: for every \(q\ge0\),
+\begin{equation}
+  \label{eq:ec-candidate-support}
+  H_{\Afull}(q)\le H_{\Acand_t}(q)
+  +\epsilon_{\mathrm{cand}}\normone{q}.
+\end{equation}
+When the loss is obtained from a calibrated fabric metric, let
+\(\Phi(a)\) be the finite feature representation of action \(a\), let \(d\) be
+the feature metric, and suppose each full action \(a\) has a projected
+candidate \(\pi_t(a)\in\Acand_t\) satisfying
+\begin{equation}
+  d(\Phi(a),\Phi(\pi_t(a)))\le\rho.
+\end{equation}
+If service is Lipschitz in this representation,
+\begin{equation}
+  \norminf{M(a)-M(\pi_t(a))}\le L\,d(\Phi(a),\Phi(\pi_t(a))),
+\end{equation}
+then for any maximizer \(a^\star\in\argmax_{a\in\Afull}q^\top M(a)\),
+\begin{equation}
+  \begin{aligned}
+  H_{\Afull}(q)
+  &=q^\top M(a^\star)\\
+  &\le q^\top M(\pi_t(a^\star))+\normone{q}L\rho\\
+  &\le H_{\Acand_t}(q)+L\rho\normone{q}.
+  \end{aligned}
+\end{equation}
+Thus \(\epsilon_{\mathrm{cand}}=L\rho\) in the fabric-cover case.  In measured
+finite slices where the candidate support is certified directly, the artifact
+uses the observed support gap itself as \(\epsilon_{\mathrm{cand}}\); when the
+candidate set is exact on the measured slice, this term is zero.  This is why
+the proof does not shrink the action space informally: every restriction must
+be paid for by an explicit support-function loss.
+
+\subsection*{EC.3. Lower-Service Rows, Penalties, and Approximate Oracles}
+
+The robust scheduler optimizes conservative service, not the unknown true mean
+service.  For each admitted candidate \(a\in\Acand_t\), the artifact provides a
+lower-service vector \(\lowermu_t(a)\).  The lower-service support loss is
+\begin{equation}
+  \label{eq:ec-lower-service-support}
+  H_{\Acand_t}(q)
+  \le
+  \max_{a\in\Acand_t}q^\top\lowermu_t(a)
+  +\epsilon_{\mathrm{est}}\normone{q}.
+\end{equation}
+The scheduling score is
+\begin{equation}
+  \Psi_t(a)
+  =
+  Q^\top\lowermu_t(a)-K_t(a)-G_t(a),
+\end{equation}
+where \(K_t(a)\) and \(G_t(a)\) are bounded switching, risk, or guard penalties.
+The selected action \(a_t\) need not be the exact maximizer.  It satisfies
+\begin{equation}
+  \label{eq:ec-oracle-gap}
+  \max_{a\in\Acand_t}\Psi_t(a)-\Psi_t(a_t)
+  \le \alpha_0+\alpha_1\normone{Q},
+\end{equation}
+and the selected penalty obeys
+\begin{equation}
+  \label{eq:ec-penalty-bound}
+  0\le K_t(a_t)+G_t(a_t)\le P_0+\beta\normone{Q}.
+\end{equation}
+Combining \eqref{eq:ec-capacity-support}--\eqref{eq:ec-penalty-bound} yields
+the selected lower-service margin.  First,
+\begin{equation}
+  \max_{a\in\Acand_t}Q^\top\lowermu_t(a)
+  \ge
+  Q^\top\lambda+
+  (\delta-\epsilon_{\mathrm{cand}}-\epsilon_{\mathrm{est}})\normone{Q}.
+\end{equation}
+Second, by the oracle gap and the selected penalty bound,
+\begin{equation}
+  \label{eq:ec-selected-margin}
+  \begin{aligned}
+  Q^\top\lowermu_t(a_t)
+  &\ge \max_{a\in\Acand_t}Q^\top\lowermu_t(a)\\
+  &\quad{}-(P_0+\alpha_0)-(\beta+\alpha_1)\normone{Q}\\
+  &\ge Q^\top\lambda+
+     \eta\normone{Q}-(P_0+\alpha_0),
+  \end{aligned}
+\end{equation}
+where
+\begin{equation}
+  \eta=\delta-(\epsilon_{\mathrm{cand}}+\epsilon_{\mathrm{est}}+\beta+\alpha_1).
+\end{equation}
+The theorem therefore has a simple accounting rule: candidate loss,
+lower-service estimation loss, queue-scaled penalty, and queue-scaled oracle
+loss all consume the same capacity slack.  A stability certificate requires
+\(\eta>0\).  Additive terms \(P_0\) and \(\alpha_0\) do not change the slope of
+the drift; they enlarge the finite set outside which the drift is negative.
+
+\subsection*{EC.4. Quadratic Drift and the Foster Certificate}
+
+The queue update is
+\begin{equation}
+  Q_i(t+1)=\bigl[Q_i(t)-S_i(t)\bigr]^+ + A_i(t),
+\end{equation}
+where \(A_i(t)\) is arrival and \(S_i(t)\) is realized service for class \(i\).
+For \(V(Q)=\frac12\sum_i Q_i^2\), the standard one-step inequality gives
+\begin{equation}
+  \label{eq:ec-quadratic-step}
+  \begin{aligned}
+  \Delta V(t)
+  &\le
+  \frac12\sum_i\bigl(A_i(t)^2+S_i(t)^2\bigr)\\
+  &\quad{}+Q(t)^\top A(t)-Q(t)^\top S(t).
+  \end{aligned}
+\end{equation}
+Assumption~\ref{ass:stochastic-moments} supplies the conditional second-order
+bound
+\begin{equation}
+  \E\!\left[
+    \frac12\sum_i\bigl(A_i(t)^2+S_i(t)^2\bigr)
+    \,\middle|\,Q(t)=Q
+  \right]\le B.
+\end{equation}
+It also ties the stochastic process to the theorem-facing service rows:
+\begin{equation}
+  \begin{aligned}
+  \E[A(t)\mid Q(t)=Q]&\le\lambda,\\
+  \E[S(t)\mid Q(t)=Q]&\ge\lowermu_t(a_t)
+  \end{aligned}
+\end{equation}
+coordinatewise.  Taking conditional expectation in
+\eqref{eq:ec-quadratic-step} and using \eqref{eq:ec-selected-margin},
+\begin{equation}
+  \label{eq:ec-drift-bound}
+  \begin{aligned}
+  \E[\Delta V(t)\mid Q(t)=Q]
+  &\le
+  B+Q^\top\lambda-Q^\top\lowermu_t(a_t)\\
+  &\le
+  B+P_0+\alpha_0-\eta\normone{Q}.
+  \end{aligned}
+\end{equation}
+If \(N\) and \(\gamma>0\) satisfy
+\begin{equation}
+  B+P_0+\alpha_0+\gamma\le\eta N,
+\end{equation}
+then whenever \(\normone{Q}>N\), \eqref{eq:ec-drift-bound} implies
+\begin{equation}
+  \E[\Delta V(t)\mid Q(t)=Q]\le-\gamma.
+\end{equation}
+This is the finite-set drift certificate used in
+Theorem~\ref{thm:main}.  To translate the certificate into positive recurrence
+for a Markov chain, the paper also assumes a countable queue state space, finite
+sublevel sets of \(V\), and a closed communicating class or equivalent
+local-return condition.  Without those recurrence-side conditions the theorem
+should be read as a negative-drift certificate, not as an unconditional
+positive-recurrence statement for every possible implementation.
+
+\subsection*{EC.5. Statewise Feasible Families and Operational Boundaries}
+
+The statewise corollary is a conditioning argument rather than a new drift
+identity.  Let \(\chi(t)\) record scheduler-visible information such as alive
+nodes, pinned tasks, queued jobs, and measured admission status.  If the
+candidate family \(\Acand(Q(t),\chi(t))\), lower-service table
+\(\lowermu(Q(t),\chi(t),\cdot)\), penalty bounds, oracle bounds, and moment
+bounds satisfy the same constants for every admitted \((Q(t),\chi(t))\), then
+the proof in EC.1--EC.4 holds after conditioning on \((Q(t),\chi(t))\).  Taking
+expectation over \(\chi(t)\) preserves the drift bound because the constants
+are uniform over the admitted family.
+
+The operational capacity statement is kept separate.  Sufficiency follows from
+the positive-slack drift chain above once a stochastic model certifies the
+arrival mean, service accounting, lower-service domination, moment bounds, and
+local recurrence conditions.  Necessity is not obtained by defining a model to
+``stabilize'' a load; it requires the model to encode the load and obey a
+conservation law showing that long-run departures cannot exceed the capacity
+base.  This separation is essential for the paper's claim boundary: Lean audits
+the implication from certified assumptions to drift and recurrence, while the
+experiments and admission gates certify when Scheduleurm rows satisfy those
+assumptions.
+
+\subsection*{EC.6. Lean Crosswalk and Artifact Assumptions}
+
+Table~\ref{tab:appendix-lean-crosswalk} maps the paper-readable statements to
+the Lean identifiers that audit them.  Table~\ref{tab:appendix-artifact-assumptions}
+separates formal hypotheses from empirical certificates.
+
+\begin{table}[t]
+\TABLE{Paper theorem to Lean theorem crosswalk.\label{tab:appendix-lean-crosswalk}}{
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.22\linewidth}
+                >{\raggedright\arraybackslash}p{0.44\linewidth}
+                >{\raggedright\arraybackslash}p{0.24\linewidth}}
+\toprule
+Paper statement & Lean identifier & What the Lean theorem checks \\
+\midrule
+Theorem~\ref{thm:main}, exact support-cover version &
+\path{main_theorem_robust_candidate_maxweight_stability_under_fabric_cover} &
+Exact-oracle support loss, robust drift, and recurrence certificate. \\
+Theorem~\ref{thm:main}, approximate-oracle version &
+\path{main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle} &
+Calibrated cover, bounded second moment, approximate oracle, and slack
+accounting. \\
+Corollary~\ref{cor:statewise} &
+\path{main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle} &
+State-dependent candidate families with uniform constants. \\
+Coordinate-scaled lower-service certificate &
+\path{main_diagonal_scaled_lcb_support_loss_l1} &
+Heterogeneous service-unit scaling and lower confidence bound support loss. \\
+Operational capacity boundary &
+\path{main_operational_capacity_sandwich} &
+Positive-slack sufficiency and zero-slack conservation-law necessity under a
+load-certified model. \\
+\bottomrule
+\end{tabular}
+}{The Lean theorem names are identifiers, not paper theorem numbers.  The
+artifact package includes a consolidated upload file and build log so the names
+can be searched directly.}
+\end{table}
+
+\begin{table}[t]
+\TABLE{Mathematical assumptions and Scheduleurm certificates.\label{tab:appendix-artifact-assumptions}}{
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.18\linewidth}
+                >{\raggedright\arraybackslash}p{0.34\linewidth}
+                >{\raggedright\arraybackslash}p{0.36\linewidth}}
+\toprule
+Object & Mathematical role & Artifact or empirical certificate \\
+\midrule
+\(\lambda,\delta\) & Arrival mean and full-action capacity slack. &
+Online arrival replay, load sweep, and finite lower-service capacity gates. \\
+\(\epsilon_{\mathrm{cand}}\) or \(L\rho\) & Candidate-set or fabric-cover
+support loss. & Measured finite-slice support gaps, declared bucket admission,
+and fabric-cover calibration when available. \\
+\(\lowermu_t,\epsilon_{\mathrm{est}}\) & Conservative lower-service rows and
+estimation loss. & Holdout lower confidence bound gates, measured service cache,
+and admission/probe status. \\
+\(P_0,\beta\) & Bounded and queue-scaled penalty consumption. & Penalty-unit
+ledger, guard/tie-break audits, and bounded-switching configuration. \\
+\(\alpha_0,\alpha_1\) & Additive and queue-scaled approximate oracle loss. &
+Oracle audit comparing selected action against theorem-facing candidate
+families. \\
+\(B,N,\gamma\) & Second-order moment bound and finite-set drift threshold. &
+Workload bounds, controlled trace statistics, and recurrence-side finite-state
+admission conditions. \\
+Statewise \(\chi(t)\) & Scheduler-visible feasible-family index. & Alive-node,
+pinned-job, queued-job, service-cache, and admission-state trace fields. \\
+Operational model certificate & Links stochastic arrivals and services to the
+queueing theorem. & Load-certified model contract plus conservation-law boundary;
+not inferred from Lean alone. \\
+\bottomrule
+\end{tabular}
+}{The table is deliberately conservative: Lean verifies the implications once
+these hypotheses hold, while the Scheduleurm artifact determines which measured
+rows satisfy them.}
+\end{table}
+
 \section*{Appendix: Gate Ladder}
 
 Tables~\ref{tab:gate-dashboard} and~\ref{tab:gate-dashboard-continued} are the
@@ -1576,7 +1933,8 @@ arbitrary systems, future workloads, or production claims outside the strict
 history population. \\
 Registered external adapter universe & true & false & All 11 non-adjacent
 registered external scheduler families have policy/service-unit adapter rows in the
-measured-cache Scheduleurm+external union, and the strict frontier is closed; 5/11
+measured-cache Scheduleurm+external union, and the measured-cache external-policy
+frontier is closed; 5/11
 also have direct same-workload binary rows. & This is finite adapter closure,
 not external-binary full-stack superiority for every registered or arbitrary
 SOTA. \\

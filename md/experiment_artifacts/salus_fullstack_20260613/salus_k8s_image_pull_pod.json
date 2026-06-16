@@ -1,0 +1,180 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"salus-image-pull-smoke\"},\"name\":\"salus-image-pull-smoke\",\"namespace\":\"salus-baseline\"},\"spec\":{\"containers\":[{\"args\":[\"echo SALUS_IMAGE_READY; command -v salus-server; salus-server --help 2\\u003e\\u00261 | head -80 || true\"],\"command\":[\"/bin/bash\",\"-lc\"],\"image\":\"registry.gitlab.com/salus/salus:latest\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"salus\",\"resources\":{\"limits\":{\"cpu\":\"2\",\"memory\":\"2Gi\"},\"requests\":{\"cpu\":\"1\",\"memory\":\"1Gi\"}}}],\"restartPolicy\":\"Never\"}}\n"
+        },
+        "creationTimestamp": "2026-06-13T14:08:04Z",
+        "labels": {
+            "app": "salus-image-pull-smoke"
+        },
+        "name": "salus-image-pull-smoke",
+        "namespace": "salus-baseline",
+        "resourceVersion": "5317",
+        "uid": "4e31ebbc-3115-467e-a5d8-e43991ac525f"
+    },
+    "spec": {
+        "containers": [
+            {
+                "args": [
+                    "echo SALUS_IMAGE_READY; command -v salus-server; salus-server --help 2\u003e\u00261 | head -80 || true"
+                ],
+                "command": [
+                    "/bin/bash",
+                    "-lc"
+                ],
+                "image": "registry.gitlab.com/salus/salus:latest",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "salus",
+                "resources": {
+                    "limits": {
+                        "cpu": "2",
+                        "memory": "2Gi"
+                    },
+                    "requests": {
+                        "cpu": "1",
+                        "memory": "1Gi"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "kube-api-access-mzvmz",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "nodeName": "huiwei-super-server",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Never",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "name": "kube-api-access-mzvmz",
+                "projected": {
+                    "defaultMode": 420,
+                    "sources": [
+                        {
+                            "serviceAccountToken": {
+                                "expirationSeconds": 3607,
+                                "path": "token"
+                            }
+                        },
+                        {
+                            "configMap": {
+                                "items": [
+                                    {
+                                        "key": "ca.crt",
+                                        "path": "ca.crt"
+                                    }
+                                ],
+                                "name": "kube-root-ca.crt"
+                            }
+                        },
+                        {
+                            "downwardAPI": {
+                                "items": [
+                                    {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.namespace"
+                                        },
+                                        "path": "namespace"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-06-13T14:08:04Z",
+                "status": "False",
+                "type": "PodReadyToStartContainers"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-06-13T14:08:04Z",
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-06-13T14:08:04Z",
+                "message": "containers with unready status: [salus]",
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-06-13T14:08:04Z",
+                "message": "containers with unready status: [salus]",
+                "reason": "ContainersNotReady",
+                "status": "False",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2026-06-13T14:08:04Z",
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "image": "registry.gitlab.com/salus/salus:latest",
+                "imageID": "",
+                "lastState": {},
+                "name": "salus",
+                "ready": false,
+                "restartCount": 0,
+                "started": false,
+                "state": {
+                    "waiting": {
+                        "reason": "ContainerCreating"
+                    }
+                }
+            }
+        ],
+        "hostIP": "192.168.1.105",
+        "hostIPs": [
+            {
+                "ip": "192.168.1.105"
+            }
+        ],
+        "phase": "Pending",
+        "qosClass": "Burstable",
+        "startTime": "2026-06-13T14:08:04Z"
+    }
+}

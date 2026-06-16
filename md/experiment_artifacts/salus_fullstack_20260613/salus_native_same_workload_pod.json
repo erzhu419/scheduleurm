@@ -1,0 +1,192 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "annotations": {
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"salus-native-same-workload-smoke\"},\"name\":\"salus-native-same-workload-smoke\",\"namespace\":\"salus-baseline\"},\"spec\":{\"containers\":[{\"command\":[\"bash\",\"-lc\",\"set -euo pipefail\\npython - \\u003c\\u003c'PY'\\nfrom __future__ import print_function\\nimport json, time\\nimport tensorflow as tf\\ntarget = ''\\nmarker = 'SALUS_NATIVE_RESULT'\\nsteps = 24\\nstart = time.time()\\nwith tf.Graph().as_default():\\n    with tf.device('/device:GPU:0'):\\n        x = tf.ones([256, 256], dtype=tf.float32)\\n        y = tf.matmul(x, x)\\n        z = tf.reduce_sum(y)\\n    sess = tf.Session(target=target) if target else tf.Session()\\n    with sess:\\n        sess.run(z)\\n        total = 0.0\\n        for _ in range(steps):\\n            total += float(sess.run(z))\\nwall = time.time() - start\\nprint(marker, json.dumps({'ok': True, 'steps': steps, 'wall_s': wall, 'checksum': total}))\\nPY\\n\"],\"env\":[{\"name\":\"NVIDIA_VISIBLE_DEVICES\",\"value\":\"all\"}],\"image\":\"registry.gitlab.com/salus/tensorflow-salus:latest\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"native-client\",\"resources\":{\"limits\":{\"nvidia.com/gpu\":1}}}],\"restartPolicy\":\"Never\"}}\n"
+    },
+    "creationTimestamp": "2026-06-13T16:11:27Z",
+    "labels": {
+      "app": "salus-native-same-workload-smoke"
+    },
+    "name": "salus-native-same-workload-smoke",
+    "namespace": "salus-baseline",
+    "resourceVersion": "8482",
+    "uid": "8e0e9b47-0f42-4a07-9993-a8599e2f0723"
+  },
+  "spec": {
+    "containers": [
+      {
+        "command": [
+          "bash",
+          "-lc",
+          "set -euo pipefail\npython - <<'PY'\nfrom __future__ import print_function\nimport json, time\nimport tensorflow as tf\ntarget = ''\nmarker = 'SALUS_NATIVE_RESULT'\nsteps = 24\nstart = time.time()\nwith tf.Graph().as_default():\n    with tf.device('/device:GPU:0'):\n        x = tf.ones([256, 256], dtype=tf.float32)\n        y = tf.matmul(x, x)\n        z = tf.reduce_sum(y)\n    sess = tf.Session(target=target) if target else tf.Session()\n    with sess:\n        sess.run(z)\n        total = 0.0\n        for _ in range(steps):\n            total += float(sess.run(z))\nwall = time.time() - start\nprint(marker, json.dumps({'ok': True, 'steps': steps, 'wall_s': wall, 'checksum': total}))\nPY\n"
+        ],
+        "env": [
+          {
+            "name": "NVIDIA_VISIBLE_DEVICES",
+            "value": "all"
+          }
+        ],
+        "image": "registry.gitlab.com/salus/tensorflow-salus:latest",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "native-client",
+        "resources": {
+          "limits": {
+            "nvidia.com/gpu": "1"
+          },
+          "requests": {
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-drfhk",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeName": "huiwei-super-server",
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Never",
+    "schedulerName": "default-scheduler",
+    "securityContext": {},
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "name": "kube-api-access-drfhk",
+        "projected": {
+          "defaultMode": 420,
+          "sources": [
+            {
+              "serviceAccountToken": {
+                "expirationSeconds": 3607,
+                "path": "token"
+              }
+            },
+            {
+              "configMap": {
+                "items": [
+                  {
+                    "key": "ca.crt",
+                    "path": "ca.crt"
+                  }
+                ],
+                "name": "kube-root-ca.crt"
+              }
+            },
+            {
+              "downwardAPI": {
+                "items": [
+                  {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.namespace"
+                    },
+                    "path": "namespace"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-06-13T16:14:50Z",
+        "status": "False",
+        "type": "PodReadyToStartContainers"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-06-13T16:11:27Z",
+        "reason": "PodCompleted",
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-06-13T16:14:49Z",
+        "reason": "PodCompleted",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-06-13T16:14:49Z",
+        "reason": "PodCompleted",
+        "status": "False",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-06-13T16:11:27Z",
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "containerID": "docker://e61a9e8afc03170ccecd33c4f09699710a5c2b06a50bc51973f4c64fbacdf02d",
+        "image": "registry.gitlab.com/salus/tensorflow-salus:latest",
+        "imageID": "docker://sha256:cfc4472a7db13c6bf59be8d5b16569a9fa76d2e3ff3acbd4143415086856cf50",
+        "lastState": {},
+        "name": "native-client",
+        "ready": false,
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "docker://e61a9e8afc03170ccecd33c4f09699710a5c2b06a50bc51973f4c64fbacdf02d",
+            "exitCode": 0,
+            "finishedAt": "2026-06-13T16:14:48Z",
+            "reason": "Completed",
+            "startedAt": "2026-06-13T16:11:28Z"
+          }
+        }
+      }
+    ],
+    "hostIP": "192.168.1.105",
+    "hostIPs": [
+      {
+        "ip": "192.168.1.105"
+      }
+    ],
+    "phase": "Succeeded",
+    "podIP": "10.42.0.36",
+    "podIPs": [
+      {
+        "ip": "10.42.0.36"
+      }
+    ],
+    "qosClass": "BestEffort",
+    "startTime": "2026-06-13T16:11:27Z"
+  }
+}

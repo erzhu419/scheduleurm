@@ -1,0 +1,737 @@
+{
+  "blocker": "",
+  "candidate_configuration_count": 626,
+  "candidate_nodes": [
+    "jtl110gpu",
+    "jtl110gpu2"
+  ],
+  "candidate_resource_counts": {
+    "cpu": 2,
+    "gpu": 16
+  },
+  "candidate_row_count": 18,
+  "candidate_rows": [
+    {
+      "action_id": "shadow-q01-gpu-heavy|jtl110gpu:gpu:0|p1",
+      "lower_service": {
+        "gpu_heavy_jax_matmul": 46.81063075
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:0",
+      "resource_ids": [
+        "jtl110gpu:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 374.485046,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 46.81063075,
+      "service_binding": {
+        "aggregate_rate": 46.81063075,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "jax_matmul_size8192_v1",
+        "lower_service": 46.81063075,
+        "mean_rate": 46.81063075,
+        "node_bucket": "node007:11gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_heavy",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      "task_id": "shadow-q01-gpu-heavy",
+      "theorem_ready": true,
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "action_id": "shadow-q01-gpu-heavy|jtl110gpu:gpu:1|p1",
+      "lower_service": {
+        "gpu_heavy_jax_matmul": 46.81063075
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:1",
+      "resource_ids": [
+        "jtl110gpu:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 374.485046,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 46.81063075,
+      "service_binding": {
+        "aggregate_rate": 46.81063075,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "jax_matmul_size8192_v1",
+        "lower_service": 46.81063075,
+        "mean_rate": 46.81063075,
+        "node_bucket": "node007:11gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_heavy",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      "task_id": "shadow-q01-gpu-heavy",
+      "theorem_ready": true,
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "action_id": "shadow-q01-cnn|jtl110gpu:gpu:0|p1",
+      "lower_service": {
+        "gpu_cnn_torch_progress_stack": 31.5625
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:0",
+      "resource_ids": [
+        "jtl110gpu:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 189.375,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 31.5625,
+      "service_binding": {
+        "aggregate_rate": 31.5625,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_cnn_progress_stack_bench_v1",
+        "lower_service": 31.5625,
+        "mean_rate": 31.5625,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_cnn_torch_progress_stack"
+      },
+      "task_id": "shadow-q01-cnn",
+      "theorem_ready": true,
+      "workload_key": "gpu_cnn_torch_progress_stack"
+    },
+    {
+      "action_id": "shadow-q01-cnn|jtl110gpu:gpu:1|p1",
+      "lower_service": {
+        "gpu_cnn_torch_progress_stack": 31.5625
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:1",
+      "resource_ids": [
+        "jtl110gpu:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 189.375,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 31.5625,
+      "service_binding": {
+        "aggregate_rate": 31.5625,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_cnn_progress_stack_bench_v1",
+        "lower_service": 31.5625,
+        "mean_rate": 31.5625,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_cnn_torch_progress_stack"
+      },
+      "task_id": "shadow-q01-cnn",
+      "theorem_ready": true,
+      "workload_key": "gpu_cnn_torch_progress_stack"
+    },
+    {
+      "action_id": "shadow-q01-llm|jtl110gpu:gpu:0|p1",
+      "lower_service": {
+        "gpu_llm_torch_decoder_stack": 309.55401125000003
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:0",
+      "resource_ids": [
+        "jtl110gpu:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 1547.7700562500002,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 309.55401125000003,
+      "service_binding": {
+        "aggregate_rate": 309.55401125000003,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_decoder_stack_bench_v1",
+        "lower_service": 309.55401125000003,
+        "mean_rate": 309.55401125000003,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_llm",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_llm_torch_decoder_stack"
+      },
+      "task_id": "shadow-q01-llm",
+      "theorem_ready": true,
+      "workload_key": "gpu_llm_torch_decoder_stack"
+    },
+    {
+      "action_id": "shadow-q01-llm|jtl110gpu:gpu:1|p1",
+      "lower_service": {
+        "gpu_llm_torch_decoder_stack": 309.55401125000003
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:1",
+      "resource_ids": [
+        "jtl110gpu:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 1547.7700562500002,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 309.55401125000003,
+      "service_binding": {
+        "aggregate_rate": 309.55401125000003,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_decoder_stack_bench_v1",
+        "lower_service": 309.55401125000003,
+        "mean_rate": 309.55401125000003,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_llm",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_llm_torch_decoder_stack"
+      },
+      "task_id": "shadow-q01-llm",
+      "theorem_ready": true,
+      "workload_key": "gpu_llm_torch_decoder_stack"
+    },
+    {
+      "action_id": "shadow-q11-hybrid|jtl110gpu:gpu:0|p1",
+      "lower_service": {
+        "hybrid_rl_resac_ant": 0.29201680674999997
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:0",
+      "resource_ids": [
+        "jtl110gpu:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 2.04411764725,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 0.29201680674999997,
+      "service_binding": {
+        "aggregate_rate": 0.29201680674999997,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+        "lower_service": 0.29201680674999997,
+        "mean_rate": 0.29201680674999997,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      "task_id": "shadow-q11-hybrid",
+      "theorem_ready": true,
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "action_id": "shadow-q11-hybrid|jtl110gpu:gpu:1|p1",
+      "lower_service": {
+        "hybrid_rl_resac_ant": 0.29201680674999997
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:gpu:1",
+      "resource_ids": [
+        "jtl110gpu:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 2.04411764725,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 0.29201680674999997,
+      "service_binding": {
+        "aggregate_rate": 0.29201680674999997,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+        "lower_service": 0.29201680674999997,
+        "mean_rate": 0.29201680674999997,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      "task_id": "shadow-q11-hybrid",
+      "theorem_ready": true,
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "action_id": "shadow-q00-light|jtl110gpu:cpu|p1",
+      "lower_service": {
+        "light_control_local": 51.446729
+      },
+      "node": "jtl110gpu",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu:cpu",
+      "resource_ids": [
+        "jtl110gpu:cpu"
+      ],
+      "resource_kind": "cpu",
+      "robust_maxweight_score": 102.893458,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 51.446729,
+      "service_binding": {
+        "aggregate_rate": 51.446729,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "cpu_light_sleep_20ms_v1",
+        "lower_service": 51.446729,
+        "mean_rate": 51.446729,
+        "node_bucket": "local:cpu",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "light_control",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/module23_q00_light_control_local_profiles1_16_20260604_001/reports/profile_1_per_resource_summary.json",
+        "workload_key": "light_control_local"
+      },
+      "task_id": "shadow-q00-light",
+      "theorem_ready": true,
+      "workload_key": "light_control_local"
+    },
+    {
+      "action_id": "shadow-q01-gpu-heavy|jtl110gpu2:gpu:0|p1",
+      "lower_service": {
+        "gpu_heavy_jax_matmul": 46.81063075
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:0",
+      "resource_ids": [
+        "jtl110gpu2:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 374.485046,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 46.81063075,
+      "service_binding": {
+        "aggregate_rate": 46.81063075,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "jax_matmul_size8192_v1",
+        "lower_service": 46.81063075,
+        "mean_rate": 46.81063075,
+        "node_bucket": "node007:11gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_heavy",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      "task_id": "shadow-q01-gpu-heavy",
+      "theorem_ready": true,
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "action_id": "shadow-q01-gpu-heavy|jtl110gpu2:gpu:1|p1",
+      "lower_service": {
+        "gpu_heavy_jax_matmul": 46.81063075
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:1",
+      "resource_ids": [
+        "jtl110gpu2:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 374.485046,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 46.81063075,
+      "service_binding": {
+        "aggregate_rate": 46.81063075,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "jax_matmul_size8192_v1",
+        "lower_service": 46.81063075,
+        "mean_rate": 46.81063075,
+        "node_bucket": "node007:11gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_heavy",
+        "source": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/node007_q01_pareto_p1_20260613_profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_heavy_jax_matmul"
+      },
+      "task_id": "shadow-q01-gpu-heavy",
+      "theorem_ready": true,
+      "workload_key": "gpu_heavy_jax_matmul"
+    },
+    {
+      "action_id": "shadow-q01-cnn|jtl110gpu2:gpu:0|p1",
+      "lower_service": {
+        "gpu_cnn_torch_progress_stack": 31.5625
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:0",
+      "resource_ids": [
+        "jtl110gpu2:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 189.375,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 31.5625,
+      "service_binding": {
+        "aggregate_rate": 31.5625,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_cnn_progress_stack_bench_v1",
+        "lower_service": 31.5625,
+        "mean_rate": 31.5625,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_cnn_torch_progress_stack"
+      },
+      "task_id": "shadow-q01-cnn",
+      "theorem_ready": true,
+      "workload_key": "gpu_cnn_torch_progress_stack"
+    },
+    {
+      "action_id": "shadow-q01-cnn|jtl110gpu2:gpu:1|p1",
+      "lower_service": {
+        "gpu_cnn_torch_progress_stack": 31.5625
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:1",
+      "resource_ids": [
+        "jtl110gpu2:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 189.375,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 31.5625,
+      "service_binding": {
+        "aggregate_rate": 31.5625,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_cnn_progress_stack_bench_v1",
+        "lower_service": 31.5625,
+        "mean_rate": 31.5625,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_cnn",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_cnn_torch_progress_stack"
+      },
+      "task_id": "shadow-q01-cnn",
+      "theorem_ready": true,
+      "workload_key": "gpu_cnn_torch_progress_stack"
+    },
+    {
+      "action_id": "shadow-q01-llm|jtl110gpu2:gpu:0|p1",
+      "lower_service": {
+        "gpu_llm_torch_decoder_stack": 309.55401125000003
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:0",
+      "resource_ids": [
+        "jtl110gpu2:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 1547.7700562500002,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 309.55401125000003,
+      "service_binding": {
+        "aggregate_rate": 309.55401125000003,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_decoder_stack_bench_v1",
+        "lower_service": 309.55401125000003,
+        "mean_rate": 309.55401125000003,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_llm",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_llm_torch_decoder_stack"
+      },
+      "task_id": "shadow-q01-llm",
+      "theorem_ready": true,
+      "workload_key": "gpu_llm_torch_decoder_stack"
+    },
+    {
+      "action_id": "shadow-q01-llm|jtl110gpu2:gpu:1|p1",
+      "lower_service": {
+        "gpu_llm_torch_decoder_stack": 309.55401125000003
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:1",
+      "resource_ids": [
+        "jtl110gpu2:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 1547.7700562500002,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 309.55401125000003,
+      "service_binding": {
+        "aggregate_rate": 309.55401125000003,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "torch_decoder_stack_bench_v1",
+        "lower_service": 309.55401125000003,
+        "mean_rate": 309.55401125000003,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "gpu_llm",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "gpu_llm_torch_decoder_stack"
+      },
+      "task_id": "shadow-q01-llm",
+      "theorem_ready": true,
+      "workload_key": "gpu_llm_torch_decoder_stack"
+    },
+    {
+      "action_id": "shadow-q11-hybrid|jtl110gpu2:gpu:0|p1",
+      "lower_service": {
+        "hybrid_rl_resac_ant": 0.29201680674999997
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:0",
+      "resource_ids": [
+        "jtl110gpu2:gpu:0"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 2.04411764725,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 0.29201680674999997,
+      "service_binding": {
+        "aggregate_rate": 0.29201680674999997,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+        "lower_service": 0.29201680674999997,
+        "mean_rate": 0.29201680674999997,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      "task_id": "shadow-q11-hybrid",
+      "theorem_ready": true,
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "action_id": "shadow-q11-hybrid|jtl110gpu2:gpu:1|p1",
+      "lower_service": {
+        "hybrid_rl_resac_ant": 0.29201680674999997
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:gpu:1",
+      "resource_ids": [
+        "jtl110gpu2:gpu:1"
+      ],
+      "resource_kind": "gpu",
+      "robust_maxweight_score": 2.04411764725,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 0.29201680674999997,
+      "service_binding": {
+        "aggregate_rate": 0.29201680674999997,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "resac_ant_real_tqdm_stable_v1",
+        "lower_service": 0.29201680674999997,
+        "mean_rate": 0.29201680674999997,
+        "node_bucket": "node007-direct:4x12gb",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "hybrid_rl",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      "task_id": "shadow-q11-hybrid",
+      "theorem_ready": true,
+      "workload_key": "hybrid_rl_resac_ant"
+    },
+    {
+      "action_id": "shadow-q00-light|jtl110gpu2:cpu|p1",
+      "lower_service": {
+        "light_control_local": 51.446729
+      },
+      "node": "jtl110gpu2",
+      "penalty_units": 0.0,
+      "resource_id": "jtl110gpu2:cpu",
+      "resource_ids": [
+        "jtl110gpu2:cpu"
+      ],
+      "resource_kind": "cpu",
+      "robust_maxweight_score": 102.893458,
+      "score_semantics": "robust_maxweight_lower_service",
+      "selected_class_lower_service": 51.446729,
+      "service_binding": {
+        "aggregate_rate": 51.446729,
+        "capacity_boundary": false,
+        "certified": true,
+        "command_fingerprint": "cpu_light_sleep_20ms_v1",
+        "lower_service": 51.446729,
+        "mean_rate": 51.446729,
+        "node_bucket": "local:cpu",
+        "profile": 1,
+        "reason": "",
+        "resource_kind": "light_control",
+        "source": "/home/erzhu419/.claude/scheduler/experiments/runs/module23_q00_light_control_local_profiles1_16_20260604_001/reports/profile_1_per_resource_summary.json",
+        "workload_key": "light_control_local"
+      },
+      "task_id": "shadow-q00-light",
+      "theorem_ready": true,
+      "workload_key": "light_control_local"
+    }
+  ],
+  "cross_node_candidate_family_ready": true,
+  "cross_node_selected_configuration_ready": true,
+  "gate": "multinode_theorem_shadow_gate",
+  "generated_at": "2026-06-14T06:04:25+0800",
+  "multinode_original_launch_claim_ready": false,
+  "multinode_theorem_shadow_ready": true,
+  "oracle_gap_alpha0": 0.0,
+  "oracle_gap_alpha1": 0.0,
+  "pass": true,
+  "probe_remotes": true,
+  "reachable_cpu_node_count": 2,
+  "reachable_gpu_node_count": 2,
+  "reachable_node_count": 2,
+  "remote_inventory_rows": [
+    {
+      "cpu_count": 24,
+      "gpu_count": 2,
+      "node": "jtl110gpu",
+      "note": "",
+      "probed": true,
+      "reachable": true,
+      "stderr": "",
+      "stdout": "HOST=huiwei-Super-Server\nCPU=24\nGPU=2\n"
+    },
+    {
+      "cpu_count": 24,
+      "gpu_count": 2,
+      "node": "jtl110gpu2",
+      "note": "",
+      "probed": true,
+      "reachable": true,
+      "stderr": "",
+      "stdout": "HOST=erzhu419-Super-Server\nCPU=24\nGPU=2\n"
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node001",
+      "note": "ssh: Could not resolve hostname node001: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node001: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node002",
+      "note": "ssh: Could not resolve hostname node002: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node002: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node003",
+      "note": "ssh: Could not resolve hostname node003: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node003: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node004",
+      "note": "ssh: Could not resolve hostname node004: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node004: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node005",
+      "note": "ssh: Could not resolve hostname node005: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node005: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node006",
+      "note": "ssh: Could not resolve hostname node006: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node006: Temporary failure in name resolution\n",
+      "stdout": ""
+    },
+    {
+      "cpu_count": null,
+      "gpu_count": null,
+      "node": "node007",
+      "note": "ssh: Could not resolve hostname node007: Temporary failure in name resolution\n",
+      "probed": true,
+      "reachable": false,
+      "stderr": "ssh: Could not resolve hostname node007: Temporary failure in name resolution\n",
+      "stdout": ""
+    }
+  ],
+  "scope": "Read-only cross-node theorem candidate-family shadow.  It shows that certified lower-service candidates can be enumerated and globally scored across visible nodes.  It is not an original multi-node full-stack launched-completion comparison.",
+  "scoped_claim_ready": true,
+  "selected_action_ids": [
+    "shadow-q01-llm|jtl110gpu:gpu:0|p1",
+    "shadow-q11-hybrid|jtl110gpu:gpu:1|p1",
+    "shadow-q01-gpu-heavy|jtl110gpu2:gpu:1|p1",
+    "shadow-q01-cnn|jtl110gpu2:gpu:0|p1",
+    "shadow-q00-light|jtl110gpu2:cpu|p1"
+  ],
+  "selected_nodes": [
+    "jtl110gpu",
+    "jtl110gpu2"
+  ],
+  "selected_task_ids": [
+    "shadow-q01-llm",
+    "shadow-q11-hybrid",
+    "shadow-q01-gpu-heavy",
+    "shadow-q01-cnn",
+    "shadow-q00-light"
+  ],
+  "status": "MULTINODE_THEOREM_SHADOW_CLOSED",
+  "strong_claim_ready": false,
+  "theorem_candidate_row_count": 18
+}

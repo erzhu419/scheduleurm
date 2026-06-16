@@ -1,0 +1,67 @@
+{
+  "cases": [
+    "four_gpu_single_task_each"
+  ],
+  "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
+  "gate": "node007_eta_matrix",
+  "node": "node007-direct",
+  "pass": true,
+  "results": [
+    {
+      "case": "four_gpu_single_task_each",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "rl_resac_ant"
+    }
+  ],
+  "rows": [
+    {
+      "aggregate_stable_rate": 1.1680672269999999,
+      "case": "four_gpu_single_task_each",
+      "elapsed_wall_s": 227.08184814453125,
+      "error": "",
+      "expected_task_count": 4,
+      "gpu_count": 4,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 3.4999999965,
+      "mean_stable_rate": 0.29201680674999997,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 3.4000000006800004,
+      "profile": 1,
+      "running_count": 4,
+      "stable_rate_ready_count": 4,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    }
+  ],
+  "run_id": "node007_eta_matrix_rl_fourgpu_p1_retry_20260613",
+  "workloads": [
+    "rl_resac_ant"
+  ]
+}

@@ -1,0 +1,280 @@
+{
+  "cases": [
+    "single_gpu_single_task",
+    "single_gpu_multi_task",
+    "four_gpu_single_task_each",
+    "four_gpu_two_tasks_each"
+  ],
+  "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
+  "gate": "node007_eta_matrix",
+  "node": "node007-direct",
+  "pass": false,
+  "results": [
+    {
+      "case": "single_gpu_single_task",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_single_task",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_single_task/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "rl_resac_ant"
+    },
+    {
+      "case": "single_gpu_multi_task",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "rate_count": 14,
+        "run_id": "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task",
+        "stable_rate_ready_count": 14,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_4_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_5_per_gpu_summary.json"
+        ]
+      },
+      "workload": "rl_resac_ant"
+    },
+    {
+      "case": "four_gpu_single_task_each",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": false,
+        "profiles": [
+          1
+        ],
+        "rate_count": 0,
+        "run_id": "node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_single_task_each",
+        "stable_rate_ready_count": 0,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "rl_resac_ant"
+    },
+    {
+      "case": "four_gpu_two_tasks_each",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          2
+        ],
+        "rate_count": 8,
+        "run_id": "node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_two_tasks_each",
+        "stable_rate_ready_count": 8,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_two_tasks_each/reports/profile_2_per_gpu_summary.json"
+        ]
+      },
+      "workload": "rl_resac_ant"
+    }
+  ],
+  "rows": [
+    {
+      "aggregate_stable_rate": 0.294117647,
+      "case": "single_gpu_single_task",
+      "elapsed_wall_s": 210.39858722686768,
+      "error": "",
+      "expected_task_count": 1,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 3.4000000006800004,
+      "mean_stable_rate": 0.294117647,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 3.4000000006800004,
+      "profile": 1,
+      "running_count": 1,
+      "stable_rate_ready_count": 1,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_single_task/reports/profile_1_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 0.29040404099999995,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 243.23090720176697,
+      "error": "",
+      "expected_task_count": 2,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 7.199999994240001,
+      "mean_stable_rate": 0.14520202049999997,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 6.599999978880001,
+      "profile": 2,
+      "running_count": 2,
+      "stable_rate_ready_count": 2,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_2_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 0.3782327101,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 295.12369322776794,
+      "error": "",
+      "expected_task_count": 3,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 11.099999998779,
+      "mean_stable_rate": 0.12607757003333334,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 6.70000001541,
+      "profile": 3,
+      "running_count": 3,
+      "stable_rate_ready_count": 3,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_3_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 0.3539058539,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 371.7880930900574,
+      "error": "",
+      "expected_task_count": 4,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 14.799999992896,
+      "mean_stable_rate": 0.088476463475,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 9.90000000099,
+      "profile": 4,
+      "running_count": 4,
+      "stable_rate_ready_count": 4,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_4_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 0.49099304610000005,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 483.31023716926575,
+      "error": "",
+      "expected_task_count": 5,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 18.499999984275,
+      "mean_stable_rate": 0.09819860922,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 6.90000001104,
+      "profile": 5,
+      "running_count": 5,
+      "stable_rate_ready_count": 5,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task/reports/profile_5_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 0.0,
+      "case": "four_gpu_single_task_each",
+      "elapsed_wall_s": 207.22796368598938,
+      "error": "",
+      "expected_task_count": 4,
+      "gpu_count": 4,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 0.0,
+      "mean_stable_rate": 0.0,
+      "measurement_valid": false,
+      "min_seconds_per_unit": 0.0,
+      "profile": 1,
+      "running_count": 4,
+      "stable_rate_ready_count": 0,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    },
+    {
+      "aggregate_stable_rate": 1.5755542019999997,
+      "case": "four_gpu_two_tasks_each",
+      "elapsed_wall_s": 282.20445227622986,
+      "error": "",
+      "expected_task_count": 8,
+      "gpu_count": 4,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "label": "RE-SAC Ant-v2 hybrid RL workload",
+      "max_seconds_per_unit": 7.400000007400001,
+      "mean_stable_rate": 0.19694427525,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 3.4000000006800004,
+      "profile": 2,
+      "running_count": 8,
+      "stable_rate_ready_count": 8,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_two_tasks_each/reports/profile_2_per_gpu_summary.json",
+      "unit": "iter",
+      "workload": "rl_resac_ant"
+    }
+  ],
+  "run_id": "node007_eta_matrix_rl_20260613",
+  "workloads": [
+    "rl_resac_ant"
+  ]
+}

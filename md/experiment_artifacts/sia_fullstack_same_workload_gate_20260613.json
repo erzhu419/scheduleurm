@@ -1,0 +1,87 @@
+{
+  "artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613",
+  "cases": [
+    {
+      "jct_ratio_native_over_sia_crd": 0.03857933905483197,
+      "label": "cuda_probe_short",
+      "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+      "native_steps_per_s": 302.014335,
+      "native_total_s": 0.264888,
+      "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+      "native_wall_s": 1.425377607345581,
+      "ready": true,
+      "sia_completion_timestamp": "2026-06-13T12:53:12.946657+00:00",
+      "sia_crd_jct_s": 36.946657,
+      "sia_creation_timestamp": "2026-06-13T12:52:36Z",
+      "sia_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_adaptdljob.json",
+      "sia_observed_wall_s": null,
+      "sia_phase": "Succeeded",
+      "sia_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe.json",
+      "sia_steps_per_s": 302.018045,
+      "sia_total_s": 0.264885,
+      "workload_steps_per_s_ratio_native_over_sia": 0.9999877159657796
+    },
+    {
+      "jct_ratio_native_over_sia_crd": 0.1679957916026681,
+      "label": "cuda_probe_long",
+      "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long.json",
+      "native_steps_per_s": 332.768032,
+      "native_total_s": 9.015289,
+      "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long_wall.json",
+      "native_wall_s": 10.308755159378052,
+      "ready": true,
+      "sia_completion_timestamp": "2026-06-13T12:56:22.363175+00:00",
+      "sia_crd_jct_s": 61.363175,
+      "sia_creation_timestamp": "2026-06-13T12:55:21Z",
+      "sia_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_long_adaptdljob.json",
+      "sia_observed_wall_s": 63.208277463912964,
+      "sia_phase": "Succeeded",
+      "sia_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_long.json",
+      "sia_steps_per_s": 332.249588,
+      "sia_total_s": 9.029357,
+      "workload_steps_per_s_ratio_native_over_sia": 1.0015604052457094
+    }
+  ],
+  "compatibility_fixes": [
+    {
+      "component": "Sia/AdaptDL scheduler image",
+      "fix": "pin scheduler runtime dependencies to NumPy < 1.24 and pandas < 2.0",
+      "reason": "upstream Sia/AdaptDL artifact uses deprecated NumPy/Pandas APIs",
+      "semantics_changed": false
+    },
+    {
+      "component": "Sia/AdaptDL supervisor",
+      "fix": "cast ADAPTDL_SUPERVISOR_SERVICE_PORT to int",
+      "reason": "Kubernetes service environment variables are strings and aiohttp requires an integer port",
+      "semantics_changed": false
+    },
+    {
+      "component": "Sia physical-cluster mapping",
+      "fix": "map the K3s node name huiwei-super-server to the existing rtx cluster type",
+      "reason": "the artifact assumes a hard-coded Phoebe cluster node inventory",
+      "semantics_changed": false
+    },
+    {
+      "component": "Sia MIP policy adapter",
+      "fix": "lift a scalar single-cluster speedup function into the artifact's {gpu_type: fn} map",
+      "reason": "single-GPU-type Kubernetes deployments do not need a multi-cluster speedup dictionary",
+      "semantics_changed": false
+    }
+  ],
+  "direct_fullstack_sota_superiority_ready": false,
+  "gate": "sia_fullstack_same_workload_gate",
+  "gpu": "NVIDIA GeForce RTX 3080 Ti",
+  "host": "jtl110gpu",
+  "native_artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613",
+  "native_pair_completed": true,
+  "pass": true,
+  "same_service_scale_ready": true,
+  "same_workload_binary": "scheduleurm/cuda-probe:local",
+  "scope": "Scoped same-host same-binary full-stack evidence for the Sia physical-cluster AdaptDL/MIP artifact.  It supports a claim that the Sia runtime can be run and compared on this cluster, and that the native Scheduleurm-controlled Docker path has lower JCT on these two CUDA probe cases.  It does not prove direct full-stack superiority over Gavel, Pollux, IADeep, Salus, or arbitrary future workloads.",
+  "scoped_sia_fullstack_same_workload_ready": true,
+  "scoped_sia_same_workload_superiority_ready": true,
+  "sia_adapter": "sia_goodput_scheduler_mip",
+  "sia_fullstack_completed": true,
+  "strong_all_sota_claim_ready": false,
+  "workload": "cuda_saxpy_loop"
+}

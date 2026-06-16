@@ -1,0 +1,276 @@
+{
+  "allow_launch": false,
+  "current_cache_phase_switch_strict_ready": false,
+  "gate": "sota_bridge_action_gate",
+  "launch_plan": {
+    "launch_safe": false,
+    "probes": [
+      {
+        "command": "PYTHONPATH=. python3 -m algorithm.experiments.remote_workload_selected_profile_probe build --run-id sota_bridge_action_20260616_085835_hybrid_rl_p2_p3_bridge --node '<waiting-for-safe-gpu>' --gpus '<gpu>' --profiles 2,3 --cwd /home/erzhu419/mine_code/RE-SAC --cmd-template-file /home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/resac_ant_real_venv.cmd.tpl --output-root /tmp/scheduleurm_bridge_probes/sota_bridge_action_20260616_085835_hybrid_rl_p2_p3_bridge/hybrid_rl_p2_p3_bridge --max-iters 80 --timeout-s 420 --unit iter --terminate-on-stable --stable-windows 3 --min-rate-samples 5 --stable-cv 0.2 --stable-rel-delta 0.25 --stable-skip-samples 1 --coordinated-profile-launch",
+        "gpus": [
+          "<gpu>"
+        ],
+        "launch_safe": false,
+        "name": "hybrid_rl_p2_p3_bridge",
+        "node": "<waiting-for-safe-gpu>",
+        "output_root": "/tmp/scheduleurm_bridge_probes/sota_bridge_action_20260616_085835_hybrid_rl_p2_p3_bridge/hybrid_rl_p2_p3_bridge",
+        "profiles": [
+          2,
+          3
+        ],
+        "required_action": "measure a p2/p3 bridge under the current resident-state fabric; admit only if lower-confidence service gives p3-level makespan with p2-level tail flow",
+        "run_id": "sota_bridge_action_20260616_085835_hybrid_rl_p2_p3_bridge",
+        "workload_key": "hybrid_rl_resac_ant"
+      },
+      {
+        "command": "PYTHONPATH=. python3 -m algorithm.experiments.remote_workload_selected_profile_probe build --run-id sota_bridge_action_20260616_085835_cnn_tail_drain_bridge --node '<waiting-for-safe-gpu>' --gpus '<gpu>' --profiles 1,2,3 --cwd /home/erzhu419/mine_code/scheduleurm --cmd-template-file /home/erzhu419/mine_code/scheduleurm/algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl --output-root /tmp/scheduleurm_bridge_probes/sota_bridge_action_20260616_085835_cnn_tail_drain_bridge/cnn_tail_drain_bridge --max-iters 120 --timeout-s 300 --unit step --terminate-on-stable --stable-windows 3 --min-rate-samples 5 --stable-cv 0.12 --stable-rel-delta 0.1 --stable-skip-samples 1 ",
+        "gpus": [
+          "<gpu>"
+        ],
+        "launch_safe": false,
+        "name": "cnn_tail_drain_bridge",
+        "node": "<waiting-for-safe-gpu>",
+        "output_root": "/tmp/scheduleurm_bridge_probes/sota_bridge_action_20260616_085835_cnn_tail_drain_bridge/cnn_tail_drain_bridge",
+        "profiles": [
+          1,
+          2,
+          3
+        ],
+        "required_action": "measure CNN p1/p2/p3 tail-drain candidates and co-location states; admit only if the tail-drain flow gain does not exceed the current makespan envelope",
+        "run_id": "sota_bridge_action_20260616_085835_cnn_tail_drain_bridge",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      }
+    ],
+    "selected_gpu": null
+  },
+  "launch_results": [],
+  "measured_cache_external_policy_frontier": {
+    "frontier": [],
+    "frontier_count": 0,
+    "status": "MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_CLOSED",
+    "strict_pareto_ready": true,
+    "within_tolerance_ready": true
+  },
+  "pass": true,
+  "phase_switch_search": {
+    "current_cache_phase_switch_strict_ready": false,
+    "meaning": "finite phase-switch actions were searched on the current measured cache before launching new probes",
+    "targets": [
+      {
+        "best_action": {
+          "action_id": "bridge_gpu_cnn_torch_resnet50_p3_to_p1_T2",
+          "metrics": [
+            {
+              "arrival": "static",
+              "makespan_ratio": 1.0,
+              "makespan_s": 50.75452580723975,
+              "mean_flow_ratio": 0.9994755340692042,
+              "mean_flow_s": 27.45440490066667,
+              "profiles": {
+                "gpu_cnn_torch_resnet50": 3
+              }
+            },
+            {
+              "arrival": "poisson",
+              "makespan_ratio": 1.0,
+              "makespan_s": 3326.882282988086,
+              "mean_flow_ratio": 1.0,
+              "mean_flow_s": 2.7285169013908264,
+              "profiles": {
+                "gpu_cnn_torch_resnet50": 1
+              }
+            }
+          ],
+          "strict_ready": false,
+          "tail_profile": 1,
+          "threshold": 2,
+          "worst_ratio": 0.9994755340692042
+        },
+        "best_worst_ratio": 0.9994755340692042,
+        "diagnosis": "current measured profiles do not contain a strict bridge action",
+        "searched_action_count": 48,
+        "strict_action_count": 0,
+        "strict_ready": false,
+        "target": "q01_gpu_bound_cnn_resnet50",
+        "workload_key": "gpu_cnn_torch_resnet50"
+      },
+      {
+        "best_action": {
+          "action_id": "bridge_hybrid_rl_resac_ant_p3_to_p2_T96",
+          "metrics": [
+            {
+              "arrival": "static",
+              "makespan_ratio": 0.9640277121091139,
+              "makespan_s": 25126.41566173766,
+              "mean_flow_ratio": 0.9548641198546542,
+              "mean_flow_s": 4475.823504174813,
+              "profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              }
+            },
+            {
+              "arrival": "poisson",
+              "makespan_ratio": 0.9746938897989925,
+              "makespan_s": 24886.363967642188,
+              "mean_flow_ratio": 0.9562082093313636,
+              "mean_flow_s": 3140.05177445784,
+              "profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 1,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              }
+            }
+          ],
+          "strict_ready": false,
+          "tail_profile": 2,
+          "threshold": 96,
+          "worst_ratio": 0.9548641198546542
+        },
+        "best_worst_ratio": 0.9548641198546542,
+        "diagnosis": "current measured profiles do not contain a strict bridge action",
+        "searched_action_count": 64,
+        "strict_action_count": 0,
+        "strict_ready": false,
+        "target": "hybrid_research_portfolio",
+        "workload_key": "hybrid_rl_resac_ant"
+      }
+    ]
+  },
+  "real_probe_launched": false,
+  "resource_audit": {
+    "gpu_rows": [
+      {
+        "gpu": 0,
+        "memory_total_mb": 12288.0,
+        "memory_used_frac": 0.11612955729166667,
+        "memory_used_mb": 1427.0,
+        "node": "jtl110gpu",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11571"
+        ],
+        "util_pct": 0.0
+      },
+      {
+        "gpu": 1,
+        "memory_total_mb": 12288.0,
+        "memory_used_frac": 0.019694010416666668,
+        "memory_used_mb": 242.0,
+        "node": "jtl110gpu",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11578"
+        ],
+        "util_pct": 0.0
+      },
+      {
+        "gpu": 0,
+        "memory_total_mb": 12288.0,
+        "memory_used_frac": 0.08333333333333333,
+        "memory_used_mb": 1024.0,
+        "node": "jtl110gpu2",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11576"
+        ],
+        "util_pct": 100.0
+      },
+      {
+        "gpu": 1,
+        "memory_total_mb": 12288.0,
+        "memory_used_frac": 0.0008138020833333334,
+        "memory_used_mb": 10.0,
+        "node": "jtl110gpu2",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11577"
+        ],
+        "util_pct": 0.0
+      },
+      {
+        "gpu": 0,
+        "memory_total_mb": 11264.0,
+        "memory_used_frac": 0.02459161931818182,
+        "memory_used_mb": 277.0,
+        "node": "node007-direct",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11572",
+          "t11579"
+        ],
+        "util_pct": 42.0
+      },
+      {
+        "gpu": 1,
+        "memory_total_mb": 11264.0,
+        "memory_used_frac": 0.02459161931818182,
+        "memory_used_mb": 277.0,
+        "node": "node007-direct",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11573",
+          "t11580"
+        ],
+        "util_pct": 37.0
+      },
+      {
+        "gpu": 2,
+        "memory_total_mb": 11264.0,
+        "memory_used_frac": 0.02459161931818182,
+        "memory_used_mb": 277.0,
+        "node": "node007-direct",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11574",
+          "t11581"
+        ],
+        "util_pct": 40.0
+      },
+      {
+        "gpu": 3,
+        "memory_total_mb": 11264.0,
+        "memory_used_frac": 0.06631747159090909,
+        "memory_used_mb": 747.0,
+        "node": "node007-direct",
+        "query_error": "",
+        "safe_for_bridge_probe": false,
+        "scheduler_blockers": [
+          "t11575"
+        ],
+        "util_pct": 100.0
+      }
+    ],
+    "launch_ready": false,
+    "max_gpu_mem_used_frac": 0.2,
+    "max_gpu_util_pct": 20.0,
+    "safe_gpu_count": 0,
+    "safe_gpus": []
+  },
+  "resource_launch_ready": false,
+  "run_id": "sota_bridge_action_20260616_085835",
+  "scope": "This gate diagnoses and prepares bridge actions for strict measured-cache external-policy closure. It is not direct full-stack SOTA binary superiority and it does not mutate the legacy scheduler default.",
+  "scoped_claim_ready": true,
+  "status": "MEASURED_CACHE_EXTERNAL_POLICY_BRIDGE_FRONTIER_ALREADY_CLOSED",
+  "strict_bridge_ready": true,
+  "strict_frontier": {
+    "frontier": [],
+    "frontier_count": 0,
+    "status": "MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_CLOSED",
+    "strict_pareto_ready": true,
+    "within_tolerance_ready": true
+  },
+  "strong_claim_ready": false
+}

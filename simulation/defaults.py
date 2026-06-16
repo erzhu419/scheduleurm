@@ -184,6 +184,66 @@ def build_default_cache() -> ServiceRateCache:
             total_units=80,
             node_bucket="jtl110gpu:12gb",
         )
+    for run_name in (
+        "node007_eta_matrix_cnn_p1_retry_20260613_cnn_torch_gpu_single_gpu_single_task",
+        "node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_single_gpu_multi_task",
+        "node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_single_task_each",
+        "node007_eta_matrix_cnn_v2_20260613_cnn_torch_gpu_four_gpu_two_tasks_each",
+    ):
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key="gpu_cnn_torch_progress_stack",
+            command_fingerprint="torch_cnn_progress_stack_bench_v1",
+            resource_kind="gpu_cnn",
+            total_units=80,
+            node_bucket="node007-direct:4x12gb",
+        )
+    for run_name in (
+        "node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_single_task",
+        "node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task",
+        "node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each",
+        "node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_two_tasks_each",
+    ):
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key="gpu_llm_torch_decoder_stack",
+            command_fingerprint="torch_decoder_stack_bench_v1",
+            resource_kind="gpu_llm",
+            total_units=80,
+            node_bucket="node007-direct:4x12gb",
+        )
+    for run_name in (
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_single_task",
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task",
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_two_tasks_each",
+        "node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each",
+    ):
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key="hybrid_rl_resac_ant",
+            command_fingerprint="resac_ant_real_tqdm_stable_v1",
+            resource_kind="hybrid_rl",
+            total_units=80,
+            node_bucket="node007-direct:4x12gb",
+        )
+    for run_name in (
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_single_task",
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_single_gpu_multi_task",
+        "node007_eta_matrix_rl_20260613_rl_resac_ant_four_gpu_two_tasks_each",
+        "node007_eta_matrix_rl_fourgpu_p1_retry_20260613_rl_resac_ant_four_gpu_single_task_each",
+    ):
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key="hybrid_rl_resac_ant_node007_tqdm",
+            command_fingerprint="resac_ant_node007_tqdm_stable_v1",
+            resource_kind="hybrid_rl",
+            total_units=80,
+            node_bucket="node007-direct:4x12gb",
+        )
     _add_summary_dir(
         cache,
         RUN_ROOT / "module23_q00_light_control_local_profiles1_16_20260604_001" / "reports",
@@ -1184,6 +1244,15 @@ def build_default_cache() -> ServiceRateCache:
         per_worker_rate=1.0,
         saturation_workers=16,
     )
+    _add_summary_dir(
+        cache,
+        ARTIFACT_ROOT / "module102_freqduet_snapshot_counterfactual_c9_16_completed_history_reports",
+        workload_key="freqduet_snapshot_counterfactual_c9_16_completed_history",
+        command_fingerprint="freqduet_snapshot_counterfactual_c9_16_completed_history_v1",
+        resource_kind="cpu_sumo_transit",
+        total_units=1,
+        node_bucket="production-history:cpu",
+    )
     return cache
 
 
@@ -1199,7 +1268,10 @@ def legacy_policy() -> ReplayPolicy:
             "gpu_heavy_jax_matmul": 3,
             "gpu_cnn_jax_convstack": 3,
             "gpu_cnn_torch_resnet50": 3,
+            "gpu_cnn_torch_progress_stack": 3,
             "gpu_llm_distilgpt2": 3,
+            "gpu_llm_torch_decoder_stack": 3,
+            "hybrid_rl_resac_ant_node007_tqdm": 3,
             "light_control_local": 1,
             "cpu_heavy_protocol": 32,
             "cpu_heavy_local_bench": 9,
@@ -1311,6 +1383,7 @@ def legacy_policy() -> ReplayPolicy:
             "zsw_tsp_sumo_eval_c_le2_completed_history": 1,
             "zsw_m21_sumo_eval_c3_8_completed_history": 1,
             "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
+            "freqduet_snapshot_counterfactual_c9_16_completed_history": 1,
         },
     )
 
@@ -1351,6 +1424,10 @@ def calibrated_backlog_aware_policy() -> ReplayPolicy:
         statewise_service_dominance_guard=True,
         guarded_resource_kinds=("gpu_heavy", "gpu_cnn", "gpu_llm", "hybrid_rl", "cpu_heavy"),
         statewise_resource_kinds=("gpu_heavy", "gpu_llm"),
+        statewise_workload_keys=(
+            "gpu_cnn_torch_progress_stack",
+            "hybrid_rl_resac_ant_node007_tqdm",
+        ),
     )
 
 

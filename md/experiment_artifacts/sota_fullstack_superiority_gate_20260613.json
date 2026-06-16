@@ -1,0 +1,433 @@
+{
+  "arbitrary_future_workload_superiority_ready": false,
+  "arbitrary_sota_superiority_ready": false,
+  "direct_fullstack_named_sota_superiority_ready": true,
+  "direct_fullstack_sota_superiority_ready": true,
+  "full_stack_ready_count": 5,
+  "gate": "sota_fullstack_superiority_gate",
+  "gate_pass": true,
+  "gavel_native_microbaseline": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260613.json",
+    "direct_full_stack_performance_ready": false,
+    "ready": true,
+    "usable_samples": 2
+  },
+  "gavel_physical_same_workload": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_physical_same_workload_gate_20260613.json",
+    "blockers": [],
+    "gavel_jct_s": 2.996,
+    "native_wall_s": 2.01660418510437,
+    "ratio": 0.673098860181699,
+    "ready": true,
+    "same_service_scale_ready": true,
+    "scoped_superiority_ready": true
+  },
+  "gavel_resident_delay_jct_holdout": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_resident_delay_jct_holdout_20260613.json",
+    "ready": true,
+    "strong_claim_ready": false,
+    "usable_rows": 3
+  },
+  "gavel_same_workload_native_simulator_comparison": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_same_workload_comparison_20260613.json",
+    "direct_fullstack_binary_superiority_ready": false,
+    "eligible_rows": 1,
+    "ready": true,
+    "rows": [
+      {
+        "eligible_same_workload_full_taskset": true,
+        "expected_full_taskset_job_count": 64,
+        "gavel_best_makespan_s": 369.415,
+        "gavel_best_mean_jct_s": 187.593,
+        "gavel_best_pareto_policy": "isolated",
+        "gavel_usable_policies": [
+          "finish_time_fairness",
+          "isolated",
+          "max_min_fairness",
+          "max_sum_throughput_perf",
+          "min_total_duration"
+        ],
+        "gavel_usable_policy_count": 5,
+        "job_count": 64,
+        "note": "eligible full-taskset native simulator comparison",
+        "scheduleurm_best_flow_policy": "scheduleurm_sota_union_makespan",
+        "scheduleurm_best_makespan_s": 50.62070581630731,
+        "scheduleurm_best_mean_flow_s": 27.304264159130508,
+        "scheduleurm_best_pareto_policy": "scheduleurm_sota_union_makespan",
+        "scheduleurm_policy_count": 12,
+        "scheduleurm_raw_native_simulator_makespan_ratio": 7.297705435805956,
+        "scheduleurm_raw_native_simulator_mean_flow_ratio": 6.8704653202408,
+        "scheduleurm_raw_native_simulator_pareto_superior": true,
+        "taskset": "q01_gpu_bound_cnn_resnet50"
+      }
+    ]
+  },
+  "hard_blocker_certificate_ready": true,
+  "iadeep_fullstack_same_workload": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_same_workload_gate_20260613.json",
+    "cases": [
+      {
+        "iadeep_completion_timestamp": "2026-06-13T13:43:20Z",
+        "iadeep_container_finished_at": "2026-06-13T13:43:17Z",
+        "iadeep_container_started_at": "2026-06-13T13:43:16Z",
+        "iadeep_crd_jct_s": 5.0,
+        "iadeep_creation_timestamp": "2026-06-13T13:43:15Z",
+        "iadeep_gpu_mem_dev": "11",
+        "iadeep_gpu_mem_idx": "0",
+        "iadeep_gpu_mem_pod": "1",
+        "iadeep_gpu_sharing_assigned": true,
+        "iadeep_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable_job.json",
+        "iadeep_phase": "Succeeded",
+        "iadeep_pod_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable_pod.json",
+        "iadeep_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable.json",
+        "iadeep_steps_per_s": 302.024196,
+        "iadeep_total_s": 0.264879,
+        "jct_ratio_native_over_iadeep_crd": 0.2850755214691162,
+        "label": "cuda_probe_short_stable",
+        "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+        "native_steps_per_s": 302.014335,
+        "native_total_s": 0.264888,
+        "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+        "native_wall_s": 1.425377607345581,
+        "ready": true,
+        "runtime_notes": [
+          "Kubernetes events include a benign extender bind EOF after the pod was already assigned; the pod still completed with IADeep GPU-memory annotations."
+        ],
+        "workload_steps_per_s_ratio_native_over_iadeep": 0.9999673502979873
+      }
+    ],
+    "ready": true,
+    "same_service_scale_ready": true,
+    "scoped_superiority_ready": true
+  },
+  "missing_tools": [
+    "docker",
+    "go",
+    "kubectl"
+  ],
+  "multinode_original_deployment_superiority_ready": false,
+  "named_sota_adapters": [
+    "gavel_simulation",
+    "iadeep_kubernetes_extender",
+    "pollux_adaptdl_scheduler",
+    "salus_gpu_sharing",
+    "sia_goodput_scheduler"
+  ],
+  "named_sota_fullstack_ready_count": 5,
+  "named_sota_fullstack_superiority_count": 5,
+  "native_execution_attempts": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_native_execution_attempts_20260613.json",
+    "direct_full_stack_ready_count": 0,
+    "direct_fullstack_sota_superiority_ready": false,
+    "ready_count": 3
+  },
+  "pass": true,
+  "pass_meaning": "named five same-host same-workload full-stack rows with paired native superiority are closed; arbitrary SOTA, registered-universe external binary, original multi-node, and production-wide trace superiority are not claimed",
+  "policy_semantics_comparison_ready": true,
+  "pollux_fullstack_same_workload": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_same_workload_gate_20260613.json",
+    "cases": [
+      {
+        "jct_ratio_native_over_pollux_crd": 0.36224344579022766,
+        "label": "cuda_probe_short",
+        "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+        "native_steps_per_s": 302.014335,
+        "native_total_s": 0.264888,
+        "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+        "native_wall_s": 1.425377607345581,
+        "pollux_completion_timestamp": "2026-06-13T12:12:35.934861+00:00",
+        "pollux_crd_jct_s": 3.934861,
+        "pollux_creation_timestamp": "2026-06-13T12:12:32Z",
+        "pollux_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_adaptdljob.json",
+        "pollux_observed_wall_s": null,
+        "pollux_phase": "Succeeded",
+        "pollux_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe.json",
+        "pollux_steps_per_s": 302.027281,
+        "pollux_total_s": 0.264877,
+        "ready": true,
+        "workload_steps_per_s_ratio_native_over_pollux": 0.9999571363223974
+      },
+      {
+        "jct_ratio_native_over_pollux_crd": 0.775794688000164,
+        "label": "cuda_probe_long",
+        "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long.json",
+        "native_steps_per_s": 332.768032,
+        "native_total_s": 9.015289,
+        "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long_wall.json",
+        "native_wall_s": 10.308755159378052,
+        "pollux_completion_timestamp": "2026-06-13T12:15:23.287994+00:00",
+        "pollux_crd_jct_s": 13.287994,
+        "pollux_creation_timestamp": "2026-06-13T12:15:10Z",
+        "pollux_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_long_adaptdljob.json",
+        "pollux_observed_wall_s": 20.590999126434326,
+        "pollux_phase": "Succeeded",
+        "pollux_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/pollux_cuda_probe_long.json",
+        "pollux_steps_per_s": 301.795277,
+        "pollux_total_s": 9.940513,
+        "ready": true,
+        "workload_steps_per_s_ratio_native_over_pollux": 1.1026283622059467
+      }
+    ],
+    "ready": true,
+    "same_service_scale_ready": true,
+    "scoped_superiority_ready": true
+  },
+  "production_wide_organic_trace_superiority_ready": false,
+  "registered_sota_universe_superiority_ready": false,
+  "rows": [
+    {
+      "adapter": "gavel_simulation",
+      "blockers": [
+        "Gavel native trace and Scheduleurm trace-seed smoke pass, but service-unit equivalence is not yet a direct performance baseline",
+        "Gavel native simulator microbaseline rows exist, but they still do not certify Scheduleurm measured-service-unit equivalence",
+        "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": true,
+      "gavel_physical_same_workload_fullstack_ready": true,
+      "gavel_physical_same_workload_superiority_ready": true,
+      "gavel_resident_delay_jct_holdout_ready": true,
+      "gavel_same_workload_native_simulator_superiority_ready": true,
+      "iadeep_same_workload_fullstack_ready": false,
+      "iadeep_scoped_same_workload_superiority_ready": false,
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": true,
+      "pollux_same_workload_fullstack_ready": false,
+      "pollux_scoped_same_workload_superiority_ready": false,
+      "salus_same_workload_fullstack_ready": false,
+      "salus_scoped_same_workload_superiority_ready": false,
+      "same_workload_full_stack_ready": true,
+      "sia_same_workload_fullstack_ready": false,
+      "sia_scoped_same_workload_superiority_ready": false,
+      "strict_reason": "Gavel completed the same temporary CUDA probe through its physical scheduler/worker/RPC/dispatcher/GavelIterator path, and the same script run directly on the same host has lower JCT in the scoped run; this is a Gavel-scoped physical full-stack row, not an all-workload Gavel claim"
+    },
+    {
+      "adapter": "pollux_adaptdl_scheduler",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": true,
+      "gavel_physical_same_workload_fullstack_ready": false,
+      "gavel_physical_same_workload_superiority_ready": false,
+      "gavel_resident_delay_jct_holdout_ready": false,
+      "gavel_same_workload_native_simulator_superiority_ready": false,
+      "iadeep_same_workload_fullstack_ready": false,
+      "iadeep_scoped_same_workload_superiority_ready": false,
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "pollux_same_workload_fullstack_ready": true,
+      "pollux_scoped_same_workload_superiority_ready": true,
+      "salus_same_workload_fullstack_ready": false,
+      "salus_scoped_same_workload_superiority_ready": false,
+      "same_workload_full_stack_ready": true,
+      "sia_same_workload_fullstack_ready": false,
+      "sia_scoped_same_workload_superiority_ready": false,
+      "strict_reason": "Pollux/AdaptDL completed the same CUDA binary through its Kubernetes controller/allocator/supervisor stack, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Pollux-scoped full-stack row, not an all-SOTA superiority certificate"
+    },
+    {
+      "adapter": "sia_goodput_scheduler",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping"
+      ],
+      "entrypoint_smoke_pass": false,
+      "full_stack_superiority_claim_allowed": true,
+      "gavel_physical_same_workload_fullstack_ready": false,
+      "gavel_physical_same_workload_superiority_ready": false,
+      "gavel_resident_delay_jct_holdout_ready": false,
+      "gavel_same_workload_native_simulator_superiority_ready": false,
+      "iadeep_same_workload_fullstack_ready": false,
+      "iadeep_scoped_same_workload_superiority_ready": false,
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "pollux_same_workload_fullstack_ready": false,
+      "pollux_scoped_same_workload_superiority_ready": false,
+      "salus_same_workload_fullstack_ready": false,
+      "salus_scoped_same_workload_superiority_ready": false,
+      "same_workload_full_stack_ready": true,
+      "sia_same_workload_fullstack_ready": true,
+      "sia_scoped_same_workload_superiority_ready": true,
+      "strict_reason": "Sia/AdaptDL MIP completed the same CUDA binary through its Kubernetes controller/allocator path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Sia-scoped full-stack row, not an all-SOTA superiority certificate"
+    },
+    {
+      "adapter": "iadeep_kubernetes_extender",
+      "blockers": [
+        "missing required tools: go, kubectl, docker",
+        "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "full_stack_superiority_claim_allowed": true,
+      "gavel_physical_same_workload_fullstack_ready": false,
+      "gavel_physical_same_workload_superiority_ready": false,
+      "gavel_resident_delay_jct_holdout_ready": false,
+      "gavel_same_workload_native_simulator_superiority_ready": false,
+      "iadeep_same_workload_fullstack_ready": true,
+      "iadeep_scoped_same_workload_superiority_ready": true,
+      "missing_required_tools": [
+        "go",
+        "kubectl",
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "pollux_same_workload_fullstack_ready": false,
+      "pollux_scoped_same_workload_superiority_ready": false,
+      "salus_same_workload_fullstack_ready": false,
+      "salus_scoped_same_workload_superiority_ready": false,
+      "same_workload_full_stack_ready": true,
+      "sia_same_workload_fullstack_ready": false,
+      "sia_scoped_same_workload_superiority_ready": false,
+      "strict_reason": "IADeep completed the same CUDA binary through its Kubernetes scheduler-extender/device-plugin GPU-sharing path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped stable probe case; this is an IADeep-scoped full-stack row, not an all-SOTA superiority certificate"
+    },
+    {
+      "adapter": "salus_gpu_sharing",
+      "blockers": [
+        "missing required tools: docker",
+        "Salus benchmark seed exists, but Salus server/runtime execution is still required"
+      ],
+      "entrypoint_smoke_pass": false,
+      "full_stack_superiority_claim_allowed": true,
+      "gavel_physical_same_workload_fullstack_ready": false,
+      "gavel_physical_same_workload_superiority_ready": false,
+      "gavel_resident_delay_jct_holdout_ready": false,
+      "gavel_same_workload_native_simulator_superiority_ready": false,
+      "iadeep_same_workload_fullstack_ready": false,
+      "iadeep_scoped_same_workload_superiority_ready": false,
+      "missing_required_tools": [
+        "docker"
+      ],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "pollux_same_workload_fullstack_ready": false,
+      "pollux_scoped_same_workload_superiority_ready": false,
+      "salus_same_workload_fullstack_ready": true,
+      "salus_scoped_same_workload_superiority_ready": true,
+      "same_workload_full_stack_ready": true,
+      "sia_same_workload_fullstack_ready": false,
+      "sia_scoped_same_workload_superiority_ready": false,
+      "strict_reason": "Salus completed the same TensorFlow-Salus workload through its server/zrpc path, and the native TensorFlow-Salus path on the same host has lower wall time in the scoped run; this is a Salus-scoped full-stack row, not an arbitrary future-workload claim"
+    },
+    {
+      "adapter": "decima_simulator",
+      "blockers": [
+        "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+      ],
+      "entrypoint_smoke_pass": true,
+      "full_stack_superiority_claim_allowed": false,
+      "gavel_physical_same_workload_fullstack_ready": false,
+      "gavel_physical_same_workload_superiority_ready": false,
+      "gavel_resident_delay_jct_holdout_ready": false,
+      "gavel_same_workload_native_simulator_superiority_ready": false,
+      "iadeep_same_workload_fullstack_ready": false,
+      "iadeep_scoped_same_workload_superiority_ready": false,
+      "missing_required_tools": [],
+      "missing_stack_assets": [],
+      "native_microbaseline_ready": false,
+      "pollux_same_workload_fullstack_ready": false,
+      "pollux_scoped_same_workload_superiority_ready": false,
+      "salus_same_workload_fullstack_ready": false,
+      "salus_scoped_same_workload_superiority_ready": false,
+      "same_workload_full_stack_ready": false,
+      "sia_same_workload_fullstack_ready": false,
+      "sia_scoped_same_workload_superiority_ready": false,
+      "strict_reason": "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
+    }
+  ],
+  "salus_fullstack_same_workload": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/salus_fullstack_same_workload_gate_20260613.json",
+    "blockers": [],
+    "ready": true,
+    "same_service_scale_ready": true,
+    "scoped_superiority_ready": true
+  },
+  "scope": "Strict gate for direct full-stack superiority claims over the named systems Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped same-host same-workload test substrate.  It does not claim superiority over arbitrary SOTA systems, arbitrary future workloads, or production-wide online traces outside this measured gate.",
+  "scoped_claim_ready": true,
+  "sia_fullstack_same_workload": {
+    "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_same_workload_gate_20260613.json",
+    "cases": [
+      {
+        "jct_ratio_native_over_sia_crd": 0.03857933905483197,
+        "label": "cuda_probe_short",
+        "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+        "native_steps_per_s": 302.014335,
+        "native_total_s": 0.264888,
+        "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+        "native_wall_s": 1.425377607345581,
+        "ready": true,
+        "sia_completion_timestamp": "2026-06-13T12:53:12.946657+00:00",
+        "sia_crd_jct_s": 36.946657,
+        "sia_creation_timestamp": "2026-06-13T12:52:36Z",
+        "sia_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_adaptdljob.json",
+        "sia_observed_wall_s": null,
+        "sia_phase": "Succeeded",
+        "sia_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe.json",
+        "sia_steps_per_s": 302.018045,
+        "sia_total_s": 0.264885,
+        "workload_steps_per_s_ratio_native_over_sia": 0.9999877159657796
+      },
+      {
+        "jct_ratio_native_over_sia_crd": 0.1679957916026681,
+        "label": "cuda_probe_long",
+        "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long.json",
+        "native_steps_per_s": 332.768032,
+        "native_total_s": 9.015289,
+        "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_long_wall.json",
+        "native_wall_s": 10.308755159378052,
+        "ready": true,
+        "sia_completion_timestamp": "2026-06-13T12:56:22.363175+00:00",
+        "sia_crd_jct_s": 61.363175,
+        "sia_creation_timestamp": "2026-06-13T12:55:21Z",
+        "sia_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_long_adaptdljob.json",
+        "sia_observed_wall_s": 63.208277463912964,
+        "sia_phase": "Succeeded",
+        "sia_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_20260613/sia_cuda_probe_long.json",
+        "sia_steps_per_s": 332.249588,
+        "sia_total_s": 9.029357,
+        "workload_steps_per_s_ratio_native_over_sia": 1.0015604052457094
+      }
+    ],
+    "ready": true,
+    "same_service_scale_ready": true,
+    "scoped_superiority_ready": true
+  },
+  "status": "NAMED_SAME_HOST_FULLSTACK_SUPERIORITY_PASS_REGISTERED_ARBITRARY_FALSE",
+  "strong_claim_ready": false,
+  "tool_inventory": {
+    "docker": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "go": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "kubectl": {
+      "available": false,
+      "path": null,
+      "version": ""
+    },
+    "nvidia-smi": {
+      "available": true,
+      "path": "/usr/lib/wsl/lib/nvidia-smi",
+      "version": "NVIDIA GeForce RTX 4060 Laptop GPU"
+    },
+    "python3": {
+      "available": true,
+      "path": "/usr/bin/python3",
+      "version": "Python 3.10.12"
+    }
+  }
+}

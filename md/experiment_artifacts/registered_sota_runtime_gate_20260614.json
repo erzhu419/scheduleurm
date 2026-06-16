@@ -1,0 +1,229 @@
+{
+  "blocker": "Registered SOTA-universe superiority still needs same-workload full-stack rows for each runnable system and an explicit policy for paper-only systems.  This gate closes inventory and blocker discovery, not performance superiority.",
+  "entrypoint_smoke_ready_count": 0,
+  "gate": "registered_sota_runtime_gate",
+  "gate_pass": true,
+  "generated_at": "2026-06-14T05:44:37+0800",
+  "pass": true,
+  "registered_extension_fullstack_superiority_ready": false,
+  "registered_extension_system_count": 6,
+  "rows": [
+    {
+      "blocker": "Python2 simulator is present, but the current host lacks the Python2 runtime dependencies needed for the entrypoint smoke, starting with numpy.",
+      "domain": "GPU cluster manager / trace-driven simulator",
+      "entrypoint_smoke_ready": false,
+      "git_head": "959f9b0",
+      "has_public_runtime_repo": true,
+      "paired_native_superiority_ready": false,
+      "probes": {
+        "python2_numpy": {
+          "cmd": [
+            "python2.7",
+            "-c",
+            "import numpy; print('numpy-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nImportError: No module named numpy\n",
+          "stdout_tail": ""
+        },
+        "run_sim_help": {
+          "cmd": [
+            "python2.7",
+            "run_sim.py",
+            "--help"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"run_sim.py\", line 15, in <module>\n    import jobs\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/tiresias/simulator/jobs.py\", line 15, in <module>\n    import numpy\nImportError: No module named numpy\n",
+          "stdout_tail": ""
+        }
+      },
+      "repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/tiresias",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": true,
+      "same_workload_fullstack_ready": false,
+      "system": "Tiresias"
+    },
+    {
+      "blocker": "Shockwave public runtime is cloned, but current-host smoke is blocked by generated protobuf stubs and/or Gurobi dependency.",
+      "domain": "dynamic adaptation / Gavel-derived scheduler runtime and simulator",
+      "entrypoint_smoke_ready": false,
+      "git_head": "8a44f4a",
+      "has_public_runtime_repo": true,
+      "paired_native_superiority_ready": false,
+      "probes": {
+        "grpc_tools": {
+          "cmd": [
+            "python3",
+            "-c",
+            "import grpc_tools.protoc; print('grpc-tools-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'grpc_tools'\n",
+          "stdout_tail": ""
+        },
+        "gurobipy": {
+          "cmd": [
+            "python3",
+            "-c",
+            "import gurobipy; print('gurobi-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'gurobipy'\n",
+          "stdout_tail": ""
+        },
+        "scheduler_help": {
+          "cmd": [
+            "python3",
+            "scheduler.py",
+            "--help"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/shockwave/scheduler/scheduler.py\", line 31, in <module>\n    from runtime.rpc import scheduler_server, scheduler_client\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/shockwave/scheduler/runtime/__init__.py\", line 1, in <module>\n    from .rpc import worker_client\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/shockwave/scheduler/runtime/rpc/worker_client.py\", line 12, in <module>\n    import worker_to_scheduler_pb2 as w2s_pb2\nModuleNotFoundError: No module named 'worker_to_scheduler_pb2'\n",
+          "stdout_tail": ""
+        }
+      },
+      "repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/shockwave",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": true,
+      "same_workload_fullstack_ready": false,
+      "system": "Shockwave"
+    },
+    {
+      "auxiliary_repos": {
+        "allox_sim": "/home/erzhu419/mine_code/scheduleurm/reference/repos/allox_sim",
+        "allox_sim_present": true,
+        "kubernetes_allox": "/home/erzhu419/mine_code/scheduleurm/reference/repos/kubernetes-allox",
+        "kubernetes_allox_present": true
+      },
+      "blocker": "AlloX pointer repo plus Kubernetes fork and simulator are cloned. Java is present when the java probe passes, but the shipped simulator bin is incomplete on this host and javac is unavailable to rebuild the missing inner-class outputs; the run script also expects experiment arguments.",
+      "domain": "interchangeable CPU/GPU hybrid-cluster allocation",
+      "entrypoint_smoke_ready": false,
+      "git_head": "55ed6bc",
+      "has_public_runtime_repo": true,
+      "paired_native_superiority_ready": false,
+      "probes": {
+        "java": {
+          "cmd": [
+            "java",
+            "-version"
+          ],
+          "returncode": 0,
+          "stderr_tail": "openjdk version \"11.0.31\" 2026-04-21\nOpenJDK Runtime Environment (build 11.0.31+11-post-1ubuntu1-22.04.2-Ubuntu)\nOpenJDK 64-Bit Server VM (build 11.0.31+11-post-1ubuntu1-22.04.2-Ubuntu, mixed mode, sharing)\n",
+          "stdout_tail": ""
+        },
+        "javac": {
+          "cmd": [
+            "javac",
+            "-version"
+          ],
+          "returncode": null,
+          "stderr_tail": "command not found: javac",
+          "stdout_tail": ""
+        },
+        "sim_run_script": {
+          "cmd": [
+            "bash",
+            "run.sh"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Error: Unable to initialize main class cluster.simulator.Main\nCaused by: java.lang.NoClassDefFoundError: cluster/simulator/Main$Globals$WorkLoadType\n",
+          "stdout_tail": ""
+        }
+      },
+      "repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/allox",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": true,
+      "same_workload_fullstack_ready": false,
+      "system": "AlloX"
+    },
+    {
+      "blocker": "Optimus public runtime is cloned, but current-host smoke is blocked by Python2 dependencies such as numpy and jinja2; full comparison also needs Kubernetes/MXNet wiring.",
+      "domain": "Kubernetes/MXNet dynamic resource scheduler",
+      "entrypoint_smoke_ready": false,
+      "git_head": "8c43920",
+      "has_public_runtime_repo": true,
+      "paired_native_superiority_ready": false,
+      "probes": {
+        "python2_jinja2": {
+          "cmd": [
+            "python2.7",
+            "-c",
+            "import jinja2; print('jinja2-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nImportError: No module named jinja2\n",
+          "stdout_tail": ""
+        },
+        "python2_numpy": {
+          "cmd": [
+            "python2.7",
+            "-c",
+            "import numpy; print('numpy-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nImportError: No module named numpy\n",
+          "stdout_tail": ""
+        },
+        "scheduler_import": {
+          "cmd": [
+            "python2.7",
+            "-c",
+            "import sys; sys.path.insert(0, 'scheduler'); import optimus_scheduler; print('optimus-import-ok')"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"scheduler/optimus_scheduler.py\", line 6, in <module>\n    from estimator import Estimator\n  File \"scheduler/estimator.py\", line 7, in <module>\n    import numpy as np\nImportError: No module named numpy\n",
+          "stdout_tail": ""
+        },
+        "template_check": {
+          "cmd": [
+            "python2.7",
+            "templates/check-jinja.py",
+            "templates/k8s-mxnet-template.jinja"
+          ],
+          "returncode": 1,
+          "stderr_tail": "Traceback (most recent call last):\n  File \"templates/check-jinja.py\", line 2, in <module>\n    from jinja2 import Environment\nImportError: No module named jinja2\n",
+          "stdout_tail": ""
+        }
+      },
+      "repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/optimus",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": true,
+      "same_workload_fullstack_ready": false,
+      "system": "Optimus"
+    },
+    {
+      "blocker": "No official runtime repository was found in the current registry search; treat as paper-semantics baseline until an artifacted implementation is added.",
+      "domain": "finish-time fairness GPU cluster scheduling",
+      "entrypoint_smoke_ready": false,
+      "has_public_runtime_repo": false,
+      "paired_native_superiority_ready": false,
+      "paper_url": "https://www.usenix.org/conference/nsdi20/presentation/mahajan",
+      "probes": {},
+      "repo": "",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": false,
+      "same_workload_fullstack_ready": false,
+      "system": "Themis"
+    },
+    {
+      "blocker": "No official public runtime repository was found in the current registry search; the system also relies on framework/runtime co-design, so direct comparison needs an artifacted implementation or faithful reimplementation protocol.",
+      "domain": "introspective deep-learning cluster scheduling",
+      "entrypoint_smoke_ready": false,
+      "has_public_runtime_repo": false,
+      "paired_native_superiority_ready": false,
+      "paper_url": "https://www.microsoft.com/en-us/research/project/gandiva-scheduler-for-dnns/",
+      "probes": {},
+      "repo": "",
+      "repo_or_paper_inventory_ready": true,
+      "repo_present": false,
+      "same_workload_fullstack_ready": false,
+      "system": "Gandiva"
+    }
+  ],
+  "runnable_public_runtime_system_count": 4,
+  "same_workload_fullstack_ready_count": 0,
+  "scope": "Read-only runtime inventory for registered SOTA systems beyond the named five.  It distinguishes runnable public repositories from paper-only systems and records dependency blockers without changing the host environment.",
+  "scoped_claim_ready": true,
+  "status": "REGISTERED_SOTA_RUNTIME_INVENTORY_READY_FULLSTACK_PENDING",
+  "strong_claim_ready": false
+}

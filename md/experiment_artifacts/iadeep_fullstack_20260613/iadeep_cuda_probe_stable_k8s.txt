@@ -1,0 +1,909 @@
+{
+    "apiVersion": "batch/v1",
+    "kind": "Job",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"batch/v1\",\"kind\":\"Job\",\"metadata\":{\"annotations\":{},\"name\":\"iadeep-cuda-probe\",\"namespace\":\"iadeep\"},\"spec\":{\"backoffLimit\":0,\"template\":{\"metadata\":{\"labels\":{\"app\":\"iadeep-cuda-probe\"}},\"spec\":{\"containers\":[{\"args\":[\"--n\",\"67108864\",\"--iters\",\"80\",\"--warmup\",\"8\",\"--inner\",\"64\"],\"env\":[{\"name\":\"SCHEDULEURM_RUN_LABEL\",\"value\":\"iadeep_fullstack_cuda_probe\"},{\"name\":\"SCHEDULEURM_RESULT_JSON\",\"value\":\"/results/iadeep_cuda_probe.json\"},{\"name\":\"SCHEDULEURM_RESULT_LOG\",\"value\":\"/results/iadeep_cuda_probe.log\"}],\"image\":\"scheduleurm/cuda-probe:local\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"main\",\"resources\":{\"limits\":{\"gpushare/gpu-mem\":\"1\"},\"requests\":{\"cpu\":\"1\",\"gpushare/gpu-mem\":\"1\",\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"mountPath\":\"/results\",\"name\":\"results\"}]}],\"nodeSelector\":{\"gpushare\":\"true\"},\"restartPolicy\":\"Never\",\"schedulerName\":\"iadeep-scheduler\",\"volumes\":[{\"hostPath\":{\"path\":\"/tmp/scheduleurm-iadeep-results\",\"type\":\"DirectoryOrCreate\"},\"name\":\"results\"}]}}}}\n"
+        },
+        "creationTimestamp": "2026-06-13T13:43:15Z",
+        "generation": 1,
+        "labels": {
+            "app": "iadeep-cuda-probe",
+            "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+            "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+            "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+            "job-name": "iadeep-cuda-probe"
+        },
+        "name": "iadeep-cuda-probe",
+        "namespace": "iadeep",
+        "resourceVersion": "4646",
+        "uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+    },
+    "spec": {
+        "backoffLimit": 0,
+        "completionMode": "NonIndexed",
+        "completions": 1,
+        "manualSelector": false,
+        "parallelism": 1,
+        "podReplacementPolicy": "TerminatingOrFailed",
+        "selector": {
+            "matchLabels": {
+                "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+            }
+        },
+        "suspend": false,
+        "template": {
+            "metadata": {
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "iadeep-cuda-probe",
+                    "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+                    "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "job-name": "iadeep-cuda-probe"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "80",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "iadeep_fullstack_cuda_probe"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/iadeep_cuda_probe.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/iadeep_cuda_probe.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "gpushare/gpu-mem": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "gpushare/gpu-mem": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "nodeSelector": {
+                    "gpushare": "true"
+                },
+                "restartPolicy": "Never",
+                "schedulerName": "iadeep-scheduler",
+                "securityContext": {},
+                "terminationGracePeriodSeconds": 30,
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-iadeep-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "completionTime": "2026-06-13T13:43:20Z",
+        "conditions": [
+            {
+                "lastProbeTime": "2026-06-13T13:43:20Z",
+                "lastTransitionTime": "2026-06-13T13:43:20Z",
+                "status": "True",
+                "type": "Complete"
+            }
+        ],
+        "ready": 0,
+        "startTime": "2026-06-13T13:43:15Z",
+        "succeeded": 1,
+        "terminating": 0,
+        "uncountedTerminatedPods": {}
+    }
+}
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "annotations": {
+                    "ALIYUN_COM_GPU_MEM_ASSIGNED": "true",
+                    "ALIYUN_COM_GPU_MEM_ASSUME_TIME": "1781358195612803262",
+                    "ALIYUN_COM_GPU_MEM_DEV": "11",
+                    "ALIYUN_COM_GPU_MEM_IDX": "0",
+                    "ALIYUN_COM_GPU_MEM_POD": "1",
+                    "POD_NAME": "iadeep-cuda-probe-xzj2v"
+                },
+                "creationTimestamp": "2026-06-13T13:43:15Z",
+                "generateName": "iadeep-cuda-probe-",
+                "labels": {
+                    "app": "iadeep-cuda-probe",
+                    "batch.kubernetes.io/controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "batch.kubernetes.io/job-name": "iadeep-cuda-probe",
+                    "controller-uid": "c73002ff-ed76-407f-933b-8549263e5f20",
+                    "job-name": "iadeep-cuda-probe"
+                },
+                "name": "iadeep-cuda-probe-xzj2v",
+                "namespace": "iadeep",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "batch/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Job",
+                        "name": "iadeep-cuda-probe",
+                        "uid": "c73002ff-ed76-407f-933b-8549263e5f20"
+                    }
+                ],
+                "resourceVersion": "4645",
+                "uid": "e6d8d589-66a8-4611-9837-fc94a9f0f0a4"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "80",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "iadeep_fullstack_cuda_probe"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/iadeep_cuda_probe.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/iadeep_cuda_probe.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "gpushare/gpu-mem": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "gpushare/gpu-mem": "1",
+                                "memory": "2Gi"
+                            }
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-568w9",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "huiwei-super-server",
+                "nodeSelector": {
+                    "gpushare": "true"
+                },
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Never",
+                "schedulerName": "iadeep-scheduler",
+                "securityContext": {},
+                "serviceAccount": "default",
+                "serviceAccountName": "default",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-iadeep-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    },
+                    {
+                        "name": "kube-api-access-568w9",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:19Z",
+                        "status": "False",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "reason": "PodCompleted",
+                        "status": "False",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-06-13T13:43:15Z",
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "containerID": "docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59",
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imageID": "docker://sha256:e961f8f5ca92d5151350411ea52c24e1bf45884ed1e4119ee0fe48dd9849d217",
+                        "lastState": {},
+                        "name": "main",
+                        "ready": false,
+                        "restartCount": 0,
+                        "started": false,
+                        "state": {
+                            "terminated": {
+                                "containerID": "docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59",
+                                "exitCode": 0,
+                                "finishedAt": "2026-06-13T13:43:17Z",
+                                "reason": "Completed",
+                                "startedAt": "2026-06-13T13:43:16Z"
+                            }
+                        }
+                    }
+                ],
+                "hostIP": "192.168.1.105",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.1.105"
+                    }
+                ],
+                "phase": "Succeeded",
+                "podIP": "10.42.0.28",
+                "podIPs": [
+                    {
+                        "ip": "10.42.0.28"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-06-13T13:43:15Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+Name:             iadeep-cuda-probe-xzj2v
+Namespace:        iadeep
+Priority:         0
+Service Account:  default
+Node:             huiwei-super-server/192.168.1.105
+Start Time:       Sat, 13 Jun 2026 21:43:15 +0800
+Labels:           app=iadeep-cuda-probe
+                  batch.kubernetes.io/controller-uid=c73002ff-ed76-407f-933b-8549263e5f20
+                  batch.kubernetes.io/job-name=iadeep-cuda-probe
+                  controller-uid=c73002ff-ed76-407f-933b-8549263e5f20
+                  job-name=iadeep-cuda-probe
+Annotations:      ALIYUN_COM_GPU_MEM_ASSIGNED: true
+                  ALIYUN_COM_GPU_MEM_ASSUME_TIME: 1781358195612803262
+                  ALIYUN_COM_GPU_MEM_DEV: 11
+                  ALIYUN_COM_GPU_MEM_IDX: 0
+                  ALIYUN_COM_GPU_MEM_POD: 1
+                  POD_NAME: iadeep-cuda-probe-xzj2v
+Status:           Succeeded
+IP:               10.42.0.28
+IPs:
+  IP:           10.42.0.28
+Controlled By:  Job/iadeep-cuda-probe
+Containers:
+  main:
+    Container ID:  docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59
+    Image:         scheduleurm/cuda-probe:local
+    Image ID:      docker://sha256:e961f8f5ca92d5151350411ea52c24e1bf45884ed1e4119ee0fe48dd9849d217
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --n
+      67108864
+      --iters
+      80
+      --warmup
+      8
+      --inner
+      64
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Sat, 13 Jun 2026 21:43:16 +0800
+      Finished:     Sat, 13 Jun 2026 21:43:17 +0800
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      gpushare/gpu-mem:  1
+    Requests:
+      cpu:               1
+      gpushare/gpu-mem:  1
+      memory:            2Gi
+    Environment:
+      SCHEDULEURM_RUN_LABEL:    iadeep_fullstack_cuda_probe
+      SCHEDULEURM_RESULT_JSON:  /results/iadeep_cuda_probe.json
+      SCHEDULEURM_RESULT_LOG:   /results/iadeep_cuda_probe.log
+    Mounts:
+      /results from results (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-568w9 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  results:
+    Type:          HostPath (bare host directory volume)
+    Path:          /tmp/scheduleurm-iadeep-results
+    HostPathType:  DirectoryOrCreate
+  kube-api-access-568w9:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              gpushare=true
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From              Message
+  ----     ------            ----  ----              -------
+  Warning  FailedScheduling  68s   iadeep-scheduler  Post "http://127.0.0.1:32761/gpushare-scheduler/bind": EOF
+  Normal   Pulled            67s   kubelet           spec.containers{main}: Container image "scheduleurm/cuda-probe:local" already present on machine
+  Normal   Created           67s   kubelet           spec.containers{main}: Created container: main
+  Normal   Started           67s   kubelet           spec.containers{main}: Started container main
+[ [0;36mdebug[0m ] 2026/06/13 13:42:58 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-trcx6 in ns iadeep and old status is Succeeded, new status is Succeeded; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358147225980033 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:1 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-trcx6] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358147225980033 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:1 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-trcx6]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-trcx6 in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:209:[0m pod iadeep-cuda-probe-trcx6 in ns iadeep has completed.
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:375:[0m delete pod iadeep-cuda-probe-trcx6 in ns iadeep
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mutils.go:697:[0m Get value [] of key /gpushare/huiwei-super-server/1
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-trcx6
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-trcx6 in ns iadeep with the GPU ID 1 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-trcx6 in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:199:[0m pod iadeep-cuda-probe-trcx6 in ns iadeep has been deleted.
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-trcx6
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-trcx6 in ns iadeep with the GPU ID 1 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:98:[0m Add or update pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:99:[0m Pod spec nodename is: 
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:100:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:102:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep is not assigned to any node, skip
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mroutes.go:83:[0m extenderArgs.nodeNames: &[huiwei-super-server]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mpredicate.go:20:[0m init Filter nodenames are [huiwei-super-server]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mgpushare-predicate.go:19:[0m check if the pod name iadeep-cuda-probe-xzj2v can be scheduled on node huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mgpushare-predicate.go:25:[0m nodeLabels are: map[beta.kubernetes.io/arch:amd64 beta.kubernetes.io/instance-type:k3s beta.kubernetes.io/os:linux gpushare:true kubernetes.io/arch:amd64 kubernetes.io/hostname:huiwei-super-server kubernetes.io/os:linux node-role.kubernetes.io/control-plane:true node-role.kubernetes.io/master:true node.kubernetes.io/instance-type:k3s]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mgpushare-predicate.go:26:[0m node huiwei-super-server is GPUSharingNode true
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:680:[0m getAllGPUs: map[0:11 1:11] in node huiwei-super-server, and dev map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:670:[0m getUsedGPUs: map[0:0 1:0] in node huiwei-super-server, and devs map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:688:[0m try to find unhealthy node unhealthy-gpu-huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:654:[0m available GPU list map[0:11 1:11] before removing unhealty GPUs
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:659:[0m available GPU list map[0:11 1:11] after removing unhealty GPUs
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:207:[0m n.devs are: map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:208:[0m q: map[0:11 1:11] in node huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:209:[0m Length of AvailableGPUs is: 2 in node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:214:[0m AvailableGPU is map[0:11 1:11], ok is true
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:223:[0m Pod iadeep-cuda-probe-xzj2v AvailableGPUs is allocatable true in node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mgpushare-predicate.go:35:[0m The pod iadeep-cuda-probe-xzj2v in the namespace iadeep can be scheduled on huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mpredicate.go:40:[0m Filter nodenames are {nil 0xc0004950b0 map[] }
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mroutes.go:96:[0m gpusharingfilter extenderFilterResult = {"Nodes":null,"NodeNames":["huiwei-super-server"],"FailedNodes":{},"Error":""}
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mroutes.go:165:[0m gpusharingBind ExtenderArgs ={iadeep-cuda-probe-xzj2v iadeep e6d8d589-66a8-4611-9837-fc94a9f0f0a4 huiwei-super-server}
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mbind.go:20:[0m bindings node huiwei-super-server and pod iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mgpushare-bind.go:25:[0m gpusharingbinding pod is iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mgpushare-bind.go:33:[0m gpusharingbinding nodeinfo is map[alpha.kubernetes.io/provided-node-ip:192.168.1.105 flannel.alpha.coreos.com/backend-data:{"VNI":1,"VtepMAC":"62:f0:33:b7:ce:88"} flannel.alpha.coreos.com/backend-type:vxlan flannel.alpha.coreos.com/kube-subnet-manager:true flannel.alpha.coreos.com/public-ip:192.168.1.105 gpushare/gpu-info:[{"UID":0,"MemCapacity":11,"MemUsed":1,"GpuUtil":100,"MemUtil":0,"Process":[{"PID":22731,"Name":"/home/erzhu419/.conda/envs/bapr-jax/bin/\u0000-u\u0000-m\u0000jax_experiments.train\u0000--algo\u0000bapr_no_bocd\u0000--seed\u00001\u0000--max_iters\u00001500\u0000--log_interval\u00005\u0000--eval_episodes\u00005\u0000--save_interval\u0000100\u0000--save_root\u0000jax_experiments/results_paper\u0000--backend\u0000spring\u0000--env\u0000HalfCheetah-v2\u0000--env_type\u0000discrete_mode\u0000--mean_dwell_iters\u000060\u0000--penalty_scale\u00000\u0000--critic_target_mode\u0000independent\u0000--no_per_trans_belief\u0000--beta\u00000\u0000--no_belief_conditioning\u0000--resume\u0000--run_name\u0000paper_v6_context_mean_nobocd_bapr_no_bocd_HalfCheetah_dw60_s1\u0000","MemoryUsed":1158}]},{"UID":1,"MemCapacity":11,"MemUsed":1,"GpuUtil":100,"MemUtil":0,"Process":[{"PID":23021,"Name":"/home/erzhu419/.conda/envs/bapr-jax/bin/\u0000-u\u0000-m\u0000jax_experiments.train\u0000--algo\u0000bapr_no_bocd\u0000--seed\u00003\u0000--max_iters\u00001500\u0000--log_interval\u00005\u0000--eval_episodes\u00005\u0000--save_interval\u0000100\u0000--save_root\u0000jax_experiments/results_paper\u0000--backend\u0000spring\u0000--env\u0000HalfCheetah-v2\u0000--env_type\u0000discrete_mode\u0000--mean_dwell_iters\u000060\u0000--penalty_scale\u00000\u0000--critic_target_mode\u0000independent\u0000--no_per_trans_belief\u0000--beta\u00000\u0000--no_belief_conditioning\u0000--resume\u0000--run_name\u0000paper_v6_context_mean_nobocd_bapr_no_bocd_HalfCheetah_dw60_s3\u0000","MemoryUsed":1158}]}] k3s.io/hostname:huiwei-Super-Server k3s.io/internal-ip:192.168.1.105 k3s.io/node-args:["server","--docker","--data-dir","/tmp/scheduleurm-k3s-docker/data","--write-kubeconfig","/tmp/scheduleurm-k3s-docker/kubeconfig","--write-kubeconfig-mode","644","--private-registry","/tmp/scheduleurm-k3s-docker/registries.yaml","--disable","traefik","--disable","servicelb","--disable","metrics-server"] k3s.io/node-config-hash:5AS4T6P4CRRH2OAR7KZIQB3GLKLOZBJTMBFAJ2JH3C5SF24TDHCA==== k3s.io/node-env:{} node.alpha.kubernetes.io/ttl:0 volumes.kubernetes.io/controller-managed-attach-detach:true]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:270:[0m Updated node labels Tuning: map[beta.kubernetes.io/arch:amd64 beta.kubernetes.io/instance-type:k3s beta.kubernetes.io/os:linux gpushare:true kubernetes.io/arch:amd64 kubernetes.io/hostname:huiwei-super-server kubernetes.io/os:linux node-role.kubernetes.io/control-plane:true node-role.kubernetes.io/master:true node.kubernetes.io/instance-type:k3s]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:275:[0m Allocate() ----Begin to allocate GPU for gpu mem for pod iadeep-cuda-probe-xzj2v in ns iadeep----
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:680:[0m getAllGPUs: map[0:11 1:11] in node huiwei-super-server, and dev map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:670:[0m getUsedGPUs: map[0:0 1:0] in node huiwei-super-server, and devs map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:688:[0m try to find unhealthy node unhealthy-gpu-huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:654:[0m available GPU list map[0:11 1:11] before removing unhealty GPUs
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:659:[0m available GPU list map[0:11 1:11] after removing unhealty GPUs
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:537:[0m ndevs length is: 2
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:546:[0m reqGPU for pod iadeep-cuda-probe-xzj2v in ns iadeep: 1
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:547:[0m AvailableGPUs: map[0:11 1:11] in node huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:553:[0m gpuStatus: [{UID:0 MemCapacity:11 MemUsed:1 GpuUtil:88 MemUtil:3 Process:[{PID:22731 Name:/home/erzhu419/.conda/envs/bapr-jax/bin/ -u -m jax_experiments.train --algo bapr_no_bocd --seed 1 --max_iters 1500 --log_interval 5 --eval_episodes 5 --save_interval 100 --save_root jax_experiments/results_paper --backend spring --env HalfCheetah-v2 --env_type discrete_mode --mean_dwell_iters 60 --penalty_scale 0 --critic_target_mode independent --no_per_trans_belief --beta 0 --no_belief_conditioning --resume --run_name paper_v6_context_mean_nobocd_bapr_no_bocd_HalfCheetah_dw60_s1  MemoryUsed:1158}]} {UID:1 MemCapacity:11 MemUsed:1 GpuUtil:100 MemUtil:0 Process:[{PID:23021 Name:/home/erzhu419/.conda/envs/bapr-jax/bin/ -u -m jax_experiments.train --algo bapr_no_bocd --seed 3 --max_iters 1500 --log_interval 5 --eval_episodes 5 --save_interval 100 --save_root jax_experiments/results_paper --backend spring --env HalfCheetah-v2 --env_type discrete_mode --mean_dwell_iters 60 --penalty_scale 0 --critic_target_mode independent --no_per_trans_belief --beta 0 --no_belief_conditioning --resume --run_name paper_v6_context_mean_nobocd_bapr_no_bocd_HalfCheetah_dw60_s3  MemoryUsed:1158}]}]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:555:[0m checkDevID of map[0:0xc000679ef0 1:0xc000679f80]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:559:[0m check devID of 0 of Tuning false
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:570:[0m memUsed is 1 of devId 0
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mutils.go:837:[0m Get value [key:"/gpushare/huiwei-super-server/0" create_revision:2 mod_revision:22 version:8 ] of key /gpushare/huiwei-super-server/0
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mutils.go:842:[0m key:/gpushare/huiwei-super-server/0, value:[]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:573:[0m Device 0 on node huiwei-super-server has tuning status false
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:559:[0m check devID of 1 of Tuning false
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:570:[0m memUsed is 1 of devId 1
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mutils.go:837:[0m Get value [key:"/gpushare/huiwei-super-server/1" create_revision:23 mod_revision:23 version:1 ] of key /gpushare/huiwei-super-server/1
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mutils.go:842:[0m key:/gpushare/huiwei-super-server/1, value:[]
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:573:[0m Device 1 on node huiwei-super-server has tuning status false
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:625:[0m interferences [{0 0}] on devID 0 found true
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:629:[0m Find candidate dev id 0 for pod iadeep-cuda-probe-xzj2v in ns iadeep successfully.
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:640:[0m allocateGPUID is 0, and found is true
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:278:[0m devid is 0, found is true
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:283:[0m Allocate() 1. Allocate GPU ID 0 to pod iadeep-cuda-probe-xzj2v in ns iadeep.----
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:437:[0m update pod iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:440:[0m totalGPUmemoryByDev: 11
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:445:[0m update pod iadeep-cuda-probe-xzj2v to bind n huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:488:[0m Allocate() 3. Try to add pod iadeep-cuda-probe-xzj2v in ns iadeep to dev 0
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:63:[0m dev.addPod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be added to device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:70:[0m success! dev.addPod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:26:[0m getdevinfo iadeep-cuda-probe-xzj2v on dev 0
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:498:[0m length of pods is 1
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:300:[0m successfully allocate pod iadeep-cuda-probe-xzj2v on devId: 0
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:468:[0m bind pod iadeep-cuda-probe-xzj2v to node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:473:[0m Allocate() 2. Try to bind pod iadeep-cuda-probe-xzj2v in iadeep namespace to node  with &Binding{ObjectMeta:k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta{Name:iadeep-cuda-probe-xzj2v,GenerateName:,Namespace:,SelfLink:,UID:e6d8d589-66a8-4611-9837-fc94a9f0f0a4,ResourceVersion:,Generation:0,CreationTimestamp:0001-01-01 00:00:00 +0000 UTC,DeletionTimestamp:<nil>,DeletionGracePeriodSeconds:nil,Labels:map[string]string{},Annotations:map[string]string{},OwnerReferences:[],Finalizers:[],ClusterName:,Initializers:nil,},Target:ObjectReference{Kind:Node,Namespace:,Name:huiwei-super-server,UID:,APIVersion:,ResourceVersion:,FieldPath:,},}
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Pending, new status is Pending; its old annotation map[] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:false ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195596600399 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:98:[0m Add or update pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:99:[0m Pod spec nodename is: 
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:100:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:102:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep is not assigned to any node, skip
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Pending, new status is Pending; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:false ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195596600399 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:false ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195596600399 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:98:[0m Add or update pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:99:[0m Pod spec nodename is: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:100:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:320:[0m schedule_time is: 22
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:324:[0m Using scheduler IADeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mutils.go:123:[0m job name is iadeep
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mutils.go:134:[0m find job iadeep, err is <nil>
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:177:[0m addOrUpdatePod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 should be added to device map
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mnodeinfo.go:183:[0m dev idx is 0 and node is huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:15 [1;30mserver.go:3160:[0m http: panic serving 192.168.1.105:44880: runtime error: invalid memory address or nil pointer dereference
+goroutine 123 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1802 +0xb9
+panic({0x13518c0, 0x20ad400})
+	/usr/local/go/src/runtime/panic.go:1047 +0x266
+gpushare-scheduler-extender/pkg/cache.(*NodeInfo).Allocate(0xc000448300, 0xc00062c5d0, 0xc00079aa80)
+	/go/src/gpushare-scheduler-extender/pkg/cache/nodeinfo.go:352 +0x16de
+gpushare-scheduler-extender/pkg/scheduler.NewGPUShareBind.func1({0xc00062c5b8, 0x17}, {0xc00034eca0, 0x6}, {0xc0000e5500, 0x0}, {0xc00062c5d0, 0x13}, 0xc000132000)
+	/go/src/gpushare-scheduler-extender/pkg/scheduler/gpushare-bind.go:38 +0x32b
+gpushare-scheduler-extender/pkg/scheduler.Bind.Handler({{0x14ffc6f, 0x0}, 0xc0005580b0, 0xc0000c3ef0}, {{0xc00062c5b8, 0x17}, {0xc00034eca0, 0x6}, {0xc0000e5500, 0x24}, ...})
+	/go/src/gpushare-scheduler-extender/pkg/scheduler/bind.go:21 +0x129
+gpushare-scheduler-extender/pkg/routes.BindRoute.func1({0x16d37b8, 0xc0001f4b60}, 0xc000554d00, {0xc0004665a0, 0x0, 0xc0000e54e9})
+	/go/src/gpushare-scheduler-extender/pkg/routes/routes.go:166 +0x2c8
+gpushare-scheduler-extender/pkg/routes.AddBind.func1({0x16d37b8, 0xc0001f4b60}, 0xc0000e54d0, {0x0, 0xc0004f59f8, 0x40f347})
+	/go/src/gpushare-scheduler-extender/pkg/routes/routes.go:205 +0x2d
+github.com/julienschmidt/httprouter.(*Router).ServeHTTP(0xc000131f20, {0x16d37b8, 0xc0001f4b60}, 0xc000554d00)
+	/go/src/gpushare-scheduler-extender/vendor/github.com/julienschmidt/httprouter/router.go:387 +0x84b
+net/http.serverHandler.ServeHTTP({0x16c7580}, {0x16d37b8, 0xc0001f4b60}, 0xc000554d00)
+	/usr/local/go/src/net/http/server.go:2879 +0x43b
+net/http.(*conn).serve(0xc000136c80, {0x16d90a0, 0xc0004525a0})
+	/usr/local/go/src/net/http/server.go:1930 +0xb08
+created by net/http.(*Server).Serve
+	/usr/local/go/src/net/http/server.go:3034 +0x4e8
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:63:[0m dev.addPod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be added to device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mdeviceinfo.go:70:[0m success! dev.addPod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:15 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:16 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:16 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:16 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:16 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:16 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:19 [1;30mcontroller.go:318:[0m Need update when pod is turned to complete or failed
+[  [0;32minfo[0m ] 2026/06/13 13:43:19 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Pending, new status is Succeeded; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcontroller.go:209:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep has completed.
+[  [0;32minfo[0m ] 2026/06/13 13:43:19 [1;30mutils.go:697:[0m Get value [key:"/gpushare/huiwei-super-server/0" create_revision:2 mod_revision:22 version:8 ] of key /gpushare/huiwei-super-server/0
+[  [0;32minfo[0m ] 2026/06/13 13:43:19 [1;30mutils.go:700:[0m key:[47 103 112 117 115 104 97 114 101 47 104 117 105 119 101 105 45 115 117 112 101 114 45 115 101 114 118 101 114 47 48], value:[]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:19 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:19 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Succeeded, new status is Succeeded; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:209:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep has completed.
+[  [0;32minfo[0m ] 2026/06/13 13:43:20 [1;30mutils.go:697:[0m Get value [] of key /gpushare/huiwei-super-server/0
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:20 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:20 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:21 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:27 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:27 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Succeeded, new status is Succeeded; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcontroller.go:209:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep has completed.
+[  [0;32minfo[0m ] 2026/06/13 13:43:27 [1;30mutils.go:697:[0m Get value [] of key /gpushare/huiwei-super-server/0
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:27 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:27 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:28 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[  [0;32minfo[0m ] 2026/06/13 13:43:57 [1;30mcontroller.go:323:[0m Need update when it's unknown pod, and GPU annotation has been set
+[  [0;32minfo[0m ] 2026/06/13 13:43:57 [1;30mcontroller.go:337:[0m Need to update pod name iadeep-cuda-probe-xzj2v in ns iadeep and old status is Succeeded, new status is Succeeded; its old annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v] and new annotation map[ALIYUN_COM_GPU_MEM_ASSIGNED:true ALIYUN_COM_GPU_MEM_ASSUME_TIME:1781358195612803262 ALIYUN_COM_GPU_MEM_DEV:11 ALIYUN_COM_GPU_MEM_IDX:0 ALIYUN_COM_GPU_MEM_POD:1 POD_NAME:iadeep-cuda-probe-xzj2v]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcontroller.go:191:[0m begin to sync gpushare pod iadeep-cuda-probe-xzj2v in ns iadeep
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcontroller.go:209:[0m pod iadeep-cuda-probe-xzj2v in ns iadeep has completed.
+[  [0;32minfo[0m ] 2026/06/13 13:43:57 [1;30mutils.go:697:[0m Get value [] of key /gpushare/huiwei-super-server/0
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcache.go:126:[0m Remove pod info: iadeep-cuda-probe-xzj2v
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcache.go:127:[0m Node map[huiwei-super-server:0xc000448300]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcache.go:152:[0m Get node info: huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mnode.go:37:[0m GetTotalGPUMemory is 24 of node huiwei-super-server
+[  [0;32minfo[0m ] 2026/06/13 13:43:57 [1;30mcache.go:183:[0m GetNodeInfo() uses the existing nodeInfo for huiwei-super-server
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcache.go:185:[0m node huiwei-super-server with devices map[0:0xc000679ef0 1:0xc000679f80]
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mdeviceinfo.go:74:[0m dev.removePod() Pod iadeep-cuda-probe-xzj2v in ns iadeep with the GPU ID 0 will be removed from device map
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mdeviceinfo.go:84:[0m success! dev.removePod()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:57 [1;30mcontroller.go:265:[0m end processNextWorkItem()
+[ [0;36mdebug[0m ] 2026/06/13 13:43:58 [1;30mcontroller.go:252:[0m begin processNextWorkItem()
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	        weight: 1
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	      - name: DefaultBinder
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	        weight: 0
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    permit: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    postBind: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    postFilter: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    preBind: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    preEnqueue: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    preFilter: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    preScore: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    queueSort: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    reserve: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	    score: {}
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] 	  schedulerName: iadeep-scheduler
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler]  >
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.945409       1 server.go:154] "Starting Kubernetes Scheduler" version="v1.30.13"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.945434       1 server.go:156] "Golang settings" GOGC="" GOMAXPROCS="" GOTRACEBACK=""
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947700       1 configmap_cafile_content.go:202] "Starting controller" name="client-ca::kube-system::extension-apiserver-authentication::client-ca-file"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947727       1 shared_informer.go:313] Waiting for caches to sync for client-ca::kube-system::extension-apiserver-authentication::client-ca-file
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947772       1 tlsconfig.go:200] "Loaded serving cert" certName="Generated self signed cert" certDetail="\"localhost@1781357979\" [serving] validServingFor=[127.0.0.1,localhost,localhost] issuer=\"localhost-ca@1781357978\" (2026-06-13 12:39:38 +0000 UTC to 2027-06-13 12:39:38 +0000 UTC (now=2026-06-13 13:39:39.94774477 +0000 UTC))"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947860       1 reflector.go:296] Starting reflector *v1.ConfigMap (12h0m0s) from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947877       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.947975       1 named_certificates.go:53] "Loaded SNI cert" index=0 certName="self-signed loopback" certDetail="\"apiserver-loopback-client@1781357979\" [serving] validServingFor=[apiserver-loopback-client] issuer=\"apiserver-loopback-client-ca@1781357979\" (2026-06-13 12:39:39 +0000 UTC to 2027-06-13 12:39:39 +0000 UTC (now=2026-06-13 13:39:39.947958843 +0000 UTC))"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948011       1 secure_serving.go:213] Serving securely on [::]:10269
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948073       1 tlsconfig.go:240] "Starting DynamicServingCertificateController"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948110       1 reflector.go:296] Starting reflector *v1.Namespace (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948119       1 reflector.go:332] Listing and watching *v1.Namespace from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948136       1 reflector.go:296] Starting reflector *v1.PersistentVolumeClaim (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948148       1 reflector.go:332] Listing and watching *v1.PersistentVolumeClaim from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948201       1 reflector.go:296] Starting reflector *v1.Pod (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948224       1 reflector.go:332] Listing and watching *v1.Pod from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948280       1 reflector.go:296] Starting reflector *v1.ReplicaSet (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948309       1 reflector.go:296] Starting reflector *v1.CSINode (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948507       1 reflector.go:332] Listing and watching *v1.ReplicaSet from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948660       1 reflector.go:332] Listing and watching *v1.CSINode from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948539       1 reflector.go:296] Starting reflector *v1.CSIDriver (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948714       1 reflector.go:332] Listing and watching *v1.CSIDriver from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948320       1 reflector.go:296] Starting reflector *v1.ReplicationController (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948202       1 reflector.go:296] Starting reflector *v1.StorageClass (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948773       1 reflector.go:332] Listing and watching *v1.ReplicationController from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948202       1 reflector.go:296] Starting reflector *v1.Service (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948805       1 reflector.go:296] Starting reflector *v1.CSIStorageCapacity (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948833       1 reflector.go:332] Listing and watching *v1.CSIStorageCapacity from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948861       1 reflector.go:332] Listing and watching *v1.Service from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949117       1 reflector.go:296] Starting reflector *v1.PodDisruptionBudget (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949249       1 reflector.go:332] Listing and watching *v1.PodDisruptionBudget from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949240       1 reflector.go:296] Starting reflector *v1.StatefulSet (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949117       1 reflector.go:296] Starting reflector *v1.Node (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949329       1 reflector.go:332] Listing and watching *v1.Node from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.948778       1 reflector.go:332] Listing and watching *v1.StorageClass from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949297       1 reflector.go:332] Listing and watching *v1.StatefulSet from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949424       1 reflector.go:296] Starting reflector *v1.PersistentVolume (0s) from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.949475       1 reflector.go:332] Listing and watching *v1.PersistentVolume from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:39:39.950843       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:39.950892       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.951038       1 reflector.go:359] Caches populated for *v1.Namespace from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.951206       1 reflector.go:359] Caches populated for *v1.PersistentVolumeClaim from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.951298       1 reflector.go:359] Caches populated for *v1.CSIDriver from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.951691       1 reflector.go:359] Caches populated for *v1.CSINode from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.952388       1 reflector.go:359] Caches populated for *v1.PodDisruptionBudget from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.952405       1 reflector.go:359] Caches populated for *v1.CSIStorageCapacity from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953042       1 reflector.go:359] Caches populated for *v1.StatefulSet from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953134       1 reflector.go:359] Caches populated for *v1.StorageClass from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953402       1 reflector.go:359] Caches populated for *v1.Node from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953434       1 reflector.go:359] Caches populated for *v1.Service from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953491       1 eventhandlers.go:75] "Add event for node" node="huiwei-super-server"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953522       1 node_tree.go:65] "Added node in listed group to NodeTree" node="huiwei-super-server" zone=""
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953645       1 reflector.go:359] Caches populated for *v1.ReplicationController from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.953665       1 reflector.go:359] Caches populated for *v1.PersistentVolume from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954102       1 reflector.go:359] Caches populated for *v1.Pod from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954112       1 reflector.go:359] Caches populated for *v1.ReplicaSet from k8s.io/client-go/informers/factory.go:160
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954196       1 eventhandlers.go:128] "Add event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954239       1 eventhandlers.go:202] "Add event for scheduled pod" pod="iadeep/gpushare-device-plugin-ds-vwk79"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954361       1 eventhandlers.go:202] "Add event for scheduled pod" pod="iadeep/iadeep-etcd-7d94c7c75-t8ljg"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954401       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/coredns-7d7f87556c-6sqnm"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954441       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/gpushare-schd-extender-69f55d8bcd-tnmmp"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954472       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/iadeep-scheduler-77f4694d8d-k4fk2"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954502       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/local-path-provisioner-ffbcc4db4-pnv5h"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954535       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/nvidia-device-plugin-daemonset-xzmlw"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:39.954550       1 eventhandlers.go:202] "Add event for scheduled pod" pod="sia-baseline/adaptdl-adaptdl-sched-5fc7c49549-prmjv"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:40.049065       1 server.go:217] "Handlers synced"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:40.049151       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:41.086727       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:39:41.088701       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:41.088756       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:43.933417       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:39:43.935402       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:43.935459       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:45.064029       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:45.064209       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/bind\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:45.064349       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:47.053893       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:47.416590       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:39:47.418669       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:47.418725       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:52.055478       1 trace.go:236] Trace[1451592106]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:39:47.053) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[1451592106]: [5.001493131s] [5.001493131s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:52.055520       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:52.055583       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:52.055713       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:54.057026       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:58.019984       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:39:58.022508       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:58.022562       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:59.058503       1 trace.go:236] Trace[1944416571]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:39:54.057) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[1944416571]: [5.001350813s] [5.001350813s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:59.058558       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:39:59.058634       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:39:59.058828       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:03.061059       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:08.062895       1 trace.go:236] Trace[892170031]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:40:03.061) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[892170031]: [5.0017387s] [5.0017387s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:08.062939       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:08.063015       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:08.063146       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:16.066264       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:16.627874       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:40:16.630285       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:16.630343       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:21.067835       1 trace.go:236] Trace[131104926]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:40:16.066) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[131104926]: [5.001458951s] [5.001458951s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:21.067894       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:21.067960       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:21.068117       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:31.076027       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:36.077715       1 trace.go:236] Trace[899805878]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:40:31.076) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[899805878]: [5.001584733s] [5.001584733s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:36.077756       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:36.077823       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:36.077943       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:46.085895       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:51.087303       1 trace.go:236] Trace[1955897535]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:40:46.085) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[1955897535]: [5.0012975s] [5.0012975s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:51.087353       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:40:51.087410       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:40:51.087544       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:01.095077       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:06.096257       1 trace.go:236] Trace[1313586727]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:41:01.095) (total time: 5001ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[1313586727]: [5.001077204s] [5.001077204s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:06.096302       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:06.096362       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:06.096489       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:06.918852       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:41:06.921402       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:06.921456       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:16.102941       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:21.103962       1 trace.go:236] Trace[2045131691]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:41:16.102) (total time: 5000ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[2045131691]: [5.000906792s] [5.000906792s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:21.104014       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:21.104105       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:21.104281       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:31.111750       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:32.951558       1 trace.go:236] Trace[44049997]: "Scheduling" namespace:iadeep,name:iadeep-cuda-probe-gd66g (13-Jun-2026 13:41:31.111) (total time: 1839ms):
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] Trace[44049997]: [1.839697637s] [1.839697637s] END
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:32.951597       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": EOF" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:32.951664       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": EOF" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:32.951801       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:33.176470       1 eventhandlers.go:249] "Delete event for scheduled pod" pod="kube-system/gpushare-schd-extender-69f55d8bcd-tnmmp"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:33.262816       1 eventhandlers.go:202] "Add event for scheduled pod" pod="kube-system/gpushare-schd-extender-86ccfb887b-gw5vp"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:43.119421       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:43.151430       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:43.151530       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:43.151668       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:54.127289       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:54.156471       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:54.156582       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:54.156688       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-gd66g" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:57.024273       1 eventhandlers.go:175] "Delete event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-gd66g"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:57.138349       1 eventhandlers.go:128] "Add event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:57.138408       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:57.138898       1 schedule_one.go:161] "Error selecting node for pod" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": dial tcp 127.0.0.1:32761: connect: connection refused" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:57.138949       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/filter\": dial tcp 127.0.0.1:32761: connect: connection refused" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:57.139016       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:59.130715       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:59.172038       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:41:59.172195       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:41:59.172344       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:01.932430       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:42:01.935034       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:01.935103       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:02.133111       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:02.165101       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:02.165202       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:02.165368       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:07.137296       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:07.172500       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:07.172889       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:07.173091       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:16.144138       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:16.175696       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:16.175801       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="failed bind with extender at URL http://127.0.0.1:32761/gpushare-scheduler/bind, code 500" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:16.175911       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.149962       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.203255       1 eventhandlers.go:175] "Delete event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.203333       1 eventhandlers.go:202] "Add event for scheduled pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.207854       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:27.207956       1 schedule_one.go:338] "scheduler cache ForgetPod failed" err="pod 2e8398c0-ee06-4f0a-8966-65655e8a7c3d(iadeep/iadeep-cuda-probe-trcx6) wasn't assumed so cannot be forgotten" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:27.208030       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/bind\": EOF" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.208092       1 schedule_one.go:1059] "Pod has been assigned to node. Abort adding it back to queue." pod="iadeep/iadeep-cuda-probe-trcx6" node="huiwei-super-server"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:27.208164       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-trcx6" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:31.301609       1 eventhandlers.go:249] "Delete event for scheduled pod" pod="iadeep/iadeep-cuda-probe-trcx6"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:42:37.572354       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:42:37.574671       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:42:37.574722       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:10.591286       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:43:10.594014       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:43:10.594065       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.581120       1 eventhandlers.go:128] "Add event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.581243       1 schedule_one.go:97] "Attempting to schedule pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.607376       1 eventhandlers.go:175] "Delete event for unscheduled pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.607393       1 eventhandlers.go:202] "Add event for scheduled pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.610152       1 schedule_one.go:993] "Failed to bind pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:43:15.610198       1 schedule_one.go:338] "scheduler cache ForgetPod failed" err="pod e6d8d589-66a8-4611-9837-fc94a9f0f0a4(iadeep/iadeep-cuda-probe-xzj2v) wasn't assumed so cannot be forgotten" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:43:15.610227       1 schedule_one.go:1046] "Error scheduling pod; retrying" err="Post \"http://127.0.0.1:32761/gpushare-scheduler/bind\": EOF" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.610254       1 schedule_one.go:1059] "Pod has been assigned to node. Abort adding it back to queue." pod="iadeep/iadeep-cuda-probe-xzj2v" node="huiwei-super-server"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:15.610285       1 schedule_one.go:1111] "Updating pod condition" pod="iadeep/iadeep-cuda-probe-xzj2v" conditionType="PodScheduled" conditionStatus="False" conditionReason="SchedulerError"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:43:19.217749       1 eventhandlers.go:249] "Delete event for scheduled pod" pod="iadeep/iadeep-cuda-probe-xzj2v"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] I0613 13:44:10.422290       1 reflector.go:332] Listing and watching *v1.ConfigMap from runtime/asm_amd64.s:1700
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] W0613 13:44:10.424890       1 reflector.go:547] runtime/asm_amd64.s:1700: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"
+[pod/iadeep-scheduler-77f4694d8d-k4fk2/kube-scheduler] E0613 13:44:10.424954       1 reflector.go:150] runtime/asm_amd64.s:1700: Failed to watch *v1.ConfigMap: failed to list *v1.ConfigMap: configmaps "extension-apiserver-authentication" is forbidden: User "system:serviceaccount:kube-system:default" cannot list resource "configmaps" in API group "" in the namespace "kube-system"

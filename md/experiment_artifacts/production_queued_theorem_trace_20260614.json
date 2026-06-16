@@ -1,0 +1,153 @@
+{
+  "algorithm": "theorem_maxweight_v1",
+  "allow_all_hard_rule_scope": true,
+  "candidate_count_total": 9,
+  "gate": "production_queued_theorem_trace",
+  "hard_rule_mode": "clean_bench",
+  "max_post_vram_frac": 0.95,
+  "max_tasks": 64,
+  "max_tasks_per_gpu": 8,
+  "node_summary": [
+    {
+      "alive": true,
+      "free_cpu": 12,
+      "free_ram_mb": 3608,
+      "gpu_count": 1,
+      "name": "local"
+    },
+    {
+      "alive": true,
+      "free_cpu": 5,
+      "free_ram_mb": 494686,
+      "gpu_count": 2,
+      "name": "jtl110gpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 4,
+      "free_ram_mb": 500748,
+      "gpu_count": 2,
+      "name": "jtl110gpu2"
+    },
+    {
+      "alive": true,
+      "free_cpu": 848,
+      "free_ram_mb": 1349551,
+      "gpu_count": 0,
+      "name": "zhengliang-hpc"
+    },
+    {
+      "alive": true,
+      "free_cpu": 52,
+      "free_ram_mb": 223151,
+      "gpu_count": 4,
+      "name": "node007-direct"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 492639,
+      "gpu_count": 0,
+      "name": "jtl110cpu"
+    },
+    {
+      "alive": true,
+      "free_cpu": 128,
+      "free_ram_mb": 499178,
+      "gpu_count": 0,
+      "name": "jtl110cpu2"
+    },
+    {
+      "alive": false,
+      "free_cpu": 172,
+      "free_ram_mb": null,
+      "gpu_count": 0,
+      "name": "node001"
+    },
+    {
+      "alive": false,
+      "free_cpu": 182,
+      "free_ram_mb": null,
+      "gpu_count": 0,
+      "name": "node002"
+    },
+    {
+      "alive": true,
+      "free_cpu": 182,
+      "free_ram_mb": 124709,
+      "gpu_count": 0,
+      "name": "node003"
+    },
+    {
+      "alive": true,
+      "free_cpu": 182,
+      "free_ram_mb": 153534,
+      "gpu_count": 0,
+      "name": "node004"
+    },
+    {
+      "alive": true,
+      "free_cpu": 182,
+      "free_ram_mb": 119765,
+      "gpu_count": 0,
+      "name": "node005"
+    },
+    {
+      "alive": false,
+      "free_cpu": 172,
+      "free_ram_mb": null,
+      "gpu_count": 0,
+      "name": "node006"
+    }
+  ],
+  "oracle_bridge": {
+    "alpha0": 0.0,
+    "alpha1": 0.0,
+    "audited_slot_count": 1,
+    "best_score_exact_over_candidate_set": true,
+    "blocker_count": 0,
+    "blockers": [],
+    "converted_slot_count": 1,
+    "fit_method": "finite_max_envelope",
+    "max_residual_violation": 0.0,
+    "point_count": 1,
+    "rows": [
+      {
+        "best_action_id": "node=jtl110gpu2|gpu=1",
+        "best_candidate_score": 420.6450000000001,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 9,
+        "chosen_action_id": "node=jtl110gpu2|gpu=1",
+        "chosen_score": 420.6450000000001,
+        "oracle_gap": 0.0,
+        "q_norm": 26.0,
+        "slot_id": "slot:t11490:1781389046.280245:1781390478092"
+      }
+    ],
+    "status": "THEOREM_ORACLE_PASS",
+    "trace_slot_count": 1,
+    "usable_for_theorem": true,
+    "worst_violation": null
+  },
+  "pass": true,
+  "placed_count": 1,
+  "placements": [
+    {
+      "placement": {
+        "gpu_idx": 1,
+        "node": "jtl110gpu2"
+      },
+      "project": "BAPR",
+      "signature": "BAPR/weightregfix-v1/bapr/discrete-mode/Ant-v2/seed0",
+      "task_id": "t11490",
+      "workload_key": "gpu_heavy_jax_matmul"
+    }
+  ],
+  "queued_admissible_count": 1,
+  "requested_algorithm": "theorem_maxweight_v1",
+  "scope": "read-only theorem trace over currently queued production tasks; queue is not mutated and no process is launched.",
+  "theorem_slot_count": 1,
+  "trace_path": "md/experiment_artifacts/production_queued_theorem_trace_20260614.jsonl",
+  "trace_slot_count": 1,
+  "unplaced_count": 0
+}

@@ -1,0 +1,4064 @@
+{
+  "adapters": [
+    {
+      "blockers": [
+        "requires native validation of the Scheduleurm Gavel trace/throughput seeds"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "scheduler/scripts/sweeps/run_sweep_static.py",
+        "-h"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio"
+      ],
+      "git": {
+        "commit": "c4fa40097339e9608ab71fd64c8bdea96a5e4a4c",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/stanford-futuredata/gavel.git"
+      },
+      "missing_required_files": [],
+      "name": "gavel_simulation",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel",
+      "representative_systems": [
+        "Gavel"
+      ],
+      "required_file_count": 2,
+      "required_file_count_present": 2,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel",
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel/scheduler/scripts/sweeps/run_sweep_static.py\", line 8, in <module>\n    from func_timeout import func_timeout, FunctionTimedOut\nModuleNotFoundError: No module named 'func_timeout'\n",
+        "stdout_tail": ""
+      },
+      "smoke_status": "FAIL"
+    },
+    {
+      "blockers": [
+        "requires Kubernetes/AdaptDL job CRD, container image, and isolated namespace validation"
+      ],
+      "command_cwd": "sched",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "setup.py",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": true,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio"
+      ],
+      "git": {
+        "commit": "542e123e50e98e4a7a7132d36c4af06c9437f6e4",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/petuum/adaptdl.git"
+      },
+      "missing_required_files": [],
+      "name": "pollux_adaptdl_scheduler",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux",
+      "representative_systems": [
+        "Pollux",
+        "AdaptDL"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/adaptdl_pollux/sched",
+        "returncode": 0,
+        "status": "PASS",
+        "stderr_tail": "/home/erzhu419/.local/lib/python3.10/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.\n!!\n\n        ********************************************************************************\n        Please consider removing the following classifiers in favor of a SPDX license expression:\n\n        License :: Other/Proprietary License\n\n        See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.\n        ********************************************************************************\n\n!!\n  self._finalize_license_expression()\n",
+        "stdout_tail": "Common commands: (see '--help-commands' for more)\n\n  setup.py build      will build the package underneath 'build/'\n  setup.py install    will install the package\n\nGlobal options:\n  --verbose (-v)      run verbosely (default)\n  --quiet (-q)        run quietly (turns verbosity off)\n  --help (-h)         show detailed help message\n  --no-user-cfg       ignore pydistutils.cfg in your home directory\n  --command-packages  list of packages that provide distutils commands\n\nInformation display options (just display information, ignore any commands)\n  --help-commands     list all available commands\n  --name              print package name\n  --version (-V)      print package version\n  --fullname          print <package name>-<version>\n  --author            print the author's name\n  --author-email      print the author's email address\n  --maintainer        print the maintainer's name\n  --maintainer-email  print the maintainer's email address\n  --contact           print the maintainer's name if known, else the author's\n  --contact-email     print the maintainer's email address if known, else the\n                      author's\n  --url               print the URL for this package\n  --license           print the license of the package\n  --licence           alias for --license\n  --description       print the package description\n  --long-description  print the long package description\n  --platforms         print the list of platforms\n  --classifiers       print the list of classifiers\n  --keywords          print the list of keywords\n  --provides          print the list of packages/modules provided\n  --requires          print the list of packages/modules required\n  --obsoletes         print the list of packages/modules made obsolete\n\nusage: setup.py [global_opts] cmd1 [cmd1_opts] [cmd2 [cmd2_opts] ...]\n   or: setup.py --help [cmd1 cmd2 ...]\n   or: setup.py --help-commands\n   or: setup.py cmd --help\n\n"
+      },
+      "smoke_status": "PASS"
+    },
+    {
+      "blockers": [
+        "requires the official Sia simulator environment with cvxpy CBC/GLPK and pymoo, or the AdaptDL/Kubernetes physical-cluster stack"
+      ],
+      "command_cwd": "sia-simulator",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "sia.py",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled",
+        "hybrid_research_portfolio"
+      ],
+      "git": {
+        "commit": "aaf7a0de7b6cb5eab06ea020467ede5d2fd18e70",
+        "dirty": true,
+        "exists": true,
+        "remote": "https://github.com/siasosp23/artifacts"
+      },
+      "missing_required_files": [],
+      "name": "sia_goodput_scheduler",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/sia_artifacts",
+      "representative_systems": [
+        "Sia"
+      ],
+      "required_file_count": 4,
+      "required_file_count_present": 4,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/sia_artifacts/sia-simulator",
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/sia_artifacts/sia-simulator/sia.py\", line 5, in <module>\n    import cvxpy as cp\nModuleNotFoundError: No module named 'cvxpy'\n",
+        "stdout_tail": ""
+      },
+      "smoke_status": "FAIL"
+    },
+    {
+      "blockers": [
+        "requires Kubernetes 1.18+, device plugin, etcd, Docker/NVIDIA runtime, and pod-manifest validation"
+      ],
+      "command_cwd": "iadeep-scheduler-extender",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled"
+      ],
+      "git": {
+        "commit": "78ca7f67d8b04989060454d4d75f1d85af4396b1",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/buzy-coder/IADeep.git"
+      },
+      "missing_required_files": [],
+      "name": "iadeep_kubernetes_extender",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/iadeep",
+      "representative_systems": [
+        "IADeep"
+      ],
+      "required_file_count": 2,
+      "required_file_count_present": 2,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/iadeep/iadeep-scheduler-extender",
+        "returncode": null,
+        "status": "ERROR",
+        "stderr_tail": "[Errno 2] No such file or directory: 'go'",
+        "stdout_tail": ""
+      },
+      "smoke_status": "ERROR"
+    },
+    {
+      "blockers": [
+        "requires Salus server, customized TensorFlow/runtime stack, and benchmark seed validation"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "-m",
+        "benchmarks.driver",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": false,
+      "fallback_tasksets": [
+        "q01_gpu_bound_compute",
+        "q11_cpu_gpu_coupled"
+      ],
+      "git": {
+        "commit": "7b7f5e0651889f7c1242108f1fb6f5e78cbfefec",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/SymbioticLab/Salus.git"
+      },
+      "missing_required_files": [],
+      "name": "salus_gpu_sharing",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+      "representative_systems": [
+        "Salus"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/salus",
+        "returncode": 1,
+        "status": "FAIL",
+        "stderr_tail": "Traceback (most recent call last):\n  File \"/usr/lib/python3.10/runpy.py\", line 187, in _run_module_as_main\n    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)\n  File \"/usr/lib/python3.10/runpy.py\", line 146, in _get_module_details\n    return _get_module_details(pkg_main_name, error)\n  File \"/usr/lib/python3.10/runpy.py\", line 157, in _get_module_details\n    code = loader.get_code(mod_name)\n  File \"<frozen importlib._bootstrap_external>\", line 1017, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 947, in source_to_code\n  File \"<frozen importlib._bootstrap>\", line 241, in _call_with_frames_removed\n  File \"/home/erzhu419/mine_code/scheduleurm/reference/repos/salus/benchmarks/driver/__main__.py\", line 0\nSyntaxError: unknown encoding: future_fstrings\n",
+        "stdout_tail": ""
+      },
+      "smoke_status": "FAIL"
+    },
+    {
+      "blockers": [
+        "Spark-DAG simulator baseline, not a GPU co-location scheduler"
+      ],
+      "command_cwd": ".",
+      "command_cwd_exists": true,
+      "direct_command": [
+        "python3",
+        "compute_baselines.py",
+        "--help"
+      ],
+      "direct_runnable": false,
+      "entrypoint_smoke_pass": true,
+      "fallback_tasksets": [
+        "q00_light_control",
+        "q10_cpu_host_bound"
+      ],
+      "git": {
+        "commit": "c010dd74ff4b7566bd0ac989c90a32cfbc630d84",
+        "dirty": false,
+        "exists": true,
+        "remote": "https://github.com/hongzimao/decima-sim.git"
+      },
+      "missing_required_files": [],
+      "name": "decima_simulator",
+      "repo_exists": true,
+      "repo_path": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+      "representative_systems": [
+        "Decima"
+      ],
+      "required_file_count": 3,
+      "required_file_count_present": 3,
+      "smoke": {
+        "cwd": "/home/erzhu419/mine_code/scheduleurm/reference/repos/decima_sim",
+        "returncode": 0,
+        "status": "PASS",
+        "stderr_tail": "",
+        "stdout_tail": ""
+      },
+      "smoke_status": "PASS"
+    }
+  ],
+  "any_direct_adapter_smoke_pass": true,
+  "direct_full_stack_ready": false,
+  "fallback_policy_semantics": {
+    "all_candidates_nondominated": true,
+    "all_fallbacks_replayable": true,
+    "tasksets": [
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "light_control_local": 13
+              },
+              "baseline_total_makespan_s": 8404.233924180235,
+              "baseline_weighted_mean_flow_s": 4235.971702869398,
+              "candidate_profiles": {
+                "light_control_local": 13
+              },
+              "candidate_total_makespan_s": 8404.233924180235,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 4235.971702869398,
+              "per_workload_improvements": {
+                "light_control_local": {
+                  "baseline_profile": 13.0,
+                  "candidate_profile": 13.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "light_control_local": 13
+              },
+              "baseline_total_makespan_s": 8404.233924180235,
+              "baseline_weighted_mean_flow_s": 4235.971702869398,
+              "candidate_profiles": {
+                "light_control_local": 13
+              },
+              "candidate_total_makespan_s": 8404.233924180235,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 4235.971702869398,
+              "per_workload_improvements": {
+                "light_control_local": {
+                  "baseline_profile": 13.0,
+                  "candidate_profile": 13.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "light_control_local": 13
+              },
+              "baseline_total_makespan_s": 8404.233924180235,
+              "baseline_weighted_mean_flow_s": 4235.971702869398,
+              "candidate_profiles": {
+                "light_control_local": 13
+              },
+              "candidate_total_makespan_s": 8404.233924180235,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 4235.971702869398,
+              "per_workload_improvements": {
+                "light_control_local": {
+                  "baseline_profile": 13.0,
+                  "candidate_profile": 13.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "light_control_local": 13
+              },
+              "baseline_total_makespan_s": 8404.233924180235,
+              "baseline_weighted_mean_flow_s": 4235.971702869398,
+              "candidate_profiles": {
+                "light_control_local": 13
+              },
+              "candidate_total_makespan_s": 8404.233924180235,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 4235.971702869398,
+              "per_workload_improvements": {
+                "light_control_local": {
+                  "baseline_profile": 13.0,
+                  "candidate_profile": 13.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "light_control_local": 13
+            },
+            "baseline_total_makespan_s": 8404.233924180235,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "light_control_local": 13
+            },
+            "baseline_weighted_mean_flow_s": 4235.971702869398,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "candidate_action_union": {
+            "rows": [
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "light_control_local": {
+                    "baseline_profile": 13.0,
+                    "candidate_profile": 13.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_guarded_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "guarded_mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              },
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "light_control_local": {
+                    "baseline_profile": 13.0,
+                    "candidate_profile": 13.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_makespan",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "makespan",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              },
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "light_control_local": {
+                    "baseline_profile": 13.0,
+                    "candidate_profile": 13.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              }
+            ],
+            "semantics": "Replay of policies whose candidate set explicitly contains the Scheduleurm candidate action and all SOTA-style policy-family actions under the same measured service cache."
+          },
+          "candidate_beats_all_sota_style_makespan": true,
+          "candidate_beats_all_sota_style_mean_flow": true,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "backlog_aware_guard": true,
+            "backlog_reference_tasks": 64,
+            "calibrated": true,
+            "calibrated_objective": "guarded_mean_flow",
+            "fixed_profiles": {},
+            "guarded_resource_kinds": [
+              "gpu_heavy",
+              "gpu_cnn",
+              "gpu_llm",
+              "hybrid_rl",
+              "cpu_heavy"
+            ],
+            "max_makespan_regret": 0.05,
+            "min_makespan_regret": 0.0,
+            "name": "calibrated_backlog_aware_guarded",
+            "statewise": true,
+            "statewise_regret_slack": 0.6,
+            "statewise_resource_kinds": [
+              "gpu_heavy",
+              "gpu_llm"
+            ],
+            "statewise_service_dominance_guard": true
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "q00_light_control"
+      },
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "gpu_heavy_jax_matmul": 8
+              },
+              "baseline_total_makespan_s": 1766.1081448816935,
+              "baseline_weighted_mean_flow_s": 1075.154153110748,
+              "candidate_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "candidate_total_makespan_s": 1678.5133761145532,
+              "candidate_vs_baseline_makespan": 1.0521859223844292,
+              "candidate_vs_baseline_mean_flow": 1.254124902643044,
+              "candidate_weighted_mean_flow_s": 857.2943180100175,
+              "per_workload_improvements": {
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0521859223844292,
+                  "mean_flow_improvement": 1.254124902643044
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "baseline_total_makespan_s": 1678.5133761145532,
+              "baseline_weighted_mean_flow_s": 857.2943180100175,
+              "candidate_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "candidate_total_makespan_s": 1678.5133761145532,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 857.2943180100175,
+              "per_workload_improvements": {
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "baseline_total_makespan_s": 1678.5133761145532,
+              "baseline_weighted_mean_flow_s": 857.2943180100175,
+              "candidate_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "candidate_total_makespan_s": 1678.5133761145532,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 857.2943180100175,
+              "per_workload_improvements": {
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "gpu_heavy_jax_matmul": 4
+              },
+              "baseline_total_makespan_s": 1716.6008906578536,
+              "baseline_weighted_mean_flow_s": 944.9715504569634,
+              "candidate_profiles": {
+                "gpu_heavy_jax_matmul": 1
+              },
+              "candidate_total_makespan_s": 1678.5133761145532,
+              "candidate_vs_baseline_makespan": 1.0226912189591637,
+              "candidate_vs_baseline_mean_flow": 1.1022720326089008,
+              "candidate_weighted_mean_flow_s": 857.2943180100175,
+              "per_workload_improvements": {
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 4.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0226912189591637,
+                  "mean_flow_improvement": 1.1022720326089008
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "gpu_heavy_jax_matmul": 1
+            },
+            "baseline_total_makespan_s": 1678.5133761145532,
+            "name": "delay_oracle",
+            "representative_systems": [
+              "SRPT",
+              "Gittins",
+              "SERPT"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "gpu_heavy_jax_matmul": 1
+            },
+            "baseline_weighted_mean_flow_s": 857.2943180100175,
+            "name": "delay_oracle",
+            "representative_systems": [
+              "SRPT",
+              "Gittins",
+              "SERPT"
+            ]
+          },
+          "candidate_action_union": {
+            "rows": [
+              {
+                "candidate_vs_union_makespan": 1.0138325167093494,
+                "candidate_vs_union_mean_flow": 0.8997070078206227,
+                "per_workload": {
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 4.0,
+                    "makespan_improvement": 1.0138325167093494,
+                    "mean_flow_improvement": 0.8997070078206226
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_guarded_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "guarded_mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9863562112268343,
+                "union_vs_candidate_mean_flow": 1.111472947645833
+              },
+              {
+                "candidate_vs_union_makespan": 1.0301676040558436,
+                "candidate_vs_union_mean_flow": 0.8143625337128138,
+                "per_workload": {
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0301676040558436,
+                    "mean_flow_improvement": 0.8143625337128138
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_makespan",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "makespan",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9707158292135458,
+                "union_vs_candidate_mean_flow": 1.2279543306601228
+              },
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 1.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              }
+            ],
+            "semantics": "Replay of policies whose candidate set explicitly contains the Scheduleurm candidate action and all SOTA-style policy-family actions under the same measured service cache."
+          },
+          "candidate_beats_all_sota_style_makespan": true,
+          "candidate_beats_all_sota_style_mean_flow": true,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "backlog_aware_guard": true,
+            "backlog_reference_tasks": 64,
+            "calibrated": true,
+            "calibrated_objective": "guarded_mean_flow",
+            "fixed_profiles": {},
+            "guarded_resource_kinds": [
+              "gpu_heavy",
+              "gpu_cnn",
+              "gpu_llm",
+              "hybrid_rl",
+              "cpu_heavy"
+            ],
+            "max_makespan_regret": 0.05,
+            "min_makespan_regret": 0.0,
+            "name": "calibrated_backlog_aware_guarded",
+            "statewise": true,
+            "statewise_regret_slack": 0.6,
+            "statewise_resource_kinds": [
+              "gpu_heavy",
+              "gpu_llm"
+            ],
+            "statewise_service_dominance_guard": true
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "q01_gpu_bound_compute"
+      },
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "baseline_total_makespan_s": 4742.493860437855,
+              "baseline_weighted_mean_flow_s": 2403.3639671311585,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "candidate_total_makespan_s": 4742.493860437855,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 2403.3639671311585,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "baseline_total_makespan_s": 4742.493860437855,
+              "baseline_weighted_mean_flow_s": 2403.3639671311585,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "candidate_total_makespan_s": 4742.493860437855,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 2403.3639671311585,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "baseline_total_makespan_s": 4742.493860437855,
+              "baseline_weighted_mean_flow_s": 2403.3639671311585,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "candidate_total_makespan_s": 4742.493860437855,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 2403.3639671311585,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "baseline_total_makespan_s": 4742.493860437855,
+              "baseline_weighted_mean_flow_s": 2403.3639671311585,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8
+              },
+              "candidate_total_makespan_s": 4742.493860437855,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 2403.3639671311585,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8
+            },
+            "baseline_total_makespan_s": 4742.493860437855,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8
+            },
+            "baseline_weighted_mean_flow_s": 2403.3639671311585,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "candidate_action_union": {
+            "rows": [
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_guarded_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "guarded_mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              },
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_makespan",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "makespan",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              },
+              {
+                "candidate_vs_union_makespan": 1.0,
+                "candidate_vs_union_mean_flow": 1.0,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 1.0,
+                "union_vs_candidate_mean_flow": 1.0
+              }
+            ],
+            "semantics": "Replay of policies whose candidate set explicitly contains the Scheduleurm candidate action and all SOTA-style policy-family actions under the same measured service cache."
+          },
+          "candidate_beats_all_sota_style_makespan": true,
+          "candidate_beats_all_sota_style_mean_flow": true,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "backlog_aware_guard": true,
+            "backlog_reference_tasks": 64,
+            "calibrated": true,
+            "calibrated_objective": "guarded_mean_flow",
+            "fixed_profiles": {},
+            "guarded_resource_kinds": [
+              "gpu_heavy",
+              "gpu_cnn",
+              "gpu_llm",
+              "hybrid_rl",
+              "cpu_heavy"
+            ],
+            "max_makespan_regret": 0.05,
+            "min_makespan_regret": 0.0,
+            "name": "calibrated_backlog_aware_guarded",
+            "statewise": true,
+            "statewise_regret_slack": 0.6,
+            "statewise_resource_kinds": [
+              "gpu_heavy",
+              "gpu_llm"
+            ],
+            "statewise_service_dominance_guard": true
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "q10_cpu_host_bound"
+      },
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 38478.28298249574,
+              "baseline_weighted_mean_flow_s": 19361.213668619286,
+              "candidate_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 38478.28298249574,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 19361.213668619286,
+              "per_workload_improvements": {
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 38478.28298249574,
+              "baseline_weighted_mean_flow_s": 19361.213668619286,
+              "candidate_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 38478.28298249574,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 19361.213668619286,
+              "per_workload_improvements": {
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "hybrid_rl_resac_ant": 3
+              },
+              "baseline_total_makespan_s": 38375.03687162937,
+              "baseline_weighted_mean_flow_s": 19362.404861162762,
+              "candidate_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 38478.28298249574,
+              "candidate_vs_baseline_makespan": 0.997316769282212,
+              "candidate_vs_baseline_mean_flow": 1.0000615246835174,
+              "candidate_weighted_mean_flow_s": 19361.213668619286,
+              "per_workload_improvements": {
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 0.997316769282212,
+                  "mean_flow_improvement": 1.0000615246835174
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 38478.28298249574,
+              "baseline_weighted_mean_flow_s": 19361.213668619286,
+              "candidate_profiles": {
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 38478.28298249574,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 1.0,
+              "candidate_weighted_mean_flow_s": 19361.213668619286,
+              "per_workload_improvements": {
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "hybrid_rl_resac_ant": 3
+            },
+            "baseline_total_makespan_s": 38375.03687162937,
+            "name": "interference_guard",
+            "representative_systems": [
+              "IADeep",
+              "Salus"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "hybrid_rl_resac_ant": 2
+            },
+            "baseline_weighted_mean_flow_s": 19361.213668619286,
+            "name": "throughput_table_goodput",
+            "representative_systems": [
+              "Gavel",
+              "Pollux",
+              "Sia"
+            ]
+          },
+          "candidate_action_union": {
+            "rows": [
+              {
+                "candidate_vs_union_makespan": 1.0023449936168634,
+                "candidate_vs_union_mean_flow": 1.0032708356987337,
+                "per_workload": {
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 2.0,
+                    "makespan_improvement": 1.0023449936168634,
+                    "mean_flow_improvement": 1.0032708356987337
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_guarded_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "guarded_mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9976604925132596,
+                "union_vs_candidate_mean_flow": 0.9967398277889183
+              },
+              {
+                "candidate_vs_union_makespan": 1.0023449936168634,
+                "candidate_vs_union_mean_flow": 1.0032708356987337,
+                "per_workload": {
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 2.0,
+                    "makespan_improvement": 1.0023449936168634,
+                    "mean_flow_improvement": 1.0032708356987337
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_makespan",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "makespan",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9976604925132596,
+                "union_vs_candidate_mean_flow": 0.9967398277889183
+              },
+              {
+                "candidate_vs_union_makespan": 1.0023449936168634,
+                "candidate_vs_union_mean_flow": 1.0032708356987337,
+                "per_workload": {
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 2.0,
+                    "makespan_improvement": 1.0023449936168634,
+                    "mean_flow_improvement": 1.0032708356987337
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9976604925132596,
+                "union_vs_candidate_mean_flow": 0.9967398277889183
+              }
+            ],
+            "semantics": "Replay of policies whose candidate set explicitly contains the Scheduleurm candidate action and all SOTA-style policy-family actions under the same measured service cache."
+          },
+          "candidate_beats_all_sota_style_makespan": false,
+          "candidate_beats_all_sota_style_mean_flow": true,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "backlog_aware_guard": true,
+            "backlog_reference_tasks": 64,
+            "calibrated": true,
+            "calibrated_objective": "guarded_mean_flow",
+            "fixed_profiles": {},
+            "guarded_resource_kinds": [
+              "gpu_heavy",
+              "gpu_cnn",
+              "gpu_llm",
+              "hybrid_rl",
+              "cpu_heavy"
+            ],
+            "max_makespan_regret": 0.05,
+            "min_makespan_regret": 0.0,
+            "name": "calibrated_backlog_aware_guarded",
+            "statewise": true,
+            "statewise_regret_slack": 0.6,
+            "statewise_resource_kinds": [
+              "gpu_heavy",
+              "gpu_llm"
+            ],
+            "statewise_service_dominance_guard": true
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "q11_cpu_gpu_coupled"
+      },
+      {
+        "comparison": {
+          "baselines": [
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "throughput_table_goodput",
+                "note": "Closest to table-driven goodput schedulers when the service table is already measured on the Scheduleurm fabric.",
+                "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_gavel_pollux_sia_table_goodput",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel",
+                  "Pollux",
+                  "Sia"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 6,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 3
+              },
+              "baseline_total_makespan_s": 28909.375498420322,
+              "baseline_weighted_mean_flow_s": 4824.554000097073,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 28873.678580736683,
+              "candidate_vs_baseline_makespan": 1.001236313467431,
+              "candidate_vs_baseline_mean_flow": 1.008987103734116,
+              "candidate_weighted_mean_flow_s": 4781.581431756752,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_cnn_torch_resnet50": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 6.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0702371374418447,
+                  "mean_flow_improvement": 1.3579115739265053
+                },
+                "gpu_llm_distilgpt2": {
+                  "baseline_profile": 10.0,
+                  "candidate_profile": 10.0,
+                  "makespan_improvement": 1.0355317183126982,
+                  "mean_flow_improvement": 0.9957433604106048
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.001236313467431,
+                  "mean_flow_improvement": 1.0100032205983407
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio"
+                ],
+                "name": "delay_oracle",
+                "note": "A strong finite-batch delay baseline. It is not a throughput-optimal cluster baseline and may lose makespan.",
+                "objective": "minimize deterministic mean completion time proxy",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.0,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_srpt_gittins_mean_flow_oracle",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "SRPT",
+                  "Gittins",
+                  "SERPT"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 28873.678580736683,
+              "baseline_weighted_mean_flow_s": 4781.581148554015,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 28873.678580736683,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 0.9999999407721607,
+              "candidate_weighted_mean_flow_s": 4781.581431756752,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_cnn_torch_resnet50": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_llm_distilgpt2": {
+                  "baseline_profile": 10.0,
+                  "candidate_profile": 10.0,
+                  "makespan_improvement": 1.0355317183126982,
+                  "mean_flow_improvement": 0.9957433604106048
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q11_cpu_gpu_coupled"
+                ],
+                "name": "interference_guard",
+                "note": "Captures the GPU multiplexing/interference-control idea using exact Scheduleurm co-location profiles.",
+                "objective": "interference-aware guarded co-location with statewise drain",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "makespan",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_iadeep_salus_interference_guard",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.6,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "IADeep",
+                  "Salus"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 3
+              },
+              "baseline_total_makespan_s": 28781.03332058988,
+              "baseline_weighted_mean_flow_s": 4821.258962311586,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 28873.678580736683,
+              "candidate_vs_baseline_makespan": 0.9967913593036735,
+              "candidate_vs_baseline_mean_flow": 1.0082979932729614,
+              "candidate_weighted_mean_flow_s": 4781.581431756752,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_cnn_torch_resnet50": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 0.9643607231401844,
+                  "mean_flow_improvement": 0.9902040916677658
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_llm_distilgpt2": {
+                  "baseline_profile": 10.0,
+                  "candidate_profile": 10.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 0.9967913593036735,
+                  "mean_flow_improvement": 1.0113087132457237
+                }
+              }
+            },
+            {
+              "baseline": {
+                "coverage": [
+                  "q00_light_control",
+                  "q01_gpu_bound_compute",
+                  "q01_gpu_bound_cnn_resnet50",
+                  "q01_gpu_bound_llm_inference",
+                  "q01_gpu_model_portfolio",
+                  "q10_cpu_host_bound",
+                  "q11_cpu_gpu_coupled",
+                  "hybrid_research_portfolio"
+                ],
+                "name": "quadrant_composite",
+                "note": "This is the reviewer-facing SOTA-style composite when no single external scheduler covers all four Scheduleurm quadrants.",
+                "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+                "policy": {
+                  "backlog_aware_guard": false,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": true,
+                  "calibrated_objective": "guarded_mean_flow",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [],
+                  "max_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "sota_quadrant_composite",
+                  "statewise": false,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [],
+                  "statewise_service_dominance_guard": false
+                },
+                "representative_systems": [
+                  "Gavel/Pollux/Sia",
+                  "IADeep/Salus",
+                  "SRPT/Gittins"
+                ]
+              },
+              "baseline_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "baseline_total_makespan_s": 28873.678580736683,
+              "baseline_weighted_mean_flow_s": 4781.581148554015,
+              "candidate_profiles": {
+                "cpu_heavy_local_bench": 8,
+                "gpu_cnn_torch_resnet50": 3,
+                "gpu_heavy_jax_matmul": 1,
+                "gpu_llm_distilgpt2": 10,
+                "hybrid_rl_resac_ant": 2
+              },
+              "candidate_total_makespan_s": 28873.678580736683,
+              "candidate_vs_baseline_makespan": 1.0,
+              "candidate_vs_baseline_mean_flow": 0.9999999407721607,
+              "candidate_weighted_mean_flow_s": 4781.581431756752,
+              "per_workload_improvements": {
+                "cpu_heavy_local_bench": {
+                  "baseline_profile": 8.0,
+                  "candidate_profile": 8.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_cnn_torch_resnet50": {
+                  "baseline_profile": 3.0,
+                  "candidate_profile": 3.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_heavy_jax_matmul": {
+                  "baseline_profile": 1.0,
+                  "candidate_profile": 1.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                },
+                "gpu_llm_distilgpt2": {
+                  "baseline_profile": 10.0,
+                  "candidate_profile": 10.0,
+                  "makespan_improvement": 1.0355317183126982,
+                  "mean_flow_improvement": 0.9957433604106048
+                },
+                "hybrid_rl_resac_ant": {
+                  "baseline_profile": 2.0,
+                  "candidate_profile": 2.0,
+                  "makespan_improvement": 1.0,
+                  "mean_flow_improvement": 1.0
+                }
+              }
+            }
+          ],
+          "best_baseline_by_makespan": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8,
+              "gpu_cnn_torch_resnet50": 3,
+              "gpu_heavy_jax_matmul": 1,
+              "gpu_llm_distilgpt2": 10,
+              "hybrid_rl_resac_ant": 3
+            },
+            "baseline_total_makespan_s": 28781.03332058988,
+            "name": "interference_guard",
+            "representative_systems": [
+              "IADeep",
+              "Salus"
+            ]
+          },
+          "best_baseline_by_mean_flow": {
+            "baseline_profiles": {
+              "cpu_heavy_local_bench": 8,
+              "gpu_cnn_torch_resnet50": 3,
+              "gpu_heavy_jax_matmul": 1,
+              "gpu_llm_distilgpt2": 10,
+              "hybrid_rl_resac_ant": 2
+            },
+            "baseline_weighted_mean_flow_s": 4781.581148554015,
+            "name": "delay_oracle",
+            "representative_systems": [
+              "SRPT",
+              "Gittins",
+              "SERPT"
+            ]
+          },
+          "candidate_action_union": {
+            "rows": [
+              {
+                "candidate_vs_union_makespan": 1.0029488657229055,
+                "candidate_vs_union_mean_flow": 0.9994364588752329,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "gpu_cnn_torch_resnet50": {
+                    "baseline_profile": 3.0,
+                    "candidate_profile": 3.0,
+                    "makespan_improvement": 1.0517319450845868,
+                    "mean_flow_improvement": 1.0366732357826716
+                  },
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 1.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "gpu_llm_distilgpt2": {
+                    "baseline_profile": 10.0,
+                    "candidate_profile": 10.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 2.0,
+                    "makespan_improvement": 1.0029488657229055,
+                    "mean_flow_improvement": 0.9992259606441488
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_guarded_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "guarded_mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9970598045187677,
+                "union_vs_candidate_mean_flow": 1.000563858882436
+              },
+              {
+                "candidate_vs_union_makespan": 1.0055639629866584,
+                "candidate_vs_union_mean_flow": 0.9950269883152592,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "gpu_cnn_torch_resnet50": {
+                    "baseline_profile": 3.0,
+                    "candidate_profile": 3.0,
+                    "makespan_improvement": 1.0517319450845868,
+                    "mean_flow_improvement": 1.0366732357826716
+                  },
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 6.0,
+                    "makespan_improvement": 1.0158208686873542,
+                    "mean_flow_improvement": 0.7553026880438363
+                  },
+                  "gpu_llm_distilgpt2": {
+                    "baseline_profile": 10.0,
+                    "candidate_profile": 10.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 3.0,
+                    "makespan_improvement": 1.0055639629866584,
+                    "mean_flow_improvement": 0.9952579162670047
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_makespan",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "makespan",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9944668234031253,
+                "union_vs_candidate_mean_flow": 1.0049978661314112
+              },
+              {
+                "candidate_vs_union_makespan": 1.0029488657229055,
+                "candidate_vs_union_mean_flow": 0.9994364588752329,
+                "per_workload": {
+                  "cpu_heavy_local_bench": {
+                    "baseline_profile": 8.0,
+                    "candidate_profile": 8.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "gpu_cnn_torch_resnet50": {
+                    "baseline_profile": 3.0,
+                    "candidate_profile": 3.0,
+                    "makespan_improvement": 1.0517319450845868,
+                    "mean_flow_improvement": 1.0366732357826716
+                  },
+                  "gpu_heavy_jax_matmul": {
+                    "baseline_profile": 1.0,
+                    "candidate_profile": 1.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "gpu_llm_distilgpt2": {
+                    "baseline_profile": 10.0,
+                    "candidate_profile": 10.0,
+                    "makespan_improvement": 1.0,
+                    "mean_flow_improvement": 1.0
+                  },
+                  "hybrid_rl_resac_ant": {
+                    "baseline_profile": 2.0,
+                    "candidate_profile": 2.0,
+                    "makespan_improvement": 1.0029488657229055,
+                    "mean_flow_improvement": 0.9992259606441488
+                  }
+                },
+                "policy": {
+                  "backlog_aware_guard": true,
+                  "backlog_reference_tasks": 64,
+                  "calibrated": false,
+                  "calibrated_objective": "makespan",
+                  "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                  "fixed_profiles": {},
+                  "guarded_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl",
+                    "cpu_heavy",
+                    "cpu_sumo_transit",
+                    "light_control"
+                  ],
+                  "max_makespan_regret": 0.0,
+                  "max_union_makespan_regret": 0.02,
+                  "min_makespan_regret": 0.0,
+                  "name": "scheduleurm_sota_union_mean_flow",
+                  "policy_families": [
+                    {
+                      "backlog_aware_guard": true,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl",
+                        "cpu_heavy"
+                      ],
+                      "max_makespan_regret": 0.05,
+                      "min_makespan_regret": 0.0,
+                      "name": "calibrated_backlog_aware_guarded",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_llm"
+                      ],
+                      "statewise_service_dominance_guard": true
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_gavel_pollux_sia_table_goodput",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.0,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_srpt_gittins_mean_flow_oracle",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "makespan",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_iadeep_salus_interference_guard",
+                      "statewise": true,
+                      "statewise_regret_slack": 0.6,
+                      "statewise_resource_kinds": [
+                        "gpu_heavy",
+                        "gpu_cnn",
+                        "gpu_llm",
+                        "hybrid_rl"
+                      ],
+                      "statewise_service_dominance_guard": false
+                    },
+                    {
+                      "backlog_aware_guard": false,
+                      "backlog_reference_tasks": 64,
+                      "calibrated": true,
+                      "calibrated_objective": "guarded_mean_flow",
+                      "fixed_profiles": {},
+                      "guarded_resource_kinds": [],
+                      "max_makespan_regret": 0.02,
+                      "min_makespan_regret": 0.0,
+                      "name": "sota_quadrant_composite",
+                      "statewise": false,
+                      "statewise_regret_slack": 0.0,
+                      "statewise_resource_kinds": [],
+                      "statewise_service_dominance_guard": false
+                    }
+                  ],
+                  "selection_objective": "mean_flow",
+                  "statewise": true,
+                  "statewise_regret_slack": 0.0,
+                  "statewise_resource_kinds": [
+                    "gpu_heavy",
+                    "gpu_cnn",
+                    "gpu_llm",
+                    "hybrid_rl"
+                  ],
+                  "statewise_service_dominance_guard": true
+                },
+                "union_vs_candidate_makespan": 0.9970598045187677,
+                "union_vs_candidate_mean_flow": 1.000563858882436
+              }
+            ],
+            "semantics": "Replay of policies whose candidate set explicitly contains the Scheduleurm candidate action and all SOTA-style policy-family actions under the same measured service cache."
+          },
+          "candidate_beats_all_sota_style_makespan": false,
+          "candidate_beats_all_sota_style_mean_flow": false,
+          "candidate_not_pareto_dominated": true,
+          "candidate_pareto_dominated_by": [],
+          "candidate_policy": {
+            "backlog_aware_guard": true,
+            "backlog_reference_tasks": 64,
+            "calibrated": true,
+            "calibrated_objective": "guarded_mean_flow",
+            "fixed_profiles": {},
+            "guarded_resource_kinds": [
+              "gpu_heavy",
+              "gpu_cnn",
+              "gpu_llm",
+              "hybrid_rl",
+              "cpu_heavy"
+            ],
+            "max_makespan_regret": 0.05,
+            "min_makespan_regret": 0.0,
+            "name": "calibrated_backlog_aware_guarded",
+            "statewise": true,
+            "statewise_regret_slack": 0.6,
+            "statewise_resource_kinds": [
+              "gpu_heavy",
+              "gpu_llm"
+            ],
+            "statewise_service_dominance_guard": true
+          }
+        },
+        "missing_measurements": {},
+        "replayable": true,
+        "taskset": "hybrid_research_portfolio"
+      }
+    ]
+  },
+  "gate": "direct_sota_binary_baseline_scaffold",
+  "pass": true,
+  "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
+  "run_smoke": true,
+  "scope": "direct external-system adapters are discovered and checked for local entrypoints. Full-stack superiority claims require the direct adapter status to become runnable with validated same-workload adapter seeds. Until then the paper uses policy-semantics replay baselines on the same measured Scheduleurm service cache."
+}

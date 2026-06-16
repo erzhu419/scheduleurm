@@ -1,0 +1,220 @@
+{
+  "all_required_pass": true,
+  "all_required_present": true,
+  "all_required_stable_eta": true,
+  "gate": "corner_case_live_summary",
+  "missing_required_scenarios": [],
+  "policy_admission_matrix": [
+    {
+      "gavel_finish_time": "baseline row",
+      "goodput_sota": "baseline row",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_empty_node001_single",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "baseline row",
+      "goodput_sota": "baseline row",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_empty_node002_single",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 1.000",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_full_node001_add_single_v2",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 0.904",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_full_node003_add_single",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 0.948",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_half_node001_add_single",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 1.090",
+      "legacy_safety": "capacity gate admits if CPU/RAM fit",
+      "memory_pack_sota": "not applicable",
+      "scenario_id": "cpu_half_node001_add_single_v2",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 0.975",
+      "legacy_safety": "node007 override admits; generic one-third would block",
+      "memory_pack_sota": "admit if memory fit",
+      "scenario_id": "node007_28p8gb_add_small",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "pending stable ETA",
+      "legacy_safety": "node007 override admits; generic one-third would block",
+      "memory_pack_sota": "admit if memory fit",
+      "scenario_id": "node007_30gb_add_small",
+      "scheduleurm_theorem": "pending stable ETA"
+    },
+    {
+      "gavel_finish_time": "needs resident-delay/JCT holdout",
+      "goodput_sota": "admit: ratio 1.098",
+      "legacy_safety": "node007 override admits; generic one-third would block",
+      "memory_pack_sota": "admit if memory fit",
+      "scenario_id": "node007_30gb_add_small_stable",
+      "scheduleurm_theorem": "admit: positive lower service"
+    },
+    {
+      "gavel_finish_time": "baseline row",
+      "goodput_sota": "baseline row",
+      "legacy_safety": "baseline row",
+      "memory_pack_sota": "baseline row",
+      "scenario_id": "node007_empty_small",
+      "scheduleurm_theorem": "admit: positive lower service"
+    }
+  ],
+  "required_scenarios": [
+    "cpu_empty_node001_single",
+    "cpu_full_node001_add_single_v2",
+    "cpu_half_node001_add_single_v2",
+    "node007_30gb_add_small_stable",
+    "node007_empty_small"
+  ],
+  "rows": [
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_empty_node001_single_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 0.0,
+      "baseline_scenario_id": "",
+      "loaded_to_empty_rate_ratio": null,
+      "node": "node001",
+      "pass": true,
+      "probe_last_rate_step_s": 20.476326,
+      "probe_mean_rate_step_s": 20.08607883333333,
+      "scenario_id": "cpu_empty_node001_single",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_empty_node002_single_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 0.0,
+      "baseline_scenario_id": "",
+      "loaded_to_empty_rate_ratio": null,
+      "node": "node002",
+      "pass": true,
+      "probe_last_rate_step_s": 21.876135,
+      "probe_mean_rate_step_s": 21.745552583333335,
+      "scenario_id": "cpu_empty_node002_single",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_full_node001_add_single_v2_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 7.8884813,
+      "baseline_scenario_id": "cpu_empty_node001_single",
+      "loaded_to_empty_rate_ratio": 0.9996819253610242,
+      "node": "node001",
+      "pass": true,
+      "probe_last_rate_step_s": 20.469813,
+      "probe_mean_rate_step_s": 20.45815225,
+      "scenario_id": "cpu_full_node001_add_single_v2",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_full_node003_add_single_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 6.06031642,
+      "baseline_scenario_id": "cpu_empty_node002_single",
+      "loaded_to_empty_rate_ratio": 0.9042899488415115,
+      "node": "node003",
+      "pass": true,
+      "probe_last_rate_step_s": 19.782369,
+      "probe_mean_rate_step_s": 20.223618333333334,
+      "scenario_id": "cpu_full_node003_add_single",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_half_node001_add_single_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 12.5229702,
+      "baseline_scenario_id": "cpu_empty_node002_single",
+      "loaded_to_empty_rate_ratio": 0.9479983552853372,
+      "node": "node001",
+      "pass": true,
+      "probe_last_rate_step_s": 20.73854,
+      "probe_mean_rate_step_s": 20.70890825,
+      "scenario_id": "cpu_half_node001_add_single",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/cpu_half_node001_add_single_v2_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 12.413102,
+      "baseline_scenario_id": "cpu_empty_node001_single",
+      "loaded_to_empty_rate_ratio": 1.089640250892665,
+      "node": "node001",
+      "pass": true,
+      "probe_last_rate_step_s": 22.311829,
+      "probe_mean_rate_step_s": 22.25098008333333,
+      "scenario_id": "cpu_half_node001_add_single_v2",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/node007_28p8gb_add_small_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 2359.10271,
+      "baseline_scenario_id": "node007_empty_small",
+      "loaded_to_empty_rate_ratio": 0.9754473230637427,
+      "node": "node007-direct",
+      "pass": true,
+      "probe_last_rate_step_s": 8325.14503,
+      "probe_mean_rate_step_s": 8187.8043025,
+      "scenario_id": "node007_28p8gb_add_small",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/node007_30gb_add_small_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 2358.84643,
+      "baseline_scenario_id": "node007_empty_small",
+      "loaded_to_empty_rate_ratio": 0.9461425663216728,
+      "node": "node007-direct",
+      "pass": true,
+      "probe_last_rate_step_s": 8075.03788,
+      "probe_mean_rate_step_s": 8029.411305,
+      "scenario_id": "node007_30gb_add_small",
+      "stable_eta_ready": false
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/node007_30gb_add_small_stable_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 2342.60278,
+      "baseline_scenario_id": "node007_empty_small",
+      "loaded_to_empty_rate_ratio": 1.0975731688246706,
+      "node": "node007-direct",
+      "pass": true,
+      "probe_last_rate_step_s": 9367.45183,
+      "probe_mean_rate_step_s": 9110.837601666666,
+      "scenario_id": "node007_30gb_add_small_stable",
+      "stable_eta_ready": true
+    },
+    {
+      "artifact": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/reports/node007_empty_small_remote_corner_case_probe.json",
+      "background_last_rate_step_s": 0.0,
+      "baseline_scenario_id": "",
+      "loaded_to_empty_rate_ratio": null,
+      "node": "node007-direct",
+      "pass": true,
+      "probe_last_rate_step_s": 8534.69463,
+      "probe_mean_rate_step_s": 8837.297441666668,
+      "scenario_id": "node007_empty_small",
+      "stable_eta_ready": true
+    }
+  ],
+  "run_id": "corner_case_live_20260613",
+  "scenario_count": 10
+}

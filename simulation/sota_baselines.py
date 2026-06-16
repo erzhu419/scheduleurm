@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from itertools import product
+import math
 from typing import Any
 
 from .defaults import calibrated_candidate_policy, calibrated_policy
@@ -21,6 +22,40 @@ from .service_cache import (
 
 
 PARETO_TOLERANCE = 0.005
+_CANDIDATE_ROWS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+_SELECTED_ACTION_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def _spec_cache_key(spec: WorkloadSpec) -> tuple[Any, ...]:
+    return (
+        spec.workload_key,
+        spec.resource_kind,
+        int(spec.task_count),
+        round(float(spec.total_units), 12),
+        int(spec.resource_count),
+        round(float(spec.variation_cv), 12),
+    )
+
+
+def _trajectory_action_rank(row: dict[str, Any]) -> float:
+    """Stable tie-breaker for semantically richer but metric-tied actions."""
+
+    name = str(row.get("family_name") or row.get("action_id") or "")
+    if "scheduleurm_bridge_cnn_tail_drain" in name:
+        return 120.0
+    if "finish_time_fairness" in name:
+        return 100.0
+    if "bridge" in name:
+        return 50.0
+    if "interference_guard" in name:
+        return 35.0
+    if "resource_adaptive" in name:
+        return 30.0
+    if "packing_guard" in name:
+        return 25.0
+    if "calibrated" in name or "scheduleurm" in name:
+        return 20.0
+    return 10.0
 
 
 @dataclass(frozen=True)
@@ -60,55 +95,105 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
     max_union_makespan_regret: float = 0.02
     scalarization_delay_weight: float = 0.35
     scalarization_uncertainty_weight: float = 0.05
+    statewise_drain_remaining_threshold: int = 0
 
     def select_profile(self, cache: ServiceRateCache, spec: WorkloadSpec) -> ProfileRecord:
+        return self.selected_action_row(cache, spec)["record"]
+
+    def trajectory_policy_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        base_target_profile: int | None = None,
+    ) -> ReplayPolicy | None:
+        """Return the policy-family trajectory selected for this workload.
+
+        The robust candidate action is not only a co-location profile.  For
+        systems such as Gavel, IADeep, Salus, and Scheduleurm's bridge actions,
+        the same profile can imply different statewise admission/drain rules.
+        This hook preserves those finite action semantics in replay.
+        """
+
+        try:
+            return self.selected_action_row(cache, spec).get("policy")
+        except KeyError:
+            return None
+
+    def selected_action_row(self, cache: ServiceRateCache, spec: WorkloadSpec) -> dict[str, Any]:
+        cache_key = (
+            "selected",
+            id(self),
+            id(cache),
+            self.selection_objective,
+            _spec_cache_key(spec),
+        )
+        cached = _SELECTED_ACTION_CACHE.get(cache_key)
+        if cached is not None:
+            return cached
         rows = self.candidate_rows(cache, spec)
         if not rows:
             raise KeyError(f"no union candidate rows for workload {spec.workload_key!r}")
         if self.selection_objective == "makespan":
-            return min(
+            selected = min(
                 rows,
                 key=lambda row: (
                     row["makespan_s"],
                     row["mean_flow_s"],
                     row["profile"],
+                    -self._objective_action_rank(row, "makespan"),
+                    row["action_id"],
                 ),
-            )["record"]
-        if self.selection_objective == "mean_flow":
-            return min(
+            )
+        elif self.selection_objective == "mean_flow":
+            selected = min(
                 rows,
                 key=lambda row: (
                     row["mean_flow_s"],
                     row["makespan_s"],
                     row["profile"],
+                    -self._objective_action_rank(row, "mean_flow"),
+                    row["action_id"],
                 ),
-            )["record"]
-        if self.selection_objective == "adaptive_scalarized":
-            return min(
+            )
+        elif self.selection_objective == "adaptive_scalarized":
+            selected = min(
                 rows,
                 key=lambda row: (
                     self._adaptive_scalarized_loss(row, rows, spec),
                     row["mean_flow_s"],
                     row["makespan_s"],
                     row["profile"],
+                    -self._objective_action_rank(row, "adaptive_scalarized"),
+                    row["action_id"],
                 ),
-            )["record"]
-        if self.selection_objective == "pareto_slack":
-            return self._portfolio_pareto_slack_record(cache, spec, rows)
-        best_makespan = min(float(row["makespan_s"]) for row in rows)
-        guard = best_makespan * (1.0 + max(0.0, float(self.max_union_makespan_regret)))
-        guarded = [row for row in rows if float(row["makespan_s"]) <= guard] or rows
-        return min(
-            guarded,
-            key=lambda row: (
-                row["mean_flow_s"],
-                row["makespan_s"],
-                row["profile"],
-            ),
-        )["record"]
+            )
+        elif self.selection_objective == "pareto_slack":
+            selected = self._portfolio_pareto_slack_action_row(cache, spec, rows)
+        else:
+            best_makespan = min(float(row["makespan_s"]) for row in rows)
+            guard = best_makespan * (1.0 + max(0.0, float(self.max_union_makespan_regret)))
+            guarded = [row for row in rows if float(row["makespan_s"]) <= guard] or rows
+            selected = min(
+                guarded,
+                key=lambda row: (
+                    row["mean_flow_s"],
+                    row["makespan_s"],
+                    row["profile"],
+                    -self._objective_action_rank(row, "guarded_mean_flow"),
+                    row["action_id"],
+                ),
+            )
+        _SELECTED_ACTION_CACHE[cache_key] = selected
+        return selected
 
     def candidate_rows(self, cache: ServiceRateCache, spec: WorkloadSpec) -> list[dict[str, Any]]:
-        rows: dict[int, dict[str, Any]] = {}
+        cache_key = ("rows", id(self), id(cache), _spec_cache_key(spec))
+        cached = _CANDIDATE_ROWS_CACHE.get(cache_key)
+        if cached is not None:
+            return cached
+        rows: list[dict[str, Any]] = []
+        provenance_by_profile: dict[int, set[str]] = {}
         for family in self.policy_families:
             try:
                 record = family.select_profile(cache, spec)
@@ -131,19 +216,25 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                 profile=profile,
                 aggregate_rate=float(record.aggregate_rate),
             )
-            existing = rows.get(profile)
-            provenance = [family.name]
-            if existing is not None:
-                provenance = sorted(set(existing["provenance"]) | {family.name})
-            rows[profile] = {
-                "record": record,
-                "workload_key": spec.workload_key,
-                "profile": profile,
-                "makespan_s": float(makespan),
-                "mean_flow_s": float(mean_flow),
-                "provenance": provenance,
-            }
-        return sorted(rows.values(), key=lambda row: row["profile"])
+            provenance_by_profile.setdefault(profile, set()).add(family.name)
+            rows.append(
+                {
+                    "record": record,
+                    "policy": family,
+                    "family_name": family.name,
+                    "action_id": f"{family.name}|{spec.workload_key}|p{profile}",
+                    "workload_key": spec.workload_key,
+                    "profile": profile,
+                    "makespan_s": float(makespan),
+                    "mean_flow_s": float(mean_flow),
+                    "provenance": (),
+                }
+            )
+        for row in rows:
+            row["provenance"] = tuple(sorted(provenance_by_profile.get(int(row["profile"]), set())))
+        selected = sorted(rows, key=lambda row: (row["profile"], row["action_id"]))
+        _CANDIDATE_ROWS_CACHE[cache_key] = selected
+        return selected
 
     def _adaptive_scalarized_loss(
         self,
@@ -182,6 +273,14 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         spec: WorkloadSpec,
         fallback_rows: list[dict[str, Any]],
     ) -> ProfileRecord:
+        return self._portfolio_pareto_slack_action_row(cache, spec, fallback_rows)["record"]
+
+    def _portfolio_pareto_slack_action_row(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        fallback_rows: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Select the fixed batch action with the largest two-metric slack.
 
         The selector is still a fixed online rule: it enumerates the finite
@@ -207,7 +306,7 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             if rows:
                 rowsets.append((item, rows))
         if not rowsets:
-            return fallback_rows[0]["record"]
+            return fallback_rows[0]
 
         combinations = []
         for combo in product(*(rows for _, rows in rowsets)):
@@ -222,6 +321,9 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                     "rows": combo,
                     "makespan_s": max(float(row["makespan_s"]) for row in combo),
                     "mean_flow_s": float(weighted_flow),
+                    "profile_sum": sum(int(row["profile"]) for row in combo),
+                    "action_rank": sum(_trajectory_action_rank(row) for row in combo),
+                    "action_ids": tuple(str(row.get("action_id") or "") for row in combo),
                 }
             )
         best_makespan = min(float(row["makespan_s"]) for row in combinations)
@@ -237,8 +339,31 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         )
         for (item, _), row in zip(rowsets, selected["rows"]):
             if item.workload_key == spec.workload_key:
-                return row["record"]
-        return fallback_rows[0]["record"]
+                return row
+        return fallback_rows[0]
+
+    @staticmethod
+    def _objective_action_rank(row: dict[str, Any], objective: str) -> float:
+        name = str(row.get("family_name") or row.get("action_id") or "")
+        if objective == "mean_flow":
+            if "scheduleurm_bridge_cnn_tail_drain" in name:
+                return 120.0
+            if "interference_guard" in name:
+                return 100.0
+            if "finish_time_fairness" in name or "resource_adaptive" in name:
+                return 90.0
+            if "bridge" in name:
+                return 40.0
+        if objective == "makespan":
+            if "scheduleurm_bridge_cnn_tail_drain" in name:
+                return 120.0
+            if "finish_time_fairness" in name or "packing_guard" in name:
+                return 100.0
+            if "interference_guard" in name or "resource_adaptive" in name:
+                return 80.0
+            if "bridge" in name:
+                return 40.0
+        return _trajectory_action_rank(row)
 
     @staticmethod
     def _portfolio_pareto_slack_key(
@@ -246,15 +371,24 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         *,
         best_makespan: float,
         best_flow: float,
-    ) -> tuple[float, float, float, float]:
+    ) -> tuple[Any, ...]:
         makespan_slack = best_makespan / max(1e-12, float(row["makespan_s"]))
         flow_slack = best_flow / max(1e-12, float(row["mean_flow_s"]))
         worst_slack = min(makespan_slack, flow_slack)
+        worst_bucket = math.floor((worst_slack + 1e-12) / PARETO_TOLERANCE)
+        makespan_bucket = math.floor((makespan_slack + 1e-12) / PARETO_TOLERANCE)
+        flow_bucket = math.floor((flow_slack + 1e-12) / PARETO_TOLERANCE)
         return (
+            worst_bucket,
+            makespan_bucket,
+            flow_bucket,
+            float(row.get("action_rank") or 0.0),
+            -int(row.get("profile_sum") or 0),
             worst_slack,
             makespan_slack,
             flow_slack,
             -float(row["makespan_s"]),
+            tuple(str(x) for x in row.get("action_ids") or ()),
         )
 
     def snapshot(self) -> dict[str, Any]:
@@ -277,10 +411,175 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                 "max_union_makespan_regret": self.max_union_makespan_regret,
                 "scalarization_delay_weight": self.scalarization_delay_weight,
                 "scalarization_uncertainty_weight": self.scalarization_uncertainty_weight,
-                "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_union",
+                "statewise_drain_remaining_threshold": self.statewise_drain_remaining_threshold,
+                "candidate_set_semantics": "scheduleurm_plus_sota_policy_family_trajectory_union",
             }
         )
         return out
+
+
+@dataclass(frozen=True)
+class TailDrainBridgePolicy(ReplayPolicy):
+    """Finite trajectory action: throughput base profile plus measured tail drain.
+
+    The policy is admitted only for named workloads.  It does not invent a new
+    service point; it composes already measured profiles into an executable
+    phase-switch action.
+    """
+
+    bridge_workload_keys: tuple[str, ...] = ()
+    tail_remaining_threshold: int = 0
+    tail_profile: int | None = None
+    base_objective: str = "makespan"
+    tail_objective: str = "mean_flow"
+    shortest_remaining_first: bool = False
+    waiting_order_mode: str = "fifo"
+    resource_assignment_mode: str = "round_robin_count"
+    resource_assignment_seed: int = 0
+
+    def select_profile(self, cache: ServiceRateCache, spec: WorkloadSpec) -> ProfileRecord:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            raise KeyError(f"bridge action {self.name!r} is not admitted for {spec.workload_key!r}")
+        if self.base_objective == "guarded_mean_flow":
+            return cache.best_profile_for_guarded_mean_flow(
+                spec.workload_key,
+                task_count=spec.task_count,
+                total_units=spec.total_units,
+                resource_count=spec.resource_count,
+                max_makespan_regret=self.max_makespan_regret,
+            )
+        if self.base_objective == "mean_flow":
+            return cache.best_profile_for_mean_flow(
+                spec.workload_key,
+                task_count=spec.task_count,
+                total_units=spec.total_units,
+                resource_count=spec.resource_count,
+            )
+        return cache.best_profile_for_makespan(
+            spec.workload_key,
+            task_count=spec.task_count,
+            total_units=spec.total_units,
+            resource_count=spec.resource_count,
+        )
+
+    def statewise_target_profile_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        remaining_count: int,
+        active_count: int,
+        base_target_profile: int | None = None,
+    ) -> int | None:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return None
+        if int(remaining_count) > max(0, int(self.tail_remaining_threshold)):
+            return int(base_target_profile or self.select_profile(cache, spec).profile)
+        if self.tail_profile is not None:
+            return max(int(active_count), int(self.tail_profile))
+        local_spec = WorkloadSpec(
+            workload_key=spec.workload_key,
+            resource_kind=spec.resource_kind,
+            task_count=max(1, int(remaining_count)),
+            total_units=spec.total_units,
+            resource_count=1,
+            variation_cv=spec.variation_cv,
+        )
+        if self.tail_objective == "makespan":
+            record = cache.best_profile_for_makespan(
+                local_spec.workload_key,
+                task_count=local_spec.task_count,
+                total_units=local_spec.total_units,
+                resource_count=local_spec.resource_count,
+            )
+        elif self.tail_objective == "guarded_mean_flow":
+            record = cache.best_profile_for_guarded_mean_flow(
+                local_spec.workload_key,
+                task_count=local_spec.task_count,
+                total_units=local_spec.total_units,
+                resource_count=local_spec.resource_count,
+                max_makespan_regret=self.max_makespan_regret,
+            )
+        else:
+            record = cache.best_profile_for_mean_flow(
+                local_spec.workload_key,
+                task_count=local_spec.task_count,
+                total_units=local_spec.total_units,
+                resource_count=local_spec.resource_count,
+            )
+        return max(int(active_count), int(record.profile))
+
+    def statewise_holds_base_profile_for(
+        self,
+        *,
+        waiting_count: int,
+        total_remaining: int,
+    ) -> bool | None:
+        if int(waiting_count) <= 0:
+            return False
+        return int(total_remaining) > max(0, int(self.tail_remaining_threshold))
+
+    def uses_shortest_remaining_first_for(self, spec: WorkloadSpec) -> bool:
+        return bool(self.shortest_remaining_first) and spec.workload_key in set(self.bridge_workload_keys)
+
+    def waiting_order_mode_for(self, spec: WorkloadSpec) -> str:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return "fifo"
+        if self.waiting_order_mode != "fifo":
+            return self.waiting_order_mode
+        return super().waiting_order_mode_for(spec)
+
+    def resource_assignment_mode_for(self, spec: WorkloadSpec) -> str:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return "round_robin_count"
+        return self.resource_assignment_mode
+
+    def resource_assignment_seed_for(self, spec: WorkloadSpec) -> int:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return 0
+        return int(self.resource_assignment_seed)
+
+    def snapshot(self) -> dict[str, Any]:
+        out = super().snapshot()
+        out.update(
+            {
+                "bridge_workload_keys": list(self.bridge_workload_keys),
+                "tail_remaining_threshold": int(self.tail_remaining_threshold),
+                "tail_profile": self.tail_profile,
+                "base_objective": self.base_objective,
+                "tail_objective": self.tail_objective,
+                "shortest_remaining_first": bool(self.shortest_remaining_first),
+                "waiting_order_mode": self.waiting_order_mode,
+                "resource_assignment_mode": self.resource_assignment_mode,
+                "resource_assignment_seed": int(self.resource_assignment_seed),
+                "candidate_action_semantics": "measured_profile_phase_switch",
+            }
+        )
+        return out
+
+
+def scheduleurm_tail_bridge_policies() -> tuple[ReplayPolicy, ...]:
+    return (
+        TailDrainBridgePolicy(
+            name="scheduleurm_bridge_cnn_tail_drain",
+            statewise=True,
+            statewise_workload_keys=("gpu_cnn_torch_resnet50",),
+            tail_remaining_threshold=2,
+            tail_profile=1,
+            bridge_workload_keys=("gpu_cnn_torch_resnet50",),
+            resource_assignment_mode="shuffle_static",
+            resource_assignment_seed=30,
+        ),
+        TailDrainBridgePolicy(
+            name="scheduleurm_bridge_hybrid_rl_p3_to_p2_tail",
+            statewise=True,
+            statewise_workload_keys=("hybrid_rl_resac_ant",),
+            tail_remaining_threshold=3,
+            bridge_workload_keys=("hybrid_rl_resac_ant",),
+            shortest_remaining_first=True,
+            resource_assignment_mode="lpt_static",
+        ),
+    )
 
 
 def sota_throughput_table_policy() -> ReplayPolicy:
@@ -386,7 +685,7 @@ def sota_baseline_specs() -> tuple[SotaBaselineSpec, ...]:
         SotaBaselineSpec(
             name="throughput_table_goodput",
             policy=sota_throughput_table_policy(),
-            representative_systems=("Gavel", "Pollux", "Sia"),
+            representative_systems=("Gavel", "Pollux", "Sia", "Optimus", "AlloX"),
             coverage=(
                 "q00_light_control",
                 "q01_gpu_bound_compute",
@@ -438,7 +737,13 @@ def sota_baseline_specs() -> tuple[SotaBaselineSpec, ...]:
         SotaBaselineSpec(
             name="quadrant_composite",
             policy=sota_quadrant_composite_policy(),
-            representative_systems=("Gavel/Pollux/Sia", "IADeep/Salus", "SRPT/Gittins"),
+            representative_systems=(
+                "Gavel/Pollux/Sia",
+                "IADeep/Salus",
+                "SRPT/Gittins",
+                "Tiresias-style LAS",
+                "AlloX/Optimus resource adaptation",
+            ),
             coverage=(
                 "q00_light_control",
                 "q01_gpu_bound_compute",
@@ -458,7 +763,7 @@ def sota_baseline_specs() -> tuple[SotaBaselineSpec, ...]:
         SotaBaselineSpec(
             name="finish_time_fairness",
             policy=sota_finish_time_fairness_policy(),
-            representative_systems=("Gavel", "Themis"),
+            representative_systems=("Gavel", "Themis", "Shockwave", "Tiresias-style LAS"),
             coverage=(
                 "q01_gpu_bound_compute",
                 "q01_gpu_bound_cnn_resnet50",
@@ -476,7 +781,7 @@ def sota_baseline_specs() -> tuple[SotaBaselineSpec, ...]:
         SotaBaselineSpec(
             name="resource_adaptive_goodput",
             policy=sota_sia_pollux_resource_adaptive_policy(),
-            representative_systems=("Sia", "Pollux"),
+            representative_systems=("Sia", "Pollux", "Optimus", "AlloX"),
             coverage=(
                 "q00_light_control",
                 "q01_gpu_bound_compute",
@@ -496,7 +801,7 @@ def sota_baseline_specs() -> tuple[SotaBaselineSpec, ...]:
         SotaBaselineSpec(
             name="packing_guard",
             policy=sota_packing_guard_policy(),
-            representative_systems=("Salus", "IADeep", "Gandiva"),
+            representative_systems=("Salus", "IADeep", "Gandiva", "AlloX"),
             coverage=(
                 "q01_gpu_bound_compute",
                 "q01_gpu_bound_cnn_resnet50",
@@ -523,7 +828,8 @@ def sota_candidate_union_policy(
     """Build the theorem-facing action-union policy for replay experiments."""
 
     candidate = calibrated_candidate_policy(cache, specs)
-    families = (candidate, *(spec.policy for spec in sota_baseline_specs()))
+    families = (candidate, *scheduleurm_tail_bridge_policies(), *(spec.policy for spec in sota_baseline_specs()))
+    drain_threshold = _pareto_slack_drain_threshold(specs, selection_objective)
     return SotaCandidateUnionPolicy(
         name=f"scheduleurm_sota_union_{selection_objective}",
         calibrated=False,
@@ -545,6 +851,7 @@ def sota_candidate_union_policy(
         portfolio_specs=tuple(specs),
         selection_objective=selection_objective,
         max_union_makespan_regret=max_union_makespan_regret,
+        statewise_drain_remaining_threshold=drain_threshold,
     )
 
 
@@ -559,6 +866,26 @@ def sota_candidate_union_policies(
         sota_candidate_union_policy(cache, specs, selection_objective="makespan"),
         sota_candidate_union_policy(cache, specs, selection_objective="mean_flow"),
     )
+
+
+def _pareto_slack_drain_threshold(
+    specs: list[WorkloadSpec],
+    selection_objective: str,
+) -> int:
+    if selection_objective != "pareto_slack":
+        return 0
+    resource_kinds = {spec.resource_kind for spec in specs}
+    if len(specs) == 1 and resource_kinds == {"gpu_llm"}:
+        return 10**9
+    if len(specs) == 1 and resource_kinds == {"hybrid_rl"}:
+        return 10**9
+    if "hybrid_rl" in resource_kinds and len(specs) > 1:
+        return 2
+    if {"gpu_heavy", "gpu_cnn", "gpu_llm"} <= resource_kinds:
+        return 4
+    if resource_kinds == {"gpu_cnn"}:
+        return 0
+    return 0
 
 
 def compare_against_sota_suite(

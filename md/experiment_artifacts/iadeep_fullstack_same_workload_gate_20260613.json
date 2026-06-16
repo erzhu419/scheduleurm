@@ -1,0 +1,76 @@
+{
+  "artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613",
+  "cases": [
+    {
+      "iadeep_completion_timestamp": "2026-06-13T13:43:20Z",
+      "iadeep_container_finished_at": "2026-06-13T13:43:17Z",
+      "iadeep_container_started_at": "2026-06-13T13:43:16Z",
+      "iadeep_crd_jct_s": 5.0,
+      "iadeep_creation_timestamp": "2026-06-13T13:43:15Z",
+      "iadeep_gpu_mem_dev": "11",
+      "iadeep_gpu_mem_idx": "0",
+      "iadeep_gpu_mem_pod": "1",
+      "iadeep_gpu_sharing_assigned": true,
+      "iadeep_job_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable_job.json",
+      "iadeep_phase": "Succeeded",
+      "iadeep_pod_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable_pod.json",
+      "iadeep_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/iadeep_fullstack_20260613/iadeep_cuda_probe_stable.json",
+      "iadeep_steps_per_s": 302.024196,
+      "iadeep_total_s": 0.264879,
+      "jct_ratio_native_over_iadeep_crd": 0.2850755214691162,
+      "label": "cuda_probe_short_stable",
+      "native_result_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe.json",
+      "native_steps_per_s": 302.014335,
+      "native_total_s": 0.264888,
+      "native_wall_artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613/native_cuda_probe_wall.json",
+      "native_wall_s": 1.425377607345581,
+      "ready": true,
+      "runtime_notes": [
+        "Kubernetes events include a benign extender bind EOF after the pod was already assigned; the pod still completed with IADeep GPU-memory annotations."
+      ],
+      "workload_steps_per_s_ratio_native_over_iadeep": 0.9999673502979873
+    }
+  ],
+  "compatibility_fixes": [
+    {
+      "component": "IADeep scheduler-extender image",
+      "fix": "use a reachable Go proxy during image build",
+      "reason": "the upstream Go module download path timed out from the test host",
+      "semantics_changed": false
+    },
+    {
+      "component": "IADeep scheduler-extender etcd client",
+      "fix": "allow HTTP etcd transport for the isolated single-node K3s test etcd",
+      "reason": "the artifact assumes a preconfigured etcd certificate path that is absent in the local test substrate",
+      "semantics_changed": false
+    },
+    {
+      "component": "IADeep device-plugin image",
+      "fix": "set NVIDIA_VISIBLE_DEVICES=all for the local NVIDIA CDI runtime",
+      "reason": "the local container runtime rejects uppercase ALL as a CDI device identifier",
+      "semantics_changed": false
+    },
+    {
+      "component": "IADeep independent kube-scheduler deployment",
+      "fix": "move the scheduler secure port away from the default scheduler hostNetwork port",
+      "reason": "the direct IADeep scheduler runs beside, not instead of, the production K3s scheduler",
+      "semantics_changed": false
+    }
+  ],
+  "direct_fullstack_sota_superiority_ready": false,
+  "gate": "iadeep_fullstack_same_workload_gate",
+  "gpu": "NVIDIA GeForce RTX 3080 Ti",
+  "host": "jtl110gpu",
+  "iadeep_adapter": "iadeep_kubernetes_extender",
+  "iadeep_fullstack_completed": true,
+  "native_artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_20260613",
+  "native_pair_completed": true,
+  "pass": true,
+  "same_service_scale_ready": true,
+  "same_workload_binary": "scheduleurm/cuda-probe:local",
+  "scope": "Scoped same-host same-binary full-stack evidence for IADeep's Kubernetes scheduler-extender/device-plugin GPU-sharing path.  The completed pod carries IADeep GPU-memory assignment annotations and the same CUDA probe binary completed with service scale matching the native Scheduleurm-controlled Docker pair.  This is an IADeep-scoped full-stack row, not an all-SOTA superiority certificate.",
+  "scoped_iadeep_fullstack_same_workload_ready": true,
+  "scoped_iadeep_same_workload_superiority_ready": true,
+  "strong_all_sota_claim_ready": false,
+  "workload": "cuda_saxpy_loop"
+}

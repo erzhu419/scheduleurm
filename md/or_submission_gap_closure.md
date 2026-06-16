@@ -105,16 +105,16 @@ post-closure upgrade artifacts:
   Gavel service-unit certificate closes q01/q11 trace/schema compatibility and
     throughput seed readiness while keeping service-unit equivalence false;
   declared finite-domain positive-cover gate closes the exact measured
-    service-cache universe: 193 buckets, 187 positive, 6 boundary, 0 uncovered;
+    service-cache universe: 225 buckets, 215 positive, 10 boundary, 0 uncovered;
   conservative all-state fabric-cover gate covers every scheduler-visible state
     by measured-admitted positive service or zero-service probe/defer; this is
     all-state safety, not positive-service all-state stability;
   production launch/completion gate reports active-production progress and
     high-utilization/no-safe-launch conditions; it refuses unsafe launch and
     therefore does not claim large-scale launched completion;
-  controlled production completion gate recognizes bounded launched completion
-    and canary readiness while keeping controlled_32_task_completion_ready=false
-    and large_scale_organic_launched_completion_ready=false;
+  controlled launched completion gate closes controlled_32_task_completion_ready=true
+    on `controlled_jtl110gpu_32_20260613` while keeping
+    large_scale_organic_launched_completion_ready=false;
   concrete deterministic round-robin sampler and bounded two-window detector
     probability model closes as a deployable extension certificate, not a live
     scheduler integration claim.
@@ -122,7 +122,7 @@ post-closure upgrade artifacts:
 reviewer supplement:
   md/or_gate_reviewer_supplement.md
   ScheduleurmUpload.lean SHA-256 =
-    af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b;
+    25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2;
   lake env lean ScheduleurmUpload.lean = PASS;
   comment-aware sorry/admit/axiom grep = clean.
 ```
@@ -347,8 +347,8 @@ Infrastructure exists for separate components:
 
 Module48 now provides one consolidated positive pass/fail certificate for the
 measured hybrid_research_portfolio finite service-action slice:
-  delta = 0.066921842
-  eta   = 0.066921842
+  delta = 0.078777710
+  eta   = 0.078777710
   B     = 6361.354514
   N     = 95072
   Lrho = epsilon_est = beta = alpha1 = 0 for the exact finite-slice certificate.
@@ -1237,7 +1237,7 @@ Current status:
 ```text
 completed on 2026-06-08;
 proof commit = 23b101432067cc005512f7667810ec03b8cffb77;
-ScheduleurmUpload.lean sha256 = af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b;
+ScheduleurmUpload.lean sha256 = 25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2;
 lake build Scheduleurm = PASS;
 lake env lean ScheduleurmUpload.lean = PASS;
 sorry/admit/axiom grep = clean;
@@ -1302,6 +1302,6 @@ Current status after Module101 and claim-scope cleanup:
 4. satisfied by q01/q11/portfolio live sanity modules; scope is progress-window
    replay-to-live validation, not full long-run completion of every job.
 5. satisfied by lean_verification_submission.md and ScheduleurmUpload.lean hash
-   af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b.
+   25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2.
 6. still open: the coherent OR manuscript has not yet been written.
 ```

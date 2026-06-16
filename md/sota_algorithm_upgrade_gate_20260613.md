@@ -16,13 +16,13 @@
 
 | Policy | Sum makespan | Weighted mean flow | vs best SOTA makespan envelope | vs best SOTA flow envelope |
 |---|---:|---:|---:|---:|
-| `scheduleurm_sota_union_adaptive_scalarized` | 173487 | 3569.5 | 0.994907 | 0.999476 |
+| `scheduleurm_sota_union_adaptive_scalarized` | 152822 | 3171.39 | 1 | 0.999476 |
 
 ## Pareto-Slack Fixed Policy
 
 | Policy | Sum makespan | Weighted mean flow | Worst vs best SOTA makespan | Worst vs best SOTA flow |
 |---|---:|---:|---:|---:|
-| `scheduleurm_sota_union_pareto_slack` | 173216 | 3573.49 | 0.998727 | 0.995784 |
+| `scheduleurm_sota_union_pareto_slack` | 152822 | 3171.39 | 1 | 0.999476 |
 
 ## Marginal Service States
 

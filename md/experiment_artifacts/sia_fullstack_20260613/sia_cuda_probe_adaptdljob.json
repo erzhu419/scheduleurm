@@ -1,0 +1,94 @@
+{
+    "apiVersion": "adaptdl.petuum.com/v1",
+    "kind": "AdaptDLJob",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"adaptdl.petuum.com/v1\",\"kind\":\"AdaptDLJob\",\"metadata\":{\"annotations\":{},\"name\":\"sia-cuda-probe\",\"namespace\":\"sia-baseline\"},\"spec\":{\"application\":\"cifar10\",\"maxReplicas\":1,\"minReplicas\":1,\"preemptible\":true,\"targetBatchSize\":32,\"targetNumReplicas\":1,\"template\":{\"spec\":{\"containers\":[{\"args\":[\"--n\",\"67108864\",\"--iters\",\"80\",\"--warmup\",\"8\",\"--inner\",\"64\"],\"env\":[{\"name\":\"SCHEDULEURM_RUN_LABEL\",\"value\":\"sia_mip_fullstack_cuda_probe\"},{\"name\":\"SCHEDULEURM_RESULT_JSON\",\"value\":\"/results/sia_cuda_probe.json\"},{\"name\":\"SCHEDULEURM_RESULT_LOG\",\"value\":\"/results/sia_cuda_probe.log\"}],\"image\":\"scheduleurm/cuda-probe:local\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"main\",\"resources\":{\"limits\":{\"nvidia.com/gpu\":\"1\"},\"requests\":{\"cpu\":\"1\",\"memory\":\"2Gi\",\"nvidia.com/gpu\":\"1\"}},\"volumeMounts\":[{\"mountPath\":\"/results\",\"name\":\"results\"}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"huiwei-super-server\"},\"restartPolicy\":\"Never\",\"volumes\":[{\"hostPath\":{\"path\":\"/tmp/scheduleurm-sia-results\",\"type\":\"DirectoryOrCreate\"},\"name\":\"results\"}]}}}}\n"
+        },
+        "creationTimestamp": "2026-06-13T12:52:36Z",
+        "generation": 1,
+        "name": "sia-cuda-probe",
+        "namespace": "sia-baseline",
+        "resourceVersion": "3003",
+        "uid": "f4e0180a-26e8-4e5e-a67a-afc687e7b74d"
+    },
+    "spec": {
+        "application": "cifar10",
+        "maxReplicas": 1,
+        "minReplicas": 1,
+        "preemptible": true,
+        "targetBatchSize": 32,
+        "targetNumReplicas": 1,
+        "template": {
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "80",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "sia_mip_fullstack_cuda_probe"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/sia_cuda_probe.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/sia_cuda_probe.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            }
+                        ]
+                    }
+                ],
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "huiwei-super-server"
+                },
+                "restartPolicy": "Never",
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-sia-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "attainedService": 3.617909,
+        "attainedServiceTimestamp": "2026-06-13T12:53:12.946657+00:00",
+        "completionTimestamp": "2026-06-13T12:53:12.946657+00:00",
+        "group": 0,
+        "phase": "Succeeded"
+    }
+}

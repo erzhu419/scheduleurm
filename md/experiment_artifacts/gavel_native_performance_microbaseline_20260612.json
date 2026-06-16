@@ -165,9 +165,9 @@
   "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
   "rows": [
     {
-      "average_jct_s": 44.561,
+      "average_jct_s": 25.464,
       "cluster_spec": "8:0:0",
-      "cluster_utilization": 0.5,
+      "cluster_utilization": 1.0,
       "command": [
         "/usr/bin/python3",
         "scripts/drivers/simulate_scheduler_with_trace.py",
@@ -194,19 +194,18 @@
       "completed_count_tail": [
         0,
         0,
-        1,
         4
       ],
       "jct_count": 4,
       "jct_tail": [
         25.464,
-        50.928,
-        50.927,
-        50.926
+        25.464,
+        25.464,
+        25.464
       ],
       "job_count": 4,
-      "log_bytes": 3511,
-      "makespan_s": 50.929,
+      "log_bytes": 3192,
+      "makespan_s": 25.464,
       "num_gpus_per_server": "8:1:1",
       "output_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/gavel_micro_q01_gpu_bound_compute_4_fifo.log",
       "policy": "fifo",
@@ -214,14 +213,14 @@
       "status": "PASS",
       "taskset": "q01_gpu_bound_compute",
       "timeout": false,
-      "timeout_seconds": 25,
+      "timeout_seconds": 90,
       "trace_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q01_gpu_bound_compute_4.trace",
       "usable_native_performance_sample": true
     },
     {
-      "average_jct_s": 20.9,
+      "average_jct_s": 11.149,
       "cluster_spec": "8:0:0",
-      "cluster_utilization": 0.5,
+      "cluster_utilization": 1.0,
       "command": [
         "/usr/bin/python3",
         "scripts/drivers/simulate_scheduler_with_trace.py",
@@ -248,23 +247,22 @@
       "completed_count_tail": [
         0,
         0,
-        1,
         8
       ],
       "jct_count": 8,
       "jct_tail": [
         11.149,
-        22.296,
-        22.295,
-        22.294,
-        22.293,
-        22.292,
-        22.291,
-        22.29
+        11.149,
+        11.149,
+        11.149,
+        11.149,
+        11.149,
+        11.149,
+        11.149
       ],
       "job_count": 8,
-      "log_bytes": 5929,
-      "makespan_s": 22.297,
+      "log_bytes": 5476,
+      "makespan_s": 11.149,
       "num_gpus_per_server": "8:1:1",
       "output_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/gavel_micro_q11_cpu_gpu_coupled_8_fifo.log",
       "policy": "fifo",
@@ -272,7 +270,7 @@
       "status": "PASS",
       "taskset": "q11_cpu_gpu_coupled",
       "timeout": false,
-      "timeout_seconds": 25,
+      "timeout_seconds": 90,
       "trace_file": "/tmp/scheduleurm_gavel_native_performance_microbaseline/gavel/scheduler/scheduleurm_q11_cpu_gpu_coupled_8.trace",
       "usable_native_performance_sample": true
     }

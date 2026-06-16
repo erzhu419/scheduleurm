@@ -1,4 +1,6 @@
 from algorithm.experiments.sota_algorithm_upgrade_gate import build_sota_algorithm_upgrade_gate
+from algorithm.experiments import sota_bridge_action_gate
+from algorithm.experiments.sota_quadrant_pareto_gate import build_sota_quadrant_pareto_gate
 from algorithm.theorem_dispatch.eta_lcb import (
     OnlineServiceEstimator,
     ReusableEtaCache,
@@ -7,6 +9,8 @@ from algorithm.theorem_dispatch.eta_lcb import (
 from algorithm.theorem_dispatch.global_dispatch import select_global_action
 from algorithm.theorem_dispatch.state_service import StateDependentServiceCache
 from simulation.defaults import build_default_cache
+from simulation.fast_forward import ReplayPolicy, WorkloadSpec
+from simulation.sota_baselines import SotaCandidateUnionPolicy
 
 
 def test_sota_algorithm_upgrade_gate_closes_scoped_five_axis_certificate():
@@ -29,6 +33,101 @@ def test_sota_algorithm_upgrade_gate_closes_scoped_five_axis_certificate():
     assert report["sota_candidate_union_summary"]["union_makespan_beats_sota_envelope_all"] is True
     assert report["sota_candidate_union_summary"]["union_mean_flow_beats_sota_envelope_all"] is True
     assert report["sota_candidate_union_summary"]["fixed_online_policy_pareto_dominates_sota_style_all"] is True
+
+
+def test_sota_candidate_union_keeps_profile_trajectory_actions_distinct():
+    cache = build_default_cache()
+    spec = WorkloadSpec(
+        workload_key="gpu_cnn_torch_resnet50",
+        resource_kind="gpu_cnn",
+        task_count=64,
+        total_units=80,
+        resource_count=2,
+        variation_cv=0.05,
+    )
+    family_a = ReplayPolicy(name="family_a", fixed_profiles={spec.workload_key: 3})
+    family_b = ReplayPolicy(name="family_b", fixed_profiles={spec.workload_key: 3})
+    union = SotaCandidateUnionPolicy(
+        name="unit_union",
+        policy_families=(family_a, family_b),
+        portfolio_specs=(spec,),
+        selection_objective="makespan",
+    )
+
+    rows = union.candidate_rows(cache, spec)
+    action_ids = {row["action_id"] for row in rows}
+
+    assert len(rows) == 2
+    assert action_ids == {
+        "family_a|gpu_cnn_torch_resnet50|p3",
+        "family_b|gpu_cnn_torch_resnet50|p3",
+    }
+    assert all(set(row["provenance"]) == {"family_a", "family_b"} for row in rows)
+
+
+def test_sota_quadrant_gate_separates_tolerance_from_strict_dominance():
+    report = build_sota_quadrant_pareto_gate()
+
+    assert report["pass"] is True
+    assert report["tolerance_pareto_ready"] is True
+    assert report["strict_noninferiority_ready"] is True
+    assert report["strict_pareto_dominance_ready"] is False
+    q01 = next(row for row in report["quadrants"] if row["quadrant"] == "q01_low_cpu_high_gpu")
+    assert q01["tolerance_pareto_ready"] is True
+    assert q01["strict_noninferiority_ready"] is True
+    assert q01["strict_pareto_dominance_ready"] is True
+
+
+def test_sota_bridge_action_gate_keeps_real_probe_and_strict_claim_gated(monkeypatch):
+    monkeypatch.setattr(
+        sota_bridge_action_gate,
+        "build_sota_strict_dominance_frontier",
+        lambda: {
+            "strict_pareto_ready": False,
+            "within_tolerance_ready": True,
+            "frontier_count": 2,
+            "frontier": [],
+        },
+    )
+    monkeypatch.setattr(
+        sota_bridge_action_gate,
+        "_phase_switch_search",
+        lambda: {
+            "current_cache_phase_switch_strict_ready": False,
+            "targets": [
+                {
+                    "target": "q01_gpu_bound_cnn_resnet50",
+                    "strict_ready": False,
+                    "best_worst_ratio": 0.999,
+                    "best_action": {"action_id": "bridge_cnn"},
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        sota_bridge_action_gate,
+        "_gpu_resource_audit",
+        lambda **_: {
+            "launch_ready": False,
+            "safe_gpus": [],
+            "safe_gpu_count": 0,
+            "gpu_rows": [],
+        },
+    )
+
+    report = sota_bridge_action_gate.build_sota_bridge_action_gate(
+        allow_launch=True,
+        run_id="unit_test_bridge_gate",
+    )
+
+    assert report["pass"] is True
+    assert report["scoped_claim_ready"] is True
+    assert report["strong_claim_ready"] is False
+    assert report["strict_bridge_ready"] is False
+    assert report["current_cache_phase_switch_strict_ready"] is False
+    assert report["resource_launch_ready"] is False
+    assert report["real_probe_launched"] is False
+    assert report["status"] == "MEASURED_CACHE_EXTERNAL_POLICY_BRIDGE_WAIT_RESOURCE"
 
 
 def test_global_dispatch_lookahead_is_bounded_tie_breaker():

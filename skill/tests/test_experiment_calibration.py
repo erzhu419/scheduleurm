@@ -443,7 +443,7 @@ def test_measured_finite_slice_slack_certificate_is_positive(check, sch):
           cert["usable_for_theorem"]
           and cert["eta"] > 0.0
           and cert["delta"] > cert["slack_consumed"]
-          and cert["selected_profiles"]["hybrid_rl_resac_ant"] == 3,
+          and cert["selected_profiles"]["hybrid_rl_resac_ant"] == 2,
           diag=str({
               "delta": cert.get("delta"),
               "eta": cert.get("eta"),

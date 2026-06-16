@@ -22,6 +22,13 @@ GAVEL_TEMPLATE_BY_RESOURCE_KIND = {
         "num_steps_arg": "--num_steps",
         "needs_data_dir": 1,
     },
+    "gpu_cnn": {
+        "job_type": "ResNet-50 (batch size 16)",
+        "command": "python3 main.py -j 8 -a resnet50 -b 16 %s/imagenet/",
+        "working_directory": "image_classification/imagenet",
+        "num_steps_arg": "--num_minibatches",
+        "needs_data_dir": 1,
+    },
     "hybrid_rl": {
         "job_type": "A3C",
         "command": "python3 main.py --env PongDeterministic-v4 --workers 4 --amsgrad True",
@@ -74,7 +81,6 @@ def build_trace(taskset_name: str) -> dict[str, Any]:
 def build_native_trace_lines(taskset_name: str) -> list[str]:
     bundle = load_taskset_rows(taskset_name)
     lines: list[str] = []
-    arrival_time = 0.0
     for row in bundle["members"]:
         member = row["member"]
         template = _template_for(member["resource_kind"])
@@ -91,10 +97,9 @@ def build_native_trace_lines(taskset_name: str) -> list[str]:
                 str(scale_factor),
                 "1",
                 "-1.000000",
-                f"{arrival_time:.6f}",
+                "0.000000",
             ]
             lines.append("\t".join(fields))
-            arrival_time += 0.001
     return lines
 
 

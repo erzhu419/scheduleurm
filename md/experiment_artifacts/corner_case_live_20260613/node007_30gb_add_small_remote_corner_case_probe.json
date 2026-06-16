@@ -1,0 +1,35 @@
+{
+  "algorithm_mode": "theorem_maxweight_v1",
+  "background_cmd": "CUDA_VISIBLE_DEVICES=0,1,2,3 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_multigpu_memory_progress_benchmark.py --devices 0,1,2,3 --reserve-gb-per-gpu 7.5 --matrix-size 1024 --steps 80 --log-interval 5 --label node007_30gb_resident",
+  "background_last_rate_step_s": 2358.84643,
+  "background_rate_count": 16,
+  "gate": "remote_corner_case_probe",
+  "hard_rule_mode": "clean_bench",
+  "node": "node007-direct",
+  "pass": true,
+  "probe_cmd": "CUDA_VISIBLE_DEVICES=0 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_multigpu_memory_progress_benchmark.py --devices 0 --reserve-gb-per-gpu 0 --matrix-size 1024 --steps 24 --log-interval 2 --label node007_30gb_add_small",
+  "probe_eta_count": 12,
+  "probe_last_rate_step_s": 8075.03788,
+  "probe_mean_rate_step_s": 8029.411305,
+  "probe_rate_count": 12,
+  "raw_paths": {
+    "background": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/node007_30gb_add_small/background.log",
+    "combined": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/node007_30gb_add_small/remote_combined.log",
+    "probe": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_20260613/raw/node007_30gb_add_small/probe.log"
+  },
+  "remote_dir": "/tmp/scheduleurm_corner_case_probe",
+  "remote_wrapper_returncode": 0,
+  "run_id": "corner_case_live_20260613",
+  "scenario_id": "node007_30gb_add_small",
+  "stable_eta": {
+    "cv": 0.032059574957225584,
+    "last_two_relative_delta": 0.07061904701058895,
+    "ready": false,
+    "rule": "3 windows, cv<=0.08, last-two relative delta<=0.05",
+    "tail": [
+      8601.56391,
+      8688.61994,
+      8075.03788
+    ]
+  }
+}

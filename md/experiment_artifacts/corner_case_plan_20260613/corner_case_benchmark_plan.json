@@ -1,0 +1,393 @@
+{
+  "algorithm_modes": [
+    "legacy",
+    "sweetspot_v1",
+    "theorem_maxweight_v1"
+  ],
+  "created_at_unix": 1781308171.611059,
+  "eta_policy": {
+    "cache_key_fields": [
+      "workload_key",
+      "command_fingerprint",
+      "normalized_parameters",
+      "node",
+      "device_family",
+      "device_model",
+      "device_count",
+      "gpu_indices",
+      "cpu_worker_count",
+      "co_location_profile",
+      "resource_occupancy_state",
+      "algorithm_mode",
+      "hard_rule_mode",
+      "python_or_conda_env",
+      "cuda_visible_devices",
+      "driver_or_runtime_version"
+    ],
+    "cache_reuse_rule": "reuse only when every cache-key field matches; otherwise probe or mark measurement_required",
+    "required_log_tokens": [
+      "rate=",
+      "ETA"
+    ],
+    "source_of_truth": "benchmark log progress lines, not tui-top ETA",
+    "stable_eta_rule": {
+      "action_after_stable": "terminate probe window and fast-forward replay/simulation",
+      "max_last_two_relative_delta": 0.05,
+      "max_window_cv": 0.08,
+      "min_windows": 3
+    }
+  },
+  "execution_order": [
+    "resource_audit",
+    "empty-resource single-task ETA probes",
+    "half-loaded marginal probes",
+    "full-loaded marginal probes",
+    "large multi-GPU memory resident plus small marginal probes",
+    "large 192-core CPU resident plus small marginal probes",
+    "queue backlog replay with ETA-cache reuse",
+    "policy-semantics SOTA replay on the measured service rows",
+    "production-safety-on rerun for claim-facing subset"
+  ],
+  "gate": "corner_case_benchmark_plan",
+  "hard_rule_modes": [
+    {
+      "meaning": "legacy safety gates stay active; this is the production-facing run.",
+      "mode": "safety_on",
+      "scheduler_hook": "--hard-rule-mode safety"
+    },
+    {
+      "meaning": "nonessential legacy packing freezes are bypassed for theorem/algorithm comparison.",
+      "mode": "clean_bench",
+      "scheduler_hook": "--hard-rule-mode clean_bench"
+    }
+  ],
+  "objective": "Validate whether the theorem/sweet-spot Scheduleurm algorithm can place small tasks beside large GPU/CPU jobs and improve total work completion time without relying on stale TUI ETA.",
+  "queue_state_contract": {
+    "includes": [
+      "queued task count by workload class",
+      "running task count by workload class",
+      "per-task ETA and ETA source",
+      "node/gpu eta_load from existing placements",
+      "candidate lower-service vector",
+      "oracle gap per dispatch slot"
+    ],
+    "must_refresh_each_round": true,
+    "scheduler_surface": [
+      "algorithm/theorem_dispatch/queue_state.py",
+      "algorithm/theorem_dispatch/policy.py",
+      "skill/scheduler.py optional A/B hook only"
+    ]
+  },
+  "resource_population": {
+    "cpu_node_shape": "192 logical cores per node",
+    "cpu_nodes": [
+      "node001",
+      "node002",
+      "node003",
+      "node004",
+      "node005",
+      "node006"
+    ],
+    "gpu_nodes": [
+      "jtl110gpu",
+      "jtl110gpu2",
+      "node007-direct"
+    ],
+    "node007_direct_gpu_shape": "4 x RTX 2080 Ti class, about 11GB each"
+  },
+  "run_id": "corner_case_plan_20260613",
+  "scenario_count": 10,
+  "scenarios": [
+    {
+      "id": "gpu_empty_single_eta",
+      "nodes": [
+        "jtl110gpu",
+        "jtl110gpu2",
+        "node007-direct"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 80 --warmup 8 --log-interval 5 --label gpu_empty_cnn",
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_llm_progress_benchmark.py --model-id distilgpt2 --steps 60 --warmup 4 --log-interval 5 --label gpu_empty_llm"
+      ],
+      "quadrant": "q01_gpu_heavy",
+      "question": "Baseline pure GPU/CNN/LLM ETA on an idle GPU.",
+      "resource_state": "empty"
+    },
+    {
+      "background": "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 240 --warmup 8 --log-interval 10 --label gpu_half_bg",
+      "id": "gpu_half_loaded_add_one",
+      "nodes": [
+        "jtl110gpu",
+        "jtl110gpu2",
+        "node007-direct"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 80 --warmup 4 --log-interval 5 --label gpu_half_add_cnn",
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_llm_progress_benchmark.py --model-id distilgpt2 --steps 60 --warmup 4 --log-interval 5 --label gpu_half_add_llm"
+      ],
+      "quadrant": "q01_gpu_heavy",
+      "question": "Marginal rate of adding one GPU task when the card already has two residents.",
+      "resource_state": "half_loaded"
+    },
+    {
+      "background": "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/gpu_multigpu_memory_progress_benchmark.py --reserve-gb-per-gpu 8.5 --steps 240 --log-interval 10 --label gpu_full_bg",
+      "id": "gpu_full_loaded_add_one",
+      "nodes": [
+        "jtl110gpu",
+        "jtl110gpu2",
+        "node007-direct"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 60 --warmup 4 --log-interval 5 --label gpu_full_add_cnn",
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_llm_progress_benchmark.py --model-id distilgpt2 --steps 40 --warmup 3 --log-interval 5 --label gpu_full_add_llm"
+      ],
+      "quadrant": "q01_gpu_heavy",
+      "question": "Marginal rate near the measured capacity boundary before memory/OOM failure.",
+      "resource_state": "full_loaded"
+    },
+    {
+      "background": "CUDA_VISIBLE_DEVICES=0,1,2,3 python3 -u algorithm/experiments/gpu_multigpu_memory_progress_benchmark.py --devices 0,1,2,3 --reserve-gb-per-gpu 7.0 --matrix-size 1536 --steps 240 --log-interval 10 --label node007_30gb_resident",
+      "id": "node007_30gb_multigpu_plus_small",
+      "nodes": [
+        "node007-direct"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 60 --warmup 4 --log-interval 5 --label node007_30gb_add_cnn",
+        "CUDA_VISIBLE_DEVICES=1 python3 -u algorithm/experiments/torch_llm_progress_benchmark.py --model-id distilgpt2 --steps 40 --warmup 3 --log-interval 5 --label node007_30gb_add_llm"
+      ],
+      "quadrant": "q11_cpu_gpu_coupled",
+      "question": "30GB-class resident LLM-style memory job over 4x12GB plus small marginal tasks.",
+      "resource_state": "large_multigpu_resident"
+    },
+    {
+      "id": "cpu_empty_single_eta",
+      "nodes": [
+        "node001",
+        "node002",
+        "node003",
+        "node004",
+        "node005",
+        "node006"
+      ],
+      "policies": [
+        "legacy",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "python3 -u algorithm/experiments/cpu_progress_benchmark.py --mode cpu --steps 50 --work-items 200000 --label cpu_empty_single",
+        "python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 96 --steps 16 --work-items 70000 --log-interval 1 --label cpu_empty_parallel96"
+      ],
+      "quadrant": "q10_cpu_host_bound",
+      "question": "Single CPU and parallel CPU ETA on an idle 192-core node.",
+      "resource_state": "empty"
+    },
+    {
+      "background": "python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 96 --steps 80 --work-items 90000 --log-interval 2 --label cpu_half_bg",
+      "id": "cpu_half_loaded_add_small",
+      "nodes": [
+        "node001",
+        "node002",
+        "node003",
+        "node004",
+        "node005",
+        "node006"
+      ],
+      "policies": [
+        "legacy",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "python3 -u algorithm/experiments/cpu_progress_benchmark.py --mode cpu --steps 40 --work-items 200000 --label cpu_half_add_single",
+        "python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 16 --steps 20 --work-items 90000 --log-interval 1 --label cpu_half_add_parallel16"
+      ],
+      "quadrant": "q10_cpu_host_bound",
+      "question": "Marginal rate when a 96-worker resident job occupies half of a 192-core node.",
+      "resource_state": "half_loaded"
+    },
+    {
+      "background": "python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 180 --steps 80 --work-items 90000 --log-interval 2 --label cpu_full_bg",
+      "id": "cpu_full_loaded_add_small",
+      "nodes": [
+        "node001",
+        "node002",
+        "node003",
+        "node004",
+        "node005",
+        "node006"
+      ],
+      "policies": [
+        "legacy",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "python3 -u algorithm/experiments/cpu_progress_benchmark.py --mode cpu --steps 30 --work-items 200000 --label cpu_full_add_single",
+        "python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 8 --steps 18 --work-items 90000 --log-interval 1 --label cpu_full_add_parallel8"
+      ],
+      "quadrant": "q10_cpu_host_bound",
+      "question": "Marginal rate near 180/192 workers to find whether small work should be deferred.",
+      "resource_state": "full_loaded"
+    },
+    {
+      "background": "CUDA_VISIBLE_DEVICES=0 python3 -u algorithm/experiments/torch_cnn_progress_benchmark.py --steps 180 --warmup 8 --log-interval 10 --label mixed_gpu_bg && python3 -u algorithm/experiments/cpu_parallel_progress_benchmark.py --workers 96 --steps 60 --work-items 80000 --log-interval 2 --label mixed_cpu_bg",
+      "id": "mixed_gpu_cpu_resident_plus_small",
+      "nodes": [
+        "node007-direct",
+        "node001"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "CUDA_VISIBLE_DEVICES=1 python3 -u algorithm/experiments/torch_llm_progress_benchmark.py --model-id distilgpt2 --steps 40 --warmup 3 --log-interval 5 --label mixed_add_llm",
+        "python3 -u algorithm/experiments/cpu_progress_benchmark.py --mode cpu --steps 40 --work-items 200000 --label mixed_add_cpu"
+      ],
+      "quadrant": "q11_cpu_gpu_coupled",
+      "question": "Hybrid resident job plus small GPU/CPU tasks; validates queue-aware MaxWeight over classes.",
+      "resource_state": "mixed_loaded"
+    },
+    {
+      "id": "queue_backlog_eta_load_balance",
+      "nodes": [
+        "jtl110gpu",
+        "jtl110gpu2",
+        "node007-direct",
+        "node001",
+        "node002"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "SCHEDULEURM_ALGORITHM=theorem_maxweight_v1 python3 skill/scheduler.py status --json --brief",
+        "python3 -m algorithm.experiments.live_trace_dryrun build --algorithm theorem_maxweight_v1 --hard-rule-mode safety"
+      ],
+      "quadrant": "portfolio",
+      "question": "Queued count, per-task ETA, eta_load, and load balancing before launch.",
+      "resource_state": "queued_backlog"
+    },
+    {
+      "id": "eta_cache_identical_signature",
+      "nodes": [
+        "local"
+      ],
+      "policies": [
+        "legacy",
+        "sweetspot_v1",
+        "theorem_maxweight_v1",
+        "gavel_finish_time_fairness",
+        "pollux_goodput_resize",
+        "sia_multi_cluster_goodput",
+        "gandiva_pack_time_slice",
+        "salus_memory_pack",
+        "iadeep_interference_aware"
+      ],
+      "probe_commands": [
+        "PYTHONPATH=. PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q skill/tests/test_corner_case_benchmark_plan.py::test_eta_cache_contract_has_colocation_key"
+      ],
+      "quadrant": "portfolio",
+      "question": "Identical task/env/profile reuses cached ETA; changed colocation profile forces a new probe.",
+      "resource_state": "cache_reuse"
+    }
+  ],
+  "sota_policy_semantics": [
+    {
+      "comparison_level": "same measured service cache / native simulator where available",
+      "policy": "gavel_finish_time_fairness",
+      "source": "Gavel-style profiled-throughput trace scheduling"
+    },
+    {
+      "comparison_level": "same measured service cache policy semantics",
+      "policy": "pollux_goodput_resize",
+      "source": "Pollux/AdaptDL-style goodput and resource resize semantics"
+    },
+    {
+      "comparison_level": "same measured service cache policy semantics",
+      "policy": "sia_multi_cluster_goodput",
+      "source": "Sia-style heterogeneity-aware goodput placement"
+    },
+    {
+      "comparison_level": "same measured service cache policy semantics",
+      "policy": "gandiva_pack_time_slice",
+      "source": "Gandiva-style GPU packing/time-slicing control"
+    },
+    {
+      "comparison_level": "same measured service cache policy semantics",
+      "policy": "salus_memory_pack",
+      "source": "Salus-style GPU memory-aware packing"
+    },
+    {
+      "comparison_level": "same measured service cache policy semantics",
+      "policy": "iadeep_interference_aware",
+      "source": "IADeep-style interference-aware colocation heuristic"
+    }
+  ]
+}

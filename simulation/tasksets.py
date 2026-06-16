@@ -275,6 +275,151 @@ def benchmark_tasksets() -> dict[str, TaskSet]:
             ),
         ),
         TaskSet(
+            name="node007_task_native_cnn",
+            purpose=(
+                "Node007 task-native CNN validation with exact single-GPU and "
+                "multi-GPU co-location profiles admitted from workload-code "
+                "tqdm stable-rate logs."
+            ),
+            arrival_model="static CNN batch on node007-direct 4x12GB GPUs",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_cnn_torch_progress_stack",
+                    resource_kind="gpu_cnn",
+                    task_count=64,
+                    total_units=80,
+                    resource_count=4,
+                    variation_cv=0.05,
+                    quadrant="low_cpu_high_gpu",
+                    role="task-native CNN co-location validation",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-13 node007-direct torch CNN "
+                        "progress benchmark, profiles 1-4 measured with "
+                        "ScheduleurmStableRate from tqdm-wrapped task logs."
+                    ),
+                    required_profiles=(1, 2, 3, 4),
+                    empirical_status="real",
+                    note=(
+                        "This is the node007 CNN progress-stack key, separate "
+                        "from the ResNet-50 key because torchvision was not "
+                        "available on node007."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="node007_task_native_llm",
+            purpose=(
+                "Node007 task-native torch decoder validation with exact "
+                "single-GPU and multi-GPU co-location profiles admitted from "
+                "workload-code tqdm stable-rate logs."
+            ),
+            arrival_model="static torch decoder batch on node007-direct 4x12GB GPUs",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_llm_torch_decoder_stack",
+                    resource_kind="gpu_llm",
+                    task_count=128,
+                    total_units=80,
+                    resource_count=4,
+                    variation_cv=0.06,
+                    quadrant="low_cpu_high_gpu",
+                    role="task-native torch decoder co-location validation",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-13 node007-direct torch decoder "
+                        "progress benchmark, profiles 1-4 measured with "
+                        "ScheduleurmStableRate from tqdm-wrapped task logs."
+                    ),
+                    required_profiles=(1, 2, 3, 4),
+                    empirical_status="real",
+                    note=(
+                        "This is the node007 torch decoder key, separate from "
+                        "the DistilGPT-2 key because transformers was not "
+                        "available on node007."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
+            name="node007_task_native_eta_portfolio",
+            purpose=(
+                "Node007 task-native ETA matrix across CNN, torch decoder LLM, "
+                "and RE-SAC hybrid training.  Each service point is admitted only "
+                "from workload-code progress/tqdm stable-rate logs, not from the "
+                "TUI ETA column."
+            ),
+            arrival_model="static mixed batch on node007-direct 4x12GB GPUs with exact measured co-location profiles",
+            members=(
+                TaskSetMember(
+                    workload_key="gpu_cnn_torch_progress_stack",
+                    resource_kind="gpu_cnn",
+                    task_count=64,
+                    total_units=80,
+                    resource_count=4,
+                    variation_cv=0.05,
+                    quadrant="low_cpu_high_gpu",
+                    role="task-native CNN progress-stack component",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-13 node007-direct torch CNN "
+                        "progress benchmark, profiles 1-4 measured with "
+                        "ScheduleurmStableRate from tqdm-wrapped task logs."
+                    ),
+                    required_profiles=(1, 2, 3, 4),
+                    empirical_status="real",
+                    note=(
+                        "This key intentionally does not replace the ResNet-50 "
+                        "key because torchvision was unavailable on node007 and "
+                        "the benchmark used the built-in torch CNN stack."
+                    ),
+                ),
+                TaskSetMember(
+                    workload_key="gpu_llm_torch_decoder_stack",
+                    resource_kind="gpu_llm",
+                    task_count=128,
+                    total_units=80,
+                    resource_count=4,
+                    variation_cv=0.06,
+                    quadrant="low_cpu_high_gpu",
+                    role="task-native torch decoder LLM component",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-13 node007-direct torch decoder "
+                        "progress benchmark, profiles 1-4 measured with "
+                        "ScheduleurmStableRate from tqdm-wrapped task logs."
+                    ),
+                    required_profiles=(1, 2, 3, 4),
+                    empirical_status="real",
+                    note=(
+                        "This key intentionally does not replace the DistilGPT-2 "
+                        "key because transformers was unavailable on node007 and "
+                        "the benchmark used the built-in torch decoder stack."
+                    ),
+                ),
+                TaskSetMember(
+                    workload_key="hybrid_rl_resac_ant_node007_tqdm",
+                    resource_kind="hybrid_rl",
+                    task_count=40,
+                    total_units=80,
+                    resource_count=4,
+                    variation_cv=0.10,
+                    quadrant="high_cpu_high_gpu",
+                    role="task-native RE-SAC hybrid component",
+                    benchmark_source=(
+                        "Scheduleurm 2026-06-13 node007-direct RE-SAC Ant "
+                        "profiles 1-5 measured with ScheduleurmStableRate from "
+                        "the real training loop progress logs."
+                    ),
+                    required_profiles=(1, 2, 3, 4, 5),
+                    empirical_status="real",
+                    note=(
+                        "This is the final node007 co-location validation slice: "
+                        "single GPU single task, single GPU multi-task, and "
+                        "multi-GPU multi-task all have task-native stable-rate "
+                        "measurements."
+                    ),
+                ),
+            ),
+        ),
+        TaskSet(
             name="q10_cpu_host_bound",
             purpose=(
                 "High-CPU/host pressure with low GPU pressure. This separates scheduler CPU/RAM "

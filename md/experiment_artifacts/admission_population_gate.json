@@ -1,42 +1,44 @@
 {
   "active_queue": {
     "blocker_reasons": {
-      "unmapped_cpu": 1
+      "unmapped_gpu": 1
     },
-    "record_count": 24,
+    "record_count": 11,
     "service_domain_admission_closed": true,
     "service_domain_admission_fraction": 1.0,
-    "service_domain_admitted_count": 24,
+    "service_domain_admitted_count": 11,
     "strict_service_admission_closed": false,
-    "strict_service_admission_fraction": 0.9583333333333334,
-    "strict_service_admitted_count": 23
+    "strict_service_admission_fraction": 0.9090909090909091,
+    "strict_service_admitted_count": 10
   },
   "active_queue_blockers": [],
   "attempted_production": {
     "blocker_reasons": {
-      "unmapped_cpu": 638,
-      "unmapped_gpu": 805,
-      "workload_key_not_inferred": 2
+      "unmapped_cpu": 621,
+      "unmapped_gpu": 1024,
+      "workload_key_not_inferred": 5
     },
-    "record_count": 5405,
+    "record_count": 5929,
     "service_domain_admission_closed": false,
-    "service_domain_admission_fraction": 0.9996299722479186,
-    "service_domain_admitted_count": 5403,
+    "service_domain_admission_fraction": 0.9991566874683758,
+    "service_domain_admitted_count": 5924,
     "strict_service_admission_closed": false,
-    "strict_service_admission_fraction": 0.7326549491211841,
-    "strict_service_admitted_count": 3960
+    "strict_service_admission_fraction": 0.7217068645640075,
+    "strict_service_admitted_count": 4279
   },
   "completed_active_production": {
     "blocker_reasons": {
-      "unmapped_cpu": 12
+      "unmapped_cpu": 263,
+      "unmapped_gpu": 183,
+      "workload_key_not_inferred": 3
     },
-    "record_count": 3582,
-    "service_domain_admission_closed": true,
-    "service_domain_admission_fraction": 1.0,
-    "service_domain_admitted_count": 3582,
+    "record_count": 4306,
+    "service_domain_admission_closed": false,
+    "service_domain_admission_fraction": 0.9993032977241059,
+    "service_domain_admitted_count": 4303,
     "strict_service_admission_closed": false,
-    "strict_service_admission_fraction": 0.9966499162479062,
-    "strict_service_admitted_count": 3570
+    "strict_service_admission_fraction": 0.8957268927078496,
+    "strict_service_admitted_count": 3857
   },
   "domain_summary": {
     "profile_domains": {
@@ -197,8 +199,17 @@
       "freqduet_runner_v3_c_le2_completed_history": [
         1
       ],
+      "freqduet_snapshot_counterfactual_c9_16_completed_history": [
+        1
+      ],
       "freqduet_spacectx_ep100_c3_8_completed_history": [
         1
+      ],
+      "gpu_cnn_torch_progress_stack": [
+        1,
+        2,
+        3,
+        4
       ],
       "gpu_heavy_jax_matmul": [
         1,
@@ -210,8 +221,11 @@
         7,
         8
       ],
-      "h2oplus_shell_eval_c_le2_completed_history": [
-        1
+      "gpu_llm_torch_decoder_stack": [
+        1,
+        2,
+        3,
+        4
       ],
       "hybrid_rl_bapr_project_fabric_completed_history": [
         1
@@ -267,9 +281,6 @@
         1
       ],
       "offline_sumo_eval_c33_64_completed_history": [
-        1
-      ],
-      "offline_sumo_eval_c_le2_completed_history": [
         1
       ],
       "resac_bus_seed_extension_cpu_eval_completed_history": [
@@ -330,9 +341,6 @@
         1
       ],
       "transit_native_promotion_c33_64_batch_completed_history": [
-        1
-      ],
-      "transit_native_promotion_c33_64_single_seed_completed_history": [
         1
       ],
       "transit_native_promotion_c3_8_persistent_stress_completed_history": [
@@ -412,19 +420,19 @@
       ]
     },
     "workload_counts": {
-      "assumption_agent_live_benchmark_completed_history": 10,
+      "assumption_agent_live_benchmark_completed_history": 17,
       "assumption_agent_meta_qa_evolution_completed_history": 21,
-      "assumption_agent_performance_validation_completed_history": 10,
+      "assumption_agent_performance_validation_completed_history": 43,
       "assumption_agent_phase2_v20_framework_completed_history": 6,
-      "assumption_agent_unittest_completed_history": 72,
+      "assumption_agent_unittest_completed_history": 121,
       "bamor_diagnostic_shard_c17_32_completed_history": 14,
       "bamor_diagnostic_shard_c3_8_completed_history": 25,
       "bamor_diagnostic_shard_c9_16_completed_history": 34,
       "bamor_diagnostic_shard_c_le2_completed_history": 3,
       "bamor_mujoco_c17_32_completed_history": 3,
-      "bamor_mujoco_c3_8_completed_history": 619,
-      "bamor_mujoco_c9_16_completed_history": 7,
-      "bamor_mujoco_c_le2_completed_history": 18,
+      "bamor_mujoco_c3_8_completed_history": 767,
+      "bamor_mujoco_c9_16_completed_history": 9,
+      "bamor_mujoco_c_le2_completed_history": 24,
       "bamor_mujoco_policy_union_c3_8_completed_history": 1,
       "bamor_train_compare_c3_8_completed_history": 68,
       "bamor_train_compare_c9_16_completed_history": 6,
@@ -441,62 +449,62 @@
       "cfcmt_sumo_generation_c_le2_completed_history": 4,
       "cfcmt_traffic_signal_phase1_c3_8_completed_history": 1,
       "cfcmt_traffic_signal_phase2_c_le2_completed_history": 1,
-      "cpu_heavy_local_bench": 55,
+      "cpu_heavy_local_bench": 77,
       "cpu_heavy_local_fabric_completed_history": 189,
-      "freqduet_baseline_rule_c_le2_completed_history": 5,
-      "freqduet_cpu_ablation_c17_32": 282,
-      "freqduet_cpu_ablation_c33_64_completed_history": 76,
+      "freqduet_baseline_rule_c_le2_completed_history": 11,
+      "freqduet_cpu_ablation_c17_32": 344,
+      "freqduet_cpu_ablation_c33_64_completed_history": 88,
       "freqduet_cpu_ablation_c3_8_completed_history": 44,
       "freqduet_cpu_ablation_c65p_completed_history": 11,
-      "freqduet_cpu_ablation_c9_16": 197,
-      "freqduet_cpu_ablation_c_le2_completed_history": 9,
+      "freqduet_cpu_ablation_c9_16": 303,
+      "freqduet_cpu_ablation_c_le2_completed_history": 10,
       "freqduet_paper_longtrain_c17_32_completed_history": 66,
       "freqduet_preflight_c_le2_completed_history": 19,
       "freqduet_promoted_ep100_c65p_completed_history": 6,
       "freqduet_runner_v3_allfreq_alllayers_c9_16": 1,
       "freqduet_runner_v3_c17_32_completed_history": 16,
       "freqduet_runner_v3_c33_64_completed_history": 36,
-      "freqduet_runner_v3_c3_8_completed_history": 87,
+      "freqduet_runner_v3_c3_8_completed_history": 90,
       "freqduet_runner_v3_c9_16_residual_completed_history": 29,
-      "freqduet_runner_v3_c_le2_completed_history": 93,
+      "freqduet_runner_v3_c_le2_completed_history": 101,
+      "freqduet_snapshot_counterfactual_c9_16_completed_history": 29,
       "freqduet_spacectx_ep100_c3_8_completed_history": 4,
-      "gpu_heavy_jax_matmul": 1371,
-      "h2oplus_shell_eval_c_le2_completed_history": 1,
-      "hybrid_rl_bapr_project_fabric_completed_history": 158,
+      "gpu_cnn_torch_progress_stack": 12,
+      "gpu_heavy_jax_matmul": 1250,
+      "gpu_llm_torch_decoder_stack": 62,
+      "hybrid_rl_bapr_project_fabric_completed_history": 224,
       "hybrid_rl_bapr_v15_project_fabric_completed_history": 103,
-      "hybrid_rl_cs_bapr_project_fabric_completed_history": 59,
-      "hybrid_rl_resac_ant": 964,
+      "hybrid_rl_cs_bapr_project_fabric_completed_history": 101,
+      "hybrid_rl_resac_ant": 1101,
       "hybrid_rl_resac_jmlr_project_fabric_completed_history": 340,
-      "hybrid_rl_resac_project_fabric_completed_history": 206,
+      "hybrid_rl_resac_project_fabric_completed_history": 179,
       "hybrid_rl_sensing_v10k_project_fabric_completed_history": 2,
       "light_control_local": 210,
       "nature_emissions_extract_c_le2_completed_history": 1,
       "nature_emissions_routeguard_analysis_completed_history": 1,
       "nature_emissions_sumo_c_le2_completed_history": 1,
-      "offline_sumo_eval_c33_64_completed_history": 41,
-      "offline_sumo_eval_c_le2_completed_history": 2,
-      "resac_bus_seed_extension_cpu_eval_completed_history": 6,
+      "offline_sumo_eval_c33_64_completed_history": 4,
+      "resac_bus_seed_extension_cpu_eval_completed_history": 1,
       "resac_conda_pack_completed_history": 1,
-      "resac_review5_jax_train_fabric_completed_history": 151,
+      "resac_review5_jax_train_fabric_completed_history": 22,
       "resco_config_eval_c_le2_completed_history": 5,
-      "scheduleurm_control_plane_completed_history": 75,
-      "scheduleurm_hpc_relay_smoke_completed_history": 1,
-      "sensing_pems_cache_completed_history": 5,
-      "sensing_voltage_cache_completed_history": 6,
+      "scheduleurm_control_plane_completed_history": 209,
+      "scheduleurm_hpc_relay_smoke_completed_history": 2,
+      "sensing_pems_cache_completed_history": 4,
+      "sensing_voltage_cache_completed_history": 4,
       "transit_demand_estimator_c17_32_completed_history": 10,
-      "transit_freqhrl_analysis_matrix_c_le2_completed_history": 14,
-      "transit_freqhrl_import_smoke_c_le2_completed_history": 107,
+      "transit_freqhrl_analysis_matrix_c_le2_completed_history": 56,
+      "transit_freqhrl_import_smoke_c_le2_completed_history": 68,
       "transit_freqhrl_merge_c_le2_completed_history": 12,
       "transit_freqhrl_tests_c3_8_completed_history": 8,
       "transit_freqhrl_tests_c_le2_completed_history": 2,
       "transit_gap_closure_c17_32_completed_history": 8,
       "transit_native_control_c_le2_completed_history": 22,
       "transit_native_merge_c3_8_completed_history": 1,
-      "transit_native_promotion_c17_32_residual_completed_history": 20,
+      "transit_native_promotion_c17_32_residual_completed_history": 16,
       "transit_native_promotion_c17_32_seedrange_completed_history": 170,
       "transit_native_promotion_c33_64_batch_completed_history": 208,
-      "transit_native_promotion_c33_64_single_seed_completed_history": 15,
-      "transit_native_promotion_c3_8_persistent_stress_completed_history": 39,
+      "transit_native_promotion_c3_8_persistent_stress_completed_history": 58,
       "transit_native_promotion_c65p_completed_history": 207,
       "transit_native_promotion_c9_16_bounded_wait_completed_history": 9,
       "transit_native_promotion_c9_16_residual_completed_history": 114,
@@ -511,7 +519,7 @@
       "transit_trading_policy_c33_64_completed_history": 2,
       "transit_trading_policy_c3_8_completed_history": 1,
       "transit_trading_policy_c_le2_completed_history": 18,
-      "transit_trading_pressure_matrix_c17_32_completed_history": 8,
+      "transit_trading_pressure_matrix_c17_32_completed_history": 5,
       "transit_trading_pressure_matrix_c33_64_completed_history": 1,
       "transit_trading_pressure_matrix_c9_16_completed_history": 2,
       "transit_trading_pressure_merge_c3_8_completed_history": 3,
@@ -524,10 +532,71 @@
     }
   },
   "gate": "service_certified_admission_population",
-  "generated_at": "2026-06-12T00:50:25+0800",
-  "pass": true,
+  "generated_at": "2026-06-16T09:04:59+0800",
+  "pass": false,
   "scope": "the reviewer-facing theorem population is completed-active production within the fixed window. Raw history and attempted-only records are reported but are not claimed as the theorem arrival stream. The live theorem dispatch mode should run with SCHEDULEURM_THEOREM_UNCERTIFIED_MODE=block when future tasks are to be admitted into the theorem population.",
-  "service_domain_blockers": [],
+  "service_domain_blockers": [
+    {
+      "admission_reason": "workload_key_not_inferred",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "sched",
+      "service_domain_admitted": false,
+      "signature": "sched/auto-adopted/p3842103",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781315623.2833574,
+      "task_id": "t11229",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "workload_key_not_inferred",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "sched",
+      "service_domain_admitted": false,
+      "signature": "sched/auto-adopted/p3874389",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781316672.6887448,
+      "task_id": "t11231",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "workload_key_not_inferred",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "freqduet",
+      "service_domain_admitted": false,
+      "signature": "freqduet/auto-adopted/p94716",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781339858.7664437,
+      "task_id": "t11329",
+      "workload_key": ""
+    }
+  ],
   "strict_classifier_blockers": [
     {
       "admission_reason": "",
@@ -792,11 +861,1693 @@
       "submitted_at": 1781195738.673988,
       "task_id": "t10347",
       "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm/auto-adopted/p2373754",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781211960.5855906,
+      "task_id": "t10381",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2387546",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781212560.2166083,
+      "task_id": "t10390",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm/auto-adopted/p2578875",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781221778.650482,
+      "task_id": "t10436",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "hybrid_rl_resac_ant",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "CS-BAPR",
+      "service_domain_admitted": true,
+      "signature": "CS-BAPR/auto-adopted/p193029",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781225388.535239,
+      "task_id": "t10470",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "scheduleurm_hpc_relay_smoke_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "EnvBootstrap",
+      "service_domain_admitted": true,
+      "signature": "EnvBootstrap/freqduet_cpu_py310_rebuild_20260612_100017",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781229618.5230165,
+      "task_id": "t10500",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2739308",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781235589.2595856,
+      "task_id": "t10547",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2746305",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781236118.6715722,
+      "task_id": "t10564",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm/auto-adopted/p2761896",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781237465.0348678,
+      "task_id": "t10588",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "scheduleurm_control_plane_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm/auto-adopted/p2769957",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781238034.562695,
+      "task_id": "t10592",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2778034",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781238950.668704,
+      "task_id": "t10599",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2793934",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781240307.5164933,
+      "task_id": "t10600",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2832281",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781243760.2541676,
+      "task_id": "t10604",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2842966",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781244605.2090442,
+      "task_id": "t10605",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2842967",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781244605.218195,
+      "task_id": "t10606",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2846175",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781244854.3210256,
+      "task_id": "t10607",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2868954",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781247084.8055909,
+      "task_id": "t10618",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2890285",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781249308.225983,
+      "task_id": "t10620",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2919487",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781251750.6210778,
+      "task_id": "t10633",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2938328",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781253313.0700312,
+      "task_id": "t10635",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2958329",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781255205.3361962,
+      "task_id": "t10639",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p2980077",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781257403.1214716,
+      "task_id": "t10648",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3036465",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781259860.135394,
+      "task_id": "t10652",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3064572",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781261948.8411002,
+      "task_id": "t10654",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3080021",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781263102.8716772,
+      "task_id": "t10659",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3099644",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781264601.1309748,
+      "task_id": "t10663",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27417",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9437766,
+      "task_id": "t10761",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27419",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9500716,
+      "task_id": "t10762",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27416",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9562273,
+      "task_id": "t10763",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27418",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9623384,
+      "task_id": "t10764",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27420",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9682934,
+      "task_id": "t10765",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27421",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.9744039,
+      "task_id": "t10766",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27422",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.98041,
+      "task_id": "t10767",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p27423",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781267776.986358,
+      "task_id": "t10768",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31605",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3300982,
+      "task_id": "t10769",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31603",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.336128,
+      "task_id": "t10770",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31604",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3421376,
+      "task_id": "t10771",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31606",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3478725,
+      "task_id": "t10772",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31607",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.353738,
+      "task_id": "t10773",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31610",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3598962,
+      "task_id": "t10774",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31612",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3658524,
+      "task_id": "t10775",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_gpu",
+      "inferred_workload_key": "gpu_heavy_jax_matmul",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "scheduleurm_bench_cwd",
+      "service_domain_admitted": true,
+      "signature": "scheduleurm_bench_cwd/auto-adopted/p31608",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268324.3721116,
+      "task_id": "t10776",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3150710",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781268571.6450217,
+      "task_id": "t10777",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3162527",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781269665.078258,
+      "task_id": "t10787",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_live_benchmark_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3175084",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781270673.3980708,
+      "task_id": "t10800",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3176528",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781270800.1017652,
+      "task_id": "t10803",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "assumption_agent_unittest_completed_history",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "Asumption Agent",
+      "service_domain_admitted": true,
+      "signature": "Asumption Agent/auto-adopted/p3181507",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271318.7393506,
+      "task_id": "t10804",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p950",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271318.866155,
+      "task_id": "t10805",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p951",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271318.8747706,
+      "task_id": "t10806",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5264",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.4096293,
+      "task_id": "t10808",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5265",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.4184108,
+      "task_id": "t10809",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5271",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.4272678,
+      "task_id": "t10810",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5272",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.435857,
+      "task_id": "t10811",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5273",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.5608184,
+      "task_id": "t10812",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5274",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.5699313,
+      "task_id": "t10813",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5275",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.5792155,
+      "task_id": "t10814",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5279",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.5884902,
+      "task_id": "t10815",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5280",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.5987523,
+      "task_id": "t10816",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5281",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6126952,
+      "task_id": "t10817",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5571",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6236043,
+      "task_id": "t10818",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5577",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6342044,
+      "task_id": "t10819",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5578",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6447432,
+      "task_id": "t10820",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5579",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6546538,
+      "task_id": "t10821",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5580",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.6639116,
+      "task_id": "t10822",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p5581",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781271881.673154,
+      "task_id": "t10823",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p7597",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781272001.357219,
+      "task_id": "t10825",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p7598",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781272001.364449,
+      "task_id": "t10826",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p7599",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781272001.3724897,
+      "task_id": "t10827",
+      "workload_key": ""
+    },
+    {
+      "admission_reason": "",
+      "classification_reason": "unmapped_cpu",
+      "inferred_workload_key": "gpu_llm_torch_decoder_stack",
+      "mapping_mode": "unmapped",
+      "measured_profiles": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "population": {
+        "include_attempted": true,
+        "include_completed_active": true,
+        "label": "included_production_like"
+      },
+      "project": "RE-SAC",
+      "service_domain_admitted": true,
+      "signature": "RE-SAC/auto-adopted/p7600",
+      "status": "done",
+      "strict_service_admitted": false,
+      "submitted_at": 1781272001.3802814,
+      "task_id": "t10828",
+      "workload_key": ""
     }
   ],
   "window": {
-    "end_ts": 1781196501.631331,
-    "start_ts": 1778604501.631331,
+    "end_ts": 1781563421.5061264,
+    "start_ts": 1778971421.5061264,
     "window_days": 30.0,
     "window_s": 2592000.0
   }

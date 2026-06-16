@@ -3,8 +3,8 @@
     {
       "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/ScheduleurmUpload.lean",
       "role": "copied",
-      "sha256": "af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b",
-      "size_bytes": 245464
+      "sha256": "25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2",
+      "size_bytes": 256062
     },
     {
       "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/lean-toolchain",
@@ -15,20 +15,44 @@
     {
       "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/lakefile.toml",
       "role": "copied",
-      "sha256": "e62cdc2cbaf38950390df7d63ad8073f4dc420667774feea9370afe13e8d17a9",
-      "size_bytes": 3335
+      "sha256": "6387d79cd6ca41acc1be4195c45e9627b117d1b8b30b24d7b3004ba3316559e7",
+      "size_bytes": 3368
     },
     {
       "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/lean_build_log.txt",
       "role": "generated_build_log",
-      "sha256": "09cf29e269b39edc4e791ee2d54625272d03a6c3bcfaf525a2eb3f21bb4cd1a4",
-      "size_bytes": 29
+      "sha256": "819051ff0e56a5b65d947450ff98f9922ffc11c8ad693e4e56230952429d883d",
+      "size_bytes": 83
+    },
+    {
+      "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/build.log",
+      "role": "generated_build_log",
+      "sha256": "819051ff0e56a5b65d947450ff98f9922ffc11c8ad693e4e56230952429d883d",
+      "size_bytes": 83
     },
     {
       "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/lean_artifact_map.md",
       "role": "copied_crosswalk",
-      "sha256": "6b17f3a26ec0f04e5f66fcca6f7334d428e7839f07002194459679eae9b859aa",
-      "size_bytes": 10022
+      "sha256": "8d8614ad60b14f6a4d8cb7ee5f862a052e57c73b3a663dd33797fb8eb3d6ed0f",
+      "size_bytes": 10451
+    },
+    {
+      "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/theorem_crosswalk.md",
+      "role": "copied_crosswalk",
+      "sha256": "8d8614ad60b14f6a4d8cb7ee5f862a052e57c73b3a663dd33797fb8eb3d6ed0f",
+      "size_bytes": 10451
+    },
+    {
+      "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/README.md",
+      "role": "generated_readme",
+      "sha256": "7140ffc622f3e254d31579b8bcd5395d1e740b959da3bac12343483e02e7c007",
+      "size_bytes": 1029
+    },
+    {
+      "path": "md/experiment_artifacts/or_reviewer_supplement_20260612/sha256sums.txt",
+      "role": "generated_sha256_list",
+      "sha256": "8bad271e6ba2fa0e82ed3195ca0810c87ee85554f48fe252ddb4abb6e7c6afff",
+      "size_bytes": 661
     }
   ],
   "forbidden_term_grep": {
@@ -41,6 +65,7 @@
     "hits": []
   },
   "gate": "reviewer_supplement_repackage",
+  "gate_pass": true,
   "lean_build": {
     "ran": true,
     "returncode": 0,
@@ -48,8 +73,22 @@
   },
   "output_dir": "md/experiment_artifacts/or_reviewer_supplement_20260612",
   "pass": true,
+  "pass_meaning": "complete reviewer proof supplement wrapper with consolidated Lean artifact, build log, crosswalk, manifest, README, and checksums; not a new mathematical theorem beyond the Lean artifact",
   "proof_root": "<LEAN_PROOF_SOURCE>",
-  "scheduleurm_upload_sha256": "af79be4416e4c4add0fe41663fc0927af7058fe04412908b6688a8409227f01b",
+  "required_files": {
+    "README.md": true,
+    "ScheduleurmUpload.lean": true,
+    "build.log": true,
+    "lakefile.toml_or_lakefile.lean": true,
+    "lean-toolchain": true,
+    "sha256sums.txt": true,
+    "theorem_crosswalk.md": true
+  },
+  "root_layout_ready": true,
+  "scheduleurm_upload_sha256": "25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2",
   "scope": "repackages the Lean upload contract and rebuild log; theorem names still need to be kept textually synchronized with the manuscript at final submission time",
+  "scoped_claim_ready": true,
+  "status": "REVIEWER_SUPPLEMENT_LAYOUT_AND_BUILD_PASS",
+  "strong_claim_ready": false,
   "upload_exists": true
 }

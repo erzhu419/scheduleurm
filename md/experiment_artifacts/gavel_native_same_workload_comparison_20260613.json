@@ -1,0 +1,42 @@
+{
+  "direct_fullstack_binary_superiority_ready": false,
+  "eligible_row_count": 1,
+  "gate": "gavel_native_same_workload_comparison",
+  "gavel_artifact": "md/experiment_artifacts/gavel_native_q01_resnet50_64_scs_20260613.json",
+  "gavel_solver": "SCS",
+  "pass": true,
+  "raw_native_simulator_superiority_count": 1,
+  "row_count": 1,
+  "rows": [
+    {
+      "eligible_same_workload_full_taskset": true,
+      "expected_full_taskset_job_count": 64,
+      "gavel_best_makespan_s": 369.415,
+      "gavel_best_mean_jct_s": 187.593,
+      "gavel_best_pareto_policy": "isolated",
+      "gavel_usable_policies": [
+        "finish_time_fairness",
+        "isolated",
+        "max_min_fairness",
+        "max_sum_throughput_perf",
+        "min_total_duration"
+      ],
+      "gavel_usable_policy_count": 5,
+      "job_count": 64,
+      "note": "eligible full-taskset native simulator comparison",
+      "scheduleurm_best_flow_policy": "scheduleurm_sota_union_makespan",
+      "scheduleurm_best_makespan_s": 50.62070581630731,
+      "scheduleurm_best_mean_flow_s": 27.304264159130508,
+      "scheduleurm_best_pareto_policy": "scheduleurm_sota_union_makespan",
+      "scheduleurm_policy_count": 12,
+      "scheduleurm_raw_native_simulator_makespan_ratio": 7.297705435805956,
+      "scheduleurm_raw_native_simulator_mean_flow_ratio": 6.8704653202408,
+      "scheduleurm_raw_native_simulator_pareto_superior": true,
+      "taskset": "q01_gpu_bound_cnn_resnet50"
+    }
+  ],
+  "same_workload_native_simulator_superiority_ready": true,
+  "scope": "Compares Scheduleurm measured-cache replay to Gavel's native simulator on full-taskset same-workload trace exports.  A ready result supports a scoped native-Gavel-simulator baseline claim.  It is not direct full-stack binary superiority because Gavel's simulator uses its own throughput tables and does not launch the real workload binaries on the Scheduleurm cluster.",
+  "scoped_claim_ready": true,
+  "strong_claim_ready": false
+}

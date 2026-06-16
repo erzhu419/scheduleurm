@@ -1,0 +1,65 @@
+Name:         sia-cuda-probe
+Namespace:    sia-baseline
+Labels:       <none>
+Annotations:  <none>
+API Version:  adaptdl.petuum.com/v1
+Kind:         AdaptDLJob
+Metadata:
+  Creation Timestamp:  2026-06-13T12:52:36Z
+  Generation:          1
+  Resource Version:    3003
+  UID:                 f4e0180a-26e8-4e5e-a67a-afc687e7b74d
+Spec:
+  Application:          cifar10
+  Max Replicas:         1
+  Min Replicas:         1
+  Preemptible:          true
+  Target Batch Size:    32
+  Target Num Replicas:  1
+  Template:
+    Spec:
+      Containers:
+        Args:
+          --n
+          67108864
+          --iters
+          80
+          --warmup
+          8
+          --inner
+          64
+        Env:
+          Name:             SCHEDULEURM_RUN_LABEL
+          Value:            sia_mip_fullstack_cuda_probe
+          Name:             SCHEDULEURM_RESULT_JSON
+          Value:            /results/sia_cuda_probe.json
+          Name:             SCHEDULEURM_RESULT_LOG
+          Value:            /results/sia_cuda_probe.log
+        Image:              scheduleurm/cuda-probe:local
+        Image Pull Policy:  IfNotPresent
+        Name:               main
+        Resources:
+          Limits:
+            nvidia.com/gpu:  1
+          Requests:
+            Cpu:             1
+            Memory:          2Gi
+            nvidia.com/gpu:  1
+        Volume Mounts:
+          Mount Path:  /results
+          Name:        results
+      Node Selector:
+        kubernetes.io/hostname:  huiwei-super-server
+      Restart Policy:            Never
+      Volumes:
+        Host Path:
+          Path:  /tmp/scheduleurm-sia-results
+          Type:  DirectoryOrCreate
+        Name:    results
+Status:
+  Attained Service:            3.617909
+  Attained Service Timestamp:  2026-06-13T12:53:12.946657+00:00
+  Completion Timestamp:        2026-06-13T12:53:12.946657+00:00
+  Group:                       0
+  Phase:                       Succeeded
+Events:                        <none>

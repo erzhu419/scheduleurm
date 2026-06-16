@@ -47,9 +47,11 @@ def main() -> int:
         dt = time.time() - t0
         elapsed = time.time() - start
         rate = i / max(elapsed, 1e-9)
+        remaining = max(0, steps - i)
+        eta = remaining / max(rate, 1e-9)
         print(
             f"Step {i}/{steps} dt={dt:.6f}s elapsed={elapsed:.3f}s "
-            f"rate={rate:.6f} step/s",
+            f"rate={rate:.6f} step/s ETA {eta:.1f}s",
             flush=True,
         )
     elapsed = time.time() - start

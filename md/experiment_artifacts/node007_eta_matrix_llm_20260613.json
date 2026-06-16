@@ -1,0 +1,256 @@
+{
+  "cases": [
+    "single_gpu_single_task",
+    "single_gpu_multi_task",
+    "four_gpu_single_task_each",
+    "four_gpu_two_tasks_each"
+  ],
+  "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
+  "gate": "node007_eta_matrix",
+  "node": "node007-direct",
+  "pass": true,
+  "results": [
+    {
+      "case": "single_gpu_single_task",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 1,
+        "run_id": "node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_single_task",
+        "stable_rate_ready_count": 1,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_single_task/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "case": "single_gpu_multi_task",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          2,
+          3,
+          4
+        ],
+        "rate_count": 9,
+        "run_id": "node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task",
+        "stable_rate_ready_count": 9,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_2_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_3_per_gpu_summary.json",
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_4_per_gpu_summary.json"
+        ]
+      },
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "case": "four_gpu_single_task_each",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          1
+        ],
+        "rate_count": 4,
+        "run_id": "node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each",
+        "stable_rate_ready_count": 4,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json"
+        ]
+      },
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "case": "four_gpu_two_tasks_each",
+      "error": "",
+      "result": {
+        "gate": "remote_workload_selected_profile_probe",
+        "gpus": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "node": "node007-direct",
+        "pass": true,
+        "profiles": [
+          2
+        ],
+        "rate_count": 8,
+        "run_id": "node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_two_tasks_each",
+        "stable_rate_ready_count": 8,
+        "summary_paths": [
+          "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_two_tasks_each/reports/profile_2_per_gpu_summary.json"
+        ]
+      },
+      "workload": "llm_torch_transformer"
+    }
+  ],
+  "rows": [
+    {
+      "aggregate_stable_rate": 411.640608,
+      "case": "single_gpu_single_task",
+      "elapsed_wall_s": 5.869864463806152,
+      "error": "",
+      "expected_task_count": 1,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.0024293035734705747,
+      "mean_stable_rate": 411.640608,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.0024293035734705747,
+      "profile": 1,
+      "running_count": 1,
+      "stable_rate_ready_count": 1,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_single_task/reports/profile_1_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "aggregate_stable_rate": 643.9679619999999,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 9.613719940185547,
+      "error": "",
+      "expected_task_count": 2,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.0043204932005438965,
+      "mean_stable_rate": 321.98398099999997,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.0024241665845581243,
+      "profile": 2,
+      "running_count": 2,
+      "stable_rate_ready_count": 2,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_2_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "aggregate_stable_rate": 1054.491461,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 6.286747455596924,
+      "error": "",
+      "expected_task_count": 3,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.0034454122136479575,
+      "mean_stable_rate": 351.4971536666667,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.0025028735867080034,
+      "profile": 3,
+      "running_count": 3,
+      "stable_rate_ready_count": 3,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_3_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "aggregate_stable_rate": 1217.400335,
+      "case": "single_gpu_multi_task",
+      "elapsed_wall_s": 21.30832004547119,
+      "error": "",
+      "expected_task_count": 4,
+      "gpu_count": 1,
+      "gpus": [
+        0
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.005151969605192822,
+      "mean_stable_rate": 304.35008375,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.002618371831616582,
+      "profile": 4,
+      "running_count": 4,
+      "stable_rate_ready_count": 4,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_single_gpu_multi_task/reports/profile_4_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "aggregate_stable_rate": 1238.2160450000001,
+      "case": "four_gpu_single_task_each",
+      "elapsed_wall_s": 5.129227161407471,
+      "error": "",
+      "expected_task_count": 4,
+      "gpu_count": 4,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.0037006119794545725,
+      "mean_stable_rate": 309.55401125000003,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.0027936203834522224,
+      "profile": 1,
+      "running_count": 4,
+      "stable_rate_ready_count": 4,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_single_task_each/reports/profile_1_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    },
+    {
+      "aggregate_stable_rate": 2518.288722,
+      "case": "four_gpu_two_tasks_each",
+      "elapsed_wall_s": 8.235629558563232,
+      "error": "",
+      "expected_task_count": 8,
+      "gpu_count": 4,
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "label": "Torch Transformer/LLM workload",
+      "max_seconds_per_unit": 0.003957997822103782,
+      "mean_stable_rate": 314.78609025,
+      "measurement_valid": true,
+      "min_seconds_per_unit": 0.0025491088171550576,
+      "profile": 2,
+      "running_count": 8,
+      "stable_rate_ready_count": 8,
+      "summary_path": "/home/erzhu419/.claude/scheduler/experiments/runs/node007_eta_matrix_llm_20260613_llm_torch_transformer_four_gpu_two_tasks_each/reports/profile_2_per_gpu_summary.json",
+      "unit": "step",
+      "workload": "llm_torch_transformer"
+    }
+  ],
+  "run_id": "node007_eta_matrix_llm_20260613",
+  "workloads": [
+    "llm_torch_transformer"
+  ]
+}

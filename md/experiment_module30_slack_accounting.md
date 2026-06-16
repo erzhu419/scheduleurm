@@ -80,14 +80,14 @@ md/experiment_artifacts/module48_portfolio_slack_certificate.md
 The module48 certificate has:
 
 ```text
-delta = 0.066921842
+delta = 0.078777710
 Lrho = 0
 epsilon_est = 0
 beta = 0
 alpha1 = 0
-eta = 0.066921842
-B = 6361.354514
-finite_set_threshold_N = 95072
+eta = 0.078777710
+B = 34499765.485
+finite_set_threshold_N = 437938174
 ```
 
 This closes the arithmetic slack-accounting gap for a declared finite-support

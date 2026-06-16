@@ -3,10 +3,10 @@
     "adaptive_scalarized_ready": true,
     "aggregate_row": {
       "baseline_name": "Scheduleurm + SOTA candidate action union",
-      "candidate_vs_policy_job_weighted_mean_flow": 0.9998690152608606,
-      "candidate_vs_policy_sum_makespan": 0.9978582965294639,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9998700957664133,
+      "candidate_vs_policy_sum_makespan": 0.9977398961469752,
       "completed_jobs": 3744,
-      "job_weighted_mean_flow_s": 3569.5034438862554,
+      "job_weighted_mean_flow_s": 3171.3883933481325,
       "policy": "scheduleurm_sota_union_adaptive_scalarized",
       "policy_family": "candidate_union",
       "representative_systems": [
@@ -19,12 +19,12 @@
         "Gittins"
       ],
       "scenario_count": 16,
-      "sum_makespan_s": 173486.96062718632
+      "sum_makespan_s": 152822.4538347678
     },
-    "beats_both_envelopes_all": false,
+    "beats_both_envelopes_all": true,
     "dominated_scenario_count": 0,
     "not_pareto_dominated_all": true,
-    "worst_vs_sota_makespan_envelope": 0.994906540456486,
+    "worst_vs_sota_makespan_envelope": 1.0,
     "worst_vs_sota_mean_flow_envelope": 0.9994755340692042
   },
   "eta_reuse": {
@@ -156,10 +156,10 @@
   "pareto_slack_fixed_online_policy": {
     "aggregate_row": {
       "baseline_name": "Scheduleurm + SOTA candidate action union",
-      "candidate_vs_policy_job_weighted_mean_flow": 1.0009857513957272,
-      "candidate_vs_policy_sum_makespan": 0.9962976239141415,
+      "candidate_vs_policy_job_weighted_mean_flow": 0.9998700761616747,
+      "candidate_vs_policy_sum_makespan": 0.9977398961469752,
       "completed_jobs": 3744,
-      "job_weighted_mean_flow_s": 3573.490159564487,
+      "job_weighted_mean_flow_s": 3171.388331165814,
       "policy": "scheduleurm_sota_union_pareto_slack",
       "policy_family": "candidate_union",
       "representative_systems": [
@@ -172,21 +172,21 @@
         "Gittins"
       ],
       "scenario_count": 16,
-      "sum_makespan_s": 173215.6231542124
+      "sum_makespan_s": 152822.4538347678
     },
     "beats_both_envelopes_all": true,
     "dominated_scenario_count": 0,
     "fixed_online_policy_pareto_dominates_sota_style_all": true,
     "not_pareto_dominated_all": true,
     "pareto_slack_ready": true,
-    "worst_vs_sota_makespan_envelope": 0.9987269191159093,
-    "worst_vs_sota_mean_flow_envelope": 0.9957835356972355
+    "worst_vs_sota_makespan_envelope": 1.0,
+    "worst_vs_sota_mean_flow_envelope": 0.9994755340692042
   },
   "pass": true,
   "scope": "Replay/certificate evidence for an opt-in algorithm upgrade.  It admits SOTA-style action families into Scheduleurm's measured-cache candidate set and adds bounded lookahead/ETA reuse, but it is not a production launch trace and not direct full-stack SOTA superiority.",
   "scoped_claim_ready": true,
   "sota_candidate_union_summary": {
-    "adaptive_scalarized_union_beats_both_envelopes_all": false,
+    "adaptive_scalarized_union_beats_both_envelopes_all": true,
     "adaptive_scalarized_union_not_pareto_dominated_all": true,
     "fixed_online_policy_pareto_dominates_sota_style_all": true,
     "pareto_slack_union_beats_both_envelopes_all": true,

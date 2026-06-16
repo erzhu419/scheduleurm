@@ -1,5 +1,11 @@
 {
   "blockers": [
+    "isolated Gavel dependency imports are incomplete",
+    "Gavel protobuf stubs cannot be generated in the isolated copy",
+    "Gavel native entrypoint help smoke does not pass",
+    "Gavel generated-jobs native simulator smoke does not pass",
+    "Gavel bounded native trace smoke is not a usable direct baseline",
+    "Scheduleurm-to-Gavel native trace seed smoke does not pass",
     "Scheduleurm-to-Gavel native trace seed is a compatibility mapping; measured service-unit and policy-semantics equivalence still require validation before direct SOTA comparison"
   ],
   "copied_repo": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel",
@@ -8,7 +14,7 @@
     "pass": true,
     "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"
   },
-  "dependency_import_pass": true,
+  "dependency_import_pass": false,
   "dependency_imports": {
     "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
     "modules": [
@@ -19,28 +25,28 @@
         "returncode": 0
       },
       {
-        "detail": "OK",
+        "detail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'grpc_tools'",
         "module": "grpc_tools",
-        "ok": true,
-        "returncode": 0
+        "ok": false,
+        "returncode": 1
       },
       {
-        "detail": "OK",
+        "detail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'func_timeout'",
         "module": "func_timeout",
-        "ok": true,
-        "returncode": 0
+        "ok": false,
+        "returncode": 1
       },
       {
-        "detail": "OK",
+        "detail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'cvxpy'",
         "module": "cvxpy",
-        "ok": true,
-        "returncode": 0
+        "ok": false,
+        "returncode": 1
       },
       {
-        "detail": "OK",
+        "detail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nModuleNotFoundError: No module named 'matrix_completion'",
         "module": "matrix_completion",
-        "ok": true,
-        "returncode": 0
+        "ok": false,
+        "returncode": 1
       },
       {
         "detail": "OK",
@@ -49,103 +55,32 @@
         "returncode": 0
       }
     ],
-    "pass": true
+    "pass": false
   },
   "dependency_target": "/tmp/scheduleurm_gavel_pydeps",
-  "direct_native_trace_pass": true,
+  "direct_native_trace_pass": false,
   "entrypoint_help": {
-    "command": [
-      "/usr/bin/python3",
-      "scripts/sweeps/run_sweep_static.py",
-      "-h"
-    ],
-    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
-    "pass": true,
-    "returncode": 0,
-    "status": "PASS",
-    "stderr_tail": "",
-    "stdout_tail": "usage: run_sweep_static.py [-h] [-l LOG_DIR] [-t TIMEOUT] [-j PROCESSES]\n                           [-p POLICIES [POLICIES ...]]\n                           [-c CLUSTER_SPEC [CLUSTER_SPEC ...]]\n                           [--num_gpus_per_server NUM_GPUS_PER_SERVER]\n                           [--seeds SEEDS [SEEDS ...]] [-i INTERVAL]\n                           [-f FIXED_JOB_DURATION]\n                           [--throughputs-file THROUGHPUTS_FILE] [-m]\n                           [--solver {ECOS,GUROBI,SCS}] [-v]\n                           [--per_instance_type_prices_dir PER_INSTANCE_TYPE_PRICES_DIR]\n                           [--available_clouds {aws,gcp,azure} [{aws,gcp,azure} ...]]\n                           [--assign_SLOs] [--enable_global_queue] [--ideal]\n                           [-a NUM_TOTAL_JOBS_LOWER_BOUND]\n                           [-b NUM_TOTAL_JOBS_UPPER_BOUND]\n                           [-n NUM_DATA_POINTS]\n\nSweep through lambda values\n\noptions:\n  -h, --help            show this help message and exit\n  -l LOG_DIR, --log-dir LOG_DIR\n                        Log directory\n  -t TIMEOUT, --timeout TIMEOUT\n                        Timeout (in seconds) for each run\n  -j PROCESSES, --processes PROCESSES\n                        Number of processes to use in pool (use as many as\n                        available if not specified)\n  -p POLICIES [POLICIES ...], --policies POLICIES [POLICIES ...]\n                        List of policies to sweep\n  -c CLUSTER_SPEC [CLUSTER_SPEC ...], --cluster-spec CLUSTER_SPEC [CLUSTER_SPEC ...]\n                        Cluster specification in the form of\n                        #v100s:#p100s:#k80s\n  --num_gpus_per_server NUM_GPUS_PER_SERVER\n                        Cluster specification in the form of\n                        #v100s:#p100s:#k80s\n  --seeds SEEDS [SEEDS ...]\n                        List of random seeds\n  -i INTERVAL, --interval INTERVAL\n                        Interval length (in seconds)\n  -f FIXED_JOB_DURATION, --fixed-job-duration FIXED_JOB_DURATION\n                        If set, fixes the duration of all jobs to the\n                        specified value (in seconds)\n  --throughputs-file THROUGHPUTS_FILE\n                        Oracle throughputs file\n  -m, --generate-multi-gpu-jobs\n                        If set, generates multi-GPU jobs according to a pre-\n                        defined distribution\n  --solver {ECOS,GUROBI,SCS}\n                        CVXPY solver\n  -v, --verbose         Verbose\n  --per_instance_type_prices_dir PER_INSTANCE_TYPE_PRICES_DIR\n                        Per-instance-type prices directory\n  --available_clouds {aws,gcp,azure} [{aws,gcp,azure} ...]\n                        Clouds available to rent machines from\n  --assign_SLOs         If set, assigns SLOs to each job\n  --enable_global_queue\n                        If set, schedules jobs regardless of worker type\n  --ideal               Run allocations 100% ideally\n\nSweep over fixed range:\n  -a NUM_TOTAL_JOBS_LOWER_BOUND, --num-total-jobs-lower-bound NUM_TOTAL_JOBS_LOWER_BOUND\n                        Lower bound for num_total_jobs to sweep\n  -b NUM_TOTAL_JOBS_UPPER_BOUND, --num-total-jobs-upper-bound NUM_TOTAL_JOBS_UPPER_BOUND\n                        Upper bound for num_total_jobs to sweep\n  -n NUM_DATA_POINTS, --num-data-points NUM_DATA_POINTS\n                        Number of data points to sweep through\n",
-    "timeout": false,
-    "timeout_seconds": 20
+    "blocker": "protobuf stub generation failed",
+    "pass": false,
+    "status": "NOT_RUN"
   },
-  "entrypoint_help_pass": true,
+  "entrypoint_help_pass": false,
   "gate": "gavel_direct_native_smoke",
   "install_deps": false,
   "install_result": null,
-  "native_generated_jobs_pass": true,
+  "native_generated_jobs_pass": false,
   "native_generated_jobs_smoke": {
-    "command": [
-      "/usr/bin/python3",
-      "scripts/drivers/simulate_scheduler_with_generated_jobs.py",
-      "-c",
-      "1:0:0",
-      "--num_gpus_per_server",
-      "1:1:1",
-      "-s",
-      "0",
-      "-e",
-      "2",
-      "-p",
-      "fifo",
-      "--seed",
-      "0",
-      "-i",
-      "60",
-      "-l",
-      "0",
-      "-f",
-      "60",
-      "--throughputs_file",
-      "simulation_throughputs.json",
-      "-v"
-    ],
-    "completed_two_jobs": true,
-    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
-    "pass": true,
-    "returncode": 0,
-    "status": "PASS",
-    "stderr_tail": "scheduler:INFO [0] Running scheduler in simulation with the following args: policy=FIFO, seed=0, time_per_iteration=60, profiling_percentage=1.0, num_reference_models=26\n[2026-06-12 05:22:38.713285] Configuration: cluster_spec=v100:1|p100:0|k80:0, policy=FIFO, seed=0, lam=0.000000\nscheduler:INFO [0] Number of completed jobs: 0\nscheduler:INFO [0] [Job dispatched]\tJob ID: 0\nscheduler:INFO [0] [Job dispatched]\tJob ID: 1\nscheduler:DEBUG [0] Resetting time run so far\nscheduler:INFO [0] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0\tPriority: 2.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [0] Number of completed jobs: 0\nscheduler:DEBUG [59.97230318543036] Current active completion events: dict_keys([])\nscheduler:INFO [59.97230318543036] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [59.97230318543036] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.33\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [59.97230318543036] Number of completed jobs: 0\nscheduler:DEBUG [60.0] Current active completion events: dict_keys([])\nscheduler:INFO [60.0] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [60.0] [Job succeeded]\tJob ID: 0\tStart timestamp: 0.00\tEnd timestamp: 60.00\tDuration: 60.00\nscheduler:INFO [60.0] Remaining active jobs: 1\nscheduler:DEBUG [60.0] Resetting time run so far\nscheduler:INFO [60.0] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [60.0] Number of completed jobs: 1\nscheduler:DEBUG [119.99239483071614] Current active completion events: dict_keys([])\nscheduler:INFO [119.99239483071614] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [119.99239483071614] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0\tPriority: 1.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [119.99239483071614] Number of completed jobs: 1\nscheduler:DEBUG [120.0] Current active completion events: dict_keys([])\nscheduler:INFO [120.0] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [120.0] [Job succeeded]\tJob ID: 1\tStart timestamp: 0.00\tEnd timestamp: 120.00\tDuration: 120.00\nscheduler:INFO [120.0] Remaining active jobs: 0\nscheduler:WARNING [120.0] 1 GPUs of type v100 left unused. Number of active jobs: 0\nscheduler:INFO [120.0] Number of completed jobs: 2\n[2026-06-12 05:22:38.715410] Results: average JCT=90.000000, utilization=1.000000, total_cost=$0.00, num_SLO_violations=0, lease_extension_frequency=100.00%\n",
-    "stdout_tail": "Window start time: 0.000000\nWindow duration: 120.000 seconds (0.03 hours)\nTotal duration: 120.000 seconds (0.03 hours)\nJob completion times:\nJob 0: 60.000\nJob 1: 120.000\nAverage job completion time: 90.000 seconds (0.03 hours)\nAverage job completion time (low priority): 90.000 seconds (0.03 hours)\nCluster utilization: 1.000\nTotal cost: $0.00\nNumber of SLO violations: 0\nExtended leases 100.00% of the time (2/2)\n",
-    "timeout": false,
-    "timeout_seconds": 20,
-    "trace_scope": "Native Gavel generated-jobs simulator smoke only; not a Scheduleurm same-workload comparison."
+    "blocker": "protobuf stub generation failed",
+    "pass": false,
+    "status": "NOT_RUN"
   },
   "native_trace_smoke": {
-    "classifier": "PASS",
-    "command": [
-      "/usr/bin/python3",
-      "scripts/drivers/simulate_scheduler_with_trace.py",
-      "-t",
-      "traces/physical_cluster/small_test.trace",
-      "-p",
-      "fifo",
-      "--throughputs_file",
-      "simulation_throughputs.json",
-      "-c",
-      "2:0:0",
-      "--num_gpus_per_server",
-      "2:1:1",
-      "--seed",
-      "0",
-      "--time_per_iteration",
-      "60",
-      "-s",
-      "0",
-      "-e",
-      "2"
-    ],
-    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
-    "pass": true,
-    "returncode": 0,
-    "status": "PASS",
-    "stderr_tail": "scheduler:INFO [0] Running scheduler in simulation with the following args: policy=FIFO, seed=0, time_per_iteration=60, profiling_percentage=1.0, num_reference_models=26\nscheduler:INFO [0.0] Number of completed jobs: 0\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 0\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 1\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 2\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 3\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 4\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 5\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 6\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 7\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 8\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 9\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 10\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 11\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 12\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 13\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 14\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 15\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 16\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 17\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 18\nscheduler:INFO [0.0] [Job dispatched]\tJob ID: 19\nscheduler:DEBUG [0.0] Resetting time run so far\nscheduler:INFO [0.0] [Micro-task scheduled]\tJob ID: 0\tWorker type: v100\tWorker ID(s): 0,1\tPriority: 20.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [0.0] Number of completed jobs: 0\nscheduler:DEBUG [34.36208245706687] Current active completion events: dict_keys([])\nscheduler:INFO [34.36208245706687] [Micro-task succeeded]\tJob ID: 0\tWorker type: v100\tWorker ID(s): [0, 1]\nscheduler:INFO [34.36208245706687] [Job succeeded]\tJob ID: 0\tStart timestamp: 0.00\tEnd timestamp: 34.36\tDuration: 34.36\nscheduler:INFO [34.36208245706687] Remaining active jobs: 19\nscheduler:DEBUG [34.36208245706687] Resetting time run so far\nscheduler:INFO [34.36208245706687] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0\tPriority: 19.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [34.36208245706687] [Micro-task scheduled]\tJob ID: 2\tWorker type: v100\tWorker ID(s): 1\tPriority: 19.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [34.36208245706687] Number of completed jobs: 1\nscheduler:DEBUG [93.91795710210855] Current active completion events: dict_keys([])\nscheduler:INFO [93.91795710210855] [Micro-task succeeded]\tJob ID: 2\tWorker type: v100\tWorker ID(s): [1]\nscheduler:DEBUG [93.91795710210855] Current active completion events: dict_keys([])\nscheduler:INFO [93.91795710210855] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0]\nscheduler:INFO [93.91795710210855] [Job succeeded]\tJob ID: 1\tStart timestamp: 0.00\tEnd timestamp: 47.03\tDuration: 47.03\nscheduler:INFO [93.91795710210855] Remaining active jobs: 18\nscheduler:INFO [93.91795710210855] [Micro-task scheduled]\tJob ID: 2\tWorker type: v100\tWorker ID(s): 1\tPriority: 7.17\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:WARNING [93.91795710210855] 1 GPUs of type v100 left unused. Number of active jobs: 18\nscheduler:INFO [93.91795710210855] Number of completed jobs: 2\n",
-    "stdout_tail": "Window start time: 0.000000\nWindow duration: 93.918 seconds (0.03 hours)\nTotal duration: 93.918 seconds (0.03 hours)\nJob completion times:\nJob 0: 34.362\nJob 1: 47.031\nAverage job completion time: 40.697 seconds (0.01 hours)\nAverage job completion time (low priority): 40.697 seconds (0.01 hours)\nCluster utilization: 0.750\nExtended leases 100.00% of the time (1/1)\n",
-    "timeout": false,
-    "timeout_seconds": 20,
-    "trace_scope": "Native Gavel small_test.trace runner smoke only; not a Scheduleurm same-workload comparison."
+    "blocker": "protobuf stub generation failed",
+    "pass": false,
+    "status": "NOT_RUN"
   },
-  "pass": true,
-  "protobuf_stub_generation_pass": true,
+  "pass": false,
+  "protobuf_stub_generation_pass": false,
   "protobuf_stubs": {
     "commands": [
       {
@@ -160,8 +95,8 @@
         ],
         "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
         "proto": "iterator_to_scheduler.proto",
-        "returncode": 0,
-        "stderr_tail": "",
+        "returncode": 1,
+        "stderr_tail": "/usr/bin/python3: Error while finding module specification for 'grpc_tools.protoc' (ModuleNotFoundError: No module named 'grpc_tools')\n",
         "stdout_tail": "",
         "timeout": false,
         "timeout_seconds": 20
@@ -178,8 +113,8 @@
         ],
         "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
         "proto": "scheduler_to_worker.proto",
-        "returncode": 0,
-        "stderr_tail": "",
+        "returncode": 1,
+        "stderr_tail": "/usr/bin/python3: Error while finding module specification for 'grpc_tools.protoc' (ModuleNotFoundError: No module named 'grpc_tools')\n",
         "stdout_tail": "",
         "timeout": false,
         "timeout_seconds": 20
@@ -196,8 +131,8 @@
         ],
         "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
         "proto": "worker_to_scheduler.proto",
-        "returncode": 0,
-        "stderr_tail": "",
+        "returncode": 1,
+        "stderr_tail": "/usr/bin/python3: Error while finding module specification for 'grpc_tools.protoc' (ModuleNotFoundError: No module named 'grpc_tools')\n",
         "stdout_tail": "",
         "timeout": false,
         "timeout_seconds": 20
@@ -214,8 +149,8 @@
         ],
         "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
         "proto": "common.proto",
-        "returncode": 0,
-        "stderr_tail": "",
+        "returncode": 1,
+        "stderr_tail": "/usr/bin/python3: Error while finding module specification for 'grpc_tools.protoc' (ModuleNotFoundError: No module named 'grpc_tools')\n",
         "stdout_tail": "",
         "timeout": false,
         "timeout_seconds": 20
@@ -232,55 +167,25 @@
         ],
         "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
         "proto": "enums.proto",
-        "returncode": 0,
-        "stderr_tail": "",
+        "returncode": 1,
+        "stderr_tail": "/usr/bin/python3: Error while finding module specification for 'grpc_tools.protoc' (ModuleNotFoundError: No module named 'grpc_tools')\n",
         "stdout_tail": "",
         "timeout": false,
         "timeout_seconds": 20
       }
     ],
-    "pass": true,
+    "pass": false,
     "rpc_stubs_dir": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/runtime/rpc_stubs"
   },
   "reference_root": "/home/erzhu419/mine_code/scheduleurm/reference/repos",
   "run_root": "/tmp/scheduleurm_gavel_direct_native_smoke",
   "run_root_removed": false,
   "same_workload_direct_baseline_ready": false,
-  "scheduleurm_native_trace_seed_pass": true,
+  "scheduleurm_native_trace_seed_pass": false,
   "scheduleurm_native_trace_seed_smoke": {
-    "classifier": "PASS",
-    "command": [
-      "/usr/bin/python3",
-      "scripts/drivers/simulate_scheduler_with_trace.py",
-      "-t",
-      "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/scheduleurm_q01_native_trace_seed.trace",
-      "-p",
-      "fifo",
-      "--throughputs_file",
-      "simulation_throughputs.json",
-      "-c",
-      "2:0:0",
-      "--num_gpus_per_server",
-      "2:1:1",
-      "--seed",
-      "0",
-      "--time_per_iteration",
-      "60",
-      "-s",
-      "0",
-      "-e",
-      "2"
-    ],
-    "cwd": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler",
-    "pass": true,
-    "returncode": 0,
-    "status": "PASS",
-    "stderr_tail": "scheduler:INFO [25.464479629318333] [Job succeeded]\tJob ID: 0\tStart timestamp: 0.00\tEnd timestamp: 25.46\tDuration: 25.46\nscheduler:INFO [25.464479629318333] Remaining active jobs: 0\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 1\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 2\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 3\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 4\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 5\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 6\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 7\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 8\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 9\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 10\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 11\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 12\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 13\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 14\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 15\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 16\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 17\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 18\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 19\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 20\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 21\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 22\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 23\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 24\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 25\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 26\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 27\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 28\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 29\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 30\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 31\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 32\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 33\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 34\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 35\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 36\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 37\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 38\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 39\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 40\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 41\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 42\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 43\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 44\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 45\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 46\nscheduler:INFO [25.464479629318333] [Job dispatched]\tJob ID: 47\nscheduler:DEBUG [25.464479629318333] Resetting time run so far\nscheduler:INFO [25.464479629318333] [Micro-task scheduled]\tJob ID: 1\tWorker type: v100\tWorker ID(s): 0,1\tPriority: 47.00\tDeficit: 0.00\tAllocation:  [v100 1.00]\nscheduler:INFO [25.464479629318333] Number of completed jobs: 1\nscheduler:DEBUG [50.92895925863667] Current active completion events: dict_keys([])\nscheduler:INFO [50.92895925863667] [Micro-task succeeded]\tJob ID: 1\tWorker type: v100\tWorker ID(s): [0, 1]\nscheduler:INFO [50.92895925863667] [Job succeeded]\tJob ID: 1\tStart timestamp: 0.00\tEnd timestamp: 50.93\tDuration: 50.93\nscheduler:INFO [50.92895925863667] Remaining active jobs: 46\nscheduler:WARNING [50.92895925863667] 2 GPUs of type v100 left unused. Number of active jobs: 46\nscheduler:INFO [50.92895925863667] Number of completed jobs: 2\n",
-    "stdout_tail": "Window start time: 0.000000\nWindow duration: 50.929 seconds (0.01 hours)\nTotal duration: 50.929 seconds (0.01 hours)\nJob completion times:\nJob 0: 25.464\nJob 1: 50.928\nAverage job completion time: 38.196 seconds (0.01 hours)\nAverage job completion time (low priority): 38.196 seconds (0.01 hours)\nCluster utilization: 1.000\nNo lease extension opportunities\n",
-    "timeout": false,
-    "timeout_seconds": 20,
-    "trace_file": "/tmp/scheduleurm_gavel_direct_native_smoke/gavel/scheduler/scheduleurm_q01_native_trace_seed.trace",
-    "trace_scope": "Scheduleurm q01-to-Gavel native trace compatibility smoke.  This validates native schema consumption, not service-unit equivalence."
+    "blocker": "protobuf stub generation failed",
+    "pass": false,
+    "status": "NOT_RUN"
   },
   "scope": "Isolated Gavel native-stack smoke audit.  A pass means the local clone can be prepared and its entrypoint can start in a temporary copy.  It does not mean Gavel has been run as a same-workload full-stack Scheduleurm baseline.",
   "source_repo": "/home/erzhu419/mine_code/scheduleurm/reference/repos/gavel"

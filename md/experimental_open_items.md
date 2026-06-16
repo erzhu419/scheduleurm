@@ -54,12 +54,12 @@ Post-closure upgrade artifacts 2026-06-11:
     both bounded tasksets; scalar service-unit equivalence remains false because
     the single-scale q01/q11 p95 relative errors are about 0.5.
   selected-profile holdout LCB gate =
-    md/selected_profile_holdout_lcb_gate_20260612.md
+    md/selected_profile_holdout_lcb_gate_20260613.md
     all 11 selected aggregate-window targets now meet the 20-sample threshold
     after CNN, LLM, RL, CPU, and control probes.  Absolute mean-service eta
-    remains negative (-738.9938) and diagonal mean-service eta remains negative
+    remains negative (-738.9820) and diagonal mean-service eta remains negative
     (-0.5587), but the theorem-facing LCB lower-service capacity certificate
-    passes with delta_LCB = 0.020993.
+    passes with delta_LCB = 0.024712.
   direct SOTA full-stack readiness =
     md/direct_sota_fullstack_readiness_20260613.md
     same-workload adapter seeds now exist for Gavel, Pollux/AdaptDL, Sia,
@@ -204,8 +204,8 @@ Post-closure upgrade artifacts 2026-06-11:
 	    threshold.
 	  declared finite-domain positive-cover gate =
 	    md/declared_finite_domain_positive_cover_gate_20260612.md
-	    declared service-cache universe has 193 buckets: 187 positive lower-service
-	    rows, 6 capacity boundaries, and 0 uncovered buckets.  This closes the
+	    declared service-cache universe has 225 buckets: 215 positive lower-service
+	    rows, 10 capacity boundaries, and 0 uncovered buckets.  This closes the
 	    declared finite positive domain, not arbitrary positive-service all-state
 	    stability.
 	  all-state conservative fabric-cover gate =

@@ -1,0 +1,87 @@
+Name:             iadeep-cuda-probe-xzj2v
+Namespace:        iadeep
+Priority:         0
+Service Account:  default
+Node:             huiwei-super-server/192.168.1.105
+Start Time:       Sat, 13 Jun 2026 21:43:15 +0800
+Labels:           app=iadeep-cuda-probe
+                  batch.kubernetes.io/controller-uid=c73002ff-ed76-407f-933b-8549263e5f20
+                  batch.kubernetes.io/job-name=iadeep-cuda-probe
+                  controller-uid=c73002ff-ed76-407f-933b-8549263e5f20
+                  job-name=iadeep-cuda-probe
+Annotations:      ALIYUN_COM_GPU_MEM_ASSIGNED: true
+                  ALIYUN_COM_GPU_MEM_ASSUME_TIME: 1781358195612803262
+                  ALIYUN_COM_GPU_MEM_DEV: 11
+                  ALIYUN_COM_GPU_MEM_IDX: 0
+                  ALIYUN_COM_GPU_MEM_POD: 1
+                  POD_NAME: iadeep-cuda-probe-xzj2v
+Status:           Succeeded
+IP:               10.42.0.28
+IPs:
+  IP:           10.42.0.28
+Controlled By:  Job/iadeep-cuda-probe
+Containers:
+  main:
+    Container ID:  docker://1b8f2525593d98774da58e8e3904f4e645ddcf28610aa2953618139803be0a59
+    Image:         scheduleurm/cuda-probe:local
+    Image ID:      docker://sha256:e961f8f5ca92d5151350411ea52c24e1bf45884ed1e4119ee0fe48dd9849d217
+    Port:          <none>
+    Host Port:     <none>
+    Args:
+      --n
+      67108864
+      --iters
+      80
+      --warmup
+      8
+      --inner
+      64
+    State:          Terminated
+      Reason:       Completed
+      Exit Code:    0
+      Started:      Sat, 13 Jun 2026 21:43:16 +0800
+      Finished:     Sat, 13 Jun 2026 21:43:17 +0800
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      gpushare/gpu-mem:  1
+    Requests:
+      cpu:               1
+      gpushare/gpu-mem:  1
+      memory:            2Gi
+    Environment:
+      SCHEDULEURM_RUN_LABEL:    iadeep_fullstack_cuda_probe
+      SCHEDULEURM_RESULT_JSON:  /results/iadeep_cuda_probe.json
+      SCHEDULEURM_RESULT_LOG:   /results/iadeep_cuda_probe.log
+    Mounts:
+      /results from results (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-568w9 (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   False 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  results:
+    Type:          HostPath (bare host directory volume)
+    Path:          /tmp/scheduleurm-iadeep-results
+    HostPathType:  DirectoryOrCreate
+  kube-api-access-568w9:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   Burstable
+Node-Selectors:              gpushare=true
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From              Message
+  ----     ------            ----  ----              -------
+  Warning  FailedScheduling  83s   iadeep-scheduler  Post "http://127.0.0.1:32761/gpushare-scheduler/bind": EOF
+  Normal   Pulled            82s   kubelet           spec.containers{main}: Container image "scheduleurm/cuda-probe:local" already present on machine
+  Normal   Created           82s   kubelet           spec.containers{main}: Created container: main
+  Normal   Started           82s   kubelet           spec.containers{main}: Started container main

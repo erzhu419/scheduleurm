@@ -1,0 +1,86 @@
+{
+    "apiVersion": "adaptdl.petuum.com/v1",
+    "kind": "AdaptDLJob",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"adaptdl.petuum.com/v1\",\"kind\":\"AdaptDLJob\",\"metadata\":{\"annotations\":{},\"name\":\"pollux-cuda-probe-long\",\"namespace\":\"pollux-baseline\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"args\":[\"--n\",\"67108864\",\"--iters\",\"3000\",\"--warmup\",\"8\",\"--inner\",\"64\"],\"env\":[{\"name\":\"SCHEDULEURM_RUN_LABEL\",\"value\":\"pollux_adaptdl_fullstack_cuda_probe_long\"},{\"name\":\"SCHEDULEURM_RESULT_JSON\",\"value\":\"/results/pollux_cuda_probe_long.json\"},{\"name\":\"SCHEDULEURM_RESULT_LOG\",\"value\":\"/results/pollux_cuda_probe_long.log\"}],\"image\":\"scheduleurm/cuda-probe:local\",\"imagePullPolicy\":\"IfNotPresent\",\"name\":\"main\",\"resources\":{\"limits\":{\"nvidia.com/gpu\":\"1\"},\"requests\":{\"cpu\":\"1\",\"memory\":\"2Gi\",\"nvidia.com/gpu\":\"1\"}},\"volumeMounts\":[{\"mountPath\":\"/results\",\"name\":\"results\"}]}],\"nodeSelector\":{\"kubernetes.io/hostname\":\"huiwei-super-server\"},\"restartPolicy\":\"Never\",\"volumes\":[{\"hostPath\":{\"path\":\"/tmp/scheduleurm-pollux-results\",\"type\":\"DirectoryOrCreate\"},\"name\":\"results\"}]}}}}\n"
+        },
+        "creationTimestamp": "2026-06-13T12:15:10Z",
+        "generation": 1,
+        "name": "pollux-cuda-probe-long",
+        "namespace": "pollux-baseline",
+        "resourceVersion": "1671",
+        "uid": "696107c5-8776-4bd9-b3d8-35a37010dfe5"
+    },
+    "spec": {
+        "template": {
+            "spec": {
+                "containers": [
+                    {
+                        "args": [
+                            "--n",
+                            "67108864",
+                            "--iters",
+                            "3000",
+                            "--warmup",
+                            "8",
+                            "--inner",
+                            "64"
+                        ],
+                        "env": [
+                            {
+                                "name": "SCHEDULEURM_RUN_LABEL",
+                                "value": "pollux_adaptdl_fullstack_cuda_probe_long"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_JSON",
+                                "value": "/results/pollux_cuda_probe_long.json"
+                            },
+                            {
+                                "name": "SCHEDULEURM_RESULT_LOG",
+                                "value": "/results/pollux_cuda_probe_long.log"
+                            }
+                        ],
+                        "image": "scheduleurm/cuda-probe:local",
+                        "imagePullPolicy": "IfNotPresent",
+                        "name": "main",
+                        "resources": {
+                            "limits": {
+                                "nvidia.com/gpu": "1"
+                            },
+                            "requests": {
+                                "cpu": "1",
+                                "memory": "2Gi",
+                                "nvidia.com/gpu": "1"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/results",
+                                "name": "results"
+                            }
+                        ]
+                    }
+                ],
+                "nodeSelector": {
+                    "kubernetes.io/hostname": "huiwei-super-server"
+                },
+                "restartPolicy": "Never",
+                "volumes": [
+                    {
+                        "hostPath": {
+                            "path": "/tmp/scheduleurm-pollux-results",
+                            "type": "DirectoryOrCreate"
+                        },
+                        "name": "results"
+                    }
+                ]
+            }
+        }
+    },
+    "status": {
+        "completionTimestamp": "2026-06-13T12:15:23.287994+00:00",
+        "group": 0,
+        "phase": "Succeeded"
+    }
+}

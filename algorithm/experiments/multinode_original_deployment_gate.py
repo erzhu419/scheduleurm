@@ -1,6 +1,6 @@
 """Multi-node original-deployment closure gate.
 
-The existing full-stack evidence is same-host and scoped.  This gate audits
+The existing external-runtime evidence is same-host and scoped.  This gate audits
 whether there is evidence for broader multi-node original deployments and, when
 requested, performs only read-only SSH inventory probes.
 """
@@ -39,7 +39,7 @@ def build_multinode_original_deployment_gate(
     nodes: tuple[str, ...] = DEFAULT_NODES,
 ) -> dict[str, Any]:
     fullstack = _load_json(SOTA_FULLSTACK)
-    same_host_ready = bool(fullstack.get("direct_fullstack_named_sota_superiority_ready"))
+    same_host_ready = bool(fullstack.get("named_same_host_runtime_probe_ready"))
     history = build_multinode_history_completion_gate()
     inventory_rows = [_probe_node(node) for node in nodes] if probe_remotes else [
         {"node": node, "probed": False, "reachable": None, "gpu_count": None, "cpu_count": None, "note": "probe disabled"}
@@ -64,7 +64,8 @@ def build_multinode_original_deployment_gate(
             "SAME_HOST_AND_MULTINODE_PENDING"
         ),
         "probe_remotes": bool(probe_remotes),
-        "same_host_named_fullstack_ready": same_host_ready,
+        "same_host_named_runtime_probe_ready": same_host_ready,
+        "same_host_named_fullstack_ready": False,
         "remote_inventory_rows": inventory_rows,
         "reachable_node_count": len(reachable),
         "reachable_gpu_node_count": len(gpu_nodes),
@@ -90,7 +91,7 @@ def build_multinode_original_deployment_gate(
         "scope": (
             "Scheduleurm-native multi-node launched/completion history is "
             "certified separately from external SOTA original-deployment "
-            "superiority.  Same-host external full-stack rows and Scheduleurm "
+            "superiority.  Same-host external runtime-probe rows and Scheduleurm "
             "multi-node history do not imply that every external scheduler has "
             "been run through its original multi-node worker/control-plane path."
         ),
@@ -105,6 +106,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
         f"| `probe_remotes` | {str(bool(report.get('probe_remotes'))).lower()} |",
+        f"| `same_host_named_runtime_probe_ready` | {str(bool(report.get('same_host_named_runtime_probe_ready'))).lower()} |",
         f"| `same_host_named_fullstack_ready` | {str(bool(report.get('same_host_named_fullstack_ready'))).lower()} |",
         f"| `reachable_node_count` | {report.get('reachable_node_count')} |",
         f"| `reachable_gpu_node_count` | {report.get('reachable_gpu_node_count')} |",

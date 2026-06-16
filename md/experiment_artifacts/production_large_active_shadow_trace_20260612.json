@@ -1,36 +1,36 @@
 {
   "active_production_shadow_task_count": 11,
   "algorithm": "theorem_maxweight_v1",
-  "candidate_count_total": 92,
+  "candidate_count_total": 70,
   "gate": "production_shadow_theorem_trace",
-  "generated_at": "2026-06-16T09:53:26+0800",
+  "generated_at": "2026-06-16T12:08:11+0800",
   "hard_rule_mode": "",
   "launched_dispatch_claim": false,
   "node_summary_after_shadow": [
     {
       "alive": true,
-      "free_cpu": 14,
-      "free_ram_mb": 26351,
+      "free_cpu": 11,
+      "free_ram_mb": 32275,
       "gpu_count": 1,
       "name": "local"
     },
     {
       "alive": true,
-      "free_cpu": 6,
-      "free_ram_mb": 193280,
+      "free_cpu": 11,
+      "free_ram_mb": 46371,
       "gpu_count": 2,
       "name": "jtl110gpu"
     },
     {
       "alive": true,
-      "free_cpu": 3,
-      "free_ram_mb": 502036,
+      "free_cpu": 4,
+      "free_ram_mb": 502298,
       "gpu_count": 2,
       "name": "jtl110gpu2"
     },
     {
       "alive": true,
-      "free_cpu": 832,
+      "free_cpu": 800,
       "free_ram_mb": 1349551,
       "gpu_count": 0,
       "name": "zhengliang-hpc"
@@ -38,63 +38,63 @@
     {
       "alive": true,
       "free_cpu": 40,
-      "free_ram_mb": 220615,
+      "free_ram_mb": 222341,
       "gpu_count": 4,
       "name": "node007-direct"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 481839,
+      "free_ram_mb": 492281,
       "gpu_count": 0,
       "name": "jtl110cpu"
     },
     {
       "alive": true,
       "free_cpu": 128,
-      "free_ram_mb": 501464,
+      "free_ram_mb": 501571,
       "gpu_count": 0,
       "name": "jtl110cpu2"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 121313,
+      "free_ram_mb": 130889,
       "gpu_count": 0,
       "name": "node001"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 181012,
+      "free_ram_mb": 149873,
       "gpu_count": 0,
       "name": "node002"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 131788,
+      "free_ram_mb": 131864,
       "gpu_count": 0,
       "name": "node003"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 156534,
+      "free_ram_mb": 156784,
       "gpu_count": 0,
       "name": "node004"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 158271,
+      "free_ram_mb": 158262,
       "gpu_count": 0,
       "name": "node005"
     },
     {
       "alive": true,
       "free_cpu": 192,
-      "free_ram_mb": 151926,
+      "free_ram_mb": 147796,
       "gpu_count": 0,
       "name": "node006"
     }
@@ -103,152 +103,138 @@
   "oracle_bridge": {
     "alpha0": 0.0,
     "alpha1": 0.0,
-    "audited_slot_count": 11,
+    "audited_slot_count": 10,
     "best_score_exact_over_candidate_set": true,
     "blocker_count": 0,
     "blockers": [],
-    "converted_slot_count": 11,
+    "converted_slot_count": 10,
     "fit_method": "finite_max_envelope",
     "max_residual_violation": 0.0,
-    "point_count": 11,
+    "point_count": 10,
     "rows": [
-      {
-        "best_action_id": "node=jtl110gpu|gpu=1",
-        "best_candidate_score": 4.726662606,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 2,
-        "chosen_action_id": "node=jtl110gpu|gpu=1",
-        "chosen_score": 4.726662606,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0000-t11571:1781574787.1843953:1781574787193"
-      },
       {
         "best_action_id": "node=node007-direct|gpu=3",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=3",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0001-t11572:1781574787.1856465:1781574788154"
-      },
-      {
-        "best_action_id": "node=jtl110gpu2|gpu=1",
-        "best_candidate_score": 4.726662606,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=jtl110gpu2|gpu=1",
-        "chosen_score": 4.726662606,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0002-t11573:1781574787.1868956:1781574790519"
+        "slot_id": "slot:shadow-production-0001-t11572:1781582878.6563249:1781582878670"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=0",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=0",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0003-t11574:1781574787.1881568:1781574792440"
+        "slot_id": "slot:shadow-production-0002-t11573:1781582878.657621:1781582880671"
       },
       {
-        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_action_id": "node=jtl110gpu2|gpu=1",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "candidate_count": 7,
+        "chosen_action_id": "node=jtl110gpu2|gpu=1",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0004-t11575:1781574787.1895127:1781574793857"
-      },
-      {
-        "best_action_id": "node=node007-direct|gpu=0",
-        "best_candidate_score": 4.015310532164465,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=node007-direct|gpu=0",
-        "chosen_score": 4.015310532164465,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0005-t11576:1781574787.1907318:1781574795245"
+        "slot_id": "slot:shadow-production-0003-t11574:1781582878.6589327:1781582882084"
       },
       {
         "best_action_id": "node=node007-direct|gpu=1",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=1",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0006-t11577:1781574787.191968:1781574797477"
+        "slot_id": "slot:shadow-production-0004-t11575:1781582878.6602767:1781582884030"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 4.015310532164465,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 7,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 4.015310532164465,
+        "oracle_gap": 0.0,
+        "q_norm": 12.0,
+        "slot_id": "slot:shadow-production-0005-t11576:1781582878.6614861:1781582885453"
       },
       {
         "best_action_id": "node=node007-direct|gpu=2",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=2",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0007-t11578:1781574787.1931975:1781574798930"
+        "slot_id": "slot:shadow-production-0006-t11577:1781582878.6627388:1781582887391"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=1",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=1",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0008-t11579:1781574787.1945944:1781574801231"
+        "slot_id": "slot:shadow-production-0007-t11578:1781582878.6639876:1781582888852"
       },
       {
         "best_action_id": "node=node007-direct|gpu=3",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=3",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0009-t11580:1781574787.1960058:1781574802638"
+        "slot_id": "slot:shadow-production-0008-t11579:1781582878.66552:1781582889184"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=0",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=0",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0010-t11581:1781574787.1974573:1781574804612"
+        "slot_id": "slot:shadow-production-0009-t11580:1781582878.667028:1781582890077"
+      },
+      {
+        "best_action_id": "node=local|gpu=0",
+        "best_candidate_score": 3.5042016809999996,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 7,
+        "chosen_action_id": "node=local|gpu=0",
+        "chosen_score": 3.5042016809999996,
+        "oracle_gap": 0.0,
+        "q_norm": 12.0,
+        "slot_id": "slot:shadow-production-0010-t11581:1781582878.668539:1781582890599"
       }
     ],
     "status": "THEOREM_ORACLE_PASS",
-    "trace_slot_count": 11,
+    "trace_slot_count": 10,
     "usable_for_theorem": true,
     "worst_violation": null
   },
   "pass": true,
-  "placed_count": 11,
+  "placed_count": 10,
   "placements": [
     {
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
-      "placement": {
-        "gpu_idx": 1,
-        "node": "jtl110gpu"
-      },
+      "placement": null,
       "project": "BAPR-BUS",
       "shadow_task_id": "shadow-production-0000-t11571",
       "signature": "BAPR-BUS/bus-gate-jtlfix/mean_nobocd/seed0",
@@ -272,7 +258,7 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 1,
+        "gpu_idx": 0,
         "node": "jtl110gpu2"
       },
       "project": "CS-BAPR",
@@ -285,7 +271,7 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 0,
+        "gpu_idx": 1,
         "node": "jtl110gpu2"
       },
       "project": "CS-BAPR",
@@ -298,8 +284,8 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 0,
-        "node": "jtl110gpu"
+        "gpu_idx": 1,
+        "node": "node007-direct"
       },
       "project": "BAPR",
       "shadow_task_id": "shadow-production-0004-t11575",
@@ -324,7 +310,7 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 1,
+        "gpu_idx": 2,
         "node": "node007-direct"
       },
       "project": "BAPR",
@@ -337,8 +323,8 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 2,
-        "node": "node007-direct"
+        "gpu_idx": 1,
+        "node": "jtl110gpu2"
       },
       "project": "BAPR",
       "shadow_task_id": "shadow-production-0007-t11578",
@@ -350,8 +336,8 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 1,
-        "node": "jtl110gpu2"
+        "gpu_idx": 3,
+        "node": "node007-direct"
       },
       "project": "BAPR",
       "shadow_task_id": "shadow-production-0008-t11579",
@@ -363,8 +349,8 @@
       "admitted": true,
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
-        "gpu_idx": 3,
-        "node": "node007-direct"
+        "gpu_idx": 0,
+        "node": "jtl110gpu2"
       },
       "project": "BAPR",
       "shadow_task_id": "shadow-production-0009-t11580",
@@ -377,7 +363,7 @@
       "inferred_workload_key": "hybrid_rl_resac_ant",
       "placement": {
         "gpu_idx": 0,
-        "node": "jtl110gpu2"
+        "node": "local"
       },
       "project": "BAPR",
       "shadow_task_id": "shadow-production-0010-t11581",
@@ -390,148 +376,137 @@
   "requested_algorithm": "theorem_maxweight_v1",
   "reserve_shadow_capacity": true,
   "scope": "non-invasive shadow trace over current active production tasks. It reads queue/node state and evaluates the optional theorem hook without queue mutation or launch.  It is not a production-wide launched dispatch trace.",
-  "theorem_slot_count": 11,
+  "theorem_slot_count": 10,
   "theorem_subset_oracle_bridge": {
     "alpha0": 0.0,
     "alpha1": 0.0,
-    "audited_slot_count": 11,
+    "audited_slot_count": 10,
     "best_score_exact_over_candidate_set": true,
     "blocker_count": 0,
     "blockers": [],
-    "converted_slot_count": 11,
+    "converted_slot_count": 10,
     "fit_method": "finite_max_envelope",
     "max_residual_violation": 0.0,
-    "point_count": 11,
+    "point_count": 10,
     "rows": [
-      {
-        "best_action_id": "node=jtl110gpu|gpu=1",
-        "best_candidate_score": 4.726662606,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 2,
-        "chosen_action_id": "node=jtl110gpu|gpu=1",
-        "chosen_score": 4.726662606,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0000-t11571:1781574787.1843953:1781574787193"
-      },
       {
         "best_action_id": "node=node007-direct|gpu=3",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=3",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0001-t11572:1781574787.1856465:1781574788154"
-      },
-      {
-        "best_action_id": "node=jtl110gpu2|gpu=1",
-        "best_candidate_score": 4.726662606,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=jtl110gpu2|gpu=1",
-        "chosen_score": 4.726662606,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0002-t11573:1781574787.1868956:1781574790519"
+        "slot_id": "slot:shadow-production-0001-t11572:1781582878.6563249:1781582878670"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=0",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=0",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0003-t11574:1781574787.1881568:1781574792440"
+        "slot_id": "slot:shadow-production-0002-t11573:1781582878.657621:1781582880671"
       },
       {
-        "best_action_id": "node=jtl110gpu|gpu=0",
+        "best_action_id": "node=jtl110gpu2|gpu=1",
         "best_candidate_score": 4.726662606,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=jtl110gpu|gpu=0",
+        "candidate_count": 7,
+        "chosen_action_id": "node=jtl110gpu2|gpu=1",
         "chosen_score": 4.726662606,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0004-t11575:1781574787.1895127:1781574793857"
-      },
-      {
-        "best_action_id": "node=node007-direct|gpu=0",
-        "best_candidate_score": 4.015310532164465,
-        "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
-        "chosen_action_id": "node=node007-direct|gpu=0",
-        "chosen_score": 4.015310532164465,
-        "oracle_gap": 0.0,
-        "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0005-t11576:1781574787.1907318:1781574795245"
+        "slot_id": "slot:shadow-production-0003-t11574:1781582878.6589327:1781582882084"
       },
       {
         "best_action_id": "node=node007-direct|gpu=1",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=1",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0006-t11577:1781574787.191968:1781574797477"
+        "slot_id": "slot:shadow-production-0004-t11575:1781582878.6602767:1781582884030"
+      },
+      {
+        "best_action_id": "node=node007-direct|gpu=0",
+        "best_candidate_score": 4.015310532164465,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 7,
+        "chosen_action_id": "node=node007-direct|gpu=0",
+        "chosen_score": 4.015310532164465,
+        "oracle_gap": 0.0,
+        "q_norm": 12.0,
+        "slot_id": "slot:shadow-production-0005-t11576:1781582878.6614861:1781582885453"
       },
       {
         "best_action_id": "node=node007-direct|gpu=2",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=2",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0007-t11578:1781574787.1931975:1781574798930"
+        "slot_id": "slot:shadow-production-0006-t11577:1781582878.6627388:1781582887391"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=1",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=1",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0008-t11579:1781574787.1945944:1781574801231"
+        "slot_id": "slot:shadow-production-0007-t11578:1781582878.6639876:1781582888852"
       },
       {
         "best_action_id": "node=node007-direct|gpu=3",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=node007-direct|gpu=3",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0009-t11580:1781574787.1960058:1781574802638"
+        "slot_id": "slot:shadow-production-0008-t11579:1781582878.66552:1781582889184"
       },
       {
         "best_action_id": "node=jtl110gpu2|gpu=0",
         "best_candidate_score": 4.015310532164465,
         "best_score_exact_over_candidate_set": true,
-        "candidate_count": 9,
+        "candidate_count": 7,
         "chosen_action_id": "node=jtl110gpu2|gpu=0",
         "chosen_score": 4.015310532164465,
         "oracle_gap": 0.0,
         "q_norm": 12.0,
-        "slot_id": "slot:shadow-production-0010-t11581:1781574787.1974573:1781574804612"
+        "slot_id": "slot:shadow-production-0009-t11580:1781582878.667028:1781582890077"
+      },
+      {
+        "best_action_id": "node=local|gpu=0",
+        "best_candidate_score": 3.5042016809999996,
+        "best_score_exact_over_candidate_set": true,
+        "candidate_count": 7,
+        "chosen_action_id": "node=local|gpu=0",
+        "chosen_score": 3.5042016809999996,
+        "oracle_gap": 0.0,
+        "q_norm": 12.0,
+        "slot_id": "slot:shadow-production-0010-t11581:1781582878.668539:1781582890599"
       }
     ],
     "status": "THEOREM_ORACLE_PASS",
-    "trace_slot_count": 11,
+    "trace_slot_count": 10,
     "usable_for_theorem": true,
     "worst_violation": null
   },
   "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/production_large_active_shadow_trace_20260612.jsonl",
-  "trace_slot_count": 11,
+  "trace_slot_count": 10,
   "uncertified_mode": "block",
-  "unplaced_count": 0
+  "unplaced_count": 1
 }

@@ -1,0 +1,19 @@
+Scheduleurm Lean reviewer supplement static proof-term audit
+============================================================
+
+Audit date: 2026-06-16
+
+Command run from the Scheduleurm repository root:
+
+  rg -n --glob '*.lean' '(^|[^A-Za-z_])(sorry|admit|axiom)([^A-Za-z_]|$)' ../proof/Scheduleurm ../proof/ScheduleurmUpload.lean
+
+Result:
+
+  0 proof-term matches.
+
+Interpretation:
+
+  The consolidated upload file and split Scheduleurm proof modules contain no
+  non-comment proof-term occurrences of sorry, admit, or axiom under the audit
+  pattern above.  This file is a static source audit; the build certificate is
+  recorded separately in build.log and lean_build_log.txt.

@@ -1,10 +1,13 @@
 {
   "arbitrary_future_workload_superiority_ready": false,
   "arbitrary_sota_superiority_ready": false,
-  "direct_fullstack_named_sota_superiority_ready": true,
-  "direct_fullstack_sota_superiority_ready": true,
+  "current_reproduction_environment": "safe local reproduction script records current tool availability and does not re-run privileged external runtime probes",
+  "current_rerun_ready": false,
+  "direct_fullstack_named_sota_superiority_ready": false,
+  "direct_fullstack_sota_superiority_ready": false,
+  "execution_environment": "artifacted prior same-host runtime snapshots on the isolated jtl110gpu/K3s or same-host substrate; the current local WSL reproduction inventory may lack docker, kubectl, or go",
   "full_stack_ready_count": 5,
-  "gate": "sota_fullstack_superiority_gate",
+  "gate": "named_external_runtime_probe_gate",
   "gate_pass": true,
   "gavel_native_microbaseline": {
     "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260613.json",
@@ -100,12 +103,17 @@
     "same_service_scale_ready": true,
     "scoped_superiority_ready": true
   },
+  "legacy_entrypoint": "sota_fullstack_superiority_gate",
   "missing_tools": [
     "docker",
     "go",
     "kubectl"
   ],
   "multinode_original_deployment_superiority_ready": false,
+  "named_same_host_runtime_probe_native_better": true,
+  "named_same_host_runtime_probe_native_better_count": 5,
+  "named_same_host_runtime_probe_ready": true,
+  "named_same_host_runtime_probe_ready_count": 5,
   "named_sota_adapters": [
     "gavel_simulation",
     "iadeep_kubernetes_extender",
@@ -114,7 +122,7 @@
     "sia_goodput_scheduler"
   ],
   "named_sota_fullstack_ready_count": 5,
-  "named_sota_fullstack_superiority_count": 5,
+  "named_sota_fullstack_superiority_count": 0,
   "native_execution_attempts": {
     "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sota_native_execution_attempts_20260613.json",
     "direct_full_stack_ready_count": 0,
@@ -122,7 +130,7 @@
     "ready_count": 3
   },
   "pass": true,
-  "pass_meaning": "named five same-host same-workload full-stack rows with paired native superiority are closed; arbitrary SOTA, registered-universe external binary, original multi-node, and production-wide trace superiority are not claimed",
+  "pass_meaning": "named five same-host same-workload runtime probes with paired native-better rows are closed; direct full-stack SOTA superiority, registered-universe external-binary superiority, original multi-node superiority, and production-wide trace superiority are not claimed",
   "policy_semantics_comparison_ready": true,
   "pollux_fullstack_same_workload": {
     "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/pollux_fullstack_same_workload_gate_20260613.json",
@@ -183,7 +191,7 @@
         "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
       ],
       "entrypoint_smoke_pass": true,
-      "full_stack_superiority_claim_allowed": true,
+      "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": true,
       "gavel_physical_same_workload_superiority_ready": true,
       "gavel_resident_delay_jct_holdout_ready": true,
@@ -198,6 +206,8 @@
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
+      "scoped_runtime_probe_native_better": true,
+      "scoped_runtime_probe_ready": true,
       "sia_same_workload_fullstack_ready": false,
       "sia_scoped_same_workload_superiority_ready": false,
       "strict_reason": "Gavel completed the same temporary CUDA probe through its physical scheduler/worker/RPC/dispatcher/GavelIterator path, and the same script run directly on the same host has lower JCT in the scoped run; this is a Gavel-scoped physical full-stack row, not an all-workload Gavel claim"
@@ -209,7 +219,7 @@
         "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
       ],
       "entrypoint_smoke_pass": true,
-      "full_stack_superiority_claim_allowed": true,
+      "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
       "gavel_physical_same_workload_superiority_ready": false,
       "gavel_resident_delay_jct_holdout_ready": false,
@@ -227,6 +237,8 @@
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
+      "scoped_runtime_probe_native_better": true,
+      "scoped_runtime_probe_ready": true,
       "sia_same_workload_fullstack_ready": false,
       "sia_scoped_same_workload_superiority_ready": false,
       "strict_reason": "Pollux/AdaptDL completed the same CUDA binary through its Kubernetes controller/allocator/supervisor stack, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Pollux-scoped full-stack row, not an all-SOTA superiority certificate"
@@ -238,7 +250,7 @@
         "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping"
       ],
       "entrypoint_smoke_pass": false,
-      "full_stack_superiority_claim_allowed": true,
+      "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
       "gavel_physical_same_workload_superiority_ready": false,
       "gavel_resident_delay_jct_holdout_ready": false,
@@ -256,6 +268,8 @@
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
+      "scoped_runtime_probe_native_better": true,
+      "scoped_runtime_probe_ready": true,
       "sia_same_workload_fullstack_ready": true,
       "sia_scoped_same_workload_superiority_ready": true,
       "strict_reason": "Sia/AdaptDL MIP completed the same CUDA binary through its Kubernetes controller/allocator path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Sia-scoped full-stack row, not an all-SOTA superiority certificate"
@@ -267,7 +281,7 @@
         "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
       ],
       "entrypoint_smoke_pass": false,
-      "full_stack_superiority_claim_allowed": true,
+      "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
       "gavel_physical_same_workload_superiority_ready": false,
       "gavel_resident_delay_jct_holdout_ready": false,
@@ -286,6 +300,8 @@
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
+      "scoped_runtime_probe_native_better": true,
+      "scoped_runtime_probe_ready": true,
       "sia_same_workload_fullstack_ready": false,
       "sia_scoped_same_workload_superiority_ready": false,
       "strict_reason": "IADeep completed the same CUDA binary through its Kubernetes scheduler-extender/device-plugin GPU-sharing path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped stable probe case; this is an IADeep-scoped full-stack row, not an all-SOTA superiority certificate"
@@ -297,7 +313,7 @@
         "Salus benchmark seed exists, but Salus server/runtime execution is still required"
       ],
       "entrypoint_smoke_pass": false,
-      "full_stack_superiority_claim_allowed": true,
+      "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
       "gavel_physical_same_workload_superiority_ready": false,
       "gavel_resident_delay_jct_holdout_ready": false,
@@ -314,6 +330,8 @@
       "salus_same_workload_fullstack_ready": true,
       "salus_scoped_same_workload_superiority_ready": true,
       "same_workload_full_stack_ready": true,
+      "scoped_runtime_probe_native_better": true,
+      "scoped_runtime_probe_ready": true,
       "sia_same_workload_fullstack_ready": false,
       "sia_scoped_same_workload_superiority_ready": false,
       "strict_reason": "Salus completed the same TensorFlow-Salus workload through its server/zrpc path, and the native TensorFlow-Salus path on the same host has lower wall time in the scoped run; this is a Salus-scoped full-stack row, not an arbitrary future-workload claim"
@@ -339,6 +357,8 @@
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": false,
+      "scoped_runtime_probe_native_better": false,
+      "scoped_runtime_probe_ready": false,
       "sia_same_workload_fullstack_ready": false,
       "sia_scoped_same_workload_superiority_ready": false,
       "strict_reason": "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
@@ -351,7 +371,7 @@
     "same_service_scale_ready": true,
     "scoped_superiority_ready": true
   },
-  "scope": "Strict gate for direct full-stack superiority claims over the named systems Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped same-host same-workload test substrate.  It does not claim superiority over arbitrary SOTA systems, arbitrary future workloads, or production-wide online traces outside this measured gate.",
+  "scope": "Scoped named-system same-host runtime-probe evidence for Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus.  The gate does not claim direct full-stack SOTA superiority, arbitrary SOTA superiority, future-workload superiority, original multi-node deployment superiority, or production-wide online trace superiority.",
   "scoped_claim_ready": true,
   "sia_fullstack_same_workload": {
     "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/sia_fullstack_same_workload_gate_20260613.json",
@@ -401,7 +421,7 @@
     "same_service_scale_ready": true,
     "scoped_superiority_ready": true
   },
-  "status": "NAMED_SAME_HOST_FULLSTACK_SUPERIORITY_PASS_REGISTERED_ARBITRARY_FALSE",
+  "status": "NAMED_SAME_HOST_RUNTIME_PROBE_PASS_DIRECT_SOTA_FALSE",
   "strong_claim_ready": false,
   "tool_inventory": {
     "docker": {

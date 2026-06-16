@@ -91,6 +91,7 @@ def build_declared_finite_domain_positive_cover_gate() -> dict[str, Any]:
     positive_fraction = float(status_counts.get("positive_lower_service", 0)) / float(total) if total else 0.0
     boundary_fraction = float(status_counts.get("capacity_boundary", 0)) / float(total) if total else 0.0
     uncovered_fraction = float(uncovered) / float(total) if total else 0.0
+    source_meta = _aggregate_source_metadata(rows)
     return {
         "gate": "declared_finite_domain_positive_cover_gate",
         "status": "DECLARED_FINITE_POSITIVE_COVER_PASS_ALL_STATE_POSITIVE_FALSE",
@@ -120,6 +121,14 @@ def build_declared_finite_domain_positive_cover_gate() -> dict[str, Any]:
         "declared_finite_positive_cover_ready": declared_ready,
         "positive_service_all_state_cover_ready": False,
         "arbitrary_all_state_positive_cover_ready": False,
+        "service_cache_v2_metadata_ready": source_meta["metadata_ready"],
+        "measurement_first_seen": source_meta["measurement_first_seen"],
+        "measurement_last_seen": source_meta["measurement_last_seen"],
+        "measurement_window_s": source_meta["measurement_window_s"],
+        "timestamped_bucket_count": source_meta["timestamped_bucket_count"],
+        "untimestamped_bucket_count": source_meta["untimestamped_bucket_count"],
+        "source_run_id_count": source_meta["source_run_id_count"],
+        "source_run_ids": source_meta["source_run_ids"],
         "rows": rows,
         "pass": declared_ready,
         "scope": (
@@ -147,6 +156,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `pass_meaning` | {report.get('pass_meaning')} |",
         f"| `declared_finite_positive_cover_ready` | {str(bool(report.get('declared_finite_positive_cover_ready'))).lower()} |",
         f"| `positive_service_all_state_cover_ready` | {str(bool(report.get('positive_service_all_state_cover_ready'))).lower()} |",
+        f"| `service_cache_v2_metadata_ready` | {str(bool(report.get('service_cache_v2_metadata_ready'))).lower()} |",
         f"| `declared_universe_bucket_count` | {report.get('declared_universe_bucket_count', 0)} |",
         f"| `workload_domain_count` | {report.get('workload_domain_count', 0)} |",
         f"| `positive_bucket_count` | {report.get('positive_bucket_count', 0)} |",
@@ -157,6 +167,12 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `positive_service_fraction` | {float(report.get('positive_service_fraction') or 0.0):.6f} |",
         f"| `boundary_fraction` | {float(report.get('boundary_fraction') or 0.0):.6f} |",
         f"| `uncovered_fraction` | {float(report.get('uncovered_fraction') or 0.0):.6f} |",
+        f"| `measurement_first_seen` | `{report.get('measurement_first_seen')}` |",
+        f"| `measurement_last_seen` | `{report.get('measurement_last_seen')}` |",
+        f"| `measurement_window_s` | {report.get('measurement_window_s')} |",
+        f"| `timestamped_bucket_count` | {report.get('timestamped_bucket_count', 0)} |",
+        f"| `untimestamped_bucket_count` | {report.get('untimestamped_bucket_count', 0)} |",
+        f"| `source_run_id_count` | {report.get('source_run_id_count', 0)} |",
         "",
         "This gate passes the scoped certificate. It does not make the adjacent strong claim.",
         "",
@@ -219,6 +235,53 @@ def _source_metadata(source: str) -> dict[str, Any]:
         "measurement_window_s": None,
         "source_run_ids": [],
     }
+
+
+def _aggregate_source_metadata(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    first_seen = [
+        str(row.get("first_seen"))
+        for row in rows
+        if row.get("first_seen")
+        and row.get("first_seen") != "not_available_in_service_cache_v1"
+    ]
+    last_seen = [
+        str(row.get("last_seen"))
+        for row in rows
+        if row.get("last_seen")
+        and row.get("last_seen") != "not_available_in_service_cache_v1"
+    ]
+    source_run_ids = sorted({
+        str(run_id)
+        for row in rows
+        for run_id in (row.get("source_run_ids") or [])
+        if str(run_id)
+    })
+    min_first = min(first_seen) if first_seen else "not_available_in_service_cache_v1"
+    max_last = max(last_seen) if last_seen else "not_available_in_service_cache_v1"
+    window_s = _timestamp_window_s(min_first, max_last)
+    timestamped = len(first_seen)
+    total = len(rows)
+    return {
+        "metadata_ready": timestamped > 0 and bool(source_run_ids),
+        "measurement_first_seen": min_first,
+        "measurement_last_seen": max_last,
+        "measurement_window_s": window_s,
+        "timestamped_bucket_count": timestamped,
+        "untimestamped_bucket_count": max(total - timestamped, 0),
+        "source_run_id_count": len(source_run_ids),
+        "source_run_ids": source_run_ids,
+    }
+
+
+def _timestamp_window_s(first_seen: str, last_seen: str) -> float | None:
+    if "not_available" in first_seen or "not_available" in last_seen:
+        return None
+    try:
+        first = time.strptime(first_seen, "%Y-%m-%dT%H:%M:%S%z")
+        last = time.strptime(last_seen, "%Y-%m-%dT%H:%M:%S%z")
+    except ValueError:
+        return None
+    return max(time.mktime(last) - time.mktime(first), 0.0)
 
 
 def _boundary_reason(record: Any) -> str:

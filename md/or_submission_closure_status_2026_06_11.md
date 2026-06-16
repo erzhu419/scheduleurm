@@ -32,15 +32,15 @@ md/experiment_artifacts/or_submission_closure_2026_06_12_gap_closure.md
 | Production-wide live trace gate | PASS-CURRENT-QUEUE | `md/production_live_theorem_trace_gate_20260612.md` | Current queued-production population has 1 admissible BAPR task; read-only theorem trace has 1 slot and oracle audit PASS. No queue mutation, launch, or completion claim is made. |
 | Production shadow theorem trace | PASS-SHADOW | `md/production_shadow_theorem_trace_20260612.md` | Non-invasive active-production shadow probe: emits a nonempty theorem subset with theorem-subset alpha0=alpha1=0; rolling counts are stored in the artifact; no queue mutation or launch. |
 | Admission population | PASS | `md/admission_population_gate.md` | Completed-active production population has full service-domain admission coverage; strict classifier non-matches are reported separately. |
-| Direct SOTA scaffold | PASS-HISTORICAL-SCAFFOLD | `md/direct_sota_baseline_binary_smoke_20260611_round2.md` | External repos/entrypoints are discovered; Pollux and Decima entrypoint smoke pass in the historical scaffold. Current named full-stack comparison status is reported by `md/sota_fullstack_superiority_gate_20260613.md`. |
+| Direct SOTA scaffold | PASS-HISTORICAL-SCAFFOLD | `md/direct_sota_baseline_binary_smoke_20260611_round2.md` | External repos/entrypoints are discovered; Pollux and Decima entrypoint smoke pass in the historical scaffold. Current named runtime-probe status is reported by `md/sota_fullstack_superiority_gate_20260613.md`. |
 | Gavel native smoke | PASS-SMOKE | `md/gavel_direct_native_smoke_20260612.md` | In an isolated copy, dependency imports, protobuf stub generation, entrypoint help, generated-jobs native simulation, native Gavel trace, and Scheduleurm q01 native trace-seed smoke pass; service-unit equivalence is still not a direct performance baseline. |
-| Direct SOTA full-stack readiness | PASS-NAMED-5-OF-5 | `md/sota_fullstack_superiority_gate_20260613.md` | Same-workload adapter seeds exist; Gavel has a scoped physical scheduler/worker row, Pollux/Sia have AdaptDL/Kubernetes rows, IADeep has an extender/device-plugin row, and Salus now has a server/zrpc TensorFlow-Salus row after local image mirroring and remote Docker load. |
+| Named external runtime-probe readiness | PASS-NAMED-5-OF-5 | `md/sota_fullstack_superiority_gate_20260613.md` | Same-workload adapter seeds exist; Gavel has a scoped physical scheduler/worker row, Pollux/Sia have AdaptDL/Kubernetes rows, IADeep has an extender/device-plugin row, and Salus now has a server/zrpc TensorFlow-Salus row after local image mirroring and remote Docker load. These are runtime-probe rows, not direct full-stack SOTA superiority. |
 | Gavel native performance microbaseline | PASS-MICRO | `md/gavel_native_performance_microbaseline_20260612.md` | Bounded Scheduleurm-exported q01/q11 windows complete in Gavel's native simulator; this is native simulator performance evidence, not measured service-unit equivalence or full-stack superiority. |
 | Gavel service-unit equivalence certificate | SCOPED-PASS-BLOCKER | `md/gavel_service_unit_equivalence_certificate_20260612.md` | Trace/schema compatibility, exact arrival preservation, throughput seeds, and bounded native microbaseline are certified for q01/q11; service-unit equivalence remains false, so Gavel is still not a full-stack same-workload baseline. |
 | Gavel service-unit calibration gate | PASS-PROFILE-AWARE-SCALAR-PENDING | `md/gavel_service_unit_calibration_gate_20260612.md` | Reads 12 paired q01/q11 calibration/holdout rows; the profile-aware same-workload native Gavel simulator model has holdout p95 relative error 0 on both bounded tasksets, while scalar service-unit equivalence remains false because q01/q11 p95 relative errors are about 0.5 under a single scale factor. |
-| SOTA claim matrix | PASS-SEEDS-PLUS-FULLSTACK | `md/sota_fullstack_superiority_gate_20260613.md` | Seed families exist for Gavel, Pollux/AdaptDL, IADeep, Salus, and Decima; Gavel/Pollux-Sia/IADeep/Salus now have scoped full-stack rows through the strict gate, while Decima remains simulator-only. |
-| SOTA full-stack superiority gate | PASS-NAMED-5-OF-5 | `md/sota_fullstack_superiority_gate_20260613.md` | Strict direct-superiority gate reports `direct_fullstack_named_sota_superiority_ready=true`: full-stack ready count is 5, with scoped Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus same-host same-workload rows ready and paired native superiority on the measured probes. The claim is not extended to arbitrary systems, future workloads, or production-wide traces. |
-| SOTA universe registry gate | PASS-SCOPED-BOUNDARY | `md/sota_universe_registry_gate_20260614.md` | Named five full-stack evidence is closed, but registered SOTA-universe and arbitrary SOTA claims remain false until each registered external system has comparable full-stack same-workload rows. |
+| SOTA claim matrix | PASS-SEEDS-PLUS-RUNTIME-PROBE | `md/sota_fullstack_superiority_gate_20260613.md` | Seed families exist for Gavel, Pollux/AdaptDL, IADeep, Salus, and Decima; Gavel/Pollux-Sia/IADeep/Salus now have scoped runtime-probe rows through the named gate, while Decima remains simulator-only. |
+| Named external runtime-probe gate | PASS-NAMED-5-OF-5 | `md/sota_fullstack_superiority_gate_20260613.md` | The gate reports `named_same_host_runtime_probe_ready=true` and `direct_fullstack_named_sota_superiority_ready=false`: five scoped Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus same-host same-workload rows are ready with paired native-better evidence on the measured probes. The claim is not extended to arbitrary systems, future workloads, direct full-stack superiority, or production-wide traces. |
+| SOTA universe registry gate | PASS-SCOPED-BOUNDARY | `md/sota_universe_registry_gate_20260614.md` | Named five runtime-probe evidence is closed, but registered SOTA-universe and arbitrary SOTA claims remain false until each registered external system has comparable rows. |
 | Registered SOTA runtime gate | PASS-INVENTORY | `md/registered_sota_runtime_gate_20260614.md` | Tiresias, Shockwave, AlloX, and Optimus public repos are cloned and audited; Themis and Gandiva are paper-only rows. Entrypoint/full-stack rows remain blocked by runtime dependencies or missing public runtime. |
 | Registered external-policy admitted-action universe | PASS-POLICY-SEMANTICS | `md/sota_admitted_universe_closure_gate_20260614.md` | All 11 non-adjacent registered external-policy systems are represented by finite measured-cache policy-family actions and the measured-cache external-policy frontier is closed; direct external-binary/full-stack universe superiority remains false. |
 | Future workload protocol gate | PASS-CONTRACT | `md/future_workload_protocol_gate_20260614.md` | Ten synthetic future stress rows cover measured q00/q01/q10/q11/CNN/LLM/CPU/control and unknown LLM/CPU/CUDA/Spark-DAG/NUMA cases; unknown cases are forced to `PROBE_REQUIRED`. |
@@ -94,13 +94,15 @@ and deterministic active-bucket / hidden-regime certificate.
 
 It still does not support claims that raw scheduler history is a clean arrival
 stream, that future dispatches are automatically theorem-grade, or that the
-synthetic dry-run trace itself is a launched-job completion trace.  The strict
-full-stack superiority gate now closes the named external-system boundary:
-`direct_fullstack_named_sota_superiority_ready=true` and
-`full_stack_ready_count=5` for Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on
-the scoped same-host same-workload probes.  This remains a measured named-system
-certificate, not a claim over arbitrary future workloads, multi-node original
-deployments, Decima's Spark-DAG simulator setting, or production-wide traces.
+synthetic dry-run trace itself is a launched-job completion trace.  The named
+external runtime-probe gate now closes the named external-system runtime-probe
+boundary: `named_same_host_runtime_probe_ready=true` and
+`direct_fullstack_named_sota_superiority_ready=false` for Gavel,
+Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped same-host same-workload
+probes.  This remains a measured named-system runtime-probe certificate, not a
+direct full-stack SOTA superiority claim over arbitrary systems, future
+workloads, multi-node original deployments, Decima's Spark-DAG simulator
+setting, or production-wide traces.
 The 2026-06-14 universal claim gate makes those five adjacent directions
 executable: SOTA universe registry, future workload protocol, multi-node
 original deployment, Decima Spark-DAG, and production-wide organic trace.  Its

@@ -47,8 +47,8 @@ runtime inventory、Decima 只停留在 smoke / single heuristic benchmark 的�
 已闭合：
 
 - `md/organic_history_completion_gate_20260614.md`：strict scheduler-history
-  organic production population 已闭合。4,020 launched，3,992 completed，
-  completion fraction 0.9930，35 workload domains，13 nodes，0 strict
+  organic production population 已闭合。4,058 launched，4,047 completed，
+  completion fraction 0.9973，35 workload domains，13 nodes，0 strict
   unadmitted launched rows。admission mode 是
   `strict_exact_or_signature_service_certificate`，不是 token-overlap fuzzy
   admission。
@@ -267,7 +267,7 @@ Raw evidence path
 * 但 Gavel service-unit equivalence 仍 false；
 * Gavel physical scheduler/worker/RPC/GavelIterator same-workload row ready；
 * Pollux/AdaptDL、Sia、IADeep、Salus scoped same-host same-workload rows ready；
-* `direct_fullstack_named_sota_superiority_ready=true`，但仅限 named five measured probes。
+* `named_same_host_runtime_probe_ready=true`，但 `direct_fullstack_named_sota_superiority_ready=false`；仅限 named five measured probes。
 
 artifact 也清楚解释了 blocker：Gavel native trace rows 使用 Gavel template job types 和 simulator throughput tables，而 Scheduleurm theorem rows 使用 Scheduleurm measured aggregate lower-service rates；schema、job counts、arrival times、resource counts、total_units 已经对齐，但没有证明 Gavel simulator step 和 Scheduleurm measured service unit 等价。
 

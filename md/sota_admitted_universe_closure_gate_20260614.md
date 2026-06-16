@@ -9,7 +9,7 @@
 | `policy_semantics_admitted_count` | 11 |
 | `action_union_dominance_ready` | true |
 | `strict_frontier_closed` | true |
-| `direct_named_fullstack_superiority_ready` | true |
+| `direct_named_fullstack_superiority_ready` | false |
 | `registered_sota_policy_semantics_universe_ready` | true |
 | `registered_sota_admitted_policy_superiority_ready` | true |
 | `registered_sota_universe_superiority_ready` | false |
@@ -17,13 +17,13 @@
 
 ## Rows
 
-| System | Class | Policy admitted | Union ready | Direct full-stack | Boundary ready | Policy-semantics allowed | Direct full-stack allowed | Blocker |
+| System | Class | Policy admitted | Union ready | Runtime probe | Boundary ready | Policy-semantics allowed | Direct full-stack superiority allowed | Blocker |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| Gavel | `named_direct_fullstack` | true | true | true | true | true | true | none: policy-semantics action admitted and same-host full-stack row ready |
-| Pollux/AdaptDL | `named_direct_fullstack` | true | true | true | true | true | true | none: policy-semantics action admitted and same-host full-stack row ready |
-| Sia | `named_direct_fullstack` | true | true | true | true | true | true | none: policy-semantics action admitted and same-host full-stack row ready |
-| IADeep | `named_direct_fullstack` | true | true | true | true | true | true | none: policy-semantics action admitted and same-host full-stack row ready |
-| Salus | `named_direct_fullstack` | true | true | true | true | true | true | none: policy-semantics action admitted and same-host full-stack row ready |
+| Gavel | `named_runtime_probe` | true | true | true | true | true | false | none: policy-semantics action admitted and same-host runtime-probe row ready |
+| Pollux/AdaptDL | `named_runtime_probe` | true | true | true | true | true | false | none: policy-semantics action admitted and same-host runtime-probe row ready |
+| Sia | `named_runtime_probe` | true | true | true | true | true | false | none: policy-semantics action admitted and same-host runtime-probe row ready |
+| IADeep | `named_runtime_probe` | true | true | true | true | true | false | none: policy-semantics action admitted and same-host runtime-probe row ready |
+| Salus | `named_runtime_probe` | true | true | true | true | true | false | none: policy-semantics action admitted and same-host runtime-probe row ready |
 | Decima | `adjacent_simulator` | false | false | false | true | false | false | adjacent simulator/domain; handled by Decima/Spark-DAG gate, not GPU co-location superiority |
 | Tiresias | `registered_not_yet_fullstack_compared` | true | true | false | true | true | false | none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped |
 | Themis | `paper_only_registered` | true | true | false | true | true | false | none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped |

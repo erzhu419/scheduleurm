@@ -62,7 +62,7 @@ def build_universal_claim_closure_gate(*, probe_remotes: bool = False) -> dict[s
         "rows": rows,
         "reports": gates,
         "safe_paper_claim": (
-            "Named same-host same-workload SOTA gates, measured/admitted future "
+            "Named same-host same-workload runtime-probe gates, measured/admitted future "
             "workload protocol, conservative deployment/fabric boundaries, "
             "registered-SOTA policy/service-unit adapter closure, Decima "
             "same-domain Spark-DAG execution audit, and production organic "

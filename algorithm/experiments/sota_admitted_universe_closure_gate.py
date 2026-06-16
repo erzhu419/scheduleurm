@@ -55,15 +55,18 @@ def build_sota_admitted_universe_closure_gate() -> dict[str, Any]:
         adjacent = system in ADJACENT_SYSTEMS or bool(row.get("adjacent_simulator_only"))
         direct_required = system in DIRECT_REQUIRED_SYSTEMS
         policy_admitted = normalized in admitted_names
-        direct_fullstack_ready = bool(
-            row.get("same_host_same_workload_fullstack_ready")
-            and row.get("paired_native_superiority_ready")
+        has_runtime_probe_row = bool(
+            row.get("same_host_same_workload_runtime_probe_ready")
+            or row.get("same_host_same_workload_fullstack_ready")
+        )
+        runtime_probe_ready = bool(
+            has_runtime_probe_row and row.get("paired_native_superiority_ready")
         )
         admitted_ready = bool(policy_admitted and action_union_ready)
         claim_ready = bool(
             adjacent
             or admitted_ready
-            or (direct_required and direct_fullstack_ready)
+            or (direct_required and runtime_probe_ready)
         )
         rows.append(
             {
@@ -71,18 +74,19 @@ def build_sota_admitted_universe_closure_gate() -> dict[str, Any]:
                 "class": row.get("class"),
                 "policy_semantics_admitted": bool(policy_admitted),
                 "action_union_dominance_ready": bool(admitted_ready),
-                "same_host_fullstack_superiority_ready": bool(direct_fullstack_ready),
+                "same_host_runtime_probe_ready": bool(runtime_probe_ready),
+                "same_host_fullstack_superiority_ready": False,
                 "adjacent_or_out_of_scope": bool(adjacent),
                 "registered_runtime_inventory_ready": bool(row.get("runtime_inventory_ready")),
                 "entrypoint_smoke_ready": bool(row.get("entrypoint_smoke_ready")),
                 "admitted_universe_boundary_ready": bool(claim_ready),
                 "policy_semantics_superiority_allowed": bool(admitted_ready),
-                "direct_fullstack_superiority_allowed": bool(direct_fullstack_ready),
+                "direct_fullstack_superiority_allowed": False,
                 "blocker": _row_blocker(
                     row,
                     policy_admitted=policy_admitted,
                     action_union_ready=action_union_ready,
-                    direct_fullstack_ready=direct_fullstack_ready,
+                    runtime_probe_ready=runtime_probe_ready,
                     adjacent=adjacent,
                 ),
             }
@@ -94,7 +98,7 @@ def build_sota_admitted_universe_closure_gate() -> dict[str, Any]:
         row["policy_semantics_admitted"] and row["action_union_dominance_ready"]
         for row in non_adjacent
     )
-    direct_ready = bool(fullstack.get("direct_fullstack_named_sota_superiority_ready"))
+    named_runtime_probe_ready = bool(fullstack.get("named_same_host_runtime_probe_ready"))
     return {
         "gate": "sota_admitted_universe_closure_gate",
         "status": (
@@ -108,7 +112,8 @@ def build_sota_admitted_universe_closure_gate() -> dict[str, Any]:
         ),
         "action_union_dominance_ready": bool(action_union_ready),
         "strict_frontier_closed": bool(frontier.get("strict_pareto_ready")),
-        "direct_named_fullstack_superiority_ready": bool(direct_ready),
+        "named_same_host_runtime_probe_ready": bool(named_runtime_probe_ready),
+        "direct_named_fullstack_superiority_ready": False,
         "registered_sota_policy_semantics_universe_ready": bool(registered_policy_ready),
         "registered_sota_admitted_boundary_ready": bool(boundary_ready),
         "registered_sota_admitted_policy_superiority_ready": bool(registered_policy_ready),
@@ -152,7 +157,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         "## Rows",
         "",
-        "| System | Class | Policy admitted | Union ready | Direct full-stack | Boundary ready | Policy-semantics allowed | Direct full-stack allowed | Blocker |",
+        "| System | Class | Policy admitted | Union ready | Runtime probe | Boundary ready | Policy-semantics allowed | Direct full-stack superiority allowed | Blocker |",
         "|---|---|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in report.get("rows") or []:
@@ -162,7 +167,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
                 cls=row.get("class"),
                 policy=str(bool(row.get("policy_semantics_admitted"))).lower(),
                 union=str(bool(row.get("action_union_dominance_ready"))).lower(),
-                direct=str(bool(row.get("same_host_fullstack_superiority_ready"))).lower(),
+                direct=str(bool(row.get("same_host_runtime_probe_ready"))).lower(),
                 boundary=str(bool(row.get("admitted_universe_boundary_ready"))).lower(),
                 policy_sup=str(bool(row.get("policy_semantics_superiority_allowed"))).lower(),
                 direct_sup=str(bool(row.get("direct_fullstack_superiority_allowed"))).lower(),
@@ -214,13 +219,13 @@ def _row_blocker(
     *,
     policy_admitted: bool,
     action_union_ready: bool,
-    direct_fullstack_ready: bool,
+    runtime_probe_ready: bool,
     adjacent: bool,
 ) -> str:
     if adjacent:
         return "adjacent simulator/domain; handled by Decima/Spark-DAG gate, not GPU co-location superiority"
-    if policy_admitted and action_union_ready and direct_fullstack_ready:
-        return "none: policy-semantics action admitted and same-host full-stack row ready"
+    if policy_admitted and action_union_ready and runtime_probe_ready:
+        return "none: policy-semantics action admitted and same-host runtime-probe row ready"
     if policy_admitted and action_union_ready:
         return "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped"
     if policy_admitted:

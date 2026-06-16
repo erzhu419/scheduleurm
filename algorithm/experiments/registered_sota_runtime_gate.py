@@ -63,7 +63,7 @@ def build_registered_sota_runtime_gate(*, run_smoke: bool = True) -> dict[str, A
         "rows": rows,
         "blocker": (
             "Registered SOTA-universe superiority still needs same-workload "
-            "full-stack rows for each runnable system and an explicit policy for "
+            "executable adapter/runtime rows for each runnable system and an explicit policy for "
             "paper-only systems.  This gate closes inventory and blocker "
             "discovery, not performance superiority."
         ),

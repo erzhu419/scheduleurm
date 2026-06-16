@@ -2,10 +2,10 @@
 
 This gate separates two different statements:
 
-* the finite named-system claim currently supported by direct same-host
+* the finite named-system runtime-probe claim currently supported by same-host
   same-workload artifacts; and
 * the much stronger "arbitrary SOTA" claim, which needs an explicit registry
-  of additional systems and comparable full-stack rows for each of them.
+  of additional systems and comparable adapter rows for each of them.
 
 The gate is read-only.  It does not launch external systems.
 """
@@ -29,35 +29,35 @@ REGISTERED_SYSTEMS = (
     {
         "system": "Gavel",
         "domain": "heterogeneous deep-learning cluster scheduling",
-        "class": "named_direct_fullstack",
+        "class": "named_runtime_probe",
         "adapter": "gavel_simulation",
         "local_repo": "reference/repos/gavel",
     },
     {
         "system": "Pollux/AdaptDL",
         "domain": "goodput-aware elastic deep-learning scheduling",
-        "class": "named_direct_fullstack",
+        "class": "named_runtime_probe",
         "adapter": "pollux_adaptdl_scheduler",
         "local_repo": "reference/repos/adaptdl_pollux",
     },
     {
         "system": "Sia",
         "domain": "goodput-aware multi-cluster deep-learning scheduling",
-        "class": "named_direct_fullstack",
+        "class": "named_runtime_probe",
         "adapter": "sia_goodput_scheduler",
         "local_repo": "reference/repos/sia_artifacts",
     },
     {
         "system": "IADeep",
         "domain": "Kubernetes GPU-sharing scheduler/extender",
-        "class": "named_direct_fullstack",
+        "class": "named_runtime_probe",
         "adapter": "iadeep_kubernetes_extender",
         "local_repo": "reference/repos/iadeep",
     },
     {
         "system": "Salus",
         "domain": "GPU-sharing execution service",
-        "class": "named_direct_fullstack",
+        "class": "named_runtime_probe",
         "adapter": "salus_gpu_sharing",
         "local_repo": "reference/repos/salus",
     },
@@ -128,9 +128,12 @@ def build_sota_universe_registry_gate() -> dict[str, Any]:
     for item in REGISTERED_SYSTEMS:
         adapter = str(item["adapter"])
         fullstack_row = fullstack_rows.get(adapter) or {}
-        named_ready = bool(fullstack_row.get("same_workload_full_stack_ready"))
-        named_superiority = bool(fullstack_row.get("full_stack_superiority_claim_allowed"))
-        comparable_gpu_claim = item["class"] == "named_direct_fullstack" and named_ready and named_superiority
+        named_ready = bool(
+            fullstack_row.get("scoped_runtime_probe_ready")
+            or fullstack_row.get("same_workload_full_stack_ready")
+        )
+        named_superiority = bool(fullstack_row.get("scoped_runtime_probe_native_better"))
+        comparable_gpu_claim = item["class"] == "named_runtime_probe" and named_ready and named_superiority
         adjacent_simulator = item["class"] == "adjacent_simulator"
         repo_path = REPO_ROOT / str(item.get("local_repo") or "__missing__")
         runtime_row = runtime_rows.get(str(item["system"])) or {}
@@ -139,13 +142,14 @@ def build_sota_universe_registry_gate() -> dict[str, Any]:
             "repo_present": bool(item.get("local_repo") and repo_path.exists()),
             "runtime_inventory_ready": bool(runtime_row.get("repo_or_paper_inventory_ready")),
             "entrypoint_smoke_ready": bool(runtime_row.get("entrypoint_smoke_ready")),
-            "same_host_same_workload_fullstack_ready": named_ready,
+            "same_host_same_workload_runtime_probe_ready": named_ready,
+            "same_host_same_workload_fullstack_ready": False,
             "paired_native_superiority_ready": named_superiority,
             "comparable_gpu_scheduler_claim_ready": comparable_gpu_claim,
             "adjacent_simulator_only": adjacent_simulator,
             "blocker": _blocker(item, named_ready, named_superiority, runtime_row),
         })
-    named_rows = [row for row in rows if row["class"] == "named_direct_fullstack"]
+    named_rows = [row for row in rows if row["class"] == "named_runtime_probe"]
     registered_comparable_rows = [
         row for row in rows
         if row["class"] != "adjacent_simulator"
@@ -155,15 +159,16 @@ def build_sota_universe_registry_gate() -> dict[str, Any]:
     return {
         "gate": "sota_universe_registry_gate",
         "status": (
-            "NAMED_FIVE_FULLSTACK_READY_REGISTERED_UNIVERSE_PENDING"
-            if named_ready else "NAMED_FIVE_FULLSTACK_PENDING"
+            "NAMED_FIVE_RUNTIME_PROBE_READY_REGISTERED_UNIVERSE_PENDING"
+            if named_ready else "NAMED_FIVE_RUNTIME_PROBE_PENDING"
         ),
         "registered_system_count": len(rows),
         "named_direct_system_count": len(named_rows),
-        "named_direct_fullstack_ready_count": sum(
-            1 for row in named_rows if row["same_host_same_workload_fullstack_ready"]
+        "named_runtime_probe_system_count": len(named_rows),
+        "named_direct_runtime_probe_ready_count": sum(
+            1 for row in named_rows if row["same_host_same_workload_runtime_probe_ready"]
         ),
-        "named_direct_superiority_ready_count": sum(
+        "named_direct_native_better_ready_count": sum(
             1 for row in named_rows if row["paired_native_superiority_ready"]
         ),
         "registered_gpu_comparable_count": len(registered_comparable_rows),
@@ -174,7 +179,8 @@ def build_sota_universe_registry_gate() -> dict[str, Any]:
             runtime.get("scoped_claim_ready") or runtime.get("pass")
         ),
         "registered_extension_entrypoint_smoke_ready_count": runtime.get("entrypoint_smoke_ready_count", 0),
-        "named_five_fullstack_superiority_ready": bool(named_ready),
+        "named_five_runtime_probe_ready": bool(named_ready),
+        "named_five_fullstack_superiority_ready": False,
         "registered_sota_universe_superiority_ready": bool(registered_ready),
         "arbitrary_sota_superiority_ready": False,
         "scoped_claim_ready": bool(named_ready),
@@ -182,12 +188,13 @@ def build_sota_universe_registry_gate() -> dict[str, Any]:
         "rows": rows,
         "pass": True,
         "scope": (
-            "The named five direct full-stack claim is ready when Gavel, "
-            "Pollux/AdaptDL, Sia, IADeep, and Salus have same-host "
-            "same-workload rows.  The registered-universe claim additionally "
-            "requires comparable full-stack rows for every registered GPU/DL "
-            "scheduler.  The unbounded 'arbitrary SOTA' claim is not a finite "
-            "experimental statement."
+            "The named five runtime-probe claim is ready when Gavel, "
+            "Pollux/AdaptDL, Sia, IADeep, and Salus have scoped same-host "
+            "same-workload rows with paired native-better evidence.  The "
+            "registered-universe claim additionally requires comparable "
+            "adapter rows for every registered GPU/DL scheduler.  The "
+            "unbounded 'arbitrary SOTA' claim is not a finite experimental "
+            "statement."
         ),
     }
 
@@ -200,17 +207,18 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
         f"| `registered_system_count` | {report.get('registered_system_count')} |",
-        f"| `named_direct_fullstack_ready_count` | {report.get('named_direct_fullstack_ready_count')} |",
-        f"| `named_direct_superiority_ready_count` | {report.get('named_direct_superiority_ready_count')} |",
+        f"| `named_direct_runtime_probe_ready_count` | {report.get('named_direct_runtime_probe_ready_count')} |",
+        f"| `named_direct_native_better_ready_count` | {report.get('named_direct_native_better_ready_count')} |",
         f"| `registered_gpu_comparable_ready_count` | {report.get('registered_gpu_comparable_ready_count')} |",
         f"| `registered_gpu_comparable_count` | {report.get('registered_gpu_comparable_count')} |",
+        f"| `named_five_runtime_probe_ready` | {str(bool(report.get('named_five_runtime_probe_ready'))).lower()} |",
         f"| `named_five_fullstack_superiority_ready` | {str(bool(report.get('named_five_fullstack_superiority_ready'))).lower()} |",
         f"| `registered_sota_universe_superiority_ready` | {str(bool(report.get('registered_sota_universe_superiority_ready'))).lower()} |",
         f"| `arbitrary_sota_superiority_ready` | {str(bool(report.get('arbitrary_sota_superiority_ready'))).lower()} |",
         "",
         "## Registry Rows",
         "",
-        "| System | Class | Repo | Runtime inventory | Entrypoint smoke | Same-workload full-stack | Paired superiority | Comparable claim | Blocker |",
+        "| System | Class | Repo | Runtime inventory | Entrypoint smoke | Same-workload runtime probe | Paired native-better | Comparable claim | Blocker |",
         "|---|---|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in report.get("rows") or []:
@@ -221,7 +229,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
                 repo=str(bool(row.get("repo_present"))).lower(),
                 runtime=str(bool(row.get("runtime_inventory_ready"))).lower(),
                 smoke=str(bool(row.get("entrypoint_smoke_ready"))).lower(),
-                full=str(bool(row.get("same_host_same_workload_fullstack_ready"))).lower(),
+                full=str(bool(row.get("same_host_same_workload_runtime_probe_ready"))).lower(),
                 sup=str(bool(row.get("paired_native_superiority_ready"))).lower(),
                 claim=str(bool(row.get("comparable_gpu_scheduler_claim_ready"))).lower(),
                 blocker=_md(row.get("blocker")),
@@ -233,10 +241,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
 
 def _blocker(item: Mapping[str, Any], ready: bool, superiority: bool, runtime_row: Mapping[str, Any]) -> str:
     cls = item.get("class")
-    if cls == "named_direct_fullstack" and ready and superiority:
-        return "none for the scoped same-host same-workload named row"
+    if cls == "named_runtime_probe" and ready and superiority:
+        return "none for the scoped same-host same-workload runtime-probe row"
     if cls == "adjacent_simulator":
-        return "adjacent simulator domain; needs a Spark-DAG comparison protocol, not a GPU co-location full-stack row"
+        return "adjacent simulator domain; needs a Spark-DAG comparison protocol, not a GPU co-location runtime-probe row"
     if cls == "paper_only_registered":
         return str(runtime_row.get("blocker") or "paper-only registered system; no official runtime row is available in the current package")
     if runtime_row:

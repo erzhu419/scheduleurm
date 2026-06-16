@@ -27,23 +27,72 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 DEFAULT_OUTPUT = ARTIFACT_ROOT / "non_future_claim_closure_gate_20260614.json"
 DEFAULT_MARKDOWN_OUTPUT = REPO_ROOT / "md" / "non_future_claim_closure_gate_20260614.md"
+FULLSTACK_ARTIFACT = ARTIFACT_ROOT / "sota_fullstack_superiority_gate_20260613.json"
+ADMITTED_SOTA_ARTIFACT = ARTIFACT_ROOT / "sota_admitted_universe_closure_gate_20260614.json"
+REGISTERED_ADAPTER_ARTIFACT = ARTIFACT_ROOT / "registered_sota_adapter_closure_gate_20260614.json"
+ORGANIC_HISTORY_ARTIFACT = ARTIFACT_ROOT / "organic_history_completion_gate_20260614.json"
+PRODUCTION_WIDE_ARTIFACT = ARTIFACT_ROOT / "production_wide_organic_trace_gate_20260614.json"
+MULTINODE_ORIGINAL_ARTIFACT = ARTIFACT_ROOT / "multinode_original_deployment_gate_20260614.json"
+DECIMA_SPARK_ARTIFACT = ARTIFACT_ROOT / "decima_spark_dag_gate_20260614.json"
+DECIMA_SAME_DOMAIN_ARTIFACT = ARTIFACT_ROOT / "decima_same_domain_benchmark_gate_20260614.json"
 
 
-def build_non_future_claim_closure_gate(*, probe_remotes: bool = False) -> dict[str, Any]:
-    fullstack = build_sota_fullstack_superiority_gate()
-    sota = build_sota_admitted_universe_closure_gate()
-    registered_adapter = build_registered_sota_adapter_closure_gate()
-    production_history = build_organic_history_completion_gate()
-    production_wide = build_production_wide_organic_trace_gate()
-    multinode = build_multinode_original_deployment_gate(probe_remotes=probe_remotes)
-    decima = build_decima_spark_dag_gate(run_smoke=True)
-    decima_same_domain = build_decima_same_domain_benchmark_gate()
+def build_non_future_claim_closure_gate(
+    *,
+    probe_remotes: bool = False,
+    refresh_subgates: bool = False,
+    refresh_rolling_production: bool = False,
+) -> dict[str, Any]:
+    fullstack = _cached_or_build(
+        FULLSTACK_ARTIFACT,
+        build_sota_fullstack_superiority_gate,
+        refresh=refresh_subgates,
+    )
+    sota = _cached_or_build(
+        ADMITTED_SOTA_ARTIFACT,
+        build_sota_admitted_universe_closure_gate,
+        refresh=refresh_subgates,
+    )
+    registered_adapter = _cached_or_build(
+        REGISTERED_ADAPTER_ARTIFACT,
+        build_registered_sota_adapter_closure_gate,
+        refresh=refresh_subgates,
+    )
+    production_history = _cached_or_build(
+        ORGANIC_HISTORY_ARTIFACT,
+        build_organic_history_completion_gate,
+        refresh=refresh_subgates,
+    )
+    production_wide = (
+        build_production_wide_organic_trace_gate()
+        if refresh_rolling_production
+        else _load_json(PRODUCTION_WIDE_ARTIFACT)
+    )
+    if not production_wide:
+        production_wide = build_production_wide_organic_trace_gate()
+    multinode = (
+        build_multinode_original_deployment_gate(probe_remotes=probe_remotes)
+        if refresh_subgates
+        else _load_json(MULTINODE_ORIGINAL_ARTIFACT)
+    )
+    if not multinode:
+        multinode = build_multinode_original_deployment_gate(probe_remotes=probe_remotes)
+    decima = _cached_or_build(
+        DECIMA_SPARK_ARTIFACT,
+        lambda: build_decima_spark_dag_gate(run_smoke=True),
+        refresh=refresh_subgates,
+    )
+    decima_same_domain = _cached_or_build(
+        DECIMA_SAME_DOMAIN_ARTIFACT,
+        build_decima_same_domain_benchmark_gate,
+        refresh=refresh_subgates,
+    )
 
     rows = [
         {
-            "name": "named_external_sota_fullstack",
-            "closed_claim": "Named five same-host same-workload external full-stack rows are closed.",
-            "ready": bool(fullstack.get("direct_fullstack_named_sota_superiority_ready")),
+            "name": "named_external_runtime_probe",
+            "closed_claim": "Named five same-host same-workload external runtime probes are artifacted with paired native-better rows.",
+            "ready": bool(fullstack.get("named_same_host_runtime_probe_ready")),
             "forbidden_extension": "Do not extend to arbitrary or unregistered SOTA systems.",
             "status": fullstack.get("status"),
         },
@@ -54,7 +103,7 @@ def build_non_future_claim_closure_gate(*, probe_remotes: bool = False) -> dict[
                 sota.get("registered_sota_admitted_policy_superiority_ready")
                 and registered_adapter.get("registered_policy_adapter_universe_ready")
             ),
-            "forbidden_extension": "Do not call this direct external-binary superiority for registered systems lacking full-stack adapters.",
+            "forbidden_extension": "Do not call this direct external-binary superiority for registered systems lacking executable same-workload adapters.",
             "status": registered_adapter.get("status"),
         },
         {
@@ -90,13 +139,13 @@ def build_non_future_claim_closure_gate(*, probe_remotes: bool = False) -> dict[
         "gate": "non_future_claim_closure_gate",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "status": (
-            "NON_FUTURE_SCOPED_STRONG_CLAIMS_CLOSED"
+            "NON_FUTURE_SCOPED_CLAIMS_CLOSED_STRONG_EXTENSIONS_FALSE"
             if ready else "NON_FUTURE_SCOPED_CLAIMS_PENDING"
         ),
         "gate_pass": ready,
         "scoped_claim_ready": ready,
         "non_future_scoped_closure_ready": ready,
-        "strong_claim_ready": ready,
+        "strong_claim_ready": False,
         "excluded_direction": "arbitrary_future_workload",
         "row_count": len(rows),
         "ready_count": sum(1 for row in rows if row["ready"]),
@@ -104,8 +153,11 @@ def build_non_future_claim_closure_gate(*, probe_remotes: bool = False) -> dict[
         "snapshots": {
             "sota_fullstack": {
                 "status": fullstack.get("status"),
-                "direct_fullstack_named_sota_superiority_ready": fullstack.get(
-                    "direct_fullstack_named_sota_superiority_ready"
+                "named_same_host_runtime_probe_ready": fullstack.get(
+                    "named_same_host_runtime_probe_ready"
+                ),
+                "direct_fullstack_sota_superiority_ready": fullstack.get(
+                    "direct_fullstack_sota_superiority_ready"
                 ),
                 "arbitrary_sota_superiority_ready": fullstack.get(
                     "arbitrary_sota_superiority_ready"
@@ -188,13 +240,13 @@ def build_non_future_claim_closure_gate(*, probe_remotes: bool = False) -> dict[
         "forbidden_claims": [
             "arbitrary future workload positive-service theorem readiness",
             "arbitrary or unregistered SOTA superiority",
-            "direct external-binary superiority for registered systems without full-stack adapter rows",
+            "direct external-binary superiority for registered systems without executable same-workload adapter rows",
             "external SOTA original multi-node control-plane superiority",
             "Decima Spark-DAG superiority as if it were a GPU co-location scheduler",
         ],
         "scope": (
             "Aggregate certificate for non-future broad directions.  It closes "
-            "finite named/full-stack, registered policy-semantics, strict "
+            "finite named runtime-probe, registered policy-semantics, strict "
             "production-history, Scheduleurm-native multi-node, and Decima "
             "adjacent-domain bridge claims.  It intentionally excludes arbitrary "
             "future workloads and keeps stronger unbounded/external-binary "
@@ -251,8 +303,34 @@ def _write_json(path: str | Path, data: Mapping[str, Any]) -> None:
     p.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _load_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _cached_or_build(
+    path: Path,
+    builder: Any,
+    *,
+    refresh: bool,
+) -> dict[str, Any]:
+    if not refresh:
+        cached = _load_json(path)
+        if cached:
+            return cached
+    return dict(builder())
+
+
 def _cmd_build(args: argparse.Namespace) -> int:
-    report = build_non_future_claim_closure_gate(probe_remotes=args.probe_remotes)
+    report = build_non_future_claim_closure_gate(
+        probe_remotes=args.probe_remotes,
+        refresh_subgates=args.refresh_subgates,
+        refresh_rolling_production=args.refresh_rolling_production,
+    )
     _write_json(args.output, report)
     if args.markdown_output:
         p = Path(args.markdown_output).expanduser()
@@ -269,6 +347,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
     build = sub.add_parser("build", help="Build non-future broad-claim closure gate")
     build.add_argument("--probe-remotes", action="store_true")
+    build.add_argument("--refresh-subgates", action="store_true")
+    build.add_argument("--refresh-rolling-production", action="store_true")
     build.add_argument("--output", default=str(DEFAULT_OUTPUT))
     build.add_argument("--markdown-output", default=str(DEFAULT_MARKDOWN_OUTPUT))
     build.set_defaults(func=_cmd_build)

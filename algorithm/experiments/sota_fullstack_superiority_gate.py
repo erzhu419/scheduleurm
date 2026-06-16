@@ -1,10 +1,9 @@
-"""Direct full-stack SOTA superiority gate.
+"""Named external runtime probe gate.
 
-This gate is deliberately strict.  It does not count policy-semantics replay or
-native simulator microbenchmarks as full-stack superiority over external
-systems.  It checks whether the current machine can run the external stacks,
-records the strongest native evidence available, and emits a reviewer-facing
-hard-blocker certificate when the environment is insufficient.
+This module keeps the historical entrypoint name for compatibility, but the
+generated claim is intentionally narrower than "direct SOTA superiority."  It
+records scoped same-host same-workload runtime probes for named external
+systems and keeps arbitrary/direct full-stack SOTA superiority false.
 """
 from __future__ import annotations
 
@@ -155,7 +154,11 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
             "missing_required_tools": row.get("missing_required_tools") or [],
             "missing_stack_assets": row.get("missing_stack_assets") or [],
             "blockers": row.get("blockers") or [],
-            "full_stack_superiority_claim_allowed": bool(full_stack_ready and superiority_ready),
+            "scoped_runtime_probe_ready": bool(full_stack_ready),
+            "scoped_runtime_probe_native_better": bool(
+                full_stack_ready and superiority_ready
+            ),
+            "full_stack_superiority_claim_allowed": False,
             "strict_reason": _strict_reason(
                 adapter,
                 row,
@@ -175,28 +178,32 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
     )
     named_rows = [row for row in rows if row.get("adapter") in NAMED_SOTA_ADAPTERS]
     named_ready_count = sum(1 for row in named_rows if row.get("same_workload_full_stack_ready"))
-    named_superiority_count = sum(1 for row in named_rows if row.get("full_stack_superiority_claim_allowed"))
-    named_sota_fullstack_superiority_ready = bool(
+    named_superiority_count = sum(
+        1 for row in named_rows if row.get("scoped_runtime_probe_native_better")
+    )
+    named_same_host_runtime_probe_ready = bool(
         len(named_rows) == len(NAMED_SOTA_ADAPTERS)
         and named_ready_count == len(NAMED_SOTA_ADAPTERS)
         and named_superiority_count == len(NAMED_SOTA_ADAPTERS)
     )
     status = (
-        "NAMED_SAME_HOST_FULLSTACK_SUPERIORITY_PASS_REGISTERED_ARBITRARY_FALSE"
-        if named_sota_fullstack_superiority_ready
-        else "NAMED_SAME_HOST_FULLSTACK_SUPERIORITY_PENDING"
+        "NAMED_SAME_HOST_RUNTIME_PROBE_PASS_DIRECT_SOTA_FALSE"
+        if named_same_host_runtime_probe_ready
+        else "NAMED_SAME_HOST_RUNTIME_PROBE_PENDING"
     )
     return {
-        "gate": "sota_fullstack_superiority_gate",
+        "gate": "named_external_runtime_probe_gate",
+        "legacy_entrypoint": "sota_fullstack_superiority_gate",
         "status": status,
         "gate_pass": True,
-        "scoped_claim_ready": bool(named_sota_fullstack_superiority_ready),
+        "scoped_claim_ready": bool(named_same_host_runtime_probe_ready),
         "strong_claim_ready": False,
         "pass_meaning": (
-            "named five same-host same-workload full-stack rows with paired native "
-            "superiority are closed; arbitrary SOTA, registered-universe external "
-            "binary, original multi-node, and production-wide trace superiority "
-            "are not claimed"
+            "named five same-host same-workload runtime probes with paired "
+            "native-better rows are closed; direct full-stack SOTA superiority, "
+            "registered-universe external-binary superiority, original "
+            "multi-node superiority, and production-wide trace superiority are "
+            "not claimed"
         ),
         "rows": rows,
         "tool_inventory": tool_inventory,
@@ -280,31 +287,45 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
         },
         "full_stack_ready_count": sum(1 for row in rows if row["same_workload_full_stack_ready"]),
         "named_sota_adapters": sorted(NAMED_SOTA_ADAPTERS),
+        "named_same_host_runtime_probe_ready_count": named_ready_count,
+        "named_same_host_runtime_probe_native_better_count": named_superiority_count,
+        "named_same_host_runtime_probe_ready": bool(named_same_host_runtime_probe_ready),
+        "named_same_host_runtime_probe_native_better": bool(named_same_host_runtime_probe_ready),
         "named_sota_fullstack_ready_count": named_ready_count,
-        "named_sota_fullstack_superiority_count": named_superiority_count,
-        "direct_fullstack_named_sota_superiority_ready": bool(named_sota_fullstack_superiority_ready),
+        "named_sota_fullstack_superiority_count": 0,
+        "direct_fullstack_named_sota_superiority_ready": False,
         "registered_sota_universe_superiority_ready": False,
         "arbitrary_sota_superiority_ready": False,
         "arbitrary_future_workload_superiority_ready": False,
         "multinode_original_deployment_superiority_ready": False,
         "production_wide_organic_trace_superiority_ready": False,
-        "direct_fullstack_sota_superiority_ready": bool(named_sota_fullstack_superiority_ready),
+        "direct_fullstack_sota_superiority_ready": False,
         "policy_semantics_comparison_ready": bool(readiness.get("policy_semantics_fallback_available")),
         "hard_blocker_certificate_ready": True,
+        "execution_environment": (
+            "artifacted prior same-host runtime snapshots on the isolated "
+            "jtl110gpu/K3s or same-host substrate; the current local WSL "
+            "reproduction inventory may lack docker, kubectl, or go"
+        ),
+        "current_reproduction_environment": (
+            "safe local reproduction script records current tool availability "
+            "and does not re-run privileged external runtime probes"
+        ),
+        "current_rerun_ready": False,
         "pass": True,
         "scope": (
-            "Strict gate for direct full-stack superiority claims over the named "
-            "systems Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus on the scoped "
-            "same-host same-workload test substrate.  It does not claim "
-            "superiority over arbitrary SOTA systems, arbitrary future workloads, "
-            "or production-wide online traces outside this measured gate."
+            "Scoped named-system same-host runtime-probe evidence for Gavel, "
+            "Pollux/AdaptDL, Sia, IADeep, and Salus.  The gate does not claim "
+            "direct full-stack SOTA superiority, arbitrary SOTA superiority, "
+            "future-workload superiority, original multi-node deployment "
+            "superiority, or production-wide online trace superiority."
         ),
     }
 
 
 def markdown_report(report: Mapping[str, Any]) -> str:
     lines = [
-        "# SOTA Full-Stack Superiority Gate",
+        "# Named External Runtime Probe Gate",
         "",
         "## Summary",
         "",
@@ -316,6 +337,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
         f"| `pass_meaning` | {report.get('pass_meaning')} |",
+        f"| `named_same_host_runtime_probe_ready` | {str(bool(report.get('named_same_host_runtime_probe_ready'))).lower()} |",
+        f"| `named_same_host_runtime_probe_native_better` | {str(bool(report.get('named_same_host_runtime_probe_native_better'))).lower()} |",
         f"| `direct_fullstack_sota_superiority_ready` | {str(bool(report.get('direct_fullstack_sota_superiority_ready'))).lower()} |",
         f"| `direct_fullstack_named_sota_superiority_ready` | {str(bool(report.get('direct_fullstack_named_sota_superiority_ready'))).lower()} |",
         f"| `registered_sota_universe_superiority_ready` | {str(bool(report.get('registered_sota_universe_superiority_ready'))).lower()} |",
@@ -323,8 +346,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `multinode_original_deployment_superiority_ready` | {str(bool(report.get('multinode_original_deployment_superiority_ready'))).lower()} |",
         f"| `production_wide_organic_trace_superiority_ready` | {str(bool(report.get('production_wide_organic_trace_superiority_ready'))).lower()} |",
         f"| `full_stack_ready_count` | {report.get('full_stack_ready_count', 0)} |",
-        f"| `named_sota_fullstack_ready_count` | {report.get('named_sota_fullstack_ready_count', 0)} |",
-        f"| `named_sota_fullstack_superiority_count` | {report.get('named_sota_fullstack_superiority_count', 0)} |",
+        f"| `named_same_host_runtime_probe_ready_count` | {report.get('named_same_host_runtime_probe_ready_count', 0)} |",
+        f"| `named_same_host_runtime_probe_native_better_count` | {report.get('named_same_host_runtime_probe_native_better_count', 0)} |",
         f"| `policy_semantics_comparison_ready` | {str(bool(report.get('policy_semantics_comparison_ready'))).lower()} |",
         f"| `hard_blocker_certificate_ready` | {str(bool(report.get('hard_blocker_certificate_ready'))).lower()} |",
         f"| `native_execution_ready_count` | {(report.get('native_execution_attempts') or {}).get('ready_count', 0)} |",
@@ -354,7 +377,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         "## System Rows",
         "",
-        "| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux full-stack pair | Sia full-stack pair | IADeep full-stack pair | Salus full-stack pair | Full-stack ready | Superiority allowed | Reason |",
+        "| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ])
     for row in report.get("rows") or []:
@@ -370,8 +393,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
                 sia_pair=str(bool(row.get("sia_same_workload_fullstack_ready"))).lower(),
                 iadeep_pair=str(bool(row.get("iadeep_same_workload_fullstack_ready"))).lower(),
                 salus_pair=str(bool(row.get("salus_same_workload_fullstack_ready"))).lower(),
-                ready=str(bool(row.get("same_workload_full_stack_ready"))).lower(),
-                allowed=str(bool(row.get("full_stack_superiority_claim_allowed"))).lower(),
+                ready=str(bool(row.get("scoped_runtime_probe_ready"))).lower(),
+                allowed=str(bool(row.get("scoped_runtime_probe_native_better"))).lower(),
                 reason=_md(row.get("strict_reason") or ""),
             )
         )
@@ -525,7 +548,7 @@ def _cmd_build(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m algorithm.experiments.sota_fullstack_superiority_gate")
     sub = parser.add_subparsers(dest="cmd", required=True)
-    build = sub.add_parser("build", help="Build direct full-stack SOTA superiority gate")
+    build = sub.add_parser("build", help="Build named external runtime-probe gate")
     build.add_argument("--output", default=str(ARTIFACT_ROOT / "sota_fullstack_superiority_gate_20260613.json"))
     build.add_argument("--markdown-output", default=str(REPO_ROOT / "md" / "sota_fullstack_superiority_gate_20260613.md"))
     build.set_defaults(func=_cmd_build)

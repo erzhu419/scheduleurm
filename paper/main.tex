@@ -239,11 +239,11 @@ Symbol & Meaning \\
 \(\mu^z(a),\mu(a),\lowermu_t(a)\) & regime service mean, main-theorem service mean, and conservative lower-service estimate \\
 \(\mathcal C(\mathcal A),\Lambda(\mathcal A),\operatorname{Mix}(\mathcal A),x_a\) & service convex hull, downward-closed load region, probability simplex, and stationary mixing mass on action \(a\) \\
 \(H_{\mathcal A}(q),q\) & support function and nonnegative support vector \\
-\(\Phi,d_{\Phi},w_r,L,\rho,\pi\) & finite action features, fabric metric, feature weight, service Lipschitz envelope, cover radius, and candidate projection \\
+\(\Phi,m,d_{\Phi},w_r,L,\rho,\pi\) & finite action features, feature dimension, fabric metric, feature weight, service Lipschitz envelope, cover radius, and candidate projection \\
 \(K_t(a),G_t(a),P_t(a),P_0,\beta\) & switching cost, risk/interference penalty, total penalty, additive penalty bound, and queue-scaled penalty coefficient \\
 \(\theta_{\mathrm{prof}}\) & dimensionless profile-penalty fraction used by the queue-adaptive replay candidate \\
 \(\delta,\epsilon_{\mathrm{cand}},\epsilon_{\mathrm{est}},\alpha_0,\alpha_1,\eta\) & full-region slack, candidate loss, estimation loss, additive oracle error, queue-scaled oracle error, and residual drift margin \\
-\(B,N,V,\Delta V\) & second-moment bound, finite-set threshold, quadratic Lyapunov function, and one-step Lyapunov drift \\
+\(B,N,\gamma,V,\Delta V\) & second-moment bound, finite-set threshold, negative-drift margin, quadratic Lyapunov function, and one-step Lyapunov drift \\
 \(b,k,\widehat\mu_i(k),\widehat\mu_i^{\max}\) & replay backlog count, measured co-location profile, measured aggregate service at profile \(k\), and best measured aggregate service in the same envelope \\
 \bottomrule
 \end{tabular}
@@ -321,9 +321,9 @@ drift; it is not an operational stability ``if and only if'' by itself.
 
 The implemented scheduler optimizes over \(\Acand\subseteq\Afull\).  To avoid
 turning this computational restriction into an unaccounted model change, define
-a finite feature map \(\Phi:\Afull\to\Real^d\) and weighted \(\ell_1\) fabric metric
+a finite feature map \(\Phi:\Afull\to\Real^m\) and weighted \(\ell_1\) fabric metric
 \begin{equation}
-  d_{\Phi}(a,a')=\sum_{r=1}^d w_r|\Phi_r(a)-\Phi_r(a')|.
+  d_{\Phi}(a,a')=\sum_{r=1}^m w_r|\Phi_r(a)-\Phi_r(a')|.
 \end{equation}
 The features may include co-location profile, node bucket, CPU bucket, memory
 pressure bucket, placement locality, and other scheduler-visible fabric
@@ -407,7 +407,8 @@ under a calibrated fabric metric \(\epsilon_{\mathrm{cand}}=L\rho\). &
 Candidate-set or fabric-cover loss \(L\rho\). \\
 Lower service & Conservative service rows satisfy
 \(H_{\Acand_t}(q)\le\max_{a\in\Acand_t}q^\top\lowermu_t(a)
-+\epsilon_{\mathrm{est}}\normone{q}\). & Service-estimation or LCB loss
+\epsilon_{\mathrm{est}}\normone{q}\). & Service-estimation or lower confidence
+bound (LCB) loss
 \(\epsilon_{\mathrm{est}}\). \\
 Penalty and oracle & Bounded penalties and approximate optimization imply that
 the selected action loses at most \(P_0+\alpha_0+(\beta+\alpha_1)\normone{Q}\)
@@ -904,8 +905,9 @@ online-arrival gate then runs Poisson and bursty traces at load factors
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
 legacy Scheduleurm caps.  The metric is completion of all jobs in the task list,
-not the time to finish a single job.  In the task names, CNN denotes
-convolutional neural network and LLM denotes large language model.
+not the time to finish a single job.  In the task names, convolutional neural
+network (CNN) denotes the vision workload family and large language model (LLM)
+denotes the language-model workload family.
 
 \begin{table}[t]
 \TABLE{Candidate policy versus legacy Scheduleurm on explicit task lists.\label{tab:legacy-results}}{
@@ -949,8 +951,8 @@ was 90 jobs, and the maximum time-weighted mean backlog was 48.112 jobs.
 \toprule
 Metric & Geomean/mean & Median & Min & 5\% & 95\% \\
 \midrule
-Candidate / legacy makespan & 1.670 & 1.329 & 1.004 & 1.020 & 9.835 \\
-Candidate / legacy mean flow & 4.998 & 3.629 & 0.999 & 1.040 & 179.178 \\
+Legacy / candidate makespan & 1.670 & 1.329 & 1.004 & 1.020 & 9.835 \\
+Legacy / candidate mean flow & 4.998 & 3.629 & 0.999 & 1.040 & 179.178 \\
 Candidate mean backlog jobs & 7.398 & 8.300 & 0.941 & 1.659 & 27.757 \\
 Candidate max backlog jobs & 23.493 & 25.000 & 4.000 & 6.000 & 67.000 \\
 \bottomrule
@@ -1024,7 +1026,7 @@ a configuration spanning both GPU nodes with \(\alpha_0=\alpha_1=0\).  This
 closes the cross-node theorem-candidate interface, but not original multi-node
 full-stack superiority for external systems.  A separate multi-node history
 gate audits strict theorem-admitted Scheduleurm production rows and finds
-4,020 launched rows, 3,992 completed rows, zero strict unadmitted rows, 35
+4,058 launched rows, 4,047 completed rows, zero strict unadmitted rows, 35
 workload domains, 13 nodes, and three GPU nodes.  This closes the
 Scheduleurm-native multi-node launched/completed history claim without claiming
 that every external SOTA control plane has been run in its original multi-node
@@ -1035,8 +1037,8 @@ to strict-history completion evidence.  The organic history completion gate
 audits real scheduler records, excludes raw-history rows outside scheduler
 control (attempted-only, auto-adopted, diagnostic, and read-only probe rows),
 and admits only exact/signature-certified service rows under strict theorem
-admission.  It reports 4,020 strict organic launched rows, 3,992 completed
-rows, completion fraction 0.9930, 35 workload domains, 13 nodes, and zero
+admission.  It reports 4,058 strict organic launched rows, 4,047 completed
+rows, completion fraction 0.9973, 35 workload domains, 13 nodes, and zero
 strict unadmitted launched rows.  The production-wide organic wrapper therefore
 reports \texttt{production\_wide\_history\_completion\_closed=true} and
 \texttt{large\_scale\_organic\_launched\_completion\_ready=true}, while
@@ -1058,7 +1060,7 @@ scenarios remain within the stated replay tolerance.
 \TABLE{Online policy-semantics replay aggregate on identical measured service cache.\label{tab:sota-matrix}}{
 \begin{tabular}{l r r r}
 \toprule
-Policy-semantics baseline & Candidate / makespan & Candidate / mean flow & Candidate / p90 flow \\
+Policy-semantics baseline & Makespan ratio & Mean-flow ratio & p90-flow ratio \\
 \midrule
 Throughput table goodput & \(1.0049\times\) & \(1.0267\times\) & \(1.0235\times\) \\
 Delay oracle & \(1.0049\times\) & \(1.0267\times\) & \(1.0235\times\) \\
@@ -1066,8 +1068,8 @@ Interference guard & \(1.0009\times\) & \(1.0032\times\) & \(1.0029\times\) \\
 Quadrant composite & \(1.0049\times\) & \(1.0267\times\) & \(1.0235\times\) \\
 \bottomrule
 \end{tabular}
-}{Entries are geometric mean candidate-versus-policy ratios across the online
-arrival scenarios.  Values above one favor the candidate.  A row would dominate
+}{Entries are geometric mean baseline-versus-candidate ratios across the online
+arrival scenarios, so values above one favor the candidate.  A row would dominate
 the candidate only if both makespan and mean-flow ratios were materially below
 one; no such row appears under the 0.5\% replay tolerance.}
 \end{table}
@@ -1128,7 +1130,8 @@ artifact flag
 meaning that every measured-cache scenario is strictly noninferior to the
 external-policy envelope in both makespan and mean flow.  This flag is not a
 direct full-stack superiority claim over Gavel, Pollux, Sia, IADeep, or Salus;
-that stronger claim is governed by the separate full-stack gate.
+the separate named-runtime-probe gate records scoped same-host probe evidence
+and still keeps direct full-stack SOTA superiority false.
 The closing action is a finite ResNet-50 trajectory bridge, not a new service
 rate: for static queues it applies a deterministic hash partition with seed 30
 across the two GPUs, runs the measured profile-3 action, and drains the last two
@@ -1151,7 +1154,7 @@ packing guards.  The Pareto-slack policy closes the measured-cache
 policy-semantics external envelope; the metric-specific union rows remain diagnostic
 envelope certificates.  The marginal-service rows explicitly record the observed
 non-monotonic opportunities: high video random-access memory (VRAM) resident
-small CUDA (Compute Unified Device Architecture) service is
+small Compute Unified Device Architecture (CUDA) service is
 \(1.095\times\) the empty reference in the controlled slice, and CPU-resident
 marginal rows are \(1.001\times\)--\(1.091\times\) the empty CPU reference.
 These additions strengthen the finite-action candidate-set claim; they remain
@@ -1344,8 +1347,8 @@ sanity checks, not production-wide traces.
 The rolling production evidence is separated in the same way.  The strict
 scheduler-history gate
 (\texttt{md/organic\_history\_completion\_gate\_20260614.md}) reports
-\texttt{strict\_history\_large\_scale\_completion\_ready=true}: 4,020 strict
-theorem-facing organic launches, 3,992 completions, 35 admitted workload
+\texttt{strict\_history\_large\_scale\_completion\_ready=true}: 4,058 strict
+theorem-facing organic launches, 4,047 completions, 35 admitted workload
 domains, 13 nodes, and zero strict unadmitted launched rows.  The
 production-launch wrapper
 (\texttt{md/production\_launch\_completion\_gate\_20260612.md}) remains
@@ -1367,7 +1370,44 @@ completion, non-invasive production shadow semantics, strict scheduler-history
 organic completion, and Scheduleurm-native multi-node history.  It does not
 certify raw history, future unknown workloads, every live oracle slot, a
 large-scale live oracle-traced production completion trace, or external SOTA
-original multi-node superiority.
+original multi-node superiority.  Table~\ref{tab:production-evidence}
+summarizes the four evidence ledgers and keeps the completed-active service-map
+population separate from the strict scheduler-history organic population.
+
+\begin{table}[t]
+\TABLE{Production and controlled live-evidence ledger.\label{tab:production-evidence}}{
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.25\linewidth}
+                >{\raggedright\arraybackslash}p{0.33\linewidth}
+                >{\raggedright\arraybackslash}p{0.26\linewidth}
+                >{\raggedright\arraybackslash}p{0.08\linewidth}}
+\toprule
+Evidence row & Artifact & Count or status & Ready \\
+\midrule
+6-task controlled launched completion &
+\texttt{controlled\_prod\_gate} &
+6 launched/completed controlled tasks; 7 theorem slots; 13 candidate rows &
+true \\
+32-task controlled launched completion &
+\texttt{controlled\_jtl110gpu\_32} &
+32 launched/completed controlled tasks; 32 theorem slots; 56 candidate rows;
+\(\alpha_0=\alpha_1=0\) & true \\
+Strict scheduler-history organic completion &
+\texttt{organic\_history\_gate} &
+4,058 strict launched rows; 4,047 completed rows; 35 domains; 13 nodes; zero
+strict unadmitted launches & true \\
+Rolling production launch/completion wrapper &
+\texttt{production\_launch\_gate} &
+History completion and active shadow progress pass; live oracle-traced
+large-scale completion remains false & scoped \\
+\bottomrule
+\end{tabular}
+}{The rows deliberately separate controlled launches, strict scheduler-history
+completion, rolling queue snapshots, and live oracle-trace closure.  The table
+uses shortened artifact labels for the corresponding
+\texttt{md/experiment\_artifacts} files and does not claim raw-history closure,
+future-workload closure, or full production oracle tracing.}
+\end{table}
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}
@@ -1581,26 +1621,26 @@ bounds, candidate admission, oracle gaps, or moment bounds.
 
 \subsection*{EC.1. Capacity Slack as a Support-Function Margin}
 
-Let \(M(a)\in\Real_+^{|\mathcal I|}\) denote the true mean service vector of
+Let \(\mu(a)\in\Real_+^{|\mathcal I|}\) denote the true mean service vector of
 full action \(a\in\Afull\), and let \(H_{\Afull}(q)=\max_{a\in\Afull}q^\top
-M(a)\) be the full-action support function for nonnegative backlog weights
+\mu(a)\) be the full-action support function for nonnegative backlog weights
 \(q\in\Real_+^{|\mathcal I|}\).  A stationary randomized policy over full
-actions is a probability vector \(x\in\Delta(\Afull)\).  If it has coordinate
+actions is a probability vector \(x\in\operatorname{Mix}(\Afull)\).  If it has coordinate
 slack \(\delta>0\) against the arrival mean \(\lambda\), then
 \begin{equation}
-  \lambda_i+\delta \le \sum_{a\in\Afull}x_a M_i(a),
+  \lambda_i+\delta \le \sum_{a\in\Afull}x_a \mu_i(a),
   \qquad i\in\mathcal I.
 \end{equation}
 Multiplying each coordinate by \(q_i\ge0\) and summing gives
 \begin{equation}
   q^\top\lambda+\delta\normone{q}
   \le
-  \sum_{a\in\Afull}x_a q^\top M(a).
+  \sum_{a\in\Afull}x_a q^\top \mu(a).
 \end{equation}
 Because \(x\) is a convex combination, the right-hand side is at most the
 maximum full-action support:
 \begin{equation}
-  \sum_{a\in\Afull}x_a q^\top M(a)
+  \sum_{a\in\Afull}x_a q^\top \mu(a)
   \le
   H_{\Afull}(q).
 \end{equation}
@@ -1628,22 +1668,22 @@ certificate: for every \(q\ge0\),
   +\epsilon_{\mathrm{cand}}\normone{q}.
 \end{equation}
 When the loss is obtained from a calibrated fabric metric, let
-\(\Phi(a)\) be the finite feature representation of action \(a\), let \(d\) be
-the feature metric, and suppose each full action \(a\) has a projected
+\(\Phi(a)\) be the finite feature representation of action \(a\), let
+\(d_{\Phi}\) be the feature metric, and suppose each full action \(a\) has a projected
 candidate \(\pi_t(a)\in\Acand_t\) satisfying
 \begin{equation}
-  d(\Phi(a),\Phi(\pi_t(a)))\le\rho.
+  d_{\Phi}(a,\pi_t(a))\le\rho.
 \end{equation}
 If service is Lipschitz in this representation,
 \begin{equation}
-  \norminf{M(a)-M(\pi_t(a))}\le L\,d(\Phi(a),\Phi(\pi_t(a))),
+  \norminf{\mu(a)-\mu(\pi_t(a))}\le L\,d_{\Phi}(a,\pi_t(a)),
 \end{equation}
-then for any maximizer \(a^\star\in\argmax_{a\in\Afull}q^\top M(a)\),
+then for any maximizer \(a^\star\in\argmax_{a\in\Afull}q^\top \mu(a)\),
 \begin{equation}
   \begin{aligned}
   H_{\Afull}(q)
-  &=q^\top M(a^\star)\\
-  &\le q^\top M(\pi_t(a^\star))+\normone{q}L\rho\\
+  &=q^\top \mu(a^\star)\\
+  &\le q^\top \mu(\pi_t(a^\star))+\normone{q}L\rho\\
   &\le H_{\Acand_t}(q)+L\rho\normone{q}.
   \end{aligned}
 \end{equation}
@@ -1652,7 +1692,8 @@ finite slices where the candidate support is certified directly, the artifact
 uses the observed support gap itself as \(\epsilon_{\mathrm{cand}}\); when the
 candidate set is exact on the measured slice, this term is zero.  This is why
 the proof does not shrink the action space informally: every restriction must
-be paid for by an explicit support-function loss.
+be paid for by the explicit support-function loss in
+\eqref{eq:ec-candidate-support}.
 
 \subsection*{EC.3. Lower-Service Rows, Penalties, and Approximate Oracles}
 
@@ -1673,18 +1714,25 @@ The scheduling score is
   Q^\top\lowermu_t(a)-K_t(a)-G_t(a),
 \end{equation}
 where \(K_t(a)\) and \(G_t(a)\) are bounded switching, risk, or guard penalties.
-The selected action \(a_t\) need not be the exact maximizer.  It satisfies
+Equation~\eqref{eq:ec-lower-service-support} is the lower-confidence-bound
+bridge from measured service rows to the drift proof.  The selected action
+\(a_t\) need not be the exact maximizer.  It satisfies
 \begin{equation}
   \label{eq:ec-oracle-gap}
   \max_{a\in\Acand_t}\Psi_t(a)-\Psi_t(a_t)
   \le \alpha_0+\alpha_1\normone{Q},
 \end{equation}
-and the selected penalty obeys
+and all admitted candidate penalties obey
 \begin{equation}
   \label{eq:ec-penalty-bound}
-  0\le K_t(a_t)+G_t(a_t)\le P_0+\beta\normone{Q}.
+  0\le K_t(a)+G_t(a)\le P_0+\beta\normone{Q},
+  \qquad a\in\Acand_t.
 \end{equation}
-Combining \eqref{eq:ec-capacity-support}--\eqref{eq:ec-penalty-bound} yields
+Combining the capacity support bound \eqref{eq:ec-capacity-support}, the two
+support-loss bounds \eqref{eq:ec-candidate-support} and
+\eqref{eq:ec-lower-service-support}, the oracle gap
+\eqref{eq:ec-oracle-gap}, and the penalty bound
+\eqref{eq:ec-penalty-bound} yields
 the selected lower-service margin.  First,
 \begin{equation}
   \max_{a\in\Acand_t}Q^\top\lowermu_t(a)
@@ -1692,7 +1740,7 @@ the selected lower-service margin.  First,
   Q^\top\lambda+
   (\delta-\epsilon_{\mathrm{cand}}-\epsilon_{\mathrm{est}})\normone{Q}.
 \end{equation}
-Second, by the oracle gap and the selected penalty bound,
+Second, by the oracle gap and the all-candidate penalty bound,
 \begin{equation}
   \label{eq:ec-selected-margin}
   \begin{aligned}
@@ -1895,8 +1943,8 @@ Stability theorem & true & false & Operational claims require a matched
 stochastic/load certificate. & Keep theorem names, build log, and no-sorry
 audit synchronized with the final manuscript. \\
 Declared finite-domain cover & true & false & Unmeasured states are
-probe/defer before positive theorem admission. & Add service-cache v2 timing
-metadata and perturbation profiling for broader universes. \\
+probe/defer before positive theorem admission. & Keep service-cache timing
+metadata synchronized; perturbation profiling is needed for broader universes. \\
 All-state safety cover & true & false & Unknown states have zero theorem
 service until measured. & Measure and admit future buckets or define a finite
 all-state universe. \\
@@ -1925,18 +1973,17 @@ probe completes through Gavel's scheduler/worker/remote procedure call
 path, and the direct native path has lower JCT on the same host. & Treat as a
 scoped Gavel physical-runtime row, not as every Gavel workload or multi-node
 Gavel superiority. \\
-Named external runtime gate & true & true & Gavel, Pollux/AdaptDL, Sia, IADeep, and
-Salus all have named same-host same-workload full-stack rows with paired native
-superiority. & Keep the claim limited to the named systems, measured probes,
-same-host substrate, and artifacted compatibility fixes; do not generalize to
-arbitrary systems, future workloads, or production claims outside the strict
-history population. \\
+Named external runtime gate & true & false & Gavel, Pollux/AdaptDL, Sia,
+IADeep, and Salus all have named same-host same-workload runtime-probe rows
+with paired native-better evidence. & Treat these rows as scoped runtime probes;
+do not state direct full-stack SOTA superiority without a common deployment and
+metric contract. \\
 Registered external adapter universe & true & false & All 11 non-adjacent
 registered external scheduler families have policy/service-unit adapter rows in the
 measured-cache Scheduleurm+external union, and the measured-cache external-policy
 frontier is closed; 5/11
-also have direct same-workload binary rows. & This is finite adapter closure,
-not external-binary full-stack superiority for every registered or arbitrary
+also have scoped same-host runtime-probe rows. & This is finite adapter closure,
+not external-binary/full-stack superiority for every registered or arbitrary
 SOTA. \\
 External-policy action-union gate & true & false & External policy-family actions are included
 as measured-cache configuration-trajectory actions; metric-specific union rows
@@ -1947,11 +1994,11 @@ state-dependent marginal service, global lookahead, ETA reuse, and expanded
 external-policy action families are certified as opt-in replay artifacts. & Do not treat
 as production-default launch evidence or direct external full-stack
 superiority. \\
-External native execution attempts & true & true & Gavel physical, Pollux/AdaptDL,
-Sia AdaptDL/Kubernetes, IADeep extender, and Salus server/zrpc rows are scoped
-same-host full-stack evidence; Decima is simulator-only. & Keep the strong
-claim limited to the named measured probes; do not generalize to arbitrary
-systems, future workloads, or production-wide traces. \\
+External native execution attempts & true & false & Gavel physical,
+Pollux/AdaptDL, Sia AdaptDL/Kubernetes, IADeep extender, and Salus server/zrpc
+rows are scoped same-host runtime-probe evidence; Decima is simulator-only. &
+Keep these rows in the diagnostic layer; do not promote them to arbitrary or
+registered-system direct SOTA superiority. \\
 Decima same-domain benchmark & true & false & Paired Spark-DAG simulator runs
 complete for fixed seeds; dynamic-partition wall time is noninferior but
 mean-completion performance is mixed. & Treat as adjacent-domain execution
@@ -1990,7 +2037,7 @@ tasks launch and complete with \(\alpha_0=\alpha_1=0\); strict scheduler-history
 organic completion is also closed. & Keep controlled and organic evidence
 paths reported separately. \\
 Organic canary recorder & true & true & Live-trace completion counters remain
-false, but strict history completion passes with 4,020 launched rows, 3,992
+false, but strict history completion passes with 4,058 launched rows, 4,047
 completed rows, 35 domains, 13 nodes, and no strict unadmitted launches. & Do
 not read this as raw-history or future-workload closure. \\
 Production launch/completion & true & true & The rolling safe-launch gate now

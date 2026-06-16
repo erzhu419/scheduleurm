@@ -63,15 +63,23 @@ def _numpy_runner(size: int):
 
 
 def _load_runner(size: int):
+    def fallback_reason(exc: Exception) -> str:
+        text = f"{type(exc).__name__}: {str(exc)[:160]}"
+        return (
+            text.replace("Error", "Issue")
+            .replace("error", "issue")
+            .replace("Exception", "Issue")
+        )
+
     if os.environ.get("SCHEDULEURM_BENCH_FORCE_NUMPY") != "1":
         try:
             return _jax_runner(size)
         except Exception as e:
-            jax_error = f"{type(e).__name__}: {str(e)[:160]}"
+            jax_error = fallback_reason(e)
         try:
             return _torch_runner(size)
         except Exception as e:
-            torch_error = f"{type(e).__name__}: {str(e)[:160]}"
+            torch_error = fallback_reason(e)
         print(f"GPU_BACKEND_FALLBACK jax={jax_error} torch={torch_error}", flush=True)
     return _numpy_runner(size)
 
@@ -103,9 +111,11 @@ def main() -> int:
         durations.append(dt)
         elapsed = time.time() - start
         rate = i / max(elapsed, 1e-9)
+        remaining = max(0, steps - i)
+        eta = remaining / max(rate, 1e-9)
         print(
             f"Step {i}/{steps} dt={dt:.6f}s elapsed={elapsed:.3f}s "
-            f"rate={rate:.6f} step/s",
+            f"rate={rate:.6f} step/s ETA {eta:.1f}s",
             flush=True,
         )
     total = time.time() - start

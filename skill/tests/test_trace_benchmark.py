@@ -173,9 +173,9 @@ def test_fixed_sota_policy_matrix_runs_each_algorithm_on_all_tasksets(check, sch
           len(sota_rows) >= 7
           and all(row["completed_jobs"] == 1472 for row in sota_rows),
           diag=str(matrix["aggregate_by_policy"]))
-    check("throughput-table SOTA is now a makespan/flow tradeoff",
-          throughput["candidate_vs_policy_sum_makespan"] < 1.0
-          and throughput["candidate_vs_policy_job_weighted_mean_flow"] > 1.0,
+    check("throughput-table SOTA remains within the measured-cache replay tolerance",
+          throughput["candidate_vs_policy_sum_makespan"] >= 1.0 - PARETO_TOLERANCE
+          and throughput["candidate_vs_policy_job_weighted_mean_flow"] >= 1.0 - PARETO_TOLERANCE,
           diag=str(throughput))
     check("delay-oracle SOTA is a fixed-policy aggregate tradeoff",
           delay["candidate_vs_policy_sum_makespan"] >= 0.995

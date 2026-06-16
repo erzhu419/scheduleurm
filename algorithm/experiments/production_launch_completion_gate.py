@@ -19,6 +19,7 @@ from .production_load_certificate import load_scheduler_records, _dedupe_records
 from .production_live_theorem_trace_gate import _looks_like_production
 from .production_shadow_theorem_trace import build_production_shadow_theorem_trace
 from .progress_units import task_progress_observation
+from .organic_history_completion_gate import build_organic_history_completion_gate
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -65,9 +66,32 @@ def build_production_launch_completion_gate(
     realization_rows = _active_realization_rows(running)
     progress = [row for row in realization_rows if float(row.get("progress_rate_per_s") or 0.0) > 0.0]
     completed = [row for row in realization_rows if row.get("status") == "done"]
-    status = "ACTIVE_PRODUCTION_PROGRESS_TRACE_PASS" if progress else "ACTIVE_PRODUCTION_NO_PROGRESS_OBSERVED"
+    shadow_ready = bool(shadow.get("pass"))
+    history = build_organic_history_completion_gate()
+    history_completion_ready = bool(history.get("large_scale_organic_history_completion_ready"))
+    if history_completion_ready and progress and shadow_ready:
+        status = "HISTORY_COMPLETION_AND_ACTIVE_PROGRESS_SHADOW_TRACE_PASS"
+    elif history_completion_ready:
+        status = "HISTORY_COMPLETION_PASS_ACTIVE_PROGRESS_SNAPSHOT_PENDING"
+    elif progress and shadow_ready:
+        status = "ACTIVE_PROGRESS_SHADOW_TRACE_PASS_LAUNCHED_COMPLETION_FALSE"
+    elif progress:
+        status = "ACTIVE_PROGRESS_OBSERVED_SHADOW_TRACE_PENDING_LAUNCHED_COMPLETION_FALSE"
+    else:
+        status = "ACTIVE_PRODUCTION_NO_PROGRESS_OBSERVED_LAUNCHED_COMPLETION_FALSE"
+    gate_pass = (bool(progress) and shadow_ready) or history_completion_ready
+    live_oracle_traced_large_ready = False
     return {
         "gate": "production_launch_completion_gate",
+        "status": status,
+        "gate_pass": gate_pass,
+        "scoped_claim_ready": gate_pass,
+        "strong_claim_ready": bool(history_completion_ready),
+        "pass_meaning": (
+            "large-scale active-production progress plus non-invasive theorem shadow "
+            "trace, or strict scheduler-history launched-completion evidence; "
+            "not live oracle-traced large-scale completion"
+        ),
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "allow_launch": bool(allow_launch),
         "launch_status": launch_status,
@@ -94,15 +118,26 @@ def build_production_launch_completion_gate(
         "completed_task_count": len(completed),
         "project_counts": dict(Counter(str(row.get("project") or "") for row in realization_rows)),
         "realization_rows": realization_rows[:200],
-        "large_scale_launched_completion_ready": False,
+        "history_completion_snapshot": {
+            "status": history.get("status"),
+            "strict_organic_launched_count": history.get("strict_organic_launched_count"),
+            "strict_organic_completed_count": history.get("strict_organic_completed_count"),
+            "strict_unadmitted_launched_count": history.get("strict_unadmitted_launched_count"),
+            "workload_domain_count": history.get("workload_domain_count"),
+            "node_count": history.get("node_count"),
+        },
+        "history_large_scale_launched_completion_ready": bool(history_completion_ready),
+        "strict_history_large_scale_completion_ready": bool(history_completion_ready),
+        "live_oracle_traced_large_scale_completion_ready": bool(live_oracle_traced_large_ready),
+        "large_scale_launched_completion_ready": bool(history_completion_ready),
         "large_scale_active_progress_ready": bool(progress) and bool(shadow.get("production_shadow_trace_closed")),
-        "pass": bool(progress) and bool(shadow.get("pass")),
+        "pass": gate_pass,
         "scope": (
             "Safe production closure gate.  It does not launch new work unless "
             "queued-production and low-utilization resource conditions are satisfied. "
-            "In the current snapshot, it reports large-scale active-production "
-            "progress plus non-invasive theorem shadow trace, not launched production "
-            "completion."
+            "In the current snapshot, launched/completion evidence may be closed "
+            "by the strict scheduler-history certificate even when active-progress "
+            "rows are absent."
         ),
     }
 
@@ -118,6 +153,11 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "| Quantity | Value |",
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
+        f"| `status` | `{report.get('status')}` |",
+        f"| `gate_pass` | {str(bool(report.get('gate_pass'))).lower()} |",
+        f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
+        f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
+        f"| `pass_meaning` | {report.get('pass_meaning')} |",
         f"| `launch_status` | `{report.get('launch_status')}` |",
         f"| `launch_safe` | {str(bool(report.get('launch_safe'))).lower()} |",
         f"| `active_production_count` | {report.get('active_production_count', 0)} |",
@@ -128,7 +168,12 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `shadow_trace_closed` | {str(bool(shadow.get('production_shadow_trace_closed'))).lower()} |",
         f"| `progress_observation_count` | {report.get('progress_observation_count', 0)} |",
         f"| `large_scale_launched_completion_ready` | {str(bool(report.get('large_scale_launched_completion_ready'))).lower()} |",
+        f"| `history_large_scale_launched_completion_ready` | {str(bool(report.get('history_large_scale_launched_completion_ready'))).lower()} |",
+        f"| `strict_history_large_scale_completion_ready` | {str(bool(report.get('strict_history_large_scale_completion_ready'))).lower()} |",
+        f"| `live_oracle_traced_large_scale_completion_ready` | {str(bool(report.get('live_oracle_traced_large_scale_completion_ready'))).lower()} |",
         f"| `large_scale_active_progress_ready` | {str(bool(report.get('large_scale_active_progress_ready'))).lower()} |",
+        "",
+        "This gate passes the scoped certificate when progress and shadow trace are present. It does not make the adjacent strong launched-completion claim.",
         "",
         "## Project Counts",
         "",

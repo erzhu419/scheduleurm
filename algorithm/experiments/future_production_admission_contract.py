@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from algorithm.theorem_dispatch.admission import task_admission_certificate
+from algorithm.theorem_dispatch.service_registry import infer_workload_key
 
 from .production_live_theorem_trace_gate import ACTIVE_STATUSES, NON_PRODUCTION_PROJECT_TOKENS
 from .production_load_certificate import _dedupe_records, load_scheduler_records
@@ -27,11 +28,12 @@ TRACEABLE_STATUSES = {"queued", "launching", "running"}
 def build_future_production_admission_contract(
     *,
     records: Iterable[Mapping[str, Any]],
+    admission_mode: str = "strict",
 ) -> dict[str, Any]:
     materialized = _dedupe_records(records)
     active = [dict(row) for row in materialized if str(row.get("status") or "") in ACTIVE_STATUSES]
     production = [row for row in active if _looks_like_production(row)]
-    rows = [_route_row(row) for row in production]
+    rows = [_route_row(row, admission_mode=admission_mode) for row in production]
     route_counts = Counter(str(row.get("route")) for row in rows)
     admitted_traceable = [
         row for row in rows
@@ -50,6 +52,16 @@ def build_future_production_admission_contract(
         "future_production_gate_ready": True,
         "future_production_automatic_theorem_closure_ready": True,
         "future_jobs_all_theorem_grade_without_probe": False,
+        "theorem_admission_default_trace_mode_ready": True,
+        "admission_mode": admission_mode,
+        "status": "STRICT_TRACE_ADMISSION_CONTRACT_PASS_UNKNOWN_PROBE_REQUIRED",
+        "gate_pass": True,
+        "scoped_claim_ready": True,
+        "strong_claim_ready": False,
+        "pass_meaning": (
+            "strict theorem-admission telemetry contract for production records, "
+            "not automatic theorem-grade status for unmeasured future jobs"
+        ),
         "pass": True,
         "contract": {
             "ADMIT_THEOREM_TRACE": "service-domain certificate exists; dispatch slots must emit robust_maxweight_lower_service trace rows",
@@ -74,6 +86,9 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "| Quantity | Value |",
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
+        f"| `status` | `{report.get('status')}` |",
+        f"| `admission_mode` | `{report.get('admission_mode')}` |",
+        f"| `theorem_admission_default_trace_mode_ready` | {str(bool(report.get('theorem_admission_default_trace_mode_ready'))).lower()} |",
         f"| `active_count` | {report.get('active_count', 0)} |",
         f"| `active_production_count` | {report.get('active_production_count', 0)} |",
         f"| `admitted_traceable_count` | {report.get('admitted_traceable_count', 0)} |",
@@ -92,27 +107,33 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         "## Active Production Sample",
         "",
-        "| Task | Status | Project | Workload | Route | Reason |",
-        "|---|---|---|---|---|---|",
+        "| Task | Status | Project | Workload | Route | Reason | Source |",
+        "|---|---|---|---|---|---|---|",
     ])
     for row in report.get("rows") or []:
         lines.append(
-            "| `{task}` | `{status}` | `{project}` | `{workload}` | `{route}` | `{reason}` |".format(
+            "| `{task}` | `{status}` | `{project}` | `{workload}` | `{route}` | `{reason}` | `{source}` |".format(
                 task=row.get("task_id"),
                 status=row.get("status"),
                 project=row.get("project"),
-                workload=row.get("workload_key"),
-                route=row.get("route"),
-                reason=row.get("reason"),
+                workload=row.get("theorem_workload_key"),
+                route=row.get("theorem_admission_route"),
+                reason=row.get("theorem_admission_reason"),
+                source=row.get("theorem_service_source"),
             )
         )
     lines.extend(["", "## Scope", "", str(report.get("scope") or ""), ""])
     return "\n".join(lines)
 
 
-def _route_row(row: Mapping[str, Any]) -> dict[str, Any]:
-    cert = task_admission_certificate(row)
+def _route_row(row: Mapping[str, Any], *, admission_mode: str = "strict") -> dict[str, Any]:
+    cert = task_admission_certificate(row, admission_mode=admission_mode)
     route = "ADMIT_THEOREM_TRACE" if cert.admitted else "PROBE_REQUIRED"
+    profile = min(cert.measured_profiles) if cert.measured_profiles else None
+    candidate = "" if cert.workload_key else infer_workload_key(row, admission_mode="")
+    reason = cert.reason
+    if route == "PROBE_REQUIRED" and candidate:
+        reason = "fuzzy_token_match_not_theorem_admissible"
     return {
         "task_id": row.get("id") or row.get("task_id"),
         "status": row.get("status"),
@@ -121,7 +142,14 @@ def _route_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "workload_key": cert.workload_key,
         "measured_profiles": list(cert.measured_profiles),
         "route": route,
-        "reason": cert.reason,
+        "reason": reason,
+        "candidate_workload_key": candidate,
+        "theorem_admission_route": route,
+        "theorem_workload_key": cert.workload_key,
+        "theorem_profile": profile,
+        "theorem_admission_reason": reason or "exact_positive_service_domain_certified",
+        "theorem_service_source": cert.source,
+        "theorem_admission_mode": admission_mode,
     }
 
 
@@ -150,7 +178,8 @@ def _cmd_build(args: argparse.Namespace) -> int:
         records=load_scheduler_records(
             queue_path=args.queue_path or None,
             archive_path=args.archive_path or None,
-        )
+        ),
+        admission_mode=args.admission_mode,
     )
     _write_json(args.output, report)
     if args.markdown_output:
@@ -167,6 +196,7 @@ def build_parser() -> argparse.ArgumentParser:
     build = sub.add_parser("build", help="Build future-production admission contract")
     build.add_argument("--queue-path", default=None)
     build.add_argument("--archive-path", default=None)
+    build.add_argument("--admission-mode", default="strict")
     build.add_argument("--output", default=str(ARTIFACT_ROOT / "future_production_admission_contract_20260612.json"))
     build.add_argument("--markdown-output", default=str(REPO_ROOT / "md" / "future_production_admission_contract_20260612.md"))
     build.set_defaults(func=_cmd_build)

@@ -55,8 +55,17 @@ def build_gavel_service_unit_equivalence_certificate(
         "calibration experiment currently proves that one Gavel simulator step has "
         "the same service-unit meaning as one Scheduleurm measured service unit."
     )
+    gate_pass = trace_schema_ready and throughput_seed_ready and native_micro_ready
     return {
         "gate": "gavel_service_unit_equivalence_certificate",
+        "status": "GAVEL_NATIVE_ADAPTER_COMPATIBILITY_PASS_SERVICE_UNIT_EQUIV_FALSE",
+        "gate_pass": gate_pass,
+        "scoped_claim_ready": gate_pass,
+        "strong_claim_ready": False,
+        "pass_meaning": (
+            "bounded same-trace Gavel adapter compatibility and native microbaseline "
+            "readiness, not measured service-unit equivalence"
+        ),
         "tasksets": list(tasksets),
         "rows": rows,
         "same_job_count": all(row["same_job_count"] for row in rows),
@@ -84,8 +93,20 @@ def build_gavel_service_unit_equivalence_certificate(
             "direct_full_stack_performance_ready": microbaseline.get(
                 "direct_full_stack_performance_ready"
             ),
+            "rows": [
+                {
+                    "taskset": row.get("taskset"),
+                    "completed_jobs": row.get("completed_count"),
+                    "avg_jct_s": row.get("average_jct_s"),
+                    "makespan_s": row.get("makespan_s"),
+                    "policy": row.get("policy"),
+                    "status": row.get("status"),
+                }
+                for row in (microbaseline.get("rows") or [])
+                if isinstance(row, Mapping)
+            ],
         },
-        "pass": trace_schema_ready and throughput_seed_ready and native_micro_ready,
+        "pass": gate_pass,
         "scope": (
             "Certifies bounded same-trace Gavel adapter compatibility and records "
             "the remaining service-unit blocker.  It intentionally does not promote "
@@ -103,6 +124,11 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "| Quantity | Value |",
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
+        f"| `status` | `{report.get('status')}` |",
+        f"| `gate_pass` | {str(bool(report.get('gate_pass'))).lower()} |",
+        f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
+        f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
+        f"| `pass_meaning` | {report.get('pass_meaning')} |",
         f"| `trace_schema_compatibility_ready` | {str(bool(report.get('trace_schema_compatibility_ready'))).lower()} |",
         f"| `exact_arrival_times_ready` | {str(bool(report.get('exact_arrival_times_ready'))).lower()} |",
         f"| `throughput_seed_ready` | {str(bool(report.get('throughput_seed_ready'))).lower()} |",
@@ -110,14 +136,22 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `gavel_service_unit_equivalence_ready` | {str(bool(report.get('gavel_service_unit_equivalence_ready'))).lower()} |",
         f"| `direct_full_stack_same_workload_ready` | {str(bool(report.get('direct_full_stack_same_workload_ready'))).lower()} |",
         "",
+        "This gate passes the scoped certificate. It does not make the adjacent strong claim.",
+        "",
         "## Rows",
         "",
-        "| Taskset | Jobs | Native rows | Total units | Resource counts | Max arrival jitter s | Throughput profiles | Ready |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "| Taskset | Jobs | Native rows | Total units | Resource counts | Max arrival jitter s | Throughput profiles | Completed | Avg JCT | Makespan | Service-unit equivalence | Ready |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
+    micro_by_taskset = {
+        str(row.get("taskset")): row
+        for row in ((report.get("microbaseline_summary") or {}).get("rows") or [])
+        if isinstance(row, Mapping)
+    }
     for row in report.get("rows") or []:
+        micro = micro_by_taskset.get(str(row.get("taskset")), {})
         lines.append(
-            "| `{taskset}` | {jobs} | {native} | {units:.6g} | {resources} | {jitter:.6g} | {profiles} | {ready} |".format(
+            "| `{taskset}` | {jobs} | {native} | {units:.6g} | {resources} | {jitter:.6g} | {profiles} | {completed} | {avg_jct} | {makespan} | false | {ready} |".format(
                 taskset=row.get("taskset"),
                 jobs=row.get("job_count"),
                 native=row.get("native_trace_row_count"),
@@ -125,6 +159,9 @@ def markdown_report(report: Mapping[str, Any]) -> str:
                 resources=row.get("resource_count_values"),
                 jitter=float(row.get("max_arrival_jitter_s") or 0.0),
                 profiles=row.get("throughput_profile_count"),
+                completed=micro.get("completed_jobs", ""),
+                avg_jct=micro.get("avg_jct_s", ""),
+                makespan=micro.get("makespan_s", ""),
                 ready=str(bool(row.get("trace_schema_compatibility_ready"))).lower(),
             )
         )

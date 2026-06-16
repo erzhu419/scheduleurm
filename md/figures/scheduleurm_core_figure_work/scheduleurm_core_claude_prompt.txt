@@ -1,0 +1,32 @@
+Create a clean, minimal two-panel scientific schematic figure for an Operations Research journal manuscript (Figure 1), white background, thin black lines, no gradients, no shadows, no 3D effects, sparse use of color (only muted blue, muted red, and gray accents). Use a serif font (Times-style) for all labels, 9–11pt equivalent. Aspect ratio 7:3 (wide landscape). No decorative elements.
+
+**Panel (a) — left half, titled "Robust Candidate MaxWeight Framework":**
+
+At top, draw a large rounded rectangle labeled "Full Configuration-Action Space (combinatorial)" in gray outline with a light gray fill. Inside it, draw a smaller solid-outlined rounded rectangle labeled "Finite Candidate Set A" containing exactly five small filled circles (muted blue) labeled a₁, a₂, …, aₖ arranged in a horizontal row.
+
+Below this, draw a downward arrow labeled "Measure" pointing to a horizontal table/matrix icon labeled "Service Cache: lower_μ(a), penalty(a)". Use thin black lines for the table grid, three rows visible.
+
+Below the table, draw a downward arrow labeled "Select: max_a Q^T lower_μ(a) − penalty(a)" pointing to a single highlighted circle (muted red outline) labeled "a*".
+
+At the bottom of Panel (a), place a small boxed inequality in a thin black frame:
+
+δ > L·ρ + ε_est + β + α₁
+
+Label beneath it in italic: "Stability certificate: slack exceeds candidate loss + estimation error + penalty bound + oracle error"
+
+**Panel (b) — right half, titled "Scheduleurm Case Study: Workload Quadrants":**
+
+Draw a 2×2 grid (four equal squares) with thin black borders. Label the horizontal axis below as "GPU intensity →" and the vertical axis to the left as "CPU intensity →". Fill each quadrant with a very light tint:
+
+- Bottom-left (q₀₀): light gray tint, label "q₀₀: Light / Control-plane"
+- Bottom-right (q₀₁): light blue tint, label "q₀₁: GPU-heavy (CNN, LLM)"
+- Top-left (q₁₀): light gray tint, label "q₁₀: CPU-bound (data-loader)"
+- Top-right (q₁₁): light red tint, label "q₁₁: Hybrid CPU+GPU (RL)"
+
+Below the grid, draw three small icons (simple rectangles) in a horizontal row labeled "External scheduler families" with a dashed arrow pointing into the Candidate Set box in Panel (a), with annotation: "Admitted as finite candidate actions on shared service cache"
+
+**Caption text below the entire figure (in regular weight, serif):**
+
+"Figure 1. (a) The Robust Candidate MaxWeight framework: a combinatorial action space is approximated by a finite candidate set; each candidate is certified via measured service rates and bounded penalties; stability holds when scheduling slack exceeds all error terms. (b) The Scheduleurm case study partitions heterogeneous workloads into four measured quadrants; external scheduler policies are admitted as candidate actions evaluated on the same service cache—not as competing full-stack baselines."
+
+No other text, icons, logos, or decorations. Maximize white space. All text must be crisp, horizontal, and fully legible at print resolution.

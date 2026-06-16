@@ -1,0 +1,276 @@
+{
+  "title": "Scheduleurm Figure 1 v3 FigureSpec",
+  "canvas": {
+    "width": 1200,
+    "height": 620
+  },
+  "style": {
+    "font_family": "Arial, Helvetica, sans-serif",
+    "font_size": 15,
+    "bg_color": "#FFFFFF",
+    "palette": [
+      "#3E6FA8",
+      "#4E9A66",
+      "#C9952C",
+      "#6F62A9",
+      "#C96E80",
+      "#4BA7A8"
+    ]
+  },
+  "groups": [
+    {
+      "id": "action_fabric",
+      "label": "A. Four-regime configuration-action fabric",
+      "node_ids": ["q10", "q11", "q00", "q01", "action"],
+      "fill": "#F6F7F9",
+      "stroke": "#C6CCD6",
+      "padding": 30
+    },
+    {
+      "id": "certificate_chain",
+      "label": "B. Measured candidate certificate chain",
+      "node_ids": ["full_space", "measured_cache", "candidate_family", "external_rows", "robust_score", "slack_gate", "theorem"],
+      "fill": "#FFFFFF",
+      "stroke": "#D4DAE3",
+      "padding": 28
+    },
+    {
+      "id": "claim_boundary",
+      "label": "C. Claim boundary",
+      "node_ids": ["admitted", "trace_only", "not_claimed"],
+      "fill": "#FFFFFF",
+      "stroke": "#D4DAE3",
+      "padding": 28
+    }
+  ],
+  "nodes": [
+    {
+      "id": "q10",
+      "label": "q10",
+      "sublabel": "CPU / data\nhost-bound",
+      "x": 165,
+      "y": 165,
+      "width": 210,
+      "height": 88,
+      "shape": "rounded",
+      "fill": "#DDEEDF",
+      "stroke": "#4E9A66",
+      "font_size": 20
+    },
+    {
+      "id": "q11",
+      "label": "q11",
+      "sublabel": "hybrid RL\nCPU + GPU",
+      "x": 405,
+      "y": 165,
+      "width": 210,
+      "height": 88,
+      "shape": "rounded",
+      "fill": "#E8E3F4",
+      "stroke": "#6F62A9",
+      "font_size": 20
+    },
+    {
+      "id": "q00",
+      "label": "q00",
+      "sublabel": "light-control\nsmall jobs",
+      "x": 165,
+      "y": 305,
+      "width": 210,
+      "height": 88,
+      "shape": "rounded",
+      "fill": "#F6E7BD",
+      "stroke": "#C9952C",
+      "font_size": 20
+    },
+    {
+      "id": "q01",
+      "label": "q01",
+      "sublabel": "GPU-heavy\nkernels",
+      "x": 405,
+      "y": 305,
+      "width": 210,
+      "height": 88,
+      "shape": "rounded",
+      "fill": "#DCE9F7",
+      "stroke": "#3E6FA8",
+      "font_size": 20
+    },
+    {
+      "id": "action",
+      "label": "configuration\naction a",
+      "sublabel": "placement + profile\n+ admission + drain",
+      "x": 285,
+      "y": 435,
+      "width": 205,
+      "height": 92,
+      "shape": "rounded",
+      "fill": "#24272B",
+      "stroke": "#24272B",
+      "text_color": "#FFFFFF",
+      "font_size": 17
+    },
+    {
+      "id": "full_space",
+      "label": "full action\nspace",
+      "sublabel": "combinatorial configurations",
+      "x": 690,
+      "y": 135,
+      "width": 150,
+      "height": 72,
+      "shape": "rounded",
+      "fill": "#F6F7F9",
+      "stroke": "#AEB6C2",
+      "font_size": 16
+    },
+    {
+      "id": "measured_cache",
+      "label": "measured\nservice cache",
+      "sublabel": "lower-service rows",
+      "x": 870,
+      "y": 135,
+      "width": 160,
+      "height": 72,
+      "shape": "rounded",
+      "fill": "#DCE9F7",
+      "stroke": "#3E6FA8",
+      "font_size": 16
+    },
+    {
+      "id": "candidate_family",
+      "label": "candidate\nfamily",
+      "sublabel": "finite action set",
+      "x": 1055,
+      "y": 135,
+      "width": 150,
+      "height": 72,
+      "shape": "rounded",
+      "fill": "#F5DDE3",
+      "stroke": "#C96E80",
+      "font_size": 16
+    },
+    {
+      "id": "external_rows",
+      "label": "external policy\nsemantics",
+      "sublabel": "diagnostic rows only",
+      "x": 870,
+      "y": 245,
+      "width": 175,
+      "height": 68,
+      "shape": "rounded",
+      "fill": "#E8E3F4",
+      "stroke": "#6F62A9",
+      "font_size": 15
+    },
+    {
+      "id": "robust_score",
+      "label": "robust\nMaxWeight score",
+      "sublabel": "Q · lower service - penalty",
+      "x": 690,
+      "y": 355,
+      "width": 170,
+      "height": 76,
+      "shape": "rounded",
+      "fill": "#DCE9F7",
+      "stroke": "#3E6FA8",
+      "font_size": 16
+    },
+    {
+      "id": "slack_gate",
+      "label": "slack gate",
+      "sublabel": "eta = delta - certified losses",
+      "x": 870,
+      "y": 355,
+      "width": 165,
+      "height": 92,
+      "shape": "diamond",
+      "fill": "#DDEEDF",
+      "stroke": "#4E9A66",
+      "font_size": 16
+    },
+    {
+      "id": "theorem",
+      "label": "stability\ncertificate",
+      "sublabel": "finite-set Foster recurrence",
+      "x": 1055,
+      "y": 355,
+      "width": 165,
+      "height": 76,
+      "shape": "rounded",
+      "fill": "#DDEEDF",
+      "stroke": "#4E9A66",
+      "font_size": 16
+    },
+    {
+      "id": "admitted",
+      "label": "proved",
+      "sublabel": "measured finite slice",
+      "x": 690,
+      "y": 510,
+      "width": 155,
+      "height": 66,
+      "shape": "rounded",
+      "fill": "#DDEEDF",
+      "stroke": "#4E9A66",
+      "font_size": 15
+    },
+    {
+      "id": "trace_only",
+      "label": "trace-only",
+      "sublabel": "live hook evidence",
+      "x": 870,
+      "y": 510,
+      "width": 155,
+      "height": 66,
+      "shape": "rounded",
+      "fill": "#F6F7F9",
+      "stroke": "#AEB6C2",
+      "font_size": 15
+    },
+    {
+      "id": "not_claimed",
+      "label": "not claimed",
+      "sublabel": "arbitrary future / universal SOTA",
+      "x": 1055,
+      "y": 510,
+      "width": 170,
+      "height": 66,
+      "shape": "rounded",
+      "fill": "#F7D9D7",
+      "stroke": "#B84643",
+      "font_size": 15
+    }
+  ],
+  "edges": [
+    {"from": "q10", "to": "action", "style": "solid", "color": "#9AA4B2", "thickness": 2},
+    {"from": "q11", "to": "action", "style": "solid", "color": "#9AA4B2", "thickness": 2},
+    {"from": "q00", "to": "action", "style": "solid", "color": "#9AA4B2", "thickness": 2},
+    {"from": "q01", "to": "action", "style": "solid", "color": "#9AA4B2", "thickness": 2},
+    {"from": "full_space", "to": "measured_cache", "label": "profile", "style": "solid", "color": "#6E7480", "thickness": 2},
+    {"from": "measured_cache", "to": "candidate_family", "label": "admit", "style": "solid", "color": "#6E7480", "thickness": 2},
+    {"from": "external_rows", "to": "measured_cache", "label": "same units", "style": "dashed", "color": "#6F62A9", "thickness": 2, "curve": true},
+    {"from": "candidate_family", "to": "robust_score", "label": "score", "style": "solid", "color": "#6E7480", "thickness": 2, "curve": true},
+    {"from": "robust_score", "to": "slack_gate", "style": "solid", "color": "#6E7480", "thickness": 2},
+    {"from": "slack_gate", "to": "theorem", "label": "eta > 0", "style": "solid", "color": "#4E9A66", "thickness": 2},
+    {"from": "admitted", "to": "trace_only", "style": "solid", "color": "#9AA4B2", "thickness": 2},
+    {"from": "trace_only", "to": "not_claimed", "style": "solid", "color": "#9AA4B2", "thickness": 2}
+  ],
+  "labels": [
+    {
+      "text": "Scheduleurm: deterministic FigureSpec view of the robust candidate certificate",
+      "x": 40,
+      "y": 34,
+      "font_size": 24,
+      "color": "#24272B",
+      "anchor": "start"
+    },
+    {
+      "text": "External policies enter as finite diagnostic rows on the same measured service cache, not as universal full-stack baselines.",
+      "x": 1180,
+      "y": 590,
+      "font_size": 13,
+      "color": "#6E7480",
+      "anchor": "end"
+    }
+  ]
+}

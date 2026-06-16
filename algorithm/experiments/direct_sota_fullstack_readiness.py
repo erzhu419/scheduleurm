@@ -66,6 +66,21 @@ REQUIREMENTS = {
             "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required",
         ),
     ),
+    "sia_goodput_scheduler": FullStackRequirement(
+        adapter="sia_goodput_scheduler",
+        required_tools=("python3", "kubectl", "docker"),
+        same_workload_assets=("adaptdljob_manifest_generator",),
+        stack_assets=(
+            "sia-simulator/sia.py",
+            "sia-simulator/ftf_simulator.py",
+            "sia-simulator/requirements.txt",
+            "adaptdl/sched/setup.py",
+            "adaptdl/benchmark/run_workload.py",
+        ),
+        extra_blockers=(
+            "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping",
+        ),
+    ),
     "iadeep_kubernetes_extender": FullStackRequirement(
         adapter="iadeep_kubernetes_extender",
         required_tools=("go", "kubectl", "docker"),
@@ -117,11 +132,19 @@ def build_direct_sota_fullstack_readiness(
             "hybrid_research_portfolio",
         ),
     )
+    gavel_smoke_artifact = _latest_artifact(
+        "gavel_direct_native_smoke_*.json",
+        GAVEL_NATIVE_SMOKE_ARTIFACT,
+    )
+    gavel_performance_artifact = _latest_artifact(
+        "gavel_native_performance_microbaseline_*.json",
+        GAVEL_NATIVE_PERFORMANCE_ARTIFACT,
+    )
     native_smokes = {
-        "gavel_simulation": _load_json_if_exists(GAVEL_NATIVE_SMOKE_ARTIFACT),
+        "gavel_simulation": _load_json_if_exists(gavel_smoke_artifact),
     }
     native_performance = {
-        "gavel_simulation": _load_json_if_exists(GAVEL_NATIVE_PERFORMANCE_ARTIFACT),
+        "gavel_simulation": _load_json_if_exists(gavel_performance_artifact),
     }
     adapter_rows = []
     for adapter in ADAPTERS:
@@ -341,7 +364,10 @@ def _native_smoke_summary(native_smoke: Mapping[str, Any] | None) -> dict[str, A
         return {}
     trace = native_smoke.get("native_trace_smoke") or {}
     return {
-        "artifact": str(GAVEL_NATIVE_SMOKE_ARTIFACT),
+        "artifact": str((native_smoke or {}).get("artifact") or _latest_artifact(
+            "gavel_direct_native_smoke_*.json",
+            GAVEL_NATIVE_SMOKE_ARTIFACT,
+        )),
         "dependency_import_pass": bool(native_smoke.get("dependency_import_pass")),
         "protobuf_stub_generation_pass": bool(native_smoke.get("protobuf_stub_generation_pass")),
         "entrypoint_help_pass": bool(native_smoke.get("entrypoint_help_pass")),
@@ -356,7 +382,10 @@ def _native_performance_summary(native_performance: Mapping[str, Any] | None) ->
     if not native_performance:
         return {}
     return {
-        "artifact": str(GAVEL_NATIVE_PERFORMANCE_ARTIFACT),
+        "artifact": str((native_performance or {}).get("artifact") or _latest_artifact(
+            "gavel_native_performance_microbaseline_*.json",
+            GAVEL_NATIVE_PERFORMANCE_ARTIFACT,
+        )),
         "usable_native_performance_sample_count": int(
             native_performance.get("usable_native_performance_sample_count") or 0
         ),
@@ -410,6 +439,11 @@ def _tool_version(tool: str) -> str:
     except (OSError, subprocess.TimeoutExpired):
         return ""
     return (proc.stdout or proc.stderr).strip()[:1000]
+
+
+def _latest_artifact(pattern: str, fallback: Path) -> Path:
+    matches = sorted(ARTIFACT_ROOT.glob(pattern), key=lambda path: path.name)
+    return matches[-1] if matches else fallback
 
 
 def _write_json(path: str | Path, report: Mapping[str, Any]) -> None:

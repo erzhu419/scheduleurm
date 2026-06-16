@@ -12,7 +12,7 @@
       "missing_same_workload_assets": [],
       "missing_stack_assets": [],
       "native_performance": {
-        "artifact": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260612.json",
+        "artifact": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/gavel_native_performance_microbaseline_20260613.json",
         "direct_full_stack_performance_ready": false,
         "native_gavel_simulator_microbaseline_ready": true,
         "same_workload_trace_schema_ready": true,
@@ -20,7 +20,7 @@
         "usable_native_performance_sample_count": 2
       },
       "native_smoke": {
-        "artifact": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/gavel_direct_native_smoke_20260612.json",
+        "artifact": "/home/researcher/mine_code/scheduleurm/md/experiment_artifacts/gavel_direct_native_smoke_20260613.json",
         "dependency_import_pass": true,
         "direct_native_trace_pass": true,
         "entrypoint_help_pass": true,
@@ -53,6 +53,26 @@
       "repo_path": "/home/researcher/mine_code/scheduleurm/reference/repos/adaptdl_pollux",
       "same_workload_full_stack_ready": false,
       "smoke_status": "PASS"
+    },
+    {
+      "adapter": "sia_goodput_scheduler",
+      "blockers": [
+        "missing required tools: kubectl, docker",
+        "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping"
+      ],
+      "entrypoint_smoke_pass": false,
+      "missing_required_tools": [
+        "kubectl",
+        "docker"
+      ],
+      "missing_same_workload_assets": [],
+      "missing_stack_assets": [],
+      "native_performance": {},
+      "native_smoke": {},
+      "repo_exists": true,
+      "repo_path": "/home/researcher/mine_code/scheduleurm/reference/repos/sia_artifacts",
+      "same_workload_full_stack_ready": false,
+      "smoke_status": "FAIL"
     },
     {
       "adapter": "iadeep_kubernetes_extender",

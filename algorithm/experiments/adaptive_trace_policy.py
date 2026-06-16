@@ -173,12 +173,13 @@ def _replay_resource_jobs_adaptive(
             waiting.append(pending[next_idx])
             next_idx += 1
 
-    def selected_limit() -> int:
+    def selected_limit(*, count: bool = True) -> int:
         backlog = len(waiting) + len(active)
         if backlog <= 0:
             return 1
         profile = robust_maxweight_profile(cache, workload_key, backlog, policy)
-        profile_counts[profile] = profile_counts.get(profile, 0) + 1
+        if count:
+            profile_counts[profile] = profile_counts.get(profile, 0) + 1
         return max(1, int(profile))
 
     def fill() -> None:
@@ -197,7 +198,20 @@ def _replay_resource_jobs_adaptive(
         fill()
         if not active:
             continue
-        rates = _sample_rates(cache, workload_key, len(active), rng)
+        service_profile = _covering_service_profile(
+            cache,
+            workload_key=workload_key,
+            active_count=len(active),
+            preferred_profile=selected_limit(count=False),
+        )
+        profile_counts[service_profile] = profile_counts.get(service_profile, 0) + 1
+        rates = _sample_rates(
+            cache,
+            workload_key,
+            len(active),
+            rng,
+            service_profile_count=service_profile,
+        )
         completion_dt = min(
             row["remaining"] / max(1e-12, rate)
             for row, rate in zip(active, rates)
@@ -239,6 +253,40 @@ def _support_envelope(
     threshold = (1.0 - max(0.0, min(0.95, float(policy.support_regret_tolerance)))) * best
     envelope = [record for record in records if float(record.aggregate_rate) >= threshold]
     return envelope or records
+
+
+def _covering_service_profile(
+    cache: ServiceRateCache,
+    *,
+    workload_key: str,
+    active_count: int,
+    preferred_profile: int,
+) -> int:
+    """Return a measured profile that can certify service for current active jobs."""
+
+    active = max(1, int(active_count))
+    preferred = max(1, int(preferred_profile))
+    preferred_record = cache.get(workload_key, preferred)
+    if (
+        preferred >= active
+        and preferred_record is not None
+        and not preferred_record.capacity_boundary
+        and float(preferred_record.aggregate_rate) > 0.0
+    ):
+        return preferred
+    feasible = [
+        record.profile
+        for record in cache.profiles(workload_key)
+        if int(record.profile) >= active
+        and not record.capacity_boundary
+        and float(record.aggregate_rate) > 0.0
+    ]
+    if not feasible:
+        raise KeyError(
+            f"no measured feasible service profile for {workload_key!r} "
+            f"covering {active}/resource active jobs"
+        )
+    return min(feasible)
 
 
 def _mode_profile(counts: Mapping[int, int]) -> int:

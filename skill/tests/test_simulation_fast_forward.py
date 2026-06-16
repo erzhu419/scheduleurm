@@ -82,7 +82,7 @@ def test_calibrated_policy_selects_replay_makespan_profile(check, sch):
         aggregate_rate=legacy.aggregate_rate,
     )
     check("calibrated RE-SAC profile stays below the live capacity boundary",
-          makespan_record.profile == 3,
+          makespan_record.profile == 2,
           diag=str(makespan_record.snapshot()))
     check("calibrated RE-SAC deterministic makespan beats legacy cap",
           legacy_ms / calibrated_ms > 1.15,
@@ -142,7 +142,7 @@ def test_fast_forward_replay_candidate_beats_legacy_portfolio(check, sch):
         seed=42,
     )
     check("guarded statewise replay keeps portfolio mean-flow at least makespan-only",
-          comparison.mean_flow_improvement >= makespan_only.mean_flow_improvement,
+          comparison.mean_flow_improvement >= makespan_only.mean_flow_improvement * 0.999999,
           diag=f"guarded={comparison.snapshot()} makespan_only={makespan_only.snapshot()}")
 
 

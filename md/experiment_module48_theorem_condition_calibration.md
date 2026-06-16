@@ -46,24 +46,24 @@ a future greedy/local-search scheduler audit has zero oracle error.
 
 | Quantity | Value | Meaning |
 |---|---:|---|
-| `delta` | 0.066921842 | capacity slack |
-| `L` | 47.897952 | finite service Lipschitz envelope |
+| `delta` | 0.078777710 | capacity slack |
+| `L` | 5727.144 | finite service Lipschitz envelope |
 | `rho` | 0.000000000 | candidate cover radius |
 | `Lrho` | 0.000000000 | candidate support loss |
 | `epsilon_est` | 0.000000000 | lower-service estimation loss for this measured map |
 | `beta` | 0.000000000 | queue-scaled penalty slope |
 | `alpha1` | 0.000000000 | queue-scaled oracle error |
-| `eta` | 0.066921842 | remaining drift margin |
-| `B` | 6361.354514 | finite-support second-moment bound |
+| `eta` | 0.078777710 | remaining drift margin |
+| `B` | 34499765.485 | finite-support second-moment bound |
 | `P0` | 0.000000000 | fixed penalty term |
 | `alpha0` | 0.000000000 | fixed oracle-error term |
-| `finite_set_threshold_N` | 95072 | Foster finite-set threshold |
+| `finite_set_threshold_N` | 437938174 | Foster finite-set threshold |
 
 The theorem-facing inequality is therefore:
 
 ```text
 delta > Lrho + epsilon_est + beta + alpha1
-0.066921842 > 0
+0.078777710 > 0
 ```
 
 ## Load Certificate

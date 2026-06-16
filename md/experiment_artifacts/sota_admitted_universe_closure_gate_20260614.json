@@ -1,0 +1,260 @@
+{
+  "action_union_dominance_ready": true,
+  "arbitrary_sota_superiority_ready": false,
+  "direct_named_fullstack_superiority_ready": true,
+  "gate": "sota_admitted_universe_closure_gate",
+  "non_adjacent_registered_system_count": 11,
+  "pass": true,
+  "policy_family_inventory": [
+    {
+      "name": "throughput_table_goodput",
+      "objective": "measured throughput/goodput table; minimize all-task makespan proxy",
+      "representative_systems": [
+        "Gavel",
+        "Pollux",
+        "Sia",
+        "Optimus",
+        "AlloX"
+      ]
+    },
+    {
+      "name": "delay_oracle",
+      "objective": "minimize deterministic mean completion time proxy",
+      "representative_systems": [
+        "SRPT",
+        "Gittins",
+        "SERPT"
+      ]
+    },
+    {
+      "name": "interference_guard",
+      "objective": "interference-aware guarded co-location with statewise drain",
+      "representative_systems": [
+        "IADeep",
+        "Salus"
+      ]
+    },
+    {
+      "name": "quadrant_composite",
+      "objective": "per-quadrant composite: goodput where service dominates, guarded delay where interference dominates",
+      "representative_systems": [
+        "Gavel/Pollux/Sia",
+        "IADeep/Salus",
+        "SRPT/Gittins",
+        "Tiresias-style LAS",
+        "AlloX/Optimus resource adaptation"
+      ]
+    },
+    {
+      "name": "finish_time_fairness",
+      "objective": "finish-time fairness with a tight measured makespan guard",
+      "representative_systems": [
+        "Gavel",
+        "Themis",
+        "Shockwave",
+        "Tiresias-style LAS"
+      ]
+    },
+    {
+      "name": "resource_adaptive_goodput",
+      "objective": "resource-adaptive goodput with backlog-aware guarded profile selection",
+      "representative_systems": [
+        "Sia",
+        "Pollux",
+        "Optimus",
+        "AlloX"
+      ]
+    },
+    {
+      "name": "packing_guard",
+      "objective": "conservative packing/interference guard",
+      "representative_systems": [
+        "Salus",
+        "IADeep",
+        "Gandiva",
+        "AlloX"
+      ]
+    }
+  ],
+  "policy_semantics_admitted_count": 11,
+  "registered_sota_admitted_boundary_ready": true,
+  "registered_sota_admitted_policy_superiority_ready": true,
+  "registered_sota_policy_semantics_universe_ready": true,
+  "registered_sota_universe_superiority_ready": false,
+  "registered_system_count": 12,
+  "rows": [
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none: policy-semantics action admitted and same-host full-stack row ready",
+      "class": "named_direct_fullstack",
+      "direct_fullstack_superiority_allowed": true,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": true,
+      "system": "Gavel"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none: policy-semantics action admitted and same-host full-stack row ready",
+      "class": "named_direct_fullstack",
+      "direct_fullstack_superiority_allowed": true,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": true,
+      "system": "Pollux/AdaptDL"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none: policy-semantics action admitted and same-host full-stack row ready",
+      "class": "named_direct_fullstack",
+      "direct_fullstack_superiority_allowed": true,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": true,
+      "system": "Sia"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none: policy-semantics action admitted and same-host full-stack row ready",
+      "class": "named_direct_fullstack",
+      "direct_fullstack_superiority_allowed": true,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": true,
+      "system": "IADeep"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none: policy-semantics action admitted and same-host full-stack row ready",
+      "class": "named_direct_fullstack",
+      "direct_fullstack_superiority_allowed": true,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": true,
+      "system": "Salus"
+    },
+    {
+      "action_union_dominance_ready": false,
+      "adjacent_or_out_of_scope": true,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "adjacent simulator/domain; handled by Decima/Spark-DAG gate, not GPU co-location superiority",
+      "class": "adjacent_simulator",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": false,
+      "policy_semantics_superiority_allowed": false,
+      "registered_runtime_inventory_ready": false,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Decima"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "registered_not_yet_fullstack_compared",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Tiresias"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "paper_only_registered",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Themis"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "paper_only_registered",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Gandiva"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "registered_not_yet_fullstack_compared",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Shockwave"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "registered_not_yet_fullstack_compared",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "AlloX"
+    },
+    {
+      "action_union_dominance_ready": true,
+      "adjacent_or_out_of_scope": false,
+      "admitted_universe_boundary_ready": true,
+      "blocker": "none for admitted-action policy-semantics claim; direct external binary claim remains separately scoped",
+      "class": "registered_not_yet_fullstack_compared",
+      "direct_fullstack_superiority_allowed": false,
+      "entrypoint_smoke_ready": false,
+      "policy_semantics_admitted": true,
+      "policy_semantics_superiority_allowed": true,
+      "registered_runtime_inventory_ready": true,
+      "same_host_fullstack_superiority_ready": false,
+      "system": "Optimus"
+    }
+  ],
+  "scope": "Every registered non-adjacent SOTA system is represented by an admitted finite policy-family action in the measured-cache Scheduleurm+SOTA union, and the strict measured-cache frontier is closed.  This closes the admitted-action policy-semantics universe claim.  It is not a direct full-stack superiority claim over registered systems that lack a same-service-unit external-binary adapter, and it is not a claim over unregistered future systems.",
+  "scoped_claim_ready": true,
+  "status": "REGISTERED_SOTA_ADMITTED_ACTION_UNIVERSE_CLOSED",
+  "strict_frontier_closed": true,
+  "strong_claim_ready": false
+}

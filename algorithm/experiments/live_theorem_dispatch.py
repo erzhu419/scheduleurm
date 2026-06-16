@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import subprocess
 import time
 from datetime import datetime
@@ -38,7 +39,9 @@ def run_live_theorem_dispatch(
     timeout_s: int = 600,
     task_count: int = 2,
     max_gpu_util_pct: int | None = None,
+    max_tasks_per_gpu: int = 9,
     max_dispatch_passes: int = 2,
+    python_bin: str = "python3",
 ) -> dict[str, Any]:
     ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
     run_id = _safe_run_id(run_id)
@@ -63,6 +66,7 @@ def run_live_theorem_dispatch(
             allowed_nodes=list(allowed_nodes or []),
             steps=steps,
             size=size,
+            python_bin=python_bin,
         )
         task_ids.append(row["task_id"])
         submit_rows.append(row)
@@ -72,7 +76,7 @@ def run_live_theorem_dispatch(
         "SCHEDULEURM_ORACLE_TRACE_PATH": str(trace_path),
         "SCHEDULEURM_THEOREM_UNCERTIFIED_MODE": "block",
         "SCHEDULEURM_THEOREM_QUEUE_TTL_S": "0",
-        "SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU": "9",
+        "SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU": str(int(max_tasks_per_gpu)),
         "SCHEDULEURM_ALGO_MAX_POST_VRAM_FRAC": "0.95",
         "SCHEDULEURM_ALGO_GPU_SWEET_SPOT_TASKS": "3",
         "SCHEDULEURM_THEOREM_PROFILE_PENALTY": "0",
@@ -150,7 +154,9 @@ def run_live_theorem_dispatch(
         "preferred_node": preferred_node,
         "allowed_nodes": list(allowed_nodes or []),
         "max_gpu_util_pct": max_gpu_util_pct,
+        "max_tasks_per_gpu": int(max_tasks_per_gpu),
         "max_dispatch_passes": max_dispatch_passes,
+        "python_bin": python_bin,
         "task_ids": task_ids,
         "submitted": submit_rows,
         "dispatches": dispatches,
@@ -205,6 +211,7 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| preferred_node | `{report.get('preferred_node')}` |",
         f"| allowed_nodes | `{','.join(report.get('allowed_nodes') or [])}` |",
         f"| max_gpu_util_pct | {report.get('max_gpu_util_pct')} |",
+        f"| max_tasks_per_gpu | {report.get('max_tasks_per_gpu')} |",
         f"| dispatch_pass_count | {len(report.get('dispatches') or [])} |",
         f"| task_count | {len(report.get('task_ids') or [])} |",
         f"| trace_slot_count | {report.get('trace_slot_count', 0)} |",
@@ -255,6 +262,7 @@ def _submit_task(
     allowed_nodes: Sequence[str],
     steps: int,
     size: int,
+    python_bin: str,
 ) -> dict[str, Any]:
     label = f"{run_id}-{idx:02d}-{workload_key}"
     signature_token = (
@@ -270,7 +278,7 @@ def _submit_task(
     cmd = (
         "XLA_PYTHON_CLIENT_PREALLOCATE=false "
         "XLA_PYTHON_CLIENT_MEM_FRACTION=0.10 "
-        "python3 -u algorithm/experiments/gpu_progress_benchmark.py "
+        f"{shlex.quote(python_bin)} -u algorithm/experiments/gpu_progress_benchmark.py "
         f"--steps {int(steps)} --size {int(size)} --label {label} && echo DONE"
     )
     signature = f"ScheduleurmBench/{signature_token}/controlled_live_theorem/{run_id}/{idx:02d}"
@@ -439,7 +447,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout-s", type=int, default=600)
     parser.add_argument("--task-count", type=int, default=2)
     parser.add_argument("--max-gpu-util-pct", type=int, default=None)
+    parser.add_argument("--max-tasks-per-gpu", type=int, default=9)
     parser.add_argument("--max-dispatch-passes", type=int, default=2)
+    parser.add_argument("--python-bin", default=os.environ.get("SCHEDULEURM_LIVE_DISPATCH_PYTHON", "python3"))
     return parser
 
 
@@ -456,7 +466,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         timeout_s=args.timeout_s,
         task_count=args.task_count,
         max_gpu_util_pct=args.max_gpu_util_pct,
+        max_tasks_per_gpu=args.max_tasks_per_gpu,
         max_dispatch_passes=args.max_dispatch_passes,
+        python_bin=args.python_bin,
     )
     print(report["report_path"])
     return 0 if report.get("pass") else 2

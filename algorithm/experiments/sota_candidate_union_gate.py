@@ -6,11 +6,12 @@ It replays three populations on identical measured Scheduleurm service curves:
 * the current Scheduleurm candidate;
 * each fixed SOTA-style policy family;
 * selectors whose action set is the union of the Scheduleurm candidate action
-  and the SOTA-style policy-family actions.
+  and the SOTA-style policy-family configuration-trajectory actions.
 
 The metric-specific union rows are not external binary executions.  They certify
 the theorem-facing statement that the robust candidate set can contain SOTA
-policy actions and select over that enlarged family in the same service units.
+policy actions, including statewise admission/drain semantics, and select over
+that enlarged family in the same service units.
 """
 from __future__ import annotations
 
@@ -107,7 +108,8 @@ def build_sota_candidate_union_gate(
         "pass": bool(aggregate["gate_pass"]),
         "scope": (
             "Policy-semantics gate on identical measured service curves.  It "
-            "certifies SOTA-policy-family action-union dominance/envelope rows, "
+            "certifies SOTA-policy-family configuration-trajectory action-union "
+            "dominance/envelope rows, "
             "not direct full-stack external binary superiority."
         ),
     }

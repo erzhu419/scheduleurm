@@ -1,8 +1,8 @@
 {
-  "B": 6361.354514021871,
-  "L": 47.897951500000005,
+  "B": 34499765.4854296,
+  "L": 5727.144174,
   "Lrho": 0.0,
-  "N_claimed": 95072,
+  "N_claimed": 437938174,
   "P0": 0.0,
   "action_profile_domains": {
     "cpu_heavy_local_bench": [
@@ -16,10 +16,25 @@
       8,
       9
     ],
+    "gpu_cnn_torch_resnet50": [
+      1,
+      2,
+      3
+    ],
     "gpu_heavy_jax_matmul": [
       1,
       2,
       3
+    ],
+    "gpu_llm_distilgpt2": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10
     ],
     "hybrid_rl_resac_ant": [
       1,
@@ -38,35 +53,38 @@
   "alpha0": 0.0,
   "alpha1": 0.0,
   "beta": 0.0,
-  "candidate_action_count": 243,
+  "candidate_action_count": 5832,
   "certificate_scope": "measured finite service-action slice; not a production-arrival or unmeasured-global-action certificate",
   "component_inputs": {
     "capacity": {
       "classes": [
         "cpu_heavy_local_bench",
+        "gpu_cnn_torch_resnet50",
         "gpu_heavy_jax_matmul",
+        "gpu_llm_distilgpt2",
         "hybrid_rl_resac_ant"
       ],
-      "delta": 0.06692184220274106,
+      "delta": 0.07877771009999993,
       "mix": {
-        "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3": 0.42536284454565887,
-        "profile_combo:cpu_heavy_local_bench=9,gpu_heavy_jax_matmul=2,hybrid_rl_resac_ant=3": 0.5746371554543411
+        "profile_combo:cpu_heavy_local_bench=6,gpu_cnn_torch_resnet50=2,gpu_heavy_jax_matmul=2,gpu_llm_distilgpt2=10,hybrid_rl_resac_ant=2": 0.06476390763327776,
+        "profile_combo:cpu_heavy_local_bench=8,gpu_cnn_torch_resnet50=2,gpu_heavy_jax_matmul=2,gpu_llm_distilgpt2=8,hybrid_rl_resac_ant=2": 0.4020418031208188,
+        "profile_combo:cpu_heavy_local_bench=9,gpu_cnn_torch_resnet50=2,gpu_heavy_jax_matmul=1,gpu_llm_distilgpt2=8,hybrid_rl_resac_ant=2": 0.5331942892459034
       },
       "status": "optimal",
       "usable_for_theorem": true
     },
     "fabric": {
-      "L": 47.897951500000005,
+      "L": 5727.144174,
       "Lrho": 0.0,
-      "candidate_count": 243,
+      "candidate_count": 5832,
       "cover_domain": "measured_finite_slice_exact",
-      "full_count": 243,
+      "full_count": 5832,
       "rho": 0.0,
       "status": "candidate_action_family_equals_measured_full_slice",
       "usable_for_theorem": true
     },
     "moment": {
-      "B": 6361.354514021871,
+      "B": 34499765.4854296,
       "status": "finite_support_bound_from_measured_action_slice_and_declared_load",
       "usable_for_theorem": true
     },
@@ -128,31 +146,37 @@
     }
   ],
   "condition": "eta > 0 and B+P0+alpha0+alpha <= eta*N",
-  "delta": 0.06692184220274106,
-  "drift_additive_constant": 6361.354514021871,
+  "delta": 0.07877771009999993,
+  "drift_additive_constant": 34499765.4854296,
   "epsilon_est": 0.0,
-  "eta": 0.06692184220274106,
-  "finite_set_threshold_N": 95072,
-  "full_action_count": 243,
+  "eta": 0.07877771009999993,
+  "finite_set_threshold_N": 437938174,
+  "full_action_count": 5832,
   "lambda": {
     "cpu_heavy_local_bench": 43.82368280000001,
-    "gpu_heavy_jax_matmul": 55.17583520000001,
-    "hybrid_rl_resac_ant": 0.26768736881096433
+    "gpu_cnn_torch_resnet50": 81.68832837600002,
+    "gpu_heavy_jax_matmul": 74.8970092,
+    "gpu_llm_distilgpt2": 5187.720412000001,
+    "hybrid_rl_resac_ant": 0.3151108404
   },
   "load_fraction": 0.8,
   "paper_condition": "delta > Lrho + epsilon_est + beta + alpha1",
-  "policy": "calibrated_global_guarded",
+  "policy": "scheduleurm_sota_union_pareto_slack",
   "rho": 0.0,
-  "selected_action_id": "profile_combo:cpu_heavy_local_bench=8,gpu_heavy_jax_matmul=1,hybrid_rl_resac_ant=3",
+  "selected_action_id": "profile_combo:cpu_heavy_local_bench=8,gpu_cnn_torch_resnet50=3,gpu_heavy_jax_matmul=1,gpu_llm_distilgpt2=10,hybrid_rl_resac_ant=2",
   "selected_profiles": {
     "cpu_heavy_local_bench": 8,
+    "gpu_cnn_torch_resnet50": 3,
     "gpu_heavy_jax_matmul": 1,
-    "hybrid_rl_resac_ant": 3
+    "gpu_llm_distilgpt2": 10,
+    "hybrid_rl_resac_ant": 2
   },
   "selected_service_vector": {
     "cpu_heavy_local_bench": 54.77960350000001,
-    "gpu_heavy_jax_matmul": 68.96979400000001,
-    "hybrid_rl_resac_ant": 0.3346092110137054
+    "gpu_cnn_torch_resnet50": 102.11041047,
+    "gpu_heavy_jax_matmul": 93.6212615,
+    "gpu_llm_distilgpt2": 6484.650515,
+    "hybrid_rl_resac_ant": 0.39388855049999993
   },
   "slack_consumed": 0.0,
   "slack_ratio": 0.0,

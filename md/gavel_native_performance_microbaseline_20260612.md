@@ -15,8 +15,8 @@
 
 | Taskset | Policy | Jobs | Status | Completed | Avg JCT s | Makespan s | Utilization | Usable |
 |---|---|---:|---|---:|---:|---:|---:|---:|
-| `q01_gpu_bound_compute` | `fifo` | 4 | `PASS` | 4 | 44.561 | 50.929 | 0.5 | true |
-| `q11_cpu_gpu_coupled` | `fifo` | 8 | `PASS` | 8 | 20.9 | 22.297 | 0.5 | true |
+| `q01_gpu_bound_compute` | `fifo` | 4 | `PASS` | 4 | 25.464 | 25.464 | 1 | true |
+| `q11_cpu_gpu_coupled` | `fifo` | 8 | `PASS` | 8 | 11.149 | 11.149 | 1 | true |
 
 ## Blockers
 

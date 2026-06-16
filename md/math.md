@@ -680,7 +680,11 @@ d_\Phi(a,a')
 w_r|\Phi_r(a)-\Phi_r(a')|.
 ]
 
-\(\Phi_r(a)\) 可以编码 placement、GPU co-location profile、NUMA / PCIe / NVLink path、memory pressure、network path class、rollback/preemption attribute 等 scheduler 可观察结构。
+\(\Phi_r(a)\) 可以编码 placement、GPU co-location profile、NUMA / PCIe / NVLink path、memory pressure、network path class、rollback/preemption attribute、admission order、resource partition rule、tail-drain / phase-switch rule 等 scheduler 可观察结构。也就是说，本文后续的 finite action 不是“只选 profile \(k\)”；更精确地说，一个动作可以写成
+\[
+a=(\text{placement}, k, \text{resource-assignment}, \text{admission-order}, \text{statewise-drain rule}),
+\]
+其中后两项由 ETA / measured lower-service certificate 驱动。这样，同一个 measured profile 下的 Gavel-style finish-time trajectory、IADeep/Salus-style interference drain、Scheduleurm critical-path-aware drain 都是不同候选动作，而不是被错误合并成同一个 \(k\)。
 
 如果：
 
@@ -886,7 +890,7 @@ placement 变成 action-family boundary certificate。数学上应写成：
 2. boundary profile 作为 infeasible / capacity-boundary certificate，从 exact replay action set 中剔除；
 3. `ServiceRateCache.profiles()` 使用 first capacity boundary：若最早 boundary 是 \(k_b^\partial\)，则所有 \(k\ge k_b^\partial\) 都不属于当前 robust feasible family；
 4. 同一 profile 有多条有效测量时，cache 先按测量完整度筛选，再在同等完整度下保留更保守的 lower aggregate service row；这把 replay service map 写成 \(\underline\mu\)，而不是乐观 best-run \(\widehat\mu\)；
-5. candidate/legacy/SOTA-inspired policy-semantics replay baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；进一步，2026-06-13 的 SOTA candidate-union gate 把 SOTA-style policy actions 正式并入有限候选族：
+5. candidate/legacy/SOTA-inspired policy-semantics replay baselines 都在同一个 measured service cache 上比较，因此 service map \(\mu\) / \(\underline\mu\) 的实证对象一致；进一步，2026-06-13 的 SOTA candidate-union gate 把 SOTA-style policy actions 正式并入有限候选族。这里的 action 粒度是 profile + trajectory semantics，而不是 profile-only 去重：
    \[
    \mathcal A^{cand,+}_s
    =
@@ -898,9 +902,17 @@ placement 变成 action-family boundary certificate。数学上应写成：
    \cup
    \mathcal A^{interference}_s
    \cup
-   \mathcal A^{quadrant}_s .
+   \mathcal A^{finish}_s
+   \cup
+   \mathcal A^{resource}_s
+   \cup
+   \mathcal A^{packing}_s
+   \cup
+   \mathcal A^{bridge}_s .
    \]
-   这是 candidate-set theorem 的直接实例：只要每个新增 action 都有同一 measured-cache lower-service row 和 bounded penalty，robust MaxWeight 可以在并集上取最大值。实证 gate 证明 metric-specific union selectors 在所有 replay scenario 上击败 SOTA makespan / mean-flow envelopes（0.5% tolerance 内），guarded union 不被 Pareto dominate；但这不是 Gavel/Pollux/Sia/IADeep/Salus 的 direct full-stack binary run；
+   \(\mathcal A^{bridge}_s\) 包括 phase-switch、ETA-SJF、critical-batch-SJF、static-LPT 和 deterministic hash-partition tail-drain bridge candidates；这些动作只有在 lower-service / makespan guard 通过后才会成为主 claim 的 admitted action。2026-06-13 的最后一轮 replay 攻击把 ResNet-50 static bridge 改成一个有限、可复现的 trajectory action：static queue 使用 hash seed 30 做两 GPU partition，主 profile \(3\)，最后两个 remaining jobs 用 measured profile \(1\) tail drain。该动作不引入新 service rate，只重排同一 measured service point 的 finite trajectory；它同时闭合 q01 CNN、q01 model portfolio 和 hybrid portfolio 的 strict measured-cache frontier。
+
+   这是 candidate-set theorem 的直接实例：只要每个新增 action 都有同一 measured-cache lower-service row 和 bounded penalty，robust MaxWeight 可以在并集上取最大值。实证 gate 证明 metric-specific union selectors 在所有 replay scenario 上击败 external-policy makespan / mean-flow envelopes，Pareto-slack union 不被 Pareto dominate；measured-cache external-policy frontier gate 现在为 closed，四象限 gate 进一步把 claim 拆开：q00/q01/q10/q11/hybrid 的 strict noninferiority 全部通过，q01 与 hybrid portfolio 有严格改进，q00/q10/q11 是 exact ties，因此不能把它写成 every-quadrant strict dominance。这不是 Gavel/Pollux/Sia/IADeep/Salus 的 direct full-stack binary run；
 8. 2026-06-13 的 SOTA-facing algorithm upgrade gate 把上面的有限动作并集再往前推进一层：
    \[
    \pi^{adapt}(s)
@@ -1061,7 +1073,7 @@ diagonal-normalized mean-service eta: still false
 LCB lower-service capacity: true for the current selected-profile population
 ```
 
-当前 selected-profile stochastic LCB certificate 用 profile-level aggregate service windows，而不是单个 co-located task 的 rate。11/11 target 已达到 20 aggregate-window threshold；LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.0209930156\)。但是这只支持“arrival load 按 LCB lower service 的 0.8 缩放”的 stochastic lower-service capacity claim；不能说 0.8 mean-service load 已由 holdout LCB 证明。
+当前 selected-profile stochastic LCB certificate 用 profile-level aggregate service windows，而不是单个 co-located task 的 rate。11/11 target 已达到 20 aggregate-window threshold；LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.0247121365\)。但是这只支持“arrival load 按 LCB lower service 的 0.8 缩放”的 stochastic lower-service capacity claim；不能说 0.8 mean-service load 已由 holdout LCB 证明。
 
 operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。Operational stabilizability 也不能只是“存在某个稳定 Markov model”；Lean 里已经把它改成 load-certified finite-support arrival/service model：
 
@@ -1506,3 +1518,49 @@ a_t
 ]
 
 这就是从 BAPR / BAPR-HRO 出发，把数学问题提升到 9/10 的方式。
+
+---
+
+# 12. 2026-06-14 theorem-population alignment update
+
+这轮新增的证书不改变 Lean 主定理的形式；它把实证 population 和
+theorem assumptions 之间的桥接推进了一层：
+
+1. `organic_history_completion_gate_20260614` 把 production-wide organic
+   completion 从 rolling snapshot / live trace pending，提升为 strict
+   scheduler-history theorem-facing population：4,020 launched、3,992
+   completed、35 workload domains、13 nodes、0 strict unadmitted launched rows。
+   这里的 admission mode 是 exact/signature service certificate，不使用
+   token-overlap fallback。
+2. `production_wide_organic_trace_gate_20260614` 把 live oracle trace 子口径和
+   strict history completion 子口径拆开：
+   `production_wide_history_completion_closed=true`，但
+   `production_wide_live_trace_closed=false`。因此论文可以 claim strict
+   scheduler-history organic launched/completion evidence，不能 claim every
+   live slot has an emitted oracle-trace row。
+3. `multinode_history_completion_gate_20260614` 证明 Scheduleurm-native
+   multi-node launched/completed history 已闭合；这对应 state-indexed
+   feasible-family / fabric-action 实证支持，不等于外部 SOTA 系统的 original
+   multi-node deployment superiority。
+4. `registered_sota_adapter_closure_gate_20260614` 把 registered SOTA
+   universe 从单纯清单推进到 theorem-facing adapter 证书：11/11 registered
+   non-adjacent systems 都有 policy/service-unit adapter row，可进入同一个
+   finite measured-cache action union；direct external-binary same-workload row
+   目前是 5/11，因此不能写成 registered-system full-stack universe
+   superiority。
+5. `decima_same_domain_benchmark_gate_20260614` 把 Decima 从 import/smoke
+   audit 推进到 Spark-DAG same-domain paired execution：fixed seeds 下 paired
+   simulations 全部完成，但 mean-completion performance mixed。它只能支撑
+   adjacent-domain executable benchmark closure，不能支撑 GPU co-location
+   full-stack superiority。
+6. `non_future_claim_closure_gate_20260614` 在排除 arbitrary future workload
+   后，闭合 5/5 finite non-future scoped rows：named external SOTA full-stack、
+   registered SOTA policy/service-unit adapter universe、production organic
+   completion、Scheduleurm-native multi-node history、Decima Spark-DAG
+   same-domain bridge。
+
+因此主 theorem 仍应按原来的 robust MaxWeight + lower-service + slack
+条件陈述；新的实验/系统证书只能用来说明这些条件在 declared finite /
+strict admitted population 上可被审计，而不能把 arbitrary future workload、
+unregistered SOTA、external original multi-node deployment、或 Decima-as-GPU
+co-location superiority 写成定理结论。

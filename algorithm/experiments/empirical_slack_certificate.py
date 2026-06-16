@@ -20,8 +20,9 @@ from itertools import product
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from simulation.defaults import build_default_cache, calibrated_candidate_policy
+from simulation.defaults import build_default_cache
 from simulation.service_cache import ProfileRecord, ServiceRateCache
+from simulation.sota_baselines import sota_candidate_union_policy
 from simulation.tasksets import TaskSetMember, taskset_by_name
 
 from .capacity_lp import solve_capacity_slack
@@ -39,7 +40,11 @@ def build_measured_finite_slice_certificate(
     cache = build_default_cache()
     taskset = taskset_by_name(taskset_name)
     specs = taskset.workload_specs()
-    policy = calibrated_candidate_policy(cache, specs)
+    policy = sota_candidate_union_policy(
+        cache,
+        list(specs),
+        selection_objective="pareto_slack",
+    )
     selected_profiles = {
         spec.workload_key: policy.select_profile(cache, spec).profile
         for spec in specs

@@ -52,6 +52,23 @@ ADAPTERS = (
         fallback_tasksets=("q01_gpu_bound_compute", "q11_cpu_gpu_coupled", "hybrid_research_portfolio"),
     ),
     ExternalAdapter(
+        name="sia_goodput_scheduler",
+        representative_systems=("Sia",),
+        repo_dir="sia_artifacts",
+        command_cwd="sia-simulator",
+        direct_command=("python3", "sia.py", "--help"),
+        required_files=(
+            "sia-simulator/sia.py",
+            "sia-simulator/ftf_simulator.py",
+            "sia-simulator/requirements.txt",
+            "adaptdl/sched/setup.py",
+        ),
+        blockers=(
+            "requires the official Sia simulator environment with cvxpy CBC/GLPK and pymoo, or the AdaptDL/Kubernetes physical-cluster stack",
+        ),
+        fallback_tasksets=("q01_gpu_bound_compute", "q11_cpu_gpu_coupled", "hybrid_research_portfolio"),
+    ),
+    ExternalAdapter(
         name="iadeep_kubernetes_extender",
         representative_systems=("IADeep",),
         repo_dir="iadeep",

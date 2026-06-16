@@ -813,13 +813,30 @@ def load_scheduler_records(
     if archive.exists():
         with archive.open("r", encoding="utf-8") as f:
             for line in f:
-                if line.strip():
-                    rows.append(json.loads(line))
+                payload = _parse_scheduler_json_line(line)
+                if payload is not None:
+                    rows.append(payload)
     if queue.exists():
-        payload = json.loads(queue.read_text(encoding="utf-8"))
+        try:
+            payload = json.loads(queue.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            payload = []
         tasks = payload.get("tasks", payload if isinstance(payload, list) else [])
-        rows.extend(dict(row) for row in tasks)
+        rows.extend(dict(row) for row in tasks if isinstance(row, Mapping))
     return _dedupe_records(rows)
+
+
+def _parse_scheduler_json_line(line: str) -> dict[str, Any] | None:
+    stripped = line.strip()
+    if not stripped:
+        return None
+    if not stripped.startswith("{"):
+        return None
+    try:
+        payload = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    return dict(payload) if isinstance(payload, Mapping) else None
 
 
 def _members_for_tasksets(taskset_names: Iterable[str]) -> tuple[TaskSetMember, ...]:

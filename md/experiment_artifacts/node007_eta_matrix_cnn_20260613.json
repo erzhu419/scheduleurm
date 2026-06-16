@@ -1,0 +1,110 @@
+{
+  "cases": [
+    "single_gpu_single_task",
+    "single_gpu_multi_task",
+    "four_gpu_single_task_each",
+    "four_gpu_two_tasks_each"
+  ],
+  "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
+  "gate": "node007_eta_matrix",
+  "node": "node007-direct",
+  "pass": false,
+  "results": [
+    {
+      "case": "single_gpu_single_task",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "result": {
+        "pass": false,
+        "run_id": "node007_eta_matrix_cnn_20260613_cnn_torch_gpu_single_gpu_single_task",
+        "summary_paths": []
+      },
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "single_gpu_multi_task",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "result": {
+        "pass": false,
+        "run_id": "node007_eta_matrix_cnn_20260613_cnn_torch_gpu_single_gpu_multi_task",
+        "summary_paths": []
+      },
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "four_gpu_single_task_each",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "result": {
+        "pass": false,
+        "run_id": "node007_eta_matrix_cnn_20260613_cnn_torch_gpu_four_gpu_single_task_each",
+        "summary_paths": []
+      },
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "four_gpu_two_tasks_each",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "result": {
+        "pass": false,
+        "run_id": "node007_eta_matrix_cnn_20260613_cnn_torch_gpu_four_gpu_two_tasks_each",
+        "summary_paths": []
+      },
+      "workload": "cnn_torch_gpu"
+    }
+  ],
+  "rows": [
+    {
+      "case": "single_gpu_single_task",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "gpus": [
+        0
+      ],
+      "measurement_valid": false,
+      "profile": "1",
+      "summary_path": "",
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "single_gpu_multi_task",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "gpus": [
+        0
+      ],
+      "measurement_valid": false,
+      "profile": "2,3,4",
+      "summary_path": "",
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "four_gpu_single_task_each",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "measurement_valid": false,
+      "profile": "1",
+      "summary_path": "",
+      "workload": "cnn_torch_gpu"
+    },
+    {
+      "case": "four_gpu_two_tasks_each",
+      "error": "RuntimeError('remote command failed rc=255 on node007-direct: Connection timed out during banner exchange\\nConnection to UNKNOWN port 65535 timed out')",
+      "gpus": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "measurement_valid": false,
+      "profile": "2",
+      "summary_path": "",
+      "workload": "cnn_torch_gpu"
+    }
+  ],
+  "run_id": "node007_eta_matrix_cnn_20260613",
+  "workloads": [
+    "cnn_torch_gpu"
+  ]
+}

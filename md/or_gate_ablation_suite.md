@@ -5,9 +5,9 @@
 | Quantity | Value |
 |---|---:|
 | pass | true |
-| trace_count | 15 |
-| full_candidate_vs_legacy_geomean_makespan | 1.79612 |
-| full_candidate_vs_legacy_geomean_mean_flow | 3.46525 |
+| trace_count | 24 |
+| full_candidate_vs_legacy_geomean_makespan | 1.80731 |
+| full_candidate_vs_legacy_geomean_mean_flow | 3.39774 |
 | ablation_dominator_count | 0 |
 
 ## Reviewer Axis Coverage
@@ -27,21 +27,30 @@
 
 | taskset | trace | jobs | profiles | cand/legacy makespan | cand/legacy flow | dominators |
 |---|---|---:|---|---:|---:|---:|
-| q00_light_control | q00_light_control_static_seed23 | 512 | `{"light_control_local": 13}` | 11.9264 | 11.7628 | 0 |
-| q00_light_control | q00_light_control_poisson_load0.85_seed23 | 512 | `{"light_control_local": 13}` | 9.48756 | 195.98 | 0 |
-| q00_light_control | q00_light_control_bursty_load0.85_seed23 | 512 | `{"light_control_local": 13}` | 10.8697 | 50.3105 | 0 |
-| q01_gpu_bound_compute | q01_gpu_bound_compute_static_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.06843 | 1.11379 | 0 |
-| q01_gpu_bound_compute | q01_gpu_bound_compute_poisson_load0.85_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.05144 | 1.51372 | 0 |
-| q01_gpu_bound_compute | q01_gpu_bound_compute_bursty_load0.85_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.01958 | 1.33877 | 0 |
-| q10_cpu_host_bound | q10_cpu_host_bound_static_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.50809 | 1.53392 | 0 |
-| q10_cpu_host_bound | q10_cpu_host_bound_poisson_load0.85_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.32768 | 6.61624 | 0 |
-| q10_cpu_host_bound | q10_cpu_host_bound_bursty_load0.85_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.39365 | 2.59144 | 0 |
-| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_static_seed23 | 160 | `{"hybrid_rl_resac_ant": 3}` | 1.15967 | 1.17386 | 0 |
-| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_poisson_load0.85_seed23 | 160 | `{"hybrid_rl_resac_ant": 2}` | 1.03037 | 2.0321 | 0 |
-| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_bursty_load0.85_seed23 | 160 | `{"hybrid_rl_resac_ant": 3}` | 1.10183 | 1.36171 | 0 |
-| hybrid_research_portfolio | hybrid_research_portfolio_static_seed23 | 400 | `{"cpu_heavy_local_bench": 8, "gpu_heavy_jax_matmul": 1, "hybrid_rl_resac_ant": 3}` | 1.15756 | 1.26914 | 0 |
-| hybrid_research_portfolio | hybrid_research_portfolio_poisson_load0.85_seed23 | 400 | `{"cpu_heavy_local_bench": 8, "gpu_heavy_jax_matmul": 1, "hybrid_rl_resac_ant": 2}` | 1.00145 | 3.14783 | 0 |
-| hybrid_research_portfolio | hybrid_research_portfolio_bursty_load0.85_seed23 | 400 | `{"cpu_heavy_local_bench": 8, "gpu_heavy_jax_matmul": 1, "hybrid_rl_resac_ant": 2}` | 1.08867 | 1.39623 | 0 |
+| q00_light_control | q00_light_control_static_seed23 | 512 | `{"light_control_local": 13}` | 11.9137 | 11.7625 | 0 |
+| q00_light_control | q00_light_control_poisson_load0.85_seed23 | 512 | `{"light_control_local": 13}` | 9.48638 | 198.632 | 0 |
+| q00_light_control | q00_light_control_bursty_load0.85_seed23 | 512 | `{"light_control_local": 13}` | 10.8682 | 50.2395 | 0 |
+| q01_gpu_bound_compute | q01_gpu_bound_compute_static_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.46619 | 1.5597 | 0 |
+| q01_gpu_bound_compute | q01_gpu_bound_compute_poisson_load0.85_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.45993 | 3.49592 | 0 |
+| q01_gpu_bound_compute | q01_gpu_bound_compute_bursty_load0.85_seed23 | 48 | `{"gpu_heavy_jax_matmul": 1}` | 1.17278 | 2.04608 | 0 |
+| q01_gpu_bound_cnn_resnet50 | q01_gpu_bound_cnn_resnet50_static_seed23 | 64 | `{"gpu_cnn_torch_resnet50": 3}` | 1 | 1 | 0 |
+| q01_gpu_bound_cnn_resnet50 | q01_gpu_bound_cnn_resnet50_poisson_load0.85_seed23 | 64 | `{"gpu_cnn_torch_resnet50": 3}` | 1 | 1 | 0 |
+| q01_gpu_bound_cnn_resnet50 | q01_gpu_bound_cnn_resnet50_bursty_load0.85_seed23 | 64 | `{"gpu_cnn_torch_resnet50": 3}` | 1 | 1 | 0 |
+| q01_gpu_bound_llm_inference | q01_gpu_bound_llm_inference_static_seed23 | 160 | `{"gpu_llm_distilgpt2": 10}` | 2.79831 | 2.65037 | 0 |
+| q01_gpu_bound_llm_inference | q01_gpu_bound_llm_inference_poisson_load0.85_seed23 | 160 | `{"gpu_llm_distilgpt2": 10}` | 2.31023 | 7.27214 | 0 |
+| q01_gpu_bound_llm_inference | q01_gpu_bound_llm_inference_bursty_load0.85_seed23 | 160 | `{"gpu_llm_distilgpt2": 10}` | 2.16614 | 3.6841 | 0 |
+| q01_gpu_model_portfolio | q01_gpu_model_portfolio_static_seed23 | 176 | `{"gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10}` | 1.61688 | 1.58698 | 0 |
+| q01_gpu_model_portfolio | q01_gpu_model_portfolio_poisson_load0.85_seed23 | 176 | `{"gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10}` | 1.40658 | 3.04288 | 0 |
+| q01_gpu_model_portfolio | q01_gpu_model_portfolio_bursty_load0.85_seed23 | 176 | `{"gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10}` | 1.16947 | 1.99514 | 0 |
+| q10_cpu_host_bound | q10_cpu_host_bound_static_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.5311 | 1.53451 | 0 |
+| q10_cpu_host_bound | q10_cpu_host_bound_poisson_load0.85_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.35388 | 6.80204 | 0 |
+| q10_cpu_host_bound | q10_cpu_host_bound_bursty_load0.85_seed23 | 256 | `{"cpu_heavy_local_bench": 8}` | 1.41307 | 2.62219 | 0 |
+| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_static_seed23 | 160 | `{"hybrid_rl_resac_ant": 2}` | 1.3773 | 1.38958 | 0 |
+| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_poisson_load0.85_seed23 | 160 | `{"hybrid_rl_resac_ant": 2}` | 1.23303 | 5.80303 | 0 |
+| q11_cpu_gpu_coupled | q11_cpu_gpu_coupled_bursty_load0.85_seed23 | 160 | `{"hybrid_rl_resac_ant": 2}` | 1.25237 | 1.80728 | 0 |
+| hybrid_research_portfolio | hybrid_research_portfolio_static_seed23 | 496 | `{"cpu_heavy_local_bench": 8, "gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10, "hybrid_rl_resac_ant": 2}` | 1.40335 | 1.43793 | 0 |
+| hybrid_research_portfolio | hybrid_research_portfolio_poisson_load0.85_seed23 | 496 | `{"cpu_heavy_local_bench": 8, "gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10, "hybrid_rl_resac_ant": 2}` | 1.20055 | 5.14472 | 0 |
+| hybrid_research_portfolio | hybrid_research_portfolio_bursty_load0.85_seed23 | 496 | `{"cpu_heavy_local_bench": 8, "gpu_cnn_torch_resnet50": 3, "gpu_heavy_jax_matmul": 1, "gpu_llm_distilgpt2": 10, "hybrid_rl_resac_ant": 2}` | 1.22359 | 2.12021 | 0 |
 
 ## Scope
 

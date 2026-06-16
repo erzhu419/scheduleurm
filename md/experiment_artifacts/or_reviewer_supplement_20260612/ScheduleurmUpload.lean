@@ -1070,6 +1070,225 @@ theorem true_support_le_lcb_support_plus_estimation_error
 end Scheduleurm
 
 
+/-! ## Source: Scheduleurm/DiagonalScaling.lean -/
+
+
+/-!
+# Scheduleurm: diagonal service scaling for heterogeneous workloads
+
+The original learning theorem uses one absolute estimation radius `ε` for all
+job classes.  That is too coarse for heterogeneous fabrics: a small relative
+error on a high-throughput LLM/CNN profile can dominate the same absolute
+budget as a CPU/control workload.
+
+This file proves the dimension-aware replacement used by the OR submission
+artifact.  Each coordinate `i` has a service scale `scale i`; service
+estimation error is charged as `ε * scale i`, and queue pressure is measured by
+the corresponding scaled backlog
+
+`Σ_i scale_i Q_i`.
+
+When the scales are uniformly bounded by `C`, the theorem reduces back to the
+ordinary `ℓ₁` drift theorem with an effective loss `ε C`.
+-/
+
+noncomputable section
+
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+
+namespace Scheduleurm
+
+open BigOperators
+
+variable {I A : Type*} [Fintype I] [DecidableEq A]
+
+/-! ## Coordinate-scaled pressure -/
+
+/-- Scaled queue pressure `Σ_i scale_i Q_i`.
+
+For normalized service units the intended choice is `scale_i = s_i`, where
+`s_i` is the service-unit normalizer for workload class `i`. -/
+def weightedPressure (scale q : ServiceVec I) : ℝ :=
+  ∑ i : I, scale i * q i
+
+/-- Coordinate-wise service error bounded by `ε * scale_i` yields a
+queue-pressure error bounded by `ε` times scaled backlog. -/
+lemma dot_le_dot_add_weighted_error
+    {q v w scale : ServiceVec I} {ε : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hcoord : ∀ i : I, v i ≤ w i + ε * scale i) :
+    dot q v ≤ dot q w + ε * weightedPressure scale q := by
+  unfold dot weightedPressure
+  calc
+    ∑ i : I, q i * v i
+        ≤ ∑ i : I, q i * (w i + ε * scale i) := by
+          apply Finset.sum_le_sum
+          intro i _
+          exact mul_le_mul_of_nonneg_left (hcoord i) (hq i)
+    _ = ∑ i : I, (q i * w i + ε * (scale i * q i)) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = ∑ i : I, q i * w i + ε * ∑ i : I, scale i * q i := by
+          rw [Finset.sum_add_distrib]
+          rw [Finset.mul_sum]
+
+/-- If all service scales are bounded by `C`, scaled backlog is bounded by
+`C ||Q||₁`. -/
+lemma weightedPressure_le_const_l1
+    {scale q : ServiceVec I} {C : ℝ}
+    (hq : Nonnegative q) (hscale_bound : ∀ i : I, scale i ≤ C) :
+    weightedPressure scale q ≤ C * l1 q := by
+  unfold weightedPressure
+  calc
+    ∑ i : I, scale i * q i
+        ≤ ∑ i : I, C * q i := by
+          apply Finset.sum_le_sum
+          intro i _
+          exact mul_le_mul_of_nonneg_right (hscale_bound i) (hq i)
+    _ = C * ∑ i : I, q i := by
+          rw [Finset.mul_sum]
+    _ = C * l1 q := by
+          rw [l1_eq_sum_of_nonnegative hq]
+
+/-! ## Support-function consequences -/
+
+/-- Coordinate-scaled support loss.  This is the normalized-service analogue
+of `true_support_le_lcb_support_plus_estimation_error`. -/
+theorem coordinate_scaled_support_loss
+    (F : ActionFamily A) (μtrue lower : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hcoord : ∀ a ∈ F.acts, ∀ i : I,
+      μtrue a i ≤ lower a i + ε * scale i) :
+    support F μtrue q
+      ≤ support F lower q + ε * weightedPressure scale q := by
+  apply support_le
+  intro a ha
+  have hdot : dot q (μtrue a)
+      ≤ dot q (lower a) + ε * weightedPressure scale q :=
+    dot_le_dot_add_weighted_error hq hε hscale (hcoord a ha)
+  have hs : dot q (lower a) ≤ support F lower q :=
+    le_support_of_mem F lower q ha
+  linarith
+
+/-- Coordinate-scaled support loss converted back to the ordinary `ℓ₁`
+backlog norm by a uniform bound on the scale vector. -/
+theorem coordinate_scaled_support_loss_l1
+    (F : ActionFamily A) (μtrue lower : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε C : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hscale_bound : ∀ i : I, scale i ≤ C)
+    (hcoord : ∀ a ∈ F.acts, ∀ i : I,
+      μtrue a i ≤ lower a i + ε * scale i) :
+    support F μtrue q
+      ≤ support F lower q + (ε * C) * l1 q := by
+  have hsupport := coordinate_scaled_support_loss
+    F μtrue lower scale hq hε hscale hcoord
+  have hpressure := weightedPressure_le_const_l1
+    (scale := scale) (q := q) hq hscale_bound
+  have hscaled : ε * weightedPressure scale q ≤ ε * (C * l1 q) :=
+    mul_le_mul_of_nonneg_left hpressure hε
+  have hr : ε * (C * l1 q) = (ε * C) * l1 q := by ring
+  linarith
+
+/-! ## Coordinate-scaled lower confidence bounds -/
+
+/-- Coordinate-wise lower-confidence service vector. -/
+def coordinateLcbService
+    (μhat rad : A → ServiceVec I) : A → ServiceVec I :=
+  fun a i => μhat a i - rad a i
+
+/-- Coordinate-wise confidence event. -/
+def CoordinateServiceConfidenceEvent
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I) : Prop :=
+  ∀ a ∈ F.acts, ∀ i : I, |μhat a i - μtrue a i| ≤ rad a i
+
+/-- Coordinate confidence radii are dominated by a diagonal scale. -/
+def CoordinateRadiusBoundedByScale
+    (F : ActionFamily A) (rad : A → ServiceVec I)
+    (scale : ServiceVec I) (ε : ℝ) : Prop :=
+  ∀ a ∈ F.acts, ∀ i : I, 0 ≤ rad a i ∧ rad a i ≤ ε * scale i
+
+/-- Coordinate LCB service is pessimistic on the confidence event. -/
+theorem coordinateLcbService_le_true
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad) :
+    ∀ a ∈ F.acts, ∀ i : I,
+      coordinateLcbService μhat rad a i ≤ μtrue a i := by
+  intro a ha i
+  unfold coordinateLcbService
+  have h := hconf a ha i
+  have hle : μhat a i - μtrue a i ≤ rad a i := (abs_le.mp h).2
+  linarith
+
+/-- On the confidence event, true service is at most coordinate LCB service
+plus two scaled radii. -/
+theorem true_le_coordinateLcbService_add_two_scaled_radius
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {ε : ℝ}
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad)
+    (hrad : CoordinateRadiusBoundedByScale F rad scale ε) :
+    ∀ a ∈ F.acts, ∀ i : I,
+      μtrue a i ≤ coordinateLcbService μhat rad a i + (2 * ε) * scale i := by
+  intro a ha i
+  unfold coordinateLcbService
+  have h := hconf a ha i
+  have hrad_ai := hrad a ha i
+  have h1 : μtrue a i ≤ μhat a i + rad a i := by
+    have hleft : -(rad a i) ≤ μhat a i - μtrue a i := (abs_le.mp h).1
+    linarith
+  have h2 : rad a i ≤ ε * scale i := hrad_ai.2
+  linarith
+
+/-- **Diagonal-scaled LCB support loss.**
+
+The stochastic LCB loss is charged in normalized service units.  With
+coordinate scales `scale_i`, replacing true service by coordinate LCB service
+costs at most `2ε Σ_i scale_i Q_i`. -/
+theorem true_support_le_coordinateLcb_support_plus_scaled_estimation_error
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad)
+    (hrad : CoordinateRadiusBoundedByScale F rad scale ε) :
+    support F μtrue q
+      ≤ support F (coordinateLcbService μhat rad) q
+          + (2 * ε) * weightedPressure scale q := by
+  apply coordinate_scaled_support_loss
+    F μtrue (coordinateLcbService μhat rad) scale hq (by nlinarith [hε])
+      hscale
+  intro a ha i
+  exact true_le_coordinateLcbService_add_two_scaled_radius
+    F μtrue μhat rad scale hconf hrad a ha i
+
+/-- Diagonal-scaled LCB support loss converted to the ordinary drift norm. -/
+theorem true_support_le_coordinateLcb_support_plus_scaled_estimation_error_l1
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε C : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hscale_bound : ∀ i : I, scale i ≤ C)
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad)
+    (hrad : CoordinateRadiusBoundedByScale F rad scale ε) :
+    support F μtrue q
+      ≤ support F (coordinateLcbService μhat rad) q
+          + ((2 * ε) * C) * l1 q := by
+  apply coordinate_scaled_support_loss_l1
+    F μtrue (coordinateLcbService μhat rad) scale hq
+      (by nlinarith [hε]) hscale hscale_bound
+  intro a ha i
+  exact true_le_coordinateLcbService_add_two_scaled_radius
+    F μtrue μhat rad scale hconf hrad a ha i
+
+end Scheduleurm
+
+
 /-! ## Source: Scheduleurm/RobustPolicy.lean -/
 
 
@@ -5043,6 +5262,43 @@ theorem main_robust_candidate_maxweight_drift_approx_oracle
   exact robust_candidate_policy_lyapunov_drift_scaled_penalty_approx_oracle
     full cand μtrue lower hQ hlam hcap hgap hlower_gap penalty
     hmax hpen hSecond hlower_a_nonneg
+
+/-- Diagonal-scaled lower-service support theorem.
+
+This paper-facing theorem is the stochastic LCB bridge for heterogeneous
+Scheduleurm workloads.  Instead of charging one absolute error budget across
+CPU, GPU, CNN, LLM, and hybrid classes, each class has its own service scale.
+The theorem remains a support-function statement, so it plugs into the same
+robust MaxWeight drift wrapper through `hlower_gap`. -/
+theorem main_diagonal_scaled_lcb_support_loss
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad)
+    (hrad : CoordinateRadiusBoundedByScale F rad scale ε) :
+    support F μtrue q
+      ≤ support F (coordinateLcbService μhat rad) q
+          + (2 * ε) * weightedPressure scale q := by
+  exact true_support_le_coordinateLcb_support_plus_scaled_estimation_error
+    F μtrue μhat rad scale hq hε hscale hconf hrad
+
+/-- Drift-norm version of diagonal-scaled LCB support loss.  If the selected
+normalizers are uniformly bounded by `C`, the lower-service support loss can
+be consumed by the standard margin as `εest = 2εC`. -/
+theorem main_diagonal_scaled_lcb_support_loss_l1
+    (F : ActionFamily A) (μtrue μhat rad : A → ServiceVec I)
+    (scale : ServiceVec I)
+    {q : ServiceVec I} {ε C : ℝ}
+    (hq : Nonnegative q) (hε : 0 ≤ ε) (hscale : Nonnegative scale)
+    (hscale_bound : ∀ i : I, scale i ≤ C)
+    (hconf : CoordinateServiceConfidenceEvent F μtrue μhat rad)
+    (hrad : CoordinateRadiusBoundedByScale F rad scale ε) :
+    support F μtrue q
+      ≤ support F (coordinateLcbService μhat rad) q
+          + ((2 * ε) * C) * l1 q := by
+  exact true_support_le_coordinateLcb_support_plus_scaled_estimation_error_l1
+    F μtrue μhat rad scale hq hε hscale hscale_bound hconf hrad
 
 /-- **Main theorem 3: operational stochastic stability under verified drift.**
 

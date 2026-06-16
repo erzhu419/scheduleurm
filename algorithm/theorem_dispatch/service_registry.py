@@ -112,6 +112,10 @@ def infer_workload_key(
     identity_lower = _task_identity_text(task).lower()
     cpu_suffix = _cpu_bucket_suffix(task)
     if "freqduet" in lower:
+        if "run_freqduet_snapshot_counterfactual_matrix.py" in lower:
+            if cpu_suffix == "c9_16":
+                return "freqduet_snapshot_counterfactual_c9_16_completed_history"
+            return "freqduet_snapshot_counterfactual_c9_16_completed_history"
         if "run_freqduet_ablation.py" in lower:
             key = f"freqduet_cpu_ablation_{cpu_suffix}"
             if key.endswith("_c_le2"):
@@ -138,6 +142,12 @@ def infer_workload_key(
         return f"bamor_mujoco_{cpu_suffix}_completed_history"
     if any(tok in lower for tok in ("jax", "matmul", "gpu_heavy", "gpu-bound", "gpu_bound")):
         return "gpu_heavy_jax_matmul"
+    if any(tok in lower for tok in ("torch_cnn_progress_benchmark", "cnn_torch_gpu", "torch_cnn_progress_stack")):
+        return "gpu_cnn_torch_progress_stack"
+    if any(tok in lower for tok in ("torch_llm_progress_benchmark", "llm_torch_transformer", "torch_decoder_stack")):
+        return "gpu_llm_torch_decoder_stack"
+    if any(tok in lower for tok in ("resac_ant_node007", "node007_tqdm", "node007_eta_matrix_rl")):
+        return "hybrid_rl_resac_ant_node007_tqdm"
     if any(tok in lower for tok in ("resac", "bapr", "mujoco", "ant-v", "ant_")):
         return "hybrid_rl_resac_ant"
     if any(tok in lower for tok in ("sleep_20ms", "light_control", "control-plane", "control_plane")):
@@ -148,10 +158,78 @@ def infer_workload_key(
         or "auto-adopted: scheduleurm" in identity_lower
     ):
         return "scheduleurm_control_plane_completed_history"
-    if ("freq-hrl" in lower or "freqhrl" in lower) and any(
-        tok in lower for tok in ("deploy", "probe", "smoke", "control", "import")
-    ):
-        return "transit_freqhrl_import_smoke_c_le2_completed_history"
+    if "freq-hrl" in lower or "freqhrl" in lower or "freq_hrl" in lower:
+        if any(tok in lower for tok in ("analysis", "appendix", "matrix")):
+            return "transit_freqhrl_analysis_matrix_c_le2_completed_history"
+        if any(tok in lower for tok in ("deploy", "probe", "smoke", "control", "import")):
+            return "transit_freqhrl_import_smoke_c_le2_completed_history"
+        if "native-promotion" in lower or "native_promotion" in lower:
+            if any(tok in lower for tok in ("wait-credit", "wait_credit")):
+                return "transit_native_promotion_c9_16_wait_credit_shell_completed_history"
+            if "bounded-wait" in lower or "bounded_wait" in lower:
+                return "transit_native_promotion_c9_16_bounded_wait_completed_history"
+            if "single" in lower or "shard_1_32_64" in lower:
+                return "transit_native_promotion_c33_64_single_seed_completed_history"
+            if "more-seeds" in lower or "residual" in lower:
+                return "transit_native_promotion_c17_32_residual_completed_history"
+            return "transit_native_promotion_c3_8_persistent_stress_completed_history"
+        if "demand-estimator" in lower or "demand_estimator" in lower:
+            return "transit_demand_estimator_c17_32_completed_history"
+        if "trading" in lower:
+            if "public" in lower or "yahoo" in lower:
+                return "transit_trading_public_csv_c3_8_completed_history"
+            if "promotion" in lower or "recovery" in lower:
+                return "transit_trading_promotion_recovery_c17_32_completed_history"
+            if "policy" in lower:
+                return "transit_trading_policy_c33_64_completed_history"
+        if "real-demand" in lower or "real_demand" in lower:
+            if "alighting" in lower:
+                return "transit_native_real_demand_alighting_c3_8_completed_history"
+            if "merge_native_real_demand_shards" in lower or "merge-drift" in lower:
+                return "transit_native_real_demand_alighting_c3_8_completed_history"
+            if "safe-wait" in lower or "waitaware" in lower:
+                return "transit_native_real_demand_safe_wait_c9_16_profile_extension"
+    project_lower = str(task.get("project") or "").strip().lower()
+    signature_lower = str(task.get("signature") or "").strip().lower()
+    if project_lower == "offline-sumo" or any(tok in lower for tok in ("train_rlpd.py", "train_wsrl.py")):
+        return "offline_sumo_eval_c33_64_completed_history"
+    if "per_ckpt_eval.py" in lower:
+        return "offline_sumo_eval_c33_64_completed_history"
+    if "h2o+" in lower or "h2oplus" in lower or "simple_sac" in lower:
+        if any(tok in lower for tok in ("train_awac_bus.py", "train_td3bc_bus.py", "train_iql_bus.py")):
+            if "device cuda" in lower or "--device=cuda" in lower:
+                return "h2oplus_snapshot_gpu_completed_history"
+            return "h2oplus_shell_eval_c_le2_completed_history"
+        if any(tok in lower for tok in ("dispatch_r3_evals.py", "dispatch_r3_nosnap_evals.py", "run_p4_hold_calibration.sh")):
+            return "h2oplus_shell_eval_c_le2_completed_history"
+        if "h2o+_bus_main.py" in lower and any(tok in lower for tok in ("snapshot", "contrastive", "dynamics")):
+            return "h2oplus_snapshot_gpu_completed_history"
+        if "pure_online_sac" in lower and "run_multiseed_eval.sh" in lower:
+            return "sumo_eval_simple_sac_c_le2"
+        if "eval_with_metrics.py" in lower:
+            return "h2oplus_shell_eval_c_le2_completed_history"
+        if "eval_daganzo.py" in lower or "run_multiseed_eval.sh" in lower or "shell" in lower:
+            return "h2oplus_shell_eval_c_le2_completed_history"
+        if "h2o+_bus_main.py" in lower:
+            return "offline_sumo_eval_c33_64_completed_history"
+    if "resac" in project_lower or "re-sac" in project_lower or "resac_bus" in lower:
+        return "resac_bus_seed_extension_cpu_eval_completed_history"
+    if "train_compare_baselines.py" in lower:
+        return "bamor_train_compare_c3_8_completed_history"
+    if "run_bamor_diagnostic_shard.py" in lower:
+        if cpu_suffix == "c9_16":
+            return "bamor_diagnostic_shard_c9_16_completed_history"
+        if cpu_suffix == "c3_8":
+            return "bamor_diagnostic_shard_c3_8_completed_history"
+        return "bamor_diagnostic_shard_c17_32_completed_history"
+    if "paper-longtrain" in lower or "paper_longtrain" in lower:
+        return "freqduet_paper_longtrain_c17_32_completed_history"
+    if "promoted-ep100" in lower or "promoted_ep100" in lower:
+        return "freqduet_promoted_ep100_c65p_completed_history"
+    if "env-smoke" in lower or "deps ok" in lower or "hpc-relay" in lower or "envbootstrap" in project_lower:
+        return "scheduleurm_hpc_relay_smoke_completed_history"
+    if "runner_v3" in lower and "allfreq" in lower:
+        return "freqduet_runner_v3_allfreq_alllayers_c9_16"
     if any(tok in lower for tok in ("cpu_heavy_local", "cpu-heavy", "cpu_heavy", "prime_sieve")):
         return "cpu_heavy_local_bench"
 

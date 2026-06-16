@@ -3,7 +3,7 @@
   "gate_pass": true,
   "pass": true,
   "pass_meaning": "reviewer-facing claim ladder; a scoped pass row must not be read as the adjacent strong claim unless strong_claim_ready is true",
-  "row_count": 37,
+  "row_count": 38,
   "rows": [
     {
       "artifact_exists": true,
@@ -100,13 +100,13 @@
       "artifact_exists": true,
       "artifact_path": "md/experiment_artifacts/sota_fullstack_superiority_gate_20260613.json",
       "blocker": "The named runtime probes are closed, but direct full-stack SOTA superiority remains false by construction.",
-      "gate": "sota_fullstack_superiority_gate",
-      "next_threshold": "Use only runtime-probe or policy-semantics language unless every external system is rerun under a common full-stack deployment and metric contract.",
+      "gate": "named_external_runtime_probe_gate",
+      "next_threshold": "Use only runtime-probe or policy-semantics language unless every external system is rerun under a common deployment, workload, and metric contract.",
       "raw_evidence_path": "md/sota_fullstack_superiority_gate_20260613.md",
       "scoped_claim": "Named same-host same-workload external runtime probes for Gavel, Pollux/AdaptDL, Sia, IADeep, and Salus, each with a paired native-better row on the measured probe.",
       "scoped_claim_ready": true,
       "status": "NAMED_SAME_HOST_RUNTIME_PROBE_PASS_DIRECT_SOTA_FALSE",
-      "strong_claim": "Directly beats arbitrary SOTA systems, arbitrary future workloads, multi-node original deployments, or production-wide organic traces.",
+      "strong_claim": "Direct full-stack SOTA superiority over named, registered, arbitrary, future, original multi-node, or production-wide settings.",
       "strong_claim_ready": false
     },
     {
@@ -387,13 +387,26 @@
       "artifact_path": "md/experiment_artifacts/production_wide_organic_trace_gate_20260614.json",
       "blocker": "",
       "gate": "production_wide_organic_trace_gate",
-      "next_threshold": "Keep live-trace and history-completion subclaims separate in manuscript wording.",
+      "next_threshold": "Keep history-completion and live-oracle-trace subclaims separate in manuscript wording.",
       "raw_evidence_path": "md/production_wide_organic_trace_gate_20260614.md",
       "scoped_claim": "Production-wide organic recorder/admission gate separates live-trace, strict-history completion, active-progress, and launched-completion evidence.",
       "scoped_claim_ready": true,
       "status": "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS",
-      "strong_claim": "Large-scale production-wide organic launched-completion evidence for the controlled theorem-facing population.",
+      "strong_claim": "Strict scheduler-history large-scale launched/completion evidence for the controlled theorem-facing production population.",
       "strong_claim_ready": true
+    },
+    {
+      "artifact_exists": true,
+      "artifact_path": "md/experiment_artifacts/production_wide_organic_trace_gate_20260614.json",
+      "blocker": "The current package closes production history, not a large-scale live oracle trace; the latest live trace status is a WAIT/readonly subclaim.",
+      "gate": "production_wide_live_oracle_trace_subgate",
+      "next_threshold": "Collect a naturally accumulated admitted live oracle trace with enough slots, realized progress/completions, and zero unadmitted launched rows.",
+      "raw_evidence_path": "md/production_wide_organic_trace_gate_20260614.md",
+      "scoped_claim": "Queued-production live-trace gate is executable or waiting without unsafe launch.",
+      "scoped_claim_ready": true,
+      "status": "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS",
+      "strong_claim": "Production-wide live oracle trace is closed with enough admitted theorem dispatch slots and completion evidence.",
+      "strong_claim_ready": false
     },
     {
       "artifact_exists": true,
@@ -413,12 +426,12 @@
       "artifact_path": "md/experiment_artifacts/production_launch_completion_gate_20260612.json",
       "blocker": "",
       "gate": "production_launch_completion_gate",
-      "next_threshold": "Recover a nonempty theorem shadow subset and launch only when the live gate reports launch_safe=true.",
+      "next_threshold": "Use the strict-history certificate for completed production evidence; use live-oracle language only after live_oracle_traced_large_scale_completion_ready becomes true.",
       "raw_evidence_path": "md/production_launch_completion_gate_20260612.md",
       "scoped_claim": "Large-scale active-production progress and non-invasive theorem shadow trace.",
       "scoped_claim_ready": true,
       "status": "HISTORY_COMPLETION_AND_ACTIVE_PROGRESS_SHADOW_TRACE_PASS",
-      "strong_claim": "Large-scale launched production completion trace.",
+      "strong_claim": "Strict scheduler-history large-scale launched/completion certificate.",
       "strong_claim_ready": true
     },
     {
@@ -489,7 +502,7 @@
   ],
   "scoped_claim_ready": true,
   "scoped_pending_count": 0,
-  "scoped_ready_count": 37,
+  "scoped_ready_count": 38,
   "status": "CLAIM_LADDER_DASHBOARD_READY",
   "strong_claim_ready": false,
   "strong_ready_count": 9

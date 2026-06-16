@@ -8,7 +8,7 @@ This artifact is reproducible.  A scoped stochastic lower-service claim is ready
 | `absolute_mean_load_eta_ready` | false |
 | `diagonal_normalized_eta_ready` | false |
 | `lcb_lower_service_capacity_ready` | true |
-| `holdout_adjusted_eta` | -738.994 |
+| `holdout_adjusted_eta` | -738.982 |
 | `holdout_adjusted_eta_positive` | false |
 | `supplemental_rate_count` | 921 |
 | `sample_ready_count` | 11 |
@@ -21,13 +21,13 @@ This artifact is reproducible.  A scoped stochastic lower-service claim is ready
 | Quantity | Value |
 |---|---:|
 | `epsilon_est_selected_actions` | 739.061 |
-| `maximum_allowed_epsilon_est` | 0.0669218 |
-| `epsilon_gap_to_positive_eta` | 738.994 |
-| `eta` | -738.994 |
+| `maximum_allowed_epsilon_est` | 0.0787777 |
+| `epsilon_gap_to_positive_eta` | 738.982 |
+| `eta` | -738.982 |
 | `row_count` | 11 |
 | `diagonal_normalized_eta` | -0.55866 |
 | `diagonal_normalized_epsilon` | 0.75866 |
-| `lcb_lower_service_delta` | 0.020993 |
+| `lcb_lower_service_delta` | 0.0247121 |
 
 ## Dominant Eta Blockers
 

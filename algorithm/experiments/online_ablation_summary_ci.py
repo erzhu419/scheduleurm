@@ -145,6 +145,7 @@ def write_loss_csv(path: str | Path, report: Mapping[str, Any]) -> None:
                 "metric",
                 "relative_loss",
             ],
+            lineterminator="\n",
         )
         writer.writeheader()
         for row in rows:

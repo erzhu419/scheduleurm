@@ -7,13 +7,23 @@ or storage bottleneck.  It prints Scheduleurm-compatible rate lines.
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 
 
 def _progress(iterable, *, total: int, desc: str, unit: str):
     try:
         from tqdm import tqdm
-        return tqdm(iterable, total=total, desc=desc, unit=unit, mininterval=0.1, dynamic_ncols=False)
+        return tqdm(
+            iterable,
+            total=total,
+            desc=desc,
+            unit=unit,
+            mininterval=0.5,
+            dynamic_ncols=False,
+            ascii=True,
+            file=sys.stdout,
+        )
     except Exception:
         return iterable
 

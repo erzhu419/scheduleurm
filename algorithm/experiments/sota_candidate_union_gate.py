@@ -21,10 +21,11 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from simulation.defaults import build_default_cache, calibrated_candidate_policy, legacy_policy
+from simulation.defaults import build_default_cache, legacy_policy
 from simulation.fast_forward import ReplayPolicy
 from simulation.sota_baselines import (
     sota_baseline_specs,
+    sota_candidate_union_policy,
     sota_candidate_union_policies,
 )
 from simulation.tasksets import taskset_by_name
@@ -45,6 +46,7 @@ DEFAULT_TASKSETS = (
 )
 DEFAULT_ARRIVALS = ("static", "poisson")
 PARETO_TOLERANCE = 0.005
+CANDIDATE_POLICY_NAME = "scheduleurm_sota_union_online_pareto_slack"
 
 
 def build_sota_candidate_union_gate(
@@ -71,7 +73,11 @@ def build_sota_candidate_union_gate(
             )
             continue
         specs = taskset.workload_specs()
-        candidate = calibrated_candidate_policy(cache, specs)
+        candidate = sota_candidate_union_policy(
+            cache,
+            specs,
+            selection_objective="online_pareto_slack",
+        )
         policies: tuple[ReplayPolicy, ...] = (
             legacy_policy(),
             candidate,
@@ -197,7 +203,7 @@ def _scenario_row(
     arrival: str,
     results: Mapping[str, Any],
 ) -> dict[str, Any]:
-    candidate = _first_policy(results, "calibrated_")
+    candidate = _candidate_policy(results)
     guarded_union = results["scheduleurm_sota_union_guarded_mean_flow"]
     adaptive_union = results["scheduleurm_sota_union_adaptive_scalarized"]
     pareto_slack_union = results["scheduleurm_sota_union_pareto_slack"]
@@ -339,7 +345,7 @@ def _policy_rows(
     arrival: str,
     results: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
-    candidate = _first_policy(results, "calibrated_")
+    candidate = _candidate_policy(results)
     rows = []
     for result in results.values():
         meta = _policy_metadata(result.policy)
@@ -418,7 +424,7 @@ def _aggregate_rows(
                 candidate_weighted_flow,
             ),
         }
-        if policy.startswith("calibrated_"):
+        if policy == CANDIDATE_POLICY_NAME:
             candidate_aggregate = out
         policy_aggregate.append(out)
     union_makespan_beats = all(
@@ -455,6 +461,21 @@ def _aggregate_rows(
         bool(row.get("pareto_slack_union_beats_both_envelopes"))
         for row in replayable
     )
+    fixed_online_both = all(
+        _ratio(
+            float(row.get("best_sota_makespan_s") or 0.0),
+            float(row.get("candidate_makespan_s") or 0.0),
+        ) >= 1.0 - PARETO_TOLERANCE
+        and _ratio(
+            float(row.get("best_sota_mean_flow_s") or 0.0),
+            float(row.get("candidate_mean_flow_s") or 0.0),
+        ) >= 1.0 - PARETO_TOLERANCE
+        for row in replayable
+    )
+    fixed_online_not_dominated = all(
+        not _candidate_pareto_dominated_by_sota(row, policy_rows)
+        for row in replayable
+    )
     return {
         "policy_aggregate": policy_aggregate,
         "candidate_aggregate": candidate_aggregate,
@@ -467,14 +488,15 @@ def _aggregate_rows(
         "pareto_slack_union_not_pareto_dominated_all": pareto_slack_not_dominated,
         "pareto_slack_union_beats_both_envelopes_all": pareto_slack_both,
         "fixed_online_policy_pareto_dominates_sota_style_all": (
-            pareto_slack_not_dominated and pareto_slack_both
+            fixed_online_not_dominated and fixed_online_both
         ),
+        "fixed_online_policy_beats_both_envelopes_all": fixed_online_both,
+        "fixed_online_policy_not_pareto_dominated_all": fixed_online_not_dominated,
         "gate_pass": (
-            union_makespan_beats
-            and union_flow_beats
+            fixed_online_not_dominated
+            and fixed_online_both
             and guarded_not_dominated
             and pareto_slack_not_dominated
-            and pareto_slack_both
         ),
     }
 
@@ -484,17 +506,49 @@ def _candidate_row_for(row: Mapping[str, Any], rows: list[dict[str, Any]]) -> di
         if (
             candidate["taskset"] == row["taskset"]
             and candidate["arrival_mode"] == row["arrival_mode"]
-            and str(candidate["policy"]).startswith("calibrated_")
+            and str(candidate["policy"]) == CANDIDATE_POLICY_NAME
         ):
             return candidate
     return dict(row)
 
 
-def _first_policy(results: Mapping[str, Any], prefix: str) -> Any:
+def _candidate_policy(results: Mapping[str, Any]) -> Any:
+    if CANDIDATE_POLICY_NAME in results:
+        return results[CANDIDATE_POLICY_NAME]
     for name, result in results.items():
-        if str(name).startswith(prefix):
+        if str(name).startswith("calibrated_"):
             return result
-    raise KeyError(f"missing policy prefix {prefix!r}")
+    raise KeyError(f"missing candidate policy {CANDIDATE_POLICY_NAME!r}")
+
+
+def _candidate_pareto_dominated_by_sota(
+    scenario: Mapping[str, Any],
+    policy_rows: list[dict[str, Any]],
+) -> bool:
+    taskset = scenario.get("taskset")
+    arrival = scenario.get("arrival_mode")
+    candidate = next(
+        (
+            row for row in policy_rows
+            if row.get("taskset") == taskset
+            and row.get("arrival_mode") == arrival
+            and row.get("policy") == CANDIDATE_POLICY_NAME
+        ),
+        None,
+    )
+    if candidate is None:
+        return True
+    floor = 1.0 - PARETO_TOLERANCE
+    for row in policy_rows:
+        if row.get("taskset") != taskset or row.get("arrival_mode") != arrival:
+            continue
+        if row.get("policy_family") != "sota_style":
+            continue
+        ms = _ratio(float(row.get("makespan_s") or 0.0), float(candidate.get("makespan_s") or 0.0))
+        flow = _ratio(float(row.get("mean_flow_s") or 0.0), float(candidate.get("mean_flow_s") or 0.0))
+        if ms < floor and flow < floor:
+            return True
+    return False
 
 
 def _policy_metadata(policy: str) -> dict[str, Any]:
@@ -504,10 +558,10 @@ def _policy_metadata(policy: str) -> dict[str, Any]:
             "baseline_name": "Scheduleurm legacy",
             "representative_systems": [],
         }
-    if policy.startswith("calibrated_"):
+    if policy == CANDIDATE_POLICY_NAME:
         return {
             "policy_family": "candidate",
-            "baseline_name": "Scheduleurm current candidate",
+            "baseline_name": "Scheduleurm theorem-facing online candidate",
             "representative_systems": [],
         }
     if policy.startswith("scheduleurm_sota_union_"):

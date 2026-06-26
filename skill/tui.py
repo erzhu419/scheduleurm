@@ -64,6 +64,31 @@ def _fmt_min(secs):
     return f"{secs/3600:.1f}h"
 
 
+def _probe_unknown_age(task, now=None):
+    if not task or not task.get("probe_unknown_since"):
+        return None
+    now = now or time.time()
+    try:
+        return max(0, now - float(task.get("probe_unknown_since") or 0))
+    except Exception:
+        return None
+
+
+def _display_status(task, now=None):
+    status = task.get("status") or "-"
+    if status == "running" and _probe_unknown_age(task, now) is not None:
+        return "running?"
+    return status
+
+
+def _display_node(task, now=None):
+    node = sch._format_task_location(task)
+    age = _probe_unknown_age(task, now)
+    if age is not None:
+        return f"{node} probe?{_fmt_min(age)}"
+    return node
+
+
 def _int_or_default(value, default=-1):
     try:
         return int(value)
@@ -107,54 +132,154 @@ def _fmt_eta(t, hist):
     return "-"
 
 
+_NODE_SUMMARY_HIDDEN_NAMES = {"zhengliang-hpc"}
+
+
+def _node_display_name(n):
+    name = str(n.get("name") or "")
+    if name == "node007-direct":
+        return "node007"
+    return name
+
+
+def _node_summary_visible(n):
+    return str(n.get("name") or "") not in _NODE_SUMMARY_HIDDEN_NAMES
+
+
+def _node_sort_key(n):
+    name = str(n.get("name") or "")
+    gpu_order = {
+        "local": 0,
+        "jtl110gpu": 1,
+        "jtl110gpu2": 2,
+        "jtl311linux": 3,
+        "node007-direct": 4,
+    }
+    cpu_order = {
+        "jtl110cpu": 0,
+        "jtl110cpu2": 1,
+        "node001": 10,
+        "node002": 11,
+        "node003": 12,
+        "node004": 13,
+        "node005": 14,
+        "node006": 15,
+    }
+    if name in gpu_order:
+        return (0, gpu_order[name], _node_display_name(n))
+    if name in cpu_order:
+        return (1, cpu_order[name], _node_display_name(n))
+    if n.get("gpus"):
+        return (0, 50, _node_display_name(n))
+    if name.startswith("node"):
+        return (1, 50, _node_display_name(n))
+    if n.get("slurm_cluster"):
+        return (9, 0, _node_display_name(n))
+    return (8, 0, _node_display_name(n))
+
+
+def _node_tail_summary(n):
+    load = n.get("loadavg")
+    load_s = f"load={load:.1f}" if isinstance(load, (int, float)) else ""
+    host_cpu = n.get("host_cpu_load_pct")
+    if host_cpu is not None:
+        wsl_load = n.get("wsl_loadavg")
+        if isinstance(wsl_load, (int, float)):
+            load_s = f"wsl_load={wsl_load:.1f},host_cpu={int(host_cpu)}%"
+        else:
+            load_s = f"host_cpu={int(host_cpu)}%"
+    if n.get("probe_fallback"):
+        load_s = (load_s + "," if load_s else "") + str(n.get("probe_fallback"))
+    ram_s = sch._format_node_ram_summary(n)
+    cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
+    claim_s = sch._format_node_claim_summary(n)
+    claim_s = claim_s.strip() if claim_s else ""
+    return "  ".join(s for s in (cpu_s, load_s, ram_s, claim_s) if s)
+
+
 def _node_summary_line(nodes):
     if not nodes: return "(probe pending...)"
-    lines = []
-    for n in nodes:
+    ordered = sorted((n for n in nodes if _node_summary_visible(n)), key=_node_sort_key)
+    if not ordered:
+        return "(no visible nodes)"
+    name_w = max(11, *(len(_node_display_name(n)) for n in ordered))
+    lines = [
+        f"{'node':<{name_w}} {'gpu':<5} {'used/total':>13} {'free':>9} {'mem':>5} {'util':>9}  resources"
+    ]
+    for n in ordered:
+        name = _node_display_name(n) or "?"
         if not n.get("alive"):
             # Defense in depth: error strings often contain ssh argv like ['ssh', '-o', ...]
-            # which Rich parses as markup tags → "Expected markup value (...)" render error.
-            # Strip the brackets here even though we also disable markup on the Static widget.
-            err = (n.get("error", "?") or "?")[:60].replace("[", "(").replace("]", ")")
-            lines.append(f"{n['name']:<11s} DOWN ({err})")
+            # which Rich parses as markup tags. Strip brackets even though markup is disabled.
+            err = (n.get("error", "?") or "?")[:72].replace("[", "(").replace("]", ")")
+            lines.append(
+                f"{name:<{name_w}} {'DOWN':<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  {err}"
+            )
             continue
         if n.get("slurm_cluster"):
-            lines.append(f"{n['name']:<11s} {sch._format_slurm_cluster_summary(n)}")
+            lines.append(
+                f"{name:<{name_w}} {'slurm':<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  "
+                f"{sch._format_slurm_cluster_summary(n)}"
+            )
             continue
-        # Phase 3.3: for `local` (WSL2), supplement NVML util with the DXGI
-        # Compute-engine reading (matches Task Manager). RAM display uses
-        # scheduler's effective free value so WSL's inflated VM-internal
-        # MemAvailable does not distract from real placement capacity.
-        def _gpu_segment(g):
-            mem_pct = g['used_mb'] * 100 // max(g['total_mb'], 1)
-            util = f"{g['util_pct']}%util"
+
+        tail = _node_tail_summary(n)
+        gpus = sorted(n.get("gpus") or [], key=lambda g: _int_or_default(g.get("idx"), 999))
+        if not gpus:
+            lines.append(
+                f"{name:<{name_w}} {'cpu':<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  {tail}".rstrip()
+            )
+            continue
+
+        for i, g in enumerate(gpus):
+            used_mb = _int_or_default(g.get("used_mb"), 0)
+            total_mb = _int_or_default(g.get("total_mb"), 0)
+            free_mb = _int_or_default(g.get("free_mb"), 0)
+            mem_pct = used_mb * 100 // max(total_mb, 1)
+            util = f"{_int_or_default(g.get('util_pct'), 0)}%"
             cu = g.get("util_pct_compute")
             if cu is not None:
-                util = f"{g['util_pct']}/{cu}%util(nvml/compute)"
-            return (
-                f"GPU{g['idx']}={sch._format_mem_gb(g.get('used_mb', 0))}/"
-                f"{sch._format_mem_gb(g.get('total_mb', 0))}"
-                f"(free={sch._format_mem_gb(g.get('free_mb', 0))},{mem_pct}%mem,{util})"
+                util = f"{_int_or_default(g.get('util_pct'), 0)}/{_int_or_default(cu, 0)}%"
+            line_name = name if i == 0 else ""
+            line_tail = tail if i == 0 else ""
+            gpu_label = f"GPU{g.get('idx', '?')}"
+            used_total = f"{sch._format_mem_gb(used_mb)}/{sch._format_mem_gb(total_mb)}"
+            lines.append(
+                f"{line_name:<{name_w}} {gpu_label:<5} "
+                f"{used_total:>13} {sch._format_mem_gb(free_mb):>9} "
+                f"{str(mem_pct) + '%':>5} {util:>9}  {line_tail}".rstrip()
             )
-        gpus = "  ".join(_gpu_segment(g) for g in n["gpus"])
-        load = n.get("loadavg")
-        load_s = f"load {load:.1f}" if isinstance(load, (int, float)) else ""
-        host_cpu = n.get("host_cpu_load_pct")
-        if host_cpu is not None:
-            wsl_load = n.get("wsl_loadavg")
-            if isinstance(wsl_load, (int, float)):
-                load_s = f"wsl_load {wsl_load:.1f}, host_cpu {int(host_cpu)}%"
-            else:
-                load_s = f"host_cpu {int(host_cpu)}%"
-        if n.get("probe_fallback"):
-            load_s = (load_s + ", " if load_s else "") + str(n.get("probe_fallback"))
-        ram_s = sch._format_node_ram_summary(n)
-        cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
-        claim_s = sch._format_node_claim_summary(n)
-        claim_s = claim_s.strip() if claim_s else ""
-        tail = "  ".join(s for s in (cpu_s, load_s, ram_s, claim_s) if s)
-        lines.append(f"{n['name']:<11s} {gpus}  {tail}")
     return "\n".join(lines)
+
+
+def _watcher_status_line():
+    watcher_state = Path(getattr(sch, "WATCHER_STATE", sch.STATE_DIR / ".watcher_state.json"))
+    try:
+        raw = json.loads(watcher_state.read_text())
+    except FileNotFoundError:
+        return "WATCHER DOWN: no watcher state; queue statuses may be stale"
+    except Exception as e:
+        return f"WATCHER UNKNOWN: cannot read watcher state ({str(e)[:80]})"
+    if not isinstance(raw, dict):
+        return "WATCHER UNKNOWN: invalid watcher state"
+    pid = raw.get("pid")
+    try:
+        alive = bool(pid) and Path(f"/proc/{int(pid)}").exists()
+    except (TypeError, ValueError):
+        alive = False
+    if not alive:
+        return f"WATCHER DOWN: pid={pid or '?'} is not alive; queue statuses may be stale"
+    now = time.time()
+    last_update = max(
+        float(raw.get("last_resource_log_ts") or 0),
+        float(raw.get("last_heartbeat_ts") or 0),
+        float(raw.get("started_at") or 0),
+    )
+    resource_interval = int(raw.get("resource_log_interval") or 0)
+    stale_after = max(600, 2 * resource_interval + 120) if resource_interval else 900
+    if last_update and now - last_update > stale_after:
+        return f"WATCHER STALE: pid={pid}, last update {_fmt_min(now - last_update)} ago"
+    return ""
 
 
 def _slurm_status_for_tui(state):
@@ -259,6 +384,7 @@ SORT_KEYS = ["id", "status", "node", "project", "owner", "priority", "runtime", 
 TUI_LAYOUT_FILE = sch.STATE_DIR / "tui_layout.json"
 HEADER_SEPARATOR = "│"
 HEADER_RESIZE_GRAB_CELLS = 2
+PROBE_STALE_AFTER_S = float(os.environ.get("SCHEDULEURM_TUI_PROBE_STALE_AFTER_S", "30"))
 
 
 def _clamp_column_width(key: str, width) -> int:
@@ -419,6 +545,8 @@ class SchedulerTUI(App):
         super().__init__()
         self._snap = {"state": {"tasks": []}, "hist": {}, "nodes": [], "ts": 0}
         self._probing = False
+        self._probe_started_at = 0.0
+        self._probe_generation = 0
         self.column_order, self.column_widths = _load_tui_layout()
         self._table_layout_sig = None
         self._column_drag = None
@@ -613,26 +741,45 @@ class SchedulerTUI(App):
         return True
 
     # Background probe ---------------------------------------------------
+    def _refresh_fast_state(self):
+        """Refresh task rows from queue.json even while node probes are stuck."""
+        fast = _fast_snapshot()
+        previous = self._snap or {}
+        fast["nodes"] = previous.get("nodes", [])
+        fast["ts"] = previous.get("ts", 0)
+        self._snap = fast
+        self._render_from_cache()
+
     def _kick_probe(self):
-        if self._probing: return
         if _scheduler_source_changed():
             try:
                 self.query_one("#node_summary", Static).update("scheduler.py changed; restarting TUI...")
             except Exception:
                 pass
             os.execv(sys.executable, [sys.executable, *sys.argv])
+        if self._probing:
+            self._refresh_fast_state()
+            if time.time() - self._probe_started_at < PROBE_STALE_AFTER_S:
+                return
         self._probing = True
-        self.run_worker(self._do_probe(), exclusive=False, thread=True, name="probe")
+        self._probe_started_at = time.time()
+        self._probe_generation += 1
+        generation = self._probe_generation
+        self.run_worker(self._do_probe(generation), exclusive=False, thread=True, name="probe")
 
-    async def _do_probe(self):
+    async def _do_probe(self, generation: int):
         snap = _probe_snapshot()
+        if generation != self._probe_generation:
+            return
         self._snap = snap
         self._probing = False
+        self._probe_started_at = 0.0
         self.call_from_thread(self._render_from_cache)
 
     def on_worker_state_changed(self, event):
         if event.worker.name == "probe" and event.state == WorkerState.ERROR:
             self._probing = False
+            self._probe_started_at = 0.0
 
     # Actions ------------------------------------------------------------
     def action_set_filter(self, status: str):
@@ -758,7 +905,9 @@ class SchedulerTUI(App):
     def _cell_renderable(self, key: str, value, status: str):
         text = "" if value is None else str(value)
         style = ""
-        if status == "running":
+        if status == "running?":
+            style = "bold yellow" if key == "status" else "yellow"
+        elif status == "running":
             style = "bold green" if key == "status" else "green"
         return Text(text, style=style, overflow="fold", no_wrap=False)
 
@@ -770,7 +919,11 @@ class SchedulerTUI(App):
             nodes = snap.get("nodes", [])
             stale = time.time() - snap.get("ts", 0) if snap.get("ts") else None
             stale_tag = "" if stale is None or stale < 7 else f"  (snap {int(stale)}s old)"
-            self.query_one("#node_summary", Static).update(_node_summary_line(nodes) + stale_tag)
+            watcher_line = _watcher_status_line()
+            summary = _node_summary_line(nodes) + stale_tag
+            if watcher_line:
+                summary = watcher_line + "\n" + summary
+            self.query_one("#node_summary", Static).update(summary)
             tasks = list(state.get("tasks", []))
             tasks.extend(_virtual_slurm_tasks_from_nodes(nodes, tasks))
             if self.state_filter == "running":
@@ -782,12 +935,13 @@ class SchedulerTUI(App):
             tf = (self.text_filter or "").lower().strip()
             if tf:
                 def match(t):
-                    fields = [sch._format_task_location(t)]
+                    fields = [sch._format_task_location(t), _display_status(t)]
                     fields.extend(
                         "" if t.get(k) is None else str(t.get(k))
                         for k in ("id", "project", "node", "signature", "description",
                                   "origin", "submitted_by", "process_owner",
-                                  "slurm_job_id", "slurm_state")
+                                  "slurm_job_id", "slurm_state", "node_probe_state",
+                                  "last_probe_unknown_reason", "last_status_sync_reason")
                     )
                     fields.append(sch._format_task_owner(t))
                     return any(tf in f.lower() for f in fields)
@@ -822,7 +976,7 @@ class SchedulerTUI(App):
                 return 1e12
             sortmap = {
                 "id": lambda t: t.get("id", ""),
-                "status": lambda t: t.get("status", ""),
+                "status": lambda t: _display_status(t, now),
                 "node": lambda t: (
                     t.get("node") or "~",
                     0 if t.get("slurm_job_id") else 1,
@@ -855,7 +1009,7 @@ class SchedulerTUI(App):
                     current_id_order = []
 
             def _row_for(t):
-                node_str = sch._format_task_location(t)
+                node_str = _display_node(t, now)
                 rt = _fmt_min(runtime_of(t)) if t.get("status") == "running" else "-"
                 if t.get("status") == "running" and t.get("current_vram_mb"):
                     vram = sch._format_mem_gb(t.get("current_vram_mb", 0))
@@ -870,7 +1024,7 @@ class SchedulerTUI(App):
                         sch._format_mem_gb(t.get("ram_mb", 0), approx=True) if t.get("ram_mb") else "-")
                 return {
                     "id": t.get("id", "?"),
-                    "status": t.get("status", "-"),
+                    "status": _display_status(t, now),
                     "node": node_str,
                     "project": t.get("project") or "-",
                     "owner": sch._format_task_owner(t),

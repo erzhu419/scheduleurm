@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Multi-resource scheduler across local (4060 8GB / 16c / 64GB) + jtl110gpu
-(2x 3080Ti 12GB / 12c / auto-probed RAM) + jtl110gpu2 (same) + jtl110cpu/jtl110cpu2
-(Windows CPU-only / 128 physical cores / 512GB each).
+(2x 3080Ti 12GB / 12c / auto-probed RAM) + jtl110gpu2 (same) + jtl311linux
+(2x 2080 8GB / 8c / auto-probed RAM) + jtl110cpu/jtl110cpu2 (Windows CPU-only /
+128 physical cores / 512GB each).
 
 Resource model: each task declares cpu_cores, ram_mb, vram_mb (or vram=0 for CPU-only). Placement requires
 ALL three to fit on the chosen node + GPU. Per-task resource needs are auto-learned from history (peak
@@ -140,7 +141,7 @@ JTL110GPU_RE_SAC_JAX_PATH = (
     f"{JTL110GPU_RE_SAC_JAX_SITE}/nvidia/cuda_nvcc/bin:"
     "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 )
-NODE007_RESAC_JAX_ENV = "/tmp/scheduleurm_envs/resac-jax-535-py310-final"
+NODE007_RESAC_JAX_ENV = "/home/zhengliang01/scheduleurm_work/conda_envs/csbapr-gpu-py310"
 NODE007_SCOMP_ENV = "/home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310"
 OFFLINE_SUMO_ENV = "/home/erzhu419/.conda/envs/offline-sumo"
 OFFLINE_SUMO_PYTHON = f"{OFFLINE_SUMO_ENV}/bin/python"
@@ -204,12 +205,28 @@ NODES = {
                        "LD_LIBRARY_PATH": JTL110GPU_RE_SAC_JAX_NVIDIA_LIBS,
                        "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
                    }},
+    # JTL311Linux is another scheduleurm-managed two-GPU box. The GPUs are RTX 2080
+    # 8GB, so keep packing a bit lighter than the 3080Ti nodes while sharing the
+    # same command rewrites/env layout for seamless GPU/JAX task placement.
+    "jtl311linux": {"host": "jtl311linux", "cpu_cores": 8, "ram_mb": 0, "ram_headroom_frac": 0.10, "max_vram_per_task": None, "max_concurrent_running": None, "max_tasks_per_gpu": 3, "enable_claims": True, "gpu_util_saturation_pct": None,
+                    "capabilities": ["cpu", "cuda", "torch_cuda", "jax_cuda"],
+                    "cmd_rewrites": BUS_TORCH_CMD_REWRITES + [
+                        ("/home/erzhu419/.conda/envs/resac-jax/bin/python",
+                         f"{JTL110GPU_RE_SAC_JAX_ENV}/bin/python"),
+                    ],
+                    "launch_extra_env": {
+                        "PATH": JTL110GPU_RE_SAC_JAX_PATH,
+                        "LD_LIBRARY_PATH": JTL110GPU_RE_SAC_JAX_NVIDIA_LIBS,
+                        "XLA_PYTHON_CLIENT_MEM_FRACTION": "0.20",
+                    }},
     # Campus-only HPC login node. Local Codex cannot reach it directly; route
-    # SSH/rsync control traffic through GPU2, which is on campus net.
+    # SSH/rsync control traffic through campus jump boxes. GPU2 is preferred,
+    # GPU1 is a fallback for the frequent "GPU2 unplugged / DOWN" case.
     # Workspaces are staged under the HPC account's home rather than preserving
     # /home/erzhu419, which that account cannot create.
     "zhengliang-hpc": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
                        "ssh_proxy_jump": "jtl110gpu2",
+                       "ssh_proxy_jumps": ["jtl110gpu2", "jtl110gpu"],
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
                        "max_vram_per_task": None, "max_concurrent_running": 0,
                        "slurm_backend": "local", "probe_slurm_cluster": True,
@@ -225,7 +242,8 @@ NODES = {
                        "disable_auto_adopt": True,
                        "only_when_targeted": True,
                        "stage_only_when_targeted": True,
-                       "relay_node": "jtl110gpu2",
+                       "relay_node": None,
+                       "relay_nodes": [],
                        "relay_root": "/tmp/scheduleurm-hpc-relay/zhengliang-hpc",
                        "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
                        "remote_path_prefixes": [
@@ -241,6 +259,7 @@ NODES = {
     # small RL jobs per physical GPU.
     "node007-direct": {"host": "202.197.46.16", "ssh_user": "zhengliang01",
                        "ssh_proxy_jump": "jtl110gpu2",
+                       "ssh_proxy_jumps": ["jtl110gpu2", "jtl110gpu"],
                        "sudo_ssh_host": "node007",
                        "sudo_ssh_run_as": "zhengliang01",
                        "cpu_cores": 64, "ram_mb": 0, "ram_headroom_frac": 0.10,
@@ -259,7 +278,8 @@ NODES = {
                        "skip_launch_staging": True,
                        "only_when_targeted": False,
                        "stage_only_when_targeted": False,
-                       "relay_node": "jtl110gpu2",
+                       "relay_node": None,
+                       "relay_nodes": [],
                        "relay_root": "/tmp/scheduleurm-hpc-relay/node007-direct",
                        "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
                        "remote_path_prefixes": [
@@ -313,6 +333,7 @@ for _hpc_cpu_idx in range(1, 7):
     _hpc_cpu_node = f"node{_hpc_cpu_idx:03d}"
     NODES[_hpc_cpu_node] = {"host": "202.197.46.16", "ssh_user": "zhengliang01",
                             "ssh_proxy_jump": "jtl110gpu2",
+                            "ssh_proxy_jumps": ["jtl110gpu2", "jtl110gpu"],
                             "sudo_ssh_host": _hpc_cpu_node,
                             "sudo_ssh_run_as": "zhengliang01",
                             "cpu_cores": 192, "ram_mb": 0,
@@ -322,7 +343,8 @@ for _hpc_cpu_idx in range(1, 7):
                             "skip_launch_staging": True,
                             "only_when_targeted": True,
                             "stage_only_when_targeted": True,
-                            "relay_node": "jtl110gpu2",
+                            "relay_node": None,
+                            "relay_nodes": [],
                             "relay_root": f"/tmp/scheduleurm-hpc-relay/{_hpc_cpu_node}",
                             "remote_workspace_root": "/home/zhengliang01/scheduleurm_work",
                             "disable_auto_adopt": True,
@@ -339,6 +361,10 @@ VRAM_FILE = STATE_DIR / "vram_history.json"  # holds {sig: {vram, ram, cpu}} (ba
 RUNTIME_FILE = STATE_DIR / "runtime_history.json"  # exact-parameter walltime/unit-time history
 LOCK_FILE = STATE_DIR / ".lock"
 LOG_DIR = STATE_DIR / "logs"
+ALLOW_EMPTY_QUEUE_RESET_ENV = "SCHEDULEURM_ALLOW_EMPTY_QUEUE_RESET"
+EMPTY_QUEUE_RESET_GUARD_MIN_TASKS = 20
+EMPTY_QUEUE_RESET_GUARD_MIN_ACTIVE = 5
+QUEUE_MISSING_GUARD_MAX_AGE_S = 6 * 3600
 
 VRAM_MARGIN_MB = 500       # headroom on a GPU after placing a task
 RAM_HEADROOM_FRAC = 0.10   # keep 10% of node RAM unallocated as buffer for OS/other procs
@@ -573,6 +599,9 @@ RESOURCE_LOG_INTERVAL_S = max(30, int(os.environ.get("SCHEDULEURM_RESOURCE_LOG_I
 WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S = max(10, int(os.environ.get("SCHEDULEURM_WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S", "60")))
 RUNNING_PROBE_MIN_INTERVAL_S = max(0, int(os.environ.get("SCHEDULEURM_RUNNING_PROBE_MIN_INTERVAL_S", "60")))
 ETA_REFRESH_MIN_INTERVAL_S = max(0, int(os.environ.get("SCHEDULEURM_ETA_REFRESH_MIN_INTERVAL_S", "120")))
+ETA_HISTORY_OVERRUN_FLOOR_S = max(0, int(os.environ.get("SCHEDULEURM_ETA_HISTORY_OVERRUN_FLOOR_S", "1800")))
+ETA_HISTORY_OVERRUN_MAX_S = max(0, int(os.environ.get("SCHEDULEURM_ETA_HISTORY_OVERRUN_MAX_S", "7200")))
+ETA_HISTORY_OVERRUN_FRACTION = max(0.0, float(os.environ.get("SCHEDULEURM_ETA_HISTORY_OVERRUN_FRACTION", "0.25")))
 MAX_AUTO_RETRY = 3          # auto-requeue cap after crash (parent.retry_count + 1 > this → give up)
 MAX_LAUNCH_RETRY = 3        # launch-failure cap (cwd missing, ssh timeout, etc.) before terminal failed + heal
 LAUNCHING_RESET_S = 60      # stale WAL launch marker age before reverting to queued
@@ -707,8 +736,82 @@ def _atomic_write_json(p, obj):
         os.fsync(f.fileno())
     os.replace(tmp, p)
 
-def load_state(): return _load_json(QUEUE_FILE, {"tasks": [], "next_id": 1})
-def save_state(s): _atomic_write_json(QUEUE_FILE, s)
+def _empty_queue_reset_allowed() -> bool:
+    return str(os.environ.get(ALLOW_EMPTY_QUEUE_RESET_ENV, "")).lower() in ("1", "true", "yes")
+
+
+def _state_counts(obj) -> tuple[int, int]:
+    tasks = obj.get("tasks", []) if isinstance(obj, dict) else []
+    total = len(tasks) if isinstance(tasks, list) else 0
+    active = sum(1 for t in tasks if isinstance(t, dict)
+                 and t.get("status") in ("queued", "launching", "running"))
+    return total, active
+
+
+def _recent_queue_state_files() -> list[Path]:
+    cutoff = time.time() - QUEUE_MISSING_GUARD_MAX_AGE_S
+    out = []
+    for p in STATE_DIR.glob("queue.json.*"):
+        if p.name.endswith(".tmp") or not p.is_file():
+            continue
+        try:
+            if p.stat().st_size > 0 and p.stat().st_mtime >= cutoff:
+                out.append(p)
+        except Exception:
+            continue
+    return sorted(out, key=lambda x: x.stat().st_mtime, reverse=True)
+
+
+def _guard_missing_queue_state():
+    if _empty_queue_reset_allowed():
+        return
+    try:
+        missing_or_empty = (not QUEUE_FILE.exists()) or QUEUE_FILE.stat().st_size == 0
+    except Exception:
+        missing_or_empty = False
+    if not missing_or_empty:
+        return
+    recent = _recent_queue_state_files()
+    if not recent:
+        return
+    names = ", ".join(p.name for p in recent[:3])
+    raise RuntimeError(
+        f"{QUEUE_FILE} is missing/empty while recent queue backups exist ({names}); "
+        f"refusing to initialize an empty scheduler state. Restore a backup or set "
+        f"{ALLOW_EMPTY_QUEUE_RESET_ENV}=1 if this reset is intentional."
+    )
+
+
+def _guard_empty_queue_save(new_state):
+    if _empty_queue_reset_allowed():
+        return
+    new_total, _new_active = _state_counts(new_state)
+    if new_total:
+        return
+    if not QUEUE_FILE.exists():
+        return
+    try:
+        old_state = json.loads(QUEUE_FILE.read_text())
+    except Exception:
+        return
+    old_total, old_active = _state_counts(old_state)
+    if old_total >= EMPTY_QUEUE_RESET_GUARD_MIN_TASKS or old_active >= EMPTY_QUEUE_RESET_GUARD_MIN_ACTIVE:
+        raise RuntimeError(
+            f"refusing to overwrite {QUEUE_FILE} with an empty task list "
+            f"(previous total={old_total}, active={old_active}). Set "
+            f"{ALLOW_EMPTY_QUEUE_RESET_ENV}=1 if this reset is intentional."
+        )
+
+
+def load_state():
+    _guard_missing_queue_state()
+    return _load_json(QUEUE_FILE, {"tasks": [], "next_id": 1})
+
+
+def save_state(s):
+    _guard_empty_queue_save(s)
+    _atomic_write_json(QUEUE_FILE, s)
+
 def load_history(): return _load_json(VRAM_FILE, {})
 def save_history(h): _atomic_write_json(VRAM_FILE, h)
 def load_runtime_history(): return _load_json(RUNTIME_FILE, {})
@@ -2656,8 +2759,28 @@ def _node_is_windows(node: str) -> bool:
     return str((NODES.get(node) or {}).get("os") or "").lower().startswith("win")
 
 
-def _ssh_base_args(node: str) -> list:
-    """Build the ssh argv prefix for a node.
+SSH_ROUTE_CACHE_TTL_S = int(os.environ.get("SCHEDULEURM_SSH_ROUTE_CACHE_TTL_S", "30"))
+_SSH_PROXY_JUMP_CACHE: dict = {}
+_RELAY_NODE_CACHE: dict = {}
+
+
+def _route_list(value) -> list:
+    if not value:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [str(value).strip()]
+
+
+def _configured_proxy_jumps(info: dict) -> list:
+    jumps = _route_list(info.get("ssh_proxy_jumps") or info.get("proxy_jumps"))
+    if jumps:
+        return jumps
+    return _route_list(info.get("ssh_proxy_jump") or info.get("proxy_jump"))
+
+
+def _ssh_base_args_with_proxy(node: str, proxy_jump: Optional[str] = None) -> list:
+    """Build the ssh argv prefix for a node with one concrete ProxyJump.
 
     Existing GPU nodes use ~/.ssh/config aliases (`host=jtl110gpu`). Windows
     CPU nodes can instead declare host/user/port directly so they do not need
@@ -2678,7 +2801,6 @@ def _ssh_base_args(node: str) -> list:
         args.extend(["-i", os.path.expanduser(str(info["ssh_identity"]))])
     if info.get("ssh_port"):
         args.extend(["-p", str(info["ssh_port"])])
-    proxy_jump = info.get("ssh_proxy_jump") or info.get("proxy_jump")
     if proxy_jump:
         args.extend(["-J", str(proxy_jump)])
     for opt in (info.get("ssh_options") or []):
@@ -2691,6 +2813,65 @@ def _ssh_base_args(node: str) -> list:
     return args
 
 
+def _probe_ssh_proxy_jump(node: str, proxy_jump: str, timeout: int = 8) -> bool:
+    """Fast reachability check for one jump route.
+
+    For sudo-hop compute nodes, probe the full outer-login -> inner node path,
+    not just the login host. Otherwise a half-working jump box can pass `ssh
+    login true` but fail every real node00x command with a banner timeout.
+    """
+    try:
+        remote_cmd = _remote_bash_command_for_node(node, "true", timeout=timeout)
+        proc = subprocess.run(
+            _ssh_base_args_with_proxy(node, proxy_jump) + [remote_cmd],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
+def _select_proxy_jump(node: str) -> Optional[str]:
+    info = NODES.get(node, {}) or {}
+    jumps = _configured_proxy_jumps(info)
+    if not jumps:
+        return None
+    if len(jumps) == 1:
+        return jumps[0]
+    now = time.time()
+    cached = _SSH_PROXY_JUMP_CACHE.get(node)
+    if cached:
+        jump, ts = cached
+        if jump in jumps and now - float(ts or 0) <= SSH_ROUTE_CACHE_TTL_S:
+            return jump
+    for jump in jumps:
+        if _probe_ssh_proxy_jump(node, jump):
+            _SSH_PROXY_JUMP_CACHE[node] = (jump, now)
+            return jump
+    _SSH_PROXY_JUMP_CACHE.pop(node, None)
+    return jumps[0]
+
+
+def _ssh_base_arg_variants(node: str) -> list:
+    info = NODES.get(node, {}) or {}
+    jumps = _configured_proxy_jumps(info)
+    if not jumps:
+        return [_ssh_base_args_with_proxy(node, None)]
+    selected = _select_proxy_jump(node)
+    ordered = []
+    for jump in [selected] + jumps:
+        if jump and jump not in ordered:
+            ordered.append(jump)
+    return [_ssh_base_args_with_proxy(node, jump) for jump in ordered]
+
+
+def _ssh_base_args(node: str) -> list:
+    """Build the preferred ssh argv prefix for a node."""
+    return _ssh_base_arg_variants(node)[0]
+
+
 def _ssh_no_stdin_args(node: str) -> list:
     """Build ssh argv for commands that must not consume scheduler stdin.
 
@@ -2700,6 +2881,13 @@ def _ssh_no_stdin_args(node: str) -> list:
     """
     args = _ssh_base_args(node)
     return args[:1] + ["-n"] + args[1:]
+
+
+def _ssh_no_stdin_arg_variants(node: str) -> list:
+    variants = []
+    for args in _ssh_base_arg_variants(node):
+        variants.append(args[:1] + ["-n"] + args[1:])
+    return variants
 
 
 def _run_windows_ps(node: str, ps_script: str, timeout=15, check=True, input_data: bytes | None = None):
@@ -2889,10 +3077,25 @@ def run_on(node, shell_cmd, timeout=15, check=True):
         # connection used to take the full subprocess timeout to surface). 5s × 3 missed pings
         # = 15s before ssh declares dead; under our 15s default `timeout=`, this means a
         # broken master surfaces as ssh failure not subprocess timeout.
-        proc = subprocess.run(
-            _ssh_no_stdin_args(node) + [remote_cmd],
-            capture_output=True, timeout=timeout, text=True,
-        )
+        proc = None
+        variants = _ssh_no_stdin_arg_variants(node)
+        for idx, ssh_args in enumerate(variants):
+            try:
+                proc = subprocess.run(
+                    ssh_args + [remote_cmd],
+                    capture_output=True, timeout=timeout, text=True,
+                )
+            except subprocess.TimeoutExpired:
+                _SSH_PROXY_JUMP_CACHE.pop(node, None)
+                if idx + 1 < len(variants):
+                    continue
+                raise
+            # rc=255 is OpenSSH transport failure. Retry another configured
+            # ProxyJump, but do not hide real remote command failures.
+            if proc.returncode == 255 and idx + 1 < len(variants):
+                _SSH_PROXY_JUMP_CACHE.pop(node, None)
+                continue
+            break
     if check and proc.returncode != 0:
         raise RuntimeError(f"[{node}] cmd failed (rc={proc.returncode}): {proc.stderr.strip()[:300]}")
     return proc.returncode, proc.stdout, proc.stderr
@@ -4599,6 +4802,10 @@ def _mark_probe_unknown(task: dict, res: Optional[dict] = None) -> None:
     task["probe_unknown_count"] = int(task.get("probe_unknown_count") or 0) + 1
     err = (res or {}).get("error") or (res or {}).get("terminal_reason")
     task["last_probe_unknown_reason"] = str(err or "backend probe returned unknown")[:300]
+    task["node_probe_state"] = "unknown"
+    task["last_status_sync_at"] = now
+    task["last_status_sync_status"] = "running"
+    task["last_status_sync_reason"] = task["last_probe_unknown_reason"]
 
 
 def _clear_probe_unknown(task: dict, now: Optional[float] = None) -> Optional[dict]:
@@ -4621,6 +4828,9 @@ def _clear_probe_unknown(task: dict, now: Optional[float] = None) -> Optional[di
     task["last_probe_unknown_duration_s"] = dur
     task["last_probe_unknown_count"] = rec["count"]
     task["last_probe_unknown_reason"] = rec["reason"]
+    task["node_probe_state"] = "ok"
+    task["last_status_sync_at"] = now
+    task["last_status_sync_reason"] = f"reconnected after {dur}s unknown probe window"
     task.pop("probe_unknown_since", None)
     task.pop("last_probe_unknown_at", None)
     task.pop("probe_unknown_count", None)
@@ -4645,12 +4855,16 @@ def _annotate_diag_after_unknown(diag: dict, sync_rec: Optional[dict]) -> dict:
 _LIVE_REMAINING_ETA_SOURCES = {
     "tqdm",
     "inline_eta",
+    "seconds_per_unit",
     "progress_rate",
     "bapr_seed_batch",
+    "bapr_run_seed",
     "runtime_history_fallback",
     "duration_ewma_fallback",
+    "runtime_history_overrun",
+    "duration_ewma_overrun",
 }
-_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "inline_eta", "progress_rate", "bapr_seed_batch"}
+_LIVE_RUNTIME_PROJECTION_SOURCES = {"tqdm", "inline_eta", "seconds_per_unit", "progress_rate", "bapr_seed_batch", "bapr_run_seed"}
 _ETA_AUDIT_FIELDS = (
     "eta_seconds", "eta_source", "eta_confidence", "eta_updated_at",
     "eta_detail", "eta_log_bytes", "eta_probe_error", "last_progress_line",
@@ -4699,7 +4913,7 @@ def _eta_confidence_for_source(source: str) -> str:
     base = _eta_source_base(source)
     if base in ("tqdm", "inline_eta", "local_test_tqdm"):
         return "high"
-    if base in ("progress_rate", "local_test_progress", "runtime_history", "bapr_seed_batch"):
+    if base in ("seconds_per_unit", "progress_rate", "local_test_progress", "runtime_history", "bapr_seed_batch"):
         return "medium"
     return "low"
 
@@ -4721,14 +4935,22 @@ def _eta_source_tag(source: object) -> str:
         return "tqdm"
     if base == "inline_eta":
         return "logeta"
+    if base == "seconds_per_unit":
+        return "unit"
     if base == "progress_rate":
         return "prog"
     if base == "bapr_seed_batch":
         return "bapr"
+    if base == "bapr_run_seed":
+        return "bapr"
     if base in ("runtime_history", "runtime_history_fallback"):
         return "hist"
+    if base == "runtime_history_overrun":
+        return "hist+"
     if base in ("duration_ewma", "duration_ewma_fallback"):
         return "ewma"
+    if base == "duration_ewma_overrun":
+        return "ewma+"
     if base.startswith("local_test"):
         return "test"
     if base.startswith("closest"):
@@ -4740,6 +4962,36 @@ def _format_task_eta(task: dict) -> str:
     if eta <= 0:
         return ""
     return f"eta~{_fmt_eta_seconds(eta)}/{_eta_source_tag(task.get('eta_source'))}"
+
+
+def _history_fallback_eta_seconds(total_s: int, elapsed_s: float) -> tuple[int, bool]:
+    """Remaining ETA from a historical full-run estimate.
+
+    When a running task has no parseable progress marker and elapsed time has
+    already exceeded history, returning 0 is actively misleading: the task is
+    still running, and node eta_load would incorrectly drop to zero.  Keep a
+    bounded positive overrun floor so overloaded nodes remain visible while the
+    display/source tag makes clear that this is not a progress-derived ETA.
+    """
+    try:
+        total = max(0, int(total_s or 0))
+        elapsed = max(0.0, float(elapsed_s or 0.0))
+    except Exception:
+        return 0, False
+    if total <= 0:
+        return 0, False
+    remaining = int(total - elapsed)
+    if remaining > 0:
+        return remaining, False
+    floor = int(ETA_HISTORY_OVERRUN_FLOOR_S)
+    if floor <= 0:
+        return 0, True
+    proportional = int(total * float(ETA_HISTORY_OVERRUN_FRACTION))
+    estimate = max(floor, proportional)
+    max_s = int(ETA_HISTORY_OVERRUN_MAX_S)
+    if max_s > 0:
+        estimate = min(estimate, max_s)
+    return int(max(1, estimate)), True
 
 CRASH_PATTERNS = [
     "Traceback (most recent call",
@@ -5722,9 +5974,20 @@ def _batch_check_running(state):
             )
             if t.get("status") == "done":
                 runtime_history_record(t, duration_s=duration_s)
+            if reconnect_sync:
+                t["last_status_sync_status"] = t.get("status")
+                t["last_status_sync_reason"] = (
+                    f"node probe reconnected and synced terminal status={t.get('status')}"
+                )
             continue
         # alive: fold deltas, upward-track ram_mb / cpu_cores estimates
         _remember_last_placement(t)
+        if reconnect_sync:
+            t["last_status_sync_status"] = "running"
+            t["last_status_sync_reason"] = (
+                f"node probe reconnected and confirmed running after "
+                f"{int(reconnect_sync.get('duration_s') or 0)}s unknown"
+            )
         t["alive_pids"] = res["alive_pids"]
         total_vram = res["vram_mb"]
         _set_current_usage(t, total_vram, res.get("ram_mb", 0), res.get("pcpu", 0.0))
@@ -5845,6 +6108,9 @@ def _refresh_eta_from_logs(state):
         except Exception:
             return
 
+    runtime_history_cache = load_runtime_history()
+    runtime_closest_index = _runtime_history_closest_index(runtime_history_cache)
+
     by_node = {}  # node -> [(task, log_path), ...]
     pure_ewma = []  # tasks without log_path; just compute fallback
     for t in state.get("tasks", []):
@@ -5861,18 +6127,27 @@ def _refresh_eta_from_logs(state):
     for t in pure_ewma:
         sig = t.get("signature") or ""
         h = history_get(sig) or {}
-        runtime_total = _runtime_total_history_s(t)
+        runtime_total = _runtime_total_history_s(
+            t,
+            runtime_history=runtime_history_cache,
+            closest_index=runtime_closest_index,
+        )
         ewma = runtime_total or int(h.get("dur_s_ewma", 0))
         elapsed = _effective_elapsed_s(t)
-        t["eta_seconds"] = eta_tracker.compute_eta_seconds(
-            "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
-        )
+        eta_s, overrun = _history_fallback_eta_seconds(ewma, elapsed)
+        t["eta_seconds"] = eta_s
         t["eta_updated_at"] = int(time.time())
         t["eta_log_bytes"] = 0
-        t["eta_detail"] = "no scheduler log_path; ETA from runtime history fallback" if runtime_total else "no scheduler log_path; ETA from duration EWMA fallback"
+        if overrun:
+            t["eta_detail"] = "no scheduler log_path; historical ETA overrun, using bounded unknown-remaining floor"
+        else:
+            t["eta_detail"] = "no scheduler log_path; ETA from runtime history fallback" if runtime_total else "no scheduler log_path; ETA from duration EWMA fallback"
         t.pop("eta_probe_error", None)
         if t.get("eta_seconds"):
-            t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
+            if overrun:
+                t["eta_source"] = "runtime_history_overrun" if runtime_total else "duration_ewma_overrun"
+            else:
+                t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
             t["eta_confidence"] = "low"
 
     if not by_node:
@@ -5927,14 +6202,20 @@ def _refresh_eta_from_logs(state):
                 if t.get("eta_seconds") is None:
                     sig = t.get("signature") or ""
                     h = history_get(sig) or {}
-                    runtime_total = _runtime_total_history_s(t)
+                    runtime_total = _runtime_total_history_s(
+                        t,
+                        runtime_history=runtime_history_cache,
+                        closest_index=runtime_closest_index,
+                    )
                     ewma = runtime_total or int(h.get("dur_s_ewma", 0))
                     elapsed = _effective_elapsed_s(t)
-                    t["eta_seconds"] = eta_tracker.compute_eta_seconds(
-                        "", elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
-                    )
+                    eta_s, overrun = _history_fallback_eta_seconds(ewma, elapsed)
+                    t["eta_seconds"] = eta_s
                     if t.get("eta_seconds"):
-                        t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
+                        if overrun:
+                            t["eta_source"] = "runtime_history_overrun" if runtime_total else "duration_ewma_overrun"
+                        else:
+                            t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
                         t["eta_confidence"] = "low"
             continue
         # Split on markers: ['header', 'tid1', 'tail1', 'tid2', 'tail2', ...]
@@ -5949,9 +6230,14 @@ def _refresh_eta_from_logs(state):
             tail_text = log_by_tid.get(tid, "")
             sig = t.get("signature") or ""
             h = history_get(sig) or {}
-            runtime_total = _runtime_total_history_s(t)
+            runtime_total = _runtime_total_history_s(
+                t,
+                runtime_history=runtime_history_cache,
+                closest_index=runtime_closest_index,
+            )
             ewma = runtime_total or int(h.get("dur_s_ewma", 0))
             elapsed = _effective_elapsed_s(t)
+            fallback_eta, fallback_overrun = _history_fallback_eta_seconds(ewma, elapsed)
             t["eta_seconds"] = eta_tracker.compute_eta_seconds(
                 tail_text, elapsed_s=elapsed, fallback_ewma_s=ewma, cmd=t.get("cmd"),
             )
@@ -5979,10 +6265,17 @@ def _refresh_eta_from_logs(state):
                     t["eta_detail"] = f"parsed BAPR seed batch progress from scheduler log tail{suffix}"
                 else:
                     t["eta_detail"] = f"parsed {source} from scheduler log tail"
-            elif t.get("eta_seconds"):
-                t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
+            elif t.get("eta_seconds") or (fallback_overrun and fallback_eta > 0):
+                if fallback_overrun:
+                    t["eta_seconds"] = fallback_eta
+                    t["eta_source"] = "runtime_history_overrun" if runtime_total else "duration_ewma_overrun"
+                else:
+                    t["eta_source"] = "runtime_history_fallback" if runtime_total else "duration_ewma_fallback"
                 t["eta_confidence"] = "low"
-                t["eta_detail"] = "no progress marker in log tail; ETA from runtime history fallback" if runtime_total else "no progress marker in log tail; ETA from duration EWMA fallback"
+                if fallback_overrun:
+                    t["eta_detail"] = "no progress marker in log tail; historical ETA overrun, using bounded unknown-remaining floor"
+                else:
+                    t["eta_detail"] = "no progress marker in log tail; ETA from runtime history fallback" if runtime_total else "no progress marker in log tail; ETA from duration EWMA fallback"
             else:
                 t["eta_detail"] = "no parseable progress marker and no runtime history fallback"
 
@@ -11548,7 +11841,27 @@ def _runtime_script_name(cmd: str) -> str:
     return ""
 
 
-def _runtime_history_closest(task: dict, history: dict):
+def _runtime_history_closest_index(history: dict) -> list[dict]:
+    rows = []
+    for key, rec in (history or {}).items():
+        if not isinstance(rec, dict) or int(rec.get("total_s") or 0) <= 0:
+            continue
+        rec_cmd = rec.get("cmd") or ""
+        rec_tokens = _runtime_cmd_tokens(rec_cmd)
+        if not rec_tokens:
+            continue
+        rows.append({
+            "key": key,
+            "rec": rec,
+            "tokens": rec_tokens,
+            "script": _runtime_script_name(rec_cmd),
+            "project": rec.get("project") or "",
+            "cwd_base": os.path.basename(str(rec.get("cwd") or "")),
+        })
+    return rows
+
+
+def _runtime_history_closest(task: dict, history: dict, closest_index: Optional[list[dict]] = None):
     """Return a conservative closest runtime-history record for novel signatures.
 
     This is the deterministic fallback for the "AI should choose closest task"
@@ -11565,22 +11878,20 @@ def _runtime_history_closest(task: dict, history: dict):
     task_cwd_base = os.path.basename(payload.get("cwd") or "")
     task_units = _runtime_total_units_from_cmd(payload.get("cmd") or "")
     best = None
-    for key, rec in (history or {}).items():
-        if not isinstance(rec, dict) or int(rec.get("total_s") or 0) <= 0:
-            continue
-        rec_cmd = rec.get("cmd") or ""
-        rec_tokens = _runtime_cmd_tokens(rec_cmd)
-        if not rec_tokens:
-            continue
+    records = closest_index if closest_index is not None else _runtime_history_closest_index(history)
+    for item in records:
+        key = item.get("key")
+        rec = item.get("rec") or {}
+        rec_tokens = item.get("tokens") or set()
         inter = len(task_tokens & rec_tokens)
         union = len(task_tokens | rec_tokens) or 1
         score = inter / union
-        rec_script = _runtime_script_name(rec_cmd)
+        rec_script = item.get("script") or ""
         if task_script and rec_script and task_script == rec_script:
             score += 0.25
-        if task_project and rec.get("project") == task_project:
+        if task_project and item.get("project") == task_project:
             score += 0.15
-        rec_cwd_base = os.path.basename(str(rec.get("cwd") or ""))
+        rec_cwd_base = item.get("cwd_base") or ""
         if task_cwd_base and rec_cwd_base and task_cwd_base == rec_cwd_base:
             score += 0.10
         if score < RUNTIME_CLOSEST_MIN_SCORE:
@@ -11599,24 +11910,31 @@ def _runtime_history_closest(task: dict, history: dict):
     return out, f"closest:{key}"
 
 
-def _runtime_history_best(task: dict):
-    h = load_runtime_history()
+def _runtime_history_best(task: dict, runtime_history: Optional[dict] = None,
+                          closest_index: Optional[list[dict]] = None):
+    h = runtime_history if runtime_history is not None else load_runtime_history()
     for key, kind, _payload in _task_runtime_keys(task):
         rec = h.get(key)
         if isinstance(rec, dict) and int(rec.get("total_s") or 0) > 0:
             return rec, key, kind
-    rec, key = _runtime_history_closest(task, h)
+    rec, key = _runtime_history_closest(task, h, closest_index=closest_index)
     if rec:
         return rec, key, "closest"
     return None, None, None
 
 
-def _runtime_total_history_s(task: dict) -> int:
-    rec, _key, _kind = _runtime_history_best(task)
+def _runtime_total_history_s(task: dict, runtime_history: Optional[dict] = None,
+                             closest_index: Optional[list[dict]] = None) -> int:
+    rec, _key, _kind = _runtime_history_best(
+        task,
+        runtime_history=runtime_history,
+        closest_index=closest_index,
+    )
     return int(rec.get("total_s") or 0) if rec else 0
 
 
-def _history_eta_for_task(task: dict) -> tuple[int, str]:
+def _history_eta_for_task(task: dict, runtime_history: Optional[dict] = None,
+                          closest_index: Optional[list[dict]] = None) -> tuple[int, str]:
     """Return a full-run ETA estimate for a task that has not started yet.
 
     Running tasks get live log-tail ETA from _refresh_eta_from_logs. Queued and
@@ -11627,7 +11945,11 @@ def _history_eta_for_task(task: dict) -> tuple[int, str]:
     total_s = int(task.get("runtime_total_s_est") or 0)
     if total_s > 0:
         return total_s, task.get("runtime_est_source") or "runtime_profile"
-    total_s = _runtime_total_history_s(task)
+    total_s = _runtime_total_history_s(
+        task,
+        runtime_history=runtime_history,
+        closest_index=closest_index,
+    )
     if total_s > 0:
         return total_s, "runtime_history"
     sig = task.get("signature") or ""
@@ -11649,6 +11971,8 @@ def _seed_pending_eta_from_history(state: dict) -> int:
     leftover remaining time from a killed process.
     """
     changed = 0
+    runtime_history_cache = load_runtime_history()
+    runtime_closest_index = _runtime_history_closest_index(runtime_history_cache)
     for t in state.get("tasks", []):
         if t.get("status") not in ("queued", "launching"):
             continue
@@ -11658,7 +11982,11 @@ def _seed_pending_eta_from_history(state: dict) -> int:
                 changed += 1
         if int(t.get("eta_seconds") or 0) > 0:
             continue
-        eta, source = _history_eta_for_task(t)
+        eta, source = _history_eta_for_task(
+            t,
+            runtime_history=runtime_history_cache,
+            closest_index=runtime_closest_index,
+        )
         if eta <= 0:
             continue
         t["eta_seconds"] = int(eta)
@@ -15107,9 +15435,42 @@ def _rsync_path_for_node(node: str, path: str) -> str:
     return f"{_ssh_target_for_node(node)}:{path}"
 
 
+def _configured_relay_nodes(info: dict) -> list:
+    relays = _route_list(info.get("relay_nodes"))
+    if relays:
+        return relays
+    return _route_list(info.get("relay_node"))
+
+
+def _relay_node_reachable(relay_node: str) -> bool:
+    if relay_node not in NODES:
+        return False
+    try:
+        rc, _, _ = run_on(relay_node, "true", timeout=8, check=False)
+        return rc == 0
+    except Exception:
+        return False
+
+
 def _relay_node_for_node(node: str) -> Optional[str]:
-    relay = (NODES.get(node, {}) or {}).get("relay_node")
-    return str(relay) if relay else None
+    info = NODES.get(node, {}) or {}
+    relays = _configured_relay_nodes(info)
+    if not relays:
+        return None
+    if len(relays) == 1:
+        return str(relays[0])
+    now = time.time()
+    cached = _RELAY_NODE_CACHE.get(node)
+    if cached:
+        relay, ts = cached
+        if relay in relays and now - float(ts or 0) <= SSH_ROUTE_CACHE_TTL_S:
+            return str(relay)
+    for relay in relays:
+        if _relay_node_reachable(relay):
+            _RELAY_NODE_CACHE[node] = (relay, now)
+            return str(relay)
+    _RELAY_NODE_CACHE.pop(node, None)
+    return str(relays[0])
 
 
 def _relay_path_for_node(node: str, remote_path: str) -> str:
@@ -17082,13 +17443,64 @@ def _do_dispatch(state, nodes, target_task_ids: Optional[set] = None):
         })
     return events, len(queued)
 
+_NODE_SUMMARY_HIDDEN_NAMES = {"zhengliang-hpc"}
+
+
+def _node_display_name(name: str) -> str:
+    if name == "node007-direct":
+        return "node007"
+    return name
+
+
+def _node_summary_visible(n: dict) -> bool:
+    return str(n.get("name") or "") not in _NODE_SUMMARY_HIDDEN_NAMES
+
+
+def _node_summary_sort_key(n: dict) -> tuple:
+    name = str(n.get("name") or "")
+    display = _node_display_name(name)
+    gpu_order = {
+        "local": 0,
+        "jtl110gpu": 1,
+        "jtl110gpu2": 2,
+        "jtl311linux": 3,
+        "node007-direct": 4,
+    }
+    cpu_order = {
+        "jtl110cpu": 0,
+        "jtl110cpu2": 1,
+        "node001": 10,
+        "node002": 11,
+        "node003": 12,
+        "node004": 13,
+        "node005": 14,
+        "node006": 15,
+    }
+    if name in gpu_order:
+        return (0, gpu_order[name], display)
+    if name in cpu_order:
+        return (1, cpu_order[name], display)
+    if n.get("gpus"):
+        return (0, 50, display)
+    if name.startswith("node"):
+        return (1, 50, display)
+    if n.get("slurm_cluster"):
+        return (9, 0, display)
+    return (8, 0, display)
+
+
+def _iter_node_summary_nodes(nodes):
+    return sorted((n for n in nodes if _node_summary_visible(n)), key=_node_summary_sort_key)
+
+
 def _print_node_summary(nodes):
     print("=== nodes ===")
-    for n in nodes:
+    for n in _iter_node_summary_nodes(nodes):
+        display_name = _node_display_name(str(n.get("name") or "?"))
         if not n["alive"]:
-            print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
+            print(f"  {display_name:11s} DOWN ({n.get('error','?')})"); continue
         if n.get("slurm_cluster"):
-            print(f"  {n['name']:11s} {_format_slurm_cluster_summary(n)}")
+            print(f"  {display_name:11s} {_format_slurm_cluster_summary(n)}")
             continue
         gpu_parts = []
         for g in n["gpus"]:
@@ -17116,7 +17528,7 @@ def _print_node_summary(nodes):
         cpu_str = f"cpu={n.get('free_cpu', '?')}/{n.get('total_cpu', '?')}{cpu_tail}"
         ram_str = _format_node_ram_summary(n)
         claim_str = _format_node_claim_summary(n)
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
+        print(f"  {display_name:11s} {gpu_str}  {cpu_str}  {ram_str}{claim_str}")
 
 def _format_task_location(task):
     if not task.get("node"):
@@ -18106,7 +18518,11 @@ _TASK_EVENT_PAYLOAD_KEYS = (
     "parent_id", "retry_count", "requeued_as", "launch_fail_count",
     "failure_category", "last_block_reason", "notified_done", "notified_launch",
     "cancelled_by", "cancel_reason", "last_killed_by", "last_kill_action",
-    "last_kill_reason",
+    "last_kill_reason", "node_probe_state", "probe_unknown_since",
+    "last_probe_unknown_at", "last_probe_unknown_duration_s",
+    "last_probe_unknown_count", "last_probe_unknown_reason",
+    "last_reconnected_at", "last_status_sync_at", "last_status_sync_status",
+    "last_status_sync_reason",
 )
 
 
@@ -19453,7 +19869,11 @@ def _compact_status_task(task: dict) -> dict:
         "last_kill_action", "last_kill_reason", "launch_error",
         "placement_algorithm", "placement_algorithm_config",
         "placement_algorithm_audit", "require_node", "require_gpu_idx",
-        "allow_gpu_over_one_third",
+        "allow_gpu_over_one_third", "node_probe_state", "probe_unknown_since",
+        "last_probe_unknown_at", "last_probe_unknown_duration_s",
+        "last_probe_unknown_count", "last_probe_unknown_reason",
+        "last_reconnected_at", "last_status_sync_at", "last_status_sync_status",
+        "last_status_sync_reason",
     )
     return {k: task.get(k) for k in keys if k in task}
 
@@ -19486,9 +19906,10 @@ def cmd_status(args):
     node_loads = compute_node_load_seconds(state)
     nodes = probe_all()
     _apply_cpu_slot_accounting_to_nodes(state, nodes)
-    for n in nodes:
+    for n in _iter_node_summary_nodes(nodes):
+        display_name = _node_display_name(str(n.get("name") or "?"))
         if not n["alive"]:
-            print(f"  {n['name']:11s} DOWN ({n.get('error','?')})"); continue
+            print(f"  {display_name:11s} DOWN ({n.get('error','?')})"); continue
         if n.get("slurm_cluster"):
             etaload = node_loads.get(n["name"], 0)
             if etaload <= 0:
@@ -19499,7 +19920,7 @@ def cmd_status(args):
                 etaload_str = f"  eta_load={etaload/3600:.1f}h"
             else:
                 etaload_str = f"  eta_load={etaload/86400:.1f}d"
-            print(f"  {n['name']:11s} {_format_slurm_cluster_summary(n)}{etaload_str}")
+            print(f"  {display_name:11s} {_format_slurm_cluster_summary(n)}{etaload_str}")
             continue
         gpu_parts = []
         for g in n["gpus"]:
@@ -19525,7 +19946,7 @@ def cmd_status(args):
             etaload_str = f"  eta_load={etaload/86400:.1f}d"
         claim_str = _format_node_claim_summary(n)
         ram_str = _format_node_ram_summary(n)
-        print(f"  {n['name']:11s} {gpu_str}  {cpu_str}  {ram_str}{etaload_str}{claim_str}")
+        print(f"  {display_name:11s} {gpu_str}  {cpu_str}  {ram_str}{etaload_str}{claim_str}")
     print("\n=== tasks ===")
     show_done = args.all
     rows = [

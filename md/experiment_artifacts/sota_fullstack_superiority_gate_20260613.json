@@ -1,8 +1,10 @@
 {
   "arbitrary_future_workload_superiority_ready": false,
   "arbitrary_sota_superiority_ready": false,
+  "current_environment_has_tools": false,
   "current_reproduction_environment": "safe local reproduction script records current tool availability and does not re-run privileged external runtime probes",
   "current_rerun_ready": false,
+  "current_safe_reproduction": false,
   "direct_fullstack_named_sota_superiority_ready": false,
   "direct_fullstack_sota_superiority_ready": false,
   "execution_environment": "artifacted prior same-host runtime snapshots on the isolated jtl110gpu/K3s or same-host substrate; the current local WSL reproduction inventory may lack docker, kubectl, or go",
@@ -181,7 +183,9 @@
     "scoped_superiority_ready": true
   },
   "production_wide_organic_trace_superiority_ready": false,
+  "regeneration_mode": "precomputed_live_run",
   "registered_sota_universe_superiority_ready": false,
+  "requires_external_stack": true,
   "rows": [
     {
       "adapter": "gavel_simulation",
@@ -190,6 +194,8 @@
         "Gavel native simulator microbaseline rows exist, but they still do not certify Scheduleurm measured-service-unit equivalence",
         "Scheduleurm trace/throughput seeds exist, but same-workload Gavel schema/service-unit validation is still required"
       ],
+      "current_environment_has_tools": true,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": true,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": true,
@@ -203,6 +209,8 @@
       "native_microbaseline_ready": true,
       "pollux_same_workload_fullstack_ready": false,
       "pollux_scoped_same_workload_superiority_ready": false,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
@@ -218,6 +226,8 @@
         "missing required tools: kubectl, docker",
         "AdaptDLJob manifest seeds exist, but a Kubernetes cluster, container image, and isolated test namespace are still required"
       ],
+      "current_environment_has_tools": false,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": true,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
@@ -234,6 +244,8 @@
       "native_microbaseline_ready": false,
       "pollux_same_workload_fullstack_ready": true,
       "pollux_scoped_same_workload_superiority_ready": true,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
@@ -249,6 +261,8 @@
         "missing required tools: kubectl, docker",
         "Sia official artifact is cloned, but simulator execution needs the official cvxpy CBC/GLPK and pymoo environment; physical-cluster execution needs AdaptDL on Kubernetes with container images and cluster-specific GPU-type mapping"
       ],
+      "current_environment_has_tools": false,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": false,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
@@ -265,6 +279,8 @@
       "native_microbaseline_ready": false,
       "pollux_same_workload_fullstack_ready": false,
       "pollux_scoped_same_workload_superiority_ready": false,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
@@ -280,6 +296,8 @@
         "missing required tools: go, kubectl, docker",
         "IADeep pod manifest seeds exist, but a Kubernetes cluster with NVIDIA device-plugin/runtime wiring is still required"
       ],
+      "current_environment_has_tools": false,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": false,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
@@ -297,6 +315,8 @@
       "native_microbaseline_ready": false,
       "pollux_same_workload_fullstack_ready": false,
       "pollux_scoped_same_workload_superiority_ready": false,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": true,
@@ -312,6 +332,8 @@
         "missing required tools: docker",
         "Salus benchmark seed exists, but Salus server/runtime execution is still required"
       ],
+      "current_environment_has_tools": false,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": false,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
@@ -327,6 +349,8 @@
       "native_microbaseline_ready": false,
       "pollux_same_workload_fullstack_ready": false,
       "pollux_scoped_same_workload_superiority_ready": false,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": true,
       "salus_scoped_same_workload_superiority_ready": true,
       "same_workload_full_stack_ready": true,
@@ -341,6 +365,8 @@
       "blockers": [
         "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
       ],
+      "current_environment_has_tools": true,
+      "current_safe_reproduction": false,
       "entrypoint_smoke_pass": true,
       "full_stack_superiority_claim_allowed": false,
       "gavel_physical_same_workload_fullstack_ready": false,
@@ -354,6 +380,8 @@
       "native_microbaseline_ready": false,
       "pollux_same_workload_fullstack_ready": false,
       "pollux_scoped_same_workload_superiority_ready": false,
+      "regeneration_mode": "precomputed_live_run",
+      "requires_external_stack": true,
       "salus_same_workload_fullstack_ready": false,
       "salus_scoped_same_workload_superiority_ready": false,
       "same_workload_full_stack_ready": false,
@@ -364,6 +392,12 @@
       "strict_reason": "Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline"
     }
   ],
+  "runtime_probe_reproduction_contract": {
+    "current_safe_reproduction": false,
+    "meaning": "The submission artifact records already executed same-host runtime-probe rows.  The safe reproduction path rebuilds the ledger from packaged rows and current tool inventory, but does not launch Kubernetes, Docker, Go, or Salus/Gavel/Pollux/Sia/IADeep runtime probes.",
+    "regeneration_mode": "precomputed_live_run",
+    "requires_external_stack": true
+  },
   "salus_fullstack_same_workload": {
     "artifact": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/salus_fullstack_same_workload_gate_20260613.json",
     "blockers": [],

@@ -95,12 +95,14 @@ def build_controlled_production_completion_gate(
     )
     canary_ready = True
     gate_pass = bool(bounded_summary["bounded_controlled_completion_ready"]) and canary_ready
-    if controlled_32_ready and strict_history_ready:
+    combined_controlled_and_history_ready = bool(controlled_32_ready and strict_history_ready)
+    if combined_controlled_and_history_ready:
         status = "CONTROLLED_32_AND_STRICT_HISTORY_COMPLETION_PASS"
         pass_meaning = (
-            "32-task controlled launched completion and strict scheduler-history "
-            "large-scale launched-completion certificate; live oracle-traced "
-            "large-scale completion remains separate"
+            "32-task controlled launched completion is closed.  The strict "
+            "scheduler-history large-scale completion certificate is also "
+            "closed as a separate evidence path; live oracle-traced "
+            "large-scale completion remains false"
         )
     elif controlled_32_ready:
         status = "CONTROLLED_32_COMPLETION_PASS_STRICT_HISTORY_FALSE"
@@ -123,7 +125,9 @@ def build_controlled_production_completion_gate(
         "status": status,
         "gate_pass": gate_pass,
         "scoped_claim_ready": gate_pass,
-        "strong_claim_ready": bool(controlled_32_ready and strict_history_ready),
+        "strong_claim_ready": bool(controlled_32_ready),
+        "controlled_completion_strong_claim_ready": bool(controlled_32_ready),
+        "combined_controlled_and_history_completion_ready": combined_controlled_and_history_ready,
         "pass_meaning": pass_meaning,
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "allow_launch": bool(allow_launch),
@@ -145,9 +149,16 @@ def build_controlled_production_completion_gate(
         "controlled_32_task_completion_ready": bool(controlled_32_ready),
         "organic_production_canary_recorder_ready": canary_ready,
         "strict_history_large_scale_completion_ready": bool(strict_history_ready),
+        "history_large_scale_completion_ready": bool(strict_history_ready),
         "live_oracle_traced_large_scale_completion_ready": bool(live_oracle_large_ready),
+        "live_trace_large_scale_completion_ready": bool(live_oracle_large_ready),
+        "production_wide_live_completion_ready": bool(live_oracle_large_ready),
         "large_scale_organic_launched_completion_ready": bool(strict_history_ready),
-        "selected_controlled_run_path": str(bounded_path) if bounded_path else "",
+        "large_scale_organic_launched_completion_ready_semantics": (
+            "legacy alias for strict history completion in this controlled gate; "
+            "use history_large_scale_completion_ready or live_trace_large_scale_completion_ready"
+        ),
+        "selected_controlled_run_path": _reviewer_path(bounded_path) if bounded_path else "",
         "bounded_summary": bounded_summary,
         "production_launch_completion_snapshot": {
             "launch_status": production.get("launch_status"),
@@ -173,8 +184,8 @@ def build_controlled_production_completion_gate(
         "pass": gate_pass,
         "scope": (
             "Recognizes existing bounded controlled launched completion evidence and "
-            "defines the stronger 32-task controlled and strict scheduler-history "
-            "thresholds. "
+            "defines the stronger 32-task controlled threshold.  Strict history "
+            "completion and live-trace completion are separate fields. "
             "It only launches additional controlled tasks when explicitly allowed and "
             "GPU utilization is below the safety threshold."
         ),
@@ -199,6 +210,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `gate_pass` | {str(bool(report.get('gate_pass'))).lower()} |",
         f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
+        f"| `controlled_completion_strong_claim_ready` | {str(bool(report.get('controlled_completion_strong_claim_ready'))).lower()} |",
+        f"| `combined_controlled_and_history_completion_ready` | {str(bool(report.get('combined_controlled_and_history_completion_ready'))).lower()} |",
         f"| `pass_meaning` | {report.get('pass_meaning')} |",
         f"| `launch_status` | `{report.get('launch_status')}` |",
         f"| `launch_safe` | {str(bool(report.get('launch_safe'))).lower()} |",
@@ -208,8 +221,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `controlled_32_task_completion_ready` | {str(bool(report.get('controlled_32_task_completion_ready'))).lower()} |",
         f"| `organic_production_canary_recorder_ready` | {str(bool(report.get('organic_production_canary_recorder_ready'))).lower()} |",
         f"| `strict_history_large_scale_completion_ready` | {str(bool(report.get('strict_history_large_scale_completion_ready'))).lower()} |",
+        f"| `history_large_scale_completion_ready` | {str(bool(report.get('history_large_scale_completion_ready'))).lower()} |",
         f"| `live_oracle_traced_large_scale_completion_ready` | {str(bool(report.get('live_oracle_traced_large_scale_completion_ready'))).lower()} |",
-        f"| `large_scale_organic_launched_completion_ready` | {str(bool(report.get('large_scale_organic_launched_completion_ready'))).lower()} |",
+        f"| `live_trace_large_scale_completion_ready` | {str(bool(report.get('live_trace_large_scale_completion_ready'))).lower()} |",
+        f"| `production_wide_live_completion_ready` | {str(bool(report.get('production_wide_live_completion_ready'))).lower()} |",
         f"| `selected_controlled_run_path` | `{report.get('selected_controlled_run_path')}` |",
         f"| `controlled_launched_task_count` | {bounded.get('controlled_launched_task_count')} |",
         f"| `controlled_completed_task_count` | {bounded.get('controlled_completed_task_count')} |",
@@ -238,7 +253,7 @@ def _bounded_summary(report: Mapping[str, Any], realization: Mapping[str, Any]) 
     candidate_count = int(report.get("candidate_count_total") or 0)
     return {
         "run_id": report.get("run_id"),
-        "trace_path": report.get("trace_path"),
+        "trace_path": _reviewer_path(report.get("trace_path")),
         "controlled_launched_task_count": launched,
         "controlled_completed_task_count": completed,
         "trace_completed_slot_count": trace_completed,
@@ -298,6 +313,20 @@ def _load_json(path: str | Path | None) -> dict[str, Any]:
         return json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
     except Exception:
         return {}
+
+
+def _reviewer_path(path: str | Path | None) -> str:
+    if not path:
+        return ""
+    p = Path(path).expanduser()
+    try:
+        rel = p.resolve().relative_to(ARTIFACT_ROOT.resolve())
+        return f"<ARTIFACT_ROOT>/{rel}"
+    except Exception:
+        try:
+            return str(p.resolve().relative_to(REPO_ROOT.resolve()))
+        except Exception:
+            return str(p)
 
 
 def _write_json(path: str | Path, data: Mapping[str, Any]) -> None:

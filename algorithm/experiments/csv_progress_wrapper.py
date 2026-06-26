@@ -12,6 +12,36 @@ import time
 from typing import Sequence
 
 
+def _format_hms(seconds: float) -> str:
+    total = max(0, int(round(float(seconds))))
+    h, rem = divmod(total, 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
+
+
+def _tqdm_progress_line(
+    *,
+    unit: str,
+    current: int,
+    total: int,
+    elapsed_s: float,
+    rate: float,
+) -> str | None:
+    if current < 0 or total <= 0 or current > total or rate <= 0:
+        return None
+    remaining_s = max(0.0, float(total - current) / max(float(rate), 1e-12))
+    pct = 100.0 * float(current) / float(total)
+    filled = int(round(10.0 * float(current) / float(total)))
+    bar = "#" * max(0, min(10, filled)) + "-" * max(0, 10 - min(10, filled))
+    return (
+        f"ScheduleurmTqdm {unit}: {pct:5.1f}%|{bar}| "
+        f"{current}/{total} [{_format_hms(elapsed_s)}<{_format_hms(remaining_s)}, "
+        f"{float(rate):.3g}{unit}/s]"
+    )
+
+
 def _count_csv_units(patterns: Sequence[str]) -> int:
     total = 0
     seen: set[str] = set()
@@ -37,16 +67,16 @@ def _progress_monitor(
     unit: str,
     total: int,
     poll_s: float,
+    start_time: float,
     stop: threading.Event,
 ) -> None:
-    start = time.monotonic()
     last_current = -1
     while not stop.wait(max(0.2, float(poll_s))):
         current = _count_csv_units(patterns)
         if current <= last_current:
             continue
         last_current = current
-        elapsed = max(1e-9, time.monotonic() - start)
+        elapsed = max(1e-9, time.monotonic() - float(start_time))
         rate = current / elapsed
         parts = [
             "ScheduleurmProgress",
@@ -61,6 +91,15 @@ def _progress_monitor(
             parts.append(f"seconds_per_{unit}={1.0 / rate:.6g}")
         parts.append("source=csv_poll")
         print(" ".join(parts), flush=True)
+        tqdm_line = _tqdm_progress_line(
+            unit=unit,
+            current=int(current),
+            total=int(total),
+            elapsed_s=elapsed,
+            rate=rate,
+        )
+        if tqdm_line:
+            print(tqdm_line, flush=True)
 
 
 def _child_return_code_for_shell(returncode: int) -> int:
@@ -85,6 +124,7 @@ def run_wrapped_command(
     env = dict(os.environ)
     env.setdefault("PYTHONUNBUFFERED", "1")
     stop = threading.Event()
+    start_time = time.monotonic()
     monitor = threading.Thread(
         target=_progress_monitor,
         kwargs={
@@ -92,6 +132,7 @@ def run_wrapped_command(
             "unit": unit,
             "total": int(total),
             "poll_s": float(poll_s),
+            "start_time": start_time,
             "stop": stop,
         },
         daemon=True,
@@ -122,6 +163,17 @@ def run_wrapped_command(
                 "source=csv_poll_final",
                 flush=True,
             )
+            elapsed = max(1e-9, time.monotonic() - start_time)
+            rate = float(current) / elapsed
+            tqdm_line = _tqdm_progress_line(
+                unit=unit,
+                current=int(current),
+                total=int(total),
+                elapsed_s=elapsed,
+                rate=rate,
+            )
+            if tqdm_line:
+                print(tqdm_line, flush=True)
         return rc
 
 

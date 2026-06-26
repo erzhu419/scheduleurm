@@ -32,8 +32,8 @@ def build_sota_strict_dominance_frontier(
     for row in gate.get("scenarios") or []:
         if not row.get("replayable", True):
             continue
-        ms_ratio = float(row.get("pareto_slack_union_vs_sota_best_makespan") or 0.0)
-        flow_ratio = float(row.get("pareto_slack_union_vs_sota_best_mean_flow") or 0.0)
+        ms_ratio = _candidate_vs_sota_best_makespan(row)
+        flow_ratio = _candidate_vs_sota_best_mean_flow(row)
         if ms_ratio >= 1.0 - strict_eps and flow_ratio >= 1.0 - strict_eps:
             continue
         frontier.append(_frontier_row(row, policy_rows))
@@ -124,9 +124,10 @@ def _frontier_row(row: Mapping[str, Any], policy_rows: list[Mapping[str, Any]]) 
     return {
         "taskset": taskset,
         "arrival_mode": arrival,
-        "makespan_ratio": float(row.get("pareto_slack_union_vs_sota_best_makespan") or 0.0),
-        "mean_flow_ratio": float(row.get("pareto_slack_union_vs_sota_best_mean_flow") or 0.0),
+        "makespan_ratio": _candidate_vs_sota_best_makespan(row),
+        "mean_flow_ratio": _candidate_vs_sota_best_mean_flow(row),
         "pareto_slack_profiles": row.get("pareto_slack_union_profiles") or {},
+        "candidate_profiles": row.get("candidate_profiles") or {},
         "best_makespan_policy": best_ms.get("policy"),
         "best_makespan_s": float(best_ms.get("makespan_s") or 0.0),
         "best_makespan_profiles": best_ms.get("profiles") or {},
@@ -136,6 +137,18 @@ def _frontier_row(row: Mapping[str, Any], policy_rows: list[Mapping[str, Any]]) 
         "diagnosis": diagnosis,
         "required_action": required,
     }
+
+
+def _candidate_vs_sota_best_makespan(row: Mapping[str, Any]) -> float:
+    candidate = float(row.get("candidate_makespan_s") or 0.0)
+    best = float(row.get("best_sota_makespan_s") or 0.0)
+    return best / candidate if candidate > 0.0 else 0.0
+
+
+def _candidate_vs_sota_best_mean_flow(row: Mapping[str, Any]) -> float:
+    candidate = float(row.get("candidate_mean_flow_s") or 0.0)
+    best = float(row.get("best_sota_mean_flow_s") or 0.0)
+    return best / candidate if candidate > 0.0 else 0.0
 
 
 def _diagnose(

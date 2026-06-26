@@ -143,6 +143,10 @@ def build_gavel_physical_same_workload_gate(
     )
     report = {
         "gate": "gavel_physical_same_workload_gate",
+        "regeneration_mode": "precomputed_live_run",
+        "current_safe_reproduction": False,
+        "requires_external_stack": True,
+        "current_environment_has_tools": False,
         "reference_root": str(reference_root),
         "run_root": str(run_root),
         "copied_repo": str(copied_repo),
@@ -203,6 +207,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "| Quantity | Value |",
         "|---|---:|",
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
+        f"| `regeneration_mode` | `{report.get('regeneration_mode')}` |",
+        f"| `current_safe_reproduction` | {str(bool(report.get('current_safe_reproduction'))).lower()} |",
+        f"| `requires_external_stack` | {str(bool(report.get('requires_external_stack'))).lower()} |",
+        f"| `current_environment_has_tools` | {str(bool(report.get('current_environment_has_tools'))).lower()} |",
         f"| `same_service_scale_ready` | {str(bool(report.get('same_service_scale_ready'))).lower()} |",
         f"| `scoped_gavel_physical_fullstack_ready` | {str(bool(report.get('scoped_gavel_physical_fullstack_ready'))).lower()} |",
         f"| `scoped_gavel_physical_same_workload_superiority_ready` | {str(bool(report.get('scoped_gavel_physical_same_workload_superiority_ready'))).lower()} |",

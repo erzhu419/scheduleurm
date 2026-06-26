@@ -39,6 +39,7 @@ from simulation.trace_benchmark import (
     replay_trace_suite,
     _assign_to_resources,
     _replay_resource_jobs,
+    _trace_action_policy_for,
 )
 
 from .adaptive_trace_policy import (
@@ -247,7 +248,19 @@ def replay_trace_with_backlog(
         )
     rng = random.Random(seed)
     specs = {spec.workload_key: spec for spec in trace.workload_specs()}
-    profiles = {key: policy.select_profile(cache, spec).profile for key, spec in specs.items()}
+    workload_policies = {
+        key: _trace_action_policy_for(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            arrival_mode=trace.arrival_mode,
+        )
+        for key, spec in specs.items()
+    }
+    profiles = {
+        key: workload_policies[key].select_profile(cache, spec).profile
+        for key, spec in specs.items()
+    }
     profile_counts: dict[str, dict[int, int]] = {}
     completions: dict[str, float] = {}
     grouped: dict[str, list[TraceJob]] = {}
@@ -255,6 +268,7 @@ def replay_trace_with_backlog(
         grouped.setdefault(job.workload_key, []).append(job)
     for key, jobs in grouped.items():
         per_resource = _assign_to_resources(jobs, specs[key].resource_count)
+        effective_policy = workload_policies[key]
         for resource_jobs in per_resource:
             completions.update(
                 _replay_resource_jobs(
@@ -263,7 +277,7 @@ def replay_trace_with_backlog(
                     jobs=resource_jobs,
                     target_profile=profiles[key],
                     rng=rng,
-                    policy=policy,
+                    policy=effective_policy,
                     spec=specs[key],
                     profile_counter=profile_counts.setdefault(key, {}),
                 )
@@ -1417,23 +1431,24 @@ def _ablation_policies(
     cache: ServiceRateCache,
     specs: Sequence[WorkloadSpec],
 ) -> tuple[ReplayPolicy | AdaptiveMaxWeightReplayPolicy, ...]:
-    candidate = calibrated_adaptive_maxweight_policy()
+    adaptive = calibrated_adaptive_maxweight_policy()
+    candidate = theorem_online_candidate_policy(cache, specs)
     sweetspot = _renamed_replay_policy(
         calibrated_scalar_candidate_policy(cache, list(specs)),
         "ablation_sweetspot_scalar_hook",
     )
     no_profile_penalty = AdaptiveMaxWeightReplayPolicy(
         name="ablation_robust_no_profile_penalty",
-        support_regret_tolerance=candidate.support_regret_tolerance,
+        support_regret_tolerance=adaptive.support_regret_tolerance,
         profile_penalty_fraction=0.0,
-        minimum_backlog_weight=candidate.minimum_backlog_weight,
-        tie_break=candidate.tie_break,
+        minimum_backlog_weight=adaptive.minimum_backlog_weight,
+        tie_break=adaptive.tie_break,
     )
     high_profile_tiebreak = AdaptiveMaxWeightReplayPolicy(
         name="ablation_robust_high_profile_tiebreak",
-        support_regret_tolerance=candidate.support_regret_tolerance,
-        profile_penalty_fraction=candidate.profile_penalty_fraction,
-        minimum_backlog_weight=candidate.minimum_backlog_weight,
+        support_regret_tolerance=adaptive.support_regret_tolerance,
+        profile_penalty_fraction=adaptive.profile_penalty_fraction,
+        minimum_backlog_weight=adaptive.minimum_backlog_weight,
         tie_break="high_profile",
     )
     return (
@@ -1463,6 +1478,7 @@ def _ablation_policies(
         ),
         no_profile_penalty,
         high_profile_tiebreak,
+        adaptive,
         ReplayPolicy(
             name="ablation_statewise_interference_guard",
             calibrated=True,
@@ -1530,7 +1546,12 @@ def _ablation_coverage_rows() -> list[dict[str, str]]:
         {
             "reviewer_axis": "full robust lower-service scorer",
             "policy": "calibrated_adaptive_maxweight_penalty",
-            "role": "queue-adaptive robust lower-service MaxWeight with bounded profile penalty",
+            "role": "queue-adaptive robust lower-service MaxWeight before SOTA-action trajectory union",
+        },
+        {
+            "reviewer_axis": "SOTA-action union selector",
+            "policy": "scheduleurm_sota_union_online_pareto_slack",
+            "role": "full theorem-facing selector over Scheduleurm and SOTA-style trajectory actions",
         },
     ]
 
@@ -1560,7 +1581,7 @@ def theorem_online_candidate_policy(
     return sota_candidate_union_policy(
         cache,
         list(specs),
-        selection_objective="pareto_slack",
+        selection_objective="online_pareto_slack",
     )
 
 

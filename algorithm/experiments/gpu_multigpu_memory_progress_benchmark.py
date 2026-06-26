@@ -8,7 +8,25 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 import time
+
+
+def _progress(iterable, *, total: int, desc: str, unit: str):
+    try:
+        from tqdm import tqdm
+        return tqdm(
+            iterable,
+            total=total,
+            desc=desc,
+            unit=unit,
+            mininterval=0.5,
+            dynamic_ncols=False,
+            ascii=True,
+            file=sys.stdout,
+        )
+    except Exception:
+        return iterable
 
 
 def _parse_devices(raw: str, count: int) -> list[int]:
@@ -96,7 +114,7 @@ def main() -> int:
     window_start = start
     window_steps = 0
     checksum = 0.0
-    for step in range(1, steps + 1):
+    for step in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
         checksum += _step(mats)
         window_steps += 1
         if step == steps or step % max(1, int(args.log_interval)) == 0:

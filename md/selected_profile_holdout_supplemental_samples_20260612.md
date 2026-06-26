@@ -2,10 +2,10 @@
 
 | Quantity | Value |
 |---|---:|
-| `row_count` | 87 |
-| `rate_count` | 921 |
-| `added_row_count` | 1 |
-| `added_rate_count` | 6 |
+| `row_count` | 96 |
+| `rate_count` | 1065 |
+| `added_row_count` | 9 |
+| `added_rate_count` | 144 |
 
 | Workload | Profile | Context | Rates | Source |
 |---|---:|---|---:|---|
@@ -96,3 +96,12 @@
 | `gpu_llm_distilgpt2` | 10 | `all` | 20 | `/home/erzhu419/.claude/scheduler/experiments/runs/llm_torch_distilgpt2_jtl110gpu_profile10_lcb_20260612_012/reports/profile_10_per_gpu_summary.json` |
 | `gpu_cnn_torch_resnet50` | 3 | `selected` | 6 | `/home/erzhu419/.claude/scheduler/experiments/runs/remote_cnn_resnet50_jtl110gpu_p3_20260613/reports/profile_3_per_gpu_summary.json` |
 | `gpu_cnn_torch_resnet50` | 3 | `mixed` | 6 | `/home/erzhu419/.claude/scheduler/experiments/runs/remote_cnn_resnet50_jtl110gpu_p3_20260613/reports/profile_3_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_01/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_02/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_03/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_04/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_05/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_06/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_07/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_08/reports/profile_8_per_gpu_summary.json` |
+| `gpu_llm_distilgpt2` | 8 | `all` | 16 | `/home/erzhu419/.claude/scheduler/experiments/runs/jtl110gpu_lcb_llm_p8_all_20260626_09/reports/profile_8_per_gpu_summary.json` |

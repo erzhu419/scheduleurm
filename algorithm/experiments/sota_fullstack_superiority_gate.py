@@ -117,6 +117,10 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
         )
         rows.append({
             "adapter": adapter,
+            "regeneration_mode": "precomputed_live_run",
+            "current_safe_reproduction": False,
+            "requires_external_stack": True,
+            "current_environment_has_tools": not bool(row.get("missing_required_tools")),
             "entrypoint_smoke_pass": bool(row.get("entrypoint_smoke_pass")),
             "same_workload_full_stack_ready": full_stack_ready,
             "pollux_same_workload_fullstack_ready": bool(pollux_row_ready),
@@ -198,6 +202,10 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
         "gate_pass": True,
         "scoped_claim_ready": bool(named_same_host_runtime_probe_ready),
         "strong_claim_ready": False,
+        "regeneration_mode": "precomputed_live_run",
+        "current_safe_reproduction": False,
+        "requires_external_stack": True,
+        "current_environment_has_tools": not bool(missing_tools),
         "pass_meaning": (
             "named five same-host same-workload runtime probes with paired "
             "native-better rows are closed; direct full-stack SOTA superiority, "
@@ -312,6 +320,18 @@ def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
             "and does not re-run privileged external runtime probes"
         ),
         "current_rerun_ready": False,
+        "runtime_probe_reproduction_contract": {
+            "regeneration_mode": "precomputed_live_run",
+            "current_safe_reproduction": False,
+            "requires_external_stack": True,
+            "meaning": (
+                "The submission artifact records already executed same-host "
+                "runtime-probe rows.  The safe reproduction path rebuilds the "
+                "ledger from packaged rows and current tool inventory, but does "
+                "not launch Kubernetes, Docker, Go, or Salus/Gavel/Pollux/Sia/"
+                "IADeep runtime probes."
+            ),
+        },
         "pass": True,
         "scope": (
             "Scoped named-system same-host runtime-probe evidence for Gavel, "
@@ -336,6 +356,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `gate_pass` | {str(bool(report.get('gate_pass'))).lower()} |",
         f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
+        f"| `regeneration_mode` | `{report.get('regeneration_mode')}` |",
+        f"| `current_safe_reproduction` | {str(bool(report.get('current_safe_reproduction'))).lower()} |",
+        f"| `requires_external_stack` | {str(bool(report.get('requires_external_stack'))).lower()} |",
+        f"| `current_environment_has_tools` | {str(bool(report.get('current_environment_has_tools'))).lower()} |",
         f"| `pass_meaning` | {report.get('pass_meaning')} |",
         f"| `named_same_host_runtime_probe_ready` | {str(bool(report.get('named_same_host_runtime_probe_ready'))).lower()} |",
         f"| `named_same_host_runtime_probe_native_better` | {str(bool(report.get('named_same_host_runtime_probe_native_better'))).lower()} |",
@@ -377,13 +401,16 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         "## System Rows",
         "",
-        "| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
+        "| Adapter | Regeneration | Current safe rerun | Tools present | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ])
     for row in report.get("rows") or []:
         lines.append(
-                "| `{adapter}` | {smoke} | {micro} | {native_comp} | {gavel_physical_pair} | {resident} | {pollux_pair} | {sia_pair} | {iadeep_pair} | {salus_pair} | {ready} | {allowed} | {reason} |".format(
+                "| `{adapter}` | `{regen}` | {safe} | {tools} | {smoke} | {micro} | {native_comp} | {gavel_physical_pair} | {resident} | {pollux_pair} | {sia_pair} | {iadeep_pair} | {salus_pair} | {ready} | {allowed} | {reason} |".format(
                 adapter=row.get("adapter"),
+                regen=row.get("regeneration_mode"),
+                safe=str(bool(row.get("current_safe_reproduction"))).lower(),
+                tools=str(bool(row.get("current_environment_has_tools"))).lower(),
                 smoke=str(bool(row.get("entrypoint_smoke_pass"))).lower(),
                 micro=str(bool(row.get("native_microbaseline_ready"))).lower(),
                 native_comp=str(bool(row.get("gavel_same_workload_native_simulator_superiority_ready"))).lower(),

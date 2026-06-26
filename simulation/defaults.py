@@ -244,6 +244,7 @@ def build_default_cache() -> ServiceRateCache:
             total_units=80,
             node_bucket="node007-direct:4x12gb",
         )
+    _add_fresh_node007_eta_matrix(cache)
     _add_summary_dir(
         cache,
         RUN_ROOT / "module23_q00_light_control_local_profiles1_16_20260604_001" / "reports",
@@ -1423,7 +1424,7 @@ def calibrated_backlog_aware_policy() -> ReplayPolicy:
         backlog_reference_tasks=64,
         statewise_service_dominance_guard=True,
         guarded_resource_kinds=("gpu_heavy", "gpu_cnn", "gpu_llm", "hybrid_rl", "cpu_heavy"),
-        statewise_resource_kinds=("gpu_heavy", "gpu_llm"),
+        statewise_resource_kinds=("gpu_heavy",),
         statewise_workload_keys=(
             "gpu_cnn_torch_progress_stack",
             "hybrid_rl_resac_ant_node007_tqdm",
@@ -1529,6 +1530,7 @@ def _add_summary_dir(
     resource_kind: str,
     total_units: float,
     node_bucket: str,
+    force_replace: bool = False,
 ) -> None:
     paths = sorted(reports_dir.glob("profile_*_per_gpu_summary.json"))
     paths += sorted(reports_dir.glob("profile_*_per_resource_summary.json"))
@@ -1541,6 +1543,7 @@ def _add_summary_dir(
             resource_kind=resource_kind,
             total_units=total_units,
             node_bucket=node_bucket,
+            force_replace=force_replace,
         )
 
 
@@ -1553,6 +1556,7 @@ def _add_summary_file(
     resource_kind: str,
     total_units: float,
     node_bucket: str,
+    force_replace: bool = False,
 ) -> None:
     if not path.exists():
         return
@@ -1565,6 +1569,113 @@ def _add_summary_file(
             total_units=total_units,
             node_bucket=node_bucket,
         ):
-            cache.add(record)
+            cache.add(record, force_replace=force_replace)
     except (OSError, ValueError, json.JSONDecodeError):
         return
+
+
+def _add_fresh_node007_eta_matrix(cache: ServiceRateCache) -> None:
+    """Prefer task-native tqdm ETA probes collected on idle node007 GPUs.
+
+    These rows intentionally override older node007 replay rows for the same
+    workload/profile.  The old rows remain on disk for audit, but current replay
+    should use the fresh co-location service rates because they are measured from
+    each workload's own progress bar rather than legacy history ETA.
+    """
+
+    for workload_key in (
+        "gpu_cnn_torch_resnet50",
+        "gpu_llm_distilgpt2",
+    ):
+        cache.clear_capacity_boundaries(workload_key)
+
+    fresh_runs = (
+        (
+            "node007_eta_matrix_fresh_20260626_cnn_gpus1_3_v2",
+            "gpu_cnn_torch_progress_stack",
+            "torch_cnn_progress_stack_bench_v1",
+            "gpu_cnn",
+            "node007-direct:3x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_cnn_gpus1_3_v2",
+            "gpu_cnn_torch_resnet50",
+            "torch_resnet50_train_b32_i224_amp_fresh_tqdm_v2",
+            "gpu_cnn",
+            "node007-direct:3x12gb-resnet50-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_cnn_gpus0_3_p5_8",
+            "gpu_cnn_torch_progress_stack",
+            "torch_cnn_progress_stack_bench_v1",
+            "gpu_cnn",
+            "node007-direct:4x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_cnn_gpus0_3_p5_8",
+            "gpu_cnn_torch_resnet50",
+            "torch_resnet50_train_b32_i224_amp_fresh_tqdm_v2",
+            "gpu_cnn",
+            "node007-direct:4x12gb-resnet50-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_llm_gpus1_3",
+            "gpu_llm_torch_decoder_stack",
+            "torch_decoder_stack_bench_v1",
+            "gpu_llm",
+            "node007-direct:3x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_llm_gpus0_3_p5_8",
+            "gpu_llm_torch_decoder_stack",
+            "torch_decoder_stack_bench_v1",
+            "gpu_llm",
+            "node007-direct:4x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "jtl110gpu_fresh_20260626_llm_distilgpt2_direct_p1_11",
+            "gpu_llm_distilgpt2",
+            "torch_distilgpt2_forward_b2_s128_fp16_fresh_direct_tqdm_v2",
+            "gpu_llm",
+            "jtl110gpu:2x12gb-distilgpt2-fresh-direct-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_rl_gpus1_3",
+            "hybrid_rl_resac_ant",
+            "resac_ant_real_tqdm_stable_v1",
+            "hybrid_rl",
+            "node007-direct:3x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_rl_gpus0_3_p6_8",
+            "hybrid_rl_resac_ant",
+            "resac_ant_real_tqdm_stable_v1",
+            "hybrid_rl",
+            "node007-direct:4x12gb-fresh-tqdm-20260626-boundary",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_rl_gpus1_3",
+            "hybrid_rl_resac_ant_node007_tqdm",
+            "resac_ant_node007_tqdm_stable_v1",
+            "hybrid_rl",
+            "node007-direct:3x12gb-fresh-tqdm-20260626",
+        ),
+        (
+            "node007_eta_matrix_fresh_20260626_rl_gpus0_3_p6_8",
+            "hybrid_rl_resac_ant_node007_tqdm",
+            "resac_ant_node007_tqdm_stable_v1",
+            "hybrid_rl",
+            "node007-direct:4x12gb-fresh-tqdm-20260626-boundary",
+        ),
+    )
+    for run_name, workload_key, command_fingerprint, resource_kind, node_bucket in fresh_runs:
+        _add_summary_dir(
+            cache,
+            RUN_ROOT / run_name / "reports",
+            workload_key=workload_key,
+            command_fingerprint=command_fingerprint,
+            resource_kind=resource_kind,
+            total_units=80,
+            node_bucket=node_bucket,
+            force_replace=True,
+        )

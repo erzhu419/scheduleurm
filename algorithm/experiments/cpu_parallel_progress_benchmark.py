@@ -4,8 +4,26 @@ from __future__ import annotations
 import argparse
 import math
 import os
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
+
+
+def _progress(iterable, *, total: int, desc: str, unit: str):
+    try:
+        from tqdm import tqdm
+        return tqdm(
+            iterable,
+            total=total,
+            desc=desc,
+            unit=unit,
+            mininterval=0.5,
+            dynamic_ncols=False,
+            ascii=True,
+            file=sys.stdout,
+        )
+    except Exception:
+        return iterable
 
 
 def _cpu_chunk(items: int, salt: int) -> float:
@@ -39,7 +57,7 @@ def main() -> int:
     window_start = start
     window_steps = 0
     with ProcessPoolExecutor(max_workers=workers) as pool:
-        for step in range(1, steps + 1):
+        for step in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
             salts = [step * 1000003 + idx for idx in range(workers)]
             for value in pool.map(_cpu_chunk, [int(args.work_items)] * workers, salts):
                 checksum += value

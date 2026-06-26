@@ -523,7 +523,7 @@ def _deploy_progress_wrapper(node: str, raw_dir: Path, *, cwd: str, output_root:
             [
                 "scp",
                 *(str(local_dir / name) for name in files),
-                f"{node}:{REMOTE_PROGRESS_WRAPPER_DIR}/",
+                f"{_ssh_target(node)}:{REMOTE_PROGRESS_WRAPPER_DIR}/",
             ],
             raw_dir / "deploy_progress_wrapper_scp",
         )
@@ -586,7 +586,7 @@ def _run_remote(node: str, shell_cmd: str, prefix: Path, *, timeout_s: int) -> N
         if rc != 0:
             raise RuntimeError(f"remote command failed rc={rc} on {node}: {err.strip()[:300]}")
         return
-    _run(["ssh", node, shell_cmd], prefix)
+    _run(["ssh", _ssh_target(node), shell_cmd], prefix)
 
 
 def _run_remote_capture(node: str, shell_cmd: str, prefix: Path, *, timeout_s: int) -> tuple[int, str, str]:
@@ -603,7 +603,7 @@ def _run_remote_capture(node: str, shell_cmd: str, prefix: Path, *, timeout_s: i
         )
         return int(rc), out or "", err or ""
     proc = subprocess.run(
-        ["ssh", node, shell_cmd],
+        ["ssh", _ssh_target(node), shell_cmd],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -614,7 +614,7 @@ def _run_remote_capture(node: str, shell_cmd: str, prefix: Path, *, timeout_s: i
     prefix.with_suffix(".stdout").write_text(proc.stdout or "", encoding="utf-8")
     prefix.with_suffix(".stderr").write_text(proc.stderr or "", encoding="utf-8")
     prefix.with_suffix(".meta.json").write_text(
-        json.dumps({"cmd": ["ssh", node, shell_cmd], "returncode": proc.returncode}, indent=2, sort_keys=True) + "\n",
+        json.dumps({"cmd": ["ssh", _ssh_target(node), shell_cmd], "returncode": proc.returncode}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return int(proc.returncode), proc.stdout or "", proc.stderr or ""
@@ -662,7 +662,7 @@ def _remote_popen(node: str, shell_cmd: str, *, timeout_s: int) -> subprocess.Po
             stderr=subprocess.STDOUT,
         )
     return subprocess.Popen(
-        ["ssh", node, shell_cmd],
+        ["ssh", _ssh_target(node), shell_cmd],
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -696,7 +696,16 @@ def _rewrite_remote_command(node: str, shell_cmd: str) -> str:
     return rewritten
 
 
+def _ssh_target(node: str) -> str:
+    text = str(node)
+    if text.startswith("ssh:"):
+        return text.split(":", 1)[1]
+    return text
+
+
 def _scheduler_node(node: str) -> bool:
+    if str(node).startswith("ssh:"):
+        return False
     try:
         scheduler = _scheduler_module()
         return str(node) in getattr(scheduler, "NODES", {}) and not scheduler._node_is_windows(str(node))
@@ -798,7 +807,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
     build = sub.add_parser("build", help="Measure real workload selected profiles without using scheduler queue")
     build.add_argument("--run-id", required=True)
-    build.add_argument("--node", required=True)
+    build.add_argument(
+        "--node",
+        required=True,
+        help=(
+            "Remote node. Use ssh:<host> to force direct SSH and bypass "
+            "scheduler.run_on path/env rewrites for theorem-facing probes."
+        ),
+    )
     build.add_argument("--gpus", default="0,1")
     build.add_argument("--profiles", required=True)
     build.add_argument("--cwd", required=True)

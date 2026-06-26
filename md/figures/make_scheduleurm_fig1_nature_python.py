@@ -188,10 +188,19 @@ def chip(ax, x, y, text, fc, ec=None, w=None, h=0.055, fontsize=5.6):
 
 def draw_quadrants(ax):
     ax_setup(ax)
-    add_panel_label(ax, "a")
     ax.text(
         0.03,
-        0.97,
+        0.985,
+        "a",
+        ha="left",
+        va="top",
+        fontsize=8.5,
+        fontweight="bold",
+        color=COL["ink"],
+    )
+    ax.text(
+        0.065,
+        0.985,
         "Four workload regimes define the action fabric",
         ha="left",
         va="top",
@@ -199,22 +208,12 @@ def draw_quadrants(ax):
         fontweight="bold",
         color=COL["ink"],
     )
-    ax.text(
-        0.03,
-        0.925,
-        "Candidate actions are placements + co-location profiles + drain rules.",
-        ha="left",
-        va="top",
-        fontsize=6.0,
-        color=COL["muted"],
-    )
-
-    x0, y0, w, h = 0.08, 0.16, 0.82, 0.68
+    x0, y0, w, h = 0.08, 0.18, 0.82, 0.68
     quads = [
         (x0, y0 + h / 2, w / 2, h / 2, COL["green_soft"], "q10", "CPU / data-loader\nhost-bound"),
-        (x0 + w / 2, y0 + h / 2, w / 2, h / 2, COL["violet_soft"], "q11", "Hybrid RL\nCPU + GPU coupled"),
+        (x0 + w / 2, y0 + h / 2, w / 2, h / 2, COL["violet_soft"], "q11", "Hybrid learning\nCPU + GPU coupled"),
         (x0, y0, w / 2, h / 2, COL["gold_soft"], "q00", "Light control\nqueue overhead"),
-        (x0 + w / 2, y0, w / 2, h / 2, COL["blue_soft"], "q01", "GPU-heavy\nCNN / LLM kernels"),
+        (x0 + w / 2, y0, w / 2, h / 2, COL["blue_soft"], "q01", "GPU-heavy\nvision / language kernels"),
     ]
     for x, y, ww, hh, fc, q, title in quads:
         ax.add_patch(Rectangle((x, y), ww, hh, facecolor=fc, edgecolor="white", linewidth=1.2))
@@ -235,7 +234,7 @@ def draw_quadrants(ax):
     chip(ax, x0 + w * 0.56, y0 + 0.035, "Gavel / Pollux / Sia", COL["blue"], ec=COL["blue"], w=0.27, h=0.045, fontsize=5.2)
     chip(ax, x0 + w * 0.58, y0 + h * 0.53, "packing guards", COL["violet"], ec=COL["violet"], w=0.19, h=0.045, fontsize=5.2)
     chip(ax, x0 + 0.045, y0 + h * 0.53, "CPU admission", COL["green"], ec=COL["green"], w=0.17, h=0.045, fontsize=5.2)
-    chip(ax, x0 + 0.045, y0 + 0.035, "SRPT / overhead", COL["gold"], ec=COL["gold"], w=0.18, h=0.045, fontsize=5.2)
+    chip(ax, x0 + 0.045, y0 + 0.035, "short-job / overhead", COL["gold"], ec=COL["gold"], w=0.20, h=0.045, fontsize=5.0)
     for txt in ax.texts[-4:]:
         txt.set_color("white")
 

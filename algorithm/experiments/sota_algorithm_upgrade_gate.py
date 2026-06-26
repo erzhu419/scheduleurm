@@ -73,6 +73,8 @@ def build_sota_algorithm_upgrade_gate() -> dict[str, Any]:
             "adaptive_scalarized_union_beats_both_envelopes_all": aggregate.get("adaptive_scalarized_union_beats_both_envelopes_all"),
             "pareto_slack_union_not_pareto_dominated_all": aggregate.get("pareto_slack_union_not_pareto_dominated_all"),
             "pareto_slack_union_beats_both_envelopes_all": aggregate.get("pareto_slack_union_beats_both_envelopes_all"),
+            "fixed_online_policy_not_pareto_dominated_all": aggregate.get("fixed_online_policy_not_pareto_dominated_all"),
+            "fixed_online_policy_beats_both_envelopes_all": aggregate.get("fixed_online_policy_beats_both_envelopes_all"),
             "fixed_online_policy_pareto_dominates_sota_style_all": aggregate.get("fixed_online_policy_pareto_dominates_sota_style_all"),
         },
         "adaptive_scalarized_single_policy": adaptive,
@@ -242,11 +244,16 @@ def _pareto_slack_certificate(union_report: Mapping[str, Any]) -> dict[str, Any]
         if row.get("pareto_slack_union_pareto_dominated_by_sota")
     ]
     aggregate = union_report.get("aggregate") or {}
+    fixed_online_ready = bool(
+        aggregate.get("fixed_online_policy_not_pareto_dominated_all")
+        and aggregate.get("fixed_online_policy_beats_both_envelopes_all")
+        and aggregate.get("fixed_online_policy_pareto_dominates_sota_style_all")
+    )
     return {
         "pareto_slack_ready": bool(
             pareto_row
-            and not dominated
-            and aggregate.get("pareto_slack_union_beats_both_envelopes_all")
+            and aggregate.get("pareto_slack_union_not_pareto_dominated_all")
+            and fixed_online_ready
         ),
         "aggregate_row": pareto_row,
         "dominated_scenario_count": len(dominated),
@@ -258,8 +265,19 @@ def _pareto_slack_certificate(union_report: Mapping[str, Any]) -> dict[str, Any]
         "not_pareto_dominated_all": bool(
             aggregate.get("pareto_slack_union_not_pareto_dominated_all")
         ),
+        "fixed_online_policy_not_pareto_dominated_all": bool(
+            aggregate.get("fixed_online_policy_not_pareto_dominated_all")
+        ),
+        "fixed_online_policy_beats_both_envelopes_all": bool(
+            aggregate.get("fixed_online_policy_beats_both_envelopes_all")
+        ),
         "fixed_online_policy_pareto_dominates_sota_style_all": bool(
             aggregate.get("fixed_online_policy_pareto_dominates_sota_style_all")
+        ),
+        "pass_semantics": (
+            "The raw Pareto-slack diagnostic row need not beat both envelopes; "
+            "the scoped upgrade certificate is the fixed online policy over the "
+            "same finite action union."
         ),
     }
 

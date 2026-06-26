@@ -10,7 +10,25 @@ from __future__ import annotations
 import argparse
 import os
 import statistics
+import sys
 import time
+
+
+def _progress(iterable, *, total: int, desc: str, unit: str):
+    try:
+        from tqdm import tqdm
+        return tqdm(
+            iterable,
+            total=total,
+            desc=desc,
+            unit=unit,
+            mininterval=0.5,
+            dynamic_ncols=False,
+            ascii=True,
+            file=sys.stdout,
+        )
+    except Exception:
+        return iterable
 
 
 def _jax_runner(size: int):
@@ -102,7 +120,7 @@ def main() -> int:
     )
     durations = []
     start = time.time()
-    for i in range(1, steps + 1):
+    for i in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
         t0 = time.time()
         run_once()
         if args.sleep_s > 0:

@@ -2,6 +2,7 @@
   "allow_launch": false,
   "blocker": "",
   "canary_snapshot": {
+    "combined_large_scale_completion_evidence_ready": true,
     "history_completion_snapshot": {
       "admission_mode": "strict_exact_or_signature_service_certificate",
       "node_count": 13,
@@ -12,7 +13,9 @@
       "strict_unadmitted_launched_count": 0,
       "workload_domain_count": 35
     },
+    "history_large_scale_organic_completion_ready": true,
     "history_large_scale_organic_launched_completion_ready": true,
+    "live_trace_large_scale_organic_completion_ready": false,
     "next_threshold": "Closed by strict scheduler-history completion certificate.",
     "node_count": 0,
     "organic_production_completed_count": 0,
@@ -25,23 +28,27 @@
     "unadmitted_launched_count": 0,
     "workload_domain_count": 0
   },
+  "combined_large_scale_completion_evidence_ready": true,
   "gate": "production_wide_organic_trace_gate",
   "gate_pass": true,
-  "generated_at": "2026-06-14T06:59:05+0800",
+  "generated_at": "2026-06-16T14:23:56+0800",
+  "history_large_scale_organic_completion_ready": true,
   "history_large_scale_organic_launched_completion_ready": true,
   "large_scale_active_progress_ready": true,
   "large_scale_organic_launched_completion_ready": true,
+  "large_scale_organic_launched_completion_ready_semantics": "legacy combined alias; use history_large_scale_organic_completion_ready, live_trace_large_scale_organic_completion_ready, and combined_large_scale_completion_evidence_ready",
   "launch_snapshot": {
-    "active_production_count": 28,
+    "active_production_count": 11,
     "large_scale_active_progress_ready": true,
-    "large_scale_launched_completion_ready": false,
+    "large_scale_launched_completion_ready": true,
     "launch_safe": false,
     "launch_status": "LAUNCH_DISABLED",
-    "progress_observation_count": 12,
+    "progress_observation_count": 4,
     "queued_production_count": 0,
-    "running_production_count": 28,
-    "status": "ACTIVE_PROGRESS_SHADOW_TRACE_PASS_LAUNCHED_COMPLETION_FALSE"
+    "running_production_count": 11,
+    "status": "HISTORY_COMPLETION_AND_ACTIVE_PROGRESS_SHADOW_TRACE_PASS"
   },
+  "live_trace_large_scale_organic_completion_ready": false,
   "live_trace_snapshot": {
     "admissible_production_queued_count": 0,
     "production_queued_count": 0,
@@ -58,7 +65,7 @@
   "safe_launch_gate_status": "LAUNCH_DISABLED",
   "scope": "Executable boundary for production-wide organic trace claims.  The scoped gate passes when recorder/admission machinery is ready.  Queued live-trace closure, strict scheduler-history completion, and organic launched completion are reported separately.  The history path closes completed production evidence without claiming that every live slot has an emitted oracle trace row.",
   "scoped_claim_ready": true,
-  "status": "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS",
+  "status": "PRODUCTION_WIDE_HISTORY_COMPLETION_PASS_LIVE_TRACE_FALSE",
   "strong_claim_ready": true,
   "trace_large_scale_organic_launched_completion_ready": false
 }

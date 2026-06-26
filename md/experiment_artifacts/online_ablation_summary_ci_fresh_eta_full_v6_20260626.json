@@ -1,0 +1,744 @@
+{
+  "ablation_candidate_dominated_scenario_count": 0,
+  "ablation_candidate_dominated_scenarios": [],
+  "ablation_scenario_count": 24,
+  "ablation_source": "md/experiment_artifacts/or_gate_ablation_suite_fresh_eta_full_v6_20260626.json",
+  "candidate_loss_gt_tolerance_count": 68,
+  "candidate_loss_gt_tolerance_rows": [
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.012515520860140406,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.012515520860140406,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.018291571300897758,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.70_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.018291571300897758,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.70_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.0070915451758020165,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.0070915451758020165,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.01600552333924643,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_poisson_load0.95_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.018351120070353222,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.018351120070353222,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.016412502768677895,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.50_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.016412502768677895,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.50_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.005891678555896229,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.70",
+      "load_factor": 0.7,
+      "metric": "mean_flow",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.01411789626020088,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.70",
+      "load_factor": 0.7,
+      "metric": "mean_flow",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.01411789626020088,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.00883616830556977,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_cnn_resnet50",
+      "trace": "q01_gpu_bound_cnn_resnet50_bursty_load0.70_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.008569808839808069,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.008244240454678087,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.008244240454678087,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.008244240454678087,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.005168073921913319,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.50_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.009388235226123864,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.007190320220057611,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.007190320220057611,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.007190320220057611,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.70_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.005551092963783644,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.70_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_gavel_pollux_sia_table_goodput",
+      "relative_loss": 0.007507943068758349,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_srpt_gittins_mean_flow_oracle",
+      "relative_loss": 0.007507943068758349,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.01673787193009324,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_quadrant_composite",
+      "relative_loss": 0.007507943068758349,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.007637546160481401,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.007637546160481401,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.007637546160481401,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.01758103416933099,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.0050817370908240456,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.0050817370908240456,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.0050817370908240456,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.008389296997552975,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.008389296997552975,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.008389296997552975,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.007508115294069473,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.007508115294069473,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.007508115294069473,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.005162981245843579,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.005162981245843579,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.005162981245843579,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_poisson_load0.95_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.006682361232017708,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.0066806803724217545,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.0066806803724217545,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.50",
+      "load_factor": 0.5,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.0066806803724217545,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.006320433554914073,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.006167748607387891,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.006167748607387891,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.006167748607387891,
+      "seed": 42,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed42"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.009359268412299393,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.009484927657748443,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.009484927657748443,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.85",
+      "load_factor": 0.85,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.009484927657748443,
+      "seed": 43,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.85_seed43"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.006702130621351277,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_gavel_finish_time_fairness",
+      "relative_loss": 0.007309192585810198,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_sia_pollux_resource_adaptive",
+      "relative_loss": 0.007309192585810198,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "bursty_load0.95",
+      "load_factor": 0.95,
+      "metric": "makespan",
+      "policy": "sota_salus_iadeep_packing_guard",
+      "relative_loss": 0.007309192585810198,
+      "seed": 41,
+      "taskset": "q01_gpu_bound_llm_inference",
+      "trace": "q01_gpu_bound_llm_inference_bursty_load0.95_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.04392069901153173,
+      "seed": 41,
+      "taskset": "q11_cpu_gpu_coupled",
+      "trace": "q11_cpu_gpu_coupled_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.055033032181559305,
+      "seed": 42,
+      "taskset": "q11_cpu_gpu_coupled",
+      "trace": "q11_cpu_gpu_coupled_poisson_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.008618985905354037,
+      "seed": 43,
+      "taskset": "q11_cpu_gpu_coupled",
+      "trace": "q11_cpu_gpu_coupled_poisson_load0.50_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.015415201838886894,
+      "seed": 41,
+      "taskset": "hybrid_research_portfolio",
+      "trace": "hybrid_research_portfolio_poisson_load0.50_seed41"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.05738093052635507,
+      "seed": 42,
+      "taskset": "hybrid_research_portfolio",
+      "trace": "hybrid_research_portfolio_poisson_load0.50_seed42"
+    },
+    {
+      "arrival_mode": "poisson_load0.50",
+      "load_factor": 0.5,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.07641273758329392,
+      "seed": 43,
+      "taskset": "hybrid_research_portfolio",
+      "trace": "hybrid_research_portfolio_poisson_load0.50_seed43"
+    },
+    {
+      "arrival_mode": "poisson_load0.70",
+      "load_factor": 0.7,
+      "metric": "mean_flow",
+      "policy": "sota_iadeep_salus_interference_guard",
+      "relative_loss": 0.02221052628698006,
+      "seed": 43,
+      "taskset": "hybrid_research_portfolio",
+      "trace": "hybrid_research_portfolio_poisson_load0.70_seed43"
+    }
+  ],
+  "gate": "online_ablation_summary_ci",
+  "gate_pass": true,
+  "online_candidate_dominated_scenario_count": 0,
+  "online_candidate_dominated_scenarios": [],
+  "online_scenario_count": 192,
+  "online_source": "md/experiment_artifacts/or_gate_online_arrivals_fresh_eta_full_v6_20260626.json",
+  "online_summary": {
+    "candidate_max_backlog_jobs": {
+      "geomean": 23.65432439378278,
+      "max": 90.0,
+      "median": 24.0,
+      "min": 4.0,
+      "n": 192,
+      "p05": 7.0,
+      "p95": 65.0,
+      "worst": 4.0
+    },
+    "candidate_mean_backlog_jobs": {
+      "geomean": 7.78298745245353,
+      "max": 48.112034119829104,
+      "median": 8.31831049601724,
+      "min": 1.0994609163452764,
+      "n": 192,
+      "p05": 1.7632589622268984,
+      "p95": 27.656596408402685,
+      "worst": 1.0994609163452764
+    },
+    "candidate_vs_legacy_makespan": {
+      "geomean": 1.6184377708051223,
+      "max": 11.801096051970816,
+      "median": 1.2484885250051156,
+      "min": 1.0027574682491889,
+      "n": 192,
+      "p05": 1.0074914420420917,
+      "p95": 9.834592536473986,
+      "worst": 1.0027574682491889
+    },
+    "candidate_vs_legacy_mean_flow": {
+      "geomean": 4.180099389680718,
+      "max": 206.00601160582107,
+      "median": 2.4918227733329994,
+      "min": 1.0004791059299027,
+      "n": 192,
+      "p05": 1.0267772639062827,
+      "p95": 179.17776704905484,
+      "worst": 1.0004791059299027
+    }
+  },
+  "pareto_tolerance": 0.005,
+  "pass": true,
+  "pass_meaning": "distributional summary of existing replay and ablation artifacts, not new live execution or stochastic generalization",
+  "scope": "Summarizes policy-semantics replay on the same measured service cache. Rows are scenario-level replay summaries, not direct external binary runs.",
+  "scoped_claim_ready": true,
+  "status": "ONLINE_ABLATION_DISTRIBUTIONAL_SUMMARY_PASS",
+  "strong_claim_ready": false
+}

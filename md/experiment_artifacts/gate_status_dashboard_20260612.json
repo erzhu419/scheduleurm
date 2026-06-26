@@ -353,21 +353,21 @@
       "scoped_claim": "32-task controlled launched completion with theorem-grade oracle trace and canary recorder contract.",
       "scoped_claim_ready": true,
       "status": "CONTROLLED_32_AND_STRICT_HISTORY_COMPLETION_PASS",
-      "strong_claim": "Controlled 32-task completion plus strict scheduler-history large-scale launched-completion, with live-oracle large-scale completion kept separate.",
+      "strong_claim": "Controlled 32-task launched-completion evidence only; strict-history and live-trace production completion are separate rows.",
       "strong_claim_ready": true
     },
     {
       "artifact_exists": true,
       "artifact_path": "md/experiment_artifacts/organic_production_canary_recorder_gate_20260612.json",
-      "blocker": "",
+      "blocker": "The canary recorder is ready, but the live-trace completion counters remain separate from the strict-history certificate.",
       "gate": "organic_production_canary_recorder_gate",
-      "next_threshold": "Closed if either live oracle trace thresholds or strict scheduler-history completion thresholds pass.",
+      "next_threshold": "Collect enough live oracle trace launches/completions, domains, nodes, and zero unadmitted launched rows.",
       "raw_evidence_path": "md/organic_production_canary_recorder_gate_20260612.md",
       "scoped_claim": "Strict organic production canary recorder and theorem admission/trace contract are ready.",
       "scoped_claim_ready": true,
       "status": "ORGANIC_PRODUCTION_CANARY_HISTORY_COMPLETION_PASS",
-      "strong_claim": "Large organic production launched-completion evidence from live trace or strict history certificate.",
-      "strong_claim_ready": true
+      "strong_claim": "Organic live-trace launched-completion evidence from canary counters.",
+      "strong_claim_ready": false
     },
     {
       "artifact_exists": true,
@@ -379,7 +379,7 @@
       "scoped_claim": "Strict scheduler-history organic production population has enough launched/completed theorem-admitted rows.",
       "scoped_claim_ready": true,
       "status": "ORGANIC_HISTORY_COMPLETION_PASS",
-      "strong_claim": "Production-wide organic launched-completion evidence for the controlled theorem-facing population.",
+      "strong_claim": "Strict scheduler-history organic launched/completion evidence for the theorem-facing population.",
       "strong_claim_ready": true
     },
     {
@@ -391,8 +391,8 @@
       "raw_evidence_path": "md/production_wide_organic_trace_gate_20260614.md",
       "scoped_claim": "Production-wide organic recorder/admission gate separates live-trace, strict-history completion, active-progress, and launched-completion evidence.",
       "scoped_claim_ready": true,
-      "status": "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS",
-      "strong_claim": "Strict scheduler-history large-scale launched/completion evidence for the controlled theorem-facing production population.",
+      "status": "PRODUCTION_WIDE_HISTORY_COMPLETION_PASS_LIVE_TRACE_FALSE",
+      "strong_claim": "History-backed large-scale completion evidence, with live-trace closure reported separately.",
       "strong_claim_ready": true
     },
     {
@@ -404,7 +404,7 @@
       "raw_evidence_path": "md/production_wide_organic_trace_gate_20260614.md",
       "scoped_claim": "Queued-production live-trace gate is executable or waiting without unsafe launch.",
       "scoped_claim_ready": true,
-      "status": "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS",
+      "status": "PRODUCTION_WIDE_HISTORY_COMPLETION_PASS_LIVE_TRACE_FALSE",
       "strong_claim": "Production-wide live oracle trace is closed with enough admitted theorem dispatch slots and completion evidence.",
       "strong_claim_ready": false
     },
@@ -418,7 +418,7 @@
       "scoped_claim": "Production organic readiness bridge closes strict admission, canary recorder, active-production theorem shadow, read-only queued-production theorem trace, and history completion snapshot.",
       "scoped_claim_ready": true,
       "status": "PRODUCTION_ORGANIC_STRONG_COMPLETION_CLOSED",
-      "strong_claim": "Large-scale organic launched-completion evidence through live trace or strict history completion.",
+      "strong_claim": "Combined large-scale completion evidence, with history and live-trace paths exposed by subfields.",
       "strong_claim_ready": true
     },
     {
@@ -505,5 +505,5 @@
   "scoped_ready_count": 38,
   "status": "CLAIM_LADDER_DASHBOARD_READY",
   "strong_claim_ready": false,
-  "strong_ready_count": 9
+  "strong_ready_count": 8
 }

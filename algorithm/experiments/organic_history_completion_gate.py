@@ -101,7 +101,18 @@ def build_organic_history_completion_gate(
         "scoped_claim_ready": thresholds_ready,
         "strong_claim_ready": thresholds_ready,
         "large_scale_organic_history_completion_ready": thresholds_ready,
+        "history_large_scale_organic_completion_ready": thresholds_ready,
+        "history_large_scale_organic_launched_completion_ready": thresholds_ready,
+        "live_trace_large_scale_organic_completion_ready": False,
+        "combined_large_scale_completion_evidence_ready": thresholds_ready,
+        "raw_history_closed": False,
         "large_scale_organic_launched_completion_ready": thresholds_ready,
+        "large_scale_organic_launched_completion_ready_semantics": (
+            "legacy combined/history alias; use "
+            "history_large_scale_organic_completion_ready, "
+            "live_trace_large_scale_organic_completion_ready, and "
+            "combined_large_scale_completion_evidence_ready"
+        ),
         "admission_mode": "strict_exact_or_signature_service_certificate",
         "raw_production_row_count": len(production_rows),
         "raw_production_launched_count": len(raw_launched),
@@ -153,7 +164,8 @@ def build_organic_history_completion_gate(
             "jobs, auto-adopted jobs, diagnostic probes, and read-only probes are "
             "reported but excluded.  The claim is not about arbitrary future "
             "workloads; future unknown jobs still require the admission/probe "
-            "contract."
+            "contract.  This is a strict scheduler-history certificate, not a "
+            "large live-trace completion certificate."
         ),
         "pass": thresholds_ready,
     }
@@ -172,6 +184,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `pass` | {str(bool(report.get('pass'))).lower()} |",
         f"| `status` | `{report.get('status')}` |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
+        f"| `history_large_scale_organic_completion_ready` | {str(bool(report.get('history_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `live_trace_large_scale_organic_completion_ready` | {str(bool(report.get('live_trace_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `combined_large_scale_completion_evidence_ready` | {str(bool(report.get('combined_large_scale_completion_evidence_ready'))).lower()} |",
+        f"| `raw_history_closed` | {str(bool(report.get('raw_history_closed'))).lower()} |",
         f"| `admission_mode` | `{report.get('admission_mode')}` |",
         f"| `raw_production_row_count` | {report.get('raw_production_row_count')} |",
         f"| `raw_production_launched_count` | {report.get('raw_production_launched_count')} |",

@@ -14,11 +14,14 @@
 | `queued_theorem_trace_task_count` | 0 |
 | `queued_theorem_trace_slot_count` | 0 |
 | `shadow_trace_closed` | true |
-| `shadow_task_count` | 27 |
-| `shadow_theorem_slot_count` | 15 |
+| `shadow_task_count` | 11 |
+| `shadow_theorem_slot_count` | 11 |
 | `large_scale_organic_launched_completion_ready` | true |
 | `trace_large_scale_organic_launched_completion_ready` | false |
+| `live_trace_large_scale_organic_completion_ready` | false |
 | `history_large_scale_organic_launched_completion_ready` | true |
+| `history_large_scale_organic_completion_ready` | true |
+| `combined_large_scale_completion_evidence_ready` | true |
 | `strong_claim_ready` | true |
 
 ## Blocker

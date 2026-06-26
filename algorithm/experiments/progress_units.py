@@ -112,8 +112,6 @@ def _current_from_line(line: str) -> tuple[int | None, int | None, str | None]:
         if current < 0 or (total is not None and (total <= 0 or current > total)):
             continue
         labeled = (current, total, canonical_unit(m.group(1)))
-    if labeled is not None:
-        return labeled
 
     bare = None
     for m in _BARE_FRACTION_RE.finditer(line or ""):
@@ -124,6 +122,10 @@ def _current_from_line(line: str) -> tuple[int | None, int | None, str | None]:
             continue
         if total > 0 and 0 <= current <= total:
             bare = (current, total, None)
+    if labeled is not None:
+        if labeled[1] is None and bare is not None and bare[0] == labeled[0]:
+            return (bare[0], bare[1], labeled[2])
+        return labeled
     return bare or (None, None, None)
 
 

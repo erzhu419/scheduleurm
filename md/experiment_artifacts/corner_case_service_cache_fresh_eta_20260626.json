@@ -1,0 +1,84 @@
+{
+  "records": [
+    {
+      "aggregate_rate": 17.381689,
+      "capacity_boundary": false,
+      "command_fingerprint": "cpu_loop(){ steps=$1; work=$2; label=$3; start=$(date +%s%N); i=1; while [ $i -le $steps ]; do awk -v W=$work 'BEGIN{s=0; for(j=1;j<=W;j++) s+=sqrt((j%997)+1); if(s<0) print s}' >/dev/null; now=$(date +%s%N); elapsed_ns=$((now-start)); [ $e",
+      "gpu_count_observed": 1,
+      "node_bucket": "node001:180worker-resident",
+      "per_task_rates": [
+        17.381689
+      ],
+      "profile": 1,
+      "resource_kind": "cpu_corner_resident",
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_fresh_eta_20260626_cpu_ns/reports/cpu_full_node001_add_single_v2_remote_corner_case_probe.json",
+      "total_units": 1.0,
+      "unit": "step",
+      "workload_key": "corner_cpu_node001_180worker_resident_single"
+    },
+    {
+      "aggregate_rate": 17.349506,
+      "capacity_boundary": false,
+      "command_fingerprint": "cpu_loop(){ steps=$1; work=$2; label=$3; start=$(date +%s%N); i=1; while [ $i -le $steps ]; do awk -v W=$work 'BEGIN{s=0; for(j=1;j<=W;j++) s+=sqrt((j%997)+1); if(s<0) print s}' >/dev/null; now=$(date +%s%N); elapsed_ns=$((now-start)); [ $e",
+      "gpu_count_observed": 1,
+      "node_bucket": "node001:96worker-resident",
+      "per_task_rates": [
+        17.349506
+      ],
+      "profile": 1,
+      "resource_kind": "cpu_corner_resident",
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_fresh_eta_20260626_cpu_ns/reports/cpu_half_node001_add_single_v2_remote_corner_case_probe.json",
+      "total_units": 1.0,
+      "unit": "step",
+      "workload_key": "corner_cpu_node001_96worker_resident_single"
+    },
+    {
+      "aggregate_rate": 17.504426,
+      "capacity_boundary": false,
+      "command_fingerprint": "cpu_loop(){ steps=$1; work=$2; label=$3; start=$(date +%s%N); i=1; while [ $i -le $steps ]; do awk -v W=$work 'BEGIN{s=0; for(j=1;j<=W;j++) s+=sqrt((j%997)+1); if(s<0) print s}' >/dev/null; now=$(date +%s%N); elapsed_ns=$((now-start)); [ $e",
+      "gpu_count_observed": 1,
+      "node_bucket": "node001:192c",
+      "per_task_rates": [
+        17.504426
+      ],
+      "profile": 1,
+      "resource_kind": "cpu_corner_empty",
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_fresh_eta_20260626_cpu_ns/reports/cpu_empty_node001_single_remote_corner_case_probe.json",
+      "total_units": 1.0,
+      "unit": "step",
+      "workload_key": "corner_cpu_node001_empty_single"
+    },
+    {
+      "aggregate_rate": 442.512388,
+      "capacity_boundary": false,
+      "command_fingerprint": "CUDA_VISIBLE_DEVICES=0 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_progress_benchmark.py --steps 100 --size 2048 --label node007_30gb_add_small_stable_fresh",
+      "gpu_count_observed": 1,
+      "node_bucket": "node007-direct:30gb-resident",
+      "per_task_rates": [
+        442.512388
+      ],
+      "profile": 1,
+      "resource_kind": "gpu_corner_resident_vram",
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_fresh_eta_20260626_cpu_ns/reports/node007_30gb_add_small_stable_remote_corner_case_probe.json",
+      "total_units": 100.0,
+      "unit": "step",
+      "workload_key": "corner_gpu_node007_30gb_resident_marginal_cuda"
+    },
+    {
+      "aggregate_rate": 490.484602,
+      "capacity_boundary": false,
+      "command_fingerprint": "CUDA_VISIBLE_DEVICES=0 /home/zhengliang01/scheduleurm_work/conda_envs/scomp-py310/bin/python -u gpu_progress_benchmark.py --steps 100 --size 2048 --label node007_empty_small_fresh",
+      "gpu_count_observed": 1,
+      "node_bucket": "node007-direct:4x12gb",
+      "per_task_rates": [
+        490.484602
+      ],
+      "profile": 1,
+      "resource_kind": "gpu_corner_empty",
+      "source": "/home/erzhu419/.claude/scheduler/experiments/runs/corner_case_live_fresh_eta_20260626_cpu_ns/reports/node007_empty_small_remote_corner_case_probe.json",
+      "total_units": 100.0,
+      "unit": "step",
+      "workload_key": "corner_gpu_node007_empty_marginal_cuda"
+    }
+  ]
+}

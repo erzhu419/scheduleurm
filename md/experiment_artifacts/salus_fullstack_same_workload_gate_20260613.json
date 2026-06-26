@@ -1,6 +1,8 @@
 {
   "artifact_dir": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/salus_fullstack_20260613",
   "blockers": [],
+  "current_environment_has_tools": false,
+  "current_safe_reproduction": false,
   "direct_fullstack_sota_superiority_ready": false,
   "docker_image_pull_completed": false,
   "evidence_artifacts": {
@@ -40,6 +42,7 @@
   "pass": true,
   "pull_elapsed_s": 180.0,
   "pull_exit_code": 124,
+  "regeneration_mode": "precomputed_live_run",
   "remote_fullstack_attempt_ready": true,
   "remote_fullstack_superiority_ready": true,
   "remote_image_pull_blocker_resolved": true,
@@ -48,6 +51,7 @@
   "remote_salus_wall_s": 201.74355292320251,
   "required_client": "tensorflow-salus",
   "required_session_target": "zrpc://tcp://HOST:5501",
+  "requires_external_stack": true,
   "runtime_contract": {
     "client_contract": "TensorFlow-Salus workload must create a Session with zrpc://tcp://HOST:5501 and complete",
     "k8s_image_pull_contract": "K3s/containerd image availability is accepted as a server-image readiness path only when the Salus container starts and the smoke command runs",

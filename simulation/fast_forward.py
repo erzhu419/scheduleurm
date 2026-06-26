@@ -108,6 +108,24 @@ class ReplayPolicy:
 
         return None
 
+    def trace_action_policy_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        arrival_mode: str,
+        base_target_profile: int | None = None,
+    ) -> "ReplayPolicy | None":
+        """Optional trace-context action selector.
+
+        A replay trace exposes whether the scheduler is serving a closed batch
+        or a rolling arrival stream.  Candidate-set policies can use that
+        observable context to select between already-admitted finite trajectory
+        actions while ordinary policies remain unchanged.
+        """
+
+        return None
+
     def statewise_target_profile_for(
         self,
         cache: ServiceRateCache,
@@ -382,14 +400,24 @@ def _replay_one_resource(
     completions: list[float] = []
     profile_trace: list[int] = []
     current_service_profile = max(1, int(target_profile))
+    sticky_base_active = False
 
     def fill() -> None:
-        nonlocal current_service_profile
+        nonlocal current_service_profile, sticky_base_active
         total_remaining = len(waiting) + len(active)
         if total_remaining <= 0:
+            sticky_base_active = False
             return
         target = target_profile
         if policy.uses_statewise_for(spec):
+            if _statewise_sticky_base_after_threshold_for(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                base_target_profile=target_profile,
+                total_remaining=total_remaining,
+            ):
+                sticky_base_active = True
             target = _statewise_target_profile(
                 cache=cache,
                 spec=spec,
@@ -406,6 +434,8 @@ def _replay_one_resource(
                 waiting_count=len(waiting),
                 total_remaining=total_remaining,
             ):
+                target = max(int(target), int(target_profile))
+            if sticky_base_active:
                 target = max(int(target), int(target_profile))
         desired_target = max(1, int(target))
         admission_target = max(len(active), min(desired_target, total_remaining))
@@ -575,6 +605,26 @@ def _statewise_holds_base_profile_for(
         waiting_count=waiting_count,
         total_remaining=total_remaining,
     )
+
+
+def _statewise_sticky_base_after_threshold_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    base_target_profile: int | None,
+    total_remaining: int,
+) -> bool:
+    effective_policy = _trajectory_policy_for(
+        cache=cache,
+        spec=spec,
+        policy=policy,
+        base_target_profile=base_target_profile,
+    )
+    if not bool(getattr(effective_policy, "sticky_base_after_threshold", False)):
+        return False
+    threshold = max(0, int(getattr(effective_policy, "tail_remaining_threshold", 0) or 0))
+    return int(total_remaining) > threshold
 
 
 def _trajectory_policy_for(

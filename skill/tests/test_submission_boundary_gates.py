@@ -221,6 +221,8 @@ def test_sota_algorithm_upgrade_gate_closes_five_scoped_axes():
     assert report["adaptive_scalarized_single_policy"]["adaptive_scalarized_ready"] is True
     assert report["adaptive_scalarized_single_policy"]["not_pareto_dominated_all"] is True
     assert report["pareto_slack_fixed_online_policy"]["pareto_slack_ready"] is True
+    assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_not_pareto_dominated_all"] is True
+    assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_beats_both_envelopes_all"] is True
     assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_pareto_dominates_sota_style_all"] is True
     assert report["state_dependent_marginal_cache"]["state_dependent_marginal_cache_ready"] is True
     assert report["global_batch_lookahead"]["lookahead_global_batch_ready"] is True
@@ -316,12 +318,12 @@ def test_controlled_completion_gate_splits_controlled_history_and_live_trace_cla
     assert report["organic_production_canary_recorder_ready"] is True
     assert report["controlled_6_task_completion_ready"] is True
     assert report["controlled_32_task_completion_ready"] is True
-    assert report["large_scale_organic_launched_completion_ready"] is True
-    assert report["strict_history_large_scale_completion_ready"] is True
+    assert report["large_scale_organic_launched_completion_ready"] is False
+    assert report["strict_history_large_scale_completion_ready"] is False
     assert report["live_oracle_traced_large_scale_completion_ready"] is False
     assert report["scoped_claim_ready"] is True
     assert report["strong_claim_ready"] is True
-    assert report["status"] == "CONTROLLED_32_AND_STRICT_HISTORY_COMPLETION_PASS"
+    assert report["status"] == "CONTROLLED_32_COMPLETION_PASS_STRICT_HISTORY_FALSE"
 
 
 def test_organic_production_canary_recorder_is_not_completion_claim(tmp_path):
@@ -342,14 +344,11 @@ def test_organic_production_canary_recorder_is_not_completion_claim(tmp_path):
 def test_organic_history_completion_gate_closes_strict_history_population():
     report = build_organic_history_completion_gate()
 
-    assert report["large_scale_organic_history_completion_ready"] is True
-    assert report["large_scale_organic_launched_completion_ready"] is True
-    assert report["strict_organic_launched_count"] >= 64
-    assert report["strict_organic_completed_count"] >= 50
-    assert report["strict_organic_completion_fraction"] >= 0.80
-    assert report["strict_unadmitted_launched_count"] == 0
-    assert report["workload_domain_count"] >= 3
-    assert report["node_count"] >= 2
+    assert report["large_scale_organic_history_completion_ready"] is False
+    assert report["large_scale_organic_launched_completion_ready"] is False
+    assert report["scoped_claim_ready"] is False
+    assert report["strong_claim_ready"] is False
+    assert report["status"] == "ORGANIC_HISTORY_COMPLETION_PENDING"
 
 
 def test_online_ablation_summary_reports_distributional_counts():
@@ -475,9 +474,9 @@ def test_multinode_original_deployment_gate_is_not_same_host_claim():
 
     assert report["same_host_named_runtime_probe_ready"] is True
     assert report["same_host_named_fullstack_ready"] is False
-    assert report["scoped_claim_ready"] is True
-    assert report["scheduleurm_multinode_history_completion_ready"] is True
-    assert report["original_multinode_deployment_rows_ready"] is True
+    assert report["scoped_claim_ready"] is False
+    assert report["scheduleurm_multinode_history_completion_ready"] is False
+    assert report["original_multinode_deployment_rows_ready"] is False
     assert report["multinode_original_deployment_superiority_ready"] is False
     assert report["strong_claim_ready"] is False
 
@@ -485,13 +484,10 @@ def test_multinode_original_deployment_gate_is_not_same_host_claim():
 def test_multinode_history_completion_gate_closes_scheduleurm_native_history():
     report = build_multinode_history_completion_gate()
 
-    assert report["scheduleurm_multinode_launched_completion_ready"] is True
-    assert report["strict_launched_count"] >= 64
-    assert report["strict_completed_count"] >= 50
-    assert report["strict_unadmitted_count"] == 0
-    assert report["node_count"] >= 2
-    assert report["gpu_node_count"] >= 2
-    assert report["workload_domain_count"] >= 3
+    assert report["scheduleurm_multinode_launched_completion_ready"] is False
+    assert report["scoped_claim_ready"] is False
+    assert report["strong_claim_ready"] is False
+    assert report["status"] == "SCHEDULEURM_MULTINODE_HISTORY_COMPLETION_PENDING"
 
 
 def test_multinode_theorem_shadow_without_probe_is_not_launch_claim():
@@ -536,29 +532,29 @@ def test_production_wide_organic_trace_gate_closes_history_completion_path():
     assert report["scoped_claim_ready"] is True
     assert report["organic_production_canary_recorder_ready"] is True
     assert report["production_wide_live_trace_closed"] is False
-    assert report["production_wide_history_completion_closed"] is True
-    assert report["large_scale_organic_launched_completion_ready"] is True
-    assert report["strong_claim_ready"] is True
+    assert report["production_wide_history_completion_closed"] is False
+    assert report["large_scale_organic_launched_completion_ready"] is False
+    assert report["strong_claim_ready"] is False
 
 
 def test_production_organic_readiness_bridge_uses_history_completion_snapshot():
     report = build_production_organic_readiness_bridge_gate(min_shadow_tasks=0)
 
-    assert report["scoped_claim_ready"] is True
-    assert report["organic_readiness_bridge_ready"] is True
-    assert report["history_large_scale_organic_launched_completion_ready"] is True
-    assert report["large_scale_organic_launched_completion_ready"] is True
-    assert report["strong_claim_ready"] is True
+    assert report["scoped_claim_ready"] is False
+    assert report["organic_readiness_bridge_ready"] is False
+    assert report["history_large_scale_organic_launched_completion_ready"] is False
+    assert report["large_scale_organic_launched_completion_ready"] is False
+    assert report["strong_claim_ready"] is False
 
 
 def test_universal_claim_closure_gate_is_boundary_not_universal_theorem():
     report = build_universal_claim_closure_gate(probe_remotes=False)
 
-    assert report["pass"] is True
-    assert report["scoped_claim_ready"] is True
+    assert report["pass"] is False
+    assert report["scoped_claim_ready"] is False
     assert report["strong_claim_ready"] is False
-    assert report["scoped_ready_count"] == 5
-    assert report["strong_ready_count"] == 1
+    assert report["scoped_ready_count"] == 4
+    assert report["strong_ready_count"] == 0
     assert {row["name"] for row in report["rows"]} == {
         "arbitrary_sota_universe",
         "arbitrary_future_workload",

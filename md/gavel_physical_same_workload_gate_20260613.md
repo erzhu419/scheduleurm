@@ -5,6 +5,10 @@
 | Quantity | Value |
 |---|---:|
 | `pass` | true |
+| `regeneration_mode` | `precomputed_live_run` |
+| `current_safe_reproduction` | false |
+| `requires_external_stack` | true |
+| `current_environment_has_tools` | false |
 | `same_service_scale_ready` | true |
 | `scoped_gavel_physical_fullstack_ready` | true |
 | `scoped_gavel_physical_same_workload_superiority_ready` | true |

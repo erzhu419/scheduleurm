@@ -13,12 +13,13 @@ run_step() {
   local name="$1"
   shift
   echo "== $name"
-  local log="$ART/reproduce_${name}.log"
+  local rel_log="md/experiment_artifacts/reproduce_${name}.log"
+  local log="$ROOT/$rel_log"
   if "$@" >"$log" 2>&1; then
-    printf '{"name":"%s","status":"PASS","log":"%s"}\n' "$name" "$log" >>"$ART/reproduction_steps.jsonl"
+    printf '{"name":"%s","status":"PASS","log":"%s"}\n' "$name" "$rel_log" >>"$ART/reproduction_steps.jsonl"
   else
     local code=$?
-    printf '{"name":"%s","status":"FAIL","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$log" >>"$ART/reproduction_steps.jsonl"
+    printf '{"name":"%s","status":"FAIL","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$rel_log" >>"$ART/reproduction_steps.jsonl"
     return "$code"
   fi
 }
@@ -27,17 +28,18 @@ run_gate_step_allow_pending() {
   local name="$1"
   shift
   echo "== $name"
-  local log="$ART/reproduce_${name}.log"
+  local rel_log="md/experiment_artifacts/reproduce_${name}.log"
+  local log="$ROOT/$rel_log"
   set +e
   "$@" >"$log" 2>&1
   local code=$?
   set -e
   if [[ "$code" -eq 0 ]]; then
-    printf '{"name":"%s","status":"PASS","log":"%s"}\n' "$name" "$log" >>"$ART/reproduction_steps.jsonl"
+    printf '{"name":"%s","status":"PASS","log":"%s"}\n' "$name" "$rel_log" >>"$ART/reproduction_steps.jsonl"
   elif [[ "$code" -eq 2 ]]; then
-    printf '{"name":"%s","status":"PENDING","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$log" >>"$ART/reproduction_steps.jsonl"
+    printf '{"name":"%s","status":"PENDING","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$rel_log" >>"$ART/reproduction_steps.jsonl"
   else
-    printf '{"name":"%s","status":"FAIL","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$log" >>"$ART/reproduction_steps.jsonl"
+    printf '{"name":"%s","status":"FAIL","exit_code":%s,"log":"%s"}\n' "$name" "$code" "$rel_log" >>"$ART/reproduction_steps.jsonl"
     return "$code"
   fi
 }
@@ -130,6 +132,11 @@ run_step registered_sota_universe_gate \
     --output "$ART/sota_universe_registry_gate_20260614.json" \
     --markdown-output "$ROOT/md/sota_universe_registry_gate_20260614.md"
 
+run_step registered_sota_runtime_gate \
+  python3 -m algorithm.experiments.registered_sota_runtime_gate build \
+    --output "$ART/registered_sota_runtime_gate_20260614.json" \
+    --markdown-output "$ROOT/md/registered_sota_runtime_gate_20260614.md"
+
 run_step registered_sota_adapter_closure_gate \
   python3 -m algorithm.experiments.registered_sota_adapter_closure_gate build \
     --output "$ART/registered_sota_adapter_closure_gate_20260614.json" \
@@ -144,6 +151,16 @@ run_step organic_history_completion_gate \
   python3 -m algorithm.experiments.organic_history_completion_gate build \
     --output "$ART/organic_history_completion_gate_20260614.json" \
     --markdown-output "$ROOT/md/organic_history_completion_gate_20260614.md"
+
+run_step production_wide_organic_trace_gate \
+  python3 -m algorithm.experiments.production_wide_organic_trace_gate build \
+    --output "$ART/production_wide_organic_trace_gate_20260614.json" \
+    --markdown-output "$ROOT/md/production_wide_organic_trace_gate_20260614.md"
+
+run_step production_organic_readiness_bridge_gate \
+  python3 -m algorithm.experiments.production_organic_readiness_bridge_gate build \
+    --output "$ART/production_organic_readiness_bridge_gate_20260614.json" \
+    --markdown-output "$ROOT/md/production_organic_readiness_bridge_gate_20260614.md"
 
 run_step multinode_history_completion_gate \
   python3 -m algorithm.experiments.multinode_history_completion_gate build \
@@ -160,10 +177,21 @@ run_step decima_same_domain_benchmark_gate \
     --output "$ART/decima_same_domain_benchmark_gate_20260614.json" \
     --markdown-output "$ROOT/md/decima_same_domain_benchmark_gate_20260614.md"
 
+run_step non_future_claim_closure_gate \
+  python3 -m algorithm.experiments.non_future_claim_closure_gate build \
+    --output "$ART/non_future_claim_closure_gate_20260614.json" \
+    --markdown-output "$ROOT/md/non_future_claim_closure_gate_20260614.md"
+
 run_step reviewer_environment_manifest_gate \
   python3 -m algorithm.experiments.reviewer_environment_manifest_gate build \
     --output "$ART/reviewer_environment_manifest_gate_20260612.json" \
     --markdown-output "$ROOT/md/reviewer_environment_manifest_gate_20260612.md"
+
+run_step reviewer_supplement_repackage \
+  python3 -m algorithm.experiments.or_submission_closure supplement \
+    --proof-root "$ROOT/../proof" \
+    --output-dir "$ART/or_reviewer_supplement_20260612" \
+    --markdown-output "$ROOT/md/or_reviewer_supplement_20260612.md"
 
 run_step gate_status_dashboard \
   python3 -m algorithm.experiments.gate_status_dashboard build \
@@ -212,15 +240,20 @@ artifact_regeneration_modes = {
     "online_ablation_summary_ci": "safe_rerun",
     "selected_profile_holdout_lcb_gate": "safe_rerun",
     "global_theorem_dispatcher_prototype_gate": "safe_rerun",
-    "named_external_runtime_probe_gate": "requires_external_stack",
+    "named_external_runtime_probe_gate": "precomputed_live_run",
     "registered_sota_universe_gate": "safe_rerun",
+    "registered_sota_runtime_gate": "safe_readonly",
     "registered_sota_adapter_closure_gate": "safe_rerun",
     "sota_admitted_universe_closure_gate": "safe_rerun",
     "organic_history_completion_gate": "safe_readonly",
+    "production_wide_organic_trace_gate": "safe_readonly",
+    "production_organic_readiness_bridge_gate": "safe_readonly",
     "multinode_history_completion_gate": "safe_readonly",
     "multinode_original_deployment_gate": "safe_readonly",
-    "decima_same_domain_benchmark_gate": "requires_external_stack",
+    "decima_same_domain_benchmark_gate": "safe_rerun",
+    "non_future_claim_closure_gate": "safe_readonly",
     "reviewer_environment_manifest_gate": "safe_rerun",
+    "reviewer_supplement_repackage": "safe_rerun",
     "gate_status_dashboard": "safe_rerun",
     "lean_no_sorry_audit": "safe_rerun",
     "lean_build": "safe_rerun",
@@ -228,13 +261,60 @@ artifact_regeneration_modes = {
     "paper_pdf": "safe_rerun",
     "latex_log_scan": "safe_rerun",
 }
+requires_external_stack = {
+    "named_external_runtime_probe_gate": True,
+}
+mode_properties = {
+    "safe_rerun": {
+        "current_safe_reproduction": True,
+        "requires_external_stack": False,
+        "uses_precomputed_live_rows": False,
+        "safe_for_reviewers_to_run": True,
+    },
+    "safe_readonly": {
+        "current_safe_reproduction": True,
+        "requires_external_stack": False,
+        "uses_precomputed_live_rows": False,
+        "safe_for_reviewers_to_run": True,
+    },
+    "precomputed_live_run": {
+        "current_safe_reproduction": False,
+        "requires_external_stack": False,
+        "uses_precomputed_live_rows": True,
+        "safe_for_reviewers_to_run": False,
+    },
+    "requires_external_stack": {
+        "current_safe_reproduction": False,
+        "requires_external_stack": True,
+        "uses_precomputed_live_rows": False,
+        "safe_for_reviewers_to_run": False,
+    },
+    "not_rerun": {
+        "current_safe_reproduction": False,
+        "requires_external_stack": False,
+        "uses_precomputed_live_rows": False,
+        "safe_for_reviewers_to_run": False,
+    },
+}
 for step in steps:
-    step["regeneration_mode"] = artifact_regeneration_modes.get(step.get("name"), "safe_rerun")
+    mode = artifact_regeneration_modes.get(step.get("name"), "safe_rerun")
+    props = dict(mode_properties.get(mode, mode_properties["safe_rerun"]))
+    if requires_external_stack.get(step.get("name")):
+        props["requires_external_stack"] = True
+    step["regeneration_mode"] = mode
+    step.update(props)
 manifest = {
     "generated_at_start": "$START_TS",
     "generated_at_end": __import__("datetime").datetime.now().astimezone().isoformat(),
-    "repo_root": str(root),
+    "repo_root": "<REPO_ROOT>",
     "artifact_regeneration_modes": artifact_regeneration_modes,
+    "artifact_reproduction_contract": {
+        "safe_rerun": "Deterministic or non-invasive local command; safe for reviewers to rerun.",
+        "safe_readonly": "Reads current queue/history/resource state only; safe for reviewers but may change with live production state.",
+        "precomputed_live_run": "Packaged evidence from previously launched controlled/runtime rows. The reproduction script rebuilds ledgers but does not relaunch the rows.",
+        "requires_external_stack": "Requires external scheduler/runtime dependencies or mirrored containers outside the safe reproduction path.",
+        "not_rerun": "Historical evidence only.",
+    },
     "regeneration_mode_legend": {
         "safe_rerun": "Deterministic or non-invasive local command; safe for reviewers to rerun.",
         "safe_readonly": "Reads current queue/history/resource state only; may change with live production state but will not launch work.",

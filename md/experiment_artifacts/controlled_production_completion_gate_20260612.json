@@ -15,7 +15,7 @@
     "run_id": "controlled_jtl110gpu_32_20260613",
     "theorem_slot_count": 32,
     "trace_completed_slot_count": 32,
-    "trace_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_32_20260613_trace.jsonl",
+    "trace_path": "<ARTIFACT_ROOT>/controlled_jtl110gpu_32_20260613_trace.jsonl",
     "trace_slot_count": 32,
     "unadmitted_launched_count": 0
   },
@@ -25,19 +25,24 @@
     "SCHEDULEURM_THEOREM_ADMISSION_MODE": "strict for theorem-facing production",
     "SCHEDULEURM_THEOREM_UNCERTIFIED_MODE": "block or trace_only"
   },
+  "combined_controlled_and_history_completion_ready": true,
   "completion_fraction_threshold": 0.95,
   "controlled_32_task_completion_ready": true,
   "controlled_6_task_completion_ready": true,
+  "controlled_completion_strong_claim_ready": true,
   "controlled_threshold": 32,
   "gate": "controlled_launched_completion_gate",
   "gate_pass": true,
-  "generated_at": "2026-06-16T12:46:14+0800",
+  "generated_at": "2026-06-16T14:37:54+0800",
+  "history_large_scale_completion_ready": true,
   "large_scale_organic_launched_completion_ready": true,
+  "large_scale_organic_launched_completion_ready_semantics": "legacy alias for strict history completion in this controlled gate; use history_large_scale_completion_ready or live_trace_large_scale_completion_ready",
   "launch_result": {},
   "launch_safe": false,
   "launch_status": "LAUNCH_DISABLED",
   "legacy_gate_name": "controlled_production_completion_gate",
   "live_oracle_traced_large_scale_completion_ready": false,
+  "live_trace_large_scale_completion_ready": false,
   "local_gpu_status": {
     "available": true,
     "gpus": [
@@ -55,7 +60,7 @@
   "minimum_candidate_count_semantics": "The theorem-facing requirement is a nonempty finite candidate family per launched slot plus exact robust MaxWeight selection; multiple candidates per slot are diagnostic richness, not a MaxWeight stability assumption.",
   "organic_production_canary_recorder_ready": true,
   "pass": true,
-  "pass_meaning": "32-task controlled launched completion and strict scheduler-history large-scale launched-completion certificate; live oracle-traced large-scale completion remains separate",
+  "pass_meaning": "32-task controlled launched completion is closed.  The strict scheduler-history large-scale completion certificate is also closed as a separate evidence path; live oracle-traced large-scale completion remains false",
   "production_launch_completion_snapshot": {
     "active_production_count": 11,
     "history_large_scale_launched_completion_ready": true,
@@ -67,9 +72,10 @@
     "queued_production_count": 0,
     "running_production_count": 11
   },
-  "scope": "Recognizes existing bounded controlled launched completion evidence and defines the stronger 32-task controlled and strict scheduler-history thresholds. It only launches additional controlled tasks when explicitly allowed and GPU utilization is below the safety threshold.",
+  "production_wide_live_completion_ready": false,
+  "scope": "Recognizes existing bounded controlled launched completion evidence and defines the stronger 32-task controlled threshold.  Strict history completion and live-trace completion are separate fields. It only launches additional controlled tasks when explicitly allowed and GPU utilization is below the safety threshold.",
   "scoped_claim_ready": true,
-  "selected_controlled_run_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/controlled_jtl110gpu_32_20260613.json",
+  "selected_controlled_run_path": "<ARTIFACT_ROOT>/controlled_jtl110gpu_32_20260613.json",
   "status": "CONTROLLED_32_AND_STRICT_HISTORY_COMPLETION_PASS",
   "strict_history_large_scale_completion_ready": true,
   "strong_claim_ready": true

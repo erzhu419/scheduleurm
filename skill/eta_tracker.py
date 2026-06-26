@@ -29,12 +29,13 @@ from typing import Optional, Tuple
 # third group (rate) is parsed but currently unused — we recompute rate from
 # current/elapsed because that's more reliable than parsing the displayed unit
 # (some tools show "it/s" for steps, others for episodes; ambiguous).
+_TQDM_UNIT_RE = r'(?:it|iter|iters|step|steps|epoch|epochs|episode|episodes|update|updates|sample|samples)'
 _ETA_PATTERNS = [
     # tqdm: "  47%|████▋     | 1234/5678 [00:42<03:21, 12.34it/s]"
     # also catches simpler tqdm without percent prefix: "1234/5678 [..., 12.34it/s]"
-    re.compile(r'(\d+)\s*/\s*(\d+)\s*\[[^\]]*?(\d+(?:\.\d+)?)\s*it/s'),
+    re.compile(r'(\d+)\s*/\s*(\d+)\s*\[[^\]]*?(\d+(?:\.\d+)?)\s*' + _TQDM_UNIT_RE + r'/s'),
     # tqdm slow form: "1234/5678 [..., 1.23s/it]"
-    re.compile(r'(\d+)\s*/\s*(\d+)\s*\[[^\]]*?(\d+(?:\.\d+)?)\s*s/it'),
+    re.compile(r'(\d+)\s*/\s*(\d+)\s*\[[^\]]*?(\d+(?:\.\d+)?)\s*s/' + _TQDM_UNIT_RE),
     # explicit "[Epoch N/M]" e.g. "[Epoch 23/200]"
     re.compile(r'\[Epoch\s+(\d+)\s*/\s*(\d+)\]'),
     # explicit "Epoch: N/M" or "Epoch N/M"
@@ -55,13 +56,22 @@ _ETA_PATTERNS = [
 #   "[02:00<00:00, 1.50s/it]"           → remaining=00:00 (effectively done)
 #   "[02:00<?, ?it/s]"                  → remaining='?' (tqdm doesn't know)
 _TQDM_ETA_RE = re.compile(
-    r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:it/s|s/it)(?:\s*,[^\]]*)?\s*\]'
+    r'\[\s*(\S+?)\s*<\s*(\S+?)\s*,\s*[\d.?]+\s*(?:'
+    + _TQDM_UNIT_RE
+    + r'/s|s/'
+    + _TQDM_UNIT_RE
+    + r')(?:\s*,[^\]]*)?\s*\]'
 )
 
 # Explicit ETA in free-form progress lines, e.g.
 #   "[16/103] ... (874.7m, ETA 4756.0m)"
 _INLINE_ETA_RE = re.compile(
     r'(?:^|[\s,(])ETA\s*[:=]?\s*(\d+(?:\.\d+)?)\s*([smhd])\b',
+    re.IGNORECASE,
+)
+
+_SECONDS_PER_UNIT_RE = re.compile(
+    r'\b(\d+(?:\.\d+)?)\s*s\s*/\s*(?:it|iter|iters|step|steps|epoch|epochs|episode|episodes)\b',
     re.IGNORECASE,
 )
 
@@ -145,6 +155,22 @@ def parse_inline_eta(tail_text: str) -> Optional[int]:
     return last
 
 
+def parse_seconds_per_unit(tail_text: str) -> Optional[float]:
+    """Extract explicit task-native speed like ``12.0s/iter`` from the latest line."""
+    if not tail_text:
+        return None
+    last = None
+    for line in tail_text.splitlines():
+        for m in _SECONDS_PER_UNIT_RE.finditer(line):
+            try:
+                seconds = float(m.group(1))
+            except ValueError:
+                continue
+            if seconds > 0:
+                last = seconds
+    return last
+
+
 def parse_progress(tail_text: str, cmd: Optional[str] = None) -> Optional[Tuple[int, int]]:
     """Walk all patterns over every line of tail_text. Return the LATEST
     (current, total) found. None if nothing matches.
@@ -224,6 +250,25 @@ def _extract_total_from_cmd(cmd: str) -> Optional[int]:
                     return v
             except ValueError:
                 pass
+    # BAPR / RE-SAC helper scripts use positional args:
+    #   ./run_seed.sh <algo> <env> <seed> <max_iters> <dwell> ...
+    # The second integer after the script is the total iteration count.
+    try:
+        import os as _os
+        import shlex as _shlex
+        toks = _shlex.split(cmd or "")
+        for i, tok in enumerate(toks):
+            if _os.path.basename(tok) != "run_seed.sh":
+                continue
+            ints = []
+            for part in toks[i + 1:]:
+                if part.isdigit():
+                    ints.append(int(part))
+                    if len(ints) >= 2:
+                        return ints[1] if ints[1] > 0 else None
+            break
+    except Exception:
+        pass
     return None
 
 
@@ -330,6 +375,10 @@ def compute_eta_seconds(tail_text: str,
     progress = parse_progress(tail_text, cmd=cmd)
     if progress is not None:
         current, total = progress
+        seconds_per_unit = parse_seconds_per_unit(tail_text)
+        if seconds_per_unit is not None and total > 0 and current <= total:
+            remaining = (float(total) - float(current)) * float(seconds_per_unit)
+            return int(max(0, remaining))
         if current >= _min_progress_for_rate(total, min_progress_for_rate):
             rate = current / elapsed
             if rate > 0:
@@ -393,6 +442,18 @@ def runtime_projection(tail_text: str,
 
     if progress is not None:
         current, total = progress
+        seconds_per_unit = parse_seconds_per_unit(tail_text)
+        if seconds_per_unit is not None and total > 0 and current <= total:
+            eta_s = int(max(0, (float(total) - float(current)) * float(seconds_per_unit)))
+            total_s = int(max(elapsed, elapsed + eta_s))
+            return {
+                "source": "seconds_per_unit",
+                "eta_s": eta_s,
+                "total_s": total_s,
+                "current": int(current),
+                "total_units": int(total),
+                "unit_s": float(seconds_per_unit),
+            }
         if (current >= _min_progress_for_rate(total, min_progress_for_rate)
                 and total > 0 and elapsed > 0):
             unit_s = float(elapsed) / float(current)

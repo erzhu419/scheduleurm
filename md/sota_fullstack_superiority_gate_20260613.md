@@ -9,6 +9,10 @@
 | `gate_pass` | true |
 | `scoped_claim_ready` | true |
 | `strong_claim_ready` | false |
+| `regeneration_mode` | `precomputed_live_run` |
+| `current_safe_reproduction` | false |
+| `requires_external_stack` | true |
+| `current_environment_has_tools` | false |
 | `pass_meaning` | named five same-host same-workload runtime probes with paired native-better rows are closed; direct full-stack SOTA superiority, registered-universe external-binary superiority, original multi-node superiority, and production-wide trace superiority are not claimed |
 | `named_same_host_runtime_probe_ready` | true |
 | `named_same_host_runtime_probe_native_better` | true |
@@ -49,14 +53,14 @@
 
 ## System Rows
 
-| Adapter | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `gavel_simulation` | true | true | true | true | true | false | false | false | false | true | true | Gavel completed the same temporary CUDA probe through its physical scheduler/worker/RPC/dispatcher/GavelIterator path, and the same script run directly on the same host has lower JCT in the scoped run; this is a Gavel-scoped physical full-stack row, not an all-workload Gavel claim |
-| `pollux_adaptdl_scheduler` | true | false | false | false | false | true | false | false | false | true | true | Pollux/AdaptDL completed the same CUDA binary through its Kubernetes controller/allocator/supervisor stack, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Pollux-scoped full-stack row, not an all-SOTA superiority certificate |
-| `sia_goodput_scheduler` | false | false | false | false | false | false | true | false | false | true | true | Sia/AdaptDL MIP completed the same CUDA binary through its Kubernetes controller/allocator path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Sia-scoped full-stack row, not an all-SOTA superiority certificate |
-| `iadeep_kubernetes_extender` | false | false | false | false | false | false | false | true | false | true | true | IADeep completed the same CUDA binary through its Kubernetes scheduler-extender/device-plugin GPU-sharing path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped stable probe case; this is an IADeep-scoped full-stack row, not an all-SOTA superiority certificate |
-| `salus_gpu_sharing` | false | false | false | false | false | false | false | false | true | true | true | Salus completed the same TensorFlow-Salus workload through its server/zrpc path, and the native TensorFlow-Salus path on the same host has lower wall time in the scoped run; this is a Salus-scoped full-stack row, not an arbitrary future-workload claim |
-| `decima_simulator` | true | false | false | false | false | false | false | false | false | false | false | Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline |
+| Adapter | Regeneration | Current safe rerun | Tools present | Smoke | Native microbaseline | Native simulator comparison | Gavel physical pair | Resident-delay JCT holdout | Pollux runtime pair | Sia runtime pair | IADeep runtime pair | Salus runtime pair | Runtime probe ready | Native-better probe | Reason |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `gavel_simulation` | `precomputed_live_run` | false | true | true | true | true | true | true | false | false | false | false | true | true | Gavel completed the same temporary CUDA probe through its physical scheduler/worker/RPC/dispatcher/GavelIterator path, and the same script run directly on the same host has lower JCT in the scoped run; this is a Gavel-scoped physical full-stack row, not an all-workload Gavel claim |
+| `pollux_adaptdl_scheduler` | `precomputed_live_run` | false | false | true | false | false | false | false | true | false | false | false | true | true | Pollux/AdaptDL completed the same CUDA binary through its Kubernetes controller/allocator/supervisor stack, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Pollux-scoped full-stack row, not an all-SOTA superiority certificate |
+| `sia_goodput_scheduler` | `precomputed_live_run` | false | false | false | false | false | false | false | false | true | false | false | true | true | Sia/AdaptDL MIP completed the same CUDA binary through its Kubernetes controller/allocator path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped short and long probe cases; this is a Sia-scoped full-stack row, not an all-SOTA superiority certificate |
+| `iadeep_kubernetes_extender` | `precomputed_live_run` | false | false | false | false | false | false | false | false | false | true | false | true | true | IADeep completed the same CUDA binary through its Kubernetes scheduler-extender/device-plugin GPU-sharing path, and the native Scheduleurm-controlled Docker path has lower JCT on the scoped stable probe case; this is an IADeep-scoped full-stack row, not an all-SOTA superiority certificate |
+| `salus_gpu_sharing` | `precomputed_live_run` | false | false | false | false | false | false | false | false | false | false | true | true | true | Salus completed the same TensorFlow-Salus workload through its server/zrpc path, and the native TensorFlow-Salus path on the same host has lower wall time in the scoped run; this is a Salus-scoped full-stack row, not an arbitrary future-workload claim |
+| `decima_simulator` | `precomputed_live_run` | false | true | true | false | false | false | false | false | false | false | false | false | false | Decima is a Spark-DAG simulator, so even a runnable entrypoint is not a GPU co-location system baseline |
 
 ## Scope
 

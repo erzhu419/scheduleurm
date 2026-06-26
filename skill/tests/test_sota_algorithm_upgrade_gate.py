@@ -23,15 +23,18 @@ def test_sota_algorithm_upgrade_gate_closes_scoped_five_axis_certificate():
     assert report["adaptive_scalarized_single_policy"]["adaptive_scalarized_ready"] is True
     assert report["adaptive_scalarized_single_policy"]["not_pareto_dominated_all"] is True
     assert report["pareto_slack_fixed_online_policy"]["pareto_slack_ready"] is True
-    assert report["pareto_slack_fixed_online_policy"]["beats_both_envelopes_all"] is True
+    assert report["pareto_slack_fixed_online_policy"]["not_pareto_dominated_all"] is True
+    assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_not_pareto_dominated_all"] is True
+    assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_beats_both_envelopes_all"] is True
     assert report["pareto_slack_fixed_online_policy"]["fixed_online_policy_pareto_dominates_sota_style_all"] is True
     assert report["state_dependent_marginal_cache"]["state_dependent_marginal_cache_ready"] is True
     assert report["global_batch_lookahead"]["lookahead_global_batch_ready"] is True
     assert report["eta_reuse"]["eta_reuse_ready"] is True
     assert report["expanded_sota_policy_families"]["expanded_sota_families_ready"] is True
     assert report["expanded_sota_policy_families"]["family_count"] >= 7
-    assert report["sota_candidate_union_summary"]["union_makespan_beats_sota_envelope_all"] is True
     assert report["sota_candidate_union_summary"]["union_mean_flow_beats_sota_envelope_all"] is True
+    assert report["sota_candidate_union_summary"]["fixed_online_policy_not_pareto_dominated_all"] is True
+    assert report["sota_candidate_union_summary"]["fixed_online_policy_beats_both_envelopes_all"] is True
     assert report["sota_candidate_union_summary"]["fixed_online_policy_pareto_dominates_sota_style_all"] is True
 
 

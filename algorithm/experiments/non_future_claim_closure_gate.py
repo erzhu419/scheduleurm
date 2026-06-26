@@ -110,8 +110,14 @@ def build_non_future_claim_closure_gate(
             "name": "production_wide_organic_completion",
             "closed_claim": "Strict theorem-facing organic scheduler history has enough launched/completed production rows, zero unadmitted rows, and production-wide wrapper is closed.",
             "ready": bool(
-                production_history.get("large_scale_organic_history_completion_ready")
-                and production_wide.get("large_scale_organic_launched_completion_ready")
+                (
+                    production_history.get("history_large_scale_organic_completion_ready")
+                    or production_history.get("large_scale_organic_history_completion_ready")
+                )
+                and (
+                    production_wide.get("history_large_scale_organic_completion_ready")
+                    or production_wide.get("combined_large_scale_completion_evidence_ready")
+                )
             ),
             "forbidden_extension": "Do not claim raw history, attempted-only rows, or future unknown arrivals are automatically theorem-grade.",
             "status": production_wide.get("status"),

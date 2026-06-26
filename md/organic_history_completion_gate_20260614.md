@@ -9,6 +9,10 @@ This gate audits real scheduler history under strict exact/signature service adm
 | `pass` | true |
 | `status` | `ORGANIC_HISTORY_COMPLETION_PASS` |
 | `strong_claim_ready` | true |
+| `history_large_scale_organic_completion_ready` | true |
+| `live_trace_large_scale_organic_completion_ready` | false |
+| `combined_large_scale_completion_evidence_ready` | true |
+| `raw_history_closed` | false |
 | `admission_mode` | `strict_exact_or_signature_service_certificate` |
 | `raw_production_row_count` | 10134 |
 | `raw_production_launched_count` | 5960 |
@@ -66,4 +70,4 @@ none
 
 ## Scope
 
-Real scheduler history audit for the strict theorem-facing organic production population.  Raw history, attempted-only jobs, cancelled jobs, auto-adopted jobs, diagnostic probes, and read-only probes are reported but excluded.  The claim is not about arbitrary future workloads; future unknown jobs still require the admission/probe contract.
+Real scheduler history audit for the strict theorem-facing organic production population.  Raw history, attempted-only jobs, cancelled jobs, auto-adopted jobs, diagnostic probes, and read-only probes are reported but excluded.  The claim is not about arbitrary future workloads; future unknown jobs still require the admission/probe contract.  This is a strict scheduler-history certificate, not a large live-trace completion certificate.

@@ -53,9 +53,15 @@ def build_production_wide_organic_trace_gate(
     recorder_ready = bool(canary.get("organic_production_canary_recorder_ready"))
     queued_trace_ready_or_wait = bool(live_trace.get("pass"))
     active_progress_ready = bool(launch.get("large_scale_active_progress_ready"))
-    organic_completion_ready = bool(canary.get("large_scale_organic_launched_completion_ready"))
-    trace_completion_ready = bool(canary.get("trace_large_scale_organic_launched_completion_ready"))
-    history_completion_ready = bool(canary.get("history_large_scale_organic_launched_completion_ready"))
+    trace_completion_ready = bool(
+        canary.get("live_trace_large_scale_organic_completion_ready")
+        or canary.get("trace_large_scale_organic_launched_completion_ready")
+    )
+    history_completion_ready = bool(
+        canary.get("history_large_scale_organic_completion_ready")
+        or canary.get("history_large_scale_organic_launched_completion_ready")
+    )
+    combined_completion_ready = bool(trace_completion_ready or history_completion_ready)
     live_trace_closed = bool(live_trace.get("production_wide_live_trace_closed"))
     strong_ready = bool(
         (live_trace_closed and trace_completion_ready)
@@ -67,7 +73,9 @@ def build_production_wide_organic_trace_gate(
         "gate": "production_wide_organic_trace_gate",
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "status": (
-            "PRODUCTION_WIDE_ORGANIC_LAUNCHED_COMPLETION_PASS"
+            "PRODUCTION_WIDE_HISTORY_COMPLETION_PASS_LIVE_TRACE_FALSE"
+            if history_completion_ready and not (live_trace_closed and trace_completion_ready) else
+            "PRODUCTION_WIDE_LIVE_TRACE_COMPLETION_PASS"
             if strong_ready else "PRODUCTION_WIDE_ORGANIC_TRACE_GATE_READY_STRONG_PENDING"
         ),
         "gate_pass": scoped_ready,
@@ -75,10 +83,18 @@ def build_production_wide_organic_trace_gate(
         "strong_claim_ready": strong_ready,
         "production_wide_live_trace_closed": live_trace_closed,
         "production_wide_history_completion_closed": history_completion_ready,
+        "history_large_scale_organic_completion_ready": history_completion_ready,
+        "live_trace_large_scale_organic_completion_ready": trace_completion_ready,
+        "combined_large_scale_completion_evidence_ready": combined_completion_ready,
         "organic_production_canary_recorder_ready": recorder_ready,
         "queued_live_trace_gate_ready_or_wait": queued_trace_ready_or_wait,
         "large_scale_active_progress_ready": active_progress_ready,
-        "large_scale_organic_launched_completion_ready": organic_completion_ready,
+        "large_scale_organic_launched_completion_ready": combined_completion_ready,
+        "large_scale_organic_launched_completion_ready_semantics": (
+            "legacy combined alias; use history_large_scale_organic_completion_ready, "
+            "live_trace_large_scale_organic_completion_ready, and "
+            "combined_large_scale_completion_evidence_ready"
+        ),
         "trace_large_scale_organic_launched_completion_ready": trace_completion_ready,
         "history_large_scale_organic_launched_completion_ready": history_completion_ready,
         "safe_launch_gate_status": launch.get("launch_status"),
@@ -106,8 +122,17 @@ def build_production_wide_organic_trace_gate(
             "trace_large_scale_organic_launched_completion_ready": canary.get(
                 "trace_large_scale_organic_launched_completion_ready"
             ),
+            "live_trace_large_scale_organic_completion_ready": canary.get(
+                "live_trace_large_scale_organic_completion_ready"
+            ),
             "history_large_scale_organic_launched_completion_ready": canary.get(
                 "history_large_scale_organic_launched_completion_ready"
+            ),
+            "history_large_scale_organic_completion_ready": canary.get(
+                "history_large_scale_organic_completion_ready"
+            ),
+            "combined_large_scale_completion_evidence_ready": canary.get(
+                "combined_large_scale_completion_evidence_ready"
             ),
             "history_completion_snapshot": canary.get("history_completion_snapshot"),
             "next_threshold": canary.get("next_threshold"),
@@ -159,10 +184,12 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
         f"| `production_wide_live_trace_closed` | {str(bool(report.get('production_wide_live_trace_closed'))).lower()} |",
         f"| `production_wide_history_completion_closed` | {str(bool(report.get('production_wide_history_completion_closed'))).lower()} |",
+        f"| `history_large_scale_organic_completion_ready` | {str(bool(report.get('history_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `live_trace_large_scale_organic_completion_ready` | {str(bool(report.get('live_trace_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `combined_large_scale_completion_evidence_ready` | {str(bool(report.get('combined_large_scale_completion_evidence_ready'))).lower()} |",
         f"| `organic_production_canary_recorder_ready` | {str(bool(report.get('organic_production_canary_recorder_ready'))).lower()} |",
         f"| `queued_live_trace_gate_ready_or_wait` | {str(bool(report.get('queued_live_trace_gate_ready_or_wait'))).lower()} |",
         f"| `large_scale_active_progress_ready` | {str(bool(report.get('large_scale_active_progress_ready'))).lower()} |",
-        f"| `large_scale_organic_launched_completion_ready` | {str(bool(report.get('large_scale_organic_launched_completion_ready'))).lower()} |",
         f"| `trace_large_scale_organic_launched_completion_ready` | {str(bool(report.get('trace_large_scale_organic_launched_completion_ready'))).lower()} |",
         f"| `history_large_scale_organic_launched_completion_ready` | {str(bool(report.get('history_large_scale_organic_launched_completion_ready'))).lower()} |",
         f"| `safe_launch_gate_status` | `{report.get('safe_launch_gate_status')}` |",

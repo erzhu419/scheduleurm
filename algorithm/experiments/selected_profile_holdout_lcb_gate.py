@@ -37,9 +37,9 @@ TARGETS = {
     ("cpu_heavy_local_bench", 8, "mixed"): 20,
     ("gpu_heavy_jax_matmul", 4, "mixed"): 20,
     ("gpu_cnn_torch_resnet50", 3): 20,
-    ("gpu_llm_distilgpt2", 10): 20,
+    ("gpu_llm_distilgpt2", 8): 20,
     ("gpu_cnn_torch_resnet50", 3, "mixed"): 20,
-    ("gpu_llm_distilgpt2", 10, "mixed"): 20,
+    ("gpu_llm_distilgpt2", 8, "mixed"): 20,
     ("hybrid_rl_resac_ant", 3, "mixed"): 20,
 }
 

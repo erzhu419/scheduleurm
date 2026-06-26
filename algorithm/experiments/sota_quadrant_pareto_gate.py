@@ -88,8 +88,8 @@ def _quadrant_row(
         (
             str(row.get("taskset") or ""),
             str(row.get("arrival_mode") or ""),
-            float(row.get("pareto_slack_union_vs_sota_best_makespan") or 0.0),
-            float(row.get("pareto_slack_union_vs_sota_best_mean_flow") or 0.0),
+            _candidate_vs_sota_best_makespan(row),
+            _candidate_vs_sota_best_mean_flow(row),
         )
         for row in rows
     ]
@@ -131,6 +131,18 @@ def _quadrant_row(
         "strict_pareto_dominance_ready": bool(strict_noninferiority and strict_improvement),
         "open_strict_rows": open_rows,
     }
+
+
+def _candidate_vs_sota_best_makespan(row: Mapping[str, Any]) -> float:
+    candidate = float(row.get("candidate_makespan_s") or 0.0)
+    best = float(row.get("best_sota_makespan_s") or 0.0)
+    return best / candidate if candidate > 0.0 else 0.0
+
+
+def _candidate_vs_sota_best_mean_flow(row: Mapping[str, Any]) -> float:
+    candidate = float(row.get("candidate_mean_flow_s") or 0.0)
+    best = float(row.get("best_sota_mean_flow_s") or 0.0)
+    return best / candidate if candidate > 0.0 else 0.0
 
 
 def markdown_report(report: Mapping[str, Any]) -> str:

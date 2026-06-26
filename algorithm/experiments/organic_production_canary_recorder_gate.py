@@ -86,7 +86,8 @@ def build_organic_production_canary_recorder_gate(
         if use_history_completion else {}
     )
     history_completion_ready = bool(
-        history_completion.get("large_scale_organic_history_completion_ready")
+        history_completion.get("history_large_scale_organic_completion_ready")
+        or history_completion.get("large_scale_organic_history_completion_ready")
     )
     organic_ready = bool(trace_completion_ready or history_completion_ready)
     recorder_ready = (
@@ -104,10 +105,14 @@ def build_organic_production_canary_recorder_gate(
         ),
         "gate_pass": recorder_ready,
         "scoped_claim_ready": recorder_ready,
-        "strong_claim_ready": organic_ready,
+        "strong_claim_ready": bool(trace_completion_ready),
+        "combined_large_scale_completion_evidence_ready": organic_ready,
         "pass_meaning": (
             "strict organic production canary recorder readiness, not organic "
-            "large-scale launched-completion closure unless strong_claim_ready is true"
+            "live-trace launched-completion closure unless strong_claim_ready "
+            "is true.  History completion is reported separately through "
+            "history_large_scale_organic_completion_ready and "
+            "combined_large_scale_completion_evidence_ready"
         ),
         "trace_path": str(trace_path),
         "trace_exists": trace_path.exists(),
@@ -126,7 +131,9 @@ def build_organic_production_canary_recorder_gate(
         "node_threshold": int(node_threshold),
         "organic_production_canary_recorder_ready": recorder_ready,
         "trace_large_scale_organic_launched_completion_ready": bool(trace_completion_ready),
+        "live_trace_large_scale_organic_completion_ready": bool(trace_completion_ready),
         "history_large_scale_organic_launched_completion_ready": bool(history_completion_ready),
+        "history_large_scale_organic_completion_ready": bool(history_completion_ready),
         "history_completion_snapshot": {
             "status": history_completion.get("status"),
             "strict_organic_launched_count": history_completion.get("strict_organic_launched_count"),
@@ -142,6 +149,12 @@ def build_organic_production_canary_recorder_gate(
             and production.get("active_production_count", 0)
         ),
         "large_scale_organic_launched_completion_ready": organic_ready,
+        "large_scale_organic_launched_completion_ready_semantics": (
+            "legacy combined alias; use "
+            "history_large_scale_organic_completion_ready, "
+            "live_trace_large_scale_organic_completion_ready, and "
+            "combined_large_scale_completion_evidence_ready"
+        ),
         "admission_contract_snapshot": {
             "future_production_automatic_theorem_closure_ready": admission.get(
                 "future_production_automatic_theorem_closure_ready"
@@ -189,8 +202,9 @@ def build_organic_production_canary_recorder_gate(
             "Non-invasive organic production canary recorder.  It establishes the "
             "trace/admission contract and audits current rows.  Large-scale "
             "completion may be closed either by the live oracle trace counters "
-            "or by the strict organic scheduler-history completion certificate; "
-            "the two evidence paths are reported separately."
+            "or by the strict organic scheduler-history completion certificate. "
+            "The two evidence paths are reported separately, so zero live-trace "
+            "counters do not imply a live-trace completion claim."
         ),
     }
 
@@ -221,8 +235,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `unadmitted_launched_count` | {report.get('unadmitted_launched_count')} |",
         f"| `organic_production_canary_recorder_ready` | {str(bool(report.get('organic_production_canary_recorder_ready'))).lower()} |",
         f"| `trace_large_scale_organic_launched_completion_ready` | {str(bool(report.get('trace_large_scale_organic_launched_completion_ready'))).lower()} |",
+        f"| `live_trace_large_scale_organic_completion_ready` | {str(bool(report.get('live_trace_large_scale_organic_completion_ready'))).lower()} |",
         f"| `history_large_scale_organic_launched_completion_ready` | {str(bool(report.get('history_large_scale_organic_launched_completion_ready'))).lower()} |",
-        f"| `large_scale_organic_launched_completion_ready` | {str(bool(report.get('large_scale_organic_launched_completion_ready'))).lower()} |",
+        f"| `history_large_scale_organic_completion_ready` | {str(bool(report.get('history_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `combined_large_scale_completion_evidence_ready` | {str(bool(report.get('combined_large_scale_completion_evidence_ready'))).lower()} |",
         "",
         "## Blocker",
         "",

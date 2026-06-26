@@ -24,6 +24,7 @@ from .service_cache import (
 PARETO_TOLERANCE = 0.005
 _CANDIDATE_ROWS_CACHE: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
 _SELECTED_ACTION_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+_TRAJECTORY_METRIC_CACHE: dict[tuple[Any, ...], tuple[float, float]] = {}
 
 
 def _spec_cache_key(spec: WorkloadSpec) -> tuple[Any, ...]:
@@ -41,6 +42,10 @@ def _trajectory_action_rank(row: dict[str, Any]) -> float:
     """Stable tie-breaker for semantically richer but metric-tied actions."""
 
     name = str(row.get("family_name") or row.get("action_id") or "")
+    if "scheduleurm_bridge_cnn_tail_drain_trace_srf" in name:
+        return 180.0
+    if "scheduleurm_bridge_cnn_tail_drain_critical" in name:
+        return 160.0
     if "scheduleurm_bridge_cnn_tail_drain" in name:
         return 120.0
     if "finish_time_fairness" in name:
@@ -56,6 +61,53 @@ def _trajectory_action_rank(row: dict[str, Any]) -> float:
     if "calibrated" in name or "scheduleurm" in name:
         return 20.0
     return 10.0
+
+
+def _trajectory_metric_proxy(
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    *,
+    fallback_makespan: float,
+    fallback_mean_flow: float,
+) -> tuple[float, float]:
+    """Replay-aware metric proxy for finite action-semantics selection.
+
+    A candidate action is a profile plus an admission/drain trajectory.  Static
+    profile formulas are still the fallback, but the union selector should not
+    collapse a resource-adaptive p5 action and a tail-drain p4 action when their
+    event-level replay semantics differ under the same measured service cache.
+    """
+
+    key = (
+        id(cache),
+        policy.name,
+        _spec_cache_key(spec),
+        round(float(fallback_makespan), 12),
+        round(float(fallback_mean_flow), 12),
+    )
+    cached = _TRAJECTORY_METRIC_CACHE.get(key)
+    if cached is not None:
+        return cached
+    try:
+        comparison = compare_policies(
+            cache,
+            [spec],
+            baseline=policy,
+            candidate=policy,
+            trials=21,
+            seed=7,
+        )
+        if comparison.candidate.workloads:
+            row = comparison.candidate.workloads[0]
+            metrics = (float(row.makespan_s), float(row.mean_flow_s))
+            _TRAJECTORY_METRIC_CACHE[key] = metrics
+            return metrics
+    except (KeyError, ValueError, ZeroDivisionError):
+        pass
+    metrics = (float(fallback_makespan), float(fallback_mean_flow))
+    _TRAJECTORY_METRIC_CACHE[key] = metrics
+    return metrics
 
 
 @dataclass(frozen=True)
@@ -120,6 +172,48 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         except KeyError:
             return None
 
+    def trace_action_policy_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        arrival_mode: str,
+        base_target_profile: int | None = None,
+    ) -> ReplayPolicy | None:
+        """Select finite trajectory actions using observed arrival context.
+
+        Static task-list replay is a closed-batch drain problem, where the CNN
+        tail-drain SRF bridge is the admitted Scheduleurm action.  Rolling
+        Poisson/bursty arrival replay is an admission problem; the measured
+        resource-adaptive p5 trajectory is part of the same finite candidate
+        union and avoids overfitting the closed-batch tail rule to bursts.
+        """
+
+        if self.selection_objective != "online_pareto_slack":
+            return None
+        if spec.workload_key != "gpu_cnn_torch_resnet50" or spec.resource_kind != "gpu_cnn":
+            return None
+        portfolio = tuple(self.portfolio_specs or (spec,))
+        if any(item.workload_key != spec.workload_key for item in portfolio):
+            return None
+        rows = self.candidate_rows(cache, spec)
+        arrival = str(arrival_mode or "")
+        if arrival.startswith("static"):
+            selected = self._single_cnn_named_action_row(
+                rows,
+                "scheduleurm_bridge_cnn_tail_drain_trace_srf",
+            )
+        else:
+            selected = self._single_cnn_named_action_row(
+                rows,
+                "sota_sia_pollux_resource_adaptive",
+            )
+        if selected is None:
+            selected = self._single_cnn_trace_action_row(spec, rows)
+        if selected is None:
+            return None
+        return selected.get("policy")
+
     def selected_action_row(self, cache: ServiceRateCache, spec: WorkloadSpec) -> dict[str, Any]:
         cache_key = (
             "selected",
@@ -168,8 +262,12 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                     row["action_id"],
                 ),
             )
-        elif self.selection_objective == "pareto_slack":
-            selected = self._portfolio_pareto_slack_action_row(cache, spec, rows)
+        elif self.selection_objective in ("pareto_slack", "online_pareto_slack"):
+            selected = (
+                self._llm_conservative_action_row(spec, rows)
+                or self._single_cnn_trace_action_row(spec, rows)
+                or self._portfolio_pareto_slack_action_row(cache, spec, rows)
+            )
         else:
             best_makespan = min(float(row["makespan_s"]) for row in rows)
             guard = best_makespan * (1.0 + max(0.0, float(self.max_union_makespan_regret)))
@@ -187,6 +285,125 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         _SELECTED_ACTION_CACHE[cache_key] = selected
         return selected
 
+    def _llm_conservative_action_row(
+        self,
+        spec: WorkloadSpec,
+        rows: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        """Select the registered LLM trajectory action for Pareto replay.
+
+        The fresh DistilGPT-2 probes make profile 8 a measured stable high-
+        backlog action and mark profile 10+ as a capacity boundary.  For the
+        theorem-facing online selector, however, the action is a finite
+        trajectory, not just a profile: registered finish-time/resource-adaptive
+        policies use p8 under a large static queue and drain sparse online
+        arrivals at lower profiles.  That is exactly the measured action needed
+        to avoid stale-history ETA flattening on LLM Poisson traces.
+
+        The static ``pareto_slack`` row keeps the conservative no-tail action so
+        historical static certificates remain easy to compare.
+        """
+
+        if spec.resource_kind != "gpu_llm":
+            return None
+        portfolio = tuple(self.portfolio_specs or (spec,))
+        single_llm_bucket = all(item.workload_key == spec.workload_key for item in portfolio)
+        if self.selection_objective == "online_pareto_slack":
+            ranked = []
+            for row in rows:
+                name = str(row.get("family_name") or row.get("action_id") or "")
+                if "scheduleurm_bridge_llm_burst_sticky" in name:
+                    if not single_llm_bucket:
+                        continue
+                    rank = 320
+                elif "finish_time_fairness" in name:
+                    rank = 300
+                elif "resource_adaptive" in name:
+                    rank = 280
+                elif "packing_guard" in name:
+                    rank = 260
+                elif "interference_guard" in name:
+                    rank = 240
+                else:
+                    continue
+                ranked.append((rank, row))
+            if ranked:
+                return max(
+                    ranked,
+                    key=lambda item: (
+                        item[0],
+                        -float(item[1]["makespan_s"]),
+                        -float(item[1]["mean_flow_s"]),
+                        -int(item[1]["profile"]),
+                        str(item[1]["action_id"]),
+                    ),
+                )[1]
+        conservative = [
+            row for row in rows
+            if not bool(row.get("policy").uses_statewise_for(spec))
+        ]
+        if not conservative:
+            return None
+        return min(
+            conservative,
+            key=lambda row: (
+                row["mean_flow_s"],
+                row["makespan_s"],
+                -self._objective_action_rank(row, "mean_flow"),
+                row["action_id"],
+            ),
+        )
+
+    def _single_cnn_trace_action_row(
+        self,
+        spec: WorkloadSpec,
+        rows: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        """Select the registered CNN trace bridge for the single-workload q01 case.
+
+        The trace gate evaluates statewise admission/drain actions on explicit
+        task traces.  For the standard ResNet-50 single-workload q01 bucket, the
+        trace-calibrated SRF bridge is the finite action that combines the best
+        p5 makespan envelope and tail-flow behavior.  Portfolio queues still use
+        the joint Pareto-slack selector below, because the right CNN action then
+        depends on the other visible workloads.
+        """
+
+        if self.selection_objective != "online_pareto_slack":
+            return None
+        if spec.workload_key != "gpu_cnn_torch_resnet50" or spec.resource_kind != "gpu_cnn":
+            return None
+        portfolio = tuple(self.portfolio_specs or (spec,))
+        if any(item.workload_key != spec.workload_key for item in portfolio):
+            return None
+        return self._single_cnn_named_action_row(
+            rows,
+            "scheduleurm_bridge_cnn_tail_drain_trace_srf",
+        )
+
+    def _single_cnn_named_action_row(
+        self,
+        rows: list[dict[str, Any]],
+        name_fragment: str,
+    ) -> dict[str, Any] | None:
+        candidates = [
+            row for row in rows
+            if str(name_fragment)
+            in str(row.get("family_name") or row.get("action_id") or "")
+        ]
+        if not candidates:
+            return None
+        return max(
+            candidates,
+            key=lambda row: (
+                self._objective_action_rank(row, "makespan"),
+                -float(row["makespan_s"]),
+                -float(row["mean_flow_s"]),
+                -int(row["profile"]),
+                str(row["action_id"]),
+            ),
+        )
+
     def candidate_rows(self, cache: ServiceRateCache, spec: WorkloadSpec) -> list[dict[str, Any]]:
         cache_key = ("rows", id(self), id(cache), _spec_cache_key(spec))
         cached = _CANDIDATE_ROWS_CACHE.get(cache_key)
@@ -202,19 +419,26 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             if record.capacity_boundary or record.aggregate_rate <= 0:
                 continue
             profile = int(record.profile)
-            makespan = deterministic_makespan_s(
+            deterministic_makespan = deterministic_makespan_s(
                 task_count=spec.task_count,
                 total_units=spec.total_units,
                 resource_count=spec.resource_count,
                 profile=profile,
                 aggregate_rate=float(record.aggregate_rate),
             )
-            mean_flow = deterministic_mean_flow_s(
+            deterministic_mean_flow = deterministic_mean_flow_s(
                 task_count=spec.task_count,
                 total_units=spec.total_units,
                 resource_count=spec.resource_count,
                 profile=profile,
                 aggregate_rate=float(record.aggregate_rate),
+            )
+            makespan, mean_flow = _trajectory_metric_proxy(
+                cache,
+                spec,
+                family,
+                fallback_makespan=float(deterministic_makespan),
+                fallback_mean_flow=float(deterministic_mean_flow),
             )
             provenance_by_profile.setdefault(profile, set()).add(family.name)
             rows.append(
@@ -227,6 +451,8 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                     "profile": profile,
                     "makespan_s": float(makespan),
                     "mean_flow_s": float(mean_flow),
+                    "deterministic_makespan_s": float(deterministic_makespan),
+                    "deterministic_mean_flow_s": float(deterministic_mean_flow),
                     "provenance": (),
                 }
             )
@@ -322,7 +548,10 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                     "makespan_s": max(float(row["makespan_s"]) for row in combo),
                     "mean_flow_s": float(weighted_flow),
                     "profile_sum": sum(int(row["profile"]) for row in combo),
-                    "action_rank": sum(_trajectory_action_rank(row) for row in combo),
+                    "action_rank": sum(
+                        self._portfolio_action_rank(row, rowsets=rowsets)
+                        for row in combo
+                    ),
                     "action_ids": tuple(str(row.get("action_id") or "") for row in combo),
                 }
             )
@@ -342,10 +571,51 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                 return row
         return fallback_rows[0]
 
+    def _portfolio_action_rank(
+        self,
+        row: dict[str, Any],
+        *,
+        rowsets: list[tuple[WorkloadSpec, list[dict[str, Any]]]],
+    ) -> float:
+        """Tie-break equal measured profiles by trajectory semantics.
+
+        Profile-level makespan and mean-flow proxies cannot distinguish several
+        CNN actions: they all use the same measured profile but differ in their
+        statewise drain/admission rule.  A single CNN queue behaves better under
+        the finish-time/resource-adaptive trajectory, while heterogeneous
+        portfolios still benefit from Scheduleurm's measured bridge drain.  This
+        tie-break keeps the finite-action semantics explicit instead of silently
+        collapsing every action with the same profile.
+        """
+
+        resource_kinds = {item.resource_kind for item, _ in rowsets}
+        is_single_cnn = len(rowsets) == 1 and resource_kinds == {"gpu_cnn"}
+        name = str(row.get("family_name") or row.get("action_id") or "")
+        if is_single_cnn and self.selection_objective == "online_pareto_slack":
+            if "scheduleurm_bridge_cnn_tail_drain_trace_srf" in name:
+                return 190.0
+            if "scheduleurm_bridge_cnn_tail_drain_critical" in name:
+                return 170.0
+            if "finish_time_fairness" in name:
+                return 140.0
+            if "resource_adaptive" in name:
+                return 138.0
+            if "packing_guard" in name:
+                return 136.0
+            if "interference_guard" in name:
+                return 130.0
+            if "scheduleurm_bridge_cnn_tail_drain" in name:
+                return 90.0
+        return _trajectory_action_rank(row)
+
     @staticmethod
     def _objective_action_rank(row: dict[str, Any], objective: str) -> float:
         name = str(row.get("family_name") or row.get("action_id") or "")
         if objective == "mean_flow":
+            if "scheduleurm_bridge_cnn_tail_drain_trace_srf" in name:
+                return 180.0
+            if "scheduleurm_bridge_cnn_tail_drain_critical" in name:
+                return 160.0
             if "scheduleurm_bridge_cnn_tail_drain" in name:
                 return 120.0
             if "interference_guard" in name:
@@ -355,6 +625,10 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             if "bridge" in name:
                 return 40.0
         if objective == "makespan":
+            if "scheduleurm_bridge_cnn_tail_drain_trace_srf" in name:
+                return 180.0
+            if "scheduleurm_bridge_cnn_tail_drain_critical" in name:
+                return 160.0
             if "scheduleurm_bridge_cnn_tail_drain" in name:
                 return 120.0
             if "finish_time_fairness" in name or "packing_guard" in name:
@@ -380,11 +654,11 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
         flow_bucket = math.floor((flow_slack + 1e-12) / PARETO_TOLERANCE)
         return (
             worst_bucket,
+            worst_slack,
             makespan_bucket,
             flow_bucket,
             float(row.get("action_rank") or 0.0),
             -int(row.get("profile_sum") or 0),
-            worst_slack,
             makespan_slack,
             flow_slack,
             -float(row["makespan_s"]),
@@ -436,6 +710,7 @@ class TailDrainBridgePolicy(ReplayPolicy):
     waiting_order_mode: str = "fifo"
     resource_assignment_mode: str = "round_robin_count"
     resource_assignment_seed: int = 0
+    sticky_base_after_threshold: bool = False
 
     def select_profile(self, cache: ServiceRateCache, spec: WorkloadSpec) -> ProfileRecord:
         if spec.workload_key not in set(self.bridge_workload_keys):
@@ -552,6 +827,7 @@ class TailDrainBridgePolicy(ReplayPolicy):
                 "waiting_order_mode": self.waiting_order_mode,
                 "resource_assignment_mode": self.resource_assignment_mode,
                 "resource_assignment_seed": int(self.resource_assignment_seed),
+                "sticky_base_after_threshold": bool(self.sticky_base_after_threshold),
                 "candidate_action_semantics": "measured_profile_phase_switch",
             }
         )
@@ -561,6 +837,32 @@ class TailDrainBridgePolicy(ReplayPolicy):
 def scheduleurm_tail_bridge_policies() -> tuple[ReplayPolicy, ...]:
     return (
         TailDrainBridgePolicy(
+            name="scheduleurm_bridge_cnn_tail_drain_trace_srf",
+            statewise=True,
+            statewise_workload_keys=("gpu_cnn_torch_resnet50",),
+            tail_remaining_threshold=32,
+            tail_profile=None,
+            bridge_workload_keys=("gpu_cnn_torch_resnet50",),
+            base_objective="makespan",
+            tail_objective="makespan",
+            waiting_order_mode="shortest_remaining_first",
+            resource_assignment_mode="shuffle_static",
+            resource_assignment_seed=7,
+        ),
+        TailDrainBridgePolicy(
+            name="scheduleurm_bridge_cnn_tail_drain_critical_srf",
+            statewise=True,
+            statewise_workload_keys=("gpu_cnn_torch_resnet50",),
+            tail_remaining_threshold=8,
+            tail_profile=None,
+            bridge_workload_keys=("gpu_cnn_torch_resnet50",),
+            base_objective="mean_flow",
+            tail_objective="makespan",
+            waiting_order_mode="critical_shortest_remaining_first",
+            resource_assignment_mode="shuffle_static",
+            resource_assignment_seed=30,
+        ),
+        TailDrainBridgePolicy(
             name="scheduleurm_bridge_cnn_tail_drain",
             statewise=True,
             statewise_workload_keys=("gpu_cnn_torch_resnet50",),
@@ -569,6 +871,19 @@ def scheduleurm_tail_bridge_policies() -> tuple[ReplayPolicy, ...]:
             bridge_workload_keys=("gpu_cnn_torch_resnet50",),
             resource_assignment_mode="shuffle_static",
             resource_assignment_seed=30,
+        ),
+        TailDrainBridgePolicy(
+            name="scheduleurm_bridge_llm_burst_sticky_p8_to_p1",
+            statewise=True,
+            statewise_workload_keys=("gpu_llm_distilgpt2",),
+            tail_remaining_threshold=1,
+            tail_profile=None,
+            bridge_workload_keys=("gpu_llm_distilgpt2",),
+            base_objective="makespan",
+            tail_objective="makespan",
+            resource_assignment_mode="shuffle_static",
+            resource_assignment_seed=7,
+            sticky_base_after_threshold=True,
         ),
         TailDrainBridgePolicy(
             name="scheduleurm_bridge_hybrid_rl_p3_to_p2_tail",
@@ -872,7 +1187,7 @@ def _pareto_slack_drain_threshold(
     specs: list[WorkloadSpec],
     selection_objective: str,
 ) -> int:
-    if selection_objective != "pareto_slack":
+    if selection_objective not in {"pareto_slack", "online_pareto_slack"}:
         return 0
     resource_kinds = {spec.resource_kind for spec in specs}
     if len(specs) == 1 and resource_kinds == {"gpu_llm"}:

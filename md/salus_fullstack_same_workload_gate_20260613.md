@@ -5,6 +5,10 @@
 | Quantity | Value |
 |---|---:|
 | `pass` | true |
+| `regeneration_mode` | `precomputed_live_run` |
+| `current_safe_reproduction` | false |
+| `requires_external_stack` | true |
+| `current_environment_has_tools` | false |
 | `official_manifest_ready` | true |
 | `docker_image_pull_completed` | false |
 | `k8s_image_pull_pod_scheduled` | true |

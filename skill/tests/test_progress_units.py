@@ -3,7 +3,7 @@ from algorithm.experiments.progress_units import (
     parse_progress_observation,
     task_progress_observation,
 )
-from algorithm.experiments.progress_wrapper import build_progress_line
+from algorithm.experiments.progress_wrapper import build_progress_line, build_tqdm_line
 from algorithm.experiments.sweetspot_ab_validation import _summarize_phase
 
 
@@ -52,9 +52,28 @@ def test_progress_wrapper_emits_scheduler_stable_iter_line(check, sch):
           and "ScheduleurmProgress Iter 14/1500" in line
           and "ETA " in line
           and obs is not None
-          and obs.current == 14
-          and obs.total == 1500
-          and abs(float(obs.rate_per_s) - (1.0 / 21.0)) < 1e-9,
+	          and obs.current == 14
+	          and obs.total == 1500
+	          and abs(float(obs.rate_per_s) - (1.0 / 21.0)) < 1e-9,
+	          diag=f"line={line}, obs={obs}")
+
+
+def test_progress_wrapper_emits_persistent_tqdm_line(check, sch):
+    child_obs = parse_progress_line(
+        "Step 20/100 loss=0.2 rate=2.5 step/s",
+        cmd="python bench.py --steps 100",
+    )
+    line = build_tqdm_line(child_obs, total_override=100, unit_override="step", elapsed_s=8.0)
+    obs = parse_progress_line(line)
+    check("progress wrapper emits persistent tqdm-style step line",
+          line is not None
+          and "ScheduleurmTqdm step:" in line
+          and "20/100" in line
+          and "[00:08<00:32, 2.5step/s]" in line
+          and obs is not None
+          and obs.current == 20
+          and obs.total == 100
+          and obs.unit == "step",
           diag=f"line={line}, obs={obs}")
 
 

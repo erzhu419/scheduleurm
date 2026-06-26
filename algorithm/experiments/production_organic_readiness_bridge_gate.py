@@ -66,7 +66,15 @@ def build_production_organic_readiness_bridge_gate(
         "WAIT_NO_ADMISSIBLE_QUEUED_PRODUCTION",
     }
     queued_theorem_ready = bool(queued_trace.get("pass"))
-    history_completion_ready = bool(canary.get("history_large_scale_organic_launched_completion_ready"))
+    history_completion_ready = bool(
+        canary.get("history_large_scale_organic_completion_ready")
+        or canary.get("history_large_scale_organic_launched_completion_ready")
+    )
+    trace_completion_ready = bool(
+        canary.get("live_trace_large_scale_organic_completion_ready")
+        or canary.get("trace_large_scale_organic_launched_completion_ready")
+    )
+    combined_completion_ready = bool(history_completion_ready or trace_completion_ready)
     readiness_ready = bool(
         canary.get("organic_production_canary_recorder_ready")
         and shadow_closed
@@ -76,7 +84,7 @@ def build_production_organic_readiness_bridge_gate(
     strong_ready = bool(
         (
             live.get("production_wide_live_trace_closed")
-            and canary.get("trace_large_scale_organic_launched_completion_ready")
+            and trace_completion_ready
         )
         or history_completion_ready
     )
@@ -115,12 +123,20 @@ def build_production_organic_readiness_bridge_gate(
         "shadow_alpha0": (shadow.get("theorem_subset_oracle_bridge") or {}).get("alpha0"),
         "shadow_alpha1": (shadow.get("theorem_subset_oracle_bridge") or {}).get("alpha1"),
         "large_scale_organic_launched_completion_ready": bool(
-            canary.get("large_scale_organic_launched_completion_ready")
+            combined_completion_ready
+        ),
+        "large_scale_organic_launched_completion_ready_semantics": (
+            "legacy combined alias; use history_large_scale_organic_completion_ready, "
+            "live_trace_large_scale_organic_completion_ready, and "
+            "combined_large_scale_completion_evidence_ready"
         ),
         "trace_large_scale_organic_launched_completion_ready": bool(
-            canary.get("trace_large_scale_organic_launched_completion_ready")
+            trace_completion_ready
         ),
+        "live_trace_large_scale_organic_completion_ready": bool(trace_completion_ready),
         "history_large_scale_organic_launched_completion_ready": bool(history_completion_ready),
+        "history_large_scale_organic_completion_ready": bool(history_completion_ready),
+        "combined_large_scale_completion_evidence_ready": bool(combined_completion_ready),
         "history_completion_snapshot": canary.get("history_completion_snapshot"),
         "production_wide_live_trace_closed": bool(live.get("production_wide_live_trace_closed")),
         "strong_claim_ready": bool(strong_ready),
@@ -161,7 +177,10 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `shadow_theorem_slot_count` | {report.get('shadow_theorem_slot_count')} |",
         f"| `large_scale_organic_launched_completion_ready` | {str(bool(report.get('large_scale_organic_launched_completion_ready'))).lower()} |",
         f"| `trace_large_scale_organic_launched_completion_ready` | {str(bool(report.get('trace_large_scale_organic_launched_completion_ready'))).lower()} |",
+        f"| `live_trace_large_scale_organic_completion_ready` | {str(bool(report.get('live_trace_large_scale_organic_completion_ready'))).lower()} |",
         f"| `history_large_scale_organic_launched_completion_ready` | {str(bool(report.get('history_large_scale_organic_launched_completion_ready'))).lower()} |",
+        f"| `history_large_scale_organic_completion_ready` | {str(bool(report.get('history_large_scale_organic_completion_ready'))).lower()} |",
+        f"| `combined_large_scale_completion_evidence_ready` | {str(bool(report.get('combined_large_scale_completion_evidence_ready'))).lower()} |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
         "",
         "## Blocker",

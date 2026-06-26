@@ -76,19 +76,36 @@ class ServiceRateCache:
         for record in records:
             self.add(record)
 
-    def add(self, record: ProfileRecord) -> None:
+    def add(self, record: ProfileRecord, *, force_replace: bool = False) -> None:
         key = (record.workload_key, int(record.profile))
         if record.capacity_boundary:
             old_boundary = self._capacity_boundaries.get(key)
-            if old_boundary is None or _record_quality(record) >= _record_quality(old_boundary):
+            if force_replace or old_boundary is None or _record_quality(record) >= _record_quality(old_boundary):
                 self._capacity_boundaries[key] = record
             old_cap = self._capacity_caps.get(record.workload_key)
             if old_cap is None or int(record.profile) < old_cap:
                 self._capacity_caps[record.workload_key] = int(record.profile)
             return
         old = self._records.get(key)
-        if old is None or _record_quality(record) >= _record_quality(old):
+        if force_replace or old is None or _record_quality(record) >= _record_quality(old):
             self._records[key] = record
+
+    def clear_capacity_boundaries(self, workload_key: str) -> None:
+        """Drop obsolete capacity caps before installing a fresher certificate.
+
+        Capacity boundaries are deliberately conservative, but they are also
+        measurement-certificate scoped.  When a later task-native probe remeasures
+        the same workload under a corrected progress/ETA protocol, old boundary
+        rows must not keep blocking the newer feasible rows.
+        """
+
+        key = str(workload_key)
+        self._capacity_boundaries = {
+            boundary_key: record
+            for boundary_key, record in self._capacity_boundaries.items()
+            if boundary_key[0] != key
+        }
+        self._capacity_caps.pop(key, None)
 
     def get(self, workload_key: str, profile: int) -> ProfileRecord | None:
         key = (workload_key, int(profile))
@@ -451,8 +468,19 @@ def _summary_is_unusable_for_exact_replay(summary: dict[str, Any]) -> bool:
 
     if bool(summary.get("capacity_boundary")):
         return True
+    if summary.get("measurement_valid") is False:
+        return True
     if summary.get("placement_valid") is False:
         return True
+    running_count = int(summary.get("running_count") or 0)
+    if running_count > 0:
+        if int(summary.get("returncode_valid_count") or running_count) < running_count:
+            return True
+        if summary.get("terminate_on_stable") is True:
+            if summary.get("all_stable_rate_ready") is False:
+                return True
+            if int(summary.get("stable_rate_ready_count") or 0) < running_count:
+                return True
     if int(summary.get("blocked_count") or 0) > 0:
         return True
     statuses = summary.get("status_counts") or {}

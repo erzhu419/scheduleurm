@@ -21,6 +21,7 @@ from .fast_forward import (
     WorkloadSpec,
     _covering_service_profile,
     _statewise_holds_base_profile_for,
+    _statewise_sticky_base_after_threshold_for,
     _statewise_target_profile,
     _resource_assignment_mode_for,
     _resource_assignment_seed_for,
@@ -260,7 +261,19 @@ def replay_trace(
 ) -> TracePolicyResult:
     rng = random.Random(seed)
     specs = {spec.workload_key: spec for spec in trace.workload_specs()}
-    profiles = {key: policy.select_profile(cache, spec).profile for key, spec in specs.items()}
+    workload_policies = {
+        key: _trace_action_policy_for(
+            cache=cache,
+            spec=spec,
+            policy=policy,
+            arrival_mode=trace.arrival_mode,
+        )
+        for key, spec in specs.items()
+    }
+    profiles = {
+        key: workload_policies[key].select_profile(cache, spec).profile
+        for key, spec in specs.items()
+    }
     profile_counts: dict[str, dict[int, int]] = {}
     completions: dict[str, float] = {}
     grouped: dict[str, list[TraceJob]] = {}
@@ -268,10 +281,11 @@ def replay_trace(
         grouped.setdefault(job.workload_key, []).append(job)
     for key, jobs in grouped.items():
         resource_count = specs[key].resource_count
+        effective_policy = workload_policies[key]
         assignment_mode = _resource_assignment_mode_for(
             cache=cache,
             spec=specs[key],
-            policy=policy,
+            policy=effective_policy,
             base_target_profile=profiles[key],
         )
         if assignment_mode == "lpt_static" and all(abs(float(job.arrival_s)) <= 1e-12 for job in jobs):
@@ -283,7 +297,7 @@ def replay_trace(
                 seed=_resource_assignment_seed_for(
                     cache=cache,
                     spec=specs[key],
-                    policy=policy,
+                    policy=effective_policy,
                     base_target_profile=profiles[key],
                 ),
             )
@@ -300,7 +314,7 @@ def replay_trace(
                     jobs=resource_jobs,
                     target_profile=profiles[key],
                     rng=rng,
-                    policy=policy,
+                    policy=effective_policy,
                     spec=specs[key],
                     profile_counter=profile_counts.setdefault(key, {}),
                     preserve_job_order=preserve_resource_order,
@@ -325,6 +339,25 @@ def replay_trace(
         p90_flow_s=_quantile(flows, 0.90),
         completed_jobs=len(completions),
     )
+
+
+def _trace_action_policy_for(
+    *,
+    cache: ServiceRateCache,
+    spec: WorkloadSpec,
+    policy: ReplayPolicy,
+    arrival_mode: str,
+    base_target_profile: int | None = None,
+) -> ReplayPolicy:
+    delegated = policy.trace_action_policy_for(
+        cache,
+        spec,
+        arrival_mode=arrival_mode,
+        base_target_profile=base_target_profile,
+    )
+    if delegated is None or delegated is policy:
+        return policy
+    return delegated
 
 
 def save_trace(trace: TaskTrace, path: Path) -> None:
@@ -413,6 +446,7 @@ def _replay_resource_jobs(
     active: list[dict[str, Any]] = []
     completions: dict[str, float] = {}
     current_service_profile = max(1, int(target_profile))
+    sticky_base_active = False
 
     def admit_arrivals(until_s: float) -> None:
         nonlocal next_idx
@@ -421,12 +455,21 @@ def _replay_resource_jobs(
             next_idx += 1
 
     def fill() -> None:
-        nonlocal current_service_profile
+        nonlocal current_service_profile, sticky_base_active
         total_remaining = len(waiting) + len(active)
         if total_remaining <= 0:
+            sticky_base_active = False
             return
         desired_target = max(1, int(target_profile))
         if policy is not None and spec is not None and policy.uses_statewise_for(spec):
+            if _statewise_sticky_base_after_threshold_for(
+                cache=cache,
+                spec=spec,
+                policy=policy,
+                base_target_profile=target_profile,
+                total_remaining=total_remaining,
+            ):
+                sticky_base_active = True
             desired_target = _statewise_target_profile(
                 cache=cache,
                 spec=spec,
@@ -443,6 +486,8 @@ def _replay_resource_jobs(
                 waiting_count=len(waiting),
                 total_remaining=total_remaining,
             ):
+                desired_target = max(int(desired_target), int(target_profile))
+            if sticky_base_active:
                 desired_target = max(int(desired_target), int(target_profile))
         admission_target = max(len(active), min(desired_target, total_remaining))
         current_service_profile = _covering_service_profile(
@@ -485,6 +530,7 @@ def _replay_resource_jobs(
 
     while next_idx < len(pending) or waiting or active:
         if not active and not waiting and next_idx < len(pending):
+            sticky_base_active = False
             now = max(now, pending[next_idx].arrival_s)
             admit_arrivals(now)
             fill()

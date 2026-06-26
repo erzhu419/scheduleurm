@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from typing import Sequence
 
 
@@ -21,6 +22,15 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from algorithm.experiments.progress_units import ProgressObservation, canonical_unit, parse_progress_line
+
+
+def _format_hms(seconds: float) -> str:
+    total = max(0, int(round(float(seconds))))
+    h, rem = divmod(total, 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
 
 
 def _command_for_parser(command: Sequence[str]) -> str:
@@ -64,6 +74,50 @@ def build_progress_line(
             parts.append(f"seconds_per_{unit}={float(obs.seconds_per_unit):.6g}")
     parts.append(f"source={obs.source}")
     return " ".join(parts)
+
+
+def build_tqdm_line(
+    obs: ProgressObservation,
+    *,
+    total_override: int | None = None,
+    unit_override: str | None = None,
+    elapsed_s: float = 0.0,
+) -> str | None:
+    """Render a persistent tqdm-style ETA line for scheduler log tails.
+
+    Real terminal tqdm bars often update with carriage returns.  Remote log tails
+    can lose those updates, so the wrapper emits a normal newline with the same
+    elapsed/remaining/rate contract that eta_tracker understands.
+    """
+
+    current = obs.current
+    total = int(total_override) if total_override and int(total_override) > 0 else obs.total
+    rate = obs.rate_per_s
+    unit = canonical_unit(unit_override or obs.unit)
+    if current is None or total is None or int(total) <= 0:
+        return None
+    current_i = int(current)
+    total_i = int(total)
+    if current_i < 0 or current_i > total_i:
+        return None
+    if rate is None or float(rate) <= 0:
+        return None
+
+    rate_f = float(rate)
+    remaining_s = max(0.0, float(total_i - current_i) / max(rate_f, 1e-12))
+    elapsed = _format_hms(elapsed_s)
+    remaining = _format_hms(remaining_s)
+    pct = 100.0 * float(current_i) / float(total_i)
+    filled = int(round(10.0 * float(current_i) / float(total_i)))
+    bar = "#" * max(0, min(10, filled)) + "-" * max(0, 10 - min(10, filled))
+    if obs.seconds_per_unit is not None and float(obs.seconds_per_unit) >= 1.0:
+        rate_text = f"{float(obs.seconds_per_unit):.3g}s/{unit}"
+    else:
+        rate_text = f"{rate_f:.3g}{unit}/s"
+    return (
+        f"ScheduleurmTqdm {unit}: {pct:5.1f}%|{bar}| "
+        f"{current_i}/{total_i} [{elapsed}<{remaining}, {rate_text}]"
+    )
 
 
 def _normalize_child_line(
@@ -183,6 +237,7 @@ def run_wrapped_command(
     assert proc.stdout is not None
     rates: list[float] = []
     stopped_on_stable = False
+    start_monotonic = time.monotonic()
     for raw in proc.stdout:
         line = raw.rstrip("\n")
         print(line, flush=True)
@@ -194,6 +249,15 @@ def run_wrapped_command(
         )
         if progress_line:
             print(progress_line, flush=True)
+        if obs is not None:
+            tqdm_line = build_tqdm_line(
+                obs,
+                total_override=total,
+                unit_override=unit,
+                elapsed_s=time.monotonic() - start_monotonic,
+            )
+            if tqdm_line:
+                print(tqdm_line, flush=True)
         if obs is None or obs.rate_per_s is None or float(obs.rate_per_s) <= 0.0:
             continue
         rates.append(float(obs.rate_per_s))

@@ -56,7 +56,7 @@ def test_full_quadrant_tasksets_surface_probe_obligations(check, sch):
     check("GPU-bound full saturation set has measured profiles 1-8",
           "q01_gpu_bound_compute" not in missing,
           diag=str(missing))
-    check("coupled RL set is closed by the fresh profile-10 capacity boundary",
+    check("coupled RL set is closed by the fresh profile-6 capacity boundary",
           "q11_cpu_gpu_coupled" not in missing,
           diag=str(missing))
     check("local real q10 probe has measured profiles 1-9 and capacity boundary 10",
@@ -73,9 +73,15 @@ def test_replayable_only_filters_unmeasured_members(check, sch):
           len(light_specs) == 1 and light_specs[0].workload_key == "light_control_local",
           diag=str(light_specs))
     check("validated hybrid portfolio remains replayable",
-          len(hybrid_specs) == 3
+          len(hybrid_specs) == 5
           and {spec.workload_key for spec in hybrid_specs}
-          == {"hybrid_rl_resac_ant", "gpu_heavy_jax_matmul", "cpu_heavy_local_bench"},
+          == {
+              "hybrid_rl_resac_ant",
+              "gpu_heavy_jax_matmul",
+              "gpu_cnn_torch_resnet50",
+              "gpu_llm_distilgpt2",
+              "cpu_heavy_local_bench",
+          },
           diag=str(hybrid_specs))
     check("local real q10 probe is replayable without protocol curve",
           len(q10_local_specs) == 1
@@ -87,8 +93,8 @@ def test_capacity_boundary_closes_higher_required_profiles(check, sch):
     cache = build_default_cache()
     snapshot = taskset_by_name("q11_cpu_gpu_coupled").snapshot(cache)
     member = snapshot["members"][0]
-    check("q11 snapshot records profile 10 as the live robust boundary",
-          member["closed_by_capacity_boundary_profile"] == 10,
+    check("q11 snapshot records profile 6 as the live robust boundary",
+          member["closed_by_capacity_boundary_profile"] == 6,
           diag=str(snapshot))
     check("q11 missing-measurement list stops at the measured boundary",
           snapshot["missing_measurements"] == {},

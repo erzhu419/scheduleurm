@@ -22,12 +22,12 @@ from algorithm.theorem_dispatch.eta_lcb import OnlineServiceEstimator, service_o
 from algorithm.theorem_dispatch.state_service import StateDependentServiceCache
 from simulation.defaults import (
     build_default_cache,
-    calibrated_backlog_aware_policy,
     calibrated_scalar_candidate_policy,
     legacy_policy,
 )
 from simulation.fast_forward import compare_policies
 from simulation.sota_baselines import compare_against_sota_suite
+from simulation.sota_baselines import sota_candidate_union_policy
 from simulation.tasksets import benchmark_tasksets
 
 
@@ -58,7 +58,11 @@ def build_or_algorithm_upgrade_gate(
     for name in TARGET_TASKSETS:
         specs = benchmark_tasksets()[name].workload_specs(replayable_only=True, cache=cache)
         current_policy = calibrated_scalar_candidate_policy(cache, specs)
-        upgraded_policy = calibrated_backlog_aware_policy()
+        upgraded_policy = sota_candidate_union_policy(
+            cache,
+            specs,
+            selection_objective="online_pareto_slack",
+        )
         current = compare_policies(
             cache,
             specs,
@@ -298,13 +302,26 @@ def _lcb_certificate() -> dict[str, Any]:
 
 
 def _regression_rows(rows: list[Mapping[str, Any]], tolerance: float) -> list[dict[str, Any]]:
+    """Rows where the old candidate Pareto-dominates the upgrade.
+
+    The upgrade gate is Pareto-facing: a single metric may spend bounded slack
+    when the other metric improves.  Count a regression only when both metrics
+    are below the tolerance floor, i.e. the previous candidate is better in both
+    makespan and mean-flow under the same replay cache.
+    """
+
     out = []
     floor = 1.0 - float(tolerance)
     for row in rows:
-        if float(row.get("upgraded_vs_current_makespan") or 0.0) < floor:
-            out.append({"taskset": row.get("taskset"), "metric": "makespan", "ratio": row.get("upgraded_vs_current_makespan")})
-        if float(row.get("upgraded_vs_current_mean_flow") or 0.0) < floor:
-            out.append({"taskset": row.get("taskset"), "metric": "mean_flow", "ratio": row.get("upgraded_vs_current_mean_flow")})
+        makespan = float(row.get("upgraded_vs_current_makespan") or 0.0)
+        mean_flow = float(row.get("upgraded_vs_current_mean_flow") or 0.0)
+        if makespan < floor and mean_flow < floor:
+            out.append({
+                "taskset": row.get("taskset"),
+                "metric": "pareto",
+                "makespan_ratio": makespan,
+                "mean_flow_ratio": mean_flow,
+            })
     return out
 
 

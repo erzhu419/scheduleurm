@@ -1,0 +1,16 @@
+{
+  "gate": "critical_cpu_expected_completion_preregistration",
+  "status": "FROZEN_BEFORE_R14_LAUNCH",
+  "estimand": "expected_group_natural_completion_makespan",
+  "estimator": "arithmetic_mean_of_exact_phase_components",
+  "fit_waves": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  "diagnostic_wave_excluded_from_fit_and_validation": 13,
+  "prospective_validation_waves": [14, 15, 16, 17, 18],
+  "p95_relative_error_limit": 0.1,
+  "max_relative_error_limit": 0.15,
+  "nodes": ["node001", "node002"],
+  "profiles": [1, 8, 9],
+  "profile_axis": "colocation_count",
+  "required_dispatch_regime": "cpu_external_idle",
+  "claim_boundary": "The failed r13 single-wave median-point gate remains recorded. This prospective gate targets expected completion over repeated future waves and does not claim a per-job deterministic error bound."
+}

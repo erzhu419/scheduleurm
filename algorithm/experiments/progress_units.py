@@ -9,7 +9,9 @@ placement behavior.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import re
+from statistics import median
 from typing import Any, Mapping
 
 
@@ -24,6 +26,272 @@ class ProgressObservation:
     unit: str
     source: str
     line: str
+
+
+_PHASE_MARKER_RE = re.compile(
+    r"ScheduleurmPhase\s+name=(?P<name>[A-Za-z0-9_.-]+)\s+"
+    r"event=(?P<event>start|end)(?:\s+index=(?P<index>[A-Za-z0-9_.-]+))?",
+    re.IGNORECASE,
+)
+_COMPLETION_MODEL_PREFIX = "ScheduleurmCompletionModel "
+
+
+class CompletionTimingTracker:
+    """Wall-clock completion model assembled around task-native progress.
+
+    Stable service and completion time are deliberately separate contracts.
+    Progress observations estimate the service portion.  A naturally completed
+    run additionally exposes startup, periodic phase, and finalization costs.
+    A probe stopped after reaching a stable window never becomes a completion
+    model, even though its service-rate row may still be valid.
+    """
+
+    def __init__(self, *, total_units: int | None = None, unit: str = "unit"):
+        self.total_units = int(total_units) if total_units and int(total_units) > 0 else None
+        self.unit = canonical_unit(unit)
+        self._progress: list[tuple[int, float]] = []
+        self._phase_starts: dict[tuple[str, str], float] = {}
+        self._phase_durations: dict[str, list[float]] = {}
+
+    def observe_progress(self, obs: ProgressObservation, *, elapsed_s: float) -> None:
+        if obs.current is None:
+            return
+        current = int(obs.current)
+        elapsed = max(0.0, float(elapsed_s))
+        if current < 0:
+            return
+        if obs.total is not None and int(obs.total) > 0:
+            self.total_units = int(obs.total)
+        self.unit = canonical_unit(obs.unit or self.unit)
+        if self._progress and current < self._progress[-1][0]:
+            # A restarted child must not splice two progress clocks together.
+            self._progress = []
+        if self._progress and current == self._progress[-1][0]:
+            self._progress[-1] = (current, elapsed)
+        else:
+            self._progress.append((current, elapsed))
+
+    def observe_phase_line(self, line: str, *, elapsed_s: float) -> bool:
+        match = _PHASE_MARKER_RE.search(str(line or ""))
+        if not match:
+            return False
+        name = str(match.group("name") or "unknown").lower()
+        index = str(match.group("index") or "")
+        key = (name, index)
+        elapsed = max(0.0, float(elapsed_s))
+        if str(match.group("event") or "").lower() == "start":
+            self._phase_starts[key] = elapsed
+            return True
+        started = self._phase_starts.pop(key, None)
+        if started is not None and elapsed >= started:
+            self._phase_durations.setdefault(name, []).append(elapsed - started)
+        return True
+
+    def finalize(
+        self,
+        *,
+        elapsed_s: float,
+        child_returncode: int,
+        stopped_on_stable: bool,
+    ) -> dict[str, Any]:
+        elapsed = max(0.0, float(elapsed_s))
+        points = list(self._progress)
+        first_current = points[0][0] if points else None
+        last_current = points[-1][0] if points else None
+        first_progress_s = points[0][1] if points else 0.0
+        last_progress_s = points[-1][1] if points else 0.0
+
+        interval_unit_seconds: list[float] = []
+        for (left_unit, left_s), (right_unit, right_s) in zip(points, points[1:]):
+            delta_units = int(right_unit) - int(left_unit)
+            delta_s = float(right_s) - float(left_s)
+            if delta_units > 0 and delta_s > 0.0:
+                interval_unit_seconds.append(delta_s / float(delta_units))
+
+        loop_units = (
+            max(0, int(last_current) - int(first_current))
+            if first_current is not None and last_current is not None
+            else 0
+        )
+        loop_wall_s = max(0.0, last_progress_s - first_progress_s) if len(points) >= 2 else 0.0
+        amortized_unit_s = loop_wall_s / float(loop_units) if loop_units > 0 else 0.0
+        base_unit_s = float(median(interval_unit_seconds)) if interval_unit_seconds else 0.0
+        periodic_extra_s = max(0.0, loop_wall_s - float(loop_units) * base_unit_s)
+
+        total = int(self.total_units or 0)
+        counter_offset = 0
+        if total > 0 and last_current is not None and int(last_current) == total - 1:
+            counter_offset = 1
+        completed_units = (
+            max(0, int(last_current) + counter_offset)
+            if last_current is not None
+            else 0
+        )
+        first_completed_units = (
+            max(0, int(first_current) + counter_offset)
+            if first_current is not None
+            else 0
+        )
+        reached_total = total > 0 and completed_units >= total
+        natural_exit = not bool(stopped_on_stable) and int(child_returncode) == 0
+        completion_ready = bool(
+            natural_exit
+            and reached_total
+            and len(points) >= 2
+            and amortized_unit_s > 0.0
+        )
+        finalization_s = max(0.0, elapsed - last_progress_s) if natural_exit and points else 0.0
+        startup_to_first_progress_s = first_progress_s if points else 0.0
+        startup_overhead_s = max(
+            0.0,
+            startup_to_first_progress_s
+            - float(first_completed_units) * amortized_unit_s,
+        )
+        predicted_total_s = (
+            startup_overhead_s
+            + float(total) * amortized_unit_s
+            + finalization_s
+            if total > 0 and amortized_unit_s > 0.0
+            else 0.0
+        )
+        model_abs_error_s = (
+            abs(predicted_total_s - elapsed) if predicted_total_s > 0.0 else 0.0
+        )
+        phase_durations = {
+            name: [float(value) for value in values]
+            for name, values in sorted(self._phase_durations.items())
+        }
+        checkpoint_s = sum(phase_durations.get("checkpoint", []))
+        save_s = sum(phase_durations.get("save", [])) + sum(
+            phase_durations.get("final_save", [])
+        )
+        return {
+            "schema_version": 1,
+            "completion_model_ready": completion_ready,
+            "natural_exit": natural_exit,
+            "stopped_on_stable": bool(stopped_on_stable),
+            "child_returncode": int(child_returncode),
+            "unit": self.unit,
+            "total_units": total,
+            "first_progress_unit": first_current,
+            "last_progress_unit": last_current,
+            "counter_offset": counter_offset,
+            "progress_observation_count": len(points),
+            "interval_sample_count": len(interval_unit_seconds),
+            "startup_to_first_progress_s": startup_to_first_progress_s,
+            "startup_overhead_s": startup_overhead_s,
+            "loop_observed_units": loop_units,
+            "loop_wall_s": loop_wall_s,
+            "base_unit_s": base_unit_s,
+            "amortized_unit_s": amortized_unit_s,
+            "completion_unit_s": amortized_unit_s,
+            "periodic_extra_s": periodic_extra_s,
+            "finalization_after_last_progress_s": finalization_s,
+            "terminal_overhead_s": finalization_s,
+            "checkpoint_observed_s": checkpoint_s,
+            "save_observed_s": save_s,
+            "total_wall_s": elapsed,
+            "predicted_total_s": predicted_total_s,
+            "model_abs_error_s": model_abs_error_s,
+            "model_relative_error": (
+                model_abs_error_s / elapsed if elapsed > 0.0 else 0.0
+            ),
+            "phase_durations_s": phase_durations,
+            "readiness_reason": _completion_readiness_reason(
+                natural_exit=natural_exit,
+                reached_total=reached_total,
+                point_count=len(points),
+                amortized_unit_s=amortized_unit_s,
+                stopped_on_stable=bool(stopped_on_stable),
+                child_returncode=int(child_returncode),
+            ),
+        }
+
+
+def _completion_readiness_reason(
+    *,
+    natural_exit: bool,
+    reached_total: bool,
+    point_count: int,
+    amortized_unit_s: float,
+    stopped_on_stable: bool,
+    child_returncode: int,
+) -> str:
+    if stopped_on_stable:
+        return "stable_service_probe_not_natural_completion"
+    if int(child_returncode) != 0:
+        return f"child_returncode_{int(child_returncode)}"
+    if not natural_exit:
+        return "not_natural_exit"
+    if not reached_total:
+        return "progress_did_not_reach_total"
+    if int(point_count) < 2:
+        return "insufficient_progress_observations"
+    if float(amortized_unit_s) <= 0.0:
+        return "nonpositive_amortized_unit_time"
+    return "ready"
+
+
+def completion_model_line(model: Mapping[str, Any]) -> str:
+    return _COMPLETION_MODEL_PREFIX + json.dumps(
+        dict(model), sort_keys=True, separators=(",", ":")
+    )
+
+
+def parse_completion_model(text: str | None) -> dict[str, Any] | None:
+    latest = None
+    for line in str(text or "").splitlines():
+        if not line.startswith(_COMPLETION_MODEL_PREFIX):
+            continue
+        try:
+            value = json.loads(line[len(_COMPLETION_MODEL_PREFIX):])
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if isinstance(value, dict):
+            latest = value
+    return latest
+
+
+def completion_eta_seconds(
+    model: Mapping[str, Any],
+    *,
+    current_unit: int = 0,
+    include_startup: bool = False,
+) -> float:
+    """Estimate remaining completion time from a natural-run model.
+
+    The amortized outer-loop unit time already contains observed periodic
+    checkpoint/evaluation stalls.  Startup is included only for pre-launch
+    estimates; finalization is always still owed until task completion.
+    """
+
+    if not bool(model.get("completion_model_ready")):
+        raise ValueError("completion model is not ready")
+    total = max(0, int(model.get("total_units") or 0))
+    offset = max(0, int(model.get("counter_offset") or 0))
+    completed = max(0, int(current_unit) + offset)
+    remaining_units = max(0, total - completed)
+    unit_value = (
+        model.get("completion_unit_s")
+        if "completion_unit_s" in model
+        else model.get("amortized_unit_s")
+    )
+    unit_s = max(0.0, float(unit_value or 0.0))
+    remaining = remaining_units * unit_s
+    terminal_value = (
+        model.get("terminal_overhead_s")
+        if "terminal_overhead_s" in model
+        else model.get("finalization_after_last_progress_s")
+    )
+    remaining += max(0.0, float(terminal_value or 0.0))
+    if include_startup:
+        startup_value = (
+            model.get("startup_overhead_s")
+            if "startup_overhead_s" in model
+            else model.get("startup_to_first_progress_s")
+        )
+        remaining += max(0.0, float(startup_value or 0.0))
+    return remaining
 
 
 _UNIT_ALIASES = {

@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "Audits the r13 controlled checkpoint files only; allocated blocks prove that sparse truncation was not used.",
+  "gate": "critical_checkpoint_allocation_audit",
+  "pass": true,
+  "rows": [
+    {
+      "all_expected_size": true,
+      "all_fully_allocated": true,
+      "allocated_bytes": 603979776,
+      "expected_checkpoint_count": 72,
+      "logical_bytes": 603979776,
+      "node": "node001",
+      "observed_checkpoint_count": 72
+    },
+    {
+      "all_expected_size": true,
+      "all_fully_allocated": true,
+      "allocated_bytes": 603979776,
+      "expected_checkpoint_count": 72,
+      "logical_bytes": 603979776,
+      "node": "node002",
+      "observed_checkpoint_count": 72
+    },
+    {
+      "all_expected_size": true,
+      "all_fully_allocated": true,
+      "allocated_bytes": 469762048,
+      "expected_checkpoint_count": 56,
+      "logical_bytes": 469762048,
+      "node": "node003",
+      "observed_checkpoint_count": 56
+    },
+    {
+      "all_expected_size": true,
+      "all_fully_allocated": true,
+      "allocated_bytes": 469762048,
+      "expected_checkpoint_count": 56,
+      "logical_bytes": 469762048,
+      "node": "node005",
+      "observed_checkpoint_count": 56
+    }
+  ],
+  "schema_version": 1,
+  "source_artifacts": [
+    "md/experiment_artifacts/critical_cpu_colocation_actualio_r13_20260802.json",
+    "md/experiment_artifacts/critical_light_colocation_actualio_r13_20260802.json"
+  ],
+  "status": "PASS"
+}

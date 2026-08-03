@@ -366,6 +366,7 @@ def _audit_wave(
         "natural_completion_required": True,
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
+        "admission_delay_included_in_completion_jct": True,
         "real_checkpoint_allocation_required": True,
     }
     for field, expected in scalar_contract.items():
@@ -644,6 +645,9 @@ def _audit_measurement_row(
         require(int(coordination.get("start_marker_count") or 0) == expected_tasks, "COORDINATION_BARRIER_INVALID", "barrier start marker count differs")
         require(int(coordination.get("end_marker_count") or 0) == expected_tasks, "COORDINATION_BARRIER_INVALID", "barrier end marker count differs")
     require(bool(row.get("measurement_code_identity_ready")), "MEASUREMENT_CODE_IDENTITY_INVALID", "row code identity is not ready")
+    admission = row.get("admission_audit") or {}
+    require(bool(admission.get("ready")), "ADMISSION_DELAY_INVALID", "staged admission audit failed")
+    require(bool(admission.get("delay_counted_in_startup_and_jct")), "ADMISSION_DELAY_INVALID", "admission delay is not counted in JCT")
 
     artifact = row.get("artifact_audit") or {}
     checkpoint_files = [
@@ -1165,7 +1169,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     args = build_parser().parse_args(list(argv) if argv is not None else None)
     output = args.output or (
         args.artifact_root
-        / f"critical_gpu_stochastic_lcb_gate_v4_{args.node}_{CAMPAIGN_DATE}.json"
+        / f"critical_gpu_stochastic_lcb_gate_v5_{args.node}_{CAMPAIGN_DATE}.json"
     )
     markdown = args.markdown_output or output.with_suffix(".md")
     report = build_critical_gpu_stochastic_lcb_gate(

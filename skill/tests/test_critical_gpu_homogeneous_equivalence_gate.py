@@ -90,6 +90,7 @@ def _campaign(node: str, *, wave: int, factor: float) -> dict[str, object]:
         "natural_completion_required": True,
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
+        "admission_delay_included_in_completion_jct": True,
         "real_checkpoint_allocation_required": True,
         "measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
         "final_measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
@@ -212,6 +213,11 @@ def _measurement_row(
             "start_marker_count": task_count if spec.coordinated_start_barrier else 0,
             "end_marker_count": task_count if spec.coordinated_start_barrier else 0,
         },
+        "admission_audit": {
+            "ready": True,
+            "delay_counted_in_startup_and_jct": True,
+            "children": [{"ready": True} for _ in range(task_count)],
+        },
         "measurement_code_sha256": CODE_SHA256,
         "measurement_code_identity_ready": True,
         "checkpoint_allocation_ready": True,
@@ -268,11 +274,11 @@ def _mutate(path: Path, callback) -> None:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
 
 
-def test_default_paths_use_exact_formal_v4_matched_wave_names(tmp_path):
+def test_default_paths_use_exact_formal_v5_matched_wave_names(tmp_path):
     representative, equivalent = default_artifact_paths(artifact_root=tmp_path)
 
-    assert representative.name == "critical_gpu_completion_v4_jtl110gpu_r01_20260803.json"
-    assert equivalent.name == "critical_gpu_completion_v4_jtl110gpu2_r01_20260803.json"
+    assert representative.name == "critical_gpu_completion_v5_jtl110gpu_r01_20260803.json"
+    assert equivalent.name == "critical_gpu_completion_v5_jtl110gpu2_r01_20260803.json"
 
 
 def test_missing_artifact_is_wait(tmp_path):

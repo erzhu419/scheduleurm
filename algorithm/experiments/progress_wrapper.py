@@ -281,7 +281,13 @@ def _usable_for_stable_rate(obs: ProgressObservation) -> bool:
 
 
 _PHASE_LINE_RE = re.compile(r"\bname=([^\s]+)\s+event=(start|end)\b")
-_NON_SERVICE_PHASES = {"initialization", "warmup", "checkpoint", "final_save"}
+_NON_SERVICE_PHASES = {
+    "admission_delay",
+    "initialization",
+    "warmup",
+    "checkpoint",
+    "final_save",
+}
 
 
 def _update_active_phases(line: str, active_phases: set[str]) -> None:
@@ -335,6 +341,7 @@ def run_wrapped_command(
     stable_rel_delta: float = 0.05,
     stable_skip_samples: int = 0,
     stable_cycle_units: int = 0,
+    admission_delay_s: float = 0.0,
 ) -> int:
     if not command:
         raise ValueError("wrapped command is empty")
@@ -342,6 +349,26 @@ def run_wrapped_command(
     env = dict(os.environ)
     env.setdefault("PYTHONUNBUFFERED", "1")
     start_monotonic = time.monotonic()
+    completion_tracker = CompletionTimingTracker(total_units=total, unit=unit)
+    delay_s = max(0.0, float(admission_delay_s))
+    if delay_s > 0.0:
+        start_line = (
+            "ScheduleurmPhase name=admission_delay event=start "
+            f"delay_s={delay_s:.6g}"
+        )
+        print(start_line, flush=True)
+        completion_tracker.observe_phase_line(start_line, elapsed_s=0.0)
+        time.sleep(delay_s)
+        elapsed_after_delay = time.monotonic() - start_monotonic
+        end_line = (
+            "ScheduleurmPhase name=admission_delay event=end "
+            f"delay_s={delay_s:.6g}"
+        )
+        print(end_line, flush=True)
+        completion_tracker.observe_phase_line(
+            end_line,
+            elapsed_s=elapsed_after_delay,
+        )
     proc = subprocess.Popen(
         list(command),
         stdout=subprocess.PIPE,
@@ -356,7 +383,6 @@ def run_wrapped_command(
     rates: list[float] = []
     stable_reported = False
     stopped_on_stable = False
-    completion_tracker = CompletionTimingTracker(total_units=total, unit=unit)
     active_phases: set[str] = set()
     for raw in proc.stdout:
         line = raw.rstrip("\n")
@@ -445,6 +471,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             "stable rate. Use 0 for ordinary raw-rate stability."
         ),
     )
+    parser.add_argument(
+        "--admission-delay-s",
+        type=float,
+        default=float(os.environ.get("SCHEDULEURM_ADMISSION_DELAY_S", "0") or 0.0),
+        help="Count a controlled staged-admission delay in startup and JCT.",
+    )
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
 
@@ -465,6 +497,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         stable_rel_delta=args.stable_rel_delta,
         stable_skip_samples=args.stable_skip_samples,
         stable_cycle_units=args.stable_cycle_units,
+        admission_delay_s=args.admission_delay_s,
     )
 
 

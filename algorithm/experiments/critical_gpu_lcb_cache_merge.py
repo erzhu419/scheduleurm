@@ -1,7 +1,7 @@
 """Fail-closed merge of critical GPU LCB certificates into service cache v2.
 
 The merge is deliberately atomic at the evidence level: all three declared
-representative GPU hardware gates must be PASS under the v4 measurement
+representative GPU hardware gates must be PASS under the v5 measurement
 protocol before any final cache snapshot is exposed or written.  Every added
 row is exact-state-only and is audited against the legacy two-key index.
 """
@@ -57,7 +57,7 @@ def default_gate_paths(
 ) -> dict[str, Path]:
     return {
         node: Path(artifact_root)
-        / f"critical_gpu_stochastic_lcb_gate_v4_{node}_{CAMPAIGN_DATE}.json"
+        / f"critical_gpu_stochastic_lcb_gate_v5_{node}_{CAMPAIGN_DATE}.json"
         for node in REPRESENTATIVE_NODES
     }
 
@@ -168,7 +168,7 @@ def build_critical_gpu_lcb_cache_merge(
         "base_cache_path": str(base_path),
         "required_representative_nodes": list(REPRESENTATIVE_NODES),
         "required_measurement_protocol": PROTOCOL,
-        "source_gate_contract": "v4_PASS",
+        "source_gate_contract": "v5_PASS",
         "resource_state": RESOURCE_STATE,
         "expected_cells_per_node": EXPECTED_CELL_COUNT_PER_NODE,
         "expected_total_inserted_rows": (
@@ -184,7 +184,7 @@ def build_critical_gpu_lcb_cache_merge(
         "inserted_rows": [],
         "claim_boundary": (
             "The final cache exists only when jtl110gpu, node007, and "
-            "jtl311linux each provide a hardware-local v4 PASS certificate for "
+            "jtl311linux each provide a hardware-local v5 PASS certificate for "
             "all nine pre-registered empty-state GPU actions. Rows are exact "
             "workload_env x node_bucket x resource_state x profile records; "
             "they never update the legacy workload/profile fallback."

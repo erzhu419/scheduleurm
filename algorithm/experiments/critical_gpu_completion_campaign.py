@@ -29,8 +29,8 @@ from .remote_workload_selected_profile_probe import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 TEMPLATE_ROOT = REPO_ROOT / "algorithm" / "experiments" / "templates"
-PROTOCOL = "critical_gpu_phase_completion_v4"
-CAMPAIGN_PREFIX = "critical_gpu_completion_v4"
+PROTOCOL = "critical_gpu_phase_completion_v5"
+CAMPAIGN_PREFIX = "critical_gpu_completion_v5"
 TRAINING_WAVES = (1, 2, 3)
 CALIBRATION_WAVES = tuple(range(4, 13))
 HOLDOUT_WAVE = 13
@@ -66,6 +66,9 @@ class WorkloadSpec:
     stable_skip_samples: int
     stable_cycle_units: int = 0
     coordinated_start_barrier: bool = False
+    admission_stagger_s: float = 0.0
+    admission_stagger_axis: str = "local_index"
+    admission_stagger_min_profile: int = 1
     extra_values: tuple[tuple[str, str], ...] = ()
 
 
@@ -153,6 +156,7 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
         min_rate_samples=6,
         stable_skip_samples=4,
         coordinated_start_barrier=True,
+        admission_stagger_s=0.75,
         extra_values=(("matrix_size", "8192"), ("checkpoint_bytes", str(8 * 1024 * 1024))),
     ),
     WorkloadSpec(
@@ -168,6 +172,7 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
         min_rate_samples=6,
         stable_skip_samples=2,
         coordinated_start_barrier=True,
+        admission_stagger_s=0.75,
     ),
     WorkloadSpec(
         workload_key="gpu_llm_distilgpt2",
@@ -182,6 +187,7 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
         min_rate_samples=12,
         stable_skip_samples=2,
         coordinated_start_barrier=True,
+        admission_stagger_s=0.75,
     ),
     WorkloadSpec(
         workload_key="hybrid_rl_resac_ant",
@@ -196,6 +202,9 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
         min_rate_samples=10,
         stable_skip_samples=0,
         stable_cycle_units=5,
+        admission_stagger_s=30.0,
+        admission_stagger_axis="global_index",
+        admission_stagger_min_profile=5,
         extra_values=(("mujoco_env", "Ant-v2"),),
     ),
 )
@@ -353,6 +362,7 @@ def build_critical_gpu_completion_campaign(
         "natural_completion_required": True,
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
+        "admission_delay_included_in_completion_jct": True,
         "real_checkpoint_allocation_required": True,
         "measurement_code_manifest": code_manifest,
         "allow_launch": bool(allow_launch),
@@ -471,6 +481,9 @@ def _run_cell(
             "coordinated_start_barrier": (
                 "1" if spec.coordinated_start_barrier else "0"
             ),
+            "admission_stagger_s": f"{spec.admission_stagger_s:.9g}",
+            "admission_stagger_axis": spec.admission_stagger_axis,
+            "admission_stagger_min_profile": str(spec.admission_stagger_min_profile),
         }
     )
     if spec.workload_key == "gpu_heavy_jax_matmul":
@@ -516,6 +529,7 @@ def _run_cell(
             summary,
             expected_tasks=expected_tasks,
         )
+        admission_audit = _admission_audit(spec, summary, profile=profile)
         code_after = measurement_code_manifest()
         code_identity_ready = bool(
             code_after["sha256"] == expected_code_sha256
@@ -534,6 +548,7 @@ def _run_cell(
             and backend_audit.get("ready")
             and completion_audit.get("ready")
             and coordination_audit.get("ready")
+            and admission_audit.get("ready")
             and checkpoint_ready
             and code_identity_ready
             and not capacity_boundary
@@ -552,6 +567,7 @@ def _run_cell(
             "backend_audit": backend_audit,
             "completion_audit": completion_audit,
             "coordination_audit": coordination_audit,
+            "admission_audit": admission_audit,
             "measurement_code_sha256": expected_code_sha256,
             "measurement_code_identity_ready": code_identity_ready,
             "checkpoint_allocation_ready": checkpoint_ready,
@@ -771,6 +787,58 @@ def _coordination_audit(
         "start_marker_count": starts,
         "end_marker_count": ends,
         "children": child_audits,
+    }
+
+
+def _admission_audit(
+    spec: WorkloadSpec,
+    summary: Mapping[str, Any],
+    *,
+    profile: int,
+) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = []
+    ready = True
+    for child in summary.get("rows") or []:
+        position = (
+            int(child.get("global_index") or 0)
+            if spec.admission_stagger_axis == "global_index"
+            else int(child.get("idx") or 0)
+        )
+        expected = (
+            float(spec.admission_stagger_s) * position
+            if int(profile) >= int(spec.admission_stagger_min_profile)
+            else 0.0
+        )
+        durations = (
+            (child.get("completion_model") or {})
+            .get("phase_durations_s", {})
+            .get("admission_delay", [])
+        )
+        observed = sum(float(value) for value in durations or [])
+        tolerance = max(0.25, 0.05 * expected)
+        child_ready = bool(
+            (expected == 0.0 and observed <= tolerance)
+            or (expected > 0.0 and abs(observed - expected) <= tolerance)
+        )
+        ready = ready and child_ready
+        rows.append(
+            {
+                "global_index": child.get("global_index"),
+                "local_index": child.get("idx"),
+                "expected_delay_s": expected,
+                "observed_delay_s": observed,
+                "tolerance_s": tolerance,
+                "ready": child_ready,
+            }
+        )
+    return {
+        "ready": bool(rows) and ready,
+        "stagger_s": float(spec.admission_stagger_s),
+        "stagger_axis": spec.admission_stagger_axis,
+        "minimum_profile": int(spec.admission_stagger_min_profile),
+        "profile": int(profile),
+        "delay_counted_in_startup_and_jct": True,
+        "children": rows,
     }
 
 

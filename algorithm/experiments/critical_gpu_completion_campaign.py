@@ -29,8 +29,8 @@ from .remote_workload_selected_profile_probe import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 TEMPLATE_ROOT = REPO_ROOT / "algorithm" / "experiments" / "templates"
-PROTOCOL = "critical_gpu_phase_completion_v5"
-CAMPAIGN_PREFIX = "critical_gpu_completion_v5"
+PROTOCOL = "critical_gpu_phase_completion_v6"
+CAMPAIGN_PREFIX = "critical_gpu_completion_v6"
 TRAINING_WAVES = (1, 2, 3)
 CALIBRATION_WAVES = tuple(range(4, 13))
 HOLDOUT_WAVE = 13
@@ -195,7 +195,11 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
         quadrant="q11",
         template="resac_env_real_venv.cmd.tpl",
         profiles=(2, 5),
-        max_iters=20,
+        # Four 5-iteration service cycles were insufficient for every child to
+        # satisfy the unchanged cycle-stability gate at p5.  Eight complete
+        # cycles preserve natural completion while giving the periodic RL
+        # service process enough post-initialization support.
+        max_iters=40,
         timeout_s=10800,
         unit="iter",
         stable_windows=2,

@@ -58,6 +58,8 @@ def test_every_workload_naturally_completes_and_saves():
     assert all(spec.timeout_s >= 1800 for spec in WORKLOAD_SPECS)
     assert all(spec.coordinated_start_barrier for spec in WORKLOAD_SPECS[:3])
     assert WORKLOAD_SPECS[3].coordinated_start_barrier is False
+    assert WORKLOAD_SPECS[3].max_iters == 40
+    assert WORKLOAD_SPECS[3].stable_cycle_units == 5
     assert WORKLOAD_SPECS[3].admission_stagger_s == 30.0
     assert WORKLOAD_SPECS[3].admission_stagger_axis == "global_index"
     assert WORKLOAD_SPECS[3].admission_stagger_min_profile == 5

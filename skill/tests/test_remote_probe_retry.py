@@ -180,12 +180,12 @@ def test_coordinated_script_staggers_initialization_and_barriers_builtin_tasks(t
     script = probe._coordinated_remote_script(
         "/tmp/unit",
         [
-            (0, 0, {"values": {"coordinated_start_barrier": "1"}}, "python a.py"),
-            (0, 1, {"values": {"coordinated_start_barrier": "1"}}, "python b.py"),
+            (0, 0, {"values": {"coordinated_start_barrier": "1", "profile": 3, "admission_stagger_s": 0.75}}, "python a.py"),
+            (0, 1, {"values": {"coordinated_start_barrier": "1", "profile": 3, "admission_stagger_s": 0.75}}, "python b.py"),
         ],
     )
 
-    assert "sleep 0.75" in script
+    assert "export SCHEDULEURM_ADMISSION_DELAY_S=0.75" in script
     assert "export SCHEDULEURM_READY_FILE" in script
     assert "export OMP_NUM_THREADS=1" in script
     assert "__SCHEDULEURM_BARRIER__ ready=" in script
@@ -203,3 +203,27 @@ def test_coordinated_script_does_not_barrier_external_rl_workload():
     assert "SCHEDULEURM_READY_FILE" not in script
     assert "__SCHEDULEURM_BARRIER__" not in script
     assert "export OMP_NUM_THREADS=1" in script
+
+
+def test_global_staged_admission_delay_is_exported_for_high_profile_rl():
+    script = probe._coordinated_remote_script(
+        "/tmp/unit",
+        [(
+            3,
+            4,
+            {
+                "values": {
+                    "coordinated_start_barrier": "0",
+                    "profile": 5,
+                    "index": 19,
+                    "admission_stagger_s": 30.0,
+                    "admission_stagger_axis": "global_index",
+                    "admission_stagger_min_profile": 5,
+                }
+            },
+            "python rl.py",
+        )],
+    )
+
+    assert "export SCHEDULEURM_ADMISSION_DELAY_S=570" in script
+    assert "__SCHEDULEURM_BARRIER__" not in script

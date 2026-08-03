@@ -1,3 +1,6 @@
+import json
+import sys
+
 from algorithm.experiments.progress_units import (
     CompletionTimingTracker,
     completion_eta_seconds,
@@ -15,6 +18,7 @@ from algorithm.experiments.progress_wrapper import (
     _update_active_phases,
     build_progress_line,
     build_tqdm_line,
+    run_wrapped_command,
 )
 from algorithm.experiments.sweetspot_ab_validation import _summarize_phase
 from simulation.service_cache import ProfileRecord, records_from_summary_file
@@ -64,6 +68,27 @@ def test_natural_completion_model_separates_startup_loop_and_terminal_save(tmp_p
     )
     assert row["completion_model_ready"] is True
     assert row["completion_model"]["startup_overhead_s"] == 2.0
+
+
+def test_staged_admission_delay_is_counted_in_completion_wall_clock(capsys):
+    rc = run_wrapped_command(
+        [
+            sys.executable,
+            "-c",
+            "import time; print('Step 1/2 rate=1 step/s', flush=True); "
+            "time.sleep(0.01); print('Step 2/2 rate=1 step/s', flush=True)",
+        ],
+        total=2,
+        unit="step",
+        admission_delay_s=0.02,
+    )
+
+    assert rc == 0
+    output = capsys.readouterr().out
+    assert "ScheduleurmPhase name=admission_delay event=start" in output
+    payload = json.loads(output.split("ScheduleurmCompletionModel ")[-1])
+    assert payload["phase_durations_s"]["admission_delay"][0] >= 0.018
+    assert payload["total_wall_s"] >= 0.028
 
 
 def test_stable_stopped_probe_never_becomes_completion_model():

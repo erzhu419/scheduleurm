@@ -70,6 +70,7 @@ def _campaign(wave: int) -> dict[str, object]:
         "natural_completion_required": True,
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
+        "admission_delay_included_in_completion_jct": True,
         "real_checkpoint_allocation_required": True,
         "measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
         "final_measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
@@ -193,6 +194,11 @@ def _measurement_row(
             "start_marker_count": task_count if spec.coordinated_start_barrier else 0,
             "end_marker_count": task_count if spec.coordinated_start_barrier else 0,
         },
+        "admission_audit": {
+            "ready": True,
+            "delay_counted_in_startup_and_jct": True,
+            "children": [{"ready": True} for _ in range(task_count)],
+        },
         "measurement_code_sha256": CODE_SHA256,
         "measurement_code_identity_ready": True,
         "checkpoint_allocation_ready": True,
@@ -299,7 +305,7 @@ def test_default_paths_follow_campaign_prefix(tmp_path):
     assert paths[13].name == f"{CAMPAIGN_PREFIX}_{NODE}_r13_20260803.json"
 
 
-def test_legacy_artifact_prefix_is_rejected_even_for_v4_payload(tmp_path):
+def test_legacy_artifact_prefix_is_rejected_even_for_v5_payload(tmp_path):
     paths = _write_campaigns(tmp_path)
     legacy = tmp_path / f"critical_gpu_completion_{NODE}_r06_20260803.json"
     paths[6].rename(legacy)

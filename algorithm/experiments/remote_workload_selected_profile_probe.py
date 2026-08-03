@@ -562,26 +562,29 @@ def _coordinated_remote_script(
         for _gpu, _local_index, rendered, _remote in launch_rows
     )
     keys: list[str] = []
-    for gpu, local_index, _rendered, remote in launch_rows:
+    for gpu, local_index, rendered, remote in launch_rows:
         key = f"gpu{int(gpu)}_{int(local_index)}"
         keys.append(key)
+        admission_delay_s = _admission_delay_seconds(
+            local_index=local_index,
+            rendered=rendered,
+        )
         thread_exports = (
             "export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; "
             "export NUMEXPR_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false; "
             "export TF_NUM_INTRAOP_THREADS=1 TF_NUM_INTEROP_THREADS=1; "
         )
+        remote = (
+            f"export SCHEDULEURM_ADMISSION_DELAY_S={admission_delay_s:.9g}; "
+            f"{thread_exports}{remote}"
+        )
         if barrier_enabled:
-            delay_s = 0.75 * int(local_index)
             remote = (
-                f"sleep {delay_s:.2f}; "
                 f"export SCHEDULEURM_READY_FILE=\"$REMOTE_DIR/{key}.ready\"; "
                 f"export SCHEDULEURM_START_FILE=\"$REMOTE_DIR/start\"; "
                 "export SCHEDULEURM_BARRIER_TIMEOUT_S=600; "
-                f"{thread_exports}"
                 f"{remote}"
             )
-        else:
-            remote = f"{thread_exports}{remote}"
         lines.extend([
             f"KEY={shlex.quote(key)}",
             f"({remote}) > \"$REMOTE_DIR/$KEY.log\" 2>&1 &",
@@ -652,6 +655,32 @@ def _coordinated_remote_script(
         ])
     lines.append("exit 0")
     return "\n".join(lines) + "\n"
+
+
+def _admission_delay_seconds(
+    *,
+    local_index: int,
+    rendered: Mapping[str, Any],
+) -> float:
+    values = rendered.get("values") or {}
+    try:
+        profile = int(values.get("profile") or 0)
+        minimum_profile = int(values.get("admission_stagger_min_profile") or 1)
+        stagger_s = max(0.0, float(values.get("admission_stagger_s") or 0.0))
+    except (TypeError, ValueError):
+        return 0.0
+    if profile < minimum_profile:
+        return 0.0
+    axis = str(values.get("admission_stagger_axis") or "local_index")
+    try:
+        position = (
+            int(values.get("index") or 0)
+            if axis == "global_index"
+            else int(local_index)
+        )
+    except (TypeError, ValueError):
+        position = 0
+    return stagger_s * max(0, position)
 
 
 def _parse_coordinated_output(output: str) -> tuple[dict[str, str], dict[str, int]]:

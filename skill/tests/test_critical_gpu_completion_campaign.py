@@ -5,6 +5,7 @@ from algorithm.experiments.critical_gpu_completion_campaign import (
     NODE_SPECS,
     TRAINING_WAVES,
     WORKLOAD_SPECS,
+    _admission_audit,
     _coordination_audit,
     build_critical_gpu_completion_campaign,
     campaign_cells,
@@ -57,6 +58,9 @@ def test_every_workload_naturally_completes_and_saves():
     assert all(spec.timeout_s >= 1800 for spec in WORKLOAD_SPECS)
     assert all(spec.coordinated_start_barrier for spec in WORKLOAD_SPECS[:3])
     assert WORKLOAD_SPECS[3].coordinated_start_barrier is False
+    assert WORKLOAD_SPECS[3].admission_stagger_s == 30.0
+    assert WORKLOAD_SPECS[3].admission_stagger_axis == "global_index"
+    assert WORKLOAD_SPECS[3].admission_stagger_min_profile == 5
 
 
 def test_coordination_audit_requires_both_markers_per_child(tmp_path):
@@ -77,6 +81,19 @@ def test_coordination_audit_requires_both_markers_per_child(tmp_path):
         encoding="utf-8",
     )
     assert not _coordination_audit(spec, {"rows": logs}, expected_tasks=2)["ready"]
+
+
+def test_admission_audit_requires_delay_to_be_present_in_completion_jct():
+    spec = WORKLOAD_SPECS[3]
+    summary = {
+        "rows": [
+            {"global_index": 0, "idx": 0, "completion_model": {"phase_durations_s": {}}},
+            {"global_index": 1, "idx": 1, "completion_model": {"phase_durations_s": {"admission_delay": [30.1]}}},
+        ]
+    }
+    assert _admission_audit(spec, summary, profile=5)["ready"]
+    summary["rows"][1]["completion_model"]["phase_durations_s"]["admission_delay"] = [2.0]
+    assert not _admission_audit(spec, summary, profile=5)["ready"]
 
 
 def test_filtered_smoke_artifact_cannot_overwrite_full_wave_manifest(tmp_path, monkeypatch):

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gzip
 import importlib.util
 import json
 import re
@@ -20,6 +21,8 @@ from pathlib import Path
 from statistics import mean
 from string import Formatter
 from typing import Any, Mapping
+
+from algorithm.experiments.progress_units import parse_completion_model
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -59,7 +62,13 @@ def build_remote_workload_selected_profile_probe(
     stable_cv: float = 0.08,
     stable_rel_delta: float = 0.05,
     stable_skip_samples: int = 0,
+    stable_cycle_units: int = 0,
     coordinated_profile_launch: bool = False,
+    require_stable_rate: bool = False,
+    require_completion_model: bool = False,
+    extra_template_values: Mapping[str, Any] | None = None,
+    deploy_bundle: bool = True,
+    survive_transport_disconnect: bool = False,
 ) -> dict[str, Any]:
     run_dir = RUN_ROOT / run_id
     raw_dir = run_dir / "raw"
@@ -67,7 +76,13 @@ def build_remote_workload_selected_profile_probe(
     raw_dir.mkdir(parents=True, exist_ok=True)
     report_dir.mkdir(parents=True, exist_ok=True)
     template = Path(cmd_template_file).read_text(encoding="utf-8").strip()
-    _deploy_progress_wrapper(node, raw_dir, cwd=cwd, output_root=output_root)
+    if deploy_bundle:
+        _deploy_progress_wrapper(
+            node,
+            raw_dir,
+            cwd=cwd,
+            output_root=output_root,
+        )
     summaries: dict[int, dict[str, Any]] = {}
     for profile in profiles:
         summaries[int(profile)] = _measure_profile(
@@ -89,7 +104,12 @@ def build_remote_workload_selected_profile_probe(
             stable_cv=stable_cv,
             stable_rel_delta=stable_rel_delta,
             stable_skip_samples=stable_skip_samples,
+            stable_cycle_units=stable_cycle_units,
             coordinated_profile_launch=coordinated_profile_launch,
+            require_stable_rate=require_stable_rate,
+            require_completion_model=require_completion_model,
+            extra_template_values=extra_template_values or {},
+            survive_transport_disconnect=survive_transport_disconnect,
         )
     result = {
         "gate": "remote_workload_selected_profile_probe",
@@ -104,6 +124,10 @@ def build_remote_workload_selected_profile_probe(
         "rate_count": sum(len(summary.get("rates_unit_s") or []) for summary in summaries.values()),
         "stable_rate_ready_count": sum(
             int(summary.get("stable_rate_ready_count") or 0)
+            for summary in summaries.values()
+        ),
+        "completion_model_ready_count": sum(
+            int(summary.get("completion_model_ready_count") or 0)
             for summary in summaries.values()
         ),
         "pass": all(bool(summary.get("measurement_valid")) for summary in summaries.values()),
@@ -135,7 +159,12 @@ def _measure_profile(
     stable_cv: float,
     stable_rel_delta: float,
     stable_skip_samples: int,
+    stable_cycle_units: int,
     coordinated_profile_launch: bool,
+    require_stable_rate: bool,
+    require_completion_model: bool,
+    extra_template_values: Mapping[str, Any],
+    survive_transport_disconnect: bool,
 ) -> dict[str, Any]:
     phase = f"profile_{int(profile)}_per_gpu"
     report_dir = run_dir / "reports"
@@ -164,17 +193,44 @@ def _measure_profile(
                 stable_cv=stable_cv,
                 stable_rel_delta=stable_rel_delta,
                 stable_skip_samples=stable_skip_samples,
+                stable_cycle_units=stable_cycle_units,
+                extra_template_values=extra_template_values,
+            )
+            workload_pythonpath = str(
+                (rendered.get("values") or {}).get("workload_pythonpath") or ""
+            ).strip()
+            pythonpath_env = (
+                f"PYTHONPATH={shlex.quote(workload_pythonpath)}:\"${{PYTHONPATH:-}}\" "
+                if workload_pythonpath
+                else ""
             )
             remote = (
                 f"cd {shlex.quote(cwd)} && "
                 f"CUDA_VISIBLE_DEVICES={int(gpu)} "
                 f"PYTHONUNBUFFERED=1 "
+                f"{pythonpath_env}"
                 f"timeout --foreground {int(timeout_s)}s "
                 f"{rendered['cmd']}"
             )
             launch_rows.append((int(gpu), local_index, rendered, remote))
             if not coordinated_profile_launch:
-                proc = _remote_popen(node, remote, timeout_s=int(timeout_s) + 90)
+                if survive_transport_disconnect:
+                    proc = _remote_detached_popen(
+                        node,
+                        remote,
+                        run_name=str(rendered["run_name"]),
+                        local_prefix=(
+                            raw_dir
+                            / f"gpu{int(gpu)}_{int(local_index)}_detached"
+                        ),
+                        timeout_s=int(timeout_s) + 90,
+                    )
+                else:
+                    proc = _remote_popen(
+                        node,
+                        remote,
+                        timeout_s=int(timeout_s) + 90,
+                    )
                 procs.append((int(gpu), local_index, rendered, proc))
             global_index += 1
 
@@ -233,11 +289,37 @@ def _measure_profile(
             actual[key] = actual.get(key, 0) + 1
     observed_units = sorted({str(row.get("unit") or unit) for row in rows if float(row["rate"]) > 0.0})
     returncode_valid_count = sum(1 for row in rows if int(row.get("returncode") or 0) == 0)
+    returncode_accepted_count = sum(
+        1
+        for row in rows
+        if int(row.get("returncode") or 0) == 0
+        or (
+            bool(require_stable_rate)
+            and bool(row.get("stable_rate_ready"))
+            and float(row.get("stable_rate") or 0.0) > 0.0
+        )
+    )
     all_stable_rate_ready = len(stable_rates) == len(rows) if rows else False
+    completion_models = [
+        dict(row["completion_model"])
+        for row in rows
+        if isinstance(row.get("completion_model"), Mapping)
+    ]
+    ready_completion_models = [
+        model for model in completion_models if bool(model.get("completion_model_ready"))
+    ]
+    all_completion_models_ready = (
+        len(ready_completion_models) == len(rows) if rows else False
+    )
     measurement_valid = (
         actual == expected
-        and returncode_valid_count == len(rows)
-        and (all_stable_rate_ready if terminate_on_stable else len(rates) == len(rows))
+        and returncode_accepted_count == len(rows)
+        and (
+            all_stable_rate_ready
+            if (terminate_on_stable or require_stable_rate)
+            else len(rates) == len(rows)
+        )
+        and (all_completion_models_ready if require_completion_model else True)
     )
     summary = {
         "phase": phase,
@@ -249,18 +331,31 @@ def _measure_profile(
         "max_iters": int(max_iters),
         "timeout_s": int(timeout_s),
         "terminate_on_stable": bool(terminate_on_stable),
+        "require_stable_rate": bool(require_stable_rate),
+        "require_completion_model": bool(require_completion_model),
         "coordinated_profile_launch": bool(coordinated_profile_launch),
+        "transport_mode": (
+            "detached_poll"
+            if survive_transport_disconnect
+            else "foreground_ssh"
+        ),
         "stable_windows": int(stable_windows),
         "min_rate_samples": int(min_rate_samples),
         "stable_cv_threshold": float(stable_cv),
         "stable_rel_delta_threshold": float(stable_rel_delta),
         "stable_skip_samples": int(stable_skip_samples),
+        "stable_cycle_units": int(stable_cycle_units),
         "elapsed_wall_s": time.time() - started,
         "running_count": len(rows),
         "running_with_rate_count": len(rates),
         "stable_rate_ready_count": len(stable_rates),
         "all_stable_rate_ready": all_stable_rate_ready,
+        "completion_model_count": len(completion_models),
+        "completion_model_ready_count": len(ready_completion_models),
+        "all_completion_models_ready": all_completion_models_ready,
         "returncode_valid_count": returncode_valid_count,
+        "returncode_accepted_count": returncode_accepted_count,
+        "returncode_acceptance_rule": "strict_zero_or_stable_required_rate",
         "per_gpu_running": actual,
         "expected_per_gpu_running": expected,
         "rates_unit_s": rates,
@@ -304,6 +399,8 @@ def _render_workload_command(
     stable_cv: float,
     stable_rel_delta: float,
     stable_skip_samples: int,
+    stable_cycle_units: int,
+    extra_template_values: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     run_name = f"{run_id}_{phase}_gpu{gpu_idx}_{index}"
     seed = int(seed_base) + int(index)
@@ -325,7 +422,25 @@ def _render_workload_command(
         "stable_cv": float(stable_cv),
         "stable_rel_delta": float(stable_rel_delta),
         "stable_skip_samples": int(stable_skip_samples),
+        "stable_cycle_units": int(stable_cycle_units),
+        "checkpoint_interval": max(1, int(max_iters) // 2),
+        "checkpoint_bytes": 8 * 1024 * 1024,
+        "checkpoint_root": (
+            f"{output_root.rstrip('/')}/checkpoints/{run_name}"
+        ),
+        "torch_python": "",
+        "bapr_python": "/home/erzhu419/.venvs/resac-jax-gpu1-0438/bin/python",
+        "workload_pythonpath": (
+            "/home/erzhu419/.claude/scheduler/runtime_patches:"
+            "/home/erzhu419/mine_code/RE-SAC"
+        ),
+        "hf_cache_dir": "",
     }
+    for key, value in (extra_template_values or {}).items():
+        text_key = str(key or "")
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", text_key):
+            raise ValueError(f"invalid command-template placeholder name: {text_key!r}")
+        values[text_key] = value
     unknown = sorted(_template_fields(template) - set(values))
     if unknown:
         raise ValueError(f"unknown command-template placeholders: {unknown}")
@@ -346,6 +461,7 @@ def _row_from_output(
     log_path.write_text(output or "", encoding="utf-8")
     rate, parsed_unit = _last_rate(output or "")
     stable = _last_stable_rate(output or "")
+    completion_model = parse_completion_model(output or "")
     return {
         "gpu": int(gpu),
         "idx": int(local_index),
@@ -362,6 +478,11 @@ def _row_from_output(
         "stable_cv": float(stable.get("cv") or 0.0),
         "stable_last_two_relative_delta": float(stable.get("last_two_relative_delta") or 0.0),
         "stable_samples": int(stable.get("samples") or 0),
+        "completion_model": completion_model,
+        "completion_model_ready": bool(
+            isinstance(completion_model, Mapping)
+            and completion_model.get("completion_model_ready")
+        ),
         "log_path": str(log_path),
     }
 
@@ -390,12 +511,20 @@ def _run_coordinated_profile(
     ]
     script = _coordinated_remote_script(remote_dir, rewritten_launch_rows)
     _write_remote_text(node, script_path, script, raw_dir / "coordinated_profile_script")
-    rc, out, err = _run_remote_capture(
+    proc = _remote_detached_popen(
         node,
         f"bash {shlex.quote(script_path)}",
-        raw_dir / "coordinated_profile_run",
+        run_name=f"coordinated_{token}",
+        local_prefix=raw_dir / "coordinated_profile_run",
         timeout_s=int(timeout_s) + 300,
     )
+    try:
+        out, _ = proc.communicate(timeout=int(timeout_s) + 300)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        out, _ = proc.communicate(timeout=180)
+    rc = int(proc.returncode if proc.returncode is not None else 255)
+    err = ""
     (raw_dir / "coordinated_profile_run.combined.log").write_text(
         (out or "") + ("\n__STDERR__\n" + err if err else ""),
         encoding="utf-8",
@@ -427,15 +556,72 @@ def _coordinated_remote_script(
         'rm -rf "$REMOTE_DIR"',
         'mkdir -p "$REMOTE_DIR"',
     ]
+    barrier_enabled = bool(launch_rows) and all(
+        str((rendered.get("values") or {}).get("coordinated_start_barrier") or "")
+        == "1"
+        for _gpu, _local_index, rendered, _remote in launch_rows
+    )
     keys: list[str] = []
     for gpu, local_index, _rendered, remote in launch_rows:
         key = f"gpu{int(gpu)}_{int(local_index)}"
         keys.append(key)
+        if barrier_enabled:
+            delay_s = 0.75 * int(local_index)
+            remote = (
+                f"sleep {delay_s:.2f}; "
+                f"export SCHEDULEURM_READY_FILE=\"$REMOTE_DIR/{key}.ready\"; "
+                f"export SCHEDULEURM_START_FILE=\"$REMOTE_DIR/start\"; "
+                "export SCHEDULEURM_BARRIER_TIMEOUT_S=600; "
+                "export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; "
+                "export NUMEXPR_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false; "
+                f"{remote}"
+            )
         lines.extend([
             f"KEY={shlex.quote(key)}",
             f"({remote}) > \"$REMOTE_DIR/$KEY.log\" 2>&1 &",
             'echo $! > "$REMOTE_DIR/$KEY.pid"',
         ])
+    if barrier_enabled:
+        lines.extend([
+            "BARRIER_DEADLINE=$((SECONDS + 600))",
+            "while true; do",
+            "  READY_COUNT=0",
+            "  EARLY_DEATH=0",
+        ])
+        for key in keys:
+            lines.extend([
+                f"  KEY={shlex.quote(key)}",
+                '  if [ -e "$REMOTE_DIR/$KEY.ready" ]; then READY_COUNT=$((READY_COUNT + 1)); fi',
+                '  PID=$(cat "$REMOTE_DIR/$KEY.pid" 2>/dev/null || echo "")',
+                '  if [ ! -e "$REMOTE_DIR/$KEY.ready" ] && { [ -z "$PID" ] || ! kill -0 "$PID" >/dev/null 2>&1; }; then EARLY_DEATH=1; fi',
+            ])
+        lines.extend([
+            f"  if [ \"$READY_COUNT\" -eq {len(keys)} ]; then touch \"$REMOTE_DIR/start\"; break; fi",
+            '  if [ "$EARLY_DEATH" -ne 0 ]; then touch "$REMOTE_DIR/start"; break; fi',
+            '  if [ "$SECONDS" -ge "$BARRIER_DEADLINE" ]; then touch "$REMOTE_DIR/start"; break; fi',
+            "  sleep 0.10",
+            "done",
+            f"echo \"__SCHEDULEURM_BARRIER__ ready=$READY_COUNT expected={len(keys)} early_death=$EARLY_DEATH\"",
+        ])
+    lines.extend([
+        "(",
+        "while true; do",
+        "  ALIVE=0",
+    ])
+    for key in keys:
+        lines.extend([
+            f"  KEY={shlex.quote(key)}",
+            '  PID=$(cat "$REMOTE_DIR/$KEY.pid" 2>/dev/null || echo "")',
+            '  if [ -n "$PID" ] && kill -0 "$PID" >/dev/null 2>&1; then ALIVE=1; fi',
+        ])
+    lines.extend([
+        '  echo "__SCHEDULEURM_HEARTBEAT__ ts=$(date +%s) alive=$ALIVE"',
+        '  if [ "$ALIVE" -eq 0 ]; then exit 0; fi',
+        "  sleep 30",
+        "done",
+        ") &",
+        "HEARTBEAT_PID=$!",
+    ])
     lines.append("OVERALL_RC=0")
     for key in keys:
         lines.extend([
@@ -445,6 +631,10 @@ def _coordinated_remote_script(
             'echo "$RC" > "$REMOTE_DIR/$KEY.rc"',
             'if [ "$RC" -ne 0 ]; then OVERALL_RC="$RC"; fi',
         ])
+    lines.extend([
+        'if [ -n "$HEARTBEAT_PID" ]; then kill "$HEARTBEAT_PID" >/dev/null 2>&1 || true; fi',
+        'if [ -n "$HEARTBEAT_PID" ]; then wait "$HEARTBEAT_PID" >/dev/null 2>&1 || true; fi',
+    ])
     for key in keys:
         lines.extend([
             f"KEY={shlex.quote(key)}",
@@ -509,6 +699,11 @@ def _deploy_progress_wrapper(node: str, raw_dir: Path, *, cwd: str, output_root:
         "torch_cnn_progress_benchmark.py",
         "torch_llm_progress_benchmark.py",
         "jax_cnn_progress_benchmark.py",
+        "gpu_progress_benchmark.py",
+        "gpu_multigpu_memory_progress_benchmark.py",
+        "cpu_progress_benchmark.py",
+        "cpu_parallel_progress_benchmark.py",
+        "cpu_resident_progress_benchmark.py",
     )
     if _scheduler_node(node):
         for name in files:
@@ -602,14 +797,22 @@ def _run_remote_capture(node: str, shell_cmd: str, prefix: Path, *, timeout_s: i
             encoding="utf-8",
         )
         return int(rc), out or "", err or ""
-    proc = subprocess.run(
-        ["ssh", _ssh_target(node), shell_cmd],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        timeout=timeout_s,
-    )
+    proc = None
+    for attempt in range(1, 5):
+        proc = subprocess.run(
+            ["ssh", _ssh_target(node), shell_cmd],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=timeout_s,
+        )
+        if proc.returncode == 0 or not _transient_ssh_error(
+            proc.stdout, proc.stderr
+        ):
+            break
+        time.sleep(min(8, 2 * attempt))
+    assert proc is not None
     prefix.parent.mkdir(parents=True, exist_ok=True)
     prefix.with_suffix(".stdout").write_text(proc.stdout or "", encoding="utf-8")
     prefix.with_suffix(".stderr").write_text(proc.stderr or "", encoding="utf-8")
@@ -621,7 +824,10 @@ def _run_remote_capture(node: str, shell_cmd: str, prefix: Path, *, timeout_s: i
 
 
 def _scheduler_run_on_retry(scheduler, node: str, rendered: str, *, timeout_s: int) -> tuple[int, str, str]:
-    attempts = 4
+    # Login gateways can reject several consecutive handshakes while the
+    # measured workload and its files remain healthy.  Artifact admission must
+    # not turn that transport burst into a false service failure.
+    attempts = 8
     last = (255, "", "")
     for attempt in range(1, attempts + 1):
         rc, out, err = scheduler.run_on(node, rendered, timeout=timeout_s, check=False)
@@ -669,11 +875,223 @@ def _remote_popen(node: str, shell_cmd: str, *, timeout_s: int) -> subprocess.Po
     )
 
 
+class _DetachedRemoteProcess:
+    """Small Popen-compatible handle for a transport-independent remote run."""
+
+    def __init__(
+        self,
+        *,
+        node: str,
+        shell_cmd: str,
+        run_name: str,
+        local_prefix: Path,
+        timeout_s: int,
+    ) -> None:
+        self.node = str(node)
+        self.shell_cmd = str(shell_cmd)
+        self.run_name = str(run_name)
+        self.local_prefix = Path(local_prefix)
+        self.timeout_s = max(1, int(timeout_s))
+        self.remote_root = (
+            f"/tmp/scheduleurm_detached_probe/{_safe_token(self.run_name)}"
+        )
+        self.returncode: int | None = None
+        self._launch_output = ""
+        self._poll_count = 0
+        self._launch()
+
+    def _launch(self) -> None:
+        root = self.remote_root
+        inner = "\n".join(
+            (
+                "set +e",
+                self.shell_cmd,
+                "RC=$?",
+                (
+                    f"printf '%s\\n' \"$RC\" > "
+                    f"{shlex.quote(root + '/returncode.tmp')}"
+                ),
+                (
+                    f"mv {shlex.quote(root + '/returncode.tmp')} "
+                    f"{shlex.quote(root + '/returncode')}"
+                ),
+                'exit "$RC"',
+            )
+        )
+        command = " ".join(
+            (
+                f"mkdir -p {shlex.quote(root)};",
+                (
+                    f"if [ -s {shlex.quote(root + '/returncode')} ]; "
+                    "then exit 0; fi;"
+                ),
+                (
+                    f"if [ -s {shlex.quote(root + '/pid')} ] && "
+                    f"kill -0 \"$(cat {shlex.quote(root + '/pid')})\" "
+                    ">/dev/null 2>&1; then exit 0; fi;"
+                ),
+                (
+                    f"rm -f {shlex.quote(root + '/output.log')} "
+                    f"{shlex.quote(root + '/returncode')} "
+                    f"{shlex.quote(root + '/returncode.tmp')} "
+                    f"{shlex.quote(root + '/pid')};"
+                ),
+                (
+                    f"nohup setsid bash -lc {shlex.quote(inner)} "
+                    f"> {shlex.quote(root + '/output.log')} 2>&1 "
+                    "</dev/null &"
+                ),
+                (
+                    f"printf '%s\\n' \"$!\" > "
+                    f"{shlex.quote(root + '/pid')}"
+                ),
+            )
+        )
+        rc, out, err = _run_remote_capture(
+            self.node,
+            command,
+            self.local_prefix.with_name(
+                self.local_prefix.name + "_launch"
+            ),
+            timeout_s=90,
+        )
+        self._launch_output = (out or "") + (err or "")
+        if int(rc) != 0:
+            self.returncode = int(rc)
+
+    def communicate(self, timeout: int | float | None = None):
+        if self.returncode is not None:
+            if self.returncode == 0:
+                return self._fetch_output(), None
+            return self._launch_output, None
+        wait_s = self.timeout_s if timeout is None else max(1.0, float(timeout))
+        deadline = time.monotonic() + wait_s
+        while time.monotonic() < deadline:
+            self._poll_count += 1
+            rc, out, _err = _run_remote_capture(
+                self.node,
+                self._status_command(),
+                self.local_prefix.with_name(
+                    f"{self.local_prefix.name}_poll_{self._poll_count:04d}"
+                ),
+                timeout_s=min(90, max(15, int(deadline - time.monotonic()))),
+            )
+            parsed = _detached_returncode(out) if int(rc) == 0 else None
+            if parsed is not None:
+                self.returncode = parsed
+                return self._fetch_output(), None
+            time.sleep(3.0)
+        raise subprocess.TimeoutExpired(
+            cmd=f"detached remote process {self.run_name}",
+            timeout=wait_s,
+        )
+
+    def kill(self) -> None:
+        root = self.remote_root
+        command = " ".join(
+            (
+                f"PID=$(cat {shlex.quote(root + '/pid')} 2>/dev/null || true);",
+                (
+                    'if [ -n "$PID" ]; then '
+                    'kill -- "-$PID" >/dev/null 2>&1 || '
+                    'kill "$PID" >/dev/null 2>&1 || true; fi;'
+                ),
+                "sleep 1;",
+                (
+                    'if [ -n "$PID" ] && kill -0 "$PID" '
+                    '>/dev/null 2>&1; then '
+                    'kill -9 -- "-$PID" >/dev/null 2>&1 || '
+                    'kill -9 "$PID" >/dev/null 2>&1 || true; fi;'
+                ),
+                (
+                    f"if [ ! -s {shlex.quote(root + '/returncode')} ]; then "
+                    f"printf '124\\n' > "
+                    f"{shlex.quote(root + '/returncode')}; fi"
+                ),
+            )
+        )
+        rc, out, err = _run_remote_capture(
+            self.node,
+            command,
+            self.local_prefix.with_name(
+                self.local_prefix.name + "_kill"
+            ),
+            timeout_s=90,
+        )
+        if int(rc) == 0:
+            self.returncode = 124
+        else:
+            self.returncode = int(rc)
+            self._launch_output += (out or "") + (err or "")
+
+    def _status_command(self) -> str:
+        root = self.remote_root
+        return " ".join(
+            (
+                f"if [ -s {shlex.quote(root + '/returncode')} ]; then",
+                "printf '__SCHEDULEURM_DETACHED_RC__ ';",
+                f"cat {shlex.quote(root + '/returncode')};",
+                (
+                    f"elif [ -s {shlex.quote(root + '/pid')} ] && "
+                    f"kill -0 \"$(cat {shlex.quote(root + '/pid')})\" "
+                    ">/dev/null 2>&1; then"
+                ),
+                "printf '__SCHEDULEURM_DETACHED_RUNNING__\\n'; exit 3;",
+                "else printf '__SCHEDULEURM_DETACHED_LOST__\\n'; exit 4; fi",
+            )
+        )
+
+    def _fetch_output(self) -> str:
+        root = self.remote_root
+        last = ""
+        for attempt in range(1, 6):
+            rc, out, err = _run_remote_capture(
+                self.node,
+                f"cat {shlex.quote(root + '/output.log')}",
+                self.local_prefix.with_name(
+                    f"{self.local_prefix.name}_fetch_{attempt:02d}"
+                ),
+                timeout_s=180,
+            )
+            last = (out or "") + (err or "")
+            if int(rc) == 0:
+                return out or ""
+            time.sleep(float(attempt))
+        if self.returncode == 0:
+            self.returncode = 255
+        return last
+
+
+def _detached_returncode(output: str | None) -> int | None:
+    match = re.search(
+        r"__SCHEDULEURM_DETACHED_RC__\s+(-?\d+)",
+        str(output or ""),
+    )
+    return int(match.group(1)) if match else None
+
+
+def _remote_detached_popen(
+    node: str,
+    shell_cmd: str,
+    *,
+    run_name: str,
+    local_prefix: Path,
+    timeout_s: int,
+) -> _DetachedRemoteProcess:
+    return _DetachedRemoteProcess(
+        node=node,
+        shell_cmd=shell_cmd,
+        run_name=run_name,
+        local_prefix=local_prefix,
+        timeout_s=timeout_s,
+    )
+
+
 def _write_remote_text(node: str, remote_path: str, text: str, prefix: Path) -> None:
-    payload = base64.b64encode(text.encode("utf-8")).decode("ascii")
+    payload = base64.b64encode(gzip.compress(text.encode("utf-8"), compresslevel=9)).decode("ascii")
     command = (
         f"mkdir -p {shlex.quote(str(Path(remote_path).parent))} && "
-        f"printf %s {shlex.quote(payload)} | base64 -d > {shlex.quote(remote_path)}"
+        f"printf %s {shlex.quote(payload)} | base64 -d | gzip -d > {shlex.quote(remote_path)}"
     )
     _run_remote(node, command, prefix, timeout_s=45)
 
@@ -768,6 +1186,7 @@ def _markdown(summary: Mapping[str, Any], summary_path: Path) -> str:
         f"| `running_count` | {summary.get('running_count')} |",
         f"| `running_with_rate_count` | {summary.get('running_with_rate_count')} |",
         f"| `stable_rate_ready_count` | {summary.get('stable_rate_ready_count')} |",
+        f"| `completion_model_ready_count` | {summary.get('completion_model_ready_count')} |",
         f"| `aggregate_active_rate_unit_s` | {float(summary.get('aggregate_active_rate_unit_s') or 0.0):.6g} |",
         f"| `aggregate_stable_rate_unit_s` | {float(summary.get('aggregate_stable_rate_unit_s') or 0.0):.6g} |",
         f"| `mean_active_rate_unit_s` | {float(summary.get('mean_active_rate_unit_s') or 0.0):.6g} |",
@@ -796,10 +1215,27 @@ def _cmd_build(args: argparse.Namespace) -> int:
         stable_cv=args.stable_cv,
         stable_rel_delta=args.stable_rel_delta,
         stable_skip_samples=args.stable_skip_samples,
+        stable_cycle_units=args.stable_cycle_units,
         coordinated_profile_launch=args.coordinated_profile_launch,
+        require_stable_rate=args.require_stable_rate,
+        require_completion_model=args.require_completion_model,
+        extra_template_values=_parse_template_vars(args.template_var),
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0 if result.get("pass") else 2
+
+
+def _parse_template_vars(items: list[str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for item in items or []:
+        if "=" not in str(item):
+            raise ValueError(f"--template-var must be key=value, got {item!r}")
+        key, value = str(item).split("=", 1)
+        key = key.strip()
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", key):
+            raise ValueError(f"invalid template variable name: {key!r}")
+        out[key] = value
+    return out
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -830,7 +1266,23 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--stable-cv", type=float, default=0.08)
     build.add_argument("--stable-rel-delta", type=float, default=0.05)
     build.add_argument("--stable-skip-samples", type=int, default=0)
+    build.add_argument("--stable-cycle-units", type=int, default=0)
     build.add_argument("--coordinated-profile-launch", action="store_true")
+    build.add_argument("--require-stable-rate", action="store_true")
+    build.add_argument(
+        "--require-completion-model",
+        action="store_true",
+        help=(
+            "Require every child to finish naturally with a phase-aware "
+            "completion model; incompatible with a successful stable-only probe."
+        ),
+    )
+    build.add_argument(
+        "--template-var",
+        action="append",
+        default=[],
+        help="Extra command-template variable in key=value form; repeatable.",
+    )
     build.set_defaults(func=_cmd_build)
     return parser
 

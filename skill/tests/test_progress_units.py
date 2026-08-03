@@ -1,10 +1,128 @@
 from algorithm.experiments.progress_units import (
+    CompletionTimingTracker,
+    completion_eta_seconds,
+    completion_model_line,
+    parse_completion_model,
     parse_progress_line,
     parse_progress_observation,
     task_progress_observation,
 )
-from algorithm.experiments.progress_wrapper import build_progress_line, build_tqdm_line
+from algorithm.experiments.remote_workload_selected_profile_probe import _row_from_output
+from algorithm.experiments.progress_wrapper import (
+    _cycle_stable_rate_decision,
+    _observation_allowed_in_phases,
+    _stable_rate_decision,
+    _update_active_phases,
+    build_progress_line,
+    build_tqdm_line,
+)
 from algorithm.experiments.sweetspot_ab_validation import _summarize_phase
+from simulation.service_cache import ProfileRecord, records_from_summary_file
+
+
+def test_natural_completion_model_separates_startup_loop_and_terminal_save(tmp_path):
+    tracker = CompletionTimingTracker(total_units=4, unit="step")
+    tracker.observe_phase_line(
+        "ScheduleurmPhase name=initialization event=start", elapsed_s=0.0
+    )
+    tracker.observe_phase_line(
+        "ScheduleurmPhase name=initialization event=end", elapsed_s=2.0
+    )
+    for current, elapsed in ((1, 3.0), (2, 4.0), (3, 5.0), (4, 6.0)):
+        obs = parse_progress_line(f"Step {current}/4 rate=1.0 step/s")
+        assert obs is not None
+        tracker.observe_progress(obs, elapsed_s=elapsed)
+    tracker.observe_phase_line(
+        "ScheduleurmPhase name=final_save event=start index=4", elapsed_s=6.0
+    )
+    tracker.observe_phase_line(
+        "ScheduleurmPhase name=final_save event=end index=4", elapsed_s=7.0
+    )
+    model = tracker.finalize(
+        elapsed_s=7.0,
+        child_returncode=0,
+        stopped_on_stable=False,
+    )
+
+    assert model["completion_model_ready"] is True
+    assert model["startup_overhead_s"] == 2.0
+    assert model["completion_unit_s"] == 1.0
+    assert model["terminal_overhead_s"] == 1.0
+    assert model["save_observed_s"] == 1.0
+    assert completion_eta_seconds(model, include_startup=True) == 7.0
+    assert completion_eta_seconds(model, current_unit=2) == 3.0
+    assert parse_completion_model(completion_model_line(model)) == model
+
+    row = _row_from_output(
+        gpu=0,
+        local_index=0,
+        rendered={"values": {"index": 0}, "seed": 7, "run_name": "natural"},
+        returncode=0,
+        output="rate=1.0 step/s\n" + completion_model_line(model) + "\n",
+        raw_dir=tmp_path,
+        unit="step",
+    )
+    assert row["completion_model_ready"] is True
+    assert row["completion_model"]["startup_overhead_s"] == 2.0
+
+
+def test_stable_stopped_probe_never_becomes_completion_model():
+    tracker = CompletionTimingTracker(total_units=100, unit="step")
+    for current, elapsed in ((1, 1.0), (2, 2.0), (3, 3.0)):
+        obs = parse_progress_line(f"Step {current}/100 rate=1.0 step/s")
+        assert obs is not None
+        tracker.observe_progress(obs, elapsed_s=elapsed)
+    model = tracker.finalize(
+        elapsed_s=3.1,
+        child_returncode=143,
+        stopped_on_stable=True,
+    )
+    assert model["completion_model_ready"] is False
+    assert model["readiness_reason"] == "stable_service_probe_not_natural_completion"
+
+
+def test_service_cache_preserves_phase_aware_completion_model(tmp_path):
+    model = {
+        "completion_model_ready": True,
+        "startup_overhead_s": 2.0,
+        "completion_unit_s": 1.25,
+        "terminal_overhead_s": 3.0,
+        "checkpoint_observed_s": 0.5,
+        "save_observed_s": 1.0,
+        "total_wall_s": 10.0,
+        "model_relative_error": 0.01,
+    }
+    summary = {
+        "profile": 1,
+        "node": "jtl110gpu",
+        "running_count": 1,
+        "returncode_valid_count": 1,
+        "returncode_accepted_count": 1,
+        "measurement_valid": True,
+        "placement_valid": True,
+        "rate_units": ["step"],
+        "aggregate_stable_rate_unit_s": 0.8,
+        "stable_rates_unit_s": [0.8],
+        "all_stable_rate_ready": True,
+        "stable_rate_ready_count": 1,
+        "rows": [{"completion_model": model}],
+    }
+    path = tmp_path / "profile_1_per_gpu_summary.json"
+    import json
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    record = records_from_summary_file(
+        path,
+        workload_key="cnn",
+        command_fingerprint="fp",
+        resource_kind="gpu",
+        total_units=4,
+        node_bucket="jtl110gpu",
+    )[0]
+
+    assert record.completion_model_ready is True
+    assert record.completion_eta_s(include_startup=True) == 10.0
+    restored = ProfileRecord.from_snapshot(record.snapshot())
+    assert restored == record
 
 
 def test_progress_units_parse_benchmark_step_rate(check, sch):
@@ -20,6 +138,16 @@ def test_progress_units_parse_benchmark_step_rate(check, sch):
     check("progress parser reads benchmark step/s rate",
           obs is not None and abs(float(obs.rate_per_s) - 10.353019) < 1e-9,
           diag=str(obs))
+
+
+def test_progress_parser_uses_cumulative_rate_not_window_rate():
+    obs = parse_progress_line(
+        "BENCH_PROGRESS Step 60/60 rate=11.1395714 step/s "
+        "window_rate=12.682061 step/s ETA 0.0s"
+    )
+
+    assert obs is not None
+    assert abs(float(obs.rate_per_s) - 11.1395714) < 1e-9
 
 
 def test_progress_units_parse_rl_seconds_per_iter(check, sch):
@@ -75,6 +203,57 @@ def test_progress_wrapper_emits_persistent_tqdm_line(check, sch):
           and obs.total == 100
           and obs.unit == "step",
           diag=f"line={line}, obs={obs}")
+
+
+def test_progress_wrapper_rejects_library_tqdm_outside_outer_loop():
+    loading = parse_progress_line(
+        "Loading weights: 45%|#### | 34/76 [00:01<00:01, 30.7it/s]"
+    )
+    assert loading is not None and loading.source == "per_second"
+    phases = set()
+    _update_active_phases(
+        "ScheduleurmPhase name=initialization event=start", phases
+    )
+    assert not _observation_allowed_in_phases(loading, phases)
+    _update_active_phases(
+        "ScheduleurmPhase name=initialization event=end", phases
+    )
+    _update_active_phases("ScheduleurmPhase name=outer_loop event=start", phases)
+    assert _observation_allowed_in_phases(loading, phases)
+    _update_active_phases("ScheduleurmPhase name=checkpoint event=start", phases)
+    assert not _observation_allowed_in_phases(loading, phases)
+
+
+def test_progress_wrapper_cycle_average_stabilizes_periodic_rl_eta(check, sch):
+    cycle_rates = [1 / 6.0, 1 / 6.0, 1 / 6.0, 1 / 6.0, 1 / 12.0]
+    rates = cycle_rates * 4
+    raw = _stable_rate_decision(
+        rates,
+        windows=5,
+        min_samples=8,
+        max_cv=0.08,
+        max_last_two_rel_delta=0.05,
+        skip_samples=0,
+    )
+    cycle = _cycle_stable_rate_decision(
+        rates,
+        cycle_units=5,
+        windows=3,
+        min_samples=15,
+        max_cv=0.08,
+        max_last_two_rel_delta=0.05,
+        skip_samples=0,
+    )
+
+    expected_cycle_rate = 5.0 / (4.0 * 6.0 + 12.0)
+    check("raw RL train/eval samples are correctly treated as non-stationary",
+          not bool(raw.get("ready")),
+          diag=str(raw))
+    check("cycle-average RL train/eval rate is stable over complete cycles",
+          bool(cycle.get("ready"))
+          and abs(float(cycle.get("mean_rate") or 0.0) - expected_cycle_rate) < 1e-12
+          and int(cycle.get("cycle_units") or 0) == 5,
+          diag=str(cycle))
 
 
 def test_progress_parser_ignores_units_per_iter_banner(check, sch):

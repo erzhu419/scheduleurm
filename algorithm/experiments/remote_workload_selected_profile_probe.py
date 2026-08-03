@@ -887,7 +887,9 @@ def _transient_ssh_error(out: str | None, err: str | None) -> bool:
         "broken pipe",
         "server not responding",
     )
-    return any(needle in text for needle in needles)
+    return any(needle in text for needle in needles) or bool(
+        re.search(r"connection closed by \S+ port \d+", text)
+    )
 
 
 def _remote_popen(node: str, shell_cmd: str, *, timeout_s: int) -> subprocess.Popen[str]:

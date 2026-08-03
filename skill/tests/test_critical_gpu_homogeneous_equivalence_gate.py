@@ -274,11 +274,11 @@ def _mutate(path: Path, callback) -> None:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
 
 
-def test_default_paths_use_exact_formal_v5_matched_wave_names(tmp_path):
+def test_default_paths_use_exact_current_protocol_matched_wave_names(tmp_path):
     representative, equivalent = default_artifact_paths(artifact_root=tmp_path)
 
-    assert representative.name == "critical_gpu_completion_v5_jtl110gpu_r01_20260803.json"
-    assert equivalent.name == "critical_gpu_completion_v5_jtl110gpu2_r01_20260803.json"
+    assert representative.name == "critical_gpu_completion_v6_jtl110gpu_r01_20260803.json"
+    assert equivalent.name == "critical_gpu_completion_v6_jtl110gpu2_r01_20260803.json"
 
 
 def test_missing_artifact_is_wait(tmp_path):

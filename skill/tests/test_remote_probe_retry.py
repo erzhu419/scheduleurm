@@ -83,6 +83,26 @@ def test_scheduler_capture_survives_four_consecutive_banner_timeouts(monkeypatch
     assert len(calls) == 5
 
 
+def test_scheduler_capture_retries_connection_closed_by_numeric_peer(monkeypatch):
+    calls = []
+
+    class FakeScheduler:
+        @staticmethod
+        def run_on(node, rendered, timeout, check):
+            calls.append((node, rendered, timeout, check))
+            if len(calls) == 1:
+                return 255, "", "Connection closed by 1.14.255.221 port 23035"
+            return 0, "ready", ""
+
+    monkeypatch.setattr(probe.time, "sleep", lambda seconds: None)
+    rc, out, err = probe._scheduler_run_on_retry(
+        FakeScheduler(), "jtl110gpu2", "true", timeout_s=30
+    )
+
+    assert (rc, out, err) == (0, "ready", "")
+    assert len(calls) == 2
+
+
 def test_detached_remote_process_survives_poll_transport_boundary(
     tmp_path,
     monkeypatch,

@@ -29,8 +29,8 @@ from .remote_workload_selected_profile_probe import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 TEMPLATE_ROOT = REPO_ROOT / "algorithm" / "experiments" / "templates"
-PROTOCOL = "critical_gpu_phase_completion_v6"
-CAMPAIGN_PREFIX = "critical_gpu_completion_v6"
+PROTOCOL = "critical_gpu_phase_completion_v7"
+CAMPAIGN_PREFIX = "critical_gpu_completion_v7"
 TRAINING_WAVES = (1, 2, 3)
 CALIBRATION_WAVES = tuple(range(4, 13))
 HOLDOUT_WAVE = 13

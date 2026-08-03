@@ -11,6 +11,7 @@ import argparse
 import math
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -21,7 +22,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from algorithm.experiments.progress_units import ProgressObservation, canonical_unit, parse_progress_line
+from algorithm.experiments.progress_units import (
+    CompletionTimingTracker,
+    ProgressObservation,
+    canonical_unit,
+    completion_model_line,
+    parse_progress_line,
+)
 
 
 def _format_hms(seconds: float) -> str:
@@ -175,6 +182,77 @@ def _stable_rate_decision(
     }
 
 
+def _cycle_stable_rate_decision(
+    rates: Sequence[float],
+    *,
+    cycle_units: int,
+    windows: int,
+    min_samples: int,
+    max_cv: float,
+    max_last_two_rel_delta: float,
+    skip_samples: int,
+) -> dict[str, object]:
+    """Stable-rate decision for periodic workloads.
+
+    Hybrid RL jobs often alternate cheap training iterations with periodic
+    evaluation/checkpoint iterations.  Treating each line as an independent
+    service sample makes a genuinely steady periodic job look unstable.  This
+    helper first aggregates complete cycles by harmonic service time, then
+    applies the ordinary tail-window stability test to cycle-average rates.
+    """
+
+    cycle_n = int(max(0, cycle_units))
+    if cycle_n <= 1:
+        return _stable_rate_decision(
+            rates,
+            windows=windows,
+            min_samples=min_samples,
+            max_cv=max_cv,
+            max_last_two_rel_delta=max_last_two_rel_delta,
+            skip_samples=skip_samples,
+        )
+    usable = [float(x) for x in rates[int(max(0, skip_samples)):] if float(x) > 0.0]
+    needed_raw = max(int(min_samples), int(windows) * cycle_n, cycle_n)
+    if len(usable) < needed_raw:
+        return {
+            "ready": False,
+            "reason": f"need_at_least_{needed_raw}_positive_raw_rate_samples_for_{cycle_n}_unit_cycles",
+            "usable_samples": 0,
+            "raw_usable_samples": len(usable),
+            "tail": [],
+            "rule": (
+                f"cycle-average over {cycle_n} native units after "
+                f"{int(max(0, skip_samples))} skipped samples"
+            ),
+        }
+
+    cycle_rates: list[float] = []
+    for start in range(0, len(usable) - cycle_n + 1, cycle_n):
+        chunk = usable[start : start + cycle_n]
+        elapsed = sum(1.0 / max(float(rate), 1e-12) for rate in chunk)
+        if elapsed > 0.0:
+            cycle_rates.append(float(len(chunk)) / elapsed)
+
+    decision = _stable_rate_decision(
+        cycle_rates,
+        windows=windows,
+        min_samples=max(1, int(windows)),
+        max_cv=max_cv,
+        max_last_two_rel_delta=max_last_two_rel_delta,
+        skip_samples=0,
+    )
+    decision["raw_usable_samples"] = len(usable)
+    decision["cycle_units"] = cycle_n
+    decision["cycle_rate_samples"] = len(cycle_rates)
+    decision["rule"] = (
+        f"{int(max(1, windows))} cycle-average windows over {cycle_n} native units "
+        f"after {int(max(0, skip_samples))} skipped raw samples, "
+        f"cv<={float(max_cv):.6g}, "
+        f"last-two relative delta<={float(max_last_two_rel_delta):.6g}"
+    )
+    return decision
+
+
 def _stable_rate_line(decision: dict[str, object], *, unit: str) -> str:
     tail = ",".join(f"{float(x):.9g}" for x in decision.get("tail", []) or [])
     return (
@@ -194,6 +272,44 @@ def _child_return_code_for_shell(returncode: int) -> int:
     if returncode < 0:
         return 128 + abs(returncode)
     return int(returncode)
+
+
+def _usable_for_stable_rate(obs: ProgressObservation) -> bool:
+    """Use task-native rate lines for stable ETA, not derived display bars."""
+
+    return obs.source in {"rate_equals", "seconds_per_unit"}
+
+
+_PHASE_LINE_RE = re.compile(r"\bname=([^\s]+)\s+event=(start|end)\b")
+_NON_SERVICE_PHASES = {"initialization", "warmup", "checkpoint", "final_save"}
+
+
+def _update_active_phases(line: str, active_phases: set[str]) -> None:
+    """Track explicit benchmark phases without changing legacy unphased jobs."""
+
+    if "ScheduleurmPhase" not in line:
+        return
+    match = _PHASE_LINE_RE.search(line)
+    if not match:
+        return
+    name, event = match.groups()
+    if event == "start":
+        active_phases.add(name)
+    else:
+        active_phases.discard(name)
+
+
+def _observation_allowed_in_phases(
+    obs: ProgressObservation,
+    active_phases: set[str],
+) -> bool:
+    """Exclude library tqdm bars emitted during setup/save from task progress."""
+
+    if obs.source != "per_second":
+        return True
+    if not active_phases:
+        return True
+    return not bool(active_phases & _NON_SERVICE_PHASES) and "outer_loop" in active_phases
 
 
 def _terminate_child(proc: subprocess.Popen[str]) -> None:
@@ -218,12 +334,14 @@ def run_wrapped_command(
     stable_cv: float = 0.08,
     stable_rel_delta: float = 0.05,
     stable_skip_samples: int = 0,
+    stable_cycle_units: int = 0,
 ) -> int:
     if not command:
         raise ValueError("wrapped command is empty")
 
     env = dict(os.environ)
     env.setdefault("PYTHONUNBUFFERED", "1")
+    start_monotonic = time.monotonic()
     proc = subprocess.Popen(
         list(command),
         stdout=subprocess.PIPE,
@@ -236,47 +354,75 @@ def run_wrapped_command(
     )
     assert proc.stdout is not None
     rates: list[float] = []
+    stable_reported = False
     stopped_on_stable = False
-    start_monotonic = time.monotonic()
+    completion_tracker = CompletionTimingTracker(total_units=total, unit=unit)
+    active_phases: set[str] = set()
     for raw in proc.stdout:
         line = raw.rstrip("\n")
         print(line, flush=True)
+        elapsed_s = time.monotonic() - start_monotonic
+        completion_tracker.observe_phase_line(line, elapsed_s=elapsed_s)
+        _update_active_phases(line, active_phases)
         progress_line, obs = _normalize_child_line(
             line,
             command=command,
             total_override=total,
             unit_override=unit,
         )
+        if obs is not None and not _observation_allowed_in_phases(obs, active_phases):
+            progress_line, obs = None, None
         if progress_line:
             print(progress_line, flush=True)
         if obs is not None:
+            completion_tracker.observe_progress(obs, elapsed_s=elapsed_s)
             tqdm_line = build_tqdm_line(
                 obs,
                 total_override=total,
                 unit_override=unit,
-                elapsed_s=time.monotonic() - start_monotonic,
+                elapsed_s=elapsed_s,
             )
             if tqdm_line:
                 print(tqdm_line, flush=True)
-        if obs is None or obs.rate_per_s is None or float(obs.rate_per_s) <= 0.0:
+        if obs is None or not _usable_for_stable_rate(obs):
+            continue
+        if obs.rate_per_s is None or float(obs.rate_per_s) <= 0.0:
             continue
         rates.append(float(obs.rate_per_s))
-        if not terminate_on_stable:
-            continue
-        decision = _stable_rate_decision(
-            rates,
-            windows=stable_windows,
-            min_samples=min_rate_samples,
-            max_cv=stable_cv,
-            max_last_two_rel_delta=stable_rel_delta,
-            skip_samples=stable_skip_samples,
+        decision = (
+            _cycle_stable_rate_decision(
+                rates,
+                cycle_units=stable_cycle_units,
+                windows=stable_windows,
+                min_samples=min_rate_samples,
+                max_cv=stable_cv,
+                max_last_two_rel_delta=stable_rel_delta,
+                skip_samples=stable_skip_samples,
+            )
+            if int(stable_cycle_units or 0) > 1
+            else _stable_rate_decision(
+                rates,
+                windows=stable_windows,
+                min_samples=min_rate_samples,
+                max_cv=stable_cv,
+                max_last_two_rel_delta=stable_rel_delta,
+                skip_samples=stable_skip_samples,
+            )
         )
-        if bool(decision.get("ready")):
+        if bool(decision.get("ready")) and not stable_reported:
             print(_stable_rate_line(decision, unit=unit), flush=True)
+            stable_reported = True
+        if bool(decision.get("ready")) and terminate_on_stable:
             _terminate_child(proc)
             stopped_on_stable = True
             break
     rc = _child_return_code_for_shell(proc.wait())
+    model = completion_tracker.finalize(
+        elapsed_s=time.monotonic() - start_monotonic,
+        child_returncode=rc,
+        stopped_on_stable=stopped_on_stable,
+    )
+    print(completion_model_line(model), flush=True)
     return 0 if stopped_on_stable else rc
 
 
@@ -290,6 +436,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--stable-cv", type=float, default=0.08)
     parser.add_argument("--stable-rel-delta", type=float, default=0.05)
     parser.add_argument("--stable-skip-samples", type=int, default=0)
+    parser.add_argument(
+        "--stable-cycle-units",
+        type=int,
+        default=0,
+        help=(
+            "Aggregate complete periodic workload cycles before testing "
+            "stable rate. Use 0 for ordinary raw-rate stability."
+        ),
+    )
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
 
@@ -309,6 +464,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         stable_cv=args.stable_cv,
         stable_rel_delta=args.stable_rel_delta,
         stable_skip_samples=args.stable_skip_samples,
+        stable_cycle_units=args.stable_cycle_units,
     )
 
 

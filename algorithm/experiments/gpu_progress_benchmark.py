@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 import statistics
 import sys
 import time
@@ -29,6 +30,64 @@ def _progress(iterable, *, total: int, desc: str, unit: str):
         )
     except Exception:
         return iterable
+
+
+def _phase(name: str, event: str) -> None:
+    print(f"ScheduleurmPhase name={name} event={event}", flush=True)
+
+
+def _wait_for_coordinated_start() -> None:
+    ready = os.environ.get("SCHEDULEURM_READY_FILE", "").strip()
+    start = os.environ.get("SCHEDULEURM_START_FILE", "").strip()
+    if not ready or not start:
+        return
+    _phase("coordination_barrier", "start")
+    Path(ready).parent.mkdir(parents=True, exist_ok=True)
+    Path(ready).touch()
+    deadline = time.monotonic() + float(
+        os.environ.get("SCHEDULEURM_BARRIER_TIMEOUT_S", "600")
+    )
+    while not Path(start).exists():
+        if time.monotonic() >= deadline:
+            raise TimeoutError("coordinated benchmark start barrier timed out")
+        time.sleep(0.05)
+    _phase("coordination_barrier", "end")
+
+
+def _save_checkpoint(
+    *,
+    checkpoint_dir: str,
+    label: str,
+    step: int,
+    phase_name: str,
+    payload_bytes: int,
+    backend: str,
+    matrix_size: int,
+) -> None:
+    root = Path(checkpoint_dir or "/tmp/scheduleurm_gpu_checkpoints")
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / f"{label}_{phase_name}_{int(step)}.bin"
+    _phase(phase_name, "start")
+    header = (
+        f"scheduleurm-gpu-checkpoint-v1\nbackend={backend}\n"
+        f"matrix_size={int(matrix_size)}\nstep={int(step)}\n"
+    ).encode("ascii")
+    remaining = max(0, int(payload_bytes) - len(header))
+    chunk = bytes(min(1024 * 1024, max(1, remaining)))
+    with path.open("wb") as handle:
+        handle.write(header)
+        while remaining > 0:
+            part = chunk[: min(len(chunk), remaining)]
+            handle.write(part)
+            remaining -= len(part)
+        handle.flush()
+        os.fsync(handle.fileno())
+    _phase(phase_name, "end")
+    print(
+        f"ScheduleurmCheckpoint path={path} bytes={path.stat().st_size} "
+        f"step={int(step)} phase={phase_name}",
+        flush=True,
+    )
 
 
 def _jax_runner(size: int):
@@ -108,18 +167,29 @@ def main() -> int:
     parser.add_argument("--size", type=int, default=2048)
     parser.add_argument("--label", default="scheduleurm-gpu-bench")
     parser.add_argument("--sleep-s", type=float, default=0.0)
+    parser.add_argument("--require-gpu", action="store_true")
+    parser.add_argument("--checkpoint-interval", type=int, default=0)
+    parser.add_argument("--checkpoint-dir", default="")
+    parser.add_argument("--checkpoint-bytes", type=int, default=8 * 1024 * 1024)
+    parser.add_argument("--final-save", action="store_true")
     args = parser.parse_args()
 
+    _phase("initialization", "start")
     steps = max(1, int(args.steps))
     size = max(64, int(args.size))
     backend, device, run_once = _load_runner(size)
+    if args.require_gpu and backend not in {"jax", "torch"}:
+        raise SystemExit("CUDA backend is required for theorem-facing GPU measurements")
+    _phase("initialization", "end")
     print(
         f"BENCH_START label={args.label} backend={backend} device={device} "
         f"pid={os.getpid()} cuda_visible={os.environ.get('CUDA_VISIBLE_DEVICES', '')}",
         flush=True,
     )
+    _wait_for_coordinated_start()
     durations = []
     start = time.time()
+    _phase("outer_loop", "start")
     for i in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
         t0 = time.time()
         run_once()
@@ -135,6 +205,27 @@ def main() -> int:
             f"Step {i}/{steps} dt={dt:.6f}s elapsed={elapsed:.3f}s "
             f"rate={rate:.6f} step/s ETA {eta:.1f}s",
             flush=True,
+        )
+        if int(args.checkpoint_interval) > 0 and i % int(args.checkpoint_interval) == 0:
+            _save_checkpoint(
+                checkpoint_dir=args.checkpoint_dir,
+                label=args.label,
+                step=i,
+                phase_name="checkpoint",
+                payload_bytes=args.checkpoint_bytes,
+                backend=backend,
+                matrix_size=size,
+            )
+    _phase("outer_loop", "end")
+    if args.final_save:
+        _save_checkpoint(
+            checkpoint_dir=args.checkpoint_dir,
+            label=args.label,
+            step=steps,
+            phase_name="final_save",
+            payload_bytes=args.checkpoint_bytes,
+            backend=backend,
+            matrix_size=size,
         )
     total = time.time() - start
     median = statistics.median(durations) if durations else 0.0

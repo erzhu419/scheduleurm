@@ -29,8 +29,10 @@ from .remote_workload_selected_profile_probe import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 TEMPLATE_ROOT = REPO_ROOT / "algorithm" / "experiments" / "templates"
-PROTOCOL = "critical_gpu_phase_completion_v7"
-CAMPAIGN_PREFIX = "critical_gpu_completion_v7"
+PROTOCOL = "critical_gpu_phase_completion_v8"
+CAMPAIGN_PREFIX = "critical_gpu_completion_v8"
+STATIONARY_RATE_EVIDENCE = "stationary_rate_and_completion"
+STAGED_TRAJECTORY_EVIDENCE = "staged_trajectory_completion"
 TRAINING_WAVES = (1, 2, 3)
 CALIBRATION_WAVES = tuple(range(4, 13))
 HOLDOUT_WAVE = 13
@@ -273,6 +275,18 @@ def workload_profiles(node: str, spec: WorkloadSpec) -> tuple[int, ...]:
     )
 
 
+def service_evidence_mode(spec: WorkloadSpec, profile: int) -> str:
+    """Return the pre-registered evidence model for one candidate action."""
+
+    if (
+        not spec.coordinated_start_barrier
+        and float(spec.admission_stagger_s) > 0.0
+        and int(profile) >= int(spec.admission_stagger_min_profile)
+    ):
+        return STAGED_TRAJECTORY_EVIDENCE
+    return STATIONARY_RATE_EVIDENCE
+
+
 def campaign_cells(
     *,
     node: str,
@@ -310,6 +324,7 @@ def campaign_cells(
                     "split_role": wave_role(wave),
                     "max_iters": int(spec.max_iters),
                     "timeout_s": int(spec.timeout_s),
+                    "service_evidence_mode": service_evidence_mode(spec, profile),
                 }
             )
     return cells
@@ -367,6 +382,7 @@ def build_critical_gpu_completion_campaign(
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
         "admission_delay_included_in_completion_jct": True,
+        "staged_trajectory_completion_evidence_required": True,
         "real_checkpoint_allocation_required": True,
         "measurement_code_manifest": code_manifest,
         "allow_launch": bool(allow_launch),
@@ -470,6 +486,8 @@ def _run_cell(
     expected_code_sha256: str,
 ) -> dict[str, Any]:
     profile = int(cell["profile"])
+    evidence_mode = str(cell["service_evidence_mode"])
+    require_stationary_rate = evidence_mode == STATIONARY_RATE_EVIDENCE
     run_id = _safe_id(
         f"{campaign_id}_{spec.workload_key}_p{profile}_code{expected_code_sha256[:12]}"
     )
@@ -517,7 +535,7 @@ def _run_cell(
             stable_skip_samples=spec.stable_skip_samples,
             stable_cycle_units=spec.stable_cycle_units,
             coordinated_profile_launch=True,
-            require_stable_rate=True,
+            require_stable_rate=require_stationary_rate,
             require_completion_model=True,
             extra_template_values=values,
             deploy_bundle=True,
@@ -534,6 +552,12 @@ def _run_cell(
             expected_tasks=expected_tasks,
         )
         admission_audit = _admission_audit(spec, summary, profile=profile)
+        trajectory_audit = _trajectory_progress_audit(
+            spec,
+            summary,
+            profile=profile,
+            evidence_mode=evidence_mode,
+        )
         code_after = measurement_code_manifest()
         code_identity_ready = bool(
             code_after["sha256"] == expected_code_sha256
@@ -544,10 +568,15 @@ def _run_cell(
             and int(artifact_audit.get("allocated_file_count") or 0) >= expected_tasks
         )
         capacity_boundary = _capacity_boundary(summary)
+        service_evidence_ready = bool(
+            summary.get("all_stable_rate_ready")
+            if require_stationary_rate
+            else trajectory_audit.get("ready")
+        )
         ready = bool(
             probe.get("pass")
             and summary.get("measurement_valid")
-            and summary.get("all_stable_rate_ready")
+            and service_evidence_ready
             and summary.get("all_completion_models_ready")
             and backend_audit.get("ready")
             and completion_audit.get("ready")
@@ -572,6 +601,9 @@ def _run_cell(
             "completion_audit": completion_audit,
             "coordination_audit": coordination_audit,
             "admission_audit": admission_audit,
+            "trajectory_progress_audit": trajectory_audit,
+            "service_evidence_mode": evidence_mode,
+            "service_evidence_ready": service_evidence_ready,
             "measurement_code_sha256": expected_code_sha256,
             "measurement_code_identity_ready": code_identity_ready,
             "checkpoint_allocation_ready": checkpoint_ready,
@@ -843,6 +875,87 @@ def _admission_audit(
         "profile": int(profile),
         "delay_counted_in_startup_and_jct": True,
         "children": rows,
+    }
+
+
+def _trajectory_progress_audit(
+    spec: WorkloadSpec,
+    summary: Mapping[str, Any],
+    *,
+    profile: int,
+    evidence_mode: str,
+) -> dict[str, Any]:
+    """Audit task-native support for a nonstationary candidate trajectory."""
+
+    required = evidence_mode == STAGED_TRAJECTORY_EVIDENCE
+    if not required:
+        return {
+            "ready": True,
+            "required": False,
+            "service_evidence_mode": evidence_mode,
+        }
+
+    cycle_units = max(1, int(spec.stable_cycle_units))
+    expected_progress = int(spec.max_iters)
+    expected_intervals = max(1, expected_progress - 1)
+    expected_cycles = expected_progress // cycle_units
+    children: list[dict[str, Any]] = []
+    ready = bool(
+        summary.get("measurement_valid")
+        and summary.get("all_completion_models_ready")
+        and summary.get("require_stable_rate") is False
+    )
+    for child in summary.get("rows") or []:
+        model = child.get("completion_model") or {}
+        raw_returncode = child.get("returncode")
+        progress_count = int(model.get("progress_observation_count") or 0)
+        interval_count = int(model.get("interval_sample_count") or 0)
+        cycle_count = progress_count // cycle_units
+        child_ready = bool(
+            raw_returncode is not None
+            and int(raw_returncode) == 0
+            and float(child.get("rate") or 0.0) > 0.0
+            and bool(child.get("completion_model_ready"))
+            and bool(model.get("natural_exit"))
+            and int(model.get("total_units") or 0) == expected_progress
+            and progress_count >= expected_progress
+            and interval_count >= expected_intervals
+            and cycle_count >= expected_cycles
+        )
+        ready = ready and child_ready
+        children.append(
+            {
+                "global_index": child.get("global_index"),
+                "progress_observation_count": progress_count,
+                "interval_sample_count": interval_count,
+                "complete_cycle_count": cycle_count,
+                "stable_rate_ready_diagnostic": bool(
+                    child.get("stable_rate_ready")
+                ),
+                "ready": child_ready,
+            }
+        )
+    expected_tasks = int(profile) * len(summary.get("gpus") or [])
+    ready = bool(
+        ready
+        and expected_tasks > 0
+        and len(children) == expected_tasks
+        and int(summary.get("running_with_rate_count") or 0) == expected_tasks
+        and int(summary.get("completion_model_ready_count") or 0)
+        == expected_tasks
+    )
+    return {
+        "ready": ready,
+        "required": True,
+        "service_evidence_mode": evidence_mode,
+        "expected_task_count": expected_tasks,
+        "observed_task_count": len(children),
+        "expected_progress_observations_per_task": expected_progress,
+        "expected_interval_samples_per_task": expected_intervals,
+        "cycle_units": cycle_units,
+        "expected_complete_cycles_per_task": expected_cycles,
+        "completion_trajectory_includes_admission_and_drain": True,
+        "children": children,
     }
 
 

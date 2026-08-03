@@ -27,6 +27,8 @@ from .critical_gpu_completion_campaign import (
     HOLDOUT_WAVE,
     NODE_SPECS,
     PROTOCOL,
+    STAGED_TRAJECTORY_EVIDENCE,
+    STATIONARY_RATE_EVIDENCE,
     TRAINING_WAVES,
     WORKLOAD_SPECS,
     campaign_cells,
@@ -294,8 +296,14 @@ def build_critical_gpu_stochastic_lcb_gate(
         "claim_boundary": (
             "The certificate is hardware-local and statewise for the declared "
             "workload_env x node_bucket x empty resource_state x profile cells. "
-            "It uses task-native progress and naturally completed controlled jobs, "
-            "including allocated checkpoint evidence. Training waves freeze the "
+            "Stationary actions require every child to expose a stable task-native "
+            "rate and a natural completion model. The staged RE-SAC p5 action is "
+            "instead certified as a finite admission-and-drain trajectory: every "
+            "child supplies all 40 outer-loop observations and naturally completes, "
+            "while a static within-trajectory rate remains diagnostic rather than "
+            "an assumed service constant. Both modes include allocated checkpoint "
+            "evidence, and their completion-time observations feed the same "
+            "one-sided split-conformal lower-service construction. Training waves freeze the "
             "phase model; calibration-wave maximum scores provide one-sided joint "
             "coverage over both drain completion time and mean task JCT for the "
             "nine declared actions. It neither uses smoke measurements nor pools "
@@ -313,6 +321,8 @@ def _expected_cells(node: str) -> dict[str, dict[str, Any]]:
         if key in result:
             raise RuntimeError(f"duplicate expected service cell {key!r}")
         spec = spec_by_key[str(raw["workload_key"])]
+        evidence_mode = str(raw["service_evidence_mode"])
+        trajectory_mode = evidence_mode == STAGED_TRAJECTORY_EVIDENCE
         result[key] = {
             "service_cell_id": key,
             "workload_key": raw["workload_key"],
@@ -328,7 +338,21 @@ def _expected_cells(node: str) -> dict[str, dict[str, Any]]:
             "total_task_count": int(raw["total_task_count"]),
             "total_units_per_task": int(spec.max_iters),
             "service_unit": spec.unit,
-            "min_progress_observations": int(spec.min_rate_samples),
+            "min_progress_observations": (
+                int(spec.max_iters)
+                if trajectory_mode
+                else int(spec.min_rate_samples)
+            ),
+            "min_interval_samples": (
+                max(1, int(spec.max_iters) - 1)
+                if trajectory_mode
+                else int(spec.min_rate_samples)
+            ),
+            "trajectory_cycle_units": int(spec.stable_cycle_units),
+            "trajectory_complete_cycles": (
+                int(spec.max_iters) // max(1, int(spec.stable_cycle_units))
+            ),
+            "service_evidence_mode": evidence_mode,
         }
     return result
 
@@ -367,6 +391,7 @@ def _audit_wave(
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
         "admission_delay_included_in_completion_jct": True,
+        "staged_trajectory_completion_evidence_required": True,
         "real_checkpoint_allocation_required": True,
     }
     for field, expected in scalar_contract.items():
@@ -559,6 +584,7 @@ def _audit_measurement_row(
         "workload_env",
         "profile_axis",
         "total_task_count",
+        "service_evidence_mode",
     ):
         require(
             row.get(field) == expected.get(field),
@@ -584,6 +610,16 @@ def _audit_measurement_row(
     expected_tasks = int(expected["total_task_count"])
     expected_gpus = int(expected["gpu_count"])
     profile = int(expected["profile"])
+    evidence_mode = str(expected["service_evidence_mode"])
+    trajectory_mode = evidence_mode == STAGED_TRAJECTORY_EVIDENCE
+    require(
+        evidence_mode in {
+            STATIONARY_RATE_EVIDENCE,
+            STAGED_TRAJECTORY_EVIDENCE,
+        },
+        "SERVICE_EVIDENCE_MODE_INVALID",
+        f"unregistered evidence mode {evidence_mode!r}",
+    )
     preflight = row.get("preflight") or {}
     selected_gpus = preflight.get("selected_gpus") or []
     require(bool(preflight.get("ready")), "EMPTY_PREFLIGHT_INVALID", "preflight is not ready")
@@ -603,7 +639,39 @@ def _audit_measurement_row(
     summary = row.get("summary") or {}
     require(summary.get("probe") == "remote_workload_selected_profile_probe", "PROGRESS_SOURCE_INVALID", "unexpected probe source")
     require(bool(summary.get("measurement_valid")), "SUMMARY_NOT_READY", "measurement_valid is false")
-    require(bool(summary.get("all_stable_rate_ready")), "PROGRESS_SOURCE_INVALID", "stable task-native rate missing")
+    require(bool(row.get("service_evidence_ready")), "PROGRESS_SOURCE_INVALID", "service evidence is not ready")
+    if trajectory_mode:
+        require(summary.get("require_stable_rate") is False, "SERVICE_EVIDENCE_MODE_INVALID", "trajectory action incorrectly requires a stationary rate")
+        trajectory = row.get("trajectory_progress_audit") or {}
+        require(bool(trajectory.get("required")), "TRAJECTORY_EVIDENCE_INVALID", "trajectory audit is not required")
+        require(bool(trajectory.get("ready")), "TRAJECTORY_EVIDENCE_INVALID", "trajectory audit is not ready")
+        require(trajectory.get("service_evidence_mode") == evidence_mode, "TRAJECTORY_EVIDENCE_INVALID", "trajectory mode differs")
+        require(bool(trajectory.get("completion_trajectory_includes_admission_and_drain")), "TRAJECTORY_EVIDENCE_INVALID", "trajectory omits admission or drain")
+        require(int(trajectory.get("expected_task_count") or 0) == expected_tasks, "TASK_COUNT_MISMATCH", "trajectory task count differs")
+        require(int(trajectory.get("observed_task_count") or 0) == expected_tasks, "TASK_COUNT_MISMATCH", "trajectory observed task count differs")
+        require(int(trajectory.get("expected_progress_observations_per_task") or 0) == int(expected["total_units_per_task"]), "TRAJECTORY_EVIDENCE_INVALID", "trajectory progress support differs")
+        require(int(trajectory.get("expected_interval_samples_per_task") or 0) == int(expected["min_interval_samples"]), "TRAJECTORY_EVIDENCE_INVALID", "trajectory interval support differs")
+        require(int(trajectory.get("cycle_units") or 0) == int(expected["trajectory_cycle_units"]), "TRAJECTORY_EVIDENCE_INVALID", "trajectory cycle width differs")
+        require(int(trajectory.get("expected_complete_cycles_per_task") or 0) == int(expected["trajectory_complete_cycles"]), "TRAJECTORY_EVIDENCE_INVALID", "trajectory cycle support differs")
+        trajectory_children = trajectory.get("children") or []
+        require(len(trajectory_children) == expected_tasks, "TASK_COUNT_MISMATCH", "trajectory child audit count differs")
+        require(
+            all(
+                bool(child.get("ready"))
+                and int(child.get("progress_observation_count") or 0)
+                >= int(expected["total_units_per_task"])
+                and int(child.get("interval_sample_count") or 0)
+                >= int(expected["min_interval_samples"])
+                and int(child.get("complete_cycle_count") or 0)
+                >= int(expected["trajectory_complete_cycles"])
+                for child in trajectory_children
+            ),
+            "TRAJECTORY_EVIDENCE_INVALID",
+            "a trajectory child lacks full progress, interval, or cycle support",
+        )
+    else:
+        require(summary.get("require_stable_rate") is True, "SERVICE_EVIDENCE_MODE_INVALID", "stationary action does not require a stable rate")
+        require(bool(summary.get("all_stable_rate_ready")), "PROGRESS_SOURCE_INVALID", "stable task-native rate missing")
     require(bool(summary.get("all_completion_models_ready")), "NATURAL_COMPLETION_INVALID", "completion model missing")
     require(bool(summary.get("coordinated_profile_launch")), "SUMMARY_NOT_READY", "profile launch was not coordinated")
     require(summary.get("terminate_on_stable") is False, "NATURAL_COMPLETION_INVALID", "measurement terminated on stable ETA")
@@ -611,7 +679,8 @@ def _audit_measurement_row(
     require(bool(summary.get("placement_valid")), "PLACEMENT_INVALID", "placement is invalid")
     require(int(summary.get("running_count") or 0) == expected_tasks, "TASK_COUNT_MISMATCH", "running task count differs")
     require(int(summary.get("running_with_rate_count") or 0) == expected_tasks, "PROGRESS_SOURCE_INVALID", "not every child has a rate")
-    require(int(summary.get("stable_rate_ready_count") or 0) == expected_tasks, "PROGRESS_SOURCE_INVALID", "not every child has a stable rate")
+    if not trajectory_mode:
+        require(int(summary.get("stable_rate_ready_count") or 0) == expected_tasks, "PROGRESS_SOURCE_INVALID", "not every child has a stable rate")
     require(int(summary.get("completion_model_ready_count") or 0) == expected_tasks, "NATURAL_COMPLETION_INVALID", "not every child has a completion model")
     require(int(summary.get("returncode_accepted_count") or 0) == expected_tasks, "NATURAL_COMPLETION_INVALID", "not every child returncode was accepted")
     require(int(summary.get("profile") or 0) == profile, "CELL_METADATA_MISMATCH", "summary profile differs")
@@ -626,7 +695,8 @@ def _audit_measurement_row(
 
     probe = row.get("probe_result") or {}
     require(bool(probe.get("pass")), "SUMMARY_NOT_READY", "nested probe did not pass")
-    require(int(probe.get("stable_rate_ready_count") or 0) == expected_tasks, "PROGRESS_SOURCE_INVALID", "probe lacks stable rows")
+    if not trajectory_mode:
+        require(int(probe.get("stable_rate_ready_count") or 0) == expected_tasks, "PROGRESS_SOURCE_INVALID", "probe lacks stable rows")
     require(int(probe.get("completion_model_ready_count") or 0) == expected_tasks, "NATURAL_COMPLETION_INVALID", "probe lacks completion rows")
     backend = row.get("backend_audit") or {}
     require(bool(backend.get("ready")), "BACKEND_INVALID", "workload backend audit failed")
@@ -682,12 +752,14 @@ def _audit_measurement_row(
     )
     child_models: list[dict[str, float]] = []
     min_progress = int(expected["min_progress_observations"])
+    min_intervals = int(expected["min_interval_samples"])
     for index, child in enumerate(children):
         model = child.get("completion_model") or {}
         child_prefix = f"child {index}"
         require(_int_or(child.get("returncode"), -1) == 0, "NATURAL_COMPLETION_INVALID", f"{child_prefix} returncode is nonzero")
-        require(bool(child.get("stable_rate_ready")), "PROGRESS_SOURCE_INVALID", f"{child_prefix} stable rate missing")
-        require(float(child.get("stable_rate") or 0.0) > 0.0, "PROGRESS_SOURCE_INVALID", f"{child_prefix} stable rate is nonpositive")
+        if not trajectory_mode:
+            require(bool(child.get("stable_rate_ready")), "PROGRESS_SOURCE_INVALID", f"{child_prefix} stable rate missing")
+            require(float(child.get("stable_rate") or 0.0) > 0.0, "PROGRESS_SOURCE_INVALID", f"{child_prefix} stable rate is nonpositive")
         require(bool(child.get("completion_model_ready")), "NATURAL_COMPLETION_INVALID", f"{child_prefix} model flag is false")
         require(str(child.get("unit") or "") == str(expected["service_unit"]), "PROGRESS_SOURCE_INVALID", f"{child_prefix} progress unit differs")
         require(str(child.get("eta_source") or "").lower() != "history", "HISTORY_ETA_FORBIDDEN", f"{child_prefix} used history ETA")
@@ -698,7 +770,7 @@ def _audit_measurement_row(
         require(str(model.get("readiness_reason") or "") == "ready", "NATURAL_COMPLETION_INVALID", f"{child_prefix} readiness reason differs")
         require(str(model.get("unit") or "") == str(expected["service_unit"]), "PROGRESS_SOURCE_INVALID", f"{child_prefix} model unit differs")
         require(int(model.get("progress_observation_count") or 0) >= min_progress, "PROGRESS_SOURCE_INVALID", f"{child_prefix} has too few progress observations")
-        require(int(model.get("interval_sample_count") or 0) >= min_progress, "PROGRESS_SOURCE_INVALID", f"{child_prefix} has too few outer-loop intervals")
+        require(int(model.get("interval_sample_count") or 0) >= min_intervals, "PROGRESS_SOURCE_INVALID", f"{child_prefix} has too few outer-loop intervals")
         require(int(model.get("total_units") or 0) == int(expected["total_units_per_task"]), "TASK_UNITS_MISMATCH", f"{child_prefix} total units differ")
         startup = _nonnegative_float(model.get("startup_overhead_s"))
         unit_s = _positive_float(model.get("completion_unit_s"))
@@ -741,6 +813,7 @@ def _audit_measurement_row(
         "profile_axis": expected["profile_axis"],
         "task_count": expected_tasks,
         "service_unit": expected["service_unit"],
+        "service_evidence_mode": evidence_mode,
         "aggregate_total_units": aggregate_units,
         "drain_completion_s": critical["total_wall_s"],
         "mean_task_jct_s": fmean(item["total_wall_s"] for item in child_models),
@@ -757,6 +830,8 @@ def _audit_measurement_row(
             "total_units_per_task": fmean(item["total_units"] for item in child_models),
         },
         "task_native_progress_ready": True,
+        "stationary_stable_rate_ready": not trajectory_mode,
+        "trajectory_completion_support_ready": trajectory_mode,
         "natural_completion_ready": True,
         "real_checkpoint_ready": True,
         "empty_preflight_ready": True,

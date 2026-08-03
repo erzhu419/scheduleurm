@@ -12,6 +12,7 @@ from algorithm.experiments.critical_gpu_completion_campaign import (
     HOLDOUT_WAVE,
     NODE_SPECS,
     PROTOCOL,
+    STAGED_TRAJECTORY_EVIDENCE,
     TRAINING_WAVES,
     WORKLOAD_SPECS,
     campaign_cells,
@@ -71,6 +72,7 @@ def _campaign(wave: int) -> dict[str, object]:
         "task_native_progress_required": True,
         "coordinated_post_warmup_start_required_for_builtin_gpu_workloads": True,
         "admission_delay_included_in_completion_jct": True,
+        "staged_trajectory_completion_evidence_required": True,
         "real_checkpoint_allocation_required": True,
         "measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
         "final_measurement_code_manifest": {"sha256": CODE_SHA256, "files": []},
@@ -122,6 +124,19 @@ def _measurement_row(
     profile = int(cell["profile"])
     gpus = list(cell["gpus"])
     per_gpu = {str(gpu): profile for gpu in gpus}
+    evidence_mode = str(cell["service_evidence_mode"])
+    trajectory_mode = evidence_mode == STAGED_TRAJECTORY_EVIDENCE
+    progress_observations = (
+        int(spec.max_iters) if trajectory_mode else int(spec.min_rate_samples) + 2
+    )
+    interval_samples = (
+        max(1, int(spec.max_iters) - 1)
+        if trajectory_mode
+        else int(spec.min_rate_samples) + 1
+    )
+    for child in children:
+        child["completion_model"]["progress_observation_count"] = progress_observations
+        child["completion_model"]["interval_sample_count"] = interval_samples
     summary = {
         "probe": "remote_workload_selected_profile_probe",
         "node": NODE,
@@ -130,6 +145,7 @@ def _measurement_row(
         "measurement_valid": True,
         "all_stable_rate_ready": True,
         "all_completion_models_ready": True,
+        "require_stable_rate": not trajectory_mode,
         "coordinated_profile_launch": True,
         "terminate_on_stable": False,
         "capacity_boundary": False,
@@ -199,12 +215,61 @@ def _measurement_row(
             "delay_counted_in_startup_and_jct": True,
             "children": [{"ready": True} for _ in range(task_count)],
         },
+        "trajectory_progress_audit": _trajectory_audit(
+            evidence_mode=evidence_mode,
+            task_count=task_count,
+            total_units=int(spec.max_iters),
+            cycle_units=int(spec.stable_cycle_units),
+        ),
+        "service_evidence_mode": evidence_mode,
+        "service_evidence_ready": True,
         "measurement_code_sha256": CODE_SHA256,
         "measurement_code_identity_ready": True,
         "checkpoint_allocation_ready": True,
         "capacity_boundary": False,
         "status": "READY",
         "ready": True,
+    }
+
+
+def _trajectory_audit(
+    *,
+    evidence_mode: str,
+    task_count: int,
+    total_units: int,
+    cycle_units: int,
+) -> dict[str, object]:
+    required = evidence_mode == STAGED_TRAJECTORY_EVIDENCE
+    if not required:
+        return {
+            "ready": True,
+            "required": False,
+            "service_evidence_mode": evidence_mode,
+        }
+    intervals = max(1, total_units - 1)
+    cycles = total_units // max(1, cycle_units)
+    return {
+        "ready": True,
+        "required": True,
+        "service_evidence_mode": evidence_mode,
+        "expected_task_count": task_count,
+        "observed_task_count": task_count,
+        "expected_progress_observations_per_task": total_units,
+        "expected_interval_samples_per_task": intervals,
+        "cycle_units": cycle_units,
+        "expected_complete_cycles_per_task": cycles,
+        "completion_trajectory_includes_admission_and_drain": True,
+        "children": [
+            {
+                "global_index": task,
+                "progress_observation_count": total_units,
+                "interval_sample_count": intervals,
+                "complete_cycle_count": cycles,
+                "stable_rate_ready_diagnostic": True,
+                "ready": True,
+            }
+            for task in range(task_count)
+        ],
     }
 
 
@@ -294,6 +359,92 @@ def test_complete_campaign_builds_wave_max_simultaneous_certificate(tmp_path):
     assert all(
         row["node_bucket"] == NODE_SPECS[NODE].node_bucket
         for row in certificate["rows"]
+    )
+
+
+def test_staged_trajectory_does_not_require_a_false_static_rate_claim(tmp_path):
+    paths = _write_campaigns(tmp_path)
+
+    def remove_one_static_rate(payload):
+        row = next(
+            item
+            for item in payload["rows"]
+            if item["service_evidence_mode"] == STAGED_TRAJECTORY_EVIDENCE
+        )
+        row["summary"]["all_stable_rate_ready"] = False
+        row["summary"]["stable_rate_ready_count"] -= 1
+        row["probe_result"]["stable_rate_ready_count"] -= 1
+        row["summary"]["rows"][2]["stable_rate_ready"] = False
+        row["trajectory_progress_audit"]["children"][2][
+            "stable_rate_ready_diagnostic"
+        ] = False
+
+    _mutate(paths[7], remove_one_static_rate)
+    report = build_critical_gpu_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "PASS"
+    trajectory = next(
+        row
+        for row in report["certificate"]["rows"]
+        if row["service_evidence_mode"] == STAGED_TRAJECTORY_EVIDENCE
+    )
+    assert trajectory["lower_service_valid_on_holdout"] is True
+
+
+def test_staged_trajectory_missing_one_native_progress_observation_fails(tmp_path):
+    paths = _write_campaigns(tmp_path)
+
+    def remove_progress(payload):
+        row = next(
+            item
+            for item in payload["rows"]
+            if item["service_evidence_mode"] == STAGED_TRAJECTORY_EVIDENCE
+        )
+        row["summary"]["rows"][0]["completion_model"][
+            "progress_observation_count"
+        ] -= 1
+
+    _mutate(paths[7], remove_progress)
+    report = build_critical_gpu_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "PROGRESS_SOURCE_INVALID"
+        and "too few progress observations" in issue["detail"]
+        for issue in report["validation_errors"]
+    )
+
+
+def test_stationary_action_still_requires_every_child_stable_rate(tmp_path):
+    paths = _write_campaigns(tmp_path)
+
+    def remove_static_rate(payload):
+        row = next(
+            item
+            for item in payload["rows"]
+            if item["service_evidence_mode"] != STAGED_TRAJECTORY_EVIDENCE
+        )
+        row["summary"]["all_stable_rate_ready"] = False
+        row["summary"]["stable_rate_ready_count"] -= 1
+        row["probe_result"]["stable_rate_ready_count"] -= 1
+        row["summary"]["rows"][0]["stable_rate_ready"] = False
+
+    _mutate(paths[7], remove_static_rate)
+    report = build_critical_gpu_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "PROGRESS_SOURCE_INVALID"
+        for issue in report["validation_errors"]
     )
 
 

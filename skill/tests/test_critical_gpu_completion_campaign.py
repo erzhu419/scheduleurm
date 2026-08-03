@@ -3,10 +3,13 @@ from algorithm.experiments.critical_gpu_completion_campaign import (
     CALIBRATION_WAVES,
     HOLDOUT_WAVE,
     NODE_SPECS,
+    STAGED_TRAJECTORY_EVIDENCE,
+    STATIONARY_RATE_EVIDENCE,
     TRAINING_WAVES,
     WORKLOAD_SPECS,
     _admission_audit,
     _coordination_audit,
+    _trajectory_progress_audit,
     build_critical_gpu_completion_campaign,
     campaign_cells,
     workload_profiles,
@@ -63,6 +66,71 @@ def test_every_workload_naturally_completes_and_saves():
     assert WORKLOAD_SPECS[3].admission_stagger_s == 30.0
     assert WORKLOAD_SPECS[3].admission_stagger_axis == "global_index"
     assert WORKLOAD_SPECS[3].admission_stagger_min_profile == 5
+
+
+def test_service_evidence_mode_tracks_stationary_action_vs_staged_trajectory():
+    cells = campaign_cells(node="jtl110gpu", wave=1)
+    rl_cells = [
+        cell
+        for cell in cells
+        if cell["workload_key"] == "hybrid_rl_resac_ant"
+    ]
+    assert [(cell["profile"], cell["service_evidence_mode"]) for cell in rl_cells] == [
+        (2, STATIONARY_RATE_EVIDENCE),
+        (5, STAGED_TRAJECTORY_EVIDENCE),
+    ]
+    assert all(
+        cell["service_evidence_mode"] == STATIONARY_RATE_EVIDENCE
+        for cell in cells
+        if cell["workload_key"] != "hybrid_rl_resac_ant"
+    )
+
+
+def test_staged_trajectory_audit_uses_full_progress_not_static_rate():
+    spec = WORKLOAD_SPECS[3]
+    rows = []
+    for index in range(10):
+        rows.append(
+            {
+                "global_index": index,
+                "returncode": 0,
+                "rate": 0.1,
+                "stable_rate_ready": index != 2,
+                "completion_model_ready": True,
+                "completion_model": {
+                    "natural_exit": True,
+                    "total_units": 40,
+                    "progress_observation_count": 40,
+                    "interval_sample_count": 39,
+                },
+            }
+        )
+    summary = {
+        "measurement_valid": True,
+        "all_completion_models_ready": True,
+        "require_stable_rate": False,
+        "gpus": [0, 1],
+        "running_with_rate_count": 10,
+        "completion_model_ready_count": 10,
+        "rows": rows,
+    }
+
+    audit = _trajectory_progress_audit(
+        spec,
+        summary,
+        profile=5,
+        evidence_mode=STAGED_TRAJECTORY_EVIDENCE,
+    )
+    assert audit["ready"] is True
+    assert audit["children"][2]["stable_rate_ready_diagnostic"] is False
+
+    rows[2]["completion_model"]["progress_observation_count"] = 39
+    assert not _trajectory_progress_audit(
+        spec,
+        summary,
+        profile=5,
+        evidence_mode=STAGED_TRAJECTORY_EVIDENCE,
+    )["ready"]
 
 
 def test_coordination_audit_requires_both_markers_per_child(tmp_path):

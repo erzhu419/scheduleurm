@@ -202,3 +202,4 @@ def test_coordinated_script_does_not_barrier_external_rl_workload():
 
     assert "SCHEDULEURM_READY_FILE" not in script
     assert "__SCHEDULEURM_BARRIER__" not in script
+    assert "export OMP_NUM_THREADS=1" in script

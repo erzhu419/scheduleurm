@@ -299,7 +299,7 @@ def test_default_paths_follow_campaign_prefix(tmp_path):
     assert paths[13].name == f"{CAMPAIGN_PREFIX}_{NODE}_r13_20260803.json"
 
 
-def test_legacy_artifact_prefix_is_rejected_even_for_v3_payload(tmp_path):
+def test_legacy_artifact_prefix_is_rejected_even_for_v4_payload(tmp_path):
     paths = _write_campaigns(tmp_path)
     legacy = tmp_path / f"critical_gpu_completion_{NODE}_r06_20260803.json"
     paths[6].rename(legacy)

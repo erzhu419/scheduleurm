@@ -23,6 +23,7 @@ from .critical_gpu_completion_campaign import (
     CAMPAIGN_PREFIX,
     NODE_SPECS,
     PROTOCOL,
+    STAGED_TRAJECTORY_EVIDENCE,
 )
 from .critical_gpu_stochastic_lcb_gate import (
     CAMPAIGN_DATE,
@@ -509,6 +510,11 @@ def _empirical_aggregate_lower_service(
     aggregate_units = _positive_float(observation.get("aggregate_total_units"))
     drain = _positive_float(observation.get("drain_completion_s"))
     completion_service = aggregate_units / drain if aggregate_units and drain else 0.0
+    if (
+        source_row.get("service_evidence_mode")
+        == STAGED_TRAJECTORY_EVIDENCE
+    ):
+        return completion_service
     children = (source_row.get("summary") or {}).get("rows") or []
     stable_rates = [_positive_float(child.get("stable_rate")) for child in children]
     if not stable_rates or any(value <= 0.0 for value in stable_rates):

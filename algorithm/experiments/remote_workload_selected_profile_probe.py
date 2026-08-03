@@ -565,6 +565,11 @@ def _coordinated_remote_script(
     for gpu, local_index, _rendered, remote in launch_rows:
         key = f"gpu{int(gpu)}_{int(local_index)}"
         keys.append(key)
+        thread_exports = (
+            "export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; "
+            "export NUMEXPR_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false; "
+            "export TF_NUM_INTRAOP_THREADS=1 TF_NUM_INTEROP_THREADS=1; "
+        )
         if barrier_enabled:
             delay_s = 0.75 * int(local_index)
             remote = (
@@ -572,10 +577,11 @@ def _coordinated_remote_script(
                 f"export SCHEDULEURM_READY_FILE=\"$REMOTE_DIR/{key}.ready\"; "
                 f"export SCHEDULEURM_START_FILE=\"$REMOTE_DIR/start\"; "
                 "export SCHEDULEURM_BARRIER_TIMEOUT_S=600; "
-                "export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; "
-                "export NUMEXPR_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false; "
+                f"{thread_exports}"
                 f"{remote}"
             )
+        else:
+            remote = f"{thread_exports}{remote}"
         lines.extend([
             f"KEY={shlex.quote(key)}",
             f"({remote}) > \"$REMOTE_DIR/$KEY.log\" 2>&1 &",

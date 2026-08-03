@@ -53,7 +53,7 @@ def default_artifact_paths(
     wave: int = DEFAULT_MATCHED_WAVE,
     artifact_root: Path = ARTIFACT_ROOT,
 ) -> tuple[Path, Path]:
-    """Return the exact formal-v3 paths for one matched wave."""
+    """Return the exact formal-v4 paths for one matched wave."""
 
     value = int(wave)
     return (

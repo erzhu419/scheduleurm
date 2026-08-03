@@ -1165,7 +1165,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     args = build_parser().parse_args(list(argv) if argv is not None else None)
     output = args.output or (
         args.artifact_root
-        / f"critical_gpu_stochastic_lcb_gate_v3_{args.node}_{CAMPAIGN_DATE}.json"
+        / f"critical_gpu_stochastic_lcb_gate_v4_{args.node}_{CAMPAIGN_DATE}.json"
     )
     markdown = args.markdown_output or output.with_suffix(".md")
     report = build_critical_gpu_stochastic_lcb_gate(

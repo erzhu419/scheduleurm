@@ -1,0 +1,139 @@
+{
+  "name": "test_port_heterogeneous_4",
+  "lower_service_factor": 0.88,
+  "decision_interval": 5.0,
+  "reberth_base_duration": 4.0,
+  "reberth_distance_duration": 1.0,
+  "reberth_fixed_cost": 2.0,
+  "crane_reassignment_base_duration": 2.0,
+  "crane_reassignment_distance_duration": 0.5,
+  "crane_reassignment_fixed_cost": 0.5,
+  "yard_rehandle_base_duration": 2.0,
+  "yard_rehandle_distance_duration": 0.8,
+  "yard_rehandle_fixed_cost": 1.0,
+  "cost_to_penalty": 0.2,
+  "berths": [
+    {
+      "berth_id": "b_deep",
+      "position": 0.0,
+      "max_length": 320.0,
+      "max_draft": 14.0,
+      "rate_multiplier": 1.2
+    },
+    {
+      "berth_id": "b_small",
+      "position": 1.0,
+      "max_length": 220.0,
+      "max_draft": 10.0,
+      "rate_multiplier": 0.8
+    }
+  ],
+  "quay_cranes": [
+    {
+      "crane_id": "qc_fast",
+      "base_rate": 2.0,
+      "compatible_berths": ["b_deep", "b_small"],
+      "cargo_multipliers": {"reefer": 0.9}
+    },
+    {
+      "crane_id": "qc_small",
+      "base_rate": 1.25,
+      "compatible_berths": ["b_small"],
+      "cargo_multipliers": {"reefer": 1.1}
+    },
+    {
+      "crane_id": "qc_flex",
+      "base_rate": 1.5,
+      "compatible_berths": ["b_deep", "b_small"],
+      "cargo_multipliers": {}
+    }
+  ],
+  "yard_blocks": [
+    {
+      "block_id": "y_near",
+      "position": 0.0,
+      "compatible_cargo": ["general", "reefer"],
+      "handling_rates": {"general": 2.1, "reefer": 1.8}
+    },
+    {
+      "block_id": "y_far",
+      "position": 2.0,
+      "compatible_cargo": ["general", "reefer"],
+      "handling_rates": {"general": 1.2, "reefer": 1.0}
+    }
+  ],
+  "gate_lanes": [
+    {
+      "lane_id": "g_fast",
+      "compatible_cargo": ["general", "reefer"],
+      "processing_rates": {"general": 2.0, "reefer": 1.7}
+    },
+    {
+      "lane_id": "g_regular",
+      "compatible_cargo": ["general", "reefer"],
+      "processing_rates": {"general": 1.3, "reefer": 1.2}
+    }
+  ],
+  "vessels": [
+    {
+      "vessel_id": "large",
+      "arrival_time": 0.0,
+      "due_time": 90.0,
+      "priority_weight": 1.0,
+      "length": 300.0,
+      "draft": 13.5,
+      "cargo_class": "general",
+      "quay_work": 100.0,
+      "yard_work": 50.0,
+      "gate_work": 30.0,
+      "preferred_berth": "b_deep",
+      "preferred_yard": "y_near",
+      "max_cranes": 2
+    },
+    {
+      "vessel_id": "urgent",
+      "arrival_time": 1.0,
+      "due_time": 55.0,
+      "priority_weight": 1.8,
+      "length": 190.0,
+      "draft": 9.0,
+      "cargo_class": "reefer",
+      "quay_work": 72.0,
+      "yard_work": 46.0,
+      "gate_work": 26.0,
+      "preferred_berth": "b_small",
+      "preferred_yard": "y_near",
+      "max_cranes": 2
+    },
+    {
+      "vessel_id": "medium",
+      "arrival_time": 7.0,
+      "due_time": 105.0,
+      "priority_weight": 1.2,
+      "length": 245.0,
+      "draft": 11.0,
+      "cargo_class": "general",
+      "quay_work": 88.0,
+      "yard_work": 55.0,
+      "gate_work": 35.0,
+      "preferred_berth": "b_deep",
+      "preferred_yard": "y_far",
+      "max_cranes": 2
+    },
+    {
+      "vessel_id": "feeder",
+      "arrival_time": 12.0,
+      "due_time": 78.0,
+      "priority_weight": 1.4,
+      "length": 180.0,
+      "draft": 8.5,
+      "cargo_class": "general",
+      "quay_work": 58.0,
+      "yard_work": 38.0,
+      "gate_work": 24.0,
+      "preferred_berth": "b_small",
+      "preferred_yard": "y_far",
+      "max_cranes": 2
+    }
+  ]
+}

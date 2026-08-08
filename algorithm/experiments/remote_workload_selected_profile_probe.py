@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import base64
 import gzip
+import hashlib
 import importlib.util
 import json
 import re
@@ -1081,22 +1082,136 @@ class _DetachedRemoteProcess:
     def _fetch_output(self) -> str:
         root = self.remote_root
         last = ""
-        for attempt in range(1, 6):
-            rc, out, err = _run_remote_capture(
-                self.node,
-                f"cat {shlex.quote(root + '/output.log')}",
-                self.local_prefix.with_name(
-                    f"{self.local_prefix.name}_fetch_{attempt:02d}"
-                ),
-                timeout_s=180,
+        for attempt in range(1, 4):
+            prefix = self.local_prefix.with_name(
+                f"{self.local_prefix.name}_fetch_{attempt:02d}"
             )
-            last = (out or "") + (err or "")
-            if int(rc) == 0:
-                return out or ""
-            time.sleep(float(attempt))
+            try:
+                payload = _fetch_remote_file_bytes(
+                    self.node,
+                    root + "/output.log",
+                    prefix,
+                    timeout_s=180,
+                )
+                prefix.with_suffix(".reconstructed.log").write_bytes(payload)
+                return payload.decode("utf-8", errors="replace")
+            except RuntimeError as exc:
+                last = repr(exc)
+                time.sleep(float(attempt))
         if self.returncode == 0:
             self.returncode = 255
         return last
+
+
+def _fetch_remote_file_bytes(
+    node: str,
+    remote_path: str,
+    local_prefix: Path,
+    *,
+    timeout_s: int,
+    chunk_bytes: int = 64 * 1024,
+) -> bytes:
+    """Fetch a remote file below transport output caps and verify exact bytes."""
+    if int(chunk_bytes) <= 0:
+        raise ValueError("chunk_bytes must be positive")
+    quoted_path = shlex.quote(str(remote_path))
+    metadata_command = " ".join(
+        (
+            f"if [ ! -f {quoted_path} ]; then",
+            "printf '__SCHEDULEURM_FILE_MISSING__\\n'; exit 44; fi;",
+            f"SIZE=$(wc -c < {quoted_path} | tr -d '[:space:]');",
+            f"SHA=$(sha256sum {quoted_path} | awk '{{print $1}}');",
+            "printf '__SCHEDULEURM_FILE__ %s %s\\n' \"$SIZE\" \"$SHA\"",
+        )
+    )
+    rc, out, err = _run_remote_capture(
+        node,
+        metadata_command,
+        local_prefix.with_name(local_prefix.name + "_meta"),
+        timeout_s=timeout_s,
+    )
+    match = re.search(
+        r"__SCHEDULEURM_FILE__\s+(\d+)\s+([0-9a-fA-F]{64})",
+        out or "",
+    )
+    if int(rc) != 0 or match is None:
+        raise RuntimeError(
+            f"remote file metadata failed rc={rc}: {(out or '') + (err or '')}"
+        )
+    expected_size = int(match.group(1))
+    expected_sha256 = match.group(2).lower()
+    chunks: list[bytes] = []
+    count = (expected_size + int(chunk_bytes) - 1) // int(chunk_bytes)
+    for index in range(count):
+        offset = index * int(chunk_bytes)
+        expected_chunk_size = min(int(chunk_bytes), expected_size - offset)
+        chunk_command = " ".join(
+            (
+                f"printf '__SCHEDULEURM_CHUNK_BEGIN__ {index} {offset} {expected_chunk_size}\\n';",
+                (
+                    f"dd if={quoted_path} bs={int(chunk_bytes)} skip={index} "
+                    "count=1 status=none | base64 -w0;"
+                ),
+                f"printf '\\n__SCHEDULEURM_CHUNK_END__ {index}\\n'",
+            )
+        )
+        chunk_payload: bytes | None = None
+        last_error = ""
+        for attempt in range(1, 4):
+            chunk_prefix = local_prefix.with_name(
+                f"{local_prefix.name}_chunk_{index:04d}_attempt_{attempt:02d}"
+            )
+            chunk_rc, chunk_out, chunk_err = _run_remote_capture(
+                node,
+                chunk_command,
+                chunk_prefix,
+                timeout_s=timeout_s,
+            )
+            chunk_match = re.search(
+                (
+                    rf"__SCHEDULEURM_CHUNK_BEGIN__\s+{index}\s+{offset}\s+"
+                    rf"{expected_chunk_size}\s*\n([A-Za-z0-9+/=]*)\s*\n"
+                    rf"__SCHEDULEURM_CHUNK_END__\s+{index}"
+                ),
+                chunk_out or "",
+            )
+            if int(chunk_rc) == 0 and chunk_match is not None:
+                try:
+                    candidate = base64.b64decode(
+                        chunk_match.group(1).encode("ascii"),
+                        validate=True,
+                    )
+                except (ValueError, UnicodeEncodeError) as exc:
+                    last_error = f"invalid base64: {exc!r}"
+                else:
+                    if len(candidate) == expected_chunk_size:
+                        chunk_payload = candidate
+                        break
+                    last_error = (
+                        f"chunk length {len(candidate)} != {expected_chunk_size}"
+                    )
+            else:
+                last_error = (
+                    f"chunk transport rc={chunk_rc}: "
+                    f"{(chunk_out or '') + (chunk_err or '')}"
+                )
+            time.sleep(float(attempt))
+        if chunk_payload is None:
+            raise RuntimeError(
+                f"remote file chunk {index}/{count} failed: {last_error}"
+            )
+        chunks.append(chunk_payload)
+    payload = b"".join(chunks)
+    if len(payload) != expected_size:
+        raise RuntimeError(
+            f"remote file size mismatch {len(payload)} != {expected_size}"
+        )
+    actual_sha256 = hashlib.sha256(payload).hexdigest()
+    if actual_sha256 != expected_sha256:
+        raise RuntimeError(
+            f"remote file sha256 mismatch {actual_sha256} != {expected_sha256}"
+        )
+    return payload
 
 
 def _detached_returncode(output: str | None) -> int | None:

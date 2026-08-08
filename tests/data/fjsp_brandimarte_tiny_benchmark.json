@@ -1,0 +1,2349 @@
+{
+  "comparison": {
+    "baselines_pareto_dominated_by_ours": [
+      "most_operations_remaining"
+    ],
+    "best_baseline_by_metric": {
+      "makespan": "most_work_remaining",
+      "mean_flow_time": "most_work_remaining",
+      "reconfiguration_time": "shortest_processing_time"
+    },
+    "objective_direction": "all_reported_metrics_are_costs_to_minimize",
+    "ours_over_best_baseline_ratio": {
+      "makespan": 1,
+      "mean_flow_time": 1.032258065,
+      "reconfiguration_time": null
+    },
+    "ours_pareto_dominated_by_baselines": [
+      "most_work_remaining"
+    ]
+  },
+  "deterministic": true,
+  "gate": {
+    "all_policies_share_instance_and_action_semantics": true,
+    "all_schedules_feasible": true,
+    "pass": true,
+    "running_operation_migration_claimed": false
+  },
+  "implementation": {
+    "combined_sha256": "f537f1770f4cde234019111449da17b3afa6ff5bac1ed317e25acb577f6b6f3a",
+    "files": [
+      {
+        "path": "algorithm/experiments/fjsp_benchmark.py",
+        "sha256": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e"
+      },
+      {
+        "path": "algorithm/experiments/fjsp_instances.py",
+        "sha256": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1"
+      }
+    ]
+  },
+  "instance": {
+    "header_metadata": [
+      "2"
+    ],
+    "job_count": 4,
+    "jobs": [
+      {
+        "job_id": 0,
+        "operations": [
+          {
+            "alternatives": [
+              {
+                "machine_id": 0,
+                "processing_time": 2
+              },
+              {
+                "machine_id": 1,
+                "processing_time": 5
+              }
+            ],
+            "job_id": 0,
+            "operation_id": 0
+          },
+          {
+            "alternatives": [
+              {
+                "machine_id": 1,
+                "processing_time": 2
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 4
+              }
+            ],
+            "job_id": 0,
+            "operation_id": 1
+          }
+        ]
+      },
+      {
+        "job_id": 1,
+        "operations": [
+          {
+            "alternatives": [
+              {
+                "machine_id": 0,
+                "processing_time": 2
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 5
+              }
+            ],
+            "job_id": 1,
+            "operation_id": 0
+          },
+          {
+            "alternatives": [
+              {
+                "machine_id": 1,
+                "processing_time": 2
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 3
+              }
+            ],
+            "job_id": 1,
+            "operation_id": 1
+          }
+        ]
+      },
+      {
+        "job_id": 2,
+        "operations": [
+          {
+            "alternatives": [
+              {
+                "machine_id": 0,
+                "processing_time": 3
+              },
+              {
+                "machine_id": 1,
+                "processing_time": 4
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 6
+              }
+            ],
+            "job_id": 2,
+            "operation_id": 0
+          },
+          {
+            "alternatives": [
+              {
+                "machine_id": 0,
+                "processing_time": 2
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 3
+              }
+            ],
+            "job_id": 2,
+            "operation_id": 1
+          }
+        ]
+      },
+      {
+        "job_id": 3,
+        "operations": [
+          {
+            "alternatives": [
+              {
+                "machine_id": 0,
+                "processing_time": 3
+              },
+              {
+                "machine_id": 1,
+                "processing_time": 4
+              }
+            ],
+            "job_id": 3,
+            "operation_id": 0
+          },
+          {
+            "alternatives": [
+              {
+                "machine_id": 1,
+                "processing_time": 3
+              },
+              {
+                "machine_id": 2,
+                "processing_time": 2
+              }
+            ],
+            "job_id": 3,
+            "operation_id": 1
+          }
+        ]
+      }
+    ],
+    "lower_bound_makespan": 6,
+    "machine_count": 3,
+    "name": "fjsp_brandimarte_tiny",
+    "operation_count": 8,
+    "source_format": "fjsplib_brandimarte_old_job_line_integer_text",
+    "source_machine_index_base": 1,
+    "source_sha256": "4ae7834cd8e2dc8ddd89bec9a68f4b1b9ea36c97ac4919026bce69ca61ac1b2f"
+  },
+  "known_best_makespan": null,
+  "policies": {
+    "earliest_completion_time": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 2,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=1",
+            "end_time": 4,
+            "job_id": 0,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 2,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=0",
+            "end_time": 4,
+            "job_id": 1,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 2,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=1",
+            "end_time": 6,
+            "job_id": 1,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 4,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 5,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=0",
+            "end_time": 7,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 4,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 9,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=1",
+            "end_time": 11,
+            "job_id": 3,
+            "machine_id": 1,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 6,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 13,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 11,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "earliest_completion_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        4,
+        6,
+        9,
+        13
+      ],
+      "metrics": {
+        "makespan": 13,
+        "makespan_over_lower_bound": 2.166666667,
+        "mean_flow_time": 8,
+        "reconfiguration_count": 1,
+        "reconfiguration_time": 1
+      },
+      "policy": "earliest_completion_time",
+      "policy_label": "Earliest Completion Time (ECT)",
+      "schedule": [
+        {
+          "end_time": 2,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 1,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 0,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 6,
+          "job_id": 1,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 11,
+          "job_id": 3,
+          "machine_id": 1,
+          "occupied_time": 5,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 6,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 9,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 13,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 11,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    },
+    "fifo_job_order": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 2,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=1",
+            "end_time": 4,
+            "job_id": 0,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 2,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=0",
+            "end_time": 4,
+            "job_id": 1,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 2,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=1",
+            "end_time": 6,
+            "job_id": 1,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 4,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 5,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=0",
+            "end_time": 7,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 4,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 9,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=1",
+            "end_time": 11,
+            "job_id": 3,
+            "machine_id": 1,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 6,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 13,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 11,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "fifo_job_order",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        4,
+        6,
+        9,
+        13
+      ],
+      "metrics": {
+        "makespan": 13,
+        "makespan_over_lower_bound": 2.166666667,
+        "mean_flow_time": 8,
+        "reconfiguration_count": 1,
+        "reconfiguration_time": 1
+      },
+      "policy": "fifo_job_order",
+      "policy_label": "First-In, First-Out (FIFO)",
+      "schedule": [
+        {
+          "end_time": 2,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 1,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 0,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 6,
+          "job_id": 1,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 11,
+          "job_id": 3,
+          "machine_id": 1,
+          "occupied_time": 5,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 6,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 9,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 13,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 11,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    },
+    "most_operations_remaining": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 2,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=0",
+            "end_time": 4,
+            "job_id": 1,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 2,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=1",
+            "end_time": 5,
+            "job_id": 2,
+            "machine_id": 1,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=0",
+            "end_time": 7,
+            "job_id": 3,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 4,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=1",
+            "end_time": 7,
+            "job_id": 0,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 5,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 6,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=2",
+            "end_time": 8,
+            "job_id": 1,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 3,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 4,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 9,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 10,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 8,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_operations_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "metrics": {
+        "makespan": 10,
+        "makespan_over_lower_bound": 1.666666667,
+        "mean_flow_time": 8.5,
+        "reconfiguration_count": 2,
+        "reconfiguration_time": 2
+      },
+      "policy": "most_operations_remaining",
+      "policy_label": "Most Operations Remaining (MOR)",
+      "schedule": [
+        {
+          "end_time": 2,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 5,
+          "job_id": 2,
+          "machine_id": 1,
+          "occupied_time": 5,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 0,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 4,
+          "job_id": 1,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 3,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 8,
+          "job_id": 1,
+          "machine_id": 2,
+          "occupied_time": 4,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 3,
+          "reconfiguration_time": 1,
+          "start_time": 4,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 7,
+          "job_id": 0,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 5,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 9,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 10,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 8,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    },
+    "most_work_remaining": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=0",
+            "end_time": 3,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=1",
+            "end_time": 5,
+            "job_id": 3,
+            "machine_id": 1,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 5,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 3,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=2",
+            "end_time": 6,
+            "job_id": 1,
+            "machine_id": 2,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 5,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=1",
+            "end_time": 7,
+            "job_id": 0,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 5,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 6,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 7,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 5,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 8,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 6,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=1",
+            "end_time": 9,
+            "job_id": 1,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "most_work_remaining",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        7,
+        9,
+        7,
+        8
+      ],
+      "metrics": {
+        "makespan": 9,
+        "makespan_over_lower_bound": 1.5,
+        "mean_flow_time": 7.75,
+        "reconfiguration_count": 2,
+        "reconfiguration_time": 2
+      },
+      "policy": "most_work_remaining",
+      "policy_label": "Most Work Remaining (MWKR)",
+      "schedule": [
+        {
+          "end_time": 3,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 5,
+          "job_id": 3,
+          "machine_id": 1,
+          "occupied_time": 5,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 0,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 6,
+          "job_id": 1,
+          "machine_id": 2,
+          "occupied_time": 6,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 5,
+          "reconfiguration_time": 1,
+          "start_time": 0,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 5,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 3,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 5,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 0,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 5,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 8,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 6,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 9,
+          "job_id": 1,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    },
+    "ours_robust_maxweight": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 2,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_0": 4,
+              "fjsp_job_1": 4,
+              "fjsp_job_2": 5,
+              "fjsp_job_3": 5
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 9,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 2.0,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=0|op=0|machine=0"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:0:op:0"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=0",
+            "end_time": 4,
+            "job_id": 1,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 2,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_0": 2,
+              "fjsp_job_1": 4,
+              "fjsp_job_2": 5,
+              "fjsp_job_3": 5
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 9,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 1.0,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=1|op=0|machine=0"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:1:op:0"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=1",
+            "end_time": 5,
+            "job_id": 2,
+            "machine_id": 1,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_0": 2,
+              "fjsp_job_1": 2,
+              "fjsp_job_2": 5,
+              "fjsp_job_3": 5
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 9,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 0.5,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=2|op=0|machine=1"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:2:op:0"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=0",
+            "end_time": 7,
+            "job_id": 3,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 4,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_0": 2,
+              "fjsp_job_1": 2,
+              "fjsp_job_2": 2,
+              "fjsp_job_3": 5
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 8,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 0.6666666666666665,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=3|op=0|machine=0"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:3:op:0"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 8,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=2",
+            "end_time": 7,
+            "job_id": 0,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 4,
+            "reconfiguration_time": 1,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 2,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": true,
+            "uses_nonpreferred_machine": true
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_0": 2,
+              "fjsp_job_1": 2,
+              "fjsp_job_2": 2,
+              "fjsp_job_3": 2
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 8,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": -0.09999999999999998,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=0|op=1|machine=2"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:0:op:1"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 6,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=1",
+            "end_time": 7,
+            "job_id": 1,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 5,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_1": 2,
+              "fjsp_job_2": 2,
+              "fjsp_job_3": 2
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 6,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 1.0,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=1|op=1|machine=1"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:1:op:1"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 9,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_2": 2,
+              "fjsp_job_3": 2
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 4,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 1.0,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=2|op=1|machine=0"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:2:op:1"
+              ]
+            }
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 9,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "penalty_time_scale": 2,
+            "queue_vector": {
+              "fjsp_job_3": 2
+            },
+            "rule": "robust_maxweight_lower_service",
+            "selected_global_action": {
+              "candidate_configuration_count": 2,
+              "fallback_legacy_rows_excluded": true,
+              "global_action_dispatch_ready": true,
+              "oracle_gap_alpha0": 0.0,
+              "oracle_gap_alpha1": 0.0,
+              "score": 1.0,
+              "score_semantics": "robust_maxweight_lower_service",
+              "selected_action_ids": [
+                "fjsp|job=3|op=1|machine=2"
+              ],
+              "selected_task_ids": [
+                "fjsp:job:3:op:1"
+              ]
+            }
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        7,
+        7,
+        9,
+        9
+      ],
+      "metrics": {
+        "makespan": 9,
+        "makespan_over_lower_bound": 1.5,
+        "mean_flow_time": 8,
+        "reconfiguration_count": 2,
+        "reconfiguration_time": 2
+      },
+      "policy": "ours_robust_maxweight",
+      "policy_label": "Ours: robust MaxWeight",
+      "schedule": [
+        {
+          "end_time": 2,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 5,
+          "job_id": 2,
+          "machine_id": 1,
+          "occupied_time": 5,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 0,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 4,
+          "job_id": 1,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 0,
+          "machine_id": 2,
+          "occupied_time": 5,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 4,
+          "reconfiguration_time": 1,
+          "start_time": 2,
+          "unstarted_operation_reassigned": true,
+          "uses_nonpreferred_machine": true
+        },
+        {
+          "end_time": 7,
+          "job_id": 3,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 1,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 5,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 9,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 9,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    },
+    "shortest_processing_time": {
+      "decision_trace": [
+        {
+          "candidate_count": 9,
+          "decision_index": 0,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=0|machine=0",
+            "end_time": 2,
+            "job_id": 0,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 0,
+            "task_id": "fjsp:job:0:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 9,
+          "decision_index": 1,
+          "selected_action": {
+            "action_id": "fjsp|job=0|op=1|machine=1",
+            "end_time": 4,
+            "job_id": 0,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 2,
+            "task_id": "fjsp:job:0:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 2,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=0|machine=0",
+            "end_time": 4,
+            "job_id": 1,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 4,
+            "remaining_operation_count": 2,
+            "start_time": 2,
+            "task_id": "fjsp:job:1:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 7,
+          "decision_index": 3,
+          "selected_action": {
+            "action_id": "fjsp|job=1|op=1|machine=1",
+            "end_time": 6,
+            "job_id": 1,
+            "machine_id": 1,
+            "operation_id": 1,
+            "preferred_machine_id": 1,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 4,
+            "task_id": "fjsp:job:1:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 5,
+          "decision_index": 4,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=0|machine=0",
+            "end_time": 7,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 4,
+            "task_id": "fjsp:job:2:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 4,
+          "decision_index": 5,
+          "selected_action": {
+            "action_id": "fjsp|job=2|op=1|machine=0",
+            "end_time": 9,
+            "job_id": 2,
+            "machine_id": 0,
+            "operation_id": 1,
+            "preferred_machine_id": 0,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 7,
+            "task_id": "fjsp:job:2:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 6,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=0|machine=0",
+            "end_time": 12,
+            "job_id": 3,
+            "machine_id": 0,
+            "operation_id": 0,
+            "preferred_machine_id": 0,
+            "processing_time": 3,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 5,
+            "remaining_operation_count": 2,
+            "start_time": 9,
+            "task_id": "fjsp:job:3:op:0",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        },
+        {
+          "candidate_count": 2,
+          "decision_index": 7,
+          "selected_action": {
+            "action_id": "fjsp|job=3|op=1|machine=2",
+            "end_time": 14,
+            "job_id": 3,
+            "machine_id": 2,
+            "operation_id": 1,
+            "preferred_machine_id": 2,
+            "processing_time": 2,
+            "reconfiguration_time": 0,
+            "remaining_minimum_work": 2,
+            "remaining_operation_count": 1,
+            "start_time": 12,
+            "task_id": "fjsp:job:3:op:1",
+            "unstarted_operation_reassigned": false,
+            "uses_nonpreferred_machine": false
+          },
+          "selection_audit": {
+            "rule": "shortest_processing_time",
+            "tie_break": "lexicographic_job_operation_machine"
+          }
+        }
+      ],
+      "feasibility": {
+        "all_operations_scheduled_once": true,
+        "declared_reconfiguration_semantics": true,
+        "eligible_machine_assignments": true,
+        "error_count": 0,
+        "errors": [],
+        "machine_nonoverlap": true,
+        "operation_precedence": true,
+        "pass": true
+      },
+      "job_completion_times": [
+        4,
+        6,
+        9,
+        14
+      ],
+      "metrics": {
+        "makespan": 14,
+        "makespan_over_lower_bound": 2.333333333,
+        "mean_flow_time": 8.25,
+        "reconfiguration_count": 0,
+        "reconfiguration_time": 0
+      },
+      "policy": "shortest_processing_time",
+      "policy_label": "Shortest Processing Time (SPT)",
+      "schedule": [
+        {
+          "end_time": 2,
+          "job_id": 0,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 0,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 1,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 4,
+          "job_id": 0,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 2,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 7,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 6,
+          "job_id": 1,
+          "machine_id": 1,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 1,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 4,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 9,
+          "job_id": 2,
+          "machine_id": 0,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 0,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 7,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 12,
+          "job_id": 3,
+          "machine_id": 0,
+          "occupied_time": 3,
+          "operation_id": 0,
+          "preferred_machine_id": 0,
+          "processing_time": 3,
+          "reconfiguration_time": 0,
+          "start_time": 9,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        },
+        {
+          "end_time": 14,
+          "job_id": 3,
+          "machine_id": 2,
+          "occupied_time": 2,
+          "operation_id": 1,
+          "preferred_machine_id": 2,
+          "processing_time": 2,
+          "reconfiguration_time": 0,
+          "start_time": 12,
+          "unstarted_operation_reassigned": false,
+          "uses_nonpreferred_machine": false
+        }
+      ]
+    }
+  },
+  "policy_order": [
+    "ours_robust_maxweight",
+    "earliest_completion_time",
+    "shortest_processing_time",
+    "most_work_remaining",
+    "most_operations_remaining",
+    "fifo_job_order"
+  ],
+  "schema_version": "scheduleurm.fjsp_benchmark.v1",
+  "scope": "Deterministic benchmark evidence on the declared FJSP instance.  This is not a claim of optimality, arbitrary-instance dominance, shop-floor deployment, or running-operation migration.",
+  "semantics": {
+    "candidate_action": "next_precedence_feasible_operation_x_eligible_machine",
+    "ours_oracle": "exact_over_each_finite_dispatch_candidate_set",
+    "ours_score": "Q_transpose_lower_service_minus_bounded_penalty",
+    "penalty_bounded_on_each_finite_instance": true,
+    "penalty_normalization": "minimum_processing_time_unit",
+    "problem": "nonpreemptive_flexible_job_shop_scheduling",
+    "reassignment": {
+      "cost_source": "explicit_experiment_parameter",
+      "enabled": true,
+      "preemption_supported": false,
+      "reference_assignment": "fastest_eligible_machine",
+      "running_operation_migration_supported": false,
+      "scope": "unstarted_operation_only",
+      "setup_time_per_reassignment": 1,
+      "source_file_encodes_reassignment_cost": false
+    },
+    "release_times": "all_jobs_available_at_time_zero",
+    "schedule_generation": "serial_insertion_with_earliest_feasible_machine_gap"
+  }
+}

@@ -1,0 +1,2824 @@
+{
+  "aggregate": {
+    "instance_count": 15,
+    "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
+    "ours_vs_each_classic": {
+      "earliest_completion_time": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.744507594236,
+        "geomean_mean_flow_ratio": 1.050261892243,
+        "ours_pareto_dominates_count": 4,
+        "tradeoff_or_equal_count": 11
+      },
+      "fifo_job_order": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.674435540256,
+        "geomean_mean_flow_ratio": 1.012382200991,
+        "ours_pareto_dominates_count": 7,
+        "tradeoff_or_equal_count": 8
+      },
+      "most_operations_remaining": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.966070620453,
+        "geomean_mean_flow_ratio": 0.97115438832,
+        "ours_pareto_dominates_count": 6,
+        "tradeoff_or_equal_count": 9
+      },
+      "most_work_remaining": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.997548397571,
+        "geomean_mean_flow_ratio": 0.935711024348,
+        "ours_pareto_dominates_count": 8,
+        "tradeoff_or_equal_count": 7
+      },
+      "shortest_processing_time": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.576888289846,
+        "geomean_mean_flow_ratio": 0.809690399281,
+        "ours_pareto_dominates_count": 14,
+        "tradeoff_or_equal_count": 1
+      }
+    },
+    "policies": {
+      "earliest_completion_time": {
+        "geomean_makespan_over_bks": 1.502878742264,
+        "geomean_mean_flow_to_instance_best": 1.030139148258,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 6,
+        "pareto_frontier_count": 10,
+        "policy_label": "Earliest Completion Time (ECT)"
+      },
+      "fifo_job_order": {
+        "geomean_makespan_over_bks": 1.659023835557,
+        "geomean_mean_flow_to_instance_best": 1.068683240445,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 6,
+        "pareto_frontier_count": 8,
+        "policy_label": "First-In, First-Out (FIFO)"
+      },
+      "most_operations_remaining": {
+        "geomean_makespan_over_bks": 1.15820170197,
+        "geomean_mean_flow_to_instance_best": 1.11405138476,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 3,
+        "mean_flow_best_or_tie_count": 1,
+        "pareto_frontier_count": 9,
+        "policy_label": "Most Operations Remaining (MOR)"
+      },
+      "most_work_remaining": {
+        "geomean_makespan_over_bks": 1.121654487698,
+        "geomean_mean_flow_to_instance_best": 1.156250020541,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 6,
+        "mean_flow_best_or_tie_count": 1,
+        "pareto_frontier_count": 6,
+        "policy_label": "Most Work Remaining (MWKR)"
+      },
+      "ours_robust_maxweight": {
+        "geomean_makespan_over_bks": 1.191756312822,
+        "geomean_mean_flow_to_instance_best": 1.152278761062,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 1,
+        "mean_flow_best_or_tie_count": 0,
+        "pareto_frontier_count": 3,
+        "policy_label": "Ours: robust MaxWeight"
+      },
+      "ours_trajectory_configuration": {
+        "geomean_makespan_over_bks": 1.118904636832,
+        "geomean_mean_flow_to_instance_best": 1.081915891123,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 12,
+        "mean_flow_best_or_tie_count": 3,
+        "pareto_frontier_count": 15,
+        "policy_label": "Ours: trajectory robust MaxWeight"
+      },
+      "shortest_processing_time": {
+        "geomean_makespan_over_bks": 1.939551654153,
+        "geomean_mean_flow_to_instance_best": 1.336209361113,
+        "instance_count": 15,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 0,
+        "pareto_frontier_count": 0,
+        "policy_label": "Shortest Processing Time (SPT)"
+      }
+    }
+  },
+  "deterministic_algorithm": true,
+  "frozen_protocol": {
+    "calibration_updates_applied": false,
+    "config": {
+      "beam_width": 12,
+      "bounded_latency_penalty": 0.05,
+      "candidate_seed_policies": [
+        "ours_robust_maxweight",
+        "earliest_completion_time",
+        "shortest_processing_time",
+        "most_work_remaining",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "cp_sat_used_by_ours": false,
+      "per_instance_tuning": false,
+      "prefix_depth": 2,
+      "rollout_policies": [
+        "earliest_completion_time",
+        "shortest_processing_time",
+        "most_work_remaining",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "schema_version": "scheduleurm.fjsp_trajectory_config.v1",
+      "system_queue_weight_per_job": 1
+    },
+    "config_sha256": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+    "holdout_execution_guard": "runtime_literal_config_hash_only",
+    "holdout_feedback_used_for_configuration": "not_auditable_before_repository_freeze",
+    "internal_partition_is_prospective_holdout": false,
+    "per_instance_tuning": false,
+    "phase_audit": [
+      {
+        "config_sha256_after": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "config_sha256_before": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "configuration_updates_applied": false,
+        "instances": [
+          "mk01",
+          "mk02",
+          "mk03",
+          "mk04",
+          "mk05"
+        ],
+        "split": "development"
+      },
+      {
+        "config_sha256_after": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "config_sha256_before": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "configuration_updates_applied": false,
+        "instances": [
+          "mk06",
+          "mk07",
+          "mk08",
+          "mk09",
+          "mk10"
+        ],
+        "split": "calibration"
+      },
+      {
+        "config_sha256_after": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "config_sha256_before": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+        "configuration_updates_applied": false,
+        "instances": [
+          "mk11",
+          "mk12",
+          "mk13",
+          "mk14",
+          "mk15"
+        ],
+        "split": "holdout"
+      }
+    ],
+    "split_order": [
+      "development",
+      "calibration",
+      "holdout"
+    ],
+    "splits": {
+      "calibration": [
+        "mk06",
+        "mk07",
+        "mk08",
+        "mk09",
+        "mk10"
+      ],
+      "development": [
+        "mk01",
+        "mk02",
+        "mk03",
+        "mk04",
+        "mk05"
+      ],
+      "holdout": [
+        "mk11",
+        "mk12",
+        "mk13",
+        "mk14",
+        "mk15"
+      ]
+    }
+  },
+  "gate": {
+    "all_schedules_feasible": true,
+    "claim_scope": "finite_hash_locked_fjsp_trajectory_family",
+    "exact_generated_family_argmax_on_every_instance": true,
+    "global_fjsp_optimality_claim": false,
+    "instance_count": 15,
+    "ours_instance_pareto_dominated_count": 0,
+    "ours_instance_pareto_nondominated_count": 15,
+    "pass": true,
+    "performance_superiority_claim_ready": false,
+    "prospective_external_holdout_ready": false,
+    "source_manifest_valid": true,
+    "stochastic_throughput_optimality_claim": false,
+    "zero_generated_family_oracle_gap_on_every_instance": true
+  },
+  "implementation": {
+    "combined_sha256": "961ec1c9753d342aff824995411eea468e777b62ec462680e3167430399f4c99",
+    "files": [
+      {
+        "path": "algorithm/experiments/fjsp_trajectory_upgrade.py",
+        "sha256": "c121539db26180b9d4c1129e1b7535f138d84201594f1c08478ac060ddc2d0d9"
+      },
+      {
+        "path": "algorithm/experiments/fjsp_benchmark.py",
+        "sha256": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e"
+      },
+      {
+        "path": "algorithm/experiments/fjsp_instances.py",
+        "sha256": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1"
+      }
+    ]
+  },
+  "instances": [
+    {
+      "bks": 40,
+      "instance_id": "mk01",
+      "job_count": 10,
+      "lower_bound": 40,
+      "machine_count": 6,
+      "operation_count": 55,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "ours_robust_maxweight",
+        "earliest_completion_time",
+        "most_operations_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.4,
+          "feasible": true,
+          "makespan": 56,
+          "makespan_over_bks": 1.4,
+          "matched_bks": false,
+          "mean_flow_time": 30.9,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.725,
+          "feasible": true,
+          "makespan": 69,
+          "makespan_over_bks": 1.725,
+          "matched_bks": false,
+          "mean_flow_time": 37.7,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.175,
+          "feasible": true,
+          "makespan": 47,
+          "makespan_over_bks": 1.175,
+          "matched_bks": false,
+          "mean_flow_time": 33.4,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.1,
+          "feasible": true,
+          "makespan": 44,
+          "makespan_over_bks": 1.1,
+          "matched_bks": false,
+          "mean_flow_time": 35.4,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.125,
+          "feasible": true,
+          "makespan": 45,
+          "makespan_over_bks": 1.125,
+          "matched_bks": false,
+          "mean_flow_time": 34.4,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.075,
+          "feasible": true,
+          "makespan": 43,
+          "makespan_over_bks": 1.075,
+          "matched_bks": false,
+          "mean_flow_time": 35.1,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.775,
+          "feasible": true,
+          "makespan": 71,
+          "makespan_over_bks": 1.775,
+          "matched_bks": false,
+          "mean_flow_time": 39.6,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "d41e39a41d218ec19f5e9fb83a5a0bdc76dcfb93fa38a0d565318b3795c7d9fa",
+      "split": "development",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.001446850394,
+        "runtime_seconds": 0.367488147,
+        "score_audit": {
+          "common_frame_upper_bound": 254,
+          "lower_service": {
+            "job_coordinates": [
+              0.862204724409,
+              0.874015748031,
+              0.88188976378,
+              0.850393700787,
+              0.874015748031,
+              0.834645669291,
+              0.866141732283,
+              0.854330708661,
+              0.830708661417,
+              0.889763779528
+            ],
+            "normalized_weighted_value": 0.84625984252,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.830708661417
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.15374015748,
+            "penalty_units": 0.007687007874,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 10,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 10,
+            "total_queue_mass": 20
+          },
+          "score": 0.838572834646,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:01:6cc510b1f1f6:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 22
+      }
+    },
+    {
+      "bks": 26,
+      "instance_id": "mk02",
+      "job_count": 10,
+      "lower_bound": 26,
+      "machine_count": 6,
+      "operation_count": 58,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "ours_robust_maxweight",
+        "most_work_remaining",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.384615384615,
+          "feasible": true,
+          "makespan": 62,
+          "makespan_over_bks": 2.384615384615,
+          "matched_bks": false,
+          "mean_flow_time": 27.9,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.923076923077,
+          "feasible": true,
+          "makespan": 50,
+          "makespan_over_bks": 1.923076923077,
+          "matched_bks": false,
+          "mean_flow_time": 25,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.230769230769,
+          "feasible": true,
+          "makespan": 32,
+          "makespan_over_bks": 1.230769230769,
+          "matched_bks": false,
+          "mean_flow_time": 26.3,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.115384615385,
+          "feasible": true,
+          "makespan": 29,
+          "makespan_over_bks": 1.115384615385,
+          "matched_bks": false,
+          "mean_flow_time": 27.2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.307692307692,
+          "feasible": true,
+          "makespan": 34,
+          "makespan_over_bks": 1.307692307692,
+          "matched_bks": false,
+          "mean_flow_time": 25.9,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.115384615385,
+          "feasible": true,
+          "makespan": 29,
+          "makespan_over_bks": 1.115384615385,
+          "matched_bks": false,
+          "mean_flow_time": 27.2,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.5,
+          "feasible": true,
+          "makespan": 65,
+          "makespan_over_bks": 2.5,
+          "matched_bks": false,
+          "mean_flow_time": 30.2,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "44360812291e71cb7f891a21495eecfa281b3f196940cd13d5f6c2a528679ad2",
+      "split": "development",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 0.681774762001,
+        "score_audit": {
+          "common_frame_upper_bound": 305,
+          "lower_service": {
+            "job_coordinates": [
+              0.904918032787,
+              0.908196721311,
+              0.918032786885,
+              0.914754098361,
+              0.92131147541,
+              0.908196721311,
+              0.908196721311,
+              0.908196721311,
+              0.911475409836,
+              0.904918032787
+            ],
+            "normalized_weighted_value": 0.907868852459,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.904918032787
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.092131147541,
+            "penalty_units": 0.004606557377,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 10,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 10,
+            "total_queue_mass": 20
+          },
+          "score": 0.903262295082,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:07:0082de8eb953:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 26
+      }
+    },
+    {
+      "bks": 204,
+      "instance_id": "mk03",
+      "job_count": 15,
+      "lower_bound": 204,
+      "machine_count": 8,
+      "operation_count": 150,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "most_work_remaining",
+        "most_operations_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.578431372549,
+          "feasible": true,
+          "makespan": 322,
+          "makespan_over_bks": 1.578431372549,
+          "matched_bks": false,
+          "mean_flow_time": 176,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.808823529412,
+          "feasible": true,
+          "makespan": 369,
+          "makespan_over_bks": 1.808823529412,
+          "matched_bks": false,
+          "mean_flow_time": 182.133333333,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.088235294118,
+          "feasible": true,
+          "makespan": 222,
+          "makespan_over_bks": 1.088235294118,
+          "matched_bks": false,
+          "mean_flow_time": 148.666666667,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 204,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 157.533333333,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.147058823529,
+          "feasible": true,
+          "makespan": 234,
+          "makespan_over_bks": 1.147058823529,
+          "matched_bks": false,
+          "mean_flow_time": 160.4,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 204,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 157.533333333333,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.985294117647,
+          "feasible": true,
+          "makespan": 405,
+          "makespan_over_bks": 1.985294117647,
+          "matched_bks": false,
+          "mean_flow_time": 222.866666667,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "ede843eb1a261ebbeef09265d4de6adcf578b369d1af04cc779f91afbf73cd92",
+      "split": "development",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 2.612973238996,
+        "score_audit": {
+          "common_frame_upper_bound": 2205,
+          "lower_service": {
+            "job_coordinates": [
+              0.926984126984,
+              0.934240362812,
+              0.914739229025,
+              0.921541950113,
+              0.936054421769,
+              0.934240362812,
+              0.927891156463,
+              0.92970521542,
+              0.931972789116,
+              0.934240362812,
+              0.935600907029,
+              0.933786848073,
+              0.933786848073,
+              0.907482993197,
+              0.926077097506
+            ],
+            "normalized_weighted_value": 0.918019652305,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.907482993197
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.081980347695,
+            "penalty_units": 0.004099017385,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 15,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 15,
+            "total_queue_mass": 30
+          },
+          "score": 0.913920634921,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:00:f51ccfdeacf7:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 27
+      }
+    },
+    {
+      "bks": 60,
+      "instance_id": "mk04",
+      "job_count": 15,
+      "lower_bound": 60,
+      "machine_count": 8,
+      "operation_count": 90,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "ours_robust_maxweight",
+        "earliest_completion_time"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.516666666667,
+          "feasible": true,
+          "makespan": 91,
+          "makespan_over_bks": 1.516666666667,
+          "matched_bks": false,
+          "mean_flow_time": 50.2,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.233333333333,
+          "feasible": true,
+          "makespan": 134,
+          "makespan_over_bks": 2.233333333333,
+          "matched_bks": false,
+          "mean_flow_time": 63.6,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.45,
+          "feasible": true,
+          "makespan": 87,
+          "makespan_over_bks": 1.45,
+          "matched_bks": false,
+          "mean_flow_time": 60.466666667,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.25,
+          "feasible": true,
+          "makespan": 75,
+          "makespan_over_bks": 1.25,
+          "matched_bks": false,
+          "mean_flow_time": 62.133333333,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.233333333333,
+          "feasible": true,
+          "makespan": 74,
+          "makespan_over_bks": 1.233333333333,
+          "matched_bks": false,
+          "mean_flow_time": 57.6,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.233333333333,
+          "feasible": true,
+          "makespan": 74,
+          "makespan_over_bks": 1.233333333333,
+          "matched_bks": false,
+          "mean_flow_time": 57.6,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.95,
+          "feasible": true,
+          "makespan": 177,
+          "makespan_over_bks": 2.95,
+          "matched_bks": false,
+          "mean_flow_time": 84.666666667,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "b751cfef26d2b4a2af392107e69a9272eb3eebbd960592ed6557a1166a8670ee",
+      "split": "development",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.00370510397,
+        "runtime_seconds": 0.969758985004,
+        "score_audit": {
+          "common_frame_upper_bound": 529,
+          "lower_service": {
+            "job_coordinates": [
+              0.896030245747,
+              0.879017013233,
+              0.869565217391,
+              0.886578449905,
+              0.894139886578,
+              0.862003780718,
+              0.869565217391,
+              0.939508506616,
+              0.87145557656,
+              0.886578449905,
+              0.875236294896,
+              0.882797731569,
+              0.948960302457,
+              0.945179584121,
+              0.86011342155
+            ],
+            "normalized_weighted_value": 0.87561436673,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.86011342155
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.12438563327,
+            "penalty_units": 0.006219281664,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 15,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 15,
+            "total_queue_mass": 30
+          },
+          "score": 0.869395085066,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:ours_robust_maxweight",
+        "selected_origins": [
+          "fixed_policy:ours_robust_maxweight"
+        ],
+        "unique_action_family_size": 34
+      }
+    },
+    {
+      "bks": 172,
+      "instance_id": "mk05",
+      "job_count": 15,
+      "lower_bound": 172,
+      "machine_count": 4,
+      "operation_count": 106,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.377906976744,
+          "feasible": true,
+          "makespan": 237,
+          "makespan_over_bks": 1.377906976744,
+          "matched_bks": false,
+          "mean_flow_time": 130.6,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.337209302326,
+          "feasible": true,
+          "makespan": 230,
+          "makespan_over_bks": 1.337209302326,
+          "matched_bks": false,
+          "mean_flow_time": 134.933333333,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.087209302326,
+          "feasible": true,
+          "makespan": 187,
+          "makespan_over_bks": 1.087209302326,
+          "matched_bks": false,
+          "mean_flow_time": 167.133333333,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.087209302326,
+          "feasible": true,
+          "makespan": 187,
+          "makespan_over_bks": 1.087209302326,
+          "matched_bks": false,
+          "mean_flow_time": 171.866666667,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.075581395349,
+          "feasible": true,
+          "makespan": 185,
+          "makespan_over_bks": 1.075581395349,
+          "matched_bks": false,
+          "mean_flow_time": 174.4,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.06976744186,
+          "feasible": true,
+          "makespan": 184,
+          "makespan_over_bks": 1.06976744186,
+          "matched_bks": false,
+          "mean_flow_time": 170.133333333333,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.511627906977,
+          "feasible": true,
+          "makespan": 260,
+          "makespan_over_bks": 1.511627906977,
+          "matched_bks": false,
+          "mean_flow_time": 146.2,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "5b02c162a32a2089736310842d63ca84a14c6b2c471581d425e54f0edde0aa74",
+      "split": "development",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 0.991865811004,
+        "score_audit": {
+          "common_frame_upper_bound": 769,
+          "lower_service": {
+            "job_coordinates": [
+              0.802340702211,
+              0.775032509753,
+              0.788036410923,
+              0.773732119636,
+              0.771131339402,
+              0.795838751625,
+              0.771131339402,
+              0.782834850455,
+              0.762028608583,
+              0.781534460338,
+              0.780234070221,
+              0.760728218466,
+              0.78933680104,
+              0.765929778934,
+              0.781534460338
+            ],
+            "normalized_weighted_value": 0.76974425661,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.760728218466
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.23025574339,
+            "penalty_units": 0.011512787169,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 15,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 15,
+            "total_queue_mass": 30
+          },
+          "score": 0.758231469441,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:01:6a07999ba309:rollout:most_operations_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 42
+      }
+    },
+    {
+      "bks": 57,
+      "instance_id": "mk06",
+      "job_count": 10,
+      "lower_bound": 57,
+      "machine_count": 15,
+      "operation_count": 150,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "most_work_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.543859649123,
+          "feasible": true,
+          "makespan": 88,
+          "makespan_over_bks": 1.543859649123,
+          "matched_bks": false,
+          "mean_flow_time": 64.8,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.684210526316,
+          "feasible": true,
+          "makespan": 96,
+          "makespan_over_bks": 1.684210526316,
+          "matched_bks": false,
+          "mean_flow_time": 63.9,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.245614035088,
+          "feasible": true,
+          "makespan": 71,
+          "makespan_over_bks": 1.245614035088,
+          "matched_bks": false,
+          "mean_flow_time": 65.1,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.175438596491,
+          "feasible": true,
+          "makespan": 67,
+          "makespan_over_bks": 1.175438596491,
+          "matched_bks": false,
+          "mean_flow_time": 63.8,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.263157894737,
+          "feasible": true,
+          "makespan": 72,
+          "makespan_over_bks": 1.263157894737,
+          "matched_bks": false,
+          "mean_flow_time": 67,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.175438596491,
+          "feasible": true,
+          "makespan": 67,
+          "makespan_over_bks": 1.175438596491,
+          "matched_bks": false,
+          "mean_flow_time": 63.8,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1,
+          "feasible": true,
+          "makespan": 114,
+          "makespan_over_bks": 2,
+          "matched_bks": false,
+          "mean_flow_time": 93.2,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "a9978b79a4d3b22e7eb6721f64a9b08a3e9ee0f24a7dfbbf874fa021cf6049d1",
+      "split": "calibration",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.00104054054,
+        "runtime_seconds": 1.789786180998,
+        "score_audit": {
+          "common_frame_upper_bound": 1110,
+          "lower_service": {
+            "job_coordinates": [
+              0.944144144144,
+              0.942342342342,
+              0.943243243243,
+              0.945045045045,
+              0.941441441441,
+              0.943243243243,
+              0.941441441441,
+              0.93963963964,
+              0.942342342342,
+              0.942342342342
+            ],
+            "normalized_weighted_value": 0.941081081081,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.93963963964
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.058918918919,
+            "penalty_units": 0.002945945946,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 10,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 10,
+            "total_queue_mass": 20
+          },
+          "score": 0.938135135135,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:most_work_remaining",
+        "selected_origins": [
+          "fixed_policy:most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 26
+      }
+    },
+    {
+      "bks": 139,
+      "instance_id": "mk07",
+      "job_count": 20,
+      "lower_bound": 139,
+      "machine_count": 5,
+      "operation_count": 100,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.489208633094,
+          "feasible": true,
+          "makespan": 207,
+          "makespan_over_bks": 1.489208633094,
+          "matched_bks": false,
+          "mean_flow_time": 110.1,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.467625899281,
+          "feasible": true,
+          "makespan": 204,
+          "makespan_over_bks": 1.467625899281,
+          "matched_bks": false,
+          "mean_flow_time": 109,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.107913669065,
+          "feasible": true,
+          "makespan": 154,
+          "makespan_over_bks": 1.107913669065,
+          "matched_bks": false,
+          "mean_flow_time": 120.65,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.136690647482,
+          "feasible": true,
+          "makespan": 158,
+          "makespan_over_bks": 1.136690647482,
+          "matched_bks": false,
+          "mean_flow_time": 142.4,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.223021582734,
+          "feasible": true,
+          "makespan": 170,
+          "makespan_over_bks": 1.223021582734,
+          "matched_bks": false,
+          "mean_flow_time": 125.95,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.107913669065,
+          "feasible": true,
+          "makespan": 154,
+          "makespan_over_bks": 1.107913669065,
+          "matched_bks": false,
+          "mean_flow_time": 120.65,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.877697841727,
+          "feasible": true,
+          "makespan": 261,
+          "makespan_over_bks": 1.877697841727,
+          "matched_bks": false,
+          "mean_flow_time": 143.7,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "77f883325b0cde6b1349a015c6dccdbb2d80c41d6452e56d1bc148587a3c7e7a",
+      "split": "calibration",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 1.735937504003,
+        "score_audit": {
+          "common_frame_upper_bound": 1390,
+          "lower_service": {
+            "job_coordinates": [
+              0.910791366906,
+              0.922302158273,
+              0.912230215827,
+              0.917985611511,
+              0.895683453237,
+              0.923741007194,
+              0.928776978417,
+              0.918705035971,
+              0.90071942446,
+              0.912949640288,
+              0.9,
+              0.911510791367,
+              0.934532374101,
+              0.922302158273,
+              0.889208633094,
+              0.892086330935,
+              0.93381294964,
+              0.91726618705,
+              0.897122302158,
+              0.922302158273
+            ],
+            "normalized_weighted_value": 0.901205035971,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.889208633094
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.098794964029,
+            "penalty_units": 0.004939748201,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 20,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 20,
+            "total_queue_mass": 40
+          },
+          "score": 0.89626528777,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:04:937cf1c1b929:rollout:most_operations_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 47
+      }
+    },
+    {
+      "bks": 523,
+      "instance_id": "mk08",
+      "job_count": 20,
+      "lower_bound": 523,
+      "machine_count": 10,
+      "operation_count": 225,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.239005736138,
+          "feasible": true,
+          "makespan": 648,
+          "makespan_over_bks": 1.239005736138,
+          "matched_bks": false,
+          "mean_flow_time": 390.6,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.292543021033,
+          "feasible": true,
+          "makespan": 676,
+          "makespan_over_bks": 1.292543021033,
+          "matched_bks": false,
+          "mean_flow_time": 386.05,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.024856596558,
+          "feasible": true,
+          "makespan": 536,
+          "makespan_over_bks": 1.024856596558,
+          "matched_bks": false,
+          "mean_flow_time": 448.7,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.019120458891,
+          "feasible": true,
+          "makespan": 533,
+          "makespan_over_bks": 1.019120458891,
+          "matched_bks": false,
+          "mean_flow_time": 462.2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.076481835564,
+          "feasible": true,
+          "makespan": 563,
+          "makespan_over_bks": 1.076481835564,
+          "matched_bks": false,
+          "mean_flow_time": 470.55,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.015296367113,
+          "feasible": true,
+          "makespan": 531,
+          "makespan_over_bks": 1.015296367113,
+          "matched_bks": false,
+          "mean_flow_time": 443.7,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.413001912046,
+          "feasible": true,
+          "makespan": 739,
+          "makespan_over_bks": 1.413001912046,
+          "matched_bks": false,
+          "mean_flow_time": 446.25,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "d06776e82c0fe7b00a705bda06759ad4668025fefd1125f6639fd62d9a8bbf18",
+      "split": "calibration",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 3.350480337001,
+        "score_audit": {
+          "common_frame_upper_bound": 3103,
+          "lower_service": {
+            "job_coordinates": [
+              0.88495004834,
+              0.840154689011,
+              0.854656783758,
+              0.893329036416,
+              0.842732839188,
+              0.848533677087,
+              0.845310989365,
+              0.836609732517,
+              0.848855945859,
+              0.828875281985,
+              0.872059297454,
+              0.873348372543,
+              0.875281985176,
+              0.893973573961,
+              0.844988720593,
+              0.865936190783,
+              0.858524009024,
+              0.866580728327,
+              0.830486625846,
+              0.834998388656
+            ],
+            "normalized_weighted_value": 0.84294231389,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.828875281985
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.15705768611,
+            "penalty_units": 0.007852884306,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 20,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 20,
+            "total_queue_mass": 40
+          },
+          "score": 0.835089429584,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:01:e82a273b37c8:rollout:most_operations_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 33
+      }
+    },
+    {
+      "bks": 307,
+      "instance_id": "mk09",
+      "job_count": 20,
+      "lower_bound": 307,
+      "machine_count": 10,
+      "operation_count": 240,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_work_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.420195439739,
+          "feasible": true,
+          "makespan": 436,
+          "makespan_over_bks": 1.420195439739,
+          "matched_bks": false,
+          "mean_flow_time": 281.85,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.403908794788,
+          "feasible": true,
+          "makespan": 431,
+          "makespan_over_bks": 1.403908794788,
+          "matched_bks": false,
+          "mean_flow_time": 287.6,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.130293159609,
+          "feasible": true,
+          "makespan": 347,
+          "makespan_over_bks": 1.130293159609,
+          "matched_bks": false,
+          "mean_flow_time": 312.5,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.078175895765,
+          "feasible": true,
+          "makespan": 331,
+          "makespan_over_bks": 1.078175895765,
+          "matched_bks": false,
+          "mean_flow_time": 309.2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.159609120521,
+          "feasible": true,
+          "makespan": 356,
+          "makespan_over_bks": 1.159609120521,
+          "matched_bks": false,
+          "mean_flow_time": 322.9,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.078175895765,
+          "feasible": true,
+          "makespan": 331,
+          "makespan_over_bks": 1.078175895765,
+          "matched_bks": false,
+          "mean_flow_time": 309.2,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.651465798046,
+          "feasible": true,
+          "makespan": 507,
+          "makespan_over_bks": 1.651465798046,
+          "matched_bks": false,
+          "mean_flow_time": 327.25,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "93a7f6dc3ff60d87b88511f7f0a73ce7116f9e1399822176bb8bd0adf51b80eb",
+      "split": "calibration",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 4.495219441997,
+        "score_audit": {
+          "common_frame_upper_bound": 3343,
+          "lower_service": {
+            "job_coordinates": [
+              0.90457672749,
+              0.909362847742,
+              0.911755907867,
+              0.906072390069,
+              0.903679329943,
+              0.905174992522,
+              0.912653305414,
+              0.901884534849,
+              0.907568052647,
+              0.903081064912,
+              0.906371522585,
+              0.907867185163,
+              0.908465450194,
+              0.908465450194,
+              0.90876458271,
+              0.907268920132,
+              0.900987137302,
+              0.906072390069,
+              0.912055040383,
+              0.918037690697
+            ],
+            "normalized_weighted_value": 0.904247681723,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.900987137302
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.095752318277,
+            "penalty_units": 0.004787615914,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 20,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 20,
+            "total_queue_mass": 40
+          },
+          "score": 0.899460065809,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:most_work_remaining",
+        "selected_origins": [
+          "fixed_policy:most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining",
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 27
+      }
+    },
+    {
+      "bks": 193,
+      "instance_id": "mk10",
+      "job_count": 20,
+      "lower_bound": 189,
+      "machine_count": 15,
+      "operation_count": 240,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.274611398964,
+          "feasible": true,
+          "makespan": 439,
+          "makespan_over_bks": 2.274611398964,
+          "matched_bks": false,
+          "mean_flow_time": 235.1,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.59067357513,
+          "feasible": true,
+          "makespan": 500,
+          "makespan_over_bks": 2.59067357513,
+          "matched_bks": false,
+          "mean_flow_time": 242.7,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.233160621762,
+          "feasible": true,
+          "makespan": 238,
+          "makespan_over_bks": 1.233160621762,
+          "matched_bks": false,
+          "mean_flow_time": 222.8,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.19170984456,
+          "feasible": true,
+          "makespan": 230,
+          "makespan_over_bks": 1.19170984456,
+          "matched_bks": false,
+          "mean_flow_time": 219.1,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.569948186528,
+          "feasible": true,
+          "makespan": 303,
+          "makespan_over_bks": 1.569948186528,
+          "matched_bks": false,
+          "mean_flow_time": 242.5,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.181347150259,
+          "feasible": true,
+          "makespan": 228,
+          "makespan_over_bks": 1.181347150259,
+          "matched_bks": false,
+          "mean_flow_time": 217.8,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.756476683938,
+          "feasible": true,
+          "makespan": 532,
+          "makespan_over_bks": 2.756476683938,
+          "matched_bks": false,
+          "mean_flow_time": 295.8,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "f926d3522a57571182799de36be8d883f2b9996740a7a05292687edcab6d6d06",
+      "split": "calibration",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 4.389891888997,
+        "score_audit": {
+          "common_frame_upper_bound": 3255,
+          "lower_service": {
+            "job_coordinates": [
+              0.933026113671,
+              0.932718894009,
+              0.931182795699,
+              0.931490015361,
+              0.932718894009,
+              0.933333333333,
+              0.933947772657,
+              0.935176651306,
+              0.936098310292,
+              0.93425499232,
+              0.929953917051,
+              0.931797235023,
+              0.931797235023,
+              0.933026113671,
+              0.933333333333,
+              0.938248847926,
+              0.930568356375,
+              0.934562211982,
+              0.933640552995,
+              0.930875576037
+            ],
+            "normalized_weighted_value": 0.931520737327,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.929953917051
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.068479262673,
+            "penalty_units": 0.003423963134,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 20,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 20,
+            "total_queue_mass": 40
+          },
+          "score": 0.928096774194,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:04:d9e0a6dde4a1:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 36
+      }
+    },
+    {
+      "bks": 609,
+      "instance_id": "mk11",
+      "job_count": 30,
+      "lower_bound": 609,
+      "machine_count": 5,
+      "operation_count": 179,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.108374384236,
+          "feasible": true,
+          "makespan": 675,
+          "makespan_over_bks": 1.108374384236,
+          "matched_bks": false,
+          "mean_flow_time": 434,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.412151067323,
+          "feasible": true,
+          "makespan": 860,
+          "makespan_over_bks": 1.412151067323,
+          "matched_bks": false,
+          "mean_flow_time": 433.866666667,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.083743842365,
+          "feasible": true,
+          "makespan": 660,
+          "makespan_over_bks": 1.083743842365,
+          "matched_bks": false,
+          "mean_flow_time": 559.966666667,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.085385878489,
+          "feasible": true,
+          "makespan": 661,
+          "makespan_over_bks": 1.085385878489,
+          "matched_bks": false,
+          "mean_flow_time": 584.333333333,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.121510673235,
+          "feasible": true,
+          "makespan": 683,
+          "makespan_over_bks": 1.121510673235,
+          "matched_bks": false,
+          "mean_flow_time": 595.6,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.108374384236,
+          "feasible": true,
+          "makespan": 675,
+          "makespan_over_bks": 1.108374384236,
+          "matched_bks": false,
+          "mean_flow_time": 434,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.661740558292,
+          "feasible": true,
+          "makespan": 1012,
+          "makespan_over_bks": 1.661740558292,
+          "matched_bks": false,
+          "mean_flow_time": 563,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "f1f02c236aa2db35fb9c4841f3367dc8b5c3be560f4abbcd50ac00c08e3aea89",
+      "split": "holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 3.291219428,
+        "score_audit": {
+          "common_frame_upper_bound": 3466,
+          "lower_service": {
+            "job_coordinates": [
+              0.860069244085,
+              0.906231967686,
+              0.886324293133,
+              0.908828620889,
+              0.887478361223,
+              0.933352567802,
+              0.924697057126,
+              0.961627236007,
+              0.946047316792,
+              0.846508944028,
+              0.896710905943,
+              0.868724754761,
+              0.877380265436,
+              0.842469705713,
+              0.824581650317,
+              0.938545874207,
+              0.833237160992,
+              0.920369301789,
+              0.815926139642,
+              0.830063473745,
+              0.80525100981,
+              0.841604154645,
+              0.942008078477,
+              0.82833237161,
+              0.813040969417,
+              0.867570686671,
+              0.80525100981,
+              0.893825735718,
+              0.896422388921,
+              0.8410271206
+            ],
+            "normalized_weighted_value": 0.840017311021,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.80525100981
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.159982688979,
+            "penalty_units": 0.007999134449,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 30,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 30,
+            "total_queue_mass": 60
+          },
+          "score": 0.832018176572,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:earliest_completion_time",
+        "selected_origins": [
+          "fixed_policy:earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time"
+        ],
+        "unique_action_family_size": 42
+      }
+    },
+    {
+      "bks": 508,
+      "instance_id": "mk12",
+      "job_count": 30,
+      "lower_bound": 508,
+      "machine_count": 10,
+      "operation_count": 193,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_work_remaining",
+        "most_operations_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.222440944882,
+          "feasible": true,
+          "makespan": 621,
+          "makespan_over_bks": 1.222440944882,
+          "matched_bks": false,
+          "mean_flow_time": 344.533333333,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.46062992126,
+          "feasible": true,
+          "makespan": 742,
+          "makespan_over_bks": 1.46062992126,
+          "matched_bks": false,
+          "mean_flow_time": 398.766666667,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.114173228346,
+          "feasible": true,
+          "makespan": 566,
+          "makespan_over_bks": 1.114173228346,
+          "matched_bks": false,
+          "mean_flow_time": 430,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.106299212598,
+          "feasible": true,
+          "makespan": 562,
+          "makespan_over_bks": 1.106299212598,
+          "matched_bks": false,
+          "mean_flow_time": 460.166666667,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.122047244094,
+          "feasible": true,
+          "makespan": 570,
+          "makespan_over_bks": 1.122047244094,
+          "matched_bks": false,
+          "mean_flow_time": 442.633333333,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.222440944882,
+          "feasible": true,
+          "makespan": 621,
+          "makespan_over_bks": 1.222440944882,
+          "matched_bks": false,
+          "mean_flow_time": 344.533333333333,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.728346456693,
+          "feasible": true,
+          "makespan": 878,
+          "makespan_over_bks": 1.728346456693,
+          "matched_bks": false,
+          "mean_flow_time": 460.566666667,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "4cd974c0d63caf0c07c55996ce6833e4c424a7eb5c52163d0497b497dbff43b2",
+      "split": "holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.003002405131,
+        "runtime_seconds": 2.668744793002,
+        "score_audit": {
+          "common_frame_upper_bound": 3742,
+          "lower_service": {
+            "job_coordinates": [
+              0.950561197221,
+              0.970336718332,
+              0.928113308391,
+              0.948690539818,
+              0.868786745056,
+              0.917156600748,
+              0.885088188135,
+              0.955371459113,
+              0.940406199893,
+              0.962586851951,
+              0.881079636558,
+              0.921432389097,
+              0.912079102084,
+              0.913682522715,
+              0.952699091395,
+              0.887493319081,
+              0.905932656334,
+              0.944949225013,
+              0.865045430251,
+              0.884820951363,
+              0.860235168359,
+              0.87386424372,
+              0.926509887761,
+              0.838054516301,
+              0.875734901122,
+              0.916354890433,
+              0.934259754142,
+              0.940673436665,
+              0.841795831106,
+              0.834045964725
+            ],
+            "normalized_weighted_value": 0.870986994477,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.834045964725
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.129013005523,
+            "penalty_units": 0.006450650276,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 30,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 30,
+            "total_queue_mass": 60
+          },
+          "score": 0.864536344201,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:earliest_completion_time",
+        "selected_origins": [
+          "fixed_policy:earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time",
+          "prefix_beam_depth_2+earliest_completion_time"
+        ],
+        "unique_action_family_size": 36
+      }
+    },
+    {
+      "bks": 390,
+      "instance_id": "mk13",
+      "job_count": 30,
+      "lower_bound": 381,
+      "machine_count": 10,
+      "operation_count": 231,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.489743589744,
+          "feasible": true,
+          "makespan": 581,
+          "makespan_over_bks": 1.489743589744,
+          "matched_bks": false,
+          "mean_flow_time": 349,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.566666666667,
+          "feasible": true,
+          "makespan": 611,
+          "makespan_over_bks": 1.566666666667,
+          "matched_bks": false,
+          "mean_flow_time": 346,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.220512820513,
+          "feasible": true,
+          "makespan": 476,
+          "makespan_over_bks": 1.220512820513,
+          "matched_bks": false,
+          "mean_flow_time": 379.733333333,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.202564102564,
+          "feasible": true,
+          "makespan": 469,
+          "makespan_over_bks": 1.202564102564,
+          "matched_bks": false,
+          "mean_flow_time": 402.1,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.271794871795,
+          "feasible": true,
+          "makespan": 496,
+          "makespan_over_bks": 1.271794871795,
+          "matched_bks": false,
+          "mean_flow_time": 392.666666667,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.189743589744,
+          "feasible": true,
+          "makespan": 464,
+          "makespan_over_bks": 1.189743589744,
+          "matched_bks": false,
+          "mean_flow_time": 376.566666666667,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.930769230769,
+          "feasible": true,
+          "makespan": 753,
+          "makespan_over_bks": 1.930769230769,
+          "matched_bks": false,
+          "mean_flow_time": 464.8,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "43a9feab27578eae73846cd79682cc4960664b1fdd070f4275d538db5f153702",
+      "split": "holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.00042807594,
+        "runtime_seconds": 6.196292011002,
+        "score_audit": {
+          "common_frame_upper_bound": 5478,
+          "lower_service": {
+            "job_coordinates": [
+              0.928988682001,
+              0.935377875137,
+              0.915297553852,
+              0.932274552756,
+              0.927345746623,
+              0.941767068273,
+              0.93136181088,
+              0.940306681271,
+              0.934830230011,
+              0.92278203724,
+              0.930631617379,
+              0.93720335889,
+              0.933369843008,
+              0.939759036145,
+              0.927345746623,
+              0.926615553122,
+              0.929901423877,
+              0.93720335889,
+              0.93446513326,
+              0.929353778751,
+              0.932822197882,
+              0.931179262505,
+              0.925702811245,
+              0.939028842643,
+              0.922599488865,
+              0.936290617014,
+              0.934830230011,
+              0.919496166484,
+              0.925155166119,
+              0.93446513326
+            ],
+            "normalized_weighted_value": 0.923277960326,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.915297553852
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.076722039674,
+            "penalty_units": 0.003836101984,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 30,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 30,
+            "total_queue_mass": 60
+          },
+          "score": 0.919441858342,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:02:8c8a8c79061a:rollout:most_operations_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 25
+      }
+    },
+    {
+      "bks": 694,
+      "instance_id": "mk14",
+      "job_count": 30,
+      "lower_bound": 694,
+      "machine_count": 15,
+      "operation_count": 277,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_work_remaining",
+        "most_operations_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.243515850144,
+          "feasible": true,
+          "makespan": 863,
+          "makespan_over_bks": 1.243515850144,
+          "matched_bks": false,
+          "mean_flow_time": 541.2,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.544668587896,
+          "feasible": true,
+          "makespan": 1072,
+          "makespan_over_bks": 1.544668587896,
+          "matched_bks": false,
+          "mean_flow_time": 568.4,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.040345821326,
+          "feasible": true,
+          "makespan": 722,
+          "makespan_over_bks": 1.040345821326,
+          "matched_bks": false,
+          "mean_flow_time": 541.866666667,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.036023054755,
+          "feasible": true,
+          "makespan": 719,
+          "makespan_over_bks": 1.036023054755,
+          "matched_bks": false,
+          "mean_flow_time": 552.066666667,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.040345821326,
+          "feasible": true,
+          "makespan": 722,
+          "makespan_over_bks": 1.040345821326,
+          "matched_bks": false,
+          "mean_flow_time": 557.866666667,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.040345821326,
+          "feasible": true,
+          "makespan": 722,
+          "makespan_over_bks": 1.040345821326,
+          "matched_bks": false,
+          "mean_flow_time": 541.866666666667,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.706051873199,
+          "feasible": true,
+          "makespan": 1184,
+          "makespan_over_bks": 1.706051873199,
+          "matched_bks": false,
+          "mean_flow_time": 724.466666667,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "82117f847c16ca93edaad40075f0ebacbbad2d3daa8c8a084e6800dd4a8b0d9e",
+      "split": "holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 5.277503665995,
+        "score_audit": {
+          "common_frame_upper_bound": 5824,
+          "lower_service": {
+            "job_coordinates": [
+              0.921531593407,
+              0.913461538462,
+              0.882211538462,
+              0.90573489011,
+              0.922561813187,
+              0.901098901099,
+              0.930975274725,
+              0.926510989011,
+              0.926339285714,
+              0.911572802198,
+              0.879464285714,
+              0.915865384615,
+              0.90676510989,
+              0.90625,
+              0.932692307692,
+              0.925995879121,
+              0.917754120879,
+              0.912946428571,
+              0.909684065934,
+              0.87603021978,
+              0.896462912088,
+              0.895260989011,
+              0.880151098901,
+              0.891826923077,
+              0.913461538462,
+              0.889938186813,
+              0.919471153846,
+              0.898351648352,
+              0.906421703297,
+              0.891998626374
+            ],
+            "normalized_weighted_value": 0.89149496337,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.87603021978
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.10850503663,
+            "penalty_units": 0.005425251832,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 30,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 30,
+            "total_queue_mass": 60
+          },
+          "score": 0.886069711538,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:00:a7c8cda892d9:rollout:most_operations_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 19
+      }
+    },
+    {
+      "bks": 333,
+      "instance_id": "mk15",
+      "job_count": 30,
+      "lower_bound": 333,
+      "machine_count": 15,
+      "operation_count": 284,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.771771771772,
+          "feasible": true,
+          "makespan": 590,
+          "makespan_over_bks": 1.771771771772,
+          "matched_bks": false,
+          "mean_flow_time": 330.766666667,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.90990990991,
+          "feasible": true,
+          "makespan": 636,
+          "makespan_over_bks": 1.90990990991,
+          "matched_bks": false,
+          "mean_flow_time": 316.466666667,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.207207207207,
+          "feasible": true,
+          "makespan": 402,
+          "makespan_over_bks": 1.207207207207,
+          "matched_bks": false,
+          "mean_flow_time": 346.2,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.282282282282,
+          "feasible": true,
+          "makespan": 427,
+          "makespan_over_bks": 1.282282282282,
+          "matched_bks": false,
+          "mean_flow_time": 352.733333333,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.231231231231,
+          "feasible": true,
+          "makespan": 410,
+          "makespan_over_bks": 1.231231231231,
+          "matched_bks": false,
+          "mean_flow_time": 357.433333333,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.207207207207,
+          "feasible": true,
+          "makespan": 402,
+          "makespan_over_bks": 1.207207207207,
+          "matched_bks": false,
+          "mean_flow_time": 346.2,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1.303303303303,
+          "feasible": true,
+          "makespan": 767,
+          "makespan_over_bks": 2.303303303303,
+          "matched_bks": false,
+          "mean_flow_time": 509.766666667,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "f0e124f5ffb8b702268e0010e596021a37d3d976f29bfde20271ed9acad83ded",
+      "split": "holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.001081568628,
+        "runtime_seconds": 7.399888712003,
+        "score_audit": {
+          "common_frame_upper_bound": 6375,
+          "lower_service": {
+            "job_coordinates": [
+              0.938666666667,
+              0.943058823529,
+              0.95168627451,
+              0.954196078431,
+              0.944941176471,
+              0.948078431373,
+              0.954980392157,
+              0.946509803922,
+              0.94431372549,
+              0.94431372549,
+              0.952156862745,
+              0.946509803922,
+              0.945725490196,
+              0.949490196078,
+              0.946980392157,
+              0.954980392157,
+              0.942901960784,
+              0.944156862745,
+              0.941333333333,
+              0.945725490196,
+              0.948862745098,
+              0.939607843137,
+              0.945411764706,
+              0.942588235294,
+              0.948549019608,
+              0.938509803922,
+              0.936941176471,
+              0.94337254902,
+              0.94368627451,
+              0.942588235294
+            ],
+            "normalized_weighted_value": 0.941317647059,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.936941176471
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.058682352941,
+            "penalty_units": 0.002934117647,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 30,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 30,
+            "total_queue_mass": 60
+          },
+          "score": 0.938383529412,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:most_operations_remaining",
+        "selected_origins": [
+          "fixed_policy:most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 29
+      }
+    }
+  ],
+  "schema_version": "scheduleurm.fjsp_trajectory_upgrade.v1",
+  "source_manifest_sha256": "6753f43a8b0033d2c3161e814bd05d49c34473e62c0e5ff0ba710bd9c1f5831c",
+  "split_aggregates": {
+    "calibration": {
+      "instance_count": 5,
+      "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
+      "ours_vs_each_classic": {
+        "earliest_completion_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.712024226171,
+          "geomean_mean_flow_ratio": 1.044898034989,
+          "ours_pareto_dominates_count": 2,
+          "tradeoff_or_equal_count": 3
+        },
+        "fifo_job_order": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.679565782107,
+          "geomean_mean_flow_ratio": 1.041504245679,
+          "ours_pareto_dominates_count": 2,
+          "tradeoff_or_equal_count": 3
+        },
+        "most_operations_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.968992730336,
+          "geomean_mean_flow_ratio": 0.987145205144,
+          "ours_pareto_dominates_count": 4,
+          "tradeoff_or_equal_count": 1
+        },
+        "most_work_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.992401909839,
+          "geomean_mean_flow_ratio": 0.958381594227,
+          "ours_pareto_dominates_count": 3,
+          "tradeoff_or_equal_count": 2
+        },
+        "shortest_processing_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.587041358372,
+          "geomean_mean_flow_ratio": 0.831536298566,
+          "ours_pareto_dominates_count": 5,
+          "tradeoff_or_equal_count": 0
+        }
+      },
+      "policies": {
+        "earliest_completion_time": {
+          "geomean_makespan_over_bks": 1.558756942357,
+          "geomean_mean_flow_to_instance_best": 1.023009617963,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 1,
+          "pareto_frontier_count": 2,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "geomean_makespan_over_bks": 1.633208638358,
+          "geomean_mean_flow_to_instance_best": 1.026343141681,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 2,
+          "pareto_frontier_count": 3,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "geomean_makespan_over_bks": 1.145388062184,
+          "geomean_mean_flow_to_instance_best": 1.082860691633,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 1,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 1,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "geomean_makespan_over_bks": 1.118370183154,
+          "geomean_mean_flow_to_instance_best": 1.115360255271,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 2,
+          "mean_flow_best_or_tie_count": 1,
+          "pareto_frontier_count": 2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "geomean_makespan_over_bks": 1.248012921686,
+          "geomean_mean_flow_to_instance_best": 1.135372519679,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 0,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "geomean_makespan_over_bks": 1.10987270567,
+          "geomean_mean_flow_to_instance_best": 1.068940739584,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 5,
+          "mean_flow_best_or_tie_count": 2,
+          "pareto_frontier_count": 5,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "geomean_makespan_over_bks": 1.890620975579,
+          "geomean_mean_flow_to_instance_best": 1.285500995481,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 0,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      }
+    },
+    "development": {
+      "instance_count": 5,
+      "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
+      "ours_vs_each_classic": {
+        "earliest_completion_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.678366147855,
+          "geomean_mean_flow_ratio": 1.081801617798,
+          "ours_pareto_dominates_count": 2,
+          "tradeoff_or_equal_count": 3
+        },
+        "fifo_job_order": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.61542284504,
+          "geomean_mean_flow_ratio": 1.000098195294,
+          "ours_pareto_dominates_count": 3,
+          "tradeoff_or_equal_count": 2
+        },
+        "most_operations_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.913938344752,
+          "geomean_mean_flow_ratio": 1.022334674638,
+          "ours_pareto_dominates_count": 1,
+          "tradeoff_or_equal_count": 4
+        },
+        "most_work_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.989538031549,
+          "geomean_mean_flow_ratio": 0.981295683128,
+          "ours_pareto_dominates_count": 3,
+          "tradeoff_or_equal_count": 2
+        },
+        "shortest_processing_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.52601068253,
+          "geomean_mean_flow_ratio": 0.851158928764,
+          "ours_pareto_dominates_count": 4,
+          "tradeoff_or_equal_count": 1
+        }
+      },
+      "policies": {
+        "earliest_completion_time": {
+          "geomean_makespan_over_bks": 1.615758407789,
+          "geomean_mean_flow_to_instance_best": 1.057286414176,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 3,
+          "pareto_frontier_count": 3,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "geomean_makespan_over_bks": 1.781012544121,
+          "geomean_mean_flow_to_instance_best": 1.14366185112,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 1,
+          "pareto_frontier_count": 2,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "geomean_makespan_over_bks": 1.199288566072,
+          "geomean_mean_flow_to_instance_best": 1.118786422594,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 1,
+          "pareto_frontier_count": 4,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "geomean_makespan_over_bks": 1.107664154394,
+          "geomean_mean_flow_to_instance_best": 1.165575445808,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 2,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "geomean_makespan_over_bks": 1.174879988111,
+          "geomean_mean_flow_to_instance_best": 1.137770082023,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 1,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 3,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "geomean_makespan_over_bks": 1.096075806956,
+          "geomean_mean_flow_to_instance_best": 1.143774153331,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 5,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 5,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "geomean_makespan_over_bks": 2.0837519909,
+          "geomean_mean_flow_to_instance_best": 1.343784473944,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 0,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      }
+    },
+    "holdout": {
+      "instance_count": 5,
+      "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
+      "ours_vs_each_classic": {
+        "earliest_completion_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.85437485517,
+          "geomean_mean_flow_ratio": 1.02487590847,
+          "ours_pareto_dominates_count": 0,
+          "tradeoff_or_equal_count": 5
+        },
+        "fifo_job_order": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.733527207924,
+          "geomean_mean_flow_ratio": 0.996161642301,
+          "ours_pareto_dominates_count": 2,
+          "tradeoff_or_equal_count": 3
+        },
+        "most_operations_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 1.0180971151,
+          "geomean_mean_flow_ratio": 0.907592084144,
+          "ours_pareto_dominates_count": 1,
+          "tradeoff_or_equal_count": 4
+        },
+        "most_work_remaining": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 1.010838661968,
+          "geomean_mean_flow_ratio": 0.871137854504,
+          "ours_pareto_dominates_count": 2,
+          "tradeoff_or_equal_count": 3
+        },
+        "shortest_processing_time": {
+          "baseline_pareto_dominates_count": 0,
+          "geomean_makespan_ratio": 0.621744434858,
+          "geomean_mean_flow_ratio": 0.750006622158,
+          "ours_pareto_dominates_count": 5,
+          "tradeoff_or_equal_count": 0
+        }
+      },
+      "policies": {
+        "earliest_completion_time": {
+          "geomean_makespan_over_bks": 1.347773768049,
+          "geomean_mean_flow_to_instance_best": 1.010683806354,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 2,
+          "pareto_frontier_count": 5,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "geomean_makespan_over_bks": 1.569817731966,
+          "geomean_mean_flow_to_instance_best": 1.039816672545,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 3,
+          "pareto_frontier_count": 3,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "geomean_makespan_over_bks": 1.131035537573,
+          "geomean_mean_flow_to_instance_best": 1.141289685433,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 2,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 4,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "geomean_makespan_over_bks": 1.139157079367,
+          "geomean_mean_flow_to_instance_best": 1.189048873101,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 2,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 2,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "geomean_makespan_over_bks": 1.154382660679,
+          "geomean_mean_flow_to_instance_best": 1.184349232212,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 0,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "geomean_makespan_over_bks": 1.151504017879,
+          "geomean_mean_flow_to_instance_best": 1.035825484214,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 2,
+          "mean_flow_best_or_tie_count": 1,
+          "pareto_frontier_count": 5,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "geomean_makespan_over_bks": 1.852053598424,
+          "geomean_mean_flow_to_instance_best": 1.381088451238,
+          "instance_count": 5,
+          "makespan_best_or_tie_count": 0,
+          "mean_flow_best_or_tie_count": 0,
+          "pareto_frontier_count": 0,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      }
+    }
+  },
+  "suite": "Brandimarte Mk01-Mk15",
+  "theorem_mapping": {
+    "action": "complete_nonpreemptive_fjsp_schedule_trajectory",
+    "candidate_family": "finite_fixed_policy_seeds_plus_fixed_prefix_beam_rollouts",
+    "claim_boundary": "This is a finite deterministic draining-problem configuration mapping. It does not by itself establish stochastic-arrival recurrence or throughput optimality.",
+    "lower_service": {
+      "common_frame_H": "sum_over_operations_max_eligible_processing_time",
+      "job_j": "(H-C_j)/H",
+      "robustness": "deterministic_processing_times_make_coordinates_exact_lower_bounds",
+      "system_drain": "(H-C_max)/H"
+    },
+    "objective": "normalized_Q_dot_lower_service_minus_bounded_trajectory_penalty",
+    "oracle": {
+      "alpha0": 0,
+      "alpha1": 0,
+      "candidate_cover_error_calibrated": false,
+      "exact_over_generated_family": true,
+      "global_fjsp_action_space_exact": false
+    },
+    "penalty": {
+      "form": "gamma*(mean_flow+makespan)/(2H)",
+      "gamma": 0.05,
+      "queue_scaled_beta": 0,
+      "slack_implication": "bounded_P0_changes_the_finite_frame_drift_constant_not_the_linear_slack_margin",
+      "uniform_bound_P0": 0.05
+    },
+    "queue_vector": "one_unit_per_unfinished_job_plus_fixed_system_drain_coordinate"
+  }
+}

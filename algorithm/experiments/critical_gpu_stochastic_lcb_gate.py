@@ -568,6 +568,7 @@ def _audit_measurement_row(
     row: Mapping[str, Any],
     expected: Mapping[str, Any],
     wave: int,
+    expected_protocol: str = PROTOCOL,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     cell_id = str(expected["service_cell_id"])
     errors: list[dict[str, Any]] = []
@@ -599,9 +600,9 @@ def _audit_measurement_row(
     require(_int_or(row.get("wave"), -1) == wave, "WAVE_MISMATCH", "row wave differs")
     require(row.get("split_role") == wave_role(wave), "SPLIT_ROLE_MISMATCH", "row role differs")
     require(
-        row.get("measurement_protocol") == PROTOCOL,
+        row.get("measurement_protocol") == expected_protocol,
         "PROTOCOL_MISMATCH",
-        f"row protocol must be {PROTOCOL!r}",
+        f"row protocol must be {expected_protocol!r}",
     )
     require(bool(row.get("ready")), "ROW_NOT_READY", "ready is not true")
     require(row.get("status") == "READY", "ROW_NOT_READY", f"status={row.get('status')!r}")

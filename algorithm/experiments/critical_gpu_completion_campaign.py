@@ -17,7 +17,7 @@ from pathlib import Path
 import re
 import shlex
 import time
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
 
 from .remote_workload_selected_profile_probe import (
     RUN_ROOT,
@@ -484,6 +484,8 @@ def _run_cell(
     preflight: Mapping[str, Any],
     cleanup_remote_output: bool,
     expected_code_sha256: str,
+    measurement_manifest_builder: Callable[[], dict[str, Any]] = measurement_code_manifest,
+    measurement_protocol: str = PROTOCOL,
 ) -> dict[str, Any]:
     profile = int(cell["profile"])
     evidence_mode = str(cell["service_evidence_mode"])
@@ -512,7 +514,7 @@ def _run_cell(
         values["torch_python"] = node_spec.bapr_python
     started = time.time()
     try:
-        code_before = measurement_code_manifest()
+        code_before = measurement_manifest_builder()
         if code_before["sha256"] != expected_code_sha256:
             raise RuntimeError("measurement code changed before cell launch")
         probe = build_remote_workload_selected_profile_probe(
@@ -558,7 +560,7 @@ def _run_cell(
             profile=profile,
             evidence_mode=evidence_mode,
         )
-        code_after = measurement_code_manifest()
+        code_after = measurement_manifest_builder()
         code_identity_ready = bool(
             code_after["sha256"] == expected_code_sha256
             and code_before["sha256"] == expected_code_sha256
@@ -588,7 +590,7 @@ def _run_cell(
         )
         row = {
             **dict(cell),
-            "measurement_protocol": PROTOCOL,
+            "measurement_protocol": measurement_protocol,
             "run_id": run_id,
             "remote_output_root": remote_output,
             "summary_path": str(summary_path),
@@ -614,7 +616,7 @@ def _run_cell(
     except Exception as exc:
         row = {
             **dict(cell),
-            "measurement_protocol": PROTOCOL,
+            "measurement_protocol": measurement_protocol,
             "run_id": run_id,
             "remote_output_root": remote_output,
             "elapsed_wall_s": time.time() - started,

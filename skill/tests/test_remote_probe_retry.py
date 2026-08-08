@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import base64
+import hashlib
 import subprocess
 
 from algorithm.experiments import remote_workload_selected_profile_probe as probe
@@ -120,8 +122,23 @@ def test_detached_remote_process_survives_poll_transport_boundary(
             if status_calls == 1:
                 return 3, "__SCHEDULEURM_DETACHED_RUNNING__\n", ""
             return 0, "__SCHEDULEURM_DETACHED_RC__ 0\n", ""
-        if command.startswith("cat "):
-            return 0, "ScheduleurmCompletionModel {}\n", ""
+        if "__SCHEDULEURM_FILE__" in command:
+            payload = b"ScheduleurmCompletionModel {}\n"
+            return (
+                0,
+                f"__SCHEDULEURM_FILE__ {len(payload)} {hashlib.sha256(payload).hexdigest()}\n",
+                "",
+            )
+        if "__SCHEDULEURM_CHUNK_BEGIN__" in command:
+            payload = b"ScheduleurmCompletionModel {}\n"
+            encoded = base64.b64encode(payload).decode("ascii")
+            return (
+                0,
+                f"__SCHEDULEURM_CHUNK_BEGIN__ 0 0 {len(payload)}\n"
+                + encoded
+                + "\n__SCHEDULEURM_CHUNK_END__ 0\n",
+                "",
+            )
         raise AssertionError(command)
 
     monkeypatch.setattr(probe, "_run_remote_capture", fake_capture)
@@ -141,6 +158,78 @@ def test_detached_remote_process_survives_poll_transport_boundary(
     assert "ScheduleurmCompletionModel" in output
     assert status_calls == 2
     assert "kill -0" in commands[0]
+
+
+def test_chunked_remote_fetch_reconstructs_file_larger_than_transport_cap(
+    tmp_path,
+    monkeypatch,
+):
+    payload = bytes(range(256)) * 2400
+    chunk_bytes = 64 * 1024
+
+    def fake_capture(node, command, prefix, *, timeout_s):
+        if "__SCHEDULEURM_FILE__" in command:
+            return (
+                0,
+                f"__SCHEDULEURM_FILE__ {len(payload)} {hashlib.sha256(payload).hexdigest()}\n",
+                "",
+            )
+        match = probe.re.search(
+            r"__SCHEDULEURM_CHUNK_BEGIN__ (\d+) (\d+) (\d+)",
+            command,
+        )
+        assert match is not None
+        index, offset, size = map(int, match.groups())
+        encoded = base64.b64encode(payload[offset : offset + size]).decode("ascii")
+        return (
+            0,
+            f"__SCHEDULEURM_CHUNK_BEGIN__ {index} {offset} {size}\n"
+            f"{encoded}\n__SCHEDULEURM_CHUNK_END__ {index}\n",
+            "",
+        )
+
+    monkeypatch.setattr(probe, "_run_remote_capture", fake_capture)
+    observed = probe._fetch_remote_file_bytes(
+        "node007",
+        "/tmp/large.log",
+        tmp_path / "fetch",
+        timeout_s=30,
+        chunk_bytes=chunk_bytes,
+    )
+
+    assert len(payload) > 500_000
+    assert observed == payload
+
+
+def test_chunked_remote_fetch_fails_closed_on_sha256_mismatch(
+    tmp_path,
+    monkeypatch,
+):
+    payload = b"complete log\n"
+
+    def fake_capture(node, command, prefix, *, timeout_s):
+        if "__SCHEDULEURM_FILE__" in command:
+            return 0, f"__SCHEDULEURM_FILE__ {len(payload)} {'0' * 64}\n", ""
+        encoded = base64.b64encode(payload).decode("ascii")
+        return (
+            0,
+            f"__SCHEDULEURM_CHUNK_BEGIN__ 0 0 {len(payload)}\n"
+            f"{encoded}\n__SCHEDULEURM_CHUNK_END__ 0\n",
+            "",
+        )
+
+    monkeypatch.setattr(probe, "_run_remote_capture", fake_capture)
+    try:
+        probe._fetch_remote_file_bytes(
+            "node007",
+            "/tmp/tampered.log",
+            tmp_path / "fetch",
+            timeout_s=30,
+        )
+    except RuntimeError as exc:
+        assert "sha256 mismatch" in str(exc)
+    else:
+        raise AssertionError("hash mismatch must fail closed")
 
 
 def test_detached_returncode_parser_fails_closed_without_marker():

@@ -37,8 +37,8 @@ from .critical_gpu_completion_campaign import (
 )
 
 
-PROTOCOL = "critical_gpu_p10_transport_correction_v1"
-CAMPAIGN_PREFIX = "critical_gpu_p10_transport_v1"
+PROTOCOL = "critical_gpu_p10_transport_correction_v2"
+CAMPAIGN_PREFIX = "critical_gpu_p10_transport_v2"
 CAMPAIGN_DATE = "20260808"
 NODE = "node007"
 WORKLOAD_KEY = "gpu_llm_distilgpt2"

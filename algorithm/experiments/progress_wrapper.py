@@ -140,6 +140,29 @@ def _normalize_child_line(
     return build_progress_line(obs, total_override=total_override, unit_override=unit_override), obs
 
 
+def _progress_source_rank(obs: ProgressObservation) -> int:
+    """Rank explicit task counters above duplicate terminal progress bars."""
+
+    source = str(obs.source or "").lower()
+    if source == "per_second":
+        return 1
+    if source == "current_total":
+        return 2
+    return 3
+
+
+def _matches_declared_total(
+    obs: ProgressObservation,
+    *,
+    total_override: int | None,
+) -> bool:
+    if total_override is None or int(total_override) <= 0:
+        return True
+    if obs.total is not None and int(obs.total) != int(total_override):
+        return False
+    return obs.current is None or int(obs.current) <= int(total_override)
+
+
 def _stable_rate_decision(
     rates: Sequence[float],
     *,
@@ -384,6 +407,7 @@ def run_wrapped_command(
     stable_reported = False
     stopped_on_stable = False
     active_phases: set[str] = set()
+    best_progress_source_rank = 0
     for raw in proc.stdout:
         line = raw.rstrip("\n")
         print(line, flush=True)
@@ -398,6 +422,20 @@ def run_wrapped_command(
         )
         if obs is not None and not _observation_allowed_in_phases(obs, active_phases):
             progress_line, obs = None, None
+        if obs is not None and not _matches_declared_total(
+            obs,
+            total_override=total,
+        ):
+            progress_line, obs = None, None
+        if obs is not None:
+            source_rank = _progress_source_rank(obs)
+            if source_rank < best_progress_source_rank:
+                progress_line, obs = None, None
+            else:
+                best_progress_source_rank = max(
+                    best_progress_source_rank,
+                    source_rank,
+                )
         if progress_line:
             print(progress_line, flush=True)
         if obs is not None:

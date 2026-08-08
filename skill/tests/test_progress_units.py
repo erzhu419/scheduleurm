@@ -14,6 +14,8 @@ from algorithm.experiments.remote_workload_selected_profile_probe import _row_fr
 from algorithm.experiments.progress_wrapper import (
     _cycle_stable_rate_decision,
     _observation_allowed_in_phases,
+    _matches_declared_total,
+    _progress_source_rank,
     _stable_rate_decision,
     _update_active_phases,
     build_progress_line,
@@ -247,6 +249,49 @@ def test_progress_wrapper_rejects_library_tqdm_outside_outer_loop():
     assert _observation_allowed_in_phases(loading, phases)
     _update_active_phases("ScheduleurmPhase name=checkpoint event=start", phases)
     assert not _observation_allowed_in_phases(loading, phases)
+
+
+def test_explicit_task_counter_outranks_lagging_tqdm_duplicate():
+    explicit = parse_progress_line(
+        "BENCH_PROGRESS Step 60/120 rate=5.0 step/s ETA 12s"
+    )
+    lagging_tqdm = parse_progress_line(
+        "train: 42%|####2     | 51/120 [00:11<00:01, 50.6step/s]"
+    )
+
+    assert explicit is not None and lagging_tqdm is not None
+    assert _progress_source_rank(explicit) > _progress_source_rank(lagging_tqdm)
+    assert _matches_declared_total(explicit, total_override=120)
+    nested = parse_progress_line(
+        "Loading weights: 100%|##########| 76/76 [00:01<00:00, 76it/s]"
+    )
+    assert nested is not None
+    assert not _matches_declared_total(nested, total_override=120)
+
+
+def test_wrapper_completion_model_ignores_lower_priority_regressive_tqdm(capsys):
+    code = (
+        "print('ScheduleurmPhase name=outer_loop event=start', flush=True); "
+        "print('BENCH_PROGRESS Step 1/4 rate=1 step/s', flush=True); "
+        "print('BENCH_PROGRESS Step 2/4 rate=1 step/s', flush=True); "
+        "print('train: 25%|## | 1/4 [00:01<00:03, 1step/s]', flush=True); "
+        "print('BENCH_PROGRESS Step 3/4 rate=1 step/s', flush=True); "
+        "print('BENCH_PROGRESS Step 4/4 rate=1 step/s', flush=True); "
+        "print('ScheduleurmPhase name=outer_loop event=end', flush=True)"
+    )
+    rc = run_wrapped_command(
+        [sys.executable, "-c", code],
+        total=4,
+        unit="step",
+    )
+
+    assert rc == 0
+    output = capsys.readouterr().out
+    model = json.loads(output.split("ScheduleurmCompletionModel ")[-1])
+    assert model["first_progress_unit"] == 1
+    assert model["last_progress_unit"] == 4
+    assert model["progress_observation_count"] == 4
+    assert model["interval_sample_count"] == 3
 
 
 def test_progress_wrapper_cycle_average_stabilizes_periodic_rl_eta(check, sch):

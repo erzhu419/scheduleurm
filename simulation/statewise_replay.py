@@ -20,11 +20,16 @@ the measured point completion time.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from typing import Any, Iterable
 
-from .fast_forward import ReplayPolicy, WorkloadSpec
+from .fast_forward import (
+    ReplayPolicy,
+    WorkloadSpec,
+    _statewise_holds_base_profile,
+    _statewise_target_profile,
+)
 from .service_cache import ProfileRecord, ServiceRateCache
 
 
@@ -123,6 +128,9 @@ def build_exact_replay_views(
         source_record = lookup.record
         _validate_source_record(source_record, request=request)
 
+        completion_group_units, completion_units_source = (
+            _completion_group_total_units(source_record)
+        )
         point_rate = _completion_point_aggregate_rate(source_record)
         lower_records.append(
             _project_record(
@@ -150,13 +158,14 @@ def build_exact_replay_views(
                 "completion_total_wall_s": float(
                     source_record.completion_total_wall_s
                 ),
-                "source_group_total_units": float(source_record.total_units),
+                "completion_group_total_units": completion_group_units,
+                "completion_group_units_source": completion_units_source,
                 "lower_service_aggregate_rate": float(
                     source_record.aggregate_rate
                 ),
                 "completion_point_aggregate_rate": point_rate,
                 "completion_point_rate_formula": (
-                    "source_group_total_units/completion_total_wall_s"
+                    "completion_group_total_units/completion_total_wall_s"
                 ),
             }
         )
@@ -185,6 +194,92 @@ class FrozenReplayAction:
 
 
 @dataclass(frozen=True)
+class LowerServiceFrozenTrajectoryPolicy(ReplayPolicy):
+    """Evaluate a trajectory whose decisions remain bound to lower service."""
+
+    delegate: ReplayPolicy = field(
+        default_factory=lambda: ReplayPolicy(name="missing_frozen_delegate")
+    )
+    selection_cache: ServiceRateCache | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
+    sticky_base_after_threshold: bool = False
+    tail_remaining_threshold: int = 0
+
+    def _lower_cache(self) -> ServiceRateCache:
+        if self.selection_cache is None:
+            raise ValueError("frozen trajectory has no lower-service selection cache")
+        return self.selection_cache
+
+    def select_profile(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+    ) -> ProfileRecord:
+        return self.delegate.select_profile(self._lower_cache(), spec)
+
+    def uses_statewise_for(self, spec: WorkloadSpec) -> bool:
+        return self.delegate.uses_statewise_for(spec)
+
+    def statewise_target_profile_for(
+        self,
+        cache: ServiceRateCache,
+        spec: WorkloadSpec,
+        *,
+        remaining_count: int,
+        active_count: int,
+        base_target_profile: int | None = None,
+    ) -> int | None:
+        return _statewise_target_profile(
+            cache=self._lower_cache(),
+            spec=spec,
+            policy=self.delegate,
+            remaining_count=remaining_count,
+            active_count=active_count,
+            base_target_profile=base_target_profile,
+        )
+
+    def statewise_holds_base_profile_for(
+        self,
+        *,
+        waiting_count: int,
+        total_remaining: int,
+    ) -> bool | None:
+        custom = self.delegate.statewise_holds_base_profile_for(
+            waiting_count=waiting_count,
+            total_remaining=total_remaining,
+        )
+        if custom is not None:
+            return bool(custom)
+        return _statewise_holds_base_profile(
+            self.delegate,
+            waiting_count=waiting_count,
+            total_remaining=total_remaining,
+        )
+
+    def uses_shortest_remaining_first_for(self, spec: WorkloadSpec) -> bool:
+        return self.delegate.uses_shortest_remaining_first_for(spec)
+
+    def waiting_order_mode_for(self, spec: WorkloadSpec) -> str:
+        return self.delegate.waiting_order_mode_for(spec)
+
+    def resource_assignment_mode_for(self, spec: WorkloadSpec) -> str:
+        return self.delegate.resource_assignment_mode_for(spec)
+
+    def resource_assignment_seed_for(self, spec: WorkloadSpec) -> int:
+        return self.delegate.resource_assignment_seed_for(spec)
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
+            **super().snapshot(),
+            "selection_service_view": "lower_service",
+            "delegate": self.delegate.snapshot(),
+        }
+
+
+@dataclass(frozen=True)
 class FrozenActionUnionPolicy(ReplayPolicy):
     """Replay fixed actions selected on a different, lower-service view.
 
@@ -194,6 +289,11 @@ class FrozenActionUnionPolicy(ReplayPolicy):
     """
 
     frozen_actions: tuple[FrozenReplayAction, ...] = ()
+    selection_cache: ServiceRateCache | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
     def _action(self, workload_key: str) -> FrozenReplayAction:
         rows = [
@@ -227,7 +327,26 @@ class FrozenActionUnionPolicy(ReplayPolicy):
         *,
         base_target_profile: int | None = None,
     ) -> ReplayPolicy | None:
-        return self._action(spec.workload_key).delegate
+        delegate = self._action(spec.workload_key).delegate
+        return LowerServiceFrozenTrajectoryPolicy(
+            name=f"lower_service_frozen:{delegate.name}",
+            statewise=True,
+            delegate=delegate,
+            selection_cache=self.selection_cache,
+            sticky_base_after_threshold=bool(
+                getattr(delegate, "sticky_base_after_threshold", False)
+            ),
+            tail_remaining_threshold=max(
+                0,
+                int(getattr(delegate, "tail_remaining_threshold", 0) or 0),
+            ),
+        )
+
+    def uses_statewise_for(self, spec: WorkloadSpec) -> bool:
+        # A frozen action always owns an event-level trajectory, even when its
+        # delegate resolves to the constant base profile on lower service.
+        self._action(spec.workload_key)
+        return True
 
     def trace_action_policy_for(
         self,
@@ -302,10 +421,20 @@ def _validate_source_record(
 
 
 def _completion_point_aggregate_rate(record: ProfileRecord) -> float:
-    rate = float(record.total_units) / float(record.completion_total_wall_s)
+    group_units, _ = _completion_group_total_units(record)
+    rate = group_units / float(record.completion_total_wall_s)
     if not math.isfinite(rate) or rate <= 0.0:
         raise ValueError("natural-completion point rate must be finite and positive")
     return rate
+
+
+def _completion_group_total_units(record: ProfileRecord) -> tuple[float, str]:
+    explicit = float(record.completion_group_total_units)
+    if explicit > 0.0:
+        return explicit, "explicit_completion_group_total_units"
+    # Backward compatibility for records whose total_units already represented
+    # the complete colocated group before this axis became explicit.
+    return float(record.total_units), "legacy_total_units_fallback"
 
 
 def _project_record(
@@ -349,6 +478,7 @@ def _project_record(
         checkpoint_observed_s=record.checkpoint_observed_s,
         save_observed_s=record.save_observed_s,
         completion_total_wall_s=record.completion_total_wall_s,
+        completion_group_total_units=record.completion_group_total_units,
         completion_model_relative_error=record.completion_model_relative_error,
         allocation_workers=1,
         colocation_count=profile,

@@ -292,6 +292,7 @@ def _freeze_lower_service_candidate(
         statewise=True,
         statewise_resource_kinds=statewise_resource_kinds,
         frozen_actions=tuple(actions),
+        selection_cache=lower_cache,
     )
 
 

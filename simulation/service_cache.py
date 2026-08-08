@@ -50,6 +50,7 @@ class ProfileRecord:
     checkpoint_observed_s: float = 0.0
     save_observed_s: float = 0.0
     completion_total_wall_s: float = 0.0
+    completion_group_total_units: float = 0.0
     completion_model_relative_error: float = 0.0
     allocation_workers: int = 1
     colocation_count: int = 0
@@ -126,6 +127,7 @@ class ProfileRecord:
             "checkpoint_observed_s": self.checkpoint_observed_s,
             "save_observed_s": self.save_observed_s,
             "completion_total_wall_s": self.completion_total_wall_s,
+            "completion_group_total_units": self.completion_group_total_units,
             "completion_model_relative_error": self.completion_model_relative_error,
         }
 
@@ -172,6 +174,9 @@ class ProfileRecord:
             save_observed_s=max(0.0, float(data.get("save_observed_s") or 0.0)),
             completion_total_wall_s=max(
                 0.0, float(data.get("completion_total_wall_s") or 0.0)
+            ),
+            completion_group_total_units=max(
+                0.0, float(data.get("completion_group_total_units") or 0.0)
             ),
             completion_model_relative_error=max(
                 0.0, float(data.get("completion_model_relative_error") or 0.0)

@@ -545,6 +545,7 @@ def _profile_record(row: Mapping[str, Any], *, source: Path) -> ProfileRecord:
         checkpoint_observed_s=0.0,
         save_observed_s=0.0,
         completion_total_wall_s=point_mean_jct,
+        completion_group_total_units=profile * total_units_per_task,
         completion_model_relative_error=float(
             row["mean_jct_point_relative_error"]
         ),

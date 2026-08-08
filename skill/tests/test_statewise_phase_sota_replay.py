@@ -11,8 +11,11 @@ from algorithm.experiments.statewise_phase_sota_replay_gate import (
 from simulation.service_cache import ProfileRecord, ServiceRateCache
 from simulation.statewise_replay import (
     ExactReplayProfile,
+    FrozenActionUnionPolicy,
+    FrozenReplayAction,
     build_exact_replay_views,
 )
+from simulation.fast_forward import ReplayPolicy, WorkloadSpec, _statewise_target_profile
 
 
 def _record(
@@ -46,6 +49,7 @@ def _record(
         completion_unit_s=(wall_s - 7.0) / total_units,
         finalization_overhead_s=2.0,
         completion_total_wall_s=wall_s,
+        completion_group_total_units=total_units,
         allocation_workers=1,
         colocation_count=profile,
     )
@@ -83,11 +87,130 @@ def test_exact_projection_separates_lower_service_and_completion_point():
     assert lower is not None and point is not None
     assert lower.aggregate_rate == pytest.approx(source_record.aggregate_rate)
     assert point.aggregate_rate == pytest.approx(
-        source_record.total_units / source_record.completion_total_wall_s
+        source_record.completion_group_total_units
+        / source_record.completion_total_wall_s
     )
     assert point.aggregate_rate != pytest.approx(lower.aggregate_rate)
     assert views.rows[0]["completion_point_rate_formula"] == (
-        "source_group_total_units/completion_total_wall_s"
+        "completion_group_total_units/completion_total_wall_s"
+    )
+
+
+def test_exact_projection_uses_explicit_group_units_for_per_task_gpu_model():
+    per_task_units = 60.0
+    profile = 3
+    source_record = ProfileRecord(
+        workload_key="gpu_cnn_torch_resnet50",
+        command_fingerprint="gpu-group-units-test",
+        resource_kind="gpu",
+        node_bucket="gpu_test_node",
+        profile=profile,
+        unit="step",
+        total_units=per_task_units,
+        aggregate_rate=9.0,
+        per_task_rates=(3.0, 3.0, 3.0),
+        source="unit-test",
+        workload_env="resnet50",
+        resource_state="empty",
+        eta_source="task_native_tqdm_progress",
+        stable_rate_ready=True,
+        completion_model_ready=True,
+        completion_model_sample_count=12,
+        completion_total_wall_s=20.0,
+        completion_group_total_units=profile * per_task_units,
+        colocation_count=profile,
+    )
+    views = build_exact_replay_views(
+        ServiceRateCache((source_record,)),
+        (
+            ExactReplayProfile(
+                workload_key=source_record.workload_key,
+                workload_env=source_record.workload_env,
+                node_bucket=source_record.node_bucket,
+                resource_state=source_record.resource_state,
+                colocation_count=profile,
+            ),
+        ),
+    )
+
+    point = views.completion_point.get(source_record.workload_key, profile)
+    assert point is not None
+    assert point.aggregate_rate == pytest.approx(9.0)
+    assert views.rows[0]["completion_group_units_source"] == (
+        "explicit_completion_group_total_units"
+    )
+
+
+def test_frozen_trajectory_never_reselects_on_completion_point_view():
+    workload = "gpu_test"
+    lower = ServiceRateCache(
+        (
+            _simple_replay_record(workload, 1, aggregate_rate=10.0),
+            _simple_replay_record(workload, 3, aggregate_rate=12.0),
+        )
+    )
+    completion = ServiceRateCache(
+        (
+            _simple_replay_record(workload, 1, aggregate_rate=10.0),
+            _simple_replay_record(workload, 3, aggregate_rate=3.0),
+        )
+    )
+    spec = WorkloadSpec(
+        workload_key=workload,
+        resource_kind="gpu_heavy",
+        task_count=30,
+        total_units=1.0,
+        resource_count=1,
+    )
+    delegate = ReplayPolicy(
+        name="statewise-makespan",
+        calibrated=True,
+        calibrated_objective="makespan",
+        statewise=True,
+        statewise_workload_keys=(workload,),
+    )
+    assert delegate.select_profile(lower, spec).profile == 3
+    assert delegate.select_profile(completion, spec).profile == 1
+    frozen = FrozenActionUnionPolicy(
+        name="frozen",
+        statewise=True,
+        frozen_actions=(
+            FrozenReplayAction(
+                workload_key=workload,
+                profile=3,
+                family_name=delegate.name,
+                delegate=delegate,
+            ),
+        ),
+        selection_cache=lower,
+    )
+    assert _statewise_target_profile(
+        cache=completion,
+        spec=spec,
+        policy=frozen,
+        remaining_count=30,
+        active_count=0,
+        base_target_profile=3,
+    ) == 3
+
+
+def _simple_replay_record(
+    workload_key: str,
+    profile: int,
+    *,
+    aggregate_rate: float,
+) -> ProfileRecord:
+    return ProfileRecord(
+        workload_key=workload_key,
+        command_fingerprint="view-isolation-test",
+        resource_kind="gpu",
+        node_bucket="",
+        profile=profile,
+        unit="unit",
+        total_units=1.0,
+        aggregate_rate=aggregate_rate,
+        per_task_rates=tuple(aggregate_rate / profile for _ in range(profile)),
+        source="unit-test",
     )
 
 

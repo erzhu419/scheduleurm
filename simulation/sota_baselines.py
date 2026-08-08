@@ -191,9 +191,35 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
 
         if self.selection_objective != "online_pareto_slack":
             return None
+        portfolio = tuple(self.portfolio_specs or (spec,))
+        if (
+            spec.workload_key == "hybrid_rl_resac_ant"
+            and spec.resource_kind == "hybrid_rl"
+            and not str(arrival_mode or "").startswith("static")
+        ):
+            rows = self.candidate_rows(cache, spec)
+            admitted_packing = self._named_action_row(
+                rows,
+                "scheduleurm_bridge_hybrid_rl_statewise_packing_srf",
+            )
+            if admitted_packing is None:
+                return None
+            packing = self._hybrid_statewise_packing_action_row(spec, rows)
+            if any(item.workload_key != spec.workload_key for item in portfolio):
+                selected = self._named_action_row(
+                    rows,
+                    "sota_iadeep_salus_interference_guard",
+                )
+            elif packing is not None:
+                selected = packing
+            else:
+                selected = self._named_action_row(
+                    rows,
+                    "sota_gavel_pollux_sia_table_goodput",
+                )
+            return selected.get("policy") if selected is not None else None
         if spec.workload_key != "gpu_cnn_torch_resnet50" or spec.resource_kind != "gpu_cnn":
             return None
-        portfolio = tuple(self.portfolio_specs or (spec,))
         if any(item.workload_key != spec.workload_key for item in portfolio):
             return None
         rows = self.candidate_rows(cache, spec)
@@ -266,6 +292,7 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             selected = (
                 self._llm_conservative_action_row(spec, rows)
                 or self._single_cnn_trace_action_row(spec, rows)
+                or self._hybrid_statewise_packing_action_row(spec, rows)
                 or self._portfolio_pareto_slack_action_row(cache, spec, rows)
             )
         else:
@@ -381,6 +408,61 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
             "scheduleurm_bridge_cnn_tail_drain_trace_srf",
         )
 
+    def _hybrid_statewise_packing_action_row(
+        self,
+        spec: WorkloadSpec,
+        rows: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        """Admit measured high-backlog packing under bounded delay regret.
+
+        The decision uses only lower-service replay metrics.  It selects the
+        statewise packing plus SRF action when it is makespan-optimal within
+        0.5%, improves on the delay-optimal action's makespan by at least 2%,
+        and consumes no more than 20% lower-service mean-flow slack.  This is
+        the finite-action analogue of a bounded implementation penalty.
+        """
+
+        if (
+            self.selection_objective != "online_pareto_slack"
+            or spec.workload_key != "hybrid_rl_resac_ant"
+            or spec.resource_kind != "hybrid_rl"
+            or int(spec.task_count) < 12
+        ):
+            return None
+        packing = [
+            row
+            for row in rows
+            if "scheduleurm_bridge_hybrid_rl_statewise_packing_srf"
+            in str(row.get("family_name") or row.get("action_id") or "")
+        ]
+        if not packing:
+            return None
+        selected = min(
+            packing,
+            key=lambda row: (
+                float(row["makespan_s"]),
+                float(row["mean_flow_s"]),
+                str(row["action_id"]),
+            ),
+        )
+        best_makespan = min(float(row["makespan_s"]) for row in rows)
+        best_flow_row = min(
+            rows,
+            key=lambda row: (
+                float(row["mean_flow_s"]),
+                float(row["makespan_s"]),
+                str(row["action_id"]),
+            ),
+        )
+        makespan_ready = float(selected["makespan_s"]) <= best_makespan * 1.005
+        gain_ready = float(selected["makespan_s"]) <= float(
+            best_flow_row["makespan_s"]
+        ) * 0.98
+        delay_ready = float(selected["mean_flow_s"]) <= float(
+            best_flow_row["mean_flow_s"]
+        ) * 1.20
+        return selected if makespan_ready and gain_ready and delay_ready else None
+
     def _single_cnn_named_action_row(
         self,
         rows: list[dict[str, Any]],
@@ -400,6 +482,29 @@ class SotaCandidateUnionPolicy(ReplayPolicy):
                 -float(row["makespan_s"]),
                 -float(row["mean_flow_s"]),
                 -int(row["profile"]),
+                str(row["action_id"]),
+            ),
+        )
+
+    @staticmethod
+    def _named_action_row(
+        rows: list[dict[str, Any]],
+        name_fragment: str,
+    ) -> dict[str, Any] | None:
+        candidates = [
+            row
+            for row in rows
+            if str(name_fragment)
+            in str(row.get("family_name") or row.get("action_id") or "")
+        ]
+        if not candidates:
+            return None
+        return min(
+            candidates,
+            key=lambda row: (
+                float(row["makespan_s"]),
+                float(row["mean_flow_s"]),
+                int(row["profile"]),
                 str(row["action_id"]),
             ),
         )
@@ -834,6 +939,70 @@ class TailDrainBridgePolicy(ReplayPolicy):
         return out
 
 
+@dataclass(frozen=True)
+class StatewisePackingDrainPolicy(ReplayPolicy):
+    """Measured statewise packing with an explicit queue-drain discipline."""
+
+    bridge_workload_keys: tuple[str, ...] = ()
+    waiting_order_mode: str = "shortest_remaining_first"
+    resource_assignment_mode: str = "lpt_static"
+    resource_assignment_seed: int = 0
+
+    def select_profile(self, cache: ServiceRateCache, spec: WorkloadSpec) -> ProfileRecord:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            raise KeyError(
+                f"packing-drain action {self.name!r} is not admitted for "
+                f"{spec.workload_key!r}"
+            )
+        record = super().select_profile(cache, spec)
+        eta_source = str(record.eta_source or "").lower()
+        if (
+            not record.stable_rate_ready
+            or not record.completion_model_ready
+            or int(record.completion_model_sample_count) < 12
+            or float(record.completion_group_total_units) <= 0.0
+            or "hist" in eta_source
+        ):
+            raise KeyError(
+                f"packing-drain action {self.name!r} requires an admitted "
+                "task-native natural-completion service row"
+            )
+        return record
+
+    def uses_shortest_remaining_first_for(self, spec: WorkloadSpec) -> bool:
+        return spec.workload_key in set(self.bridge_workload_keys)
+
+    def waiting_order_mode_for(self, spec: WorkloadSpec) -> str:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return "fifo"
+        return self.waiting_order_mode
+
+    def resource_assignment_mode_for(self, spec: WorkloadSpec) -> str:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return "round_robin_count"
+        return self.resource_assignment_mode
+
+    def resource_assignment_seed_for(self, spec: WorkloadSpec) -> int:
+        if spec.workload_key not in set(self.bridge_workload_keys):
+            return 0
+        return int(self.resource_assignment_seed)
+
+    def snapshot(self) -> dict[str, Any]:
+        out = super().snapshot()
+        out.update(
+            {
+                "bridge_workload_keys": list(self.bridge_workload_keys),
+                "waiting_order_mode": self.waiting_order_mode,
+                "resource_assignment_mode": self.resource_assignment_mode,
+                "resource_assignment_seed": int(self.resource_assignment_seed),
+                "candidate_action_semantics": (
+                    "measured_statewise_packing_plus_queue_drain"
+                ),
+            }
+        )
+        return out
+
+
 def scheduleurm_tail_bridge_policies() -> tuple[ReplayPolicy, ...]:
     return (
         TailDrainBridgePolicy(
@@ -892,6 +1061,17 @@ def scheduleurm_tail_bridge_policies() -> tuple[ReplayPolicy, ...]:
             tail_remaining_threshold=3,
             bridge_workload_keys=("hybrid_rl_resac_ant",),
             shortest_remaining_first=True,
+            resource_assignment_mode="lpt_static",
+        ),
+        StatewisePackingDrainPolicy(
+            name="scheduleurm_bridge_hybrid_rl_statewise_packing_srf",
+            calibrated=True,
+            calibrated_objective="makespan",
+            statewise=True,
+            statewise_workload_keys=("hybrid_rl_resac_ant",),
+            statewise_regret_slack=0.6,
+            bridge_workload_keys=("hybrid_rl_resac_ant",),
+            waiting_order_mode="shortest_remaining_first",
             resource_assignment_mode="lpt_static",
         ),
     )

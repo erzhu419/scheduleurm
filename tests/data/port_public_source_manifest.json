@@ -1,0 +1,73 @@
+{
+  "schema_version": "scheduleurm.port_public_source_manifest.v1",
+  "retrieved_on": "2026-08-09",
+  "dataset": {
+    "name": "BACASP-S LargeMB",
+    "description": "Berth Allocation and Specific Quay Crane Assignment Problem with crane travel and setup times",
+    "paper": {
+      "title": "The berth allocation and quay crane assignment problem with crane travel and setup times",
+      "authors": [
+        "Juan F. Correcher",
+        "Federico Perea",
+        "Ramon Alvarez-Valdes"
+      ],
+      "journal": "Computers & Operations Research",
+      "volume": "162",
+      "year": 2024,
+      "article_number": "106468",
+      "doi": "10.1016/j.cor.2023.106468",
+      "institutional_pdf_url": "https://idus.us.es/server/api/core/bitstreams/9f122073-9243-4ecf-acb0-6025993fee54/content",
+      "institutional_pdf_sha256": "d677c8ad175d47ebe21df08c814213e3a45283f949f1a29a09757621aacb5ca4"
+    },
+    "repository_url": "https://github.com/juanfdata/bacasp_setup",
+    "repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7",
+    "repository_commit_url": "https://github.com/juanfdata/bacasp_setup/tree/e8eda86ec0435105ca313afe85987e4f4ab2cbd7",
+    "license": {
+      "spdx": "CC-BY-SA-4.0",
+      "name": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "upstream_file": "LICENSE.md",
+      "upstream_url": "https://github.com/juanfdata/bacasp_setup/blob/e8eda86ec0435105ca313afe85987e4f4ab2cbd7/LICENSE.md",
+      "sha256": "2003829cf643d61b00a76088dd31bb11b8029546f24c56b39fd492adb9281483"
+    }
+  },
+  "fixture": {
+    "local_path": "tests/data/port_public_bacasp_s_large_mb_30_fixture.dat",
+    "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_10_Q10_S160-0.2_D1.5.dat",
+    "raw_url": "https://raw.githubusercontent.com/juanfdata/bacasp_setup/e8eda86ec0435105ca313afe85987e4f4ab2cbd7/instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_10_Q10_S160-0.2_D1.5.dat",
+    "sha256": "20f7610929fa26726535f0dedbb95971ecead4994e16fb5f4633aa55b4029a36",
+    "byte_count": 1324,
+    "line_count": 32,
+    "raw_bytes_modified": false,
+    "verification": "direct raw-URL download matched the file from the pinned git checkout byte-for-byte"
+  },
+  "upstream_format": {
+    "header": "quay_length horizon crane_count vessel_count",
+    "crane_line": "C crane_speed_quay_units_per_hour setup_time_hours",
+    "vessel_line": "length arrival desired_departure position_cost waiting_cost delay_cost desired_position min_cranes max_cranes processing_time_min_cranes ... processing_time_max_cranes",
+    "quay_length_unit": "10 meters in this LargeMB family",
+    "quay_coordinate_convention": "one-based; desired_position is in [1, quay_length + 1 - vessel_length]",
+    "time_unit": "hour",
+    "source_contains_yard": false,
+    "source_contains_gate": false,
+    "source_contains_draft": false
+  },
+  "adapter_boundary": {
+    "source_core": [
+      "continuous-quay length and vessel lengths",
+      "arrival and desired departure times",
+      "position, waiting, and delay costs",
+      "desired berth positions",
+      "minimum and maximum specific-crane counts",
+      "processing times indexed by crane count",
+      "crane travel speed and setup duration"
+    ],
+    "synthetic_augmentation": [
+      "fixed non-overlapping berth-slot projection required by PortInstance",
+      "neutral draft values required by PortInstance",
+      "zero travel/setup on each crane's first use because the fixture has no initial crane positions",
+      "yard-block and gate-lane stages absent from BACASP-S",
+      "yard and gate service rates and work amounts"
+    ],
+    "not_a_source_claim": "The augmented event-driven run is not a reproduction of the paper's continuous-quay MILP, published objective values, or optimality gaps. BACASP-S uses time-invariant crane assignments, so the registered reconfiguration-aware greedy policy has no mid-service reconfiguration actions in this adapter."
+  }
+}

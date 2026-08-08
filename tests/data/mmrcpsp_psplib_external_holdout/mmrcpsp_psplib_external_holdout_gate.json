@@ -1,0 +1,147 @@
+{
+  "aggregate": {
+    "ours_strictly_dominates_every_baseline_instance_count": 0,
+    "ours_strictly_pareto_dominates_every_baseline_on_every_instance": false,
+    "policies": {
+      "greatest_rank_positional_weight": {
+        "geomean_makespan_to_instance_best": null,
+        "geomean_mean_flow_to_instance_best": null,
+        "pareto_frontier_count": 0
+      },
+      "minimum_slack": {
+        "geomean_makespan_to_instance_best": null,
+        "geomean_mean_flow_to_instance_best": null,
+        "pareto_frontier_count": 0
+      },
+      "most_total_successors": {
+        "geomean_makespan_to_instance_best": null,
+        "geomean_mean_flow_to_instance_best": null,
+        "pareto_frontier_count": 0
+      },
+      "scheduleurm_trajectory_robust_maxweight": {
+        "geomean_makespan_to_instance_best": null,
+        "geomean_mean_flow_to_instance_best": null,
+        "pareto_frontier_count": 0
+      },
+      "shortest_processing_time": {
+        "geomean_makespan_to_instance_best": null,
+        "geomean_mean_flow_to_instance_best": null,
+        "pareto_frontier_count": 0
+      }
+    }
+  },
+  "deterministic_algorithm": true,
+  "first_failure": {
+    "exception_type": "TrajectoryUpgradeError",
+    "fail_closed": true,
+    "instance": "j102_10",
+    "reason": "j102_10: rollout seed scheduleurm_robust_maxweight is infeasible: resource_deadlock:eligible=[6, 9]:nonrenewable_consumed=[27, 20]"
+  },
+  "frozen_protocol": {
+    "config": {
+      "baseline_policies": [
+        "shortest_processing_time",
+        "minimum_slack",
+        "greatest_rank_positional_weight",
+        "most_total_successors"
+      ],
+      "beam_seeds": [
+        [
+          "critical_service",
+          [
+            1.0,
+            1.0,
+            0.2,
+            0.2
+          ]
+        ],
+        [
+          "flow_service",
+          [
+            0.35,
+            1.35,
+            0.55,
+            0.15
+          ]
+        ],
+        [
+          "resource_guard",
+          [
+            0.7,
+            0.85,
+            0.2,
+            0.7
+          ]
+        ],
+        [
+          "critical_flow",
+          [
+            1.2,
+            0.7,
+            0.7,
+            0.15
+          ]
+        ]
+      ],
+      "beam_width": 16,
+      "configuration_penalty_weight": 0.02,
+      "local_seed_limit": 10,
+      "mode_penalty_weight": 0.03,
+      "penalty_bound": 0.05
+    },
+    "config_sha256_after": "999cc0c9ac667e3589364dc2a92ddb1f1803594d9971b0bd812eb84e1e739d11",
+    "config_sha256_before": "999cc0c9ac667e3589364dc2a92ddb1f1803594d9971b0bd812eb84e1e739d11",
+    "holdout_feedback_used_for_configuration": false,
+    "instance_bytes_absent_at_preregistration": true,
+    "per_instance_tuning": false
+  },
+  "gate": {
+    "all_schedules_feasible": false,
+    "claim_scope": "post_freeze_psplib_j10_parameter_cell_holdout",
+    "completed_all_registered_instances": false,
+    "exact_generated_family_argmax_on_every_instance": false,
+    "global_mmrcpsp_optimality_claim": false,
+    "instance_count": 0,
+    "ours_instance_pareto_nondominated_count": 0,
+    "pass": false,
+    "performance_superiority_claim_ready": false,
+    "prospective_external_holdout_ready": false,
+    "registered_instance_count": 56,
+    "stochastic_throughput_optimality_claim": false,
+    "zero_precedence_violation": false,
+    "zero_resource_violation": false
+  },
+  "instances": {},
+  "pre_analysis_freeze": {
+    "implementation_commit": "61b835eb17216ccd2e5e950d2aceab09e05a3f27",
+    "implementation_files": [
+      {
+        "path": "algorithm/experiments/mmrcpsp_trajectory_upgrade.py",
+        "sha256": "f0363c727cc85878bb8c14bfaab3bc76f2ae5befb1c91bf565f46e9533d21f5d"
+      },
+      {
+        "path": "algorithm/experiments/mmrcpsp_benchmark.py",
+        "sha256": "d2998f8579e3030d20cff0de42d572dc1f09e8379276c49a976b7f56af63d754"
+      },
+      {
+        "path": "algorithm/experiments/mmrcpsp_instances.py",
+        "sha256": "8227b8854b391b9cd763b9411a68634ed54775095f306a3e1c324d79ad5e1bff"
+      },
+      {
+        "path": "algorithm/experiments/mmrcpsp_suite_benchmark.py",
+        "sha256": "14a8164151307321d88541e6f5306c3863a51bc1e54ba88a137c7a2dbc957fed"
+      }
+    ],
+    "instance_bytes_absent_at_preregistration": true,
+    "pass": true,
+    "policy_or_config_updates_after_holdout": false,
+    "preregistration_commit": "5d806861d074b9957eac9878e5f78cb70f595ad8",
+    "preregistration_sha256": "86c89fb3f7582e5a786b870b78fc5c424566eaa6cfe998a59d415fea9f71b125",
+    "protocol_config_sha256": "999cc0c9ac667e3589364dc2a92ddb1f1803594d9971b0bd812eb84e1e739d11",
+    "selection_registered_after_policy_freeze": true
+  },
+  "schema_version": "scheduleurm.mmrcpsp_external_holdout.v1",
+  "source_manifest_sha256": "68c3f2d6ea16af1a8eaa10c5f85ce286142f8f8fe2b4a0b549a3a9d6b5f7e0e8",
+  "suite": "PSPLIB j10 multi-mode parameter-cell holdout",
+  "theorem_mapping": {}
+}

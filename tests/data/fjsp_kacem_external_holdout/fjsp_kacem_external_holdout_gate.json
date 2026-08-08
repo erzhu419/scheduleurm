@@ -1,0 +1,752 @@
+{
+  "aggregate": {
+    "instance_count": 4,
+    "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
+    "ours_vs_each_classic": {
+      "earliest_completion_time": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.796567017875,
+        "geomean_mean_flow_ratio": 1.065593652794,
+        "ours_pareto_dominates_count": 1,
+        "tradeoff_or_equal_count": 3
+      },
+      "fifo_job_order": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.824993278597,
+        "geomean_mean_flow_ratio": 1.05011528143,
+        "ours_pareto_dominates_count": 0,
+        "tradeoff_or_equal_count": 4
+      },
+      "most_operations_remaining": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.91216790907,
+        "geomean_mean_flow_ratio": 1.020770555283,
+        "ours_pareto_dominates_count": 1,
+        "tradeoff_or_equal_count": 3
+      },
+      "most_work_remaining": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.927607703081,
+        "geomean_mean_flow_ratio": 0.922800608244,
+        "ours_pareto_dominates_count": 4,
+        "tradeoff_or_equal_count": 0
+      },
+      "shortest_processing_time": {
+        "baseline_pareto_dominates_count": 0,
+        "geomean_makespan_ratio": 0.698930762278,
+        "geomean_mean_flow_ratio": 1.000577469621,
+        "ours_pareto_dominates_count": 2,
+        "tradeoff_or_equal_count": 2
+      }
+    },
+    "policies": {
+      "earliest_completion_time": {
+        "geomean_makespan_over_bks": 1.311209116491,
+        "geomean_mean_flow_to_instance_best": 1.010029109628,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 2,
+        "pareto_frontier_count": 2,
+        "policy_label": "Earliest Completion Time (ECT)"
+      },
+      "fifo_job_order": {
+        "geomean_makespan_over_bks": 1.266029630582,
+        "geomean_mean_flow_to_instance_best": 1.024916623335,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 1,
+        "mean_flow_best_or_tie_count": 1,
+        "pareto_frontier_count": 2,
+        "policy_label": "First-In, First-Out (FIFO)"
+      },
+      "most_operations_remaining": {
+        "geomean_makespan_over_bks": 1.145036922861,
+        "geomean_mean_flow_to_instance_best": 1.05438053908,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 1,
+        "mean_flow_best_or_tie_count": 2,
+        "pareto_frontier_count": 3,
+        "policy_label": "Most Operations Remaining (MOR)"
+      },
+      "most_work_remaining": {
+        "geomean_makespan_over_bks": 1.125978074853,
+        "geomean_mean_flow_to_instance_best": 1.166319786465,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 1,
+        "mean_flow_best_or_tie_count": 0,
+        "pareto_frontier_count": 0,
+        "policy_label": "Most Work Remaining (MWKR)"
+      },
+      "ours_robust_maxweight": {
+        "geomean_makespan_over_bks": 1.305216778375,
+        "geomean_mean_flow_to_instance_best": 1.144046049338,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 0,
+        "pareto_frontier_count": 1,
+        "policy_label": "Ours: robust MaxWeight"
+      },
+      "ours_trajectory_configuration": {
+        "geomean_makespan_over_bks": 1.044465935734,
+        "geomean_mean_flow_to_instance_best": 1.076280608357,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 4,
+        "mean_flow_best_or_tie_count": 1,
+        "pareto_frontier_count": 4,
+        "policy_label": "Ours: trajectory robust MaxWeight"
+      },
+      "shortest_processing_time": {
+        "geomean_makespan_over_bks": 1.494376828299,
+        "geomean_mean_flow_to_instance_best": 1.075659447703,
+        "instance_count": 4,
+        "makespan_best_or_tie_count": 0,
+        "mean_flow_best_or_tie_count": 1,
+        "pareto_frontier_count": 0,
+        "policy_label": "Shortest Processing Time (SPT)"
+      }
+    }
+  },
+  "deterministic_algorithm": true,
+  "frozen_protocol": {
+    "config": {
+      "beam_width": 12,
+      "bounded_latency_penalty": 0.05,
+      "candidate_seed_policies": [
+        "ours_robust_maxweight",
+        "earliest_completion_time",
+        "shortest_processing_time",
+        "most_work_remaining",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "cp_sat_used_by_ours": false,
+      "per_instance_tuning": false,
+      "prefix_depth": 2,
+      "rollout_policies": [
+        "earliest_completion_time",
+        "shortest_processing_time",
+        "most_work_remaining",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "schema_version": "scheduleurm.fjsp_trajectory_config.v1",
+      "system_queue_weight_per_job": 1
+    },
+    "config_sha256_after": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+    "config_sha256_before": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+    "external_suite_absent_from_freeze_commit": true,
+    "holdout_feedback_used_for_configuration": false,
+    "per_instance_tuning": false
+  },
+  "gate": {
+    "all_schedules_feasible": true,
+    "claim_scope": "post_freeze_kacem_finite_trajectory_family",
+    "exact_generated_family_argmax_on_every_instance": true,
+    "global_fjsp_optimality_claim": false,
+    "instance_count": 4,
+    "ours_instance_pareto_nondominated_count": 4,
+    "pass": true,
+    "performance_superiority_claim_ready": false,
+    "prospective_external_holdout_ready": true,
+    "stochastic_throughput_optimality_claim": false,
+    "zero_generated_family_oracle_gap_on_every_instance": true
+  },
+  "instances": [
+    {
+      "bks": 11,
+      "instance_id": "kacem1",
+      "job_count": 4,
+      "lower_bound": 11,
+      "machine_count": 5,
+      "operation_count": 12,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 8.75,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 11,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 8.5,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 11,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 8.5,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 9.5,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.181818181818,
+          "feasible": true,
+          "makespan": 13,
+          "makespan_over_bks": 1.181818181818,
+          "matched_bks": false,
+          "mean_flow_time": 10.75,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 11,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 8.5,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 8.5,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "e7ac0416c62edda928ff61d7f116246de7f3048552489c20e2a5c63a3c27e27c",
+      "split": "post_freeze_external_holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 0.063951303004,
+        "score_audit": {
+          "common_frame_upper_bound": 130,
+          "lower_service": {
+            "job_coordinates": [
+              0.930769230769,
+              0.915384615385,
+              0.923076923077,
+              0.969230769231
+            ],
+            "normalized_weighted_value": 0.925,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.915384615385
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.075,
+            "penalty_units": 0.00375,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 4,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 4,
+            "total_queue_mass": 8
+          },
+          "score": 0.92125,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "seed:most_operations_remaining",
+        "selected_origins": [
+          "fixed_policy:most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining",
+          "prefix_beam_depth_2+most_operations_remaining"
+        ],
+        "unique_action_family_size": 34
+      }
+    },
+    {
+      "bks": 11,
+      "instance_id": "kacem2",
+      "job_count": 10,
+      "lower_bound": 11,
+      "machine_count": 7,
+      "operation_count": 29,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "ours_robust_maxweight",
+        "most_operations_remaining"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.545454545455,
+          "feasible": true,
+          "makespan": 17,
+          "makespan_over_bks": 1.545454545455,
+          "matched_bks": false,
+          "mean_flow_time": 9.2,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.454545454545,
+          "feasible": true,
+          "makespan": 16,
+          "makespan_over_bks": 1.454545454545,
+          "matched_bks": false,
+          "mean_flow_time": 9.2,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.272727272727,
+          "feasible": true,
+          "makespan": 14,
+          "makespan_over_bks": 1.272727272727,
+          "matched_bks": false,
+          "mean_flow_time": 9.1,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 10.3,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.181818181818,
+          "feasible": true,
+          "makespan": 13,
+          "makespan_over_bks": 1.181818181818,
+          "matched_bks": false,
+          "mean_flow_time": 9.2,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 9.6,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 1,
+          "feasible": true,
+          "makespan": 22,
+          "makespan_over_bks": 2,
+          "matched_bks": false,
+          "mean_flow_time": 10.6,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "a209a486173c3043420c9237dea6e1709d1987205269a0d23c617937742de3a8",
+      "split": "post_freeze_external_holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0.000230769231,
+        "runtime_seconds": 0.589267157004,
+        "score_audit": {
+          "common_frame_upper_bound": 455,
+          "lower_service": {
+            "job_coordinates": [
+              0.986813186813,
+              0.98021978022,
+              0.975824175824,
+              0.975824175824,
+              0.982417582418,
+              0.98021978022,
+              0.978021978022,
+              0.973626373626,
+              0.978021978022,
+              0.978021978022
+            ],
+            "normalized_weighted_value": 0.976263736264,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.973626373626
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.023736263736,
+            "penalty_units": 0.001186813187,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 10,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 10,
+            "total_queue_mass": 20
+          },
+          "score": 0.975076923077,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:03:b7e141c7cb23:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 25
+      }
+    },
+    {
+      "bks": 7,
+      "instance_id": "kacem3",
+      "job_count": 10,
+      "lower_bound": 7,
+      "machine_count": 10,
+      "operation_count": 30,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time",
+        "most_operations_remaining",
+        "fifo_job_order"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.285714285714,
+          "feasible": true,
+          "makespan": 9,
+          "makespan_over_bks": 1.285714285714,
+          "matched_bks": false,
+          "mean_flow_time": 5.2,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.142857142857,
+          "feasible": true,
+          "makespan": 8,
+          "makespan_over_bks": 1.142857142857,
+          "matched_bks": false,
+          "mean_flow_time": 5.3,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.142857142857,
+          "feasible": true,
+          "makespan": 8,
+          "makespan_over_bks": 1.142857142857,
+          "matched_bks": false,
+          "mean_flow_time": 5.3,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.142857142857,
+          "feasible": true,
+          "makespan": 8,
+          "makespan_over_bks": 1.142857142857,
+          "matched_bks": false,
+          "mean_flow_time": 6,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.142857142857,
+          "feasible": true,
+          "makespan": 8,
+          "makespan_over_bks": 1.142857142857,
+          "matched_bks": false,
+          "mean_flow_time": 5.6,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0,
+          "feasible": true,
+          "makespan": 7,
+          "makespan_over_bks": 1,
+          "matched_bks": true,
+          "mean_flow_time": 5.6,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.571428571429,
+          "feasible": true,
+          "makespan": 11,
+          "makespan_over_bks": 1.571428571429,
+          "matched_bks": false,
+          "mean_flow_time": 5.5,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "bf695b7be877b42948a1036b895779c4eeabee34508b5f716328b5708ae83013",
+      "split": "post_freeze_external_holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 0,
+        "runtime_seconds": 0.761564276996,
+        "score_audit": {
+          "common_frame_upper_bound": 368,
+          "lower_service": {
+            "job_coordinates": [
+              0.983695652174,
+              0.983695652174,
+              0.986413043478,
+              0.986413043478,
+              0.98097826087,
+              0.983695652174,
+              0.983695652174,
+              0.98097826087,
+              0.989130434783,
+              0.989130434783
+            ],
+            "normalized_weighted_value": 0.982880434783,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.98097826087
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.017119565217,
+            "penalty_units": 0.000855978261,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 10,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 10,
+            "total_queue_mass": 20
+          },
+          "score": 0.982024456522,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:06:5c65a34e7bb4:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 34
+      }
+    },
+    {
+      "bks": 11,
+      "instance_id": "kacem4",
+      "job_count": 15,
+      "lower_bound": 11,
+      "machine_count": 10,
+      "operation_count": 56,
+      "ours_pareto_dominated_by": [],
+      "pareto_frontier_policies": [
+        "ours_trajectory_configuration",
+        "earliest_completion_time"
+      ],
+      "policies": {
+        "earliest_completion_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.363636363636,
+          "feasible": true,
+          "makespan": 15,
+          "makespan_over_bks": 1.363636363636,
+          "matched_bks": false,
+          "mean_flow_time": 8.466666667,
+          "policy_label": "Earliest Completion Time (ECT)"
+        },
+        "fifo_job_order": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.545454545455,
+          "feasible": true,
+          "makespan": 17,
+          "makespan_over_bks": 1.545454545455,
+          "matched_bks": false,
+          "mean_flow_time": 9.066666667,
+          "policy_label": "First-In, First-Out (FIFO)"
+        },
+        "most_operations_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.181818181818,
+          "feasible": true,
+          "makespan": 13,
+          "makespan_over_bks": 1.181818181818,
+          "matched_bks": false,
+          "mean_flow_time": 10.266666667,
+          "policy_label": "Most Operations Remaining (MOR)"
+        },
+        "most_work_remaining": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.181818181818,
+          "feasible": true,
+          "makespan": 13,
+          "makespan_over_bks": 1.181818181818,
+          "matched_bks": false,
+          "mean_flow_time": 10.733333333,
+          "policy_label": "Most Work Remaining (MWKR)"
+        },
+        "ours_robust_maxweight": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.818181818182,
+          "feasible": true,
+          "makespan": 20,
+          "makespan_over_bks": 1.818181818182,
+          "matched_bks": false,
+          "mean_flow_time": 10.533333333,
+          "policy_label": "Ours: robust MaxWeight"
+        },
+        "ours_trajectory_configuration": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.090909090909,
+          "feasible": true,
+          "makespan": 12,
+          "makespan_over_bks": 1.090909090909,
+          "matched_bks": false,
+          "mean_flow_time": 10,
+          "policy_label": "Ours: trajectory robust MaxWeight"
+        },
+        "shortest_processing_time": {
+          "below_source_lower_bound": false,
+          "bks_gap_fraction": 0.454545454545,
+          "feasible": true,
+          "makespan": 16,
+          "makespan_over_bks": 1.454545454545,
+          "matched_bks": false,
+          "mean_flow_time": 9.2,
+          "policy_label": "Shortest Processing Time (SPT)"
+        }
+      },
+      "source_raw_sha256": "1882d27c3e61e2b714faaf80434ddeb31aa56073d47095d5f3c40a8f43fdc447",
+      "split": "post_freeze_external_holdout",
+      "trajectory_search": {
+        "beam_terminal_state_count": 12,
+        "exact_family_argmax": true,
+        "generated_candidate_count": 66,
+        "oracle_gap_within_generated_family": 0,
+        "runner_up_score_gap": 3.6496351e-05,
+        "runtime_seconds": 2.234638045004,
+        "score_audit": {
+          "common_frame_upper_bound": 959,
+          "lower_service": {
+            "job_coordinates": [
+              0.991657977059,
+              0.990615224192,
+              0.989572471324,
+              0.991657977059,
+              0.990615224192,
+              0.989572471324,
+              0.988529718457,
+              0.988529718457,
+              0.989572471324,
+              0.989572471324,
+              0.988529718457,
+              0.989572471324,
+              0.987486965589,
+              0.989572471324,
+              0.988529718457
+            ],
+            "normalized_weighted_value": 0.988529718457,
+            "source": "deterministic_processing_times_exact_lower_bound",
+            "system_drain_coordinate": 0.987486965589
+          },
+          "penalty": {
+            "coefficient": 0.05,
+            "latency_normalization": 0.011470281543,
+            "penalty_units": 0.000573514077,
+            "queue_linear_coefficient_beta": 0,
+            "uniform_upper_bound": 0.05
+          },
+          "queue_vector": {
+            "job_coordinate_count": 15,
+            "queue_weight_per_job": 1,
+            "system_drain_queue_weight": 15,
+            "total_queue_mass": 30
+          },
+          "score": 0.98795620438,
+          "score_semantics": "normalized_Q_dot_cumulative_lower_service_minus_bounded_trajectory_penalty"
+        },
+        "selected_candidate_id": "beam:03:806df849a7af:rollout:most_work_remaining",
+        "selected_origins": [
+          "prefix_beam_depth_2+most_work_remaining"
+        ],
+        "unique_action_family_size": 44
+      }
+    }
+  ],
+  "pre_analysis_freeze": {
+    "config_sha256": "b9fa529ff6218035d4fe0173b9faf09909db96fdd8b24035d8e52a292359fe07",
+    "external_suite_absent_from_freeze_commit": true,
+    "implementation_files": [
+      {
+        "path": "algorithm/experiments/fjsp_trajectory_upgrade.py",
+        "sha256": "c121539db26180b9d4c1129e1b7535f138d84201594f1c08478ac060ddc2d0d9"
+      },
+      {
+        "path": "algorithm/experiments/fjsp_benchmark.py",
+        "sha256": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e"
+      },
+      {
+        "path": "algorithm/experiments/fjsp_instances.py",
+        "sha256": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1"
+      }
+    ],
+    "pass": true,
+    "policy_or_config_updates_after_holdout": false,
+    "repository_commit": "9a922be91161829b714e7c1c11b69d66e799f203"
+  },
+  "schema_version": "scheduleurm.fjsp_external_holdout.v1",
+  "source_manifest_sha256": "f429635dfbb940ba1622c42dcb3772b43abbd0bad14987a3098ce588e9e60825",
+  "source_repository_commit": "e5e62a01023ff827f658255b793fd1b86e5c1707",
+  "suite": "Kacem-Hammadi-Borne 2002",
+  "theorem_mapping": {
+    "action": "complete_nonpreemptive_fjsp_schedule_trajectory",
+    "candidate_family": "finite_fixed_policy_seeds_plus_fixed_prefix_beam_rollouts",
+    "claim_boundary": "This is a finite deterministic draining-problem configuration mapping. It does not by itself establish stochastic-arrival recurrence or throughput optimality.",
+    "lower_service": {
+      "common_frame_H": "sum_over_operations_max_eligible_processing_time",
+      "job_j": "(H-C_j)/H",
+      "robustness": "deterministic_processing_times_make_coordinates_exact_lower_bounds",
+      "system_drain": "(H-C_max)/H"
+    },
+    "objective": "normalized_Q_dot_lower_service_minus_bounded_trajectory_penalty",
+    "oracle": {
+      "alpha0": 0,
+      "alpha1": 0,
+      "candidate_cover_error_calibrated": false,
+      "exact_over_generated_family": true,
+      "global_fjsp_action_space_exact": false
+    },
+    "penalty": {
+      "form": "gamma*(mean_flow+makespan)/(2H)",
+      "gamma": 0.05,
+      "queue_scaled_beta": 0,
+      "slack_implication": "bounded_P0_changes_the_finite_frame_drift_constant_not_the_linear_slack_margin",
+      "uniform_bound_P0": 0.05
+    },
+    "queue_vector": "one_unit_per_unfinished_job_plus_fixed_system_drain_coordinate"
+  }
+}

@@ -243,7 +243,7 @@ def test_loaded_gate_rejects_third_high_cpu_same_user_process(tmp_path):
         index for index, line in enumerate(lines)
         if line.startswith("__USER_PROC_SNAPSHOT__")
     ][1]
-    lines.insert(marker + 1, "__USER_PROC__ 2999 1999 75.0 4096 python")
+    lines.insert(marker + 1, "__USER_PROC__ 2999 1999 400.0 4096 python")
     monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
     row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
     paths[5].write_text(json.dumps(payload), encoding="utf-8")
@@ -257,6 +257,29 @@ def test_loaded_gate_rejects_third_high_cpu_same_user_process(tmp_path):
         issue["code"] == "UNDECLARED_HOST_PROCESS_DURING_TARGET"
         for issue in report["validation_errors"]
     )
+
+
+def test_loaded_gate_normalizes_small_background_process_by_host_capacity(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    for path in paths.values():
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        row = payload["rows"][1]
+        monitor = Path(row["gpu_monitor_log_path"])
+        lines = monitor.read_text(encoding="utf-8").splitlines()
+        marker = [
+            index for index, line in enumerate(lines)
+            if line.startswith("__USER_PROC_SNAPSHOT__")
+        ][1]
+        lines.insert(marker + 1, "__USER_PROC__ 2999 1999 81.2 4096 snap")
+        monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "PASS"
 
 
 def test_loaded_gate_rejects_missing_host_sample(tmp_path):

@@ -46,8 +46,7 @@ MIS_COVERAGE_ALPHA = 0.10
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MAX_NORMALIZED_LOAD1 = 0.50
 MIN_AVAILABLE_MEMORY_FRACTION = 0.10
-UNAPPROVED_USER_PROCESS_CPU_PCT = 25.0
-MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT = 50.0
+MAX_UNAPPROVED_USER_CPU_FRACTION = 0.05
 HOST_MONITOR_ALLOWED_COMMANDS = frozenset(
     {
         "awk",
@@ -945,6 +944,9 @@ def _continuous_other_gpu_audit(
     unapproved_cpu_snapshot_totals = []
     for sample in host_process_samples:
         sample_ns = int(sample["sample_ns"])
+        host = sample.get("host") or {}
+        nproc = int(host.get("nproc") or 0)
+        host_cpu_capacity_pct = 100.0 * nproc
         total_unapproved_cpu_pct = 0.0
         for process in sample["user_processes"]:
             pgid = int(process["pgid"])
@@ -953,15 +955,32 @@ def _continuous_other_gpu_audit(
                 continue
             cpu_pct = float(process["cpu_pct"])
             total_unapproved_cpu_pct += max(cpu_pct, 0.0)
-            if cpu_pct > UNAPPROVED_USER_PROCESS_CPU_PCT:
+            host_cpu_fraction = (
+                max(cpu_pct, 0.0) / host_cpu_capacity_pct
+                if host_cpu_capacity_pct > 0.0
+                else math.inf
+            )
+            if host_cpu_fraction > MAX_UNAPPROVED_USER_CPU_FRACTION:
                 unapproved_cpu_processes.append(
-                    {"sample_ns": sample_ns, **process}
+                    {
+                        "sample_ns": sample_ns,
+                        "host_nproc": nproc,
+                        "host_cpu_fraction": host_cpu_fraction,
+                        **process,
+                    }
                 )
-        if total_unapproved_cpu_pct > MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT:
+        total_unapproved_cpu_fraction = (
+            total_unapproved_cpu_pct / host_cpu_capacity_pct
+            if host_cpu_capacity_pct > 0.0
+            else math.inf
+        )
+        if total_unapproved_cpu_fraction > MAX_UNAPPROVED_USER_CPU_FRACTION:
             unapproved_cpu_snapshot_totals.append(
                 {
                     "sample_ns": sample_ns,
+                    "host_nproc": nproc,
                     "total_unapproved_cpu_pct": total_unapproved_cpu_pct,
+                    "total_unapproved_cpu_fraction": total_unapproved_cpu_fraction,
                 }
             )
     maxima = {
@@ -1023,10 +1042,7 @@ def _continuous_other_gpu_audit(
         "unapproved_cpu_snapshot_totals": unapproved_cpu_snapshot_totals[:50],
         "max_normalized_load1": MAX_NORMALIZED_LOAD1,
         "min_available_memory_fraction": MIN_AVAILABLE_MEMORY_FRACTION,
-        "unapproved_user_process_cpu_pct": UNAPPROVED_USER_PROCESS_CPU_PCT,
-        "max_unapproved_user_cpu_pct_per_snapshot": (
-            MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT
-        ),
+        "max_unapproved_user_cpu_fraction": MAX_UNAPPROVED_USER_CPU_FRACTION,
         "allowed_process_group_ids": sorted(allowed_pgids),
         "observed_process_group_ids": sorted(observed_pgids),
         "unapproved_compute_processes": unapproved_processes[:50],

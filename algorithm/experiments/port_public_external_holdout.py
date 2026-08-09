@@ -526,9 +526,9 @@ def write_artifacts(
     compact_path: str | Path = DEFAULT_COMPACT,
     markdown_path: str | Path = DEFAULT_MARKDOWN,
 ) -> dict[str, str]:
-    full_path = Path(full_path)
-    compact_path = Path(compact_path)
-    markdown_path = Path(markdown_path)
+    full_path = _repo_output_path(full_path)
+    compact_path = _repo_output_path(compact_path)
+    markdown_path = _repo_output_path(markdown_path)
     full_path.parent.mkdir(parents=True, exist_ok=True)
     full_payload = (
         json.dumps(report, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -553,6 +553,11 @@ def write_artifacts(
         "compact_file_sha256": _file_sha256(compact_path),
         "markdown": str(markdown_path),
     }
+
+
+def _repo_output_path(path: str | Path) -> Path:
+    output = Path(path)
+    return output if output.is_absolute() else REPO_ROOT / output
 
 
 def compact_certificate(

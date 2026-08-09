@@ -57,6 +57,11 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
             "other_registered_gpus_idle": True,
             "controlled_process_groups_observed": True,
             "no_unapproved_compute_processes": True,
+            "host_interval_covered": True,
+            "host_process_interval_sampled": True,
+            "host_load_within_bound": True,
+            "host_memory_within_bound": True,
+            "no_unapproved_cpu_processes": True,
         },
     )
 
@@ -115,6 +120,11 @@ def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
             "other_registered_gpus_idle": True,
             "controlled_process_groups_observed": True,
             "no_unapproved_compute_processes": True,
+            "host_interval_covered": True,
+            "host_process_interval_sampled": True,
+            "host_load_within_bound": True,
+            "host_memory_within_bound": True,
+            "no_unapproved_cpu_processes": True,
         },
     )
 

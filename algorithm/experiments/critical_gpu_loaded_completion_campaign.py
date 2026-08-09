@@ -446,6 +446,8 @@ def _run_loaded_trajectory(
         "resident_returncode": resident_rc,
         "target_returncode": target_rc,
         "remote_returncode": int(rc),
+        "resident_process_group_id": markers.get("RESIDENT_PGID"),
+        "target_process_group_id": markers.get("TARGET_PGID"),
         "target_start_ns": markers.get("TARGET_START_NS"),
         "target_end_ns": markers.get("TARGET_END_NS"),
         "elapsed_wall_s": time.time() - started,
@@ -564,6 +566,18 @@ def _remote_script(
             '  while true; do',
             '    printf "__GPU_SAMPLE_NS__ %s\\n" "$(date +%s%N)"',
             '    nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits || true',
+            (
+                '    nvidia-smi --query-compute-apps=pid,gpu_uuid,used_memory '
+                '--format=csv,noheader,nounits 2>/dev/null | '
+                'while IFS=, read -r PROC_PID PROC_UUID PROC_MEM; do '
+                'PROC_PID=$(printf "%s" "$PROC_PID" | tr -d " "); '
+                'PROC_UUID=$(printf "%s" "$PROC_UUID" | tr -d " "); '
+                'PROC_MEM=$(printf "%s" "$PROC_MEM" | tr -d " "); '
+                'PROC_PGID=$(ps -o pgid= -p "$PROC_PID" 2>/dev/null | tr -d " "); '
+                '[ -n "$PROC_PGID" ] || PROC_PGID=-1; '
+                'printf "__GPU_PROC__ %s %s %s %s\\n" '
+                '"$PROC_PID" "$PROC_PGID" "$PROC_UUID" "$PROC_MEM"; done'
+            ),
             '    sleep 1',
             '  done',
             ') >> "$GPU_MONITOR" 2>&1 &',
@@ -588,10 +602,12 @@ def _remote_script(
             'TARGET_START_NS=$(date +%s%N)',
             'TARGET_START_LINE=$(wc -l < "$REMOTE_LOGS/resident.log")',
             (
-                f"CUDA_VISIBLE_DEVICES={int(gpu)} timeout --foreground "
+                f"CUDA_VISIBLE_DEVICES={int(gpu)} setsid timeout --foreground "
                 f"{int(target_timeout_s)}s {target_cmd} "
-                '> "$REMOTE_LOGS/target.log" 2>&1'
+                '> "$REMOTE_LOGS/target.log" 2>&1 &'
             ),
+            "TARGET_PID=$!",
+            'wait "$TARGET_PID"',
             "TARGET_RC=$?",
             'TARGET_END_NS=$(date +%s%N)',
             'TARGET_END_LINE=$(wc -l < "$REMOTE_LOGS/resident.log")',
@@ -605,6 +621,8 @@ def _remote_script(
             'nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits >> "$DIAG" 2>&1 || true',
             'echo "__RESIDENT_RC__ $RESIDENT_RC"',
             'echo "__TARGET_RC__ $TARGET_RC"',
+            'echo "__RESIDENT_PGID__ $RESIDENT_PID"',
+            'echo "__TARGET_PGID__ $TARGET_PID"',
             'echo "__RESIDENT_ALIVE_AT_TARGET_START__ $RESIDENT_ALIVE_START"',
             'echo "__RESIDENT_ALIVE_AT_TARGET_END__ $RESIDENT_ALIVE_END"',
             'echo "__RESIDENT_READY_OBSERVATIONS__ $READY_OBS"',

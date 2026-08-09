@@ -121,7 +121,15 @@ def test_loaded_gate_rejects_transient_cross_gpu_load_during_target(tmp_path):
     row = payload["rows"][1]
     monitor = Path(row["gpu_monitor_log_path"])
     lines = monitor.read_text(encoding="utf-8").splitlines()
-    lines[7] = "1, NVIDIA GeForce RTX 2080 Ti, 11264, 2048, 9000, 100"
+    second_marker = [
+        index for index, line in enumerate(lines) if line.startswith("__GPU_SAMPLE_NS__")
+    ][1]
+    gpu_one = next(
+        index
+        for index in range(second_marker + 1, len(lines))
+        if lines[index].startswith("1,")
+    )
+    lines[gpu_one] = "1, NVIDIA GeForce RTX 2080 Ti, 11264, 2048, 9000, 100"
     monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
     row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
     paths[5].write_text(json.dumps(payload), encoding="utf-8")
@@ -134,6 +142,40 @@ def test_loaded_gate_rejects_transient_cross_gpu_load_during_target(tmp_path):
     assert report["status"] == "FAIL_VALIDATION"
     assert any(
         issue["code"] == "UNDECLARED_CROSS_GPU_LOAD_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
+def test_loaded_gate_rejects_third_compute_process_on_assigned_gpu(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    lines.append("__GPU_SAMPLE_NS__ 105000000000")
+    lines.extend(
+        f"{gpu}, NVIDIA GeForce RTX 2080 Ti, 11264, 1, 11010, 0"
+        for gpu in range(4)
+    )
+    lines.extend(
+        (
+            "__GPU_PROC__ 2001 1001 GPU-a 1024",
+            "__GPU_PROC__ 2002 1002 GPU-a 1024",
+            "__GPU_PROC__ 2999 1999 GPU-a 256",
+        )
+    )
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_GPU_COMPUTE_PROCESS_DURING_TARGET"
         for issue in report["validation_errors"]
     )
 
@@ -228,13 +270,24 @@ def _row(spec, *, wave: int, index: int, root: Path) -> dict[str, object]:
     target_start_ns = 100_000_000_000
     target_end_ns = 110_000_000_000
     monitor = root / f"wave-{wave}-{spec.scenario_id}.gpu-monitor.log"
+    process_snapshot = "\n".join(
+        (
+            "__GPU_PROC__ 2001 1001 GPU-a 1024",
+            "__GPU_PROC__ 2002 1002 GPU-a 1024",
+        )
+    )
     monitor.write_text(
         "\n".join(
             (
                 "__GPU_SAMPLE_NS__ 99000000000",
                 snapshot,
+                process_snapshot,
+                "__GPU_SAMPLE_NS__ 105000000000",
+                snapshot,
+                process_snapshot,
                 "__GPU_SAMPLE_NS__ 111000000000",
                 snapshot,
+                process_snapshot,
             )
         )
         + "\n",
@@ -250,6 +303,8 @@ def _row(spec, *, wave: int, index: int, root: Path) -> dict[str, object]:
         "diagnostics_sha256": hashlib.sha256(diagnostics.read_bytes()).hexdigest(),
         "gpu_monitor_log_path": str(monitor),
         "gpu_monitor_sha256": hashlib.sha256(monitor.read_bytes()).hexdigest(),
+        "resident_process_group_id": 1001,
+        "target_process_group_id": 1002,
         "target_start_ns": target_start_ns,
         "target_end_ns": target_end_ns,
         "wave": wave,

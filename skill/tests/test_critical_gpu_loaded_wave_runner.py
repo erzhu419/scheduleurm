@@ -62,6 +62,7 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
             "host_load_within_bound": True,
             "host_memory_within_bound": True,
             "no_unapproved_cpu_processes": True,
+            "unapproved_cpu_exposure_within_bound": True,
         },
     )
 
@@ -125,6 +126,7 @@ def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
             "host_load_within_bound": True,
             "host_memory_within_bound": True,
             "no_unapproved_cpu_processes": True,
+            "unapproved_cpu_exposure_within_bound": True,
         },
     )
 

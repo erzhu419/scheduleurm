@@ -16,6 +16,8 @@ from algorithm.experiments.critical_gpu_loaded_completion_campaign import (
     measurement_code_manifest,
 )
 from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
+    MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION,
+    _conservative_unapproved_cpu_exposure,
     _expected_scenarios,
     build_critical_gpu_loaded_stochastic_lcb_gate,
     discover_campaign_paths,
@@ -24,6 +26,35 @@ from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
 
 NODE = "node007"
 CODE_HASH = "a" * 64
+
+
+def test_isolated_cpu_snapshot_uses_conservative_exposure_not_allowlist():
+    target_start_ns = 0
+    target_end_ns = 665_972_965_002
+    violation_ns = 574_091_370_691
+    samples = [
+        {"sample_ns": violation_ns - 5_663_808_024},
+        {"sample_ns": violation_ns},
+        {"sample_ns": violation_ns + 5_667_101_176},
+    ]
+    result = _conservative_unapproved_cpu_exposure(
+        host_process_samples=samples,
+        high_snapshot_totals=[
+            {
+                "sample_ns": violation_ns,
+                "total_unapproved_cpu_fraction": 0.05670833333333333,
+            }
+        ],
+        target_start_ns=target_start_ns,
+        target_end_ns=target_end_ns,
+    )
+
+    assert len(result["bursts"]) == 1
+    assert result["bursts"][0]["high_snapshot_count"] == 1
+    assert (
+        result["conservative_exposure_fraction"]
+        < MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION
+    )
 
 
 def test_loaded_gate_constructs_joint_holdout_certificate(tmp_path):

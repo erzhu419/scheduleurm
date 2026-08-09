@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from typing import Any, Sequence
 
-from algorithm.experiments.fjsp_instances import load_fjsp_instance
+from algorithm.experiments.fjsp_instances import FJSPParseError, load_fjsp_instance
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -65,10 +65,21 @@ def freeze_suite(*, source_repo: str | Path, output_root: str | Path) -> dict[st
         / "HurinkJurischThole1994"
     )
     selected = []
+    source_format_exclusions = []
     for subfamily in SUBFAMILIES:
         candidates = []
         for path in sorted((family_root / subfamily).glob("*.txt")):
-            instance = load_fjsp_instance(path)
+            try:
+                instance = load_fjsp_instance(path)
+            except FJSPParseError as exc:
+                source_format_exclusions.append(
+                    {
+                        "relative_path": path.relative_to(source).as_posix(),
+                        "sha256": _file_sha256(path),
+                        "reason": str(exc),
+                    }
+                )
+                continue
             candidates.append(
                 (
                     instance.operation_count * instance.machine_count,
@@ -138,6 +149,8 @@ def freeze_suite(*, source_repo: str | Path, output_root: str | Path) -> dict[st
                 "DauzerePeresPaulli1994",
                 "FattahiMehrabadJolai2007",
             ],
+            "source_format_exclusions": source_format_exclusions,
+            "source_format_exclusion_uses_algorithm_outcomes": False,
             "members": members,
         },
         "protocol": {

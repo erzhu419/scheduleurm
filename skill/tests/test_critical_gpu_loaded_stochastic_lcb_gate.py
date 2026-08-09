@@ -187,6 +187,55 @@ def test_loaded_gate_rejects_third_compute_process_on_assigned_gpu(tmp_path):
     )
 
 
+def test_loaded_gate_resolves_transient_missing_pgid_for_known_controlled_pid(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    for path in paths.values():
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        row = payload["rows"][1]
+        monitor = Path(row["gpu_monitor_log_path"])
+        lines = monitor.read_text(encoding="utf-8").splitlines()
+        process_lines = [
+            index
+            for index, line in enumerate(lines)
+            if line == "__GPU_PROC__ 2002 1002 GPU-a 1024"
+        ]
+        lines[process_lines[1]] = "__GPU_PROC__ 2002 -1 GPU-a 1024"
+        monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+        path.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "PASS"
+
+
+def test_loaded_gate_rejects_missing_pgid_for_unseen_process(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    second_marker = [
+        index for index, line in enumerate(lines) if line.startswith("__GPU_SAMPLE_NS__")
+    ][1]
+    lines.insert(second_marker + 1, "__GPU_PROC__ 2999 -1 GPU-a 256")
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_GPU_COMPUTE_PROCESS_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
 def test_loaded_gate_rejects_high_aggregate_host_load(tmp_path):
     paths = _write_campaigns(tmp_path)
     payload = json.loads(paths[5].read_text(encoding="utf-8"))

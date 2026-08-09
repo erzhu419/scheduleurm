@@ -55,7 +55,7 @@ def test_loaded_campaign_is_finite_policy_reachable_and_no_touch(tmp_path, monke
         300,
         600,
         40,
-        600,
+        3000,
     ]
     assert [row["resident_mix"] for row in report["rows"]] == [
         "resident_llm_target_cnn",

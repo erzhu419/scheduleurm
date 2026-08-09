@@ -1768,12 +1768,15 @@ subsection test the candidate/oracle/penalty layer and do not by themselves
 instantiate a stochastic arrival model.
 
 The protocols were frozen before their reported external holdouts.  The FJSP
-holdout uses four Kacem instances \citep{kacem2002pareto}.  The repaired MMRCPSP
-holdout uses 56 PSPLIB instances disjoint from both policy development and the
-opened-row repair regression \citep{kolisch1997psplib}.  The port experiment
-uses one pinned public BACASP-S instance plus three preregistered synthetic
-four-resource instances \citep{correcher2024berth}.  Table~\ref{tab:or-generalization}
-reports the auditable finite-family result.
+study retains a failed 20-instance, four-family protocol and then evaluates a
+separate 20-instance confirmation drawn from the untouched Hurink edata,
+rdata, sdata, and vdata families \citep{hurink1994tabu}.  The MMRCPSP study adds
+25 PSPLIB instances, five each from j12, j14, j16, j18, and j20, after retaining
+both the original failed holdout and its nonprospective repair regression
+\citep{kolisch1997psplib}.  The port study develops a factor-conditioned policy
+on BACASP-S replications R87--R90, freezes the resulting 27-cell mapping, and
+then evaluates all 54 untouched R85/R86 instances \citep{correcher2024berth}.
+Table~\ref{tab:or-generalization} reports the resulting mixed evidence.
 The registered FJSP baselines are first-in-first-out (FIFO), earliest completion
 time (ECT), shortest processing time (SPT), most operations remaining (MOR), and
 most work remaining (MWKR).  The MMRCPSP baselines are SPT, minimum slack,
@@ -1793,19 +1796,21 @@ instance.
 \toprule
 Domain & Frozen protocol & Candidate result & Claim boundary \\
 \midrule
-FJSP & Post-freeze Kacem holdout; 4 instances & Pareto-nondominated on 4/4;
-geomean makespan/BKS 1.0445; mean flow/instance best 1.0763 & Registered
-FIFO, ECT, SPT, MOR, and MWKR rules; no global optimum or arbitrary-solver
+FJSP & First public-family holdout plus untouched Hurink confirmation; 20
+instances each & First protocol failed and was 19/20 nondominated; Hurink
+protocol passed with complete reference coverage and was 19/20 nondominated,
+0/20 strictly better than every registered rule & One dominated Hurink
+counterexample is retained; no global optimum or arbitrary-solver claim. \\
+MMRCPSP & Prospective PSPLIB j12--j20 family confirmation; 25 instances &
+Pareto-nondominated on 25/25; strictly better than every registered rule on
+11/25; attained the public makespan optimum on 7/25 & The original failure,
+opened-row repair, and disjoint 56-instance v2 result remain in the artifact;
+no all-solver claim. \\
+Port & BACASP-S 27-factor-cell R85/R86 confirmation; 54 instances & Protocol
+completed 54/54; Pareto-nondominated on 16/54; strictly better than every
+registered rule on 1/54 & The 38/54 reconfiguration-greedy counterexamples are
+retained; no continuous-quay optimum, yard/gate validation, or physical-port
 claim. \\
-MMRCPSP & Disjoint post-repair PSPLIB holdout; 56 instances &
-Pareto-nondominated on 56/56; geomean makespan/instance best 1.0072; mean
-flow/instance best 1.0002 & The preregistered v1 failure and opened-row repair
-are retained; v2 excludes both sets and does not claim all-instance dominance. \\
-Port & Pinned BACASP-S core plus 3 registered synthetic instances & Selected
-trajectory Pareto-nondominated on 4/4; generated-family oracle gap 0 & Public
-adapter is not a reproduction of the continuous-quay mixed-integer linear
-program; yard/gate stages and
-mid-service reconfiguration evidence are synthetic only. \\
 \bottomrule
 \end{tabular}
 }{Nondominance is with respect to the registered finite policy family and the
@@ -1815,11 +1820,14 @@ reported makespan/mean-flow objectives, not all domain algorithms.}
 The failed MMRCPSP v1 holdout is part of the evidence rather than discarded: its
 first counterexample exposed a renewable-resource feasibility error in the
 nonrenewable reserve dynamic program.  After repairing the candidate generator,
-all opened rows passed a repair regression, and the disjoint v2 holdout then
-passed 56/56 instances.  The port public-source manifest hash-binds the raw
-instance, adapter, and source license; the source has berth/crane travel and
-setup data but no yard or gate layer.  These boundaries prevent the portability
-experiment from being presented as domain-wide state-of-the-art superiority.
+all opened rows passed a repair regression, the disjoint v2 holdout passed
+56/56 instances, and the later multi-family confirmation passed its protocol.
+The FJSP and port results are deliberately not summarized as performance
+successes: each contains registered-policy counterexamples.  The port manifests
+hash-bind the raw BACASP-S files, adapter, frozen factor mapping, and result;
+the source has berth/crane travel and setup data but no yard or gate layer.
+These boundaries prevent portability evidence from becoming a domain-wide
+state-of-the-art claim.
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,13 @@ from algorithm.experiments.port_scheduling_benchmark import ALL_POLICIES, THEORE
 
 EXPECTED_FIXTURE_SHA256 = "20f7610929fa26726535f0dedbb95971ecead4994e16fb5f4633aa55b4029a36"
 EXPECTED_REPOSITORY_COMMIT = "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+Q5_SUITE_MANIFEST = (
+    Path(__file__).resolve().parents[2]
+    / "tests"
+    / "data"
+    / "port_bacasp_s_external_holdout_r89_r90"
+    / "source_manifest.json"
+)
 
 
 @pytest.fixture(scope="module")
@@ -94,6 +102,32 @@ def test_parser_recovers_large_mb_header_and_exact_u_iq(raw_instance):
     # This boundary row verifies the source's one-based b_i <= L + 1 - l_i convention.
     assert raw_instance.vessels[22].length == 12.0
     assert raw_instance.vessels[22].desired_position == 39.0
+
+
+def test_q5_source_domain_is_intersected_without_mutating_raw_vessel_bounds():
+    manifest = json.loads(Q5_SUITE_MANIFEST.read_text(encoding="utf-8"))
+    registered = next(
+        row for row in manifest["instances"] if int(row["q_max_factor"]) == 5
+    )
+    source = parse_bacasp_s_instance(
+        Path(__file__).resolve().parents[2] / registered["local_path"],
+        expected_sha256=registered["sha256"],
+    )
+    raw_jumbo = next(row for row in source.vessels if row.max_cranes == 6)
+    adapted = adapt_bacasp_s_to_port_instance(source)
+    mapped = next(
+        row
+        for row in adapted.port_instance.vessels
+        if row.vessel_id == raw_jumbo.vessel_id
+    )
+
+    assert source.crane_count == 5
+    assert raw_jumbo.processing_times[-1][0] == raw_jumbo.max_cranes == 6
+    assert raw_jumbo.feasible_crane_counts(source.crane_count) == (4, 5)
+    assert mapped.max_cranes == 5
+    assert adapted.augmentation["source_crane_semantics"][
+        "raw_vessel_bounds_preserved"
+    ] is True
 
 
 def test_parser_rejects_changed_bytes_and_nonintegral_counts(tmp_path):

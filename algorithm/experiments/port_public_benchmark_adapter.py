@@ -66,6 +66,16 @@ class BacaspSVesselRecord:
                 f"vessel {self.vessel_index} has no processing time for {crane_count} cranes"
             ) from exc
 
+    def feasible_crane_counts(self, available_cranes: int) -> tuple[int, ...]:
+        """Return the raw vessel domain intersected with terminal capacity."""
+
+        capacity = int(available_cranes)
+        return tuple(
+            cranes
+            for cranes, _ in self.processing_times
+            if self.min_cranes <= cranes <= self.max_cranes and cranes <= capacity
+        )
+
     @property
     def vessel_id(self) -> str:
         return f"public_v{self.vessel_index:02d}"
@@ -269,13 +279,13 @@ def _parse_vessel_line(
     # convert only at the fixed-slot adapter boundary.
     if desired_position < 1.0 or desired_position + length > quay_length + 1.0 + EPS:
         raise ValueError(f"vessel row {index} has infeasible desired position")
-    if min_cranes <= 0 or max_cranes < min_cranes or max_cranes > crane_count:
+    if min_cranes <= 0 or max_cranes < min_cranes:
         raise ValueError(f"vessel row {index} has invalid crane bounds")
     processing = tuple(
         (cranes, _positive_float(values[9 + offset], f"vessel[{index}].u[{cranes}]"))
         for offset, cranes in enumerate(range(min_cranes, max_cranes + 1))
     )
-    return BacaspSVesselRecord(
+    record = BacaspSVesselRecord(
         vessel_index=index,
         length=length,
         arrival_time=arrival,
@@ -288,6 +298,12 @@ def _parse_vessel_line(
         max_cranes=max_cranes,
         processing_times=processing,
     )
+    if not record.feasible_crane_counts(crane_count):
+        raise ValueError(
+            f"vessel row {index} has empty crane domain after terminal-capacity "
+            f"intersection: source=[{min_cranes},{max_cranes}], available={crane_count}"
+        )
+    return record
 
 
 def adapt_bacasp_s_to_port_instance(source: BacaspSRawInstance) -> AdaptedPublicPortInstance:
@@ -361,7 +377,7 @@ def adapt_bacasp_s_to_port_instance(source: BacaspSRawInstance) -> AdaptedPublic
                 if row.desired_position <= source.quay_length / 2.0
                 else "synthetic_yard_far"
             ),
-            max_cranes=row.max_cranes,
+            max_cranes=max(row.feasible_crane_counts(source.crane_count)),
         )
         for row in source.vessels
     )
@@ -418,6 +434,10 @@ def adapt_bacasp_s_to_port_instance(source: BacaspSRawInstance) -> AdaptedPublic
             "source_crane_semantics": {
                 "time_invariant_during_service": True,
                 "minimum_cranes_enforced_by_adapter": True,
+                "raw_vessel_bounds_preserved": True,
+                "effective_domain_rule": (
+                    "source [q_i_min,q_i_max] intersect terminal {1,...,Q}"
+                ),
                 "processing_time_u_iq_used_exactly": True,
                 "consecutive_crane_setup_and_travel_used": True,
                 "mid_service_reassignment_enabled": False,
@@ -474,7 +494,7 @@ class PublicBacaspSPortSimulator(PortSchedulingSimulator):
             key=_crane_number,
         )
         bundles: set[tuple[str, ...]] = set()
-        for size in range(record.min_cranes, record.max_cranes + 1):
+        for size in record.feasible_crane_counts(len(compatible)):
             for start in range(0, len(compatible) - size + 1):
                 candidate = tuple(compatible[start : start + size])
                 if _consecutive_cranes(candidate):
@@ -514,6 +534,11 @@ class PublicBacaspSPortSimulator(PortSchedulingSimulator):
                 {
                     "source_min_cranes": record.min_cranes,
                     "source_max_cranes": record.max_cranes,
+                    "effective_max_cranes": max(
+                        record.feasible_crane_counts(
+                            self.adapted.source.crane_count
+                        )
+                    ),
                     "source_processing_time": source_processing_time,
                     "source_desired_position": record.desired_position,
                     "mapped_berth_position": mapped_source_position,

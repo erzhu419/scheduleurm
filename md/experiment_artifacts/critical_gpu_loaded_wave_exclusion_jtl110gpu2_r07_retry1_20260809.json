@@ -1,0 +1,72 @@
+{
+  "excluded_before_lcb": true,
+  "exclusion_decision_basis": "The registered GPUs were idle at each row prelaunch, but independent continuous process monitoring observed later, non-campaign CPU and GPU process groups. Performance values were not consulted.",
+  "exclusion_rule": "Exclude a preregistered wave only when the independent process audit exceeds registered contamination bounds; retain all invalid evidence and rerun the identical wave only after an idle guard period.",
+  "gate": "critical_gpu_loaded_wave_exclusion",
+  "node": "jtl110gpu2",
+  "ordinary_running_tasks_touched": false,
+  "original_artifacts": [
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_external_production_contamination_excluded_retry1.json",
+      "sha256": "d7e117616621552cd4ca0554ab18d77f2590b8e2ec94fabb96849d2c9110c6e8"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_external_production_contamination_excluded_retry1.md",
+      "sha256": "c9c9fcdf893f39039dfc6bd30195b453a868702293effebcaae6b93ec527e69b"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu2_r07_20260809_external_production_contamination_excluded_retry1.json",
+      "sha256": "26baa6593aac55df91c19cfd9755744f88923eb445a48607f76586b6648f9593"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu2_r07_20260809_external_production_contamination_excluded_retry1.md",
+      "sha256": "028e3a9cfddbc0ccd765b130907842f91f3301ad6ef6b58f20b1545238fc1c01"
+    }
+  ],
+  "performance_outcome_used_for_exclusion": false,
+  "protocol": "critical_gpu_loaded_natural_completion_v2",
+  "quarantined_raw_trees": [
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_cnn_after_llm_external_production_contamination_excluded_retry1",
+      "tree_sha256": "0dac7e47e449ef0c175200b401b87878278b2a5204cb0781bc52454e4d44526c"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_llm_after_cnn_external_production_contamination_excluded_retry1",
+      "tree_sha256": "8795933cbbde575a122081a6b555b8e60107d5fade0a493749c1e00b32ff9260"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_rl_after_cnn_external_production_contamination_excluded_retry1",
+      "tree_sha256": "2fab3ca5dd2954b8a4146b0a97e0b75661b378240af1f52cc7738dbefcb83591"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_cnn_after_rl_external_production_contamination_excluded_retry1",
+      "tree_sha256": "2bd40f550a4b9ad0aaedc00eb1c0dc53a104a476b90c2bf6b65d90135cb52d76"
+    }
+  ],
+  "replacement_policy": "Wait until both registered GPUs and the unapproved production process groups are absent for a guard interval, then rerun the same registered calibration wave with the frozen code manifest. Do not stop, pause, or modify the external jobs.",
+  "row_audits": [
+    {
+      "conservative_unapproved_cpu_exposure_fraction": 0.010302803822211454,
+      "exposure_threshold": 0.001,
+      "peak_unapproved_host_cpu_fraction": 0.33429166666666665,
+      "scenario_id": "rl_after_cnn",
+      "unapproved_cpu_process_count": 2,
+      "unapproved_gpu_compute_process_count": 0
+    },
+    {
+      "conservative_unapproved_cpu_exposure_fraction": 0.032769938402850814,
+      "exposure_threshold": 0.001,
+      "observed_unapproved_gpu_process_group_ids": [
+        1778481,
+        1778482
+      ],
+      "other_registered_gpu_idle": false,
+      "peak_unapproved_host_cpu_fraction": 0.15433333333333332,
+      "scenario_id": "cnn_after_rl",
+      "unapproved_gpu_compute_observation_count": 34
+    }
+  ],
+  "split_role": "calibration",
+  "status": "EXCLUDED_EXTERNAL_PRODUCTION_CONTAMINATION",
+  "wave": 7
+}

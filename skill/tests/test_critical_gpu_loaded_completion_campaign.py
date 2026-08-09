@@ -66,6 +66,16 @@ def test_loaded_campaign_is_finite_policy_reachable_and_no_touch(tmp_path, monke
     assert all(row["status"] == "planned" for row in report["rows"])
 
 
+def test_llm_template_isolates_node_specific_pythonpath():
+    template = (campaign.TEMPLATE_ROOT / "torch_llm_distilgpt2.cmd.tpl").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'export PYTHONPATH="{workload_pythonpath}"' in template
+    assert "--local-files-only" in template
+    assert "--require-transformers" in template
+
+
 def test_loaded_campaign_rejects_unknown_scenario(tmp_path, monkeypatch):
     monkeypatch.setattr(campaign, "ARTIFACT_ROOT", tmp_path)
 

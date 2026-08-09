@@ -50,6 +50,27 @@ def test_hardware_classes_are_not_collapsed():
     assert NODE_SPECS["jtl110gpu2"].role == "homogeneous_equivalence"
 
 
+def test_environment_gate_loads_real_llm_weights_in_node_specific_pythonpath(
+    tmp_path, monkeypatch
+):
+    captured = {}
+
+    def fake_remote(node, shell, prefix, timeout_s):
+        captured.update(node=node, shell=shell, prefix=prefix, timeout_s=timeout_s)
+        return 0, "ENV_READY\nRESAC_READY\n", ""
+
+    monkeypatch.setattr(campaign_module, "ARTIFACT_ROOT", tmp_path)
+    monkeypatch.setattr(campaign_module, "_run_remote_capture", fake_remote)
+
+    result = campaign_module._node_environment_gate(NODE_SPECS["jtl110gpu2"])
+
+    assert result["ready"] is True
+    assert "AutoModelForCausalLM.from_pretrained" in captured["shell"]
+    assert "local_files_only=True" in captured["shell"]
+    assert "export TRANSFORMERS_OFFLINE=1" in captured["shell"]
+    assert NODE_SPECS["jtl110gpu2"].workload_pythonpath in captured["shell"]
+
+
 def test_every_workload_naturally_completes_and_saves():
     assert {spec.workload_key for spec in WORKLOAD_SPECS} == {
         "gpu_heavy_jax_matmul",

@@ -450,6 +450,16 @@ def _audit_row(
         "UNDECLARED_CROSS_GPU_LOAD_DURING_TARGET",
         f"violations={continuous_gpu.get('violations')!r}",
     )
+    require(
+        continuous_gpu.get("controlled_process_groups_observed") is True,
+        "CONTROLLED_GPU_PROCESS_GROUP_NOT_OBSERVED",
+        f"observed={continuous_gpu.get('observed_process_group_ids')!r}",
+    )
+    require(
+        continuous_gpu.get("no_unapproved_compute_processes") is True,
+        "UNDECLARED_GPU_COMPUTE_PROCESS_DURING_TARGET",
+        f"unapproved={continuous_gpu.get('unapproved_compute_processes')!r}",
+    )
     require(row.get("resident_alive_at_target_start") is True, "OVERLAP_INVALID")
     require(row.get("resident_alive_at_target_end") is True, "OVERLAP_INVALID")
     require(_int_or(row.get("resident_returncode"), -1) == 0, "NATURAL_EXIT_INVALID")
@@ -646,6 +656,8 @@ def _continuous_other_gpu_audit(
     expected_sha256 = str(row.get("gpu_monitor_sha256") or "").strip().lower()
     try:
         assigned_gpu = int(row.get("gpu"))
+        resident_pgid = int(row.get("resident_process_group_id"))
+        target_pgid = int(row.get("target_process_group_id"))
         target_start_ns = int(row.get("target_start_ns"))
         target_end_ns = int(row.get("target_end_ns"))
     except (TypeError, ValueError):
@@ -654,14 +666,19 @@ def _continuous_other_gpu_audit(
             "target_interval_covered": False,
             "other_registered_gpus_idle": False,
             "error_code": "GPU_MONITOR_METADATA_INVALID",
-            "detail": (
-                f"gpu={row.get('gpu')!r}, start={row.get('target_start_ns')!r}, "
-                f"end={row.get('target_end_ns')!r}"
-            ),
-        }
+                "detail": (
+                    f"gpu={row.get('gpu')!r}, start={row.get('target_start_ns')!r}, "
+                    f"end={row.get('target_end_ns')!r}, "
+                    f"pgids=({row.get('resident_process_group_id')!r}, "
+                    f"{row.get('target_process_group_id')!r})"
+                ),
+            }
     expected_indices = {int(value) for value in NODE_SPECS[node].gpus}
     if (
         assigned_gpu not in expected_indices
+        or resident_pgid <= 0
+        or target_pgid <= 0
+        or resident_pgid == target_pgid
         or target_start_ns <= 0
         or target_end_ns <= target_start_ns
     ):
@@ -670,10 +687,11 @@ def _continuous_other_gpu_audit(
             "target_interval_covered": False,
             "other_registered_gpus_idle": False,
             "error_code": "GPU_MONITOR_METADATA_INVALID",
-            "detail": (
-                f"gpu={assigned_gpu}, target=({target_start_ns}, {target_end_ns})"
-            ),
-        }
+                "detail": (
+                    f"gpu={assigned_gpu}, pgids=({resident_pgid}, {target_pgid}), "
+                    f"target=({target_start_ns}, {target_end_ns})"
+                ),
+            }
     if not path_text or len(expected_sha256) != 64:
         return {
             "audit_ready": False,
@@ -712,9 +730,27 @@ def _continuous_other_gpu_audit(
         if marker:
             if current is not None:
                 samples.append(current)
-            current = {"sample_ns": int(marker.group(1)), "gpus": {}}
+            current = {
+                "sample_ns": int(marker.group(1)),
+                "gpus": {},
+                "processes": [],
+            }
             continue
         if current is None:
+            continue
+        process = re.fullmatch(
+            r"__GPU_PROC__\s+(\d+)\s+(-?\d+)\s+(\S+)\s+(\S+)",
+            line.strip(),
+        )
+        if process:
+            current["processes"].append(
+                {
+                    "pid": int(process.group(1)),
+                    "pgid": int(process.group(2)),
+                    "gpu_uuid": process.group(3),
+                    "used_memory_mb": process.group(4),
+                }
+            )
             continue
         parts = [part.strip() for part in line.split(",")]
         if len(parts) < 6:
@@ -754,12 +790,23 @@ def _continuous_other_gpu_audit(
         first_sample_ns <= target_start_ns and last_sample_ns >= target_end_ns
     )
     violations = []
+    allowed_pgids = {resident_pgid, target_pgid}
+    observed_pgids: set[int] = set()
+    unapproved_processes = []
     maxima = {
         index: {"gpu": index, "max_used_mb": 0, "max_util_pct": 0}
         for index in sorted(expected_indices - {assigned_gpu})
     }
     for sample in samples:
         sample_ns = int(sample["sample_ns"])
+        if target_start_ns <= sample_ns <= target_end_ns:
+            for process in sample["processes"]:
+                pgid = int(process["pgid"])
+                observed_pgids.add(pgid)
+                if pgid not in allowed_pgids:
+                    unapproved_processes.append(
+                        {"sample_ns": sample_ns, **process}
+                    )
         for index, maximum in maxima.items():
             gpu_row = sample["gpus"][index]
             maximum["max_used_mb"] = max(
@@ -777,6 +824,12 @@ def _continuous_other_gpu_audit(
         "audit_ready": True,
         "target_interval_covered": target_interval_covered,
         "other_registered_gpus_idle": not violations,
+        "controlled_process_groups_observed": allowed_pgids <= observed_pgids,
+        "no_unapproved_compute_processes": not unapproved_processes,
+        "allowed_process_group_ids": sorted(allowed_pgids),
+        "observed_process_group_ids": sorted(observed_pgids),
+        "unapproved_compute_processes": unapproved_processes[:50],
+        "unapproved_compute_process_count": len(unapproved_processes),
         "assigned_gpu": assigned_gpu,
         "target_start_ns": target_start_ns,
         "target_end_ns": target_end_ns,

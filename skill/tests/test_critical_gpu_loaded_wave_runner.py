@@ -55,6 +55,8 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
             "audit_ready": True,
             "target_interval_covered": True,
             "other_registered_gpus_idle": True,
+            "controlled_process_groups_observed": True,
+            "no_unapproved_compute_processes": True,
         },
     )
 
@@ -111,6 +113,8 @@ def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
             "audit_ready": True,
             "target_interval_covered": True,
             "other_registered_gpus_idle": True,
+            "controlled_process_groups_observed": True,
+            "no_unapproved_compute_processes": True,
         },
     )
 

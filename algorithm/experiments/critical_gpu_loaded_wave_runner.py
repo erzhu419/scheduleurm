@@ -138,6 +138,8 @@ def _audit_campaign_prelaunch_snapshots(
         and audit["continuous"].get("audit_ready") is True
         and audit["continuous"].get("target_interval_covered") is True
         and audit["continuous"].get("other_registered_gpus_idle") is True
+        and audit["continuous"].get("controlled_process_groups_observed") is True
+        and audit["continuous"].get("no_unapproved_compute_processes") is True
         for audit in audits
     )
     return {

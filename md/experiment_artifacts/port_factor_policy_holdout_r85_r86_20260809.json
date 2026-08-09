@@ -1,0 +1,221 @@
+{
+  "aggregate": {
+    "bootstrap": {
+      "method": "factor-cell cluster bootstrap; both registered replication rows retained per sampled cell",
+      "registered_replications": [
+        85,
+        86
+      ],
+      "replicates": 5000,
+      "seed": 20260809
+    },
+    "factor_cell_count": 27,
+    "paired_policy_summaries": {
+      "edd_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.226606699,
+              0.243444877
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.234726121
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              0.623365729,
+              0.631273824
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.627123696
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.140213714,
+              0.159765253
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.149395625
+          }
+        },
+        "relation_counts": {
+          "ours_dominates": 54
+        }
+      },
+      "fcfs_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.219928194,
+              0.236104245
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.227750481
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              0.623286597,
+              0.63136642
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.627124181
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.135133369,
+              0.154353213
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.144205642
+          }
+        },
+        "relation_counts": {
+          "ours_dominates": 54
+        }
+      },
+      "reconfiguration_greedy": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              1.018788594,
+              1.039718254
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.028667317
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              1.002978201,
+              1.006544018
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.004677895
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              1.031090079,
+              1.06622629
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.047630679
+          }
+        },
+        "relation_counts": {
+          "baseline_dominates": 38,
+          "ours_dominates": 1,
+          "tie": 9,
+          "tradeoff": 6
+        }
+      },
+      "spt_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              1.018462561,
+              1.039823982
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.028667317
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              1.002943211,
+              1.006537262
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.004677895
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              1.030602513,
+              1.066210937
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.047630679
+          }
+        },
+        "relation_counts": {
+          "baseline_dominates": 38,
+          "ours_dominates": 1,
+          "tie": 9,
+          "tradeoff": 6
+        }
+      }
+    },
+    "selected_pareto_nondominated_count": 16,
+    "selected_strictly_dominates_every_baseline_count": 1
+  },
+  "baseline_policies": [
+    "fcfs_static",
+    "spt_static",
+    "edd_static",
+    "reconfiguration_greedy"
+  ],
+  "claim_boundary": {
+    "mid_service_migration": false,
+    "physical_terminal_deployment": false,
+    "scope": "BACASP-S fixed-slot source-core R85/R86 only",
+    "stochastic_stability_transfer": false,
+    "unrestricted_port_optimality": false
+  },
+  "compact_content_sha256_excluding_self": "064f8b4f9fc9d17b4b803632e81f69c1c78f5809a4301cecb9daf283a31318d4",
+  "evaluation_metrics": [
+    "quay_makespan",
+    "mean_quay_flow_time",
+    "source_objective_cost"
+  ],
+  "factor_policy_sha256": "2b1c3fcdd7e72f45c9431a062de082a7399aa0c3ac28c4520cc53aa4016b64fb",
+  "failures": [],
+  "freeze": {
+    "development_sha256": "3bbecc6b8c4185a0bf860a139424a32f32f4f5329680ca04ce340b392451e8eb",
+    "implementation": [
+      {
+        "path": "algorithm/experiments/port_factor_policy_development.py",
+        "sha256": "4c70e846e667975ac1cb23e5ca9cddd646349c98f569b0ab1697464c7e15601d"
+      },
+      {
+        "path": "algorithm/experiments/port_factor_policy_holdout.py",
+        "sha256": "f784daedb66aec540ab4590e810ad5715fa5d7b443866fe8fdb7643ada8ae577"
+      },
+      {
+        "path": "algorithm/experiments/port_factor_policy_holdout_freeze.py",
+        "sha256": "d7f14903e04d4a843ea3885472a7d329d12827ecbbc697e7bcc341d6d3a0c139"
+      },
+      {
+        "path": "algorithm/experiments/port_public_benchmark_adapter.py",
+        "sha256": "543ce3bebd0cc4bb01d24faa96b959016f86913ff76f77d3d5c2ed20aa40206d"
+      },
+      {
+        "path": "algorithm/experiments/port_public_external_holdout.py",
+        "sha256": "acbbe90e5dfb6597fc28125f62b21470bac3dbfab53de77fd2f1450aa55e1217"
+      },
+      {
+        "path": "algorithm/experiments/port_scheduling_benchmark.py",
+        "sha256": "ff262291b19f63ab3d557efc342708b495ac5036f733e25dff1e189bfc625863"
+      },
+      {
+        "path": "algorithm/experiments/port_scheduling_instances.py",
+        "sha256": "2591964494302d0adc8f015dbc92ea4fea8ed09926bbe437dd5f38255ec4d391"
+      },
+      {
+        "path": "algorithm/experiments/port_trajectory_upgrade.py",
+        "sha256": "68dca4c47ad89fd71dba5bca8c775a666a2fd226c035ce51b6472edfa61ed8de"
+      }
+    ],
+    "preregistration_commit": "ecdce6cd2fe4ee68ab4ebdd0ad9c23b307e932c2",
+    "preregistration_sha256": "98c866a7d0cffa02e7b7cd7981b3c42a2722fe40e8b32a5fbd2297e6583d68ea",
+    "ready": true
+  },
+  "full_artifact_gzip_sha256": "9d159d3a5d97761cdb2cc6b08788098d37d21ab56874a9548a23825c32b9f5e1",
+  "full_artifact_path": "md/experiment_artifacts/port_factor_policy_holdout_r85_r86_20260809.json.gz",
+  "full_scientific_content_sha256": "953742f7fe3eac647da4102bc7d238151345275b78df8d213c145642eef93999",
+  "gate": {
+    "completed_instance_count": 54,
+    "failure_count": 0,
+    "pass": true,
+    "performance_nondominance_ready": false,
+    "performance_superiority_claim_ready": false,
+    "registered_instance_count": 54,
+    "status": "PORT_FACTOR_POLICY_HOLDOUT_PASS",
+    "stochastic_port_stability_claim_ready": false,
+    "unrestricted_port_optimality_claim_ready": false
+  },
+  "schema_version": "scheduleurm.port_factor_policy_holdout.v1.compact.v1",
+  "selected_plan_count": 6,
+  "selected_plan_histogram": {
+    "plan|reconfiguration_greedy": 6,
+    "plan|reconfiguration_greedy+reconfiguration_greedy+robust_maxweight": 4,
+    "plan|reconfiguration_greedy+robust_maxweight+reconfiguration_greedy": 26,
+    "plan|robust_maxweight+reconfiguration_greedy+reconfiguration_greedy": 6,
+    "plan|robust_maxweight+robust_maxweight+reconfiguration_greedy": 6,
+    "plan|spt_static+robust_maxweight+robust_maxweight": 6
+  }
+}

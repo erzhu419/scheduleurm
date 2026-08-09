@@ -358,6 +358,11 @@ def _run_loaded_trajectory(
         f"{remote_logs}/diagnostics.log",
         raw_dir / "diagnostics",
     )
+    gpu_monitor = _fetch_log(
+        node,
+        f"{remote_logs}/gpu_monitor.log",
+        raw_dir / "gpu_monitor",
+    )
     resident_model = parse_completion_model(resident_log) or {}
     target_model = parse_completion_model(target_log) or {}
     resident_stable = _last_stable_rate(resident_log)
@@ -441,6 +446,8 @@ def _run_loaded_trajectory(
         "resident_returncode": resident_rc,
         "target_returncode": target_rc,
         "remote_returncode": int(rc),
+        "target_start_ns": markers.get("TARGET_START_NS"),
+        "target_end_ns": markers.get("TARGET_END_NS"),
         "elapsed_wall_s": time.time() - started,
         "ready": ready,
         "capacity_boundary": capacity_boundary,
@@ -464,6 +471,8 @@ def _run_loaded_trajectory(
         "target_log_path": str(raw_dir / "target.log"),
         "diagnostics_log_path": str(raw_dir / "diagnostics.log"),
         "diagnostics_sha256": hashlib.sha256(diagnostics.encode("utf-8")).hexdigest(),
+        "gpu_monitor_log_path": str(raw_dir / "gpu_monitor.log"),
+        "gpu_monitor_sha256": hashlib.sha256(gpu_monitor.encode("utf-8")).hexdigest(),
     }
     (run_dir / "reports").mkdir(parents=True, exist_ok=True)
     (run_dir / "reports" / "summary.json").write_text(
@@ -547,8 +556,19 @@ def _remote_script(
             'rm -rf "$REMOTE_LOGS"',
             'mkdir -p "$REMOTE_LOGS"',
             'DIAG="$REMOTE_LOGS/diagnostics.log"',
+            'GPU_MONITOR="$REMOTE_LOGS/gpu_monitor.log"',
             f"GPU={int(gpu)}",
             'nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits > "$DIAG" 2>&1 || true',
+            ': > "$GPU_MONITOR"',
+            '(',
+            '  while true; do',
+            '    printf "__GPU_SAMPLE_NS__ %s\\n" "$(date +%s%N)"',
+            '    nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits || true',
+            '    sleep 1',
+            '  done',
+            ') >> "$GPU_MONITOR" 2>&1 &',
+            'GPU_MONITOR_PID=$!',
+            'trap \'kill "$GPU_MONITOR_PID" >/dev/null 2>&1 || true; wait "$GPU_MONITOR_PID" >/dev/null 2>&1 || true\' EXIT INT TERM',
             (
                 f"CUDA_VISIBLE_DEVICES={int(gpu)} setsid timeout --foreground "
                 f"{int(resident_timeout_s)}s {resident_cmd} "
@@ -579,6 +599,9 @@ def _remote_script(
             'if kill -0 "$RESIDENT_PID" >/dev/null 2>&1; then RESIDENT_ALIVE_END=1; fi',
             'wait "$RESIDENT_PID"',
             "RESIDENT_RC=$?",
+            'kill "$GPU_MONITOR_PID" >/dev/null 2>&1 || true',
+            'wait "$GPU_MONITOR_PID" >/dev/null 2>&1 || true',
+            'trap - EXIT INT TERM',
             'nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits >> "$DIAG" 2>&1 || true',
             'echo "__RESIDENT_RC__ $RESIDENT_RC"',
             'echo "__TARGET_RC__ $TARGET_RC"',

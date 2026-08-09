@@ -115,6 +115,29 @@ def test_loaded_gate_rejects_undeclared_load_on_other_registered_gpu(tmp_path):
     )
 
 
+def test_loaded_gate_rejects_transient_cross_gpu_load_during_target(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    lines[7] = "1, NVIDIA GeForce RTX 2080 Ti, 11264, 2048, 9000, 100"
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_CROSS_GPU_LOAD_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
 def test_discovery_excludes_filtered_smoke_artifacts(tmp_path):
     code_prefix = measurement_code_manifest()["sha256"][:12]
     full = tmp_path / (
@@ -202,6 +225,21 @@ def _row(spec, *, wave: int, index: int, root: Path) -> dict[str, object]:
         for gpu in range(4)
     )
     diagnostics.write_text(f"{snapshot}\n{snapshot}\n", encoding="utf-8")
+    target_start_ns = 100_000_000_000
+    target_end_ns = 110_000_000_000
+    monitor = root / f"wave-{wave}-{spec.scenario_id}.gpu-monitor.log"
+    monitor.write_text(
+        "\n".join(
+            (
+                "__GPU_SAMPLE_NS__ 99000000000",
+                snapshot,
+                "__GPU_SAMPLE_NS__ 111000000000",
+                snapshot,
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     return {
         "scenario_id": spec.scenario_id,
         "node": NODE,
@@ -210,6 +248,10 @@ def _row(spec, *, wave: int, index: int, root: Path) -> dict[str, object]:
         "gpu": 0,
         "diagnostics_log_path": str(diagnostics),
         "diagnostics_sha256": hashlib.sha256(diagnostics.read_bytes()).hexdigest(),
+        "gpu_monitor_log_path": str(monitor),
+        "gpu_monitor_sha256": hashlib.sha256(monitor.read_bytes()).hexdigest(),
+        "target_start_ns": target_start_ns,
+        "target_end_ns": target_end_ns,
         "wave": wave,
         "split_role": _split_role(wave),
         "resource_state": expected["resource_state"],

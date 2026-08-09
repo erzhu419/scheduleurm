@@ -1,0 +1,79 @@
+{
+  "claim_boundary": {
+    "arbitrary_family_dominance": false,
+    "global_fjsp_optimality": false,
+    "stochastic_stability_transfer": false
+  },
+  "implementation_freeze": {
+    "implementation_sha256": {
+      "algorithm/experiments/fjsp_benchmark.py": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e",
+      "algorithm/experiments/fjsp_family_holdout.py": "b5c3321c50f73fb35992906164c0f8528994bbba2e8c89d3eb81b1f6413b3a29",
+      "algorithm/experiments/fjsp_family_holdout_freeze.py": "ae20e77469007c26a5243902c715fb318876863bbc34260a20ae84f16d38d3c0",
+      "algorithm/experiments/fjsp_instances.py": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1",
+      "algorithm/experiments/fjsp_renewal_frame_upgrade.py": "01906687ae536105a31ae2b7c62a0292400f42b10ce27160484cfded7caf66e2",
+      "algorithm/experiments/fjsp_trajectory_upgrade.py": "c121539db26180b9d4c1129e1b7535f138d84201594f1c08478ac060ddc2d0d9",
+      "algorithm/experiments/or_exact_reference.py": "5e6a178fb1aaf0aea794f3f9b49a8442770e777999725eacb1648950e18d5a56",
+      "algorithm/experiments/trajectory_renewal_frame_score.py": "f9cc9b0a24f85b3ad616e69503b9813c6111888846fdd997c4d20a0a9899b0ad"
+    },
+    "repository_commit": "9d2a224fa4c6a2630a1aa7f3886695156e316984"
+  },
+  "outputs": [
+    "tests/data/fjsp_family_external_holdout/fjsp_family_external_holdout_gate.json",
+    "tests/data/fjsp_family_external_holdout/fjsp_family_external_holdout_gate.md"
+  ],
+  "protocol": {
+    "cp_sat_budget_excludes_model_construction": true,
+    "cp_sat_workers": 1,
+    "fixed_reference_budget_s": 10.0,
+    "holdout_feedback_used_for_policy": false,
+    "matched_reference_floor_s": 0.05,
+    "per_instance_tuning": false,
+    "performance_is_not_a_protocol_pass_condition": true,
+    "policy": "scheduleurm_fjsp_renewal_frame",
+    "run_cp_sat_reference": true
+  },
+  "registered_on": "2026-08-09",
+  "schema_version": "scheduleurm.fjsp_family_holdout.preregistration.v1",
+  "selection": {
+    "excluded_development_families": [
+      "Brandimarte1993",
+      "KacemHammadiBorne2002"
+    ],
+    "families": [
+      "BehnkeGeiger2012",
+      "ChambersBarnes1996",
+      "DauzerePeresPaulli1994",
+      "FattahiMehrabadJolai2007"
+    ],
+    "members": [
+      "BehnkeGeiger2012/behnke1.txt",
+      "BehnkeGeiger2012/behnke9.txt",
+      "BehnkeGeiger2012/behnke15.txt",
+      "BehnkeGeiger2012/behnke20.txt",
+      "BehnkeGeiger2012/behnke60.txt",
+      "ChambersBarnes1996/mt10c1.txt",
+      "ChambersBarnes1996/mt10xxx.txt",
+      "ChambersBarnes1996/setb4xx.txt",
+      "ChambersBarnes1996/seti5x.txt",
+      "ChambersBarnes1996/seti5xyz.txt",
+      "DauzerePeresPaulli1994/01a.txt",
+      "DauzerePeresPaulli1994/05a.txt",
+      "DauzerePeresPaulli1994/09a.txt",
+      "DauzerePeresPaulli1994/13a.txt",
+      "DauzerePeresPaulli1994/18a.txt",
+      "FattahiMehrabadJolai2007/fattahi1.txt",
+      "FattahiMehrabadJolai2007/fattahi5.txt",
+      "FattahiMehrabadJolai2007/fattahi10.txt",
+      "FattahiMehrabadJolai2007/fattahi15.txt",
+      "FattahiMehrabadJolai2007/fattahi20.txt"
+    ],
+    "rule": "Within each registered non-development family, sort by (operation_count*machine_count, job_count, machine_count, operation_count, filename) and take ranks floor(k(n-1)/4), k=0..4.",
+    "rule_uses_algorithm_outcomes": false
+  },
+  "source": {
+    "bounds_path": "flexible-jobshop/solutions/bks.json",
+    "bounds_sha256": "9917b8d914a095fed5f822941b06c0e9e9cd12813aceff7fdbb3c46aae8cd5d9",
+    "repository": "https://github.com/ScheduleOpt/benchmarks",
+    "repository_commit": "e5e62a01023ff827f658255b793fd1b86e5c1707"
+  }
+}

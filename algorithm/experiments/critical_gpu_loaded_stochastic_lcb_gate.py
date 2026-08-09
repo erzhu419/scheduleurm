@@ -884,6 +884,15 @@ def _continuous_other_gpu_audit(
     allowed_pgids = {resident_pgid, target_pgid}
     observed_pgids: set[int] = set()
     unapproved_processes = []
+    pid_pgid_candidates: dict[int, set[int]] = {}
+    for sample in samples:
+        for process in sample["processes"]:
+            process_pgid = int(process["pgid"])
+            if process_pgid > 0:
+                pid_pgid_candidates.setdefault(int(process["pid"]), set()).add(
+                    process_pgid
+                )
+    resolved_transient_pgids = []
     target_samples = [
         sample
         for sample in samples
@@ -992,10 +1001,24 @@ def _continuous_other_gpu_audit(
         if target_start_ns <= sample_ns <= target_end_ns:
             for process in sample["processes"]:
                 pgid = int(process["pgid"])
+                if pgid <= 0:
+                    candidates = pid_pgid_candidates.get(int(process["pid"]), set())
+                    if len(candidates) == 1:
+                        resolved_pgid = next(iter(candidates))
+                        resolved_transient_pgids.append(
+                            {
+                                "sample_ns": sample_ns,
+                                "pid": int(process["pid"]),
+                                "reported_pgid": pgid,
+                                "resolved_pgid": resolved_pgid,
+                                "resolution_rule": "same_pid_unique_positive_pgid_in_hash_bound_monitor",
+                            }
+                        )
+                        pgid = resolved_pgid
                 observed_pgids.add(pgid)
                 if pgid not in allowed_pgids:
                     unapproved_processes.append(
-                        {"sample_ns": sample_ns, **process}
+                        {"sample_ns": sample_ns, **process, "effective_pgid": pgid}
                     )
         for index, maximum in maxima.items():
             gpu_row = sample["gpus"][index]
@@ -1047,6 +1070,8 @@ def _continuous_other_gpu_audit(
         "observed_process_group_ids": sorted(observed_pgids),
         "unapproved_compute_processes": unapproved_processes[:50],
         "unapproved_compute_process_count": len(unapproved_processes),
+        "resolved_transient_process_group_ids": resolved_transient_pgids[:50],
+        "resolved_transient_process_group_id_count": len(resolved_transient_pgids),
         "assigned_gpu": assigned_gpu,
         "target_start_ns": target_start_ns,
         "target_end_ns": target_end_ns,

@@ -106,7 +106,7 @@ SCENARIOS = (
         "mixed_colocation",
         "resident_hybrid_rl_target_cnn",
         80,
-        600,
+        3000,
     ),
 )
 

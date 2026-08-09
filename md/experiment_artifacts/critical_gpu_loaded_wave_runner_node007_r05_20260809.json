@@ -1,0 +1,63 @@
+{
+  "allow_launch": true,
+  "campaign": null,
+  "claim_boundary": "No benchmark process was launched because at least one registered GPU failed the idle preflight. Existing user processes were not modified.",
+  "downstream_row_level_prelaunch_audit_required": true,
+  "gate": "critical_gpu_loaded_wave_runner",
+  "idle_snapshot": {
+    "compute_process_rows": [
+      "91201, GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20, 2296",
+      "91207, GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20, 728",
+      "91206, GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20, 728",
+      "91204, GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3, 728",
+      "91205, GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3, 2296",
+      "91200, GPU-554fefa8-ec07-42e7-2187-8f876b8a2022, 728",
+      "91203, GPU-554fefa8-ec07-42e7-2187-8f876b8a2022, 2296",
+      "91202, GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3, 728"
+    ],
+    "idle_memory_limit_mb": 512,
+    "idle_util_limit_pct": 5,
+    "ready": false,
+    "returncode": 0,
+    "selected_gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 3755,
+        "util_pct": 100
+      },
+      {
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 3027,
+        "util_pct": 100
+      },
+      {
+        "index": 2,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 3027,
+        "util_pct": 100
+      },
+      {
+        "index": 3,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 731,
+        "util_pct": 99
+      }
+    ],
+    "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n"
+  },
+  "launched": false,
+  "legacy_scheduler_limits_bypassed": true,
+  "node": "node007",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "requires_all_registered_gpus_idle": true,
+  "schema_version": 1,
+  "status": "WAIT_GPU_IDLE",
+  "wave": 5
+}

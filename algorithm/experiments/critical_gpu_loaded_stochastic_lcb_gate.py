@@ -14,6 +14,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 from statistics import median
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -219,7 +220,8 @@ def build_critical_gpu_loaded_stochastic_lcb_gate(
             "conformal margin jointly covers both functionals for all four "
             "actions. Every row also hash-verifies the pre-launch nvidia-smi "
             "snapshot and rejects undeclared load on any registered GPU, so "
-            "same-GPU co-location rows do not silently absorb host/PCIe "
+            "a hash-bound one-second sidecar covers the complete target interval "
+            "and same-GPU co-location rows do not silently absorb host/PCIe "
             "contention from another card. It neither populates the legacy "
             "workload/profile index nor "
             "extrapolates to unmeasured mixtures, hardware, or future workloads."
@@ -424,6 +426,30 @@ def _audit_row(
             f"limits=({GPU_IDLE_MEMORY_LIMIT_MB} MB, {GPU_IDLE_UTIL_LIMIT_PCT}%)"
         ),
     )
+    continuous_gpu = _continuous_other_gpu_audit(
+        row=row,
+        node=str(expected["node"]),
+    )
+    require(
+        continuous_gpu.get("audit_ready") is True,
+        str(continuous_gpu.get("error_code") or "GPU_MONITOR_AUDIT_INVALID"),
+        str(continuous_gpu.get("detail") or ""),
+    )
+    require(
+        continuous_gpu.get("target_interval_covered") is True,
+        "GPU_MONITOR_TARGET_INTERVAL_NOT_COVERED",
+        (
+            f"first_sample_ns={continuous_gpu.get('first_sample_ns')}, "
+            f"last_sample_ns={continuous_gpu.get('last_sample_ns')}, "
+            f"target=({continuous_gpu.get('target_start_ns')}, "
+            f"{continuous_gpu.get('target_end_ns')})"
+        ),
+    )
+    require(
+        continuous_gpu.get("other_registered_gpus_idle") is True,
+        "UNDECLARED_CROSS_GPU_LOAD_DURING_TARGET",
+        f"violations={continuous_gpu.get('violations')!r}",
+    )
     require(row.get("resident_alive_at_target_start") is True, "OVERLAP_INVALID")
     require(row.get("resident_alive_at_target_end") is True, "OVERLAP_INVALID")
     require(_int_or(row.get("resident_returncode"), -1) == 0, "NATURAL_EXIT_INVALID")
@@ -482,6 +508,7 @@ def _audit_row(
             overlap["progress_observation_count"]
         ),
         "prelaunch_assigned_gpu_audit": prelaunch_gpu,
+        "continuous_other_gpu_audit": continuous_gpu,
     }
 
 
@@ -607,6 +634,163 @@ def _prelaunch_assigned_gpu_audit(
         "idle_util_limit_pct": GPU_IDLE_UTIL_LIMIT_PCT,
         "diagnostics_path": str(path),
         "diagnostics_sha256": observed_sha256,
+    }
+
+
+def _continuous_other_gpu_audit(
+    *, row: Mapping[str, Any], node: str
+) -> dict[str, Any]:
+    """Audit undeclared load on non-assigned GPUs throughout the target interval."""
+
+    path_text = str(row.get("gpu_monitor_log_path") or "").strip()
+    expected_sha256 = str(row.get("gpu_monitor_sha256") or "").strip().lower()
+    try:
+        assigned_gpu = int(row.get("gpu"))
+        target_start_ns = int(row.get("target_start_ns"))
+        target_end_ns = int(row.get("target_end_ns"))
+    except (TypeError, ValueError):
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_METADATA_INVALID",
+            "detail": (
+                f"gpu={row.get('gpu')!r}, start={row.get('target_start_ns')!r}, "
+                f"end={row.get('target_end_ns')!r}"
+            ),
+        }
+    expected_indices = {int(value) for value in NODE_SPECS[node].gpus}
+    if (
+        assigned_gpu not in expected_indices
+        or target_start_ns <= 0
+        or target_end_ns <= target_start_ns
+    ):
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_METADATA_INVALID",
+            "detail": (
+                f"gpu={assigned_gpu}, target=({target_start_ns}, {target_end_ns})"
+            ),
+        }
+    if not path_text or len(expected_sha256) != 64:
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_MISSING",
+            "detail": f"path={path_text!r}, sha256={expected_sha256!r}",
+        }
+    path = Path(path_text)
+    try:
+        payload = path.read_bytes()
+    except OSError as exc:
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_UNREADABLE",
+            "detail": f"{path}: {type(exc).__name__}: {exc}",
+        }
+    observed_sha256 = hashlib.sha256(payload).hexdigest()
+    if observed_sha256 != expected_sha256:
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_HASH_MISMATCH",
+            "detail": (
+                f"path={path}, expected={expected_sha256}, observed={observed_sha256}"
+            ),
+        }
+
+    samples: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for line in payload.decode("utf-8", errors="replace").splitlines():
+        marker = re.fullmatch(r"__GPU_SAMPLE_NS__\s+(\d+)", line.strip())
+        if marker:
+            if current is not None:
+                samples.append(current)
+            current = {"sample_ns": int(marker.group(1)), "gpus": {}}
+            continue
+        if current is None:
+            continue
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) < 6:
+            continue
+        try:
+            index = int(parts[0])
+            used_mb = int(parts[3])
+            util_pct = int(parts[5])
+        except ValueError:
+            continue
+        if index in expected_indices:
+            current["gpus"][index] = {
+                "gpu": index,
+                "used_mb": used_mb,
+                "util_pct": util_pct,
+            }
+    if current is not None:
+        samples.append(current)
+    incomplete = [
+        int(sample["sample_ns"])
+        for sample in samples
+        if set(sample["gpus"]) != expected_indices
+    ]
+    if len(samples) < 2 or incomplete:
+        return {
+            "audit_ready": False,
+            "target_interval_covered": False,
+            "other_registered_gpus_idle": False,
+            "error_code": "GPU_MONITOR_SAMPLES_INVALID",
+            "detail": f"samples={len(samples)}, incomplete={incomplete[:10]!r}",
+        }
+
+    samples.sort(key=lambda sample: int(sample["sample_ns"]))
+    first_sample_ns = int(samples[0]["sample_ns"])
+    last_sample_ns = int(samples[-1]["sample_ns"])
+    target_interval_covered = bool(
+        first_sample_ns <= target_start_ns and last_sample_ns >= target_end_ns
+    )
+    violations = []
+    maxima = {
+        index: {"gpu": index, "max_used_mb": 0, "max_util_pct": 0}
+        for index in sorted(expected_indices - {assigned_gpu})
+    }
+    for sample in samples:
+        sample_ns = int(sample["sample_ns"])
+        for index, maximum in maxima.items():
+            gpu_row = sample["gpus"][index]
+            maximum["max_used_mb"] = max(
+                int(maximum["max_used_mb"]), int(gpu_row["used_mb"])
+            )
+            maximum["max_util_pct"] = max(
+                int(maximum["max_util_pct"]), int(gpu_row["util_pct"])
+            )
+            if (
+                int(gpu_row["used_mb"]) > GPU_IDLE_MEMORY_LIMIT_MB
+                or int(gpu_row["util_pct"]) > GPU_IDLE_UTIL_LIMIT_PCT
+            ):
+                violations.append({"sample_ns": sample_ns, **gpu_row})
+    return {
+        "audit_ready": True,
+        "target_interval_covered": target_interval_covered,
+        "other_registered_gpus_idle": not violations,
+        "assigned_gpu": assigned_gpu,
+        "target_start_ns": target_start_ns,
+        "target_end_ns": target_end_ns,
+        "first_sample_ns": first_sample_ns,
+        "last_sample_ns": last_sample_ns,
+        "sample_count": len(samples),
+        "sample_interval_s": 1,
+        "other_gpu_maxima": [maxima[index] for index in sorted(maxima)],
+        "violations": violations[:50],
+        "violation_count": len(violations),
+        "idle_memory_limit_mb": GPU_IDLE_MEMORY_LIMIT_MB,
+        "idle_util_limit_pct": GPU_IDLE_UTIL_LIMIT_PCT,
+        "gpu_monitor_path": str(path),
+        "gpu_monitor_sha256": observed_sha256,
     }
 
 

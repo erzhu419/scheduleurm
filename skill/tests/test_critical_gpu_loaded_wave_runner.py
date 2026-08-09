@@ -48,6 +48,15 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
             "all_registered_gpus_idle": True,
         },
     )
+    monkeypatch.setattr(
+        runner,
+        "_continuous_other_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "target_interval_covered": True,
+            "other_registered_gpus_idle": True,
+        },
+    )
 
     report = runner.run_safe_loaded_wave(
         node="node007",
@@ -93,6 +102,15 @@ def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
             "assigned_gpu_idle": True,
             "all_registered_gpus_idle": False,
             "nonidle_registered_gpus": [{"gpu": 1}],
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_continuous_other_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "target_interval_covered": True,
+            "other_registered_gpus_idle": True,
         },
     )
 

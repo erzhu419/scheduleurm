@@ -25,6 +25,7 @@ from algorithm.experiments.critical_gpu_loaded_completion_campaign import (
     build_loaded_completion_campaign,
 )
 from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
+    _continuous_other_gpu_audit,
     _prelaunch_assigned_gpu_audit,
 )
 
@@ -121,12 +122,22 @@ def _audit_campaign_prelaunch_snapshots(
     rows = list(campaign.get("rows") or [])
     audits = []
     for row in rows:
-        audit = _prelaunch_assigned_gpu_audit(row=row, node=node)
-        audits.append({"scenario_id": row.get("scenario_id"), **audit})
+        prelaunch = _prelaunch_assigned_gpu_audit(row=row, node=node)
+        continuous = _continuous_other_gpu_audit(row=row, node=node)
+        audits.append(
+            {
+                "scenario_id": row.get("scenario_id"),
+                "prelaunch": prelaunch,
+                "continuous": continuous,
+            }
+        )
     passed = bool(rows) and all(
-        audit.get("audit_ready") is True
-        and audit.get("assigned_gpu_idle") is True
-        and audit.get("all_registered_gpus_idle") is True
+        audit["prelaunch"].get("audit_ready") is True
+        and audit["prelaunch"].get("assigned_gpu_idle") is True
+        and audit["prelaunch"].get("all_registered_gpus_idle") is True
+        and audit["continuous"].get("audit_ready") is True
+        and audit["continuous"].get("target_interval_covered") is True
+        and audit["continuous"].get("other_registered_gpus_idle") is True
         for audit in audits
     )
     return {

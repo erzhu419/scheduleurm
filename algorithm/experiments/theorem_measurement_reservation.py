@@ -262,7 +262,14 @@ def fold_measurement_reservations_into_probe(
     path: Path | None = None,
     now: float | None = None,
 ) -> list[dict[str, Any]]:
-    """Fold active local reservations into a live probe without hiding telemetry."""
+    """Annotate live probes with active measurement reservations.
+
+    Reservation is an admission-control fact, not observed resource pressure.
+    Keep the live CPU, RAM, and GPU telemetry intact so preemption, eviction,
+    migration, and monitoring code cannot misinterpret a calibration hold as a
+    saturated node. Placement code must consume
+    ``measurement_reservation_active`` explicitly.
+    """
     rows = list(nodes)
     active = {
         str(row.get("node")): row
@@ -286,20 +293,8 @@ def fold_measurement_reservations_into_probe(
                 "expires_at",
             )
         }
-        node["measurement_observed_free_cpu"] = node.get("free_cpu")
-        node["measurement_observed_free_ram_mb"] = node.get("free_ram_mb")
-        node["free_cpu"] = 0
-        node["free_ram_mb"] = 0
-        for key in ("cpu_hard_free", "cpu_backfillable_free"):
-            if key in node:
-                node[key] = 0
         for gpu in node.get("gpus") or []:
-            total = int(gpu.get("total_mb") or 0)
-            gpu["measurement_observed_used_mb"] = gpu.get("used_mb")
-            gpu["measurement_observed_free_mb"] = gpu.get("free_mb")
             gpu["measurement_reservation_active"] = True
-            gpu["used_mb"] = total
-            gpu["free_mb"] = 0
     return rows
 
 

@@ -15,7 +15,7 @@ from algorithm.experiments.theorem_measurement_reservation import (
 )
 
 
-def test_reservation_blocks_new_capacity_without_hiding_observed_telemetry(tmp_path):
+def test_reservation_annotates_probe_without_fabricating_resource_pressure(tmp_path):
     path = tmp_path / "reservations.json"
     record = acquire_reservation(
         node="node007",
@@ -33,12 +33,11 @@ def test_reservation_blocks_new_capacity_without_hiding_observed_telemetry(tmp_p
     folded = fold_measurement_reservations_into_probe(nodes, path=path)
     node = folded[0]
     gpu = node["gpus"][0]
-    assert node["free_cpu"] == 0
-    assert node["free_ram_mb"] == 0
-    assert node["measurement_observed_free_cpu"] == 48
-    assert gpu["used_mb"] == 11000
-    assert gpu["free_mb"] == 0
-    assert gpu["measurement_observed_used_mb"] == 17
+    assert node["free_cpu"] == 48
+    assert node["free_ram_mb"] == 90000
+    assert gpu["used_mb"] == 17
+    assert gpu["free_mb"] == 10983
+    assert gpu["measurement_reservation_active"] is True
     assert node["measurement_reservation"]["reservation_id"] == record["reservation_id"]
     assert release_reservation(record["reservation_id"], path=path)
     assert list_active_reservations(path=path) == []

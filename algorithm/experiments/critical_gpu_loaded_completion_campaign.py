@@ -25,6 +25,9 @@ from algorithm.experiments.critical_gpu_completion_campaign import (
     WORKLOAD_SPECS,
     _node_environment_gate,
 )
+from algorithm.experiments.durable_remote_command import (
+    run_durable_remote_capture,
+)
 from algorithm.experiments.progress_units import parse_completion_model
 from algorithm.experiments.remote_workload_selected_profile_probe import (
     RUN_ROOT,
@@ -51,6 +54,7 @@ MEASUREMENT_CODE_PATHS = (
     REPO_ROOT / "algorithm" / "experiments" / "remote_workload_selected_profile_probe.py",
     REPO_ROOT / "algorithm" / "experiments" / "progress_wrapper.py",
     REPO_ROOT / "algorithm" / "experiments" / "progress_units.py",
+    REPO_ROOT / "algorithm" / "experiments" / "durable_remote_command.py",
     REPO_ROOT / "algorithm" / "experiments" / "gpu_progress_benchmark.py",
     REPO_ROOT / "algorithm" / "experiments" / "torch_cnn_progress_benchmark.py",
     REPO_ROOT / "algorithm" / "experiments" / "torch_llm_progress_benchmark.py",
@@ -182,6 +186,8 @@ def build_loaded_completion_campaign(
         "scenario_parallelism": 1,
         "scenario_parallelism_scope": "sequential_independent_action_measurement",
         "cross_node_parallelism_allowed": True,
+        "durable_remote_supervisor_required": True,
+        "fail_closed_after_first_nonterminal_row": True,
         "gpu_assignment": {
             scenario.scenario_id: gpu
             for scenario, gpu in _scenario_gpu_assignments(
@@ -227,21 +233,24 @@ def build_loaded_completion_campaign(
         output_root=NODE_SPECS[node].output_root,
     )
     rows = []
+    stopped_after_scenario = ""
     for scenario, gpu in _scenario_gpu_assignments(
         selected,
         NODE_SPECS[node].gpus,
         wave=int(wave),
     ):
-        rows.append(
-            _run_loaded_trajectory(
-                node=node,
-                wave=int(wave),
-                campaign_id=campaign_id,
-                scenario=scenario,
-                gpu=gpu,
-                cleanup_remote_output=not keep_remote_output,
-            )
+        row = _run_loaded_trajectory(
+            node=node,
+            wave=int(wave),
+            campaign_id=campaign_id,
+            scenario=scenario,
+            gpu=gpu,
+            cleanup_remote_output=not keep_remote_output,
         )
+        rows.append(row)
+        if not bool(row.get("ready")) and not bool(row.get("capacity_boundary")):
+            stopped_after_scenario = scenario.scenario_id
+            break
     report = {
         **common,
         "rows": rows,
@@ -249,6 +258,9 @@ def build_loaded_completion_campaign(
         "capacity_boundary_count": sum(
             bool(row.get("capacity_boundary")) for row in rows
         ),
+        "registered_scenario_count": len(selected),
+        "executed_scenario_count": len(rows),
+        "stopped_after_scenario": stopped_after_scenario,
     }
     report["pass"] = bool(rows) and all(
         bool(row.get("ready")) or bool(row.get("capacity_boundary"))
@@ -355,10 +367,11 @@ def _run_loaded_trajectory(
         readiness_observations=int(scenario.readiness_observations),
     )
     started = time.time()
-    rc, out, err = _run_remote_capture(
+    rc, out, err, durable_transport = run_durable_remote_capture(
         node,
         script,
         raw_dir / "loaded_trajectory",
+        run_id=run_id,
         timeout_s=resident_timeout + target_timeout + readiness_timeout + 300,
     )
     resident_log = _fetch_log(node, f"{remote_logs}/resident.log", raw_dir / "resident")
@@ -456,6 +469,7 @@ def _run_loaded_trajectory(
         "resident_returncode": resident_rc,
         "target_returncode": target_rc,
         "remote_returncode": int(rc),
+        "durable_transport": durable_transport,
         "resident_process_group_id": markers.get("RESIDENT_PGID"),
         "target_process_group_id": markers.get("TARGET_PGID"),
         "target_start_ns": markers.get("TARGET_START_NS"),

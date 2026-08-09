@@ -317,7 +317,8 @@ def feasible_mode_actions(
     whether one mode can still be selected for every remaining activity within
     all nonrenewable budgets simultaneously.  This avoids the false certificate
     obtained by minimizing each resource coordinate with potentially different
-    modes.
+    modes.  Modes that exceed total renewable capacity are permanently
+    unavailable and therefore cannot be used as completion witnesses.
     """
 
     renewable_available_tuple = tuple(int(value) for value in renewable_available)
@@ -576,6 +577,15 @@ def _minimum_feasible_nonrenewable_completion(
         next_states: set[tuple[int, ...]] = set()
         for used in frontier:
             for mode in activity_map[job_id].modes:
+                if any(
+                    demand > capacity
+                    for demand, capacity in zip(
+                        mode.renewable_demands,
+                        instance.renewable_capacities,
+                        strict=True,
+                    )
+                ):
+                    continue
                 candidate = tuple(
                     old + demand
                     for old, demand in zip(

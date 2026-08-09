@@ -84,6 +84,8 @@ def frozen_protocol_sha256() -> str:
 
 def verify_pre_analysis_freeze(
     preregistration_path: str | Path = DEFAULT_PREREGISTRATION,
+    *,
+    require_current_implementation: bool = True,
 ) -> dict[str, Any]:
     preregistration = Path(preregistration_path)
     relative_preregistration = preregistration.resolve().relative_to(REPO_ROOT.resolve())
@@ -93,16 +95,28 @@ def verify_pre_analysis_freeze(
         raise ExternalHoldoutError("current MMRCPSP protocol configuration drifted")
 
     implementation_files = []
+    current_implementation_matches_freeze = True
     for relative, expected in FROZEN_IMPLEMENTATION_SHA256.items():
         current = sha256((REPO_ROOT / relative).read_bytes()).hexdigest()
-        if current != expected:
+        current_matches = current == expected
+        current_implementation_matches_freeze = (
+            current_implementation_matches_freeze and current_matches
+        )
+        if require_current_implementation and not current_matches:
             raise ExternalHoldoutError(f"post-freeze implementation drift: {relative}")
         committed = sha256(
             _git_output(["show", f"{FROZEN_IMPLEMENTATION_COMMIT}:{relative}"])
         ).hexdigest()
         if committed != expected:
             raise ExternalHoldoutError(f"freeze commit blob mismatch: {relative}")
-        implementation_files.append({"path": relative, "sha256": current})
+        implementation_files.append(
+            {
+                "path": relative,
+                "frozen_sha256": expected,
+                "current_sha256": current,
+                "current_matches_freeze": current_matches,
+            }
+        )
 
     preregistration_bytes = preregistration.read_bytes()
     current_preregistration_sha = sha256(preregistration_bytes).hexdigest()
@@ -131,6 +145,8 @@ def verify_pre_analysis_freeze(
         "protocol_config_sha256": FROZEN_PROTOCOL_SHA256,
         "preregistration_sha256": PREREGISTRATION_SHA256,
         "implementation_files": implementation_files,
+        "current_implementation_matches_freeze": current_implementation_matches_freeze,
+        "historical_artifact_rerun_permitted": current_implementation_matches_freeze,
         "selection_registered_after_policy_freeze": True,
         "instance_bytes_absent_at_preregistration": True,
         "policy_or_config_updates_after_holdout": False,
@@ -221,7 +237,9 @@ def build_external_holdout_report(
     preregistration_path: str | Path = DEFAULT_PREREGISTRATION,
     manifest_path: str | Path = DEFAULT_MANIFEST,
 ) -> dict[str, Any]:
-    freeze = verify_pre_analysis_freeze(preregistration_path)
+    freeze = verify_pre_analysis_freeze(
+        preregistration_path, require_current_implementation=True
+    )
     source = validate_external_source(suite_dir, preregistration_path, manifest_path)
     config_before = frozen_protocol_sha256()
     rows: dict[str, Any] = {}

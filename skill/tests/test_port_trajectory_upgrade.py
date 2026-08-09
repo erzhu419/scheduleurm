@@ -69,7 +69,7 @@ def test_local_improvement_is_finite_unique_and_fixed_period():
     assert all(set(row.policies) <= set(ALL_POLICIES) for row in rows)
 
 
-def test_trajectory_objective_uses_lower_service_and_bounded_penalties():
+def test_trajectory_objective_separates_virtual_service_and_physical_score():
     instance = load_port_instance(SMALL_INSTANCE)
     plan = TrajectoryPlan((THEOREM_POLICY, "spt_static", "reconfiguration_greedy"))
     first = _SyntheticTrajectorySimulator(instance, plan).run()
@@ -78,14 +78,24 @@ def test_trajectory_objective_uses_lower_service_and_bounded_penalties():
     objective = trajectory_objective(first, frame)
 
     assert first["result_hash"] == second["result_hash"]
-    assert 0.0 <= objective["terminal_q_dot_lower_service"] <= 1.0
+    assert objective["low_level_physical_score_semantics"] == (
+        "robust_maxweight_lower_service"
+    )
+    assert objective["terminal_coordinates_are_physical_service"] is False
+    assert objective["terminal_coordinate_semantics"] == "nu_j=(U_j-C_j)/U_j"
+    assert 0.0 <= objective["terminal_uniform_weighted_virtual_service"] <= 1.0
     assert objective["total_bounded_penalty"] >= 0.0
     assert objective["total_bounded_penalty"] <= objective["uniform_penalty_bound"]
     assert objective["risk_exposure_bounded"] <= objective["risk_exposure_bound"]
     assert objective["robust_terminal_objective"] == pytest.approx(
-        objective["terminal_q_dot_lower_service"]
+        objective["terminal_uniform_weighted_virtual_service"]
         - objective["total_bounded_penalty"],
         abs=2e-8,
+    )
+    assert objective["penalty_identity"]["equals_raw_total_penalty"] is True
+    assert objective["penalty_identity"]["reconfiguration_cost_counted_once"] is True
+    assert objective["raw_total_penalty"] == pytest.approx(
+        objective["penalty_identity"]["sum"], abs=2e-8
     )
     assert objective["selected_action_count"] > 0
 
@@ -96,7 +106,10 @@ def test_full_gate_selects_one_global_plan_by_exact_trajectory_oracle(report):
     assert report["selection_scope"] == (
         "one_plan_over_public_and_all_registered_synthetic_instances"
     )
-    assert report["selection_uses_registered_terminal_service_coordinates"] is True
+    assert report[
+        "selection_uses_registered_terminal_virtual_service_coordinates"
+    ] is True
+    assert report["terminal_coordinates_are_physical_service"] is False
     assert report["selection_uses_external_optima_or_bks"] is False
     assert report["per_instance_cherry_pick"] is False
     assert report["registered_instance_pareto_ready"] is True

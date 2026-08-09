@@ -12,16 +12,19 @@ synthetic berth/quay-crane/yard/gate instance.  Candidate generation uses:
 Every generated trajectory is replayed on every registered instance.  One
 global plan is selected by the aggregate normalized objective
 
-    cumulative Q^T lower_service
-      - trajectory_action_penalty
+    uniform_weighted terminal_virtual_service
+      - non_reconfiguration_action_penalty
       - reconfiguration_penalty
       - bounded_service_risk_penalty.
 
-Selection is exact over the enumerated family and never reads makespan, flow
-time, tardiness, or source objective values.  BACASP-S remains a time-invariant
-assignment benchmark with no mid-service migration.  Re-berthing, quay-crane
-reassignment, and yard rehandle remain available only in the synthetic
-four-resource benchmark where those semantics are explicitly registered.
+Selection is exact over the enumerated family.  Its low-level decisions use
+physical lower-service vectors, while its frame-level selector uses explicitly
+defined normalized terminal-cost service coordinates derived from makespan,
+flow time, and tardiness/source cost.  The artifact keeps those two notions
+separate.  BACASP-S remains a time-invariant assignment benchmark with no
+mid-service migration.  Re-berthing, quay-crane reassignment, and yard rehandle
+remain available only in the synthetic four-resource benchmark where those
+semantics are explicitly registered.
 
 This is a deterministic registered-instance trajectory oracle.  It is not a
 physical-port result, an unrestricted BACASP-S optimum, or by itself a
@@ -66,7 +69,7 @@ from algorithm.experiments.port_scheduling_instances import (
 )
 
 
-SCHEMA_VERSION = "scheduleurm.port_trajectory_upgrade.v1"
+SCHEMA_VERSION = "scheduleurm.port_trajectory_upgrade.v2"
 TRAJECTORY_POLICY = "trajectory_robust_global"
 SOURCE_COST_METRICS = (
     "quay_makespan",
@@ -147,7 +150,7 @@ GLOBAL_TRAJECTORY_CONFIG.validate()
 
 @dataclass(frozen=True)
 class TrajectoryFrameSpec:
-    """Candidate-independent finite frame and terminal service coordinates."""
+    """Candidate-independent frame for normalized terminal-cost coordinates."""
 
     horizon: float
     cost_metrics: tuple[str, ...]
@@ -346,7 +349,15 @@ def trajectory_objective(
     frame: TrajectoryFrameSpec,
     config: TrajectorySearchConfig = GLOBAL_TRAJECTORY_CONFIG,
 ) -> dict[str, Any]:
-    """Compute terminal lower service under one candidate-independent frame."""
+    """Compute virtual terminal service under a candidate-independent frame.
+
+    Low-level dispatch audits retain the physical score
+    ``Q^T lower_service - penalty``.  At the trajectory level, registered cost
+    ``C_j`` becomes the dimensionless virtual-service coordinate
+    ``nu_j = (U_j - C_j) / U_j`` under candidate-independent bound ``U_j``.
+    Reconfiguration duration and fixed cost enter the frame penalty exactly
+    once; their action-level penalty remains a separate statewise audit.
+    """
     config.validate()
     audits = list(result.get("decision_audits") or ())
     vessels = list(result.get("vessels") or ())
@@ -379,14 +390,21 @@ def trajectory_objective(
             )
         costs[name] = value
         coordinates[name] = max(0.0, (bound - value) / bound)
-    terminal_lower_service = statistics.fmean(coordinates.values())
+    terminal_virtual_service = statistics.fmean(coordinates.values())
 
     selected_actions = [
         action
         for audit in audits
         for action in audit.get("selected_actions", ())
     ]
-    action_penalty_raw = sum(float(action["penalty_units"]) for action in selected_actions)
+    statewise_all_action_penalty_raw = sum(
+        float(action["penalty_units"]) for action in selected_actions
+    )
+    non_reconfiguration_action_penalty_raw = sum(
+        float(action["penalty_units"])
+        for action in selected_actions
+        if str(action.get("action_type") or "") not in RECONFIGURATION_ACTIONS
+    )
     risk_exposure_raw = sum(
         max(
             0.0,
@@ -402,19 +420,26 @@ def trajectory_objective(
     metrics = result["metrics"]
     reconfiguration_duration = float(metrics["reconfiguration_duration"])
     reconfiguration_fixed_cost = float(metrics["reconfiguration_fixed_cost"])
-    trajectory_penalty = config.action_penalty_weight * action_penalty_raw
+    non_reconfiguration_action_penalty = (
+        config.action_penalty_weight * non_reconfiguration_action_penalty_raw
+    )
     reconfiguration_penalty = (
         config.reconfiguration_duration_weight * reconfiguration_duration
         + config.reconfiguration_cost_weight * reconfiguration_fixed_cost
     )
     risk_penalty = config.risk_weight * risk_exposure_bounded
-    raw_total_penalty = trajectory_penalty + reconfiguration_penalty + risk_penalty
+    raw_total_penalty = (
+        non_reconfiguration_action_penalty
+        + reconfiguration_penalty
+        + risk_penalty
+    )
     normalized_penalty_exposure = raw_total_penalty / (frame.horizon + raw_total_penalty)
     bounded_penalty = config.terminal_penalty_cap * normalized_penalty_exposure
-    robust_objective = terminal_lower_service - bounded_penalty
+    robust_objective = terminal_virtual_service - bounded_penalty
     values = (
-        terminal_lower_service,
-        action_penalty_raw,
+        terminal_virtual_service,
+        statewise_all_action_penalty_raw,
+        non_reconfiguration_action_penalty_raw,
         risk_exposure_raw,
         risk_exposure_bounded,
         raw_total_penalty,
@@ -423,16 +448,36 @@ def trajectory_objective(
     )
     if any(not math.isfinite(value) for value in values) or raw_total_penalty < -EPS:
         raise ValueError("trajectory objective is non-finite or has a negative penalty")
+    penalty_identity_sum = (
+        non_reconfiguration_action_penalty
+        + reconfiguration_penalty
+        + risk_penalty
+    )
     return {
-        "score_semantics": "terminal_Q_dot_lower_service_minus_uniformly_bounded_penalty",
+        "score_semantics": (
+            "uniform_weighted_terminal_virtual_service_minus_"
+            "uniformly_bounded_penalty"
+        ),
+        "low_level_physical_score_semantics": "robust_maxweight_lower_service",
+        "terminal_coordinate_semantics": "nu_j=(U_j-C_j)/U_j",
+        "terminal_coordinates_are_physical_service": False,
         "frame": frame.snapshot(),
         "terminal_costs": {key: _round(value) for key, value in costs.items()},
-        "terminal_lower_service_coordinates": {
+        "terminal_virtual_service_coordinates": {
             key: _round(value) for key, value in coordinates.items()
         },
-        "terminal_q_dot_lower_service": _round(terminal_lower_service),
-        "trajectory_action_penalty_raw": _round(action_penalty_raw),
-        "trajectory_action_penalty": _round(trajectory_penalty),
+        "terminal_uniform_weighted_virtual_service": _round(
+            terminal_virtual_service
+        ),
+        "statewise_all_action_penalty_audit_raw": _round(
+            statewise_all_action_penalty_raw
+        ),
+        "non_reconfiguration_action_penalty_raw": _round(
+            non_reconfiguration_action_penalty_raw
+        ),
+        "non_reconfiguration_action_penalty": _round(
+            non_reconfiguration_action_penalty
+        ),
         "reconfiguration_duration": _round(reconfiguration_duration),
         "reconfiguration_fixed_cost": _round(reconfiguration_fixed_cost),
         "reconfiguration_penalty": _round(reconfiguration_penalty),
@@ -441,6 +486,18 @@ def trajectory_objective(
         "risk_exposure_bound": _round(config.risk_cap_per_action * len(selected_actions)),
         "risk_penalty": _round(risk_penalty),
         "raw_total_penalty": _round(raw_total_penalty),
+        "penalty_identity": {
+            "non_reconfiguration_action_penalty": _round(
+                non_reconfiguration_action_penalty
+            ),
+            "reconfiguration_penalty": _round(reconfiguration_penalty),
+            "risk_penalty": _round(risk_penalty),
+            "sum": _round(penalty_identity_sum),
+            "equals_raw_total_penalty": bool(
+                abs(raw_total_penalty - penalty_identity_sum) <= EPS
+            ),
+            "reconfiguration_cost_counted_once": True,
+        },
         "normalized_penalty_exposure": _round(normalized_penalty_exposure),
         "total_bounded_penalty": _round(bounded_penalty),
         "uniform_penalty_bound": _round(config.terminal_penalty_cap),
@@ -772,7 +829,8 @@ def build_port_trajectory_upgrade(
         "global_search_config": config.snapshot(),
         "global_search_config_sha256": config.digest,
         "selection_scope": "one_plan_over_public_and_all_registered_synthetic_instances",
-        "selection_uses_registered_terminal_service_coordinates": True,
+        "selection_uses_registered_terminal_virtual_service_coordinates": True,
+        "terminal_coordinates_are_physical_service": False,
         "selection_uses_external_optima_or_bks": False,
         "per_instance_cherry_pick": False,
         "selected_global_plan": selected.snapshot(),
@@ -843,10 +901,13 @@ def build_port_trajectory_upgrade(
                 "finite full-rollout plus fixed rolling-seed plus fixed-beam local-improvement family"
             ),
             "score": (
-                "mean candidate-independent-frame terminal lower-service coordinate over "
-                "drain, flow, and deadline/source-cost coordinates, minus a uniformly bounded "
-                "trajectory, reconfiguration, and capped service-risk penalty"
+                "uniform mean of candidate-independent normalized terminal-cost virtual-service "
+                "coordinates over drain, flow, and deadline/source-cost measures, minus a "
+                "uniformly bounded non-reconfiguration, reconfiguration, and capped service-risk "
+                "penalty"
             ),
+            "low_level_score": "statewise Q^T physical_lower_service minus action penalty",
+            "terminal_coordinate_definition": "nu_j=(U_j-C_j)/U_j in [0,1]",
             "candidate_solver": "exact enumeration over every generated global trajectory candidate",
             "oracle_gap_alpha0": _round(oracle_gap),
             "oracle_gap_alpha1": 0.0,
@@ -866,7 +927,7 @@ def build_port_trajectory_upgrade(
         "claim_boundary": {
             "supports": [
                 "one globally selected plan under one locked configuration across all registered port instances",
-                "exact terminal lower-service-minus-bounded-penalty selection over the finite family",
+                "exact terminal virtual-service-minus-bounded-penalty selection over the finite family",
                 "candidate-independent frame bounds and Pareto-nondominated selected trajectories on every registered instance",
                 "same-input comparison with FCFS, SPT, EDD, and reconfiguration-aware policies",
                 "public BACASP-S source-core feasibility with time-invariant service assignments",

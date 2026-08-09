@@ -1,0 +1,2409 @@
+{
+  "aggregate": {
+    "bootstrap": {
+      "method": "factor-cell cluster bootstrap; both R89/R90 rows retained per sampled cell",
+      "replicates": 5000,
+      "seed": 20260809
+    },
+    "factor_cell_count": 18,
+    "paired_policy_summaries": {
+      "edd_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.266619602,
+              0.271843179
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.269207254
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              0.609115186,
+              0.614530609
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.611729831
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.162604419,
+              0.178468024
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.170580444
+          }
+        },
+        "relation_counts": {
+          "ours_dominates": 36
+        }
+      },
+      "fcfs_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.26368367,
+              0.268540437
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.266073561
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              0.609097128,
+              0.61449747
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.611718404
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.160079743,
+              0.176668596
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.168305982
+          }
+        },
+        "relation_counts": {
+          "ours_dominates": 36
+        }
+      },
+      "reconfiguration_greedy": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.995130646,
+              1.009521066
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.002282388
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              1.000858611,
+              1.009053743
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.004752216
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.966503853,
+              1.005960856
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.985902068
+          }
+        },
+        "relation_counts": {
+          "baseline_dominates": 21,
+          "ours_dominates": 12,
+          "tradeoff": 3
+        }
+      },
+      "spt_static": {
+        "metrics": {
+          "mean_quay_flow_time": {
+            "cluster_bootstrap_95pct": [
+              0.995381728,
+              1.009857501
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.002282388
+          },
+          "quay_makespan": {
+            "cluster_bootstrap_95pct": [
+              1.000902022,
+              1.009020127
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 1.004752216
+          },
+          "source_objective_cost": {
+            "cluster_bootstrap_95pct": [
+              0.966814343,
+              1.00612576
+            ],
+            "geometric_mean_ratio_ours_over_baseline": 0.985902068
+          }
+        },
+        "relation_counts": {
+          "baseline_dominates": 21,
+          "ours_dominates": 12,
+          "tradeoff": 3
+        }
+      }
+    },
+    "selected_pareto_nondominated_count": 15,
+    "selected_strictly_dominates_every_baseline_count": 12
+  },
+  "baseline_policies": [
+    "fcfs_static",
+    "spt_static",
+    "edd_static",
+    "reconfiguration_greedy"
+  ],
+  "candidate_generation_on_holdout": false,
+  "claim_boundary": {
+    "does_not_support": [
+      "continuous-quay MILP reproduction or unrestricted port optimality",
+      "comparison with the BACASP-S authors' exact or genetic algorithms",
+      "public evidence for yard, gate, draft, or mid-service migration",
+      "physical-port deployment or empirically calibrated reconfiguration costs",
+      "automatic transfer of the server stochastic-stability certificate"
+    ],
+    "supports": [
+      "post-freeze evaluation on 54 hash-bound disjoint BACASP-S LargeMB instances",
+      "complete 27-cell Q x speed/setup x deadline coverage with R89/R90 replication",
+      "same-input comparison with four frozen simulator policies",
+      "source-core feasibility and factor-stratified paired outcome summaries"
+    ]
+  },
+  "compact_content_sha256_excluding_self": "3fcd3606c8f530477543242959d8761d2761f249664fd58b7da08858970c96c5",
+  "evaluation_metrics": [
+    "quay_makespan",
+    "mean_quay_flow_time",
+    "source_objective_cost"
+  ],
+  "freeze": {
+    "content_sha256_excluding_self": "8483fbee2174a7b281033c4d4d73d4e1a4da71c64a2b64ba1ced29d6ef30d7f9",
+    "file_sha256": "a645c6bb0482ff9741ce72245aa896d16f36d7658492e3699548b99f75e3301b",
+    "frozen_plan": {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
+      "policies": [
+        "spt_static",
+        "robust_maxweight",
+        "robust_maxweight"
+      ]
+    },
+    "holdout_feedback_used_for_selection": false,
+    "implementation_file_count": 5,
+    "path": "/home/erzhu419/mine_code/scheduleurm/tests/data/port_bacasp_s_external_holdout_r89_r90/preregistration.json",
+    "ready": true
+  },
+  "frozen_plan": {
+    "mode": "rolling_periodic",
+    "period": 3,
+    "plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
+    "policies": [
+      "spt_static",
+      "robust_maxweight",
+      "robust_maxweight"
+    ]
+  },
+  "full_artifact_gzip_sha256": "11b77d9e8220474030167f1355e1dc156fdcf33a26719c4df6e99d1408ce77fd",
+  "full_artifact_path": "md/experiment_artifacts/port_bacasp_s_external_holdout_r89_r90_full_20260809.json.gz",
+  "full_scientific_content_sha256": "da764622adae8f359da8711e64095309411a944f0e5a4479117a9ee94c0bf6d2",
+  "gate": {
+    "completed_instance_count": 36,
+    "failure_count": 18,
+    "pass": false,
+    "performance_nondominance_ready": false,
+    "performance_superiority_claim_ready": false,
+    "registered_instance_count": 54,
+    "status": "PORT_PUBLIC_EXTERNAL_HOLDOUT_FAIL",
+    "unrestricted_port_optimality_claim_ready": false
+  },
+  "holdout_feedback_used_for_selection": false,
+  "provenance": {
+    "development_holdout_hash_disjoint": true,
+    "development_holdout_path_disjoint": true,
+    "factor_cell_count": 27,
+    "instance_count": 54,
+    "manifest_content_sha256_excluding_self": "a7d84d51b5aa3130a4867a631c0e7a435c2ab9f9eb1d90e2d7b30869bd042bf6",
+    "manifest_file_sha256": "aaafa502a378dd853135e7f3ed4632edb85db909c44738da370ad764c41db97f",
+    "replications_per_cell": 2,
+    "repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+  },
+  "rows": [
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.175,
+          "mean_quay_flow_time": 95.102083333,
+          "quay_makespan": 379.08125,
+          "source_objective_cost": 7606087.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 7856737.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 1896400.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 1896400.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.840625,
+          "mean_quay_flow_time": 31.353645833,
+          "quay_makespan": 231.440625,
+          "source_objective_cost": 2065121.875
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.63421875,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.840625,
+        "mean_quay_flow_time": 31.353645833,
+        "quay_makespan": 231.440625,
+        "source_objective_cost": 2065121.875
+      },
+      "source_sha256": "bd4aadf0b4927889908c6196f81a6f7d72f5714e42525a035d62d848734cc824",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S160-0.2_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.20625,
+          "mean_quay_flow_time": 96.412083333,
+          "quay_makespan": 379.1125,
+          "source_objective_cost": 7936387.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 8069137.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 2070762.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 2070762.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.840625,
+          "mean_quay_flow_time": 31.353645833,
+          "quay_makespan": 231.440625,
+          "source_objective_cost": 2246128.125
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.63421875,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.840625,
+        "mean_quay_flow_time": 31.353645833,
+        "quay_makespan": 231.440625,
+        "source_objective_cost": 2246128.125
+      },
+      "source_sha256": "e464b060e938f87806a0b4de15248e8b426fae30ea87cac80046e2fd4f239399",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S160-0.2_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.175,
+          "mean_quay_flow_time": 94.953541667,
+          "quay_makespan": 379.08125,
+          "source_objective_cost": 7383700.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 7647718.75
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 1754412.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.71875,
+          "mean_quay_flow_time": 29.352916667,
+          "quay_makespan": 226.61875,
+          "source_objective_cost": 1754412.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.840625,
+          "mean_quay_flow_time": 31.353645833,
+          "quay_makespan": 231.440625,
+          "source_objective_cost": 1905053.125
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.63421875,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.840625,
+        "mean_quay_flow_time": 31.353645833,
+        "quay_makespan": 231.440625,
+        "source_objective_cost": 1905053.125
+      },
+      "source_sha256": "0537840e9871ce872e6b08727539132564e356c966da2f158aebaa645b4b22d7",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S160-0.2_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.67,
+          "mean_quay_flow_time": 94.546666667,
+          "quay_makespan": 377.765,
+          "source_objective_cost": 7556100.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7743270.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 1856315.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 1856315.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.355,
+          "mean_quay_flow_time": 29.474833333,
+          "quay_makespan": 225.545,
+          "source_objective_cost": 1898350.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.288877821,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.355,
+        "mean_quay_flow_time": 29.474833333,
+        "quay_makespan": 225.545,
+        "source_objective_cost": 1898350.0
+      },
+      "source_sha256": "d232d991c77f43e28786e2b82a1a8098c4d094df1accab7358ffd11ab3213b39",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S200-0.15_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.66,
+          "mean_quay_flow_time": 95.5415,
+          "quay_makespan": 377.755,
+          "source_objective_cost": 7858035.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7955670.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 2035040.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 2035040.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.355,
+          "mean_quay_flow_time": 29.474833333,
+          "quay_makespan": 225.545,
+          "source_objective_cost": 2081735.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.288877821,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.355,
+        "mean_quay_flow_time": 29.474833333,
+        "quay_makespan": 225.545,
+        "source_objective_cost": 2081735.0
+      },
+      "source_sha256": "9981d6e3311a1b47cd6859c8b8d73f15880d2fa0e22804b91be1cb9d24a1ccc6",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S200-0.15_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.67,
+          "mean_quay_flow_time": 94.3985,
+          "quay_makespan": 377.765,
+          "source_objective_cost": 7334130.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7534635.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 1705965.000000001
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.33,
+          "mean_quay_flow_time": 28.956,
+          "quay_makespan": 225.52,
+          "source_objective_cost": 1705965.000000001
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.355,
+          "mean_quay_flow_time": 29.474833333,
+          "quay_makespan": 225.545,
+          "source_objective_cost": 1742355.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.288877821,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.355,
+        "mean_quay_flow_time": 29.474833333,
+        "quay_makespan": 225.545,
+        "source_objective_cost": 1742355.0
+      },
+      "source_sha256": "3b5793379d4ddfe5d2fa1d6b3f355f6e0aa5cf07cf4c1ef710452d88b8b14d60",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S200-0.15_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.216666667,
+          "mean_quay_flow_time": 94.008055556,
+          "quay_makespan": 376.4875,
+          "source_objective_cost": 7507625.000004667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7694800.000001334
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 1829343.750000667
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 1829343.750000667
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.01875,
+          "mean_quay_flow_time": 30.4875,
+          "quay_makespan": 229.185416667,
+          "source_objective_cost": 1982554.166668001
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.289465965,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.01875,
+        "mean_quay_flow_time": 30.4875,
+        "quay_makespan": 229.185416667,
+        "source_objective_cost": 1982554.166668001
+      },
+      "source_sha256": "5614c31c3ea47d0c008f01be4c79b928c2460bf48fe9f7973ec362b5dd5f10fb",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S240-0.1_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.208333333,
+          "mean_quay_flow_time": 95.00375,
+          "quay_makespan": 376.479166667,
+          "source_objective_cost": 7809637.500002
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7907200.000001333
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 2007981.250000668
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 2007981.250000668
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.01875,
+          "mean_quay_flow_time": 30.4875,
+          "quay_makespan": 229.185416667,
+          "source_objective_cost": 2168175.000002001
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.289465965,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.01875,
+        "mean_quay_flow_time": 30.4875,
+        "quay_makespan": 229.185416667,
+        "source_objective_cost": 2168175.000002001
+      },
+      "source_sha256": "e39311539b55072aad8de23a625435ba854ad59faafd24b4435cd59c90409186",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S240-0.1_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.216666667,
+          "mean_quay_flow_time": 93.860138889,
+          "quay_makespan": 376.4875,
+          "source_objective_cost": 7286033.333336667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7486520.833333333
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 1675797.916666667
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.958333333,
+          "mean_quay_flow_time": 28.655347222,
+          "quay_makespan": 224.425,
+          "source_objective_cost": 1675797.916666667
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.01875,
+          "mean_quay_flow_time": 30.4875,
+          "quay_makespan": 229.185416667,
+          "source_objective_cost": 1824620.833336002
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.289465965,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.01875,
+        "mean_quay_flow_time": 30.4875,
+        "quay_makespan": 229.185416667,
+        "source_objective_cost": 1824620.833336002
+      },
+      "source_sha256": "d550dfa55ad5b1168e751a04063498cb1dacb1c3d14470e6ca868533625f1d8a",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q10_S240-0.1_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.175,
+          "mean_quay_flow_time": 95.102083333,
+          "quay_makespan": 379.08125,
+          "source_objective_cost": 7606087.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 7856737.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 1872603.125
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 1872603.125
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.296875,
+          "mean_quay_flow_time": 30.271770833,
+          "quay_makespan": 226.20625,
+          "source_objective_cost": 1958978.125
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228338623,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.296875,
+        "mean_quay_flow_time": 30.271770833,
+        "quay_makespan": 226.20625,
+        "source_objective_cost": 1958978.125
+      },
+      "source_sha256": "9e88c5ab5ac5e71ff831af6c90e7253ee1a0034ebef5997e285e2518a2927d1d",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S160-0.2_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.20625,
+          "mean_quay_flow_time": 96.412083333,
+          "quay_makespan": 379.1125,
+          "source_objective_cost": 7936387.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 8069137.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 2044834.375
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 2044834.375
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.296875,
+          "mean_quay_flow_time": 30.271770833,
+          "quay_makespan": 226.20625,
+          "source_objective_cost": 2148359.375
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228338623,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.296875,
+        "mean_quay_flow_time": 30.271770833,
+        "quay_makespan": 226.20625,
+        "source_objective_cost": 2148359.375
+      },
+      "source_sha256": "823108839a247e05eec4f7a6c0c4a55fe85e582489d33ef01c7b8e27533cb035",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S160-0.2_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.175,
+          "mean_quay_flow_time": 94.953541667,
+          "quay_makespan": 379.08125,
+          "source_objective_cost": 7383700.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.253125,
+          "mean_quay_flow_time": 97.887083333,
+          "quay_makespan": 379.159375,
+          "source_objective_cost": 7647718.75
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 1726590.625
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.0,
+          "mean_quay_flow_time": 29.199270833,
+          "quay_makespan": 226.10625,
+          "source_objective_cost": 1726590.625
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.296875,
+          "mean_quay_flow_time": 30.271770833,
+          "quay_makespan": 226.20625,
+          "source_objective_cost": 1794328.125
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228338623,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.296875,
+        "mean_quay_flow_time": 30.271770833,
+        "quay_makespan": 226.20625,
+        "source_objective_cost": 1794328.125
+      },
+      "source_sha256": "80ddd2bfc56d9b03c5a1040f34e368595d161a3b52c8881c8e8e51360a7eef02",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S160-0.2_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.67,
+          "mean_quay_flow_time": 94.546666667,
+          "quay_makespan": 377.765,
+          "source_objective_cost": 7556100.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7743270.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 1840232.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 1840232.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8125,
+          "mean_quay_flow_time": 29.4898,
+          "quay_makespan": 225.1525,
+          "source_objective_cost": 1888002.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228575846,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.8125,
+        "mean_quay_flow_time": 29.4898,
+        "quay_makespan": 225.1525,
+        "source_objective_cost": 1888002.0
+      },
+      "source_sha256": "b9d820558a4d98dc955c0a774a9ef2e3ecb79bbe313722f85936d5ff086ced74",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S200-0.15_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.66,
+          "mean_quay_flow_time": 95.5415,
+          "quay_makespan": 377.755,
+          "source_objective_cost": 7858035.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7955670.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 2019572.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 2019572.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8125,
+          "mean_quay_flow_time": 29.4898,
+          "quay_makespan": 225.1525,
+          "source_objective_cost": 2073782.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228575846,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.8125,
+        "mean_quay_flow_time": 29.4898,
+        "quay_makespan": 225.1525,
+        "source_objective_cost": 2073782.0
+      },
+      "source_sha256": "996b8776ed39376a57931c904ea92d24cb3f046628fb264f1aa8464126288dc7",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S200-0.15_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.67,
+          "mean_quay_flow_time": 94.3985,
+          "quay_makespan": 377.765,
+          "source_objective_cost": 7334130.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.7025,
+          "mean_quay_flow_time": 96.626333333,
+          "quay_makespan": 377.7975,
+          "source_objective_cost": 7534635.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 1684022.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.795,
+          "mean_quay_flow_time": 28.918583333,
+          "quay_makespan": 225.14,
+          "source_objective_cost": 1684022.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8125,
+          "mean_quay_flow_time": 29.4898,
+          "quay_makespan": 225.1525,
+          "source_objective_cost": 1720277.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.228575846,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.8125,
+        "mean_quay_flow_time": 29.4898,
+        "quay_makespan": 225.1525,
+        "source_objective_cost": 1720277.0
+      },
+      "source_sha256": "8b4afac37880ae88985e6440c873ad1ecd15a4890895ca5629d7b4c4591a2f4d",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S200-0.15_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.216666667,
+          "mean_quay_flow_time": 94.008055556,
+          "quay_makespan": 376.4875,
+          "source_objective_cost": 7507625.000004667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7694800.000001334
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 1821427.083333334
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 1821427.083333334
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.779166667,
+          "mean_quay_flow_time": 29.661041667,
+          "quay_makespan": 224.21875,
+          "source_objective_cost": 1907427.083336001
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.22880995,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.779166667,
+        "mean_quay_flow_time": 29.661041667,
+        "quay_makespan": 224.21875,
+        "source_objective_cost": 1907427.083336001
+      },
+      "source_sha256": "a96aacc26d84b01866ceb5880c3349aa812f56408beb9f817244067bfa467530",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S240-0.1_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.208333333,
+          "mean_quay_flow_time": 95.00375,
+          "quay_makespan": 376.479166667,
+          "source_objective_cost": 7809637.500002
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7907200.000001333
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 2003693.750001334
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 2003693.750001334
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.779166667,
+          "mean_quay_flow_time": 29.661041667,
+          "quay_makespan": 224.21875,
+          "source_objective_cost": 2093393.750004
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.22880995,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.779166667,
+        "mean_quay_flow_time": 29.661041667,
+        "quay_makespan": 224.21875,
+        "source_objective_cost": 2093393.750004
+      },
+      "source_sha256": "fe5ededea89b76f7cde6c8c1663d423efd237c54adbc1e30786524375685c221",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S240-0.1_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.216666667,
+          "mean_quay_flow_time": 93.860138889,
+          "quay_makespan": 376.4875,
+          "source_objective_cost": 7286033.333336667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.24375,
+          "mean_quay_flow_time": 96.087777778,
+          "quay_makespan": 376.514583333,
+          "source_objective_cost": 7486520.833333333
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 1660018.749999335
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.579166667,
+          "mean_quay_flow_time": 28.742152778,
+          "quay_makespan": 224.15,
+          "source_objective_cost": 1660018.749999335
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.779166667,
+          "mean_quay_flow_time": 29.661041667,
+          "quay_makespan": 224.21875,
+          "source_objective_cost": 1745839.583334001
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 89,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.22880995,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.779166667,
+        "mean_quay_flow_time": 29.661041667,
+        "quay_makespan": 224.21875,
+        "source_objective_cost": 1745839.583334001
+      },
+      "source_sha256": "61547186782dbf7720dbd3400780dcc723e7cd0053af7587a13426681154b5e6",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_89_Q15_S240-0.1_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "tradeoff",
+        "spt_static": "tradeoff"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.41875,
+          "mean_quay_flow_time": 54.262083333,
+          "quay_makespan": 299.63125,
+          "source_objective_cost": 3961387.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 3961012.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 485903.125
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 485903.125
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.684375,
+          "mean_quay_flow_time": 12.71375,
+          "quay_makespan": 187.503125,
+          "source_objective_cost": 484018.75
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.389042468,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.684375,
+        "mean_quay_flow_time": 12.71375,
+        "quay_makespan": 187.503125,
+        "source_objective_cost": 484018.75
+      },
+      "source_sha256": "4510a1aa2c9433a2b8dcd6d59a51e9bb676a0c7e9503c46312c88c26c68cc417",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S160-0.2_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "tradeoff",
+        "spt_static": "tradeoff"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.19375,
+          "mean_quay_flow_time": 54.124166667,
+          "quay_makespan": 299.625,
+          "source_objective_cost": 4153775.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 4165812.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 619821.875
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 619821.875
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.684375,
+          "mean_quay_flow_time": 12.71375,
+          "quay_makespan": 187.503125,
+          "source_objective_cost": 598937.5
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.389042468,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.684375,
+        "mean_quay_flow_time": 12.71375,
+        "quay_makespan": 187.503125,
+        "source_objective_cost": 598937.5
+      },
+      "source_sha256": "d08cb21cfced77a8f1c016c03f08f058d6a35b52d923cdc6498378ebf01838d2",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S160-0.2_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "tradeoff",
+        "spt_static": "tradeoff"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.41875,
+          "mean_quay_flow_time": 53.975,
+          "quay_makespan": 299.63125,
+          "source_objective_cost": 3740843.75
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 3766743.75
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 401334.375
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.65,
+          "mean_quay_flow_time": 12.9546875,
+          "quay_makespan": 186.45,
+          "source_objective_cost": 401334.375
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.684375,
+          "mean_quay_flow_time": 12.71375,
+          "quay_makespan": 187.503125,
+          "source_objective_cost": 402412.5
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.389042468,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 5.684375,
+        "mean_quay_flow_time": 12.71375,
+        "quay_makespan": 187.503125,
+        "source_objective_cost": 402412.5
+      },
+      "source_sha256": "16e15146e7d50a6763a8344099ac7f9b1469a5752b24797d2f13b6a17adf731e",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S160-0.2_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.865,
+          "mean_quay_flow_time": 54.005,
+          "quay_makespan": 298.825,
+          "source_objective_cost": 3938250.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 3938040.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 468417.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 468417.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.245,
+          "mean_quay_flow_time": 13.0754,
+          "quay_makespan": 193.1585,
+          "source_objective_cost": 513461.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.194417969,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.245,
+        "mean_quay_flow_time": 13.0754,
+        "quay_makespan": 193.1585,
+        "source_objective_cost": 513461.0
+      },
+      "source_sha256": "5bd1979469d80a7326adcb3051bf407d42fea240ab1a22ce15a8e4a03a06fd4e",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S200-0.15_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.695,
+          "mean_quay_flow_time": 53.867666667,
+          "quay_makespan": 298.82,
+          "source_objective_cost": 4130690.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 4142840.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 599397.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 599397.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.245,
+          "mean_quay_flow_time": 13.0754,
+          "quay_makespan": 193.1585,
+          "source_objective_cost": 627086.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.194417969,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.245,
+        "mean_quay_flow_time": 13.0754,
+        "quay_makespan": 193.1585,
+        "source_objective_cost": 627086.0
+      },
+      "source_sha256": "c47bd25397f3314c8dc201bdff89e85be202f4ce940b259f1ab4d8653a7bd05e",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S200-0.15_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "baseline_dominates",
+        "spt_static": "baseline_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.865,
+          "mean_quay_flow_time": 53.718,
+          "quay_makespan": 298.825,
+          "source_objective_cost": 3718515.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 3744465.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 388082.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.26,
+          "mean_quay_flow_time": 12.72775,
+          "quay_makespan": 185.73,
+          "source_objective_cost": 388082.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.245,
+          "mean_quay_flow_time": 13.0754,
+          "quay_makespan": 193.1585,
+          "source_objective_cost": 432034.0
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.194417969,
+      "selected_pareto_nondominated": false,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.245,
+        "mean_quay_flow_time": 13.0754,
+        "quay_makespan": 193.1585,
+        "source_objective_cost": 432034.0
+      },
+      "source_sha256": "f927582f5b445931070000ffd0ed35993eb3c9f1de92ac37d9302d95aa28dc04",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S200-0.15_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.379166667,
+          "mean_quay_flow_time": 53.761388889,
+          "quay_makespan": 298.054166667,
+          "source_objective_cost": 3916324.999996667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 3916274.999998
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 452014.583334666
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 452014.583334666
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.872916667,
+          "mean_quay_flow_time": 11.293102778,
+          "quay_makespan": 182.39375,
+          "source_objective_cost": 365616.749997333
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.281875,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.872916667,
+        "mean_quay_flow_time": 11.293102778,
+        "quay_makespan": 182.39375,
+        "source_objective_cost": 365616.749997333
+      },
+      "source_sha256": "3ddf5d51702f609cbb1fa8d68f76dc3fc72cf0d41809061cc6a51886f4ac2a65",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S240-0.1_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.2625,
+          "mean_quay_flow_time": 53.625,
+          "quay_makespan": 298.05,
+          "source_objective_cost": 4108849.999998
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 4121074.999998
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 579681.249998666
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 579681.249998666
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.872916667,
+          "mean_quay_flow_time": 11.293102778,
+          "quay_makespan": 182.39375,
+          "source_objective_cost": 473079.249993333
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.281875,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.872916667,
+        "mean_quay_flow_time": 11.293102778,
+        "quay_makespan": 182.39375,
+        "source_objective_cost": 473079.249993333
+      },
+      "source_sha256": "c1a2b784068a22f44430e072cd4268a74aeeb2394b71792d02f08cec91628ad8",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S240-0.1_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.379166667,
+          "mean_quay_flow_time": 53.474444444,
+          "quay_makespan": 298.054166667,
+          "source_objective_cost": 3697362.499999333
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 3723362.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 375702.083332666
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.9,
+          "mean_quay_flow_time": 12.508680556,
+          "quay_makespan": 185.033333333,
+          "source_objective_cost": 375702.083332666
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.872916667,
+          "mean_quay_flow_time": 11.293102778,
+          "quay_makespan": 182.39375,
+          "source_objective_cost": 292234.749997333
+        }
+      },
+      "q_max_factor": 10,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.281875,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.872916667,
+        "mean_quay_flow_time": 11.293102778,
+        "quay_makespan": 182.39375,
+        "source_objective_cost": 292234.749997333
+      },
+      "source_sha256": "a32adae434753074a080e4b031355acdc49795fd84966f24abd2f41dc53d3f0b",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q10_S240-0.1_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.41875,
+          "mean_quay_flow_time": 54.262083333,
+          "quay_makespan": 299.63125,
+          "source_objective_cost": 3961387.5
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 3961012.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 491262.5
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 491262.5
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.896875,
+          "mean_quay_flow_time": 12.449125,
+          "quay_makespan": 185.534375,
+          "source_objective_cost": 444541.25
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.686041667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.896875,
+        "mean_quay_flow_time": 12.449125,
+        "quay_makespan": 185.534375,
+        "source_objective_cost": 444541.25
+      },
+      "source_sha256": "8f2828a49a478286cab43ba8640a6f44337b0e583fe9fa5138480a85d572b7e2",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S160-0.2_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.19375,
+          "mean_quay_flow_time": 54.124166667,
+          "quay_makespan": 299.625,
+          "source_objective_cost": 4153775.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 4165812.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 618325.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 618325.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.896875,
+          "mean_quay_flow_time": 12.449125,
+          "quay_makespan": 185.534375,
+          "source_objective_cost": 558521.25
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.686041667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.896875,
+        "mean_quay_flow_time": 12.449125,
+        "quay_makespan": 185.534375,
+        "source_objective_cost": 558521.25
+      },
+      "source_sha256": "e8212781c08d554e00a77b1a4fb51cfad7cff8bea2f834cbde5ee4443524fecb",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S160-0.2_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.41875,
+          "mean_quay_flow_time": 53.975,
+          "quay_makespan": 299.63125,
+          "source_objective_cost": 3740843.75
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 6.16875,
+          "mean_quay_flow_time": 54.257916667,
+          "quay_makespan": 299.6,
+          "source_objective_cost": 3766743.75
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 404543.75
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 5.159375,
+          "mean_quay_flow_time": 12.915833333,
+          "quay_makespan": 186.409375,
+          "source_objective_cost": 404543.75
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.896875,
+          "mean_quay_flow_time": 12.449125,
+          "quay_makespan": 185.534375,
+          "source_objective_cost": 360060.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.686041667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 4.896875,
+        "mean_quay_flow_time": 12.449125,
+        "quay_makespan": 185.534375,
+        "source_objective_cost": 360060.0
+      },
+      "source_sha256": "7d920ebea752f1edc6b870beea4906609912681cd0be692f49c827f770265a02",
+      "speed_setup_factor": "160-0.2",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S160-0.2_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.865,
+          "mean_quay_flow_time": 54.005,
+          "quay_makespan": 298.825,
+          "source_objective_cost": 3938250.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 3938040.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 476200.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 476200.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.6675,
+          "mean_quay_flow_time": 12.326533333,
+          "quay_makespan": 185.1835,
+          "source_objective_cost": 436788.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.634166667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.6675,
+        "mean_quay_flow_time": 12.326533333,
+        "quay_makespan": 185.1835,
+        "source_objective_cost": 436788.0
+      },
+      "source_sha256": "3d26fcd68556032614817398eb860005cc57093b9e438024fc4c1d85cffe003a",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S200-0.15_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.695,
+          "mean_quay_flow_time": 53.867666667,
+          "quay_makespan": 298.82,
+          "source_objective_cost": 4130690.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 4142840.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 600850.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 600850.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.6675,
+          "mean_quay_flow_time": 12.326533333,
+          "quay_makespan": 185.1835,
+          "source_objective_cost": 547488.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.634166667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.6675,
+        "mean_quay_flow_time": 12.326533333,
+        "quay_makespan": 185.1835,
+        "source_objective_cost": 547488.0
+      },
+      "source_sha256": "2fad795406ca6b52f786594542d11db9205b50af8595c83a9d563d66389b40b2",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S200-0.15_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.865,
+          "mean_quay_flow_time": 53.718,
+          "quay_makespan": 298.825,
+          "source_objective_cost": 3718515.0
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 4.675,
+          "mean_quay_flow_time": 54.002666667,
+          "quay_makespan": 298.8,
+          "source_objective_cost": 3744465.0
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 392165.0
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.8975,
+          "mean_quay_flow_time": 12.721666667,
+          "quay_makespan": 185.6975,
+          "source_objective_cost": 392165.0
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.6675,
+          "mean_quay_flow_time": 12.326533333,
+          "quay_makespan": 185.1835,
+          "source_objective_cost": 353363.0
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.634166667,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 3.6675,
+        "mean_quay_flow_time": 12.326533333,
+        "quay_makespan": 185.1835,
+        "source_objective_cost": 353363.0
+      },
+      "source_sha256": "4c3cb0f9cc3dae9ca6337c8c537ebc477f2fdc88e34f5aa5e34e66cb684ec7d7",
+      "speed_setup_factor": "200-0.15",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S200-0.15_D2.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1.5",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.379166667,
+          "mean_quay_flow_time": 53.761388889,
+          "quay_makespan": 298.054166667,
+          "source_objective_cost": 3916324.999996667
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 3916274.999998
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 462129.166666667
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 462129.166666667
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.48125,
+          "mean_quay_flow_time": 12.006277778,
+          "quay_makespan": 183.335416667,
+          "source_objective_cost": 413872.500003333
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.287083333,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.48125,
+        "mean_quay_flow_time": 12.006277778,
+        "quay_makespan": 183.335416667,
+        "source_objective_cost": 413872.500003333
+      },
+      "source_sha256": "eeab9ba18c2b0ec236c8f9a94fa9b59046ef688c5ece8ff696bd22acfe8987c2",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S240-0.1_D1.5.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "1",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.2625,
+          "mean_quay_flow_time": 53.625,
+          "quay_makespan": 298.05,
+          "source_objective_cost": 4108849.999998
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 4121074.999998
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 583949.999996666
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 583949.999996666
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.48125,
+          "mean_quay_flow_time": 12.006277778,
+          "quay_makespan": 183.335416667,
+          "source_objective_cost": 525665.000001333
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.287083333,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.48125,
+        "mean_quay_flow_time": 12.006277778,
+        "quay_makespan": 183.335416667,
+        "source_objective_cost": 525665.000001333
+      },
+      "source_sha256": "c1437d68f3f0a4418c54b551a3ef0623c4325a517acd83617ea4c12ad6b7887c",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S240-0.1_D1.dat"
+    },
+    {
+      "baseline_relations": {
+        "edd_static": "ours_dominates",
+        "fcfs_static": "ours_dominates",
+        "reconfiguration_greedy": "ours_dominates",
+        "spt_static": "ours_dominates"
+      },
+      "deadline_factor": "2",
+      "policy_source_core_metrics": {
+        "edd_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.379166667,
+          "mean_quay_flow_time": 53.474444444,
+          "quay_makespan": 298.054166667,
+          "source_objective_cost": 3697362.499999333
+        },
+        "fcfs_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 3.245833333,
+          "mean_quay_flow_time": 53.760833333,
+          "quay_makespan": 298.033333333,
+          "source_objective_cost": 3723362.5
+        },
+        "reconfiguration_greedy": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 380525.000000667
+        },
+        "spt_static": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.672916667,
+          "mean_quay_flow_time": 12.533888889,
+          "quay_makespan": 185.00625,
+          "source_objective_cost": 380525.000000667
+        },
+        "trajectory_robust_global": {
+          "completed_source_vessels": 30,
+          "crane_setup_travel_duration": 2.48125,
+          "mean_quay_flow_time": 12.006277778,
+          "quay_makespan": 183.335416667,
+          "source_objective_cost": 330735.000003333
+        }
+      },
+      "q_max_factor": 15,
+      "replication": 90,
+      "selected_feasible": true,
+      "selected_low_level_oracle_gap_max": 0.287083333,
+      "selected_pareto_nondominated": true,
+      "selected_source_core_metrics": {
+        "completed_source_vessels": 30,
+        "crane_setup_travel_duration": 2.48125,
+        "mean_quay_flow_time": 12.006277778,
+        "quay_makespan": 183.335416667,
+        "source_objective_cost": 330735.000003333
+      },
+      "source_sha256": "6dd6ebd08dac3172fb3ab4edf820b6d10ed69b54671846c4227688c9dfa14f79",
+      "speed_setup_factor": "240-0.1",
+      "upstream_path": "instances/LargeMB/instance_Gen_Meisel2009_10m_V30_L50_90_Q15_S240-0.1_D2.dat"
+    }
+  ],
+  "schema_version": "scheduleurm.port_bacasp_s_external_holdout.v1.compact.v1"
+}

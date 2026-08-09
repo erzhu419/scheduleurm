@@ -32,6 +32,8 @@ def test_loaded_campaign_is_finite_policy_reachable_and_no_touch(tmp_path, monke
         "sequential_independent_action_measurement"
     )
     assert report["cross_node_parallelism_allowed"] is True
+    assert report["durable_remote_supervisor_required"] is True
+    assert report["fail_closed_after_first_nonterminal_row"] is True
     assert len(report["measurement_code_manifest"]["sha256"]) == 64
     assert report["pre_registered_split"] == {
         "training": [1, 2, 3],
@@ -64,6 +66,33 @@ def test_loaded_campaign_is_finite_policy_reachable_and_no_touch(tmp_path, monke
         "resident_hybrid_rl_target_cnn",
     ]
     assert all(row["status"] == "planned" for row in report["rows"])
+
+
+def test_loaded_campaign_stops_after_first_nonterminal_row(tmp_path, monkeypatch):
+    monkeypatch.setattr(campaign, "ARTIFACT_ROOT", tmp_path)
+    monkeypatch.setattr(campaign, "_deploy_progress_wrapper", lambda *args, **kwargs: None)
+    calls = []
+
+    def fake_run(**kwargs):
+        calls.append(kwargs["scenario"].scenario_id)
+        ready = len(calls) == 1
+        return {
+            "scenario_id": kwargs["scenario"].scenario_id,
+            "ready": ready,
+            "capacity_boundary": False,
+        }
+
+    monkeypatch.setattr(campaign, "_run_loaded_trajectory", fake_run)
+
+    report = campaign.build_loaded_completion_campaign(
+        node="node007", wave=1, allow_launch=True
+    )
+
+    assert calls == ["cnn_after_llm", "llm_after_cnn"]
+    assert report["registered_scenario_count"] == 4
+    assert report["executed_scenario_count"] == 2
+    assert report["stopped_after_scenario"] == "llm_after_cnn"
+    assert report["pass"] is False
 
 
 def test_loaded_campaign_preregisters_node_specific_overlap_duration(

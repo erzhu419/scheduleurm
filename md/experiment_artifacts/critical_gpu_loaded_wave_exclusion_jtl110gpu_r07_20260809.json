@@ -1,0 +1,68 @@
+{
+  "excluded_before_lcb": true,
+  "exclusion_decision_basis": "Independent continuous host-process monitoring observed a Python process outside the campaign process groups during rl_after_cnn; performance values were not consulted.",
+  "exclusion_rule": "Exclude a preregistered wave only when the independent process audit exceeds the registered contamination bound; retain all invalid evidence and rerun the identical wave only after an idle guard interval.",
+  "gate": "critical_gpu_loaded_wave_exclusion",
+  "node": "jtl110gpu",
+  "operator_diagnostic_policy_after_exclusion": "Do not execute any remote progress-log inspection while a theorem-facing wave is active. Monitor only local durable-state artifacts and the runner session.",
+  "ordinary_running_tasks_touched": false,
+  "original_artifacts": [
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_external_cpu_contamination_excluded.json",
+      "sha256": "85a480304e80604ea77a6f4c8b6c9990632b251af72bea3fba3940db2ae70b0f"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_external_cpu_contamination_excluded.md",
+      "sha256": "130ed0ed346a48bc1daffcc177db6f5e55f1958d54c5b40f78b1dc0eda332092"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu_r07_20260809_external_cpu_contamination_excluded.json",
+      "sha256": "9eb517359c3f1e631c738f8a1cd68ad5cc1b2e0c6c7c534f02d9d0932cca52b1"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu_r07_20260809_external_cpu_contamination_excluded.md",
+      "sha256": "15ff5c39ce5f15f9ab66974c3d037e044be0c332c79711f2e5c7f7ded69d3e86"
+    }
+  ],
+  "performance_outcome_used_for_exclusion": false,
+  "protocol": "critical_gpu_loaded_natural_completion_v2",
+  "quarantined_raw_trees": [
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_llm_external_cpu_contamination_excluded",
+      "tree_sha256": "da4d7477dc562adf5364c0760f8cb84ece512c7d34b56b354eb88b419faa2ce5"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_llm_after_cnn_external_cpu_contamination_excluded",
+      "tree_sha256": "641d9b92c80dfa2d9cdadbe88d8d8bc26d6b75fc87f8c3107965b08560363e8a"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_rl_after_cnn_external_cpu_contamination_excluded",
+      "tree_sha256": "dd02e58415223831f295d6d41234648fb1f319d76815af1bd18228d158769803"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_code1b42b9b7e37d_cnn_after_rl_external_cpu_contamination_excluded",
+      "tree_sha256": "4970e1b63391159904ec1b0681208df9c53d318be53a476d3780b431aa361dd4"
+    }
+  ],
+  "replacement_policy": "Require five consecutive one-minute idle checks, then rerun the same calibration wave with the frozen code manifest. Do not run operator-side remote diagnostics during the wave and do not stop or modify unrelated jobs.",
+  "row_audit": {
+    "conservative_burst_duration_s": 11.369738879,
+    "conservative_unapproved_cpu_exposure_fraction": 0.001240516989646551,
+    "exposure_threshold": 0.001,
+    "observed_process": {
+      "command": "python",
+      "cpu_pct": 125.0,
+      "host_cpu_fraction": 0.052083333333333336,
+      "host_nproc": 24,
+      "pgid": 16375,
+      "pid": 16468,
+      "rss_kb": 176272,
+      "sample_ns": 1786273265342036208
+    },
+    "scenario_id": "rl_after_cnn",
+    "unapproved_gpu_compute_process_count": 0
+  },
+  "split_role": "calibration",
+  "status": "EXCLUDED_EXTERNAL_CPU_CONTAMINATION",
+  "wave": 7
+}

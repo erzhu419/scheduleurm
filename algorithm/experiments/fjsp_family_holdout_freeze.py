@@ -150,6 +150,10 @@ def freeze_suite(*, source_repo: str | Path, output_root: str | Path) -> dict[st
             "arbitrary_family_dominance": False,
             "stochastic_stability_transfer": False,
         },
+        "outputs": [
+            "tests/data/fjsp_family_external_holdout/fjsp_family_external_holdout_gate.json",
+            "tests/data/fjsp_family_external_holdout/fjsp_family_external_holdout_gate.md",
+        ],
     }
     output.mkdir(parents=True, exist_ok=True)
     preregistration_path = output / "preregistration.json"

@@ -51,6 +51,32 @@ def validate_frozen_suite(
     prereg_hash = _file_sha256(preregistration_file)
     if manifest.get("preregistration_sha256") != prereg_hash:
         raise FJSPFamilyHoldoutError("source manifest does not bind preregistration")
+    prereg_relative = preregistration_file.resolve().relative_to(REPO_ROOT.resolve())
+    prereg_commit = _git_output(
+        ["log", "-1", "--format=%H", "--", prereg_relative.as_posix()]
+    ).decode().strip()
+    if len(prereg_commit) != 40:
+        raise FJSPFamilyHoldoutError("preregistration is not committed")
+    committed_prereg = _git_output(
+        ["show", f"{prereg_commit}:{prereg_relative.as_posix()}"]
+    )
+    if sha256(committed_prereg).hexdigest() != prereg_hash:
+        raise FJSPFamilyHoldoutError("committed preregistration blob differs from disk")
+    for output in preregistration.get("outputs") or ():
+        relative_output = Path(str(output))
+        if relative_output.is_absolute() or ".." in relative_output.parts:
+            raise FJSPFamilyHoldoutError(f"unsafe registered output path: {output}")
+        exists = subprocess.run(
+            ["git", "cat-file", "-e", f"{prereg_commit}:{relative_output.as_posix()}"],
+            cwd=REPO_ROOT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        ).returncode == 0
+        if exists:
+            raise FJSPFamilyHoldoutError(
+                f"result artifact predates preregistration: {output}"
+            )
 
     freeze = preregistration.get("implementation_freeze") or {}
     commit = str(freeze.get("repository_commit") or "")
@@ -109,6 +135,7 @@ def validate_frozen_suite(
         "pass": True,
         "preregistration": preregistration,
         "preregistration_sha256": prereg_hash,
+        "preregistration_commit": prereg_commit,
         "manifest_sha256": _file_sha256(manifest_file),
         "implementation": verified_implementation,
         "verified_instances": verified,
@@ -227,6 +254,7 @@ def build_holdout_report(
         "schema_version": "scheduleurm.fjsp_family_holdout.v1",
         "source": {
             "preregistration_sha256": source["preregistration_sha256"],
+            "preregistration_commit": source["preregistration_commit"],
             "manifest_sha256": source["manifest_sha256"],
             "implementation": source["implementation"],
         },

@@ -73,7 +73,7 @@ def freeze_suite(*, source_repo: str | Path, output_root: str | Path) -> dict[st
         rows.sort(key=lambda row: row[:5])
         for rank in stratified_indices(len(rows)):
             _, jobs, machines, operations, name, path, instance = rows[rank]
-            bks = bks_by_name.get(path.stem)
+            bks = bks_by_name.get(public_bound_id(family, path.stem))
             if bks is None:
                 raise ValueError(f"missing public bound for {family}/{name}")
             relative = Path(family) / name
@@ -182,6 +182,12 @@ def freeze_suite(*, source_repo: str | Path, output_root: str | Path) -> dict[st
         "manifest_sha256": _file_sha256(manifest_path),
         "freeze_commit": freeze_commit,
     }
+
+
+def public_bound_id(family: str, instance_stem: str) -> str:
+    if family == "DauzerePeresPaulli1994":
+        return f"dpp{instance_stem}"
+    return instance_stem
 
 
 def _file_sha256(path: str | Path) -> str:

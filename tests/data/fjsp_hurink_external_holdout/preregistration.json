@@ -1,0 +1,108 @@
+{
+  "claim_boundary": {
+    "arbitrary_family_dominance": false,
+    "global_fjsp_optimality": false,
+    "stochastic_stability_transfer": false
+  },
+  "implementation_freeze": {
+    "implementation_sha256": {
+      "algorithm/experiments/fjsp_benchmark.py": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e",
+      "algorithm/experiments/fjsp_family_holdout.py": "b5c3321c50f73fb35992906164c0f8528994bbba2e8c89d3eb81b1f6413b3a29",
+      "algorithm/experiments/fjsp_hurink_holdout.py": "56d78758dcc6d8202d791a1385b67bb2feecad0ab304691b4704ee94cb456303",
+      "algorithm/experiments/fjsp_hurink_holdout_freeze.py": "230969feb89600f5e21010575d9cd6c35d9b4293c9197aa791f9318ed74d9826",
+      "algorithm/experiments/fjsp_instances.py": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1",
+      "algorithm/experiments/fjsp_renewal_frame_upgrade.py": "01906687ae536105a31ae2b7c62a0292400f42b10ce27160484cfded7caf66e2",
+      "algorithm/experiments/fjsp_trajectory_upgrade.py": "c121539db26180b9d4c1129e1b7535f138d84201594f1c08478ac060ddc2d0d9",
+      "algorithm/experiments/or_exact_reference.py": "5e6a178fb1aaf0aea794f3f9b49a8442770e777999725eacb1648950e18d5a56",
+      "algorithm/experiments/trajectory_renewal_frame_score.py": "f9cc9b0a24f85b3ad616e69503b9813c6111888846fdd997c4d20a0a9899b0ad"
+    },
+    "repository_commit": "5b79695c0bef5ede096363a8bdf19185b6842ace"
+  },
+  "outputs": [
+    "md/experiment_artifacts/fjsp_hurink_holdout_20260809.json.gz",
+    "md/experiment_artifacts/fjsp_hurink_holdout_20260809.json",
+    "md/fjsp_hurink_holdout_20260809.md"
+  ],
+  "protocol": {
+    "cp_sat_reference_coverage_is_not_protocol_pass_condition": true,
+    "cp_sat_workers": 1,
+    "fixed_reference_budget_s": 5.0,
+    "holdout_feedback_used_for_policy": false,
+    "matched_reference_floor_s": 0.05,
+    "per_instance_tuning": false,
+    "performance_is_not_protocol_pass_condition": true,
+    "policy": "scheduleurm_fjsp_renewal_frame",
+    "run_cp_sat_reference": true
+  },
+  "registered_on": "2026-08-09",
+  "schema_version": "scheduleurm.fjsp_hurink_holdout.preregistration.v1",
+  "selection": {
+    "excluded_previously_observed_families": [
+      "Brandimarte1993",
+      "KacemHammadiBorne2002",
+      "BehnkeGeiger2012",
+      "ChambersBarnes1996",
+      "DauzerePeresPaulli1994",
+      "FattahiMehrabadJolai2007"
+    ],
+    "members": [
+      "edata/car2.txt",
+      "edata/la10.txt",
+      "edata/la20.txt",
+      "edata/la27.txt",
+      "edata/abz9.txt",
+      "rdata/car2.txt",
+      "rdata/la10.txt",
+      "rdata/la20.txt",
+      "rdata/la27.txt",
+      "rdata/abz9.txt",
+      "sdata/car2.txt",
+      "sdata/la10.txt",
+      "sdata/la20.txt",
+      "sdata/la27.txt",
+      "sdata/abz9.txt",
+      "vdata/car2.txt",
+      "vdata/la10.txt",
+      "vdata/la20.txt",
+      "vdata/la27.txt",
+      "vdata/abz9.txt"
+    ],
+    "rule": "Within each untouched Hurink data subfamily, sort by (operation_count*machine_count, job_count, machine_count, operation_count, filename) and take ranks floor(k(n-1)/4), k=0..4.",
+    "rule_uses_algorithm_outcomes": false,
+    "source_format_exclusion_uses_algorithm_outcomes": false,
+    "source_format_exclusions": [
+      {
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "flexible-jobshop/instances/fjsp/HurinkJurischThole1994/edata/orb7.txt",
+        "sha256": "56f57f0e7599f490e7f81c9082420bf1a845762dadefedb29df817223609589c"
+      },
+      {
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "flexible-jobshop/instances/fjsp/HurinkJurischThole1994/rdata/orb7.txt",
+        "sha256": "19713991dd82191df12b047ebe9bacc0f26ff2711a79983b4377a9975d679e21"
+      },
+      {
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "flexible-jobshop/instances/fjsp/HurinkJurischThole1994/sdata/orb7.txt",
+        "sha256": "22e7ea4b3ad707069187321176aa31062a51d34ce063fe2425367a7d536a013b"
+      },
+      {
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "flexible-jobshop/instances/fjsp/HurinkJurischThole1994/vdata/orb7.txt",
+        "sha256": "9074db53172444b99b9b01cc1b53790e92cf03204e621b656efee93aba87e125"
+      }
+    ],
+    "subfamilies": [
+      "edata",
+      "rdata",
+      "sdata",
+      "vdata"
+    ]
+  },
+  "source": {
+    "bounds_path": "flexible-jobshop/solutions/bks.json",
+    "bounds_sha256": "9917b8d914a095fed5f822941b06c0e9e9cd12813aceff7fdbb3c46aae8cd5d9",
+    "repository": "https://github.com/ScheduleOpt/benchmarks",
+    "repository_commit": "e5e62a01023ff827f658255b793fd1b86e5c1707"
+  }
+}

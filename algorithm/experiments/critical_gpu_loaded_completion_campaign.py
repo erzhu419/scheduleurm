@@ -110,6 +110,13 @@ SCENARIOS = (
     ),
 )
 
+# The faster CNN stack on jtl110gpu2 otherwise finishes before the naturally
+# completed RE-SAC target.  This node/scenario-specific value is frozen before
+# the final waves and changes only resident duration, not the target estimand.
+RESIDENT_TOTAL_UNIT_OVERRIDES = {
+    ("jtl110gpu2", "rl_after_cnn"): 30_000,
+}
+
 
 def build_loaded_completion_campaign(
     *,
@@ -182,6 +189,9 @@ def build_loaded_completion_campaign(
                 NODE_SPECS[node].gpus,
                 wave=int(wave),
             )
+        },
+        "registered_resident_total_units": {
+            row.scenario_id: _resident_total_units(node, row) for row in selected
         },
         "scenario_ids": [row.scenario_id for row in selected],
         "selection": {
@@ -307,7 +317,7 @@ def _run_loaded_trajectory(
     raw_dir.mkdir(parents=True, exist_ok=True)
     remote_root = f"{node_spec.output_root.rstrip('/')}/{run_id}"
     remote_logs = f"/tmp/scheduleurm_loaded_completion/{run_id}"
-    resident_iters = int(scenario.resident_total_units)
+    resident_iters = _resident_total_units(node, scenario)
     resident = _render(
         node=node,
         wave=wave,
@@ -861,6 +871,15 @@ def _reason(**values: Any) -> str:
     return ";".join(pieces)
 
 
+def _resident_total_units(node: str, scenario: LoadedTrajectorySpec) -> int:
+    return int(
+        RESIDENT_TOTAL_UNIT_OVERRIDES.get(
+            (str(node), str(scenario.scenario_id)),
+            int(scenario.resident_total_units),
+        )
+    )
+
+
 def _manifest_row(node: str, wave: int, scenario: LoadedTrajectorySpec) -> dict[str, Any]:
     return {
         "scenario_id": scenario.scenario_id,
@@ -871,7 +890,7 @@ def _manifest_row(node: str, wave: int, scenario: LoadedTrajectorySpec) -> dict[
         "target_workload_key": scenario.target_workload,
         "resource_state": scenario.resource_state,
         "resident_mix": scenario.resident_mix,
-        "resident_total_units": int(scenario.resident_total_units),
+        "resident_total_units": _resident_total_units(node, scenario),
         "target_total_units": int(scenario.target_total_units),
         "status": "planned",
         "ready": False,

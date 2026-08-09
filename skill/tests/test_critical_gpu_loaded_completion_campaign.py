@@ -66,6 +66,24 @@ def test_loaded_campaign_is_finite_policy_reachable_and_no_touch(tmp_path, monke
     assert all(row["status"] == "planned" for row in report["rows"])
 
 
+def test_loaded_campaign_preregisters_node_specific_overlap_duration(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(campaign, "ARTIFACT_ROOT", tmp_path)
+
+    report = campaign.build_loaded_completion_campaign(
+        node="jtl110gpu2", wave=1
+    )
+    rows = {row["scenario_id"]: row for row in report["rows"]}
+
+    assert report["registered_resident_total_units"]["rl_after_cnn"] == 30_000
+    assert rows["rl_after_cnn"]["resident_total_units"] == 30_000
+    assert rows["cnn_after_llm"]["resident_total_units"] == 12_000
+    assert campaign._resident_total_units(
+        "jtl110gpu", next(row for row in campaign.SCENARIOS if row.scenario_id == "rl_after_cnn")
+    ) == 18_000
+
+
 def test_llm_template_isolates_node_specific_pythonpath():
     template = (campaign.TEMPLATE_ROOT / "torch_llm_distilgpt2.cmd.tpl").read_text(
         encoding="utf-8"

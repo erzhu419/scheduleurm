@@ -36,6 +36,7 @@ from .critical_gpu_loaded_completion_campaign import (
     TRAINING_WAVES,
     _split_role,
     measurement_code_manifest,
+    _resident_total_units,
 )
 
 
@@ -269,7 +270,9 @@ def _expected_scenarios(node: str) -> dict[str, dict[str, Any]]:
             "resident_workload_env": resident.workload_env,
             "target_workload_key": target.workload_key,
             "target_workload_env": target.workload_env,
-            "resident_measurement_total_units": int(scenario.resident_total_units),
+            "resident_measurement_total_units": _resident_total_units(
+                node, scenario
+            ),
             "target_measurement_total_units": int(scenario.target_total_units),
             "resident_canonical_total_units": int(resident.max_iters),
             "target_canonical_total_units": int(target.max_iters),

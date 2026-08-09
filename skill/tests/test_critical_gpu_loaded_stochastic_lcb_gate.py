@@ -50,6 +50,13 @@ def test_loaded_gate_constructs_joint_holdout_certificate(tmp_path):
     )
 
 
+def test_expected_loaded_units_follow_node_specific_preregistration():
+    expected = _expected_scenarios("jtl110gpu2")
+
+    assert expected["rl_after_cnn"]["resident_measurement_total_units"] == 30_000
+    assert expected["cnn_after_llm"]["resident_measurement_total_units"] == 12_000
+
+
 def test_loaded_gate_fails_closed_on_partial_overlap(tmp_path):
     paths = _write_campaigns(tmp_path)
     payload = json.loads(paths[HOLDOUT_WAVE].read_text(encoding="utf-8"))

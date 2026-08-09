@@ -10,6 +10,7 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 |---|---|---|
 | Full-action stationary-mix slack implies support-function slack | `/home/erzhu419/mine_code/proof/Scheduleurm/CapacityRegion.lean` | `capacity_slack_implies_support_slack` |
 | Downward-closed capacity slack implies support-function slack | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_downward_capacity_support_slack` |
+| Finite feature-cell candidate construction with containment, cardinality, and nonzero \(L\rho\) support loss | `/home/erzhu419/mine_code/proof/Scheduleurm/CandidateApprox.lean` | `finite_feature_cell_candidate_certificate` |
 | Fabric-cover candidate support approximation \(H^{full}\le H^{cand}+L\rho\|q\|_1\) | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_approximation` |
 | Fabric-cover support approximation from a concrete projection and feature-sensitivity calibration | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_approximation_from_calibration` |
 | Constructive coordinate-Hausdorff capacity-set approximation | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_coordinate_hausdorff` |
@@ -27,6 +28,7 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 | Calibrated one-statement theorem with bounded conditional second-order moment | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound` |
 | Calibrated one-statement theorem with bounded conditional second-order moment and approximate oracle | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle` |
 | Statewise/dynamic feasible-family calibrated theorem with bounded second moment and approximate oracle | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle` |
+| Finite-horizon cumulative-backlog bound from telescoping Foster drift | `/home/erzhu419/mine_code/proof/Scheduleurm/FosterLyapunov.lean` | `foster_telescoping_l1_bound` |
 | Zero-slack operational necessity from a conservation law | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_operational_conservation_law_necessity` |
 | Operational capacity sandwich: positive slack sufficiency plus zero-slack necessity | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_operational_capacity_sandwich` |
 
@@ -48,6 +50,23 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 | Active-bucket high-probability lifting | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_active_bucket_lcb_learning_regret_high_probability` |
 | Active-bucket finite local failure union bound | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_active_bucket_local_failure_union_bound` |
 | Generic confidence/certificate event implies high-probability stability certificate | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_high_probability_stability_from_certificate_event` |
+
+## Variable-duration frame internals
+
+These results are the paper-facing bridge for migration and other event-driven
+configuration trajectories.  They use cumulative service and penalty units and
+do not infer a stochastic migration model from deterministic cost rows.
+
+| Obligation | Split Lean source | Searchable theorem name |
+|---|---|---|
+| Unit-rate second-order bound lifted through a bounded frame duration | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `secondOrderTerm_frame_le` |
+| Cumulative oracle obligation equals its duration-normalized form for positive duration | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frameApproximateOracle_iff_durationNormalized` |
+| Variable-duration robust MaxWeight pressure bound | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frame_approximate_maxWeight_negative_drift` |
+| Variable-duration Lyapunov drift with cumulative service and bounded frame penalty | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frame_approximate_maxWeight_lyapunov_drift` |
+| Positive minimum duration gives uniform embedded-chain drift | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frame_approximate_maxWeight_lyapunov_drift_uniform` |
+| Duration one recovers the ordinary slotted theorem | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frame_lyapunov_drift_duration_one` |
+| Finite upper duration converts frame count to elapsed physical time | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `elapsedFrameTime_le` |
+| Uniform frame drift plus local return gives embedded-chain finite-set recurrence | `/home/erzhu419/mine_code/proof/Scheduleurm/FrameBasedStability.lean` | `frame_nat_model_positive_recurrent_via_finite_set` |
 
 ## Fabric calibration internals
 
@@ -89,9 +108,18 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 
 ## Current verification command
 
+The general manuscript statement conditions on the complete pre-decision
+filtration \(\mathcal F_t\).  The Lean statewise theorem is the queue-indexed
+specialization in which all statewise full/candidate/service/feature/penalty
+objects are functions of the integer queue snapshot.  The augmented-state
+Markov and local-return bridge remains an explicit manuscript assumption; the
+artifact must not be described as a complete measure-theoretic kernel proof for
+arbitrary scheduler-visible state.
+
 ```text
 cd /home/erzhu419/mine_code/proof
 lake build Scheduleurm
+lake env lean Scheduleurm/FrameBasedStability.lean
 lake env lean ScheduleurmUpload.lean
 rg -n "\\bsorry\\b|\\badmit\\b|\\baxiom\\b" Scheduleurm ScheduleurmUpload.lean lakefile.toml
 ```

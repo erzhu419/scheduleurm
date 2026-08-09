@@ -69,7 +69,11 @@ the capacity statement and charges four implementable losses against explicit
 slack: candidate approximation, conservative service estimation, bounded
 penalties, and approximate optimization.  A positive residual margin gives a
 finite-set Foster drift certificate under bounded conditional second moments.
-We provide a Lean formalization of the fixed-family and statewise statements.
+We construct candidate families from finite feature cells, obtaining an
+explicit cardinality bound and an \(L\rho\) support-loss certificate, and derive
+finite-horizon expected-backlog bounds in addition to recurrence.  We provide a
+Lean formalization of the fixed-family, queue-indexed statewise, candidate-cover,
+diagonal-scaling, and variable-duration frame statements.
 We instantiate the model in Scheduleurm, an operational research-cluster scheduler.  The
 implementation records measured lower-service rows, admissible candidate
 configurations, penalty terms, oracle gaps, and production-admission status.
@@ -168,10 +172,16 @@ complete slack accounting.  The theorem states exactly how candidate
 approximation, conservative service estimation, scheduling penalties, and
 approximate optimization consume capacity slack.  When the remaining margin is
 positive and the stochastic primitives have bounded conditional second moments,
-the resulting policy satisfies a finite-set Foster recurrence certificate.  The
-result is stated for both fixed feasible families and state-dependent feasible
-families, the latter being the case relevant to live schedulers whose feasible
-actions depend on available jobs, alive nodes, and measured capacity boundaries.
+the resulting policy satisfies finite-horizon expected-backlog bounds and a
+finite-set Foster recurrence certificate.  A finite feature partition provides
+a constructive candidate family whose size is bounded by the number of active
+cells and whose support loss is at most \(L\rho\).  The stability result is
+stated for both fixed feasible families and state-dependent feasible families,
+the latter being the case relevant to live schedulers whose feasible actions
+depend on available jobs, alive nodes, and measured capacity boundaries.
+For migration and other event-driven actions, a separate variable-duration
+frame theorem preserves the same per-time slack accounting in cumulative
+service units and gives an embedded-chain recurrence certificate.
 
 The empirical contribution is a theorem-condition evaluation, not a claim that a
 single implementation has solved cluster scheduling in full generality.  We
@@ -189,6 +199,10 @@ coverage, and live-state dry-run trace checks identify which assumptions are
 certified and which remain finite-slice claims.  These results connect the
 proof obligations to scheduler artifacts; they do not replace a universal
 fabric-cover theorem or an exhaustive full-stack scheduler competition.
+Frozen FJSP, MMRCPSP, and port holdouts additionally test whether the finite
+trajectory-action interface survives domain-specific feasibility and
+reconfiguration constraints; they are portability evidence, not automatic
+transfer of the server stochastic model.
 
 The paper is organized as follows.  We first state the claim scope and evidence
 contract, then position the work relative to scheduler and queueing literatures.
@@ -217,6 +231,10 @@ Robust candidate MaxWeight stability & Main-text proof, electronic-companion
 derivation, and Lean checks for exact and approximate oracle versions. & Holds
 only under the stated slack, lower-service, penalty, oracle, and moment
 conditions. \\
+Variable-duration trajectory stability & Frame-level proof and Lean checks for
+cumulative service, bounded reconfiguration loss, duration bounds, and embedded
+recurrence. & A migration or port trace enters this theorem only after its
+cumulative stochastic service and moment model is certified. \\
 Measured finite service domains & Declared q00/q01/q10/q11 service slices,
 mixed-portfolio replay, lower-service slack certificates, and probe/defer
 status for unknown states. & Does not imply positive service for unmeasured
@@ -234,6 +252,10 @@ External scheduler comparison & Registered policy-semantics baselines evaluated
 on the same measured service cache, plus scoped adapter or same-host runtime
 probes when available. & Does not claim direct full-stack superiority over every
 external scheduler or original multi-node deployment. \\
+Cross-domain trajectory portability & Frozen FJSP, repaired disjoint MMRCPSP,
+and registered port holdouts with exact generated-family oracle audits. & Does
+not claim arbitrary domain-solver dominance, industrial port validation, or
+automatic transfer of server stability. \\
 Learning and hidden-regime extensions & Formal conditional results and finite
 active-bucket replay checks, forced exploration, switching, and detector-delay
 records. & Treated as extensions rather than main live performance or complete
@@ -305,17 +327,39 @@ live hook emits active-bucket sampler and regime-detector records while
 preserving the lower-service theorem oracle.  This remains an opt-in extension
 path; the default live scheduler policy is not changed.
 
+\subsection{Finite configuration trajectories in operations research}
+\label{subsec:related-trajectories}
+
+Several classical operations-research scheduling domains share the same finite
+configuration-trajectory structure without sharing the same physical service
+model.  In the flexible job-shop scheduling problem (FJSP), a trajectory chooses
+an eligible machine and a position in the machine sequence for every operation;
+the Kacem instances provide heterogeneous processing times for these choices
+\citep{kacem2002pareto}.  In the multi-mode resource-constrained project
+scheduling problem (MMRCPSP), each activity chooses a duration/resource mode
+subject to precedence and renewable and nonrenewable resource constraints; the
+Project Scheduling Problem Library (PSPLIB) supplies standard instances
+\citep{kolisch1997psplib}.  In port scheduling, berth positions, specific quay
+cranes, crane travel, and setup times form another configuration trajectory;
+the Berth Allocation and Specific Quay Crane Assignment Problem with travel and
+setup times (BACASP-S) formulation and instances make those costs explicit
+\citep{correcher2024berth}.  Section~\ref{subsec:or-generalization} uses these
+domains only to test portability of the finite-action selector.  It does not
+identify their arrival, service, or reconfiguration laws with those of a GPU
+cluster, and it does not transfer the server recurrence theorem without a
+domain-specific stochastic model.
+
 \section{Model}
 \label{sec:model}
 
 \subsection{Notation}
 \label{subsec:notation}
 
-Table~\ref{tab:notation} fixes the notation used throughout the paper.
-Each mathematical symbol is reserved for the meaning shown in the table; in
-particular, \(Q\) is the queue vector, \(q\) is an arbitrary nonnegative support
-weight, \(K_t\) is switching cost, and \(G_t\) is the risk or interference
-penalty.
+Table~\ref{tab:notation} fixes the main slotted-model and replay notation.
+Frame-specific trajectory symbols are defined at first use in
+EC.6.  Each mathematical symbol is reserved for one meaning; in particular,
+\(Q\) is the queue vector, \(q\) is an arbitrary nonnegative support weight,
+\(K_t\) is switching cost, and \(G_t\) is the risk or interference penalty.
 
 \begin{table}[t]
 \TABLE{Notation.\label{tab:notation}}{
@@ -330,6 +374,7 @@ Symbol & Meaning \\
 \(t\) & discrete decision slot \\
 \(Q_i(t)\) & class-\(i\) backlog at slot \(t\) \\
 \(Q(t)\) & queue vector at slot \(t\) \\
+\(\mathcal F_t\) & pre-decision information available to the scheduler at slot \(t\) \\
 \(\lambda\) & arrival mean vector \\
 \(v\) & feasible service vector \\
 \(a\) & configuration action \\
@@ -342,7 +387,8 @@ Symbol & Meaning \\
 \(\chi(t)\) & scheduler-visible state at slot \(t\) \\
 \(\omega_t\) & exogenous randomness at slot \(t\) \\
 \(A_i(t)\) & class-\(i\) arrival at slot \(t\) \\
-\(S_i(t)\) & class-\(i\) realized service at slot \(t\) \\
+\(S_i(t)\) & class-\(i\) potential service offered at slot \(t\) \\
+\(D_i(t)\) & class-\(i\) completed departure at slot \(t\) \\
 \(\mu^z(a)\) & service mean of action \(a\) in regime \(z\) \\
 \(\mu(a)\) & main-theorem service mean of action \(a\) \\
 \(\lowermu_t(a)\) & conservative lower-service estimate for action \(a\) at slot \(t\) \\
@@ -368,6 +414,7 @@ Symbol & Meaning \\
 \(\delta\) & full-region slack \\
 \(\epsilon_{\mathrm{cand}}\) & candidate-set support loss \\
 \(\epsilon_{\mathrm{est}}\) & lower-service estimation loss \\
+\(\epsilon_{\mathrm{LCB}}\) & normalized coordinate confidence radius \\
 \(\alpha_0\) & additive approximate-oracle error \\
 \(\alpha_1\) & queue-scaled approximate-oracle error \\
 \(\eta\) & residual drift margin \\
@@ -382,6 +429,9 @@ Symbol & Meaning \\
 \(k_i^\star(b)\) & replay profile selected for class \(i\) at backlog count \(b\) \\
 \(\widehat\mu_i(k)\) & measured aggregate service of class \(i\) at profile \(k\) \\
 \(\widehat\mu_i^{\max}\) & best measured aggregate service for class \(i\) in the same envelope \\
+\(r_i(a)\) & coordinate confidence radius for service of action \(a\) \\
+\(s_i\) & positive service-unit scale for class \(i\) \\
+\(C_s\) & uniform upper bound on the service-unit scales \(s_i\) \\
 \bottomrule
 \end{tabular}
 }{The notation avoids reusing one symbol for multiple meanings.  Acronyms are
@@ -401,20 +451,34 @@ The model intentionally treats these as one action rather than as independent
 per-job choices.
 
 Given a regime \(z\) and exogenous randomness \(\omega\), action \(a\) generates
-a nonnegative service vector \(S(a,z,\omega)\in\Real_+^{|\mathcal I|}\).  We write
+a nonnegative potential-service vector
+\(S(a,z,\omega)\in\Real_+^{|\mathcal I|}\).  Potential service is the work that
+the configuration could supply under backlog; it may be wasted when a queue is
+empty.  We write
 \(\mu^z(a)=\E[S(a,z,\omega)]\).  For the main theorem we first suppress \(z\)
 and use \(\mu(a)\); uniform-in-regime and average-regime extensions require
 additional switching assumptions and are not used as main empirical claims.
 
-The queue dynamics are
+Let \(\mathcal F_t\) be the pre-decision filtration generated by the history
+through slot \(t\), including \(Q(t)\) and scheduler-visible state \(\chi(t)\).
+The feasible families, service tables, penalties, and selected action \(a_t\)
+are \(\mathcal F_t\)-measurable; arrivals and potential service are realized
+after the action is selected.  Completed departure is
+\(D_i(t)=\min\{Q_i(t),S_i(t)\}\), and the queue dynamics are equivalently
 \begin{equation}
-  Q_i(t+1)=\left[Q_i(t)-S_i(t)\right]^+ + A_i(t),\qquad i\in\mathcal I,
+  \begin{aligned}
+  Q_i(t+1)
+  &=Q_i(t)-D_i(t)+A_i(t)\\
+  &=\left[Q_i(t)-S_i(t)\right]^+ + A_i(t),
+  \qquad i\in\mathcal I.
+  \end{aligned}
   \label{eq:queue-dynamics}
 \end{equation}
-where \(A_i(t)\) is the class-\(i\) arrival in slot \(t\).  In the finite-support
+Here \(A_i(t)\) is the class-\(i\) arrival in slot \(t\).  In the finite-support
 specialization used by the formal proof, the conditional distribution of
 \((A(t),S(t))\) depends on \(Q(t)\) through a finite sample space.  In the more
-general theorem it is enough to assume bounded conditional second moments.
+general theorem it is enough to impose the conditional mean and second-moment
+bounds below with respect to \(\mathcal F_t\).
 
 \subsection{Capacity and support functions}
 \label{subsec:capacity-support}
@@ -477,6 +541,65 @@ The support-loss bound~\eqref{eq:cover-support-loss} is used as a theorem
 assumption unless a perturbation-profiling table certifies \(\Phi,L,\rho\).  For
 exact measured finite slices in which the candidate family enumerates the
 measured actions, we set \(\rho=0\).
+
+The next result makes the candidate construction explicit rather than taking a
+covering family as a primitive.  Let \(\mathcal J_\Phi\) be a finite collection
+of active feature cells and let
+\(\kappa:\Afull\to\mathcal J_\Phi\) assign each full action to a cell.  For every
+active cell, choose one full-action representative
+\(\operatorname{rep}(j)\), and define
+\begin{equation}
+  \Acand
+  =
+  \left\{
+    \operatorname{rep}(j):j\in\mathcal J_\Phi
+  \right\}.
+  \label{eq:cell-candidate-family}
+\end{equation}
+
+\begin{proposition}[Finite-cell candidate construction]
+\label{prop:finite-cell-candidate}
+Suppose every \(a\in\Afull\) and its representative satisfy
+\begin{equation}
+  d_\Phi\!\left(a,\operatorname{rep}(\kappa(a))\right)\le\rho,
+  \label{eq:cell-radius}
+\end{equation}
+and the service map is \(L\)-Lipschitz in \(d_\Phi\).  Then the family in
+\eqref{eq:cell-candidate-family} satisfies
+\begin{equation}
+  |\Acand|\le |\mathcal J_\Phi|
+  \label{eq:candidate-cardinality}
+\end{equation}
+and, for every \(q\ge0\),
+\begin{equation}
+  H_{\Afull}(q)
+  \le
+  H_{\Acand}(q)+L\rho\normone{q}.
+  \label{eq:constructed-cover-support-loss}
+\end{equation}
+\end{proposition}
+
+\proof{Proof.}
+The candidate family is the image of the active-cell set under
+\(\operatorname{rep}\), so its cardinality cannot exceed
+\(|\mathcal J_\Phi|\).  For each \(a\in\Afull\), let
+\(a'=\operatorname{rep}(\kappa(a))\).  By~\eqref{eq:cell-radius} and
+Lipschitzness,
+\(\norminf{\mu(a)-\mu(a')}\le L\rho\).  Nonnegativity of \(q\) gives
+\begin{equation}
+  q^\top\mu(a)
+  \le q^\top\mu(a')+L\rho\normone{q}.
+\end{equation}
+Taking the maximum over \(a\in\Afull\) proves
+\eqref{eq:constructed-cover-support-loss}.
+\endproof
+
+Proposition~\ref{prop:finite-cell-candidate} separates two obligations.  The
+feature partition and representative map are constructive algorithmic objects;
+the radius and service sensitivity remain calibration objects.  Exact measured
+slices are the special case in which every active cell is represented exactly
+and \(\rho=0\).  A nonzero empirical \(L\rho\) claim additionally requires the
+perturbation profiling described in Section~\ref{sec:experiments}.
 
 \section{Robust Candidate MaxWeight}
 \label{sec:theory}
@@ -590,6 +713,56 @@ When the fabric metric in Section~\ref{subsec:candidate-cover} is certified,
 \(\epsilon_{\mathrm{cand}}=0\).
 \end{assumption}
 
+\begin{proposition}[Diagonal-scaled lower-confidence support loss]
+\label{prop:diagonal-lcb}
+Let \(\widehat\mu_i(a)\) estimate \(\mu_i(a)\), let \(r_i(a)\) be a
+coordinate confidence radius, and let \(s_i\ge0\) be a fixed service-unit
+scale.  On the simultaneous confidence event
+\begin{equation}
+  \left|\widehat\mu_i(a)-\mu_i(a)\right|
+  \le r_i(a),
+  \qquad
+  0\le r_i(a)\le\epsilon_{\mathrm{LCB}}s_i,
+  \label{eq:diagonal-confidence-event}
+\end{equation}
+for every admitted \(a\in\Acand_t\) and class \(i\), define
+\begin{equation}
+  \lowermu_{t,i}(a)=\widehat\mu_i(a)-r_i(a).
+  \label{eq:diagonal-lcb-service}
+\end{equation}
+Then \(\lowermu_{t,i}(a)\le\mu_i(a)\) and, for every \(q\ge0\),
+\begin{equation}
+  H_{\Acand_t}(q)
+  \le
+  \max_{a\in\Acand_t}q^\top\lowermu_t(a)
+  +2\epsilon_{\mathrm{LCB}}\sum_i s_iq_i.
+  \label{eq:diagonal-lcb-support}
+\end{equation}
+If \(s_i\le C_s\) for every \(i\), Assumption~\ref{ass:candidate-lower-service}
+holds with
+\begin{equation}
+  \epsilon_{\mathrm{est}}=2\epsilon_{\mathrm{LCB}}C_s.
+  \label{eq:diagonal-estimation-loss}
+\end{equation}
+\end{proposition}
+
+\proof{Proof.}
+The upper side of~\eqref{eq:diagonal-confidence-event} gives
+\(\widehat\mu_i(a)-r_i(a)\le\mu_i(a)\).  Its lower side and the radius bound
+give
+\begin{equation}
+  \mu_i(a)
+  \le
+  \widehat\mu_i(a)+r_i(a)
+  \le
+  \lowermu_{t,i}(a)+2\epsilon_{\mathrm{LCB}}s_i.
+\end{equation}
+Multiplying by \(q_i\ge0\), summing over \(i\), and maximizing over admitted
+actions proves~\eqref{eq:diagonal-lcb-support}.  Finally,
+\(\sum_i s_iq_i\le C_s\sum_iq_i=C_s\normone{q}\), which yields
+\eqref{eq:diagonal-estimation-loss}.
+\endproof
+
 \begin{assumption}[Penalty growth and approximate oracle]
 \label{ass:penalty-oracle}
 Let \(P_t(a)=K_t(a)+G_t(a)\).  For all \(a\in\Acand_t\),
@@ -613,20 +786,21 @@ Exact robust MaxWeight is the special case
 
 \begin{assumption}[Stochastic domination and bounded second moments]
 \label{ass:stochastic-moments}
-Conditional on \(Q(t)=Q\),
+The action \(a_t\), statewise action families, lower-service map, and penalties
+are \(\mathcal F_t\)-measurable.  For every class \(i\),
 \begin{equation}
-  \E[A_i(t)\mid Q(t)=Q]\le\lambda_i,
+  \E[A_i(t)\mid\mathcal F_t]\le\lambda_i,
 \end{equation}
 and
 \begin{equation}
   \lowermu_{t,i}(a_t)
-  \le \E[S_i(t)\mid Q(t)=Q]
+  \le \E[S_i(t)\mid\mathcal F_t]
 \end{equation}
-for every class \(i\), and
+almost surely.  Moreover,
 \begin{equation}
   \E\!\left[
     \frac12\sum_i\{A_i(t)^2+S_i(t)^2\}
-    \,\middle|\, Q(t)=Q
+    \,\middle|\,\mathcal F_t
   \right]
   \le B.
 \end{equation}
@@ -634,11 +808,15 @@ for every class \(i\), and
 
 \begin{assumption}[Countable-state recurrence condition]
 \label{ass:foster-state}
-For a positive-recurrence conclusion, the induced controlled process is a
-Markov chain on a countable queue state space, sublevel sets
-\(\{Q:\normone{Q}\le N\}\) are finite, and the usual local-return condition
-holds on the finite set selected by the drift certificate.  Without this
-assumption we claim only the finite-set negative-drift certificate.
+For a positive-recurrence conclusion, the augmented controlled state
+\(X(t)=(Q(t),\chi(t))\) is a Markov chain on a countable state space.  The set
+\begin{equation}
+  \mathcal C_N
+  =\{x:\normone{Q(x)}\le N\}
+\end{equation}
+used by the drift certificate is finite and nonempty, and the corresponding
+closed class satisfies the usual local-return condition.  Without these
+conditions we claim only the finite-set negative-drift certificate.
 \end{assumption}
 
 \subsubsection{Deterministic slack accounting}
@@ -758,9 +936,9 @@ then for \(V(Q)=\frac12\sum_i Q_i^2\) and
 \(\Delta V(t)=V(Q(t+1))-V(Q(t))\),
 \begin{equation}
   \begin{aligned}
-  \E[\Delta V(t)\mid Q(t)=Q]
+  \E[\Delta V(t)\mid\mathcal F_t]
   &\le B+P_0+\alpha_0\\
-  &\quad{}-\eta\normone{Q}.
+  &\quad{}-\eta\normone{Q(t)}.
   \end{aligned}
 \end{equation}
 Consequently, for any \(N\) satisfying
@@ -768,78 +946,139 @@ Consequently, for any \(N\) satisfying
   B+P_0+\alpha_0+\gamma \le \eta N
 \end{equation}
 for some \(\gamma>0\), the process has a negative expected drift outside
-\(\{Q:\normone{Q}\le N\}\).  If Assumption~\ref{ass:foster-state} also holds,
+\(\mathcal C_N\).  If Assumption~\ref{ass:foster-state} also holds,
 the standard countable-state Foster criterion gives positive recurrence of the
 corresponding closed communicating class.
 \end{theorem}
 
 \proof{Proof.}
 Apply Lemma~\ref{lem:quadratic-step} with
-\((Q,A,S)=(Q(t),A(t),S(t))\) and condition on \(Q(t)=Q\).  Using
+\((Q,A,S)=(Q(t),A(t),S(t))\) and condition on \(\mathcal F_t\).  Using
 Assumption~\ref{ass:stochastic-moments},
 \begin{equation}
   \begin{aligned}
-  \E[\Delta V(t)\mid Q(t)=Q]
+  \E[\Delta V(t)\mid\mathcal F_t]
   &\le B
-  +Q^\top\E[A(t)\mid Q(t)=Q]\\
-  &\quad{}-Q^\top\E[S(t)\mid Q(t)=Q]\\
-  &\le B+Q^\top\lambda
-       -Q^\top\lowermu_t(a_t).
+  +Q(t)^\top\E[A(t)\mid\mathcal F_t]\\
+  &\quad{}-Q(t)^\top\E[S(t)\mid\mathcal F_t]\\
+  &\le B+Q(t)^\top\lambda
+       -Q(t)^\top\lowermu_t(a_t).
   \end{aligned}
 \end{equation}
-Write \(D(Q)=Q^\top\lambda-Q^\top\lowermu_t(a_t)\).
+Write
+\(D_t=Q(t)^\top\lambda-Q(t)^\top\lowermu_t(a_t)\).
 Lemma~\ref{lem:selected-margin} gives
 \begin{equation}
   \begin{aligned}
-  D(Q)&\le P_0+\alpha_0\\
+  D_t&\le P_0+\alpha_0\\
   &\quad{}-
   \bigl(\delta-\epsilon_{\mathrm{cand}}
   -\epsilon_{\mathrm{est}}
-  -\beta-\alpha_1\bigr)\normone{Q}.
+  -\beta-\alpha_1\bigr)\normone{Q(t)}.
   \end{aligned}
 \end{equation}
 Combining the two displays proves
 \begin{equation}
   \begin{aligned}
-  \E[\Delta V(t)\mid Q(t)=Q]
+  \E[\Delta V(t)\mid\mathcal F_t]
   &\le B+P_0+\alpha_0\\
-  &\quad{}-\eta\normone{Q}.
+  &\quad{}-\eta\normone{Q(t)}.
   \end{aligned}
 \end{equation}
 If \(B+P_0+\alpha_0+\gamma\le\eta N\), the drift is at most
-\(-\gamma\) whenever \(\normone{Q}>N\).  This is the finite-set Foster drift
+\(-\gamma\) whenever \(\normone{Q(t)}>N\).  This is the finite-set Foster drift
 certificate.  Under Assumption~\ref{ass:foster-state}, the usual
 countable-state Foster theorem yields positive recurrence of the closed class.
 \endproof
 
+\begin{corollary}[Finite-horizon expected-backlog bound]
+\label{cor:finite-horizon-backlog}
+Under the hypotheses of Theorem~\ref{thm:main}, suppose the Lyapunov variables
+are integrable.  For every integer \(T\ge1\),
+\begin{equation}
+  \frac1T\sum_{t=0}^{T-1}
+  \E\!\left[\normone{Q(t)}\right]
+  \le
+  \frac{B+P_0+\alpha_0}{\eta}
+  +\frac{\E[V(Q(0))]}{\eta T}.
+  \label{eq:finite-horizon-backlog}
+\end{equation}
+Consequently,
+\begin{equation}
+  \limsup_{T\to\infty}
+  \frac1T\sum_{t=0}^{T-1}
+  \E\!\left[\normone{Q(t)}\right]
+  \le
+  \frac{B+P_0+\alpha_0}{\eta}.
+  \label{eq:asymptotic-backlog}
+\end{equation}
+\end{corollary}
+
+\proof{Proof.}
+Take expectations in the conditional drift bound of
+Theorem~\ref{thm:main}, sum from \(t=0\) to \(T-1\), and apply the tower
+property.  The Lyapunov terms telescope and \(V\ge0\), so
+\begin{equation}
+  \begin{aligned}
+  \eta\sum_{t=0}^{T-1}\E[\normone{Q(t)}]
+  &\le T(B+P_0+\alpha_0)\\
+  &\quad{}+\E[V(Q(0))].
+  \end{aligned}
+\end{equation}
+Dividing by \(\eta T\) gives
+\eqref{eq:finite-horizon-backlog}; taking \(T\to\infty\) gives
+\eqref{eq:asymptotic-backlog}.
+\endproof
+
 \begin{corollary}[Statewise feasible families]
 \label{cor:statewise}
-Let the candidate family and lower-service map be state indexed:
-\(\Acand_t=\Acand(Q(t),\chi(t))\) and
-\(\lowermu_t=\lowermu(Q(t),\chi(t),\cdot)\), where \(\chi(t)\) records
-scheduler-visible availability, pinned jobs, node health, and measured capacity
-boundaries.  If Assumptions~\ref{ass:load-slack}--\ref{ass:stochastic-moments}
-hold pointwise for every realized \((Q(t),\chi(t))\) with the same constants
+Let the full family, candidate family, true service, lower service, feature map,
+and penalty be indexed by the scheduler-visible state
+\(X(t)=(Q(t),\chi(t))\):
+\begin{equation}
+  \begin{aligned}
+  \Afull_t&=\Afull(X(t)),
+  &\Acand_t&=\Acand(X(t)),\\
+  \mu_t&=\mu(X(t),\cdot),
+  &\lowermu_t&=\lowermu(X(t),\cdot),\\
+  \Phi_t&=\Phi(X(t),\cdot),
+  &P_t&=P(X(t),\cdot).
+  \end{aligned}
+  \label{eq:statewise-objects}
+\end{equation}
+Here \(\chi(t)\) records scheduler-visible availability, pinned jobs, node
+health, and measured capacity boundaries.  Suppose the load-slack, calibrated
+candidate-cover, lower-service, penalty, oracle, and stochastic-moment
+conditions hold pointwise for every admitted state \(X(t)\), with the same
+constants
 \(\delta,\epsilon_{\mathrm{cand}},\epsilon_{\mathrm{est}},P_0,\beta,\alpha_0,
-\alpha_1,B\), then the drift bound in Theorem~\ref{thm:main} holds unchanged.
+\alpha_1,B\).  Then the drift bound and the finite-horizon backlog bounds in
+Theorem~\ref{thm:main} and Corollary~\ref{cor:finite-horizon-backlog} hold
+unchanged.  If Assumption~\ref{ass:foster-state} holds for the augmented state,
+the same finite-set recurrence conclusion follows.
 \end{corollary}
 
 \proof{Proof.}
 The proof of Lemmas~\ref{lem:support-after-losses}--\ref{lem:selected-margin}
-is pointwise in the realized candidate family and lower-service table.  After
-conditioning on \(Q(t)=Q\) and the scheduler-visible state \(\chi(t)\), the same
-inequality chain gives the same lower-service margin and hence the same
-quadratic drift bound.  Taking conditional expectation over \(\chi(t)\) preserves
-the bound because all constants are uniform over the admitted statewise family.
+is pointwise in all six objects in~\eqref{eq:statewise-objects}.  Conditioning
+on \(\mathcal F_t\) fixes the realized full and candidate families, service
+maps, features, penalties, and action.  The same inequality chain therefore
+gives the same lower-service margin and quadratic drift bound.  Uniformity of
+the constants over the admitted statewise family permits the tower-property
+and Foster steps without introducing an additional state-dependent loss.
 \endproof
 
 \noindent
 The Lean 4 theorem prover artifact \citep{deMoura2021lean} proves the
-fixed-family theorem and the statewise version in Corollary~\ref{cor:statewise},
-where the feasible family \(\Acand_t\) depends on the queue state, available
-jobs, and measured capacity-boundary rows.  It also proves a bounded
-finite-support specialization in which \(B\) is constructed from coordinate
-sample bounds.  The paper theorem numbers are not Lean identifiers.
+fixed-family theorem and the queue-indexed specialization of
+Corollary~\ref{cor:statewise}.  In that specialization the full family,
+candidate family, true and lower-service maps, feature map, and penalty all
+depend on the integer queue snapshot.  The general \(\mathcal F_t\)-conditional
+form above is the conventional augmented-state extension; its recurrence
+conclusion additionally uses Assumption~\ref{ass:foster-state}.  The artifact
+also proves a bounded finite-support specialization in which \(B\) is
+constructed from coordinate sample bounds and a finite-horizon telescoping
+backlog inequality.  The paper theorem numbers are not Lean identifiers.
 Appendix Table~\ref{tab:appendix-lean-crosswalk} gives the exact crosswalk for
 Theorem~\ref{thm:main}, Corollary~\ref{cor:statewise}, the coordinate-scaled
 lower confidence bound result, and the operational sandwich boundary.
@@ -851,11 +1090,15 @@ a certificate for every scheduler dispatch.
 \label{subsec:proof-decomposition}
 
 The preceding lemmas isolate the mathematical obligations that must be certified
-by the scheduler.  Lemma~\ref{lem:support-after-losses} is the capacity and
-candidate-approximation layer; Lemma~\ref{lem:selected-margin} is the robust
-oracle layer; Lemma~\ref{lem:quadratic-step} is the queueing layer; and
-Theorem~\ref{thm:main} is their Foster-Lyapunov composition.  The Lean
-formalization mirrors this separation.  The operational necessity direction is
+by the scheduler.  Proposition~\ref{prop:finite-cell-candidate} constructs a
+bounded candidate family; Proposition~\ref{prop:diagonal-lcb} converts
+coordinate confidence radii into a support loss;
+Lemma~\ref{lem:support-after-losses} is the capacity and approximation layer;
+Lemma~\ref{lem:selected-margin} is the robust oracle layer;
+Lemma~\ref{lem:quadratic-step} is the queueing layer; and
+Theorem~\ref{thm:main} with
+Corollary~\ref{cor:finite-horizon-backlog} is their Foster-Lyapunov composition.
+The Lean formalization mirrors this separation.  The operational necessity direction is
 kept separate: an ``operationally stabilizes'' predicate is load-certified by a
 model that explicitly encodes the mean arrival vector, and zero-slack necessity
 follows from a conservation-law argument rather than from the definition of the
@@ -1152,19 +1395,44 @@ candidate now improves makespan and mean-flow against that endpoint, although
 some single-metric scenario losses remain as diagnostic rows rather than
 Pareto-dominance violations.
 
+Figure~\ref{fig:sota-comparison} visualizes the same policy-semantics comparison
+as a four-quadrant cost frontier.  Each panel normalizes a registered
+SOTA-style policy by the fixed Scheduleurm candidate: the horizontal coordinate
+is mean-flow cost divided by Scheduleurm's mean-flow cost and the vertical
+coordinate is makespan cost divided by Scheduleurm's makespan cost.  Thus the
+Scheduleurm policy is fixed at \((1,1)\), and points above or to the right of
+the star are costlier under the same measured service cache.  The quadrant
+labels also show that the best SOTA-style family changes across workload
+regimes.  The figure is intentionally scoped to measured-cache policy-semantics
+comparison and is not a direct external binary benchmark.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\linewidth]{../md/figures/scheduleurm_quadrant_sota_grid.pdf}
+\caption{Four-quadrant measured-cache SOTA-style comparison.  In each panel,
+the red star is Scheduleurm at \((1,1)\).  Other markers are registered
+SOTA-style policy families evaluated on the same task-native measured service
+cache, with \(x=\) normalized mean-flow cost and \(y=\) normalized makespan
+cost, both expressed as policy cost divided by Scheduleurm cost.  The box in
+each panel reports the scenario-level best SOTA-style family for that quadrant.
+The comparison is a policy-semantics replay on shared measured service rows,
+not direct full-stack external binary execution.}
+\label{fig:sota-comparison}
+\end{figure}
+
 \begin{table}[t]
 \TABLE{Task-list policy-semantics aggregate on identical measured service cache.\label{tab:sota-matrix}}{
 \begin{tabular}{l r r}
 \toprule
 Policy-semantics baseline & Makespan ratio & Mean-flow ratio \\
 \midrule
-Throughput table goodput & \(1.0068\times\) & \(1.0003\times\) \\
-Delay oracle & \(1.0068\times\) & \(1.0003\times\) \\
-Interference guard & \(1.0117\times\) & \(1.0011\times\) \\
-Finish-time fairness & \(1.00002\times\) & \(1.00000\times\) \\
-Resource-adaptive goodput & \(1.00000\times\) & \(1.00000\times\) \\
-Packing guard & \(1.00002\times\) & \(1.00000\times\) \\
-Quadrant composite & \(1.0068\times\) & \(1.0003\times\) \\
+Throughput table goodput & \(1.0064\times\) & \(1.0003\times\) \\
+Delay oracle & \(1.0063\times\) & \(1.0002\times\) \\
+Interference guard & \(1.0025\times\) & \(0.99996\times\) \\
+Finish-time fairness & \(0.999996\times\) & \(1.00001\times\) \\
+Resource-adaptive goodput & \(1.000002\times\) & \(1.000006\times\) \\
+Packing guard & \(0.999996\times\) & \(1.00001\times\) \\
+Quadrant composite & \(1.0064\times\) & \(1.0003\times\) \\
 \bottomrule
 \end{tabular}
 }{Entries are aggregate baseline-versus-candidate ratios across the static and
@@ -1213,11 +1481,12 @@ ablations rather than the main dominance certificate.
 \toprule
 Policy family & Sum makespan & Mean flow & Interpretation \\
 \midrule
-Current Scheduleurm online-Pareto-slack candidate & 148926.490 & 3129.563 & Theorem-facing fixed candidate. \\
-External best fixed policy & 148926.843 & 3129.567 & Sia/Pollux-style resource-adaptive goodput. \\
-Scheduleurm+external Pareto-slack union & 148926.972 & 3129.577 & Static/Poisson measured-cache frontier certificate. \\
-Scheduleurm+external makespan union & 148962.131 & 3129.365 & Metric-specific action-union diagnostic. \\
-Scheduleurm+external guarded union & 149584.066 & 3129.696 & Guarded mean-flow action-union ablation. \\
+Current Scheduleurm online-Pareto-slack candidate & 149027.703 & 3129.521 & Theorem-facing fixed candidate. \\
+External best fixed makespan policy & 149027.163 & 3129.547 & Finish-time-fairness / packing-guard style drain. \\
+External best fixed mean-flow policy & 149395.706 & 3129.389 & IADeep/Salus-style interference guard. \\
+Scheduleurm+external Pareto-slack union & 149027.271 & 3129.542 & Static/Poisson measured-cache frontier certificate. \\
+Scheduleurm+external makespan union & 149027.163 & 3129.534 & Metric-specific action-union diagnostic. \\
+Scheduleurm+external guarded union & 149639.695 & 3129.907 & Guarded mean-flow action-union ablation. \\
 Legacy Scheduleurm caps & 341169.248 & 16137.121 & Legacy fixed-cap reference. \\
 \bottomrule
 \end{tabular}
@@ -1472,6 +1741,86 @@ controlled live execution, strict admitted-history completion, service-map
 bridging, read-only monitoring, and live-oracle readiness.}
 \end{table}
 
+\subsection{Finite-trajectory generalization beyond compute}
+\label{subsec:or-generalization}
+
+The server action can be generalized without erasing domain physics by treating
+an action as a complete finite configuration trajectory.  A trajectory records
+placement or mode choices, admissible reconfiguration decisions, cumulative
+lower service, duration, and a bounded penalty.  In each experiment below, the
+same selector exactly maximizes generated-family robust score
+\begin{equation}
+  a_n\in\argmax_{a\in\mathcal A_n^{\mathrm{traj}}}
+  \left\{
+    \left(Q^{\mathrm F}(n)\right)^{\!\top}\lowermu_{n,\mathrm{cum}}(a)
+    -P_n^{\mathrm F}(a)
+  \right\},
+  \label{eq:trajectory-selector}
+\end{equation}
+Here \(n\) indexes decision frames, \(Q^{\mathrm F}(n)\) is the frame-boundary
+backlog or urgency vector, \(\mathcal A_n^{\mathrm{traj}}\) is the finite
+generated trajectory family, \(\lowermu_{n,\mathrm{cum}}(a)\) is the cumulative
+lower-service vector, and \(P_n^{\mathrm F}(a)\) is the cumulative bounded
+trajectory penalty.  The queue/urgency coordinates and feasibility oracle are
+domain-specific.  Proposition~\ref{prop:frame-drift} supplies the
+variable-duration stochastic interface; the deterministic holdouts in this
+subsection test the candidate/oracle/penalty layer and do not by themselves
+instantiate a stochastic arrival model.
+
+The protocols were frozen before their reported external holdouts.  The FJSP
+holdout uses four Kacem instances \citep{kacem2002pareto}.  The repaired MMRCPSP
+holdout uses 56 PSPLIB instances disjoint from both policy development and the
+opened-row repair regression \citep{kolisch1997psplib}.  The port experiment
+uses one pinned public BACASP-S instance plus three preregistered synthetic
+four-resource instances \citep{correcher2024berth}.  Table~\ref{tab:or-generalization}
+reports the auditable finite-family result.
+The registered FJSP baselines are first-in-first-out (FIFO), earliest completion
+time (ECT), shortest processing time (SPT), most operations remaining (MOR), and
+most work remaining (MWKR).  The MMRCPSP baselines are SPT, minimum slack,
+greatest rank positional weight, and most total successors.  Best-known
+solution (BKS) below refers only to the makespan value distributed with an FJSP
+instance.
+
+\begin{table}[H]
+\TABLE{Cross-domain finite-trajectory holdouts.\label{tab:or-generalization}}{
+\scriptsize
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}
+>{\raggedright\arraybackslash}p{0.13\linewidth}
+>{\raggedright\arraybackslash}p{0.22\linewidth}
+>{\raggedright\arraybackslash}p{0.23\linewidth}
+>{\raggedright\arraybackslash}p{0.32\linewidth}@{}}
+\toprule
+Domain & Frozen protocol & Candidate result & Claim boundary \\
+\midrule
+FJSP & Post-freeze Kacem holdout; 4 instances & Pareto-nondominated on 4/4;
+geomean makespan/BKS 1.0445; mean flow/instance best 1.0763 & Registered
+FIFO, ECT, SPT, MOR, and MWKR rules; no global optimum or arbitrary-solver
+claim. \\
+MMRCPSP & Disjoint post-repair PSPLIB holdout; 56 instances &
+Pareto-nondominated on 56/56; geomean makespan/instance best 1.0072; mean
+flow/instance best 1.0002 & The preregistered v1 failure and opened-row repair
+are retained; v2 excludes both sets and does not claim all-instance dominance. \\
+Port & Pinned BACASP-S core plus 3 registered synthetic instances & Selected
+trajectory Pareto-nondominated on 4/4; generated-family oracle gap 0 & Public
+adapter is not a reproduction of the continuous-quay mixed-integer linear
+program; yard/gate stages and
+mid-service reconfiguration evidence are synthetic only. \\
+\bottomrule
+\end{tabular}
+}{Nondominance is with respect to the registered finite policy family and the
+reported makespan/mean-flow objectives, not all domain algorithms.}
+\end{table}
+
+The failed MMRCPSP v1 holdout is part of the evidence rather than discarded: its
+first counterexample exposed a renewable-resource feasibility error in the
+nonrenewable reserve dynamic program.  After repairing the candidate generator,
+all opened rows passed a repair regression, and the disjoint v2 holdout then
+passed 56/56 instances.  The port public-source manifest hash-binds the raw
+instance, adapter, and source license; the source has berth/crane travel and
+setup data but no yard or gate layer.  These boundaries prevent the portability
+experiment from being presented as domain-wide state-of-the-art superiority.
+
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}
 
@@ -1501,6 +1850,17 @@ explicit support-function loss and paid from capacity slack together with
 estimation, penalty, and oracle losses.  This gives a readable accounting rule:
 a scheduler may use a finite candidate family only when the remaining drift
 margin is still positive.
+
+The finite-cell construction strengthens this accounting from a purely
+assumption-driven statement to a candidate-generation result.  A finite feature
+partition controls candidate cardinality, while representative radius and
+service sensitivity control the induced support loss.  This separates
+computational complexity from statistical calibration: the partition determines
+how many actions the oracle must inspect, whereas perturbation data determine
+how much capacity slack the compression consumes.  The diagonal LCB result
+performs the analogous separation across heterogeneous service units, and the
+finite-horizon corollary converts residual slack into an expected-backlog bound
+rather than only a recurrence statement.
 
 The Scheduleurm case study shows how this accounting can be implemented.  The
 scheduler records measured lower-service rows, admissible configuration
@@ -1536,13 +1896,23 @@ Together these checks support the measured Scheduleurm certificate.  They do
 not turn raw telemetry, future unknown arrivals, or every live dispatch into a
 stability-certified arrival stream.
 
-Two technical directions remain open.  The first is broader fabric-cover
+Three technical directions remain open.  The first is broader fabric-cover
 calibration: extending the positive-service certificate beyond the declared
 finite domains requires perturbation evidence for the feature map, projection,
 cover radius, Lipschitz envelope, and statistical failure probability.  The
 second is online learning: the active-bucket sampler and regime detector have
 formal conditional guarantees and replay checks, but they should be validated
-in live A/B experiments before becoming default scheduling logic.
+in live A/B experiments before becoming default scheduling logic.  The third is
+migration-aware control.  Proposition~\ref{prop:frame-drift} closes the
+mathematical variable-duration boundary: setup time, lost work, and resume risk
+enter a cumulative net-service frame or a unit-matched bounded penalty, and a
+positive minimum duration transfers per-time slack to embedded-chain drift.
+The remaining obligation is operational rather than algebraic.  The current
+controlled migration rows estimate checkpoint, synchronization, staging, and
+resume components, but they have not yet been assembled into a domain-wide
+stochastic frame model with conditional cumulative-service and moment
+certificates.  We therefore do not infer a semi-Markov stability claim from the
+deterministic migration or cross-domain trajectory holdouts.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1551,9 +1921,15 @@ We studied heterogeneous compute scheduling as a configuration-action
 stochastic processing network.  The resulting robust candidate MaxWeight
 theorem gives an explicit slack budget for candidate approximation,
 lower-service estimation, bounded penalties, and approximate optimization.  If
-the residual margin is positive, the policy satisfies a finite-set
-Foster-Lyapunov drift certificate.  The fixed-family and statewise statements
-are formalized in Lean.
+the residual margin is positive, the policy satisfies finite-horizon
+expected-backlog bounds and a finite-set Foster-Lyapunov recurrence certificate.
+A finite feature-cell construction bounds both candidate cardinality and the
+resulting \(L\rho\) support loss, while diagonal scaling preserves the meaning of
+lower-confidence service across heterogeneous workload units.  A separate
+variable-duration frame result extends the same slack accounting to cumulative
+configuration trajectories and recovers the slotted theorem at unit duration.
+The fixed-family, queue-indexed statewise, candidate-construction,
+diagonal-scaling, and frame statements are formalized in Lean.
 
 Scheduleurm provides a concrete instantiation of the theorem.  Its measured
 finite slices close the lower-service stability conditions for declared
@@ -1561,7 +1937,10 @@ workload domains.  On explicit task lists and 192 online replay scenarios, the
 robust candidate improves legacy completion metrics and is not Pareto-dominated
 by registered policy-semantics baselines evaluated on the same measured service
 cache.  Controlled live launches and strict scheduler-history evidence show how
-the theorem-facing objects can be produced by an operational scheduler.
+the theorem-facing objects can be produced by an operational scheduler.  Frozen
+finite-trajectory holdouts on FJSP, MMRCPSP, and port instances further test the
+candidate/oracle/penalty interface, without claiming domain-wide optimality or
+automatic transfer of the server stochastic model.
 
 The contribution is therefore not a universal claim about every future workload
 or every external scheduler implementation.  It is a mathematical and empirical
@@ -1656,6 +2035,13 @@ the proof does not shrink the action space informally: every restriction must
 be paid for by the explicit support-function loss in
 \eqref{eq:ec-candidate-support}.
 
+Proposition~\ref{prop:finite-cell-candidate} supplies a constructive version of
+this step.  It forms candidates as representatives of active feature cells,
+bounds the candidate cardinality by the number of cells, and derives the same
+\(L\rho\) support loss.  Thus the theorem can consume either a directly audited
+support gap or a finite-cell construction certificate; only the latter supports
+a claim of nontrivial action-space compression.
+
 \subsection*{EC.3. Lower-Service Rows, Penalties, and Approximate Oracles}
 
 The robust scheduler optimizes conservative service, not the unknown true mean
@@ -1676,7 +2062,13 @@ The scheduling score is
 \end{equation}
 where \(K_t(a)\) and \(G_t(a)\) are bounded switching, risk, or guard penalties.
 Equation~\eqref{eq:ec-lower-service-support} is the lower-confidence-bound
-bridge from measured service rows to the drift proof.  The selected action
+bridge from measured service rows to the drift proof.  The coordinate-scaled
+sufficient condition for this bridge is given in
+Proposition~\ref{prop:diagonal-lcb}: on the simultaneous confidence event it
+charges \(2\epsilon_{\mathrm{LCB}}\sum_i s_iq_i\), or
+\(2\epsilon_{\mathrm{LCB}}C_s\normone{q}\) under a uniform scale bound.  This
+prevents a high-throughput workload from defining the absolute error unit for
+all other classes.  The selected action
 \(a_t\) need not be the exact maximizer.  It satisfies
 \begin{equation}
   \label{eq:ec-oracle-gap}
@@ -1728,7 +2120,10 @@ The queue update is
 \begin{equation}
   Q_i(t+1)=\bigl[Q_i(t)-S_i(t)\bigr]^+ + A_i(t),
 \end{equation}
-where \(A_i(t)\) is arrival and \(S_i(t)\) is realized service for class \(i\).
+where \(A_i(t)\) is arrival and \(S_i(t)\) is potential service for class \(i\).
+Completed departure is
+\(D_i(t)=\min\{Q_i(t),S_i(t)\}\).  The displayed update remains valid because
+unused potential service is removed by the positive part.
 For \(V(Q)=\frac12\sum_i Q_i^2\), the standard one-step inequality gives
 \begin{equation}
   \label{eq:ec-quadratic-step}
@@ -1744,41 +2139,41 @@ bound
 \begin{equation}
   \E\!\left[
     \frac12\sum_i\bigl(A_i(t)^2+S_i(t)^2\bigr)
-    \,\middle|\,Q(t)=Q
+    \,\middle|\,\mathcal F_t
   \right]\le B.
 \end{equation}
 It also ties the stochastic process to the theorem-facing service rows:
 \begin{align}
   \label{eq:ec-arrival-domination}
-  \E[A(t)\mid Q(t)=Q]&\le\lambda,\\
+  \E[A(t)\mid\mathcal F_t]&\le\lambda,\\
   \label{eq:ec-service-domination}
-  \E[S(t)\mid Q(t)=Q]&\ge\lowermu_t(a_t)
+  \E[S(t)\mid\mathcal F_t]&\ge\lowermu_t(a_t)
 \end{align}
 coordinatewise.  Taking conditional expectation in
 \eqref{eq:ec-quadratic-step} and using \eqref{eq:ec-selected-margin},
 \begin{equation}
   \label{eq:ec-drift-bound}
   \begin{aligned}
-  \E[\Delta V(t)\mid Q(t)=Q]
+  \E[\Delta V(t)\mid\mathcal F_t]
   &\le
-  B+Q^\top\lambda-Q^\top\lowermu_t(a_t)\\
+  B+Q(t)^\top\lambda-Q(t)^\top\lowermu_t(a_t)\\
   &\le
-  B+P_0+\alpha_0-\eta\normone{Q}.
+  B+P_0+\alpha_0-\eta\normone{Q(t)}.
   \end{aligned}
 \end{equation}
 If \(N\) and \(\gamma>0\) satisfy
 \begin{equation}
   B+P_0+\alpha_0+\gamma\le\eta N,
 \end{equation}
-then whenever \(\normone{Q}>N\), \eqref{eq:ec-drift-bound} implies
+then whenever \(\normone{Q(t)}>N\), \eqref{eq:ec-drift-bound} implies
 \begin{equation}
-  \E[\Delta V(t)\mid Q(t)=Q]\le-\gamma.
+  \E[\Delta V(t)\mid\mathcal F_t]\le-\gamma.
 \end{equation}
 This is the finite-set drift certificate used in
 Theorem~\ref{thm:main}.  To translate the certificate into positive recurrence
-for a Markov chain, the paper also assumes a countable queue state space, finite
-sublevel sets of \(V\), and a closed communicating class or equivalent
-local-return condition.  Without those recurrence-side conditions the theorem
+for a Markov chain, the paper also assumes a countable augmented state space,
+a finite nonempty backlog sublevel set, and a closed communicating class or
+equivalent local-return condition.  Without those recurrence-side conditions the theorem
 should be read as a negative-drift certificate, not as an unconditional
 positive-recurrence statement for every possible implementation.
 
@@ -1786,13 +2181,15 @@ positive-recurrence statement for every possible implementation.
 
 The statewise corollary is a conditioning argument rather than a new drift
 identity.  Let \(\chi(t)\) record scheduler-visible information such as alive
-nodes, pinned tasks, queued jobs, and measured admission status.  If the
-candidate family \(\Acand(Q(t),\chi(t))\), lower-service table
-\(\lowermu(Q(t),\chi(t),\cdot)\), penalty bounds, oracle bounds, and moment
-bounds satisfy the same constants for every admitted \((Q(t),\chi(t))\), then
-the proof in EC.1--EC.4 holds after conditioning on \((Q(t),\chi(t))\).  Taking
-expectation over \(\chi(t)\) preserves the drift bound because the constants
-are uniform over the admitted family.
+nodes, pinned tasks, queued jobs, and measured admission status.  If the full
+family, candidate family, true and lower-service maps, feature map, penalty
+bounds, oracle bounds, and moment bounds are indexed by
+\(X(t)=(Q(t),\chi(t))\) and satisfy the same constants for every admitted state,
+then the proof in EC.1--EC.4 holds after conditioning on \(\mathcal F_t\).
+Uniform constants preserve both the drift and finite-horizon backlog bounds.
+Positive recurrence additionally requires the augmented-state conditions in
+Assumption~\ref{ass:foster-state}; it does not follow merely by averaging over
+\(\chi(t)\).
 
 The operational capacity statement is kept separate.  Sufficiency follows from
 the positive-slack drift chain above once a stochastic model certifies the
@@ -1805,7 +2202,155 @@ the implication from certified assumptions to drift and recurrence, while the
 experiments and admission checks certify when Scheduleurm rows satisfy those
 assumptions.
 
-\subsection*{EC.6. Lean Crosswalk and Artifact Assumptions}
+\subsection*{EC.6. Variable-Duration Configuration Trajectories}
+
+The slotted theorem does not silently cover migration, machine reconfiguration,
+or port moves whose durations differ.  We therefore state the separate frame
+result used by the trajectory interface.  Let \(n\) index decision frames, let
+\(\mathcal F_n^{\mathrm F}\) be the information available at the start of frame
+\(n\), and let the \(\mathcal F_n^{\mathrm F}\)-measurable duration satisfy
+\begin{equation}
+  0<\tau_{\min}\le \tau_n\le\tau_{\max}<\infty.
+  \label{eq:frame-duration-bounds}
+\end{equation}
+The frame-boundary queue obeys
+\begin{equation}
+  Q^{\mathrm F}(n+1)
+  =
+  \left[Q^{\mathrm F}(n)-S^{\mathrm F}(n)\right]^+
+  +A^{\mathrm F}(n),
+  \label{eq:frame-queue-dynamics}
+\end{equation}
+where \(A^{\mathrm F}(n)\) and \(S^{\mathrm F}(n)\) are cumulative arrivals
+and potential service during the frame.  Define
+\begin{equation}
+  \overline S^{\mathrm F}(n)
+  =
+  \E\!\left[S^{\mathrm F}(n)\mid\mathcal F_n^{\mathrm F}\right].
+  \label{eq:frame-mean-service}
+\end{equation}
+Suppose the conditional arrival and second-order bounds are
+\begin{align}
+  \E\!\left[A_i^{\mathrm F}(n)\mid\mathcal F_n^{\mathrm F}\right]
+  &\le \tau_n\lambda_i,
+  \label{eq:frame-arrival-bound}\\
+  \E\!\left[
+    \frac12\sum_i
+    \left\{(A_i^{\mathrm F}(n))^2+(S_i^{\mathrm F}(n))^2\right\}
+    \middle|\mathcal F_n^{\mathrm F}
+  \right]
+  &\le B_{\mathrm F}.
+  \label{eq:frame-second-moment}
+\end{align}
+Let \(\epsilon_{\mathrm F}\) combine candidate-support and conservative-service
+losses in rate units.  The cumulative approximate-oracle and penalty obligations
+are
+\begin{equation}
+  \begin{aligned}
+  \tau_n H_{\Afull}\!\left(Q^{\mathrm F}(n)\right)
+  &\le
+  \left(Q^{\mathrm F}(n)\right)^{\!\top}
+  \overline S^{\mathrm F}(n)\\
+  &\quad+\tau_n(\epsilon_{\mathrm F}+\alpha_1)
+    \normone{Q^{\mathrm F}(n)}\\
+  &\quad+\alpha_0+P_n^{\mathrm F}.
+  \end{aligned}
+  \label{eq:frame-oracle}
+\end{equation}
+\begin{equation}
+  P_n^{\mathrm F}
+  \le P_0+\tau_n\beta\normone{Q^{\mathrm F}(n)}.
+  \label{eq:frame-penalty}
+\end{equation}
+All quantities in \eqref{eq:frame-oracle}--\eqref{eq:frame-penalty} are in
+cumulative work units over the same frame; in particular, migration lost work
+cannot be inserted as an unmatched wall-clock scalar.
+
+\begin{proposition}[Variable-duration robust frame drift]
+\label{prop:frame-drift}
+Suppose \eqref{eq:frame-duration-bounds}--\eqref{eq:frame-penalty} hold and the
+full family has support slack \(\delta\).  Define
+\begin{equation}
+  \eta_{\mathrm F}
+  =
+  \delta-\epsilon_{\mathrm F}-\alpha_1-\beta.
+  \label{eq:frame-margin}
+\end{equation}
+Then
+\begin{equation}
+  \begin{aligned}
+  &\E\!\left[
+    V\!\left(Q^{\mathrm F}(n+1)\right)
+    -V\!\left(Q^{\mathrm F}(n)\right)
+    \middle|\mathcal F_n^{\mathrm F}
+  \right]\\
+  &\qquad\le
+  B_{\mathrm F}+\alpha_0+P_0
+  -\tau_n\eta_{\mathrm F}\normone{Q^{\mathrm F}(n)}\\
+  &\qquad\le
+  B_{\mathrm F}+\alpha_0+P_0
+  -\tau_{\min}\eta_{\mathrm F}\normone{Q^{\mathrm F}(n)},
+  \end{aligned}
+  \label{eq:frame-drift}
+\end{equation}
+provided \(\eta_{\mathrm F}>0\).  If the frame-boundary augmented state is
+countable, its backlog sublevel sets are finite and nonempty, and the usual
+local-return condition holds, then any \(N\in\mathbb N\) and \(\gamma>0\)
+satisfying
+\begin{equation}
+  B_{\mathrm F}+\alpha_0+P_0+\gamma
+  \le \tau_{\min}\eta_{\mathrm F}N
+  \label{eq:frame-foster-threshold}
+\end{equation}
+give a finite-set Foster recurrence certificate for the embedded
+frame-boundary chain.  Moreover, elapsed physical time through frame \(n\) is
+at most \(n\tau_{\max}\).
+\end{proposition}
+
+\proof{Proof.}
+The quadratic queue inequality applied to
+\eqref{eq:frame-queue-dynamics}, followed by conditional expectation, gives
+\begin{equation}
+  \begin{aligned}
+  \E[\Delta_{mathrm F}V(n)\mid\mathcal F_n^{\mathrm F}]
+  \le{}& B_{\mathrm F}
+  +\tau_n\left(Q^{\mathrm F}(n)\right)^{\!\top}\lambda\\
+  &-\left(Q^{\mathrm F}(n)\right)^{\!\top}
+    \overline S^{\mathrm F}(n),
+  \end{aligned}
+  \label{eq:frame-proof-base}
+\end{equation}
+where \(\Delta_{mathrm F}V(n)\) denotes the frame-to-frame Lyapunov increment.
+Full-action support slack implies
+\begin{equation}
+  \left(Q^{\mathrm F}(n)\right)^{\!\top}\lambda
+  +\delta\normone{Q^{\mathrm F}(n)}
+  \le H_{\Afull}\!\left(Q^{\mathrm F}(n)\right).
+  \label{eq:frame-support-slack}
+\end{equation}
+Multiplying \eqref{eq:frame-support-slack} by \(\tau_n\), substituting
+\eqref{eq:frame-oracle} and \eqref{eq:frame-penalty} into
+\eqref{eq:frame-proof-base}, and collecting coefficients yields the first
+inequality in \eqref{eq:frame-drift}.  Positivity of \(\eta_{\mathrm F}\) and
+\(\tau_n\ge\tau_{\min}\) gives the second.  Equation
+\eqref{eq:frame-foster-threshold} makes the conditional drift at most
+\(-\gamma\) outside the finite sublevel set, so the same local-return argument
+as in EC.4 applies to the embedded chain.  Finally,
+\(\sum_{k=0}^{n-1}\tau_k\le n\tau_{\max}\) proves the calendar-time bound.
+\endproof
+
+If arrivals and service are rate-scaled throughout a frame and their unit-time
+second-order term is at most \(B\), then the formal artifact also checks the
+constructive choice \(B_{\mathrm F}\le\tau_{\max}^2B\).  Setting
+\(\tau_n=\tau_{\min}=\tau_{\max}=1\),
+\(B_{\mathrm F}=B\), and
+\(\epsilon_{\mathrm F}=\epsilon_{\mathrm{cand}}+\epsilon_{\mathrm{est}}\)
+recovers the slotted drift theorem.  Thus the result strengthens rather than
+relabels the migration boundary: a measured migration row must still certify
+cumulative net service, duration, checkpoint/synchronization/resume loss, and
+risk before it can enter a stochastic frame model.
+
+\subsection*{EC.7. Lean Crosswalk and Artifact Assumptions}
 
 Tables~\ref{tab:appendix-lean-crosswalk} and
 \ref{tab:appendix-artifact-assumptions} separate the formal proof contract from
@@ -1822,6 +2367,9 @@ crosswalk so that the article does not become a code index.
 \toprule
 Paper statement & Lean proof group & What the formal result checks \\
 \midrule
+Proposition~\ref{prop:finite-cell-candidate} & Finite feature-cell candidate
+construction theorem & Candidate containment, cardinality bounded by active
+feature cells, and nonzero \(L\rho\) support loss. \\
 Theorem~\ref{thm:main}, exact candidate version & Fixed-family exact-oracle
 robust candidate MaxWeight theorem & Support-function candidate loss, robust
 lower-service drift, and finite-set recurrence certificate. \\
@@ -1832,9 +2380,15 @@ accounting. \\
 Corollary~\ref{cor:statewise} & State-indexed candidate-family theorem &
 State-dependent feasible families under the same uniform constants used in the
 fixed-family theorem. \\
-Coordinate-scaled lower-service certificate & Diagonal-scaled lower confidence
+Proposition~\ref{prop:diagonal-lcb} & Diagonal-scaled lower confidence
 bound theorem & Heterogeneous service-unit scaling and lower-service support
 loss in normalized coordinates. \\
+Corollary~\ref{cor:finite-horizon-backlog} & Foster telescoping backlog theorem &
+Finite-horizon cumulative-backlog and asymptotic expected-backlog bounds from
+the residual drift margin. \\
+Proposition~\ref{prop:frame-drift} & Variable-duration frame drift and
+embedded recurrence theorems & Cumulative-work oracle, bounded frame penalty,
+uniform frame drift, duration-one reduction, and elapsed-time bound. \\
 Operational capacity boundary & Load-certified capacity sandwich theorem &
 Positive-slack sufficiency and zero-slack conservation-law necessity once the
 stochastic model encodes arrivals and service accounting. \\
@@ -1870,6 +2424,15 @@ families. \\
 \(B,N,\gamma\) & Second-order moment bound and finite-set drift threshold. &
 Workload bounds, controlled trace statistics, and recurrence-side finite-state
 admission conditions. \\
+\(\tau_{\min},\tau_{\max},B_{\mathrm F}\) & Frame-duration bounds and
+cumulative second-order term. & A trajectory row must use natural elapsed
+duration and cumulative arrivals/service; unit-rate scaling yields the audited
+bound \(B_{\mathrm F}\le\tau_{\max}^2B\) when applicable. \\
+\(\overline S^{\mathrm F}(n),P_n^{\mathrm F}\) & Conditional cumulative
+service and frame-level migration/reconfiguration loss. & Checkpoint flush,
+synchronization, staging, resume warmup, lost work, and failure risk must be
+converted to the same cumulative service/penalty units; deterministic domain
+holdouts alone do not certify this stochastic bridge. \\
 Statewise \(\chi(t)\) & Scheduler-visible feasible-family index. & Alive node,
 pinned-job, queued-job, service-cache, and admission-state trace fields. \\
 Operational model certificate & Links stochastic arrivals and services to the
@@ -1964,6 +2527,10 @@ trajectory/action-semantics union rows, adaptive scalarized replay,
 state-dependent marginal lookup, global lookahead, and ETA reuse. & Shows the
 candidate family can absorb registered semantics; it is not production-default
 launch evidence. \\
+Controlled migration-cost probes & Physical checkpoint, sync, and resume
+timing rows for controlled CNN, hybrid-RL, and CPU-surrogate payloads at 25\%,
+50\%, and 75\% progress. & Calibrates \(K_{\mathrm{mig}}\) for benchmark
+migration actions only; ordinary running user jobs remain excluded. \\
 Adjacent-domain scheduler bridge & Decima-style Spark-DAG simulator bridge,
 registered non-GPU scheduling diagnostics, and same-domain simulator notes. &
 Shows adjacent-domain coverage; it is not a GPU co-location full-stack

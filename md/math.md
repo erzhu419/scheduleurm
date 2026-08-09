@@ -17,9 +17,55 @@ GPT：
 
 BAPR 已经有 piecewise-stationary regime、BOCD belief、frozen-belief contraction 这类结构；BAPR-HRO 已经有“保留候选集、在线重排序”和 per-candidate Wasserstein DRO score 的思想。你的 scheduler 问题要做成 9/10 数学，需要把这两个东西嵌入一个完整的 queueing-control 模型，而不是只做单任务候选排序。 
 
-先把口径收准：下面是一条 **8.5–9/10 数学路线 proposal + 当前 Lean proof spine**，不是无条件闭合的 throughput-optimality claim。主线不能把完整 operational iff 直接写死；应该先证明 stationary-mix / support-function capacity base、candidate-restricted robust MaxWeight drift，再在具体 stochastic arrival/service model 里证明 conditional drift domination，并由 Foster-Lyapunov drift certificate 推出 finite-small-set return。按 round2 revise，主 paper theorem 已经收束成一条：full-action support slack + fabric-cover candidate loss + lower-service estimation loss + queue-scaled penalty + bounded finite-support stochastic model \(\Rightarrow\) positive recurrence。仍必须靠 scheduleurm profiling / 实验校准的部分单独列在 `md/experimental_open_items.md`。
+先把口径收准：下面是当前 **约 9/10 形式严谨度、朝 10/10 方法论深度推进的数学路线 + Lean proof spine**，不是无条件闭合的 throughput-optimality claim。主线不能把完整 operational iff 直接写死；应该先证明 stationary-mix / support-function capacity base、constructive candidate-family support bound、candidate-restricted robust MaxWeight drift，再在具体 stochastic arrival/service model 里证明 conditional drift domination，并由 Foster-Lyapunov drift certificate推出 finite-small-set return和 finite-horizon backlog bound。按 2026-07-11 revision，主 paper theorem 已经收束成一条：full-action support slack + finite-cell/fabric-cover candidate loss + diagonal lower-service estimation loss + queue-scaled penalty + approximate oracle + bounded-second-moment stochastic model \(\Rightarrow\) expected-backlog bound and finite-set recurrence certificate。仍必须靠 Scheduleurm profiling / 实验校准的部分单独列在 `md/experimental_open_items.md`。
 
 按 round3 revise，正式论文里 capacity region 必须写成 **downward-closed service region**；positive recurrence 必须写成 **finite-set Foster recurrence certificate**，除非额外加 irreducibility / single closed communicating class 条件；learning / lower-service 部分必须写成 confidence-event certificate，而不是无条件 online-learning theorem。
+
+## 2026-07-11 canonical stochastic-state revision
+
+从本节起，所有主定理的随机条件统一相对于动作选择前信息流
+
+\[
+\mathcal F_t
+=
+\sigma(\text{history through }t,Q(t),\chi(t)).
+\]
+
+\(\mathcal A_t^{full}\)、\(\mathcal A_t^{cand}\)、\(\mu_t\)、
+\(\underline\mu_t\)、\(\Phi_t\)、penalty 和 \(a_t\) 都必须是
+\(\mathcal F_t\)-measurable。随机支配统一写成
+
+\[
+\mathbb E[A_i(t)\mid\mathcal F_t]\le\lambda_i,
+\qquad
+\underline\mu_{t,i}(a_t)
+\le
+\mathbb E[S_i(t)\mid\mathcal F_t],
+\]
+
+以及 conditional second moment bound。这里 \(S_i(t)\) 只表示 potential
+service，实际 departure 是
+
+\[
+D_i(t)=\min\{Q_i(t),S_i(t)\}.
+\]
+
+statewise theorem 必须同时索引 full/candidate/true-service/lower-service/
+feature/penalty 六类对象。uniform pointwise slack 是所有 admitted state
+capacity regions 的 robust intersection 条件；average-regime slack 不能冒充它。
+
+candidate family 不再只作为外部 cover 假设。对 finite active feature cells
+\(\mathcal J_\Phi\)，每个 cell 选择一个 full-action representative，得到
+
+\[
+|\mathcal A^{cand}|\le|\mathcal J_\Phi|,
+\qquad
+H_{full}(q)\le H_{cand}(q)+L\rho\|q\|_1.
+\]
+
+Lean 对应 `finite_feature_cell_candidate_certificate`。实证若仍使用 exact
+measured slice，则只能报告 \(\rho=0\) 的 exact-slice 特例；非平凡动作空间
+压缩需要单独给出 nonzero \(L\rho\) profiling table。
 
 为了避免 round2 指出的 Lean artifact / 正文不一致，当前 theorem 名称和上传单文件里的可搜索名字单独列在：
 
@@ -581,7 +627,7 @@ full support slack
 6. switching / rollback / risk penalty ≤ P0 + β||Q||_1；
 7. solver/oracle error ≤ α0 + α1||Q||_1；exact argmax 是 α0=α1=0 的特例；
 8. arrival/service 有 bounded conditional second-order moment；Lean artifact 还给出 bounded finite-support specialization；
-9. coordinate conditional means 满足 E[A_i|Q]≤λ_i 和 lower_i(a(Q))≤E[S_i|Q]。
+9. coordinate conditional means 满足 E[A_i|F_t]≤λ_i 和 lower_i(a_t)≤E[S_i|F_t]。
 ```
 
 若：
@@ -882,7 +928,7 @@ placement 变成 action-family boundary certificate。数学上应写成：
 | q00 `light_control_local` | 1-13 | 14 | 13 | 1 |
 | q01 `gpu_heavy_jax_matmul` | 1-8 | none in current slice | 1 replay/static; 4-8 high-backlog support certificates | 3 |
 | q10 `cpu_heavy_local_bench` | 1-9 | 10 | 8 | 9 |
-| q11 `hybrid_rl_resac_ant` | 1-9 | 10 | 2 online/static/portfolio; 3 high-backlog support certificate | 5 |
+| q11 `hybrid_rl_resac_ant` | 1-5 | 6 | 5 online/static/portfolio | 5 |
 
 这些曲线进入数学路线的方式不是“证明 sweet spot 恒成立”，而是：
 
@@ -972,10 +1018,10 @@ A_i(Q(t),\omega_t).
 
 ```text
 prob(Q,ω) ≥ 0 且 Σ_ω prob(Q,ω)=1；
-bounded conditional second-order moment：E[1/2 Σ_i(A_i^2+S_i^2)|Q]≤B；
+bounded conditional second-order moment：E[1/2 Σ_i(A_i^2+S_i^2)|F_t]≤B；
 可选的 finite-support specialization：A_i(Q,ω)≤Amax_i, S_i(Q,ω)≤Smax_i；
-coordinate conditional arrival mean：E[A_i|Q]≤λ_i；
-coordinate conditional selected service mean：lower_i(a(Q))≤E[S_i|Q]；
+coordinate conditional arrival mean：E[A_i|F_t]≤λ_i；
+coordinate conditional selected service mean：lower_i(a_t)≤E[S_i|F_t]；
 full action capacity slack + fabric cover + robust candidate MaxWeight 条件成立。
 ```
 
@@ -1073,7 +1119,7 @@ diagonal-normalized mean-service eta: still false
 LCB lower-service capacity: true for the current selected-profile population
 ```
 
-当前 selected-profile stochastic LCB certificate 用 profile-level aggregate service windows，而不是单个 co-located task 的 rate。11/11 target 已达到 20 aggregate-window threshold；LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.0247121365\)。但是这只支持“arrival load 按 LCB lower service 的 0.8 缩放”的 stochastic lower-service capacity claim；不能说 0.8 mean-service load 已由 holdout LCB 证明。
+当前 selected-profile stochastic LCB certificate 用 profile-level aggregate service windows，而不是单个 co-located task 的 rate。11/11 target 已达到 20 aggregate-window threshold；当前论文使用的 LCB lower-service capacity slack 为 \(\delta_{\mathrm{LCB}}=0.0341241\)。但是这只支持“arrival load 按 LCB lower service 的 0.8 缩放”的 stochastic lower-service capacity claim；不能说 0.8 mean-service load 已由 holdout LCB 证明。
 
 operational necessity 不能写成“positive recurrence iff \(\lambda\) 有任意正 slack”。Operational stabilizability 也不能只是“存在某个稳定 Markov model”；Lean 里已经把它改成 load-certified finite-support arrival/service model：
 
@@ -1565,3 +1611,161 @@ theorem assumptions 之间的桥接推进了一层：
 strict admitted population 上可被审计，而不能把 arbitrary future workload、
 unregistered SOTA、external original multi-node deployment、或 Decima-as-GPU
 co-location superiority 写成定理结论。
+
+---
+
+# 13. 2026-08-09 variable-duration trajectory closure 与 OR 泛化
+
+服务器迁移、港口换泊/换岸桥、FJSP 的整条机器序列和 MMRCPSP 的整条
+mode trajectory 都不能直接塞进 unit-slot theorem。它们共同要求把 action
+从单步 profile 提升为 **finite configuration trajectory**，并显式记录物理
+时长与累计服务。令 \(n\) 为 frame index，
+\(\mathcal F_n^{F}\) 为 frame 开始前信息，
+\(\tau_n\in[\tau_{\min},\tau_{\max}]\) 为 action duration，边界队列满足
+
+\[
+Q^{F}(n+1)
+=
+[Q^{F}(n)-S^{F}(n)]^+
++A^{F}(n).
+\]
+
+这里 \(A^{F}(n)\) 与 \(S^{F}(n)\) 都是 frame 内累计量，不能把 wall-clock
+migration seconds 直接和 service units 相加。若
+
+\[
+\mathbb E[A_i^{F}(n)\mid\mathcal F_n^{F}]\le\tau_n\lambda_i,
+\qquad
+\overline S^{F}(n)
+=
+\mathbb E[S^{F}(n)\mid\mathcal F_n^{F}],
+\]
+
+且 conditional second-order term 由 \(B_F\) 控制，累计 oracle 义务写成
+
+\[
+\tau_n H_{\mathcal A^{full}}(Q^{F}(n))
+\le
+(Q^{F}(n))^\top\overline S^{F}(n)
++\tau_n(\epsilon_F+\alpha_1)\|Q^{F}(n)\|_1
++\alpha_0+P_n^F,
+\]
+
+\[
+P_n^F
+\le
+P_0+\tau_n\beta\|Q^{F}(n)\|_1.
+\]
+
+其中 \(\epsilon_F\) 合并 candidate support loss 与 conservative-service
+loss，\(P_n^F\) 包含 checkpoint flush、sync、environment staging、resume
+warmup、lost work 和 risk。定义
+
+\[
+\eta_F=\delta-\epsilon_F-\alpha_1-\beta.
+\]
+
+则新的 frame theorem 给出
+
+\[
+\mathbb E[\Delta_FV(n)\mid\mathcal F_n^F]
+\le
+B_F+\alpha_0+P_0
+-\tau_n\eta_F\|Q^F(n)\|_1
+\le
+B_F+\alpha_0+P_0
+-\tau_{\min}\eta_F\|Q^F(n)\|_1.
+\]
+
+当 \(\eta_F>0\)、frame-boundary augmented state countable、backlog
+sublevel set finite/nonempty，并满足 local-return condition 时，
+
+\[
+B_F+\alpha_0+P_0+\gamma
+\le
+\tau_{\min}\eta_F N
+\]
+
+给出 embedded frame-boundary chain 的 finite-set Foster recurrence
+certificate。上界 \(\tau_n\le\tau_{\max}\) 还给出
+
+\[
+\sum_{k=0}^{n-1}\tau_k\le n\tau_{\max},
+\]
+
+因此 finite expected frame-return time 可以转换成 finite physical-time
+return bound。若单位时间 arrivals/service 成比例缩放，Lean 还构造性证明
+\(B_F\le\tau_{\max}^2B\)。取所有 duration 为 1 时严格退化回原 slotted
+theorem，而不是另起一个不相干的模型。
+
+Lean 对应文件是 Scheduleurm/FrameBasedStability.lean，对应 theorem 为：
+
+- secondOrderTerm_frame_le
+- frameApproximateOracle_iff_durationNormalized
+- frame_approximate_maxWeight_negative_drift
+- frame_approximate_maxWeight_lyapunov_drift
+- frame_approximate_maxWeight_lyapunov_drift_uniform
+- frame_lyapunov_drift_duration_one
+- elapsedFrameTime_le
+- frame_nat_model_positive_recurrent_via_finite_set
+
+## 13.1 migration 的两个正确比较口径
+
+不能再只写模糊的“新机器更快就迁移”。对剩余工作 \(W\)、旧/新自然完成
+rate \(r_{\mathrm{old}},r_{\mathrm{new}}>0\)，若成本以 wall-clock time 计，
+completion-time 必要比较是
+
+\[
+W\left(\frac1{r_{\mathrm{old}}}-\frac1{r_{\mathrm{new}}}\right)
+>
+T_{\mathrm{flush}}+T_{\mathrm{sync}}+T_{\mathrm{stage}}
++T_{\mathrm{warm}}+T_{\mathrm{lost}}+T_{\mathrm{risk}}.
+\]
+
+若进入 MaxWeight/frame theorem，则必须先选共同 horizon，把 keep/migrate
+都转换成累计 lower service，再比较
+
+\[
+(Q^F)^\top
+\left(\underline S_{\mathrm{migrate}}^F-\underline S_{\mathrm{keep}}^F\right)
+>
+P_{\mathrm{migrate}}^F-P_{\mathrm{keep}}^F.
+\]
+
+前者是 JCT 决策审计，后者是 drift/oracle 审计；两者不能混用单位。
+目前 controlled migration rows 可复用 checkpoint/sync/resume 的实测耗时，
+但迁移前后剩余完成时间必须用冻结后的 hardware-local natural-completion
+rate 重算。没有 cumulative stochastic service/moment certificate 的 row
+只能进 deterministic replay，不能据此 claim semi-Markov recurrence。
+
+## 13.2 港口、FJSP、MMRCPSP 的统一层与不可统一层
+
+统一层只有 finite complete trajectory action、state-specific feasible
+family、cumulative lower service、bounded reconfiguration/risk penalty 和
+exact generated-family oracle audit。
+
+不可统一层是每个域的物理 feasibility 与 stochastic model：
+
+- port：泊位空间冲突、岸桥数量/移动/setup、yard/gate 容量与换泊成本；
+- FJSP：operation precedence、eligible machines、machine sequence 与 processing time；
+- MMRCPSP：precedence、renewable capacity、nonrenewable budget 与 mode duration；
+- server：CPU/GPU/memory/topology、co-location interference、checkpointability 与 node-local service。
+
+2026-08-09 的冻结后证据是：
+
+| Domain | Protocol | Result | 不能外推的结论 |
+|---|---|---|---|
+| FJSP | post-freeze Kacem holdout | 4/4 selected trajectory Pareto-nondominated | arbitrary FJSP solver/global optimum |
+| MMRCPSP | disjoint post-repair PSPLIB holdout | 56/56 selected trajectory Pareto-nondominated | all-instance dominance；v1 failure 不能删除 |
+| Port | pinned BACASP-S core + 3 registered synthetic instances | 4/4 selected trajectory Pareto-nondominated；generated-family gap 0 | continuous-quay MILP reproduction、industrial yard/gate validation |
+
+MMRCPSP 的 v1 preregistered holdout 在 j102_10 fail，原因是 reserve DP
+错误地把 renewable-infeasible future modes 当作 nonrenewable completion
+witness。修复后先做 opened-row regression，再对与 development/repair rows
+都 disjoint 的 v2 holdout 做 56/56 检验。这个失败链必须保留，因为它说明
+candidate generator 的 feasibility certificate 不是事后包装。
+
+因此目前能写的强结论是：**finite trajectory-action candidate/oracle/
+penalty interface 在 compute、port、FJSP、MMRCPSP 的已登记实例上可移植，
+且变量时长 frame drift 已有独立 Lean closure。** 不能写成这些 deterministic
+holdout 自动证明各域 stochastic stability，也不能写成击败任意域 SOTA。

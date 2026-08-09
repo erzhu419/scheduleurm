@@ -1,0 +1,127 @@
+{
+  "adapter_repair_commit": "38f8b5e",
+  "baseline_policies": [
+    "fcfs_static",
+    "spt_static",
+    "edd_static",
+    "reconfiguration_greedy"
+  ],
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "method": "factor-cell cluster bootstrap; both R89/R90 rows retained per sampled cell",
+    "replicates": 5000,
+    "seed": 20260809
+  },
+  "claim_boundary": [
+    "fixed-slot source-core projection only",
+    "no BACASP-S mid-service migration",
+    "no author-algorithm or unrestricted-optimum comparison",
+    "no physical-port or stochastic-stability claim"
+  ],
+  "data_freeze_commit": "d7db8e9",
+  "development_candidate_family_size": 31,
+  "development_compact_artifact": "md/experiment_artifacts/port_trajectory_upgrade_v2_compact_20260809.json",
+  "development_compact_file_sha256": "1fa29e264fceff2936f3b4b15547a0ee384fcaff27a448dc8688ce865c5c7d92",
+  "development_full_artifact": "md/experiment_artifacts/port_trajectory_upgrade_v2_full_20260809.json.gz",
+  "development_full_gzip_sha256": "46df76bd1d59cea5dc67fbc7d2e77d1ac55c0b8fb6e969e0f08c8549916ee69a",
+  "development_scientific_content_sha256": "6252b003d41d5495e12030935829c84b0e9d45b1be40c918a02c0d553b709b45",
+  "evaluation_metrics": [
+    "quay_makespan",
+    "mean_quay_flow_time",
+    "source_objective_cost"
+  ],
+  "execution_budget": {
+    "deployment_policy": "one frozen periodic trajectory",
+    "development_candidate_evaluations_disclosed": 31,
+    "holdout_rollouts_per_policy_per_instance": 1,
+    "ours_holdout_candidate_search": false
+  },
+  "failure_policy": {
+    "baseline_dominance": "retain in performance denominator",
+    "infeasible_or_deadlocked": "retain as failure",
+    "no_post_holdout_tuning": true,
+    "parse_error": "retain as failure"
+  },
+  "frozen_plan": {
+    "mode": "rolling_periodic",
+    "period": 3,
+    "plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
+    "policies": [
+      "spt_static",
+      "robust_maxweight",
+      "robust_maxweight"
+    ]
+  },
+  "frozen_search_config_sha256": "320f51e5e4b882245a2167aa73fdf9426099a8028fdcbcc7c4a87c86427959a9",
+  "holdout_outcomes_observed_before_freeze": false,
+  "implementation_file_sha256": {
+    "algorithm/experiments/port_public_benchmark_adapter.py": "543ce3bebd0cc4bb01d24faa96b959016f86913ff76f77d3d5c2ed20aa40206d",
+    "algorithm/experiments/port_public_external_holdout.py": "0f0c2656c86b608285abf914a55553c78ba5fc2d75d0192d7a3b689b68a38dea",
+    "algorithm/experiments/port_scheduling_benchmark.py": "ff262291b19f63ab3d557efc342708b495ac5036f733e25dff1e189bfc625863",
+    "algorithm/experiments/port_scheduling_instances.py": "2591964494302d0adc8f015dbc92ea4fea8ed09926bbe437dd5f38255ec4d391",
+    "algorithm/experiments/port_trajectory_upgrade.py": "68dca4c47ad89fd71dba5bca8c775a666a2fd226c035ce51b6472edfa61ed8de"
+  },
+  "implementation_freeze_commit": "38f8b5e",
+  "performance_diagnostic": "selected frozen plan Pareto-nondominance count and paired ratios",
+  "preregistration_sha256_excluding_self": "d65105fd1fcf2a30f57bf7fd7a24f972a0040fdccf781837f81da1417cf0601e",
+  "primary_failed_holdout": {
+    "compact_artifact": "md/experiment_artifacts/port_bacasp_s_external_holdout_r89_r90_20260809.json",
+    "compact_sha256": "71f95597ca9c67f50981066bf695a3070adcca18cb7ed1d1ef51d8ef754ec2e7",
+    "completed_instance_count": 36,
+    "failure_count": 18,
+    "full_artifact": "md/experiment_artifacts/port_bacasp_s_external_holdout_r89_r90_full_20260809.json.gz",
+    "full_sha256": "11b77d9e8220474030167f1355e1dc156fdcf33a26719c4df6e99d1408ce77fd",
+    "registered_instance_count": 54,
+    "status": "PORT_PUBLIC_EXTERNAL_HOLDOUT_FAIL"
+  },
+  "primary_protocol_gate": "all 54 rows authentic, parsed, feasible, and retained",
+  "protocol": "post_adapter_repair_disjoint_large_mb_r87_r88",
+  "registered_on": "2026-08-09",
+  "repair_diagnosis_used_primary_r89_r90_outcomes": true,
+  "repair_protocol_commit": "62d5816",
+  "repair_scope": {
+    "allowed": [
+      "intersect raw vessel crane interval with global available-crane set",
+      "generalize registered replication labels"
+    ],
+    "forbidden": [
+      "change frozen plan",
+      "change baseline policies",
+      "change evaluation metrics",
+      "inspect R87/R88 policy outcomes before this freeze"
+    ]
+  },
+  "schema_version": "scheduleurm.port_bacasp_s_preregistration.v1",
+  "score_boundary": {
+    "development_outer_selector": "normalized terminal-cost virtual service minus bounded penalty",
+    "holdout_outcomes_used_for_selection": false,
+    "low_level": "statewise Q^T physical lower_service minus action penalty"
+  },
+  "split_rule": {
+    "all_registered_rows_remain_in_denominator": true,
+    "deadline_factors": [
+      "1",
+      "1.5",
+      "2"
+    ],
+    "development_replication": 10,
+    "external_holdout_replications": [
+      87,
+      88
+    ],
+    "q_max_factors": [
+      5,
+      10,
+      15
+    ],
+    "registered_instance_count": 54,
+    "speed_setup_factors": [
+      "160-0.2",
+      "200-0.15",
+      "240-0.1"
+    ]
+  },
+  "suite_manifest_file_sha256": "87089340e79a336cbcda85ba4638f40f33c92263c726f2769d9208fd2300e28f",
+  "suite_manifest_path": "tests/data/port_bacasp_s_external_holdout_r89_r90/source_manifest.json",
+  "upstream_repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+}

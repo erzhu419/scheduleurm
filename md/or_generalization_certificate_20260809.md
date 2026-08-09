@@ -1,28 +1,31 @@
 # OR Generalization Certificate
 
-- Status: `OR_GENERALIZATION_CERTIFICATE_PASS`
-- Common action: complete finite configuration trajectory.
-- Common selector: exact generated-family maximizer of lower service minus bounded penalty.
+- Status: `OR_GENERALIZATION_CERTIFICATE_PASS_MIXED_EVIDENCE`
+- Protocol completeness and performance superiority are separate gates.
+- Counterexamples are retained and prevent a cross-domain dominance claim.
 
-| Domain | Protocol | Instances | Ours Pareto-nondominated | Strong global claim |
-|---|---|---:|---:|---:|
-| FJSP | post-freeze Kacem holdout | 4 | 4/4 | false |
-| MMRCPSP | disjoint post-repair PSPLIB holdout | 56 | 56/56 | false |
-| Port | public BACASP-S plus registered synthetic four-resource instances | 4 | 4/4 | false |
+| Domain | Prospective protocol | Status | Pareto-nondominated | Strict every-baseline |
+|---|---|---|---:|---:|
+| FJSP | first public-family holdout | `FJSP_FAMILY_HOLDOUT_FAIL` | 19/20 | 3/20 |
+| FJSP | Hurink confirmation | `FJSP_HURINK_HOLDOUT_PASS` | 19/20 | 0/20 |
+| MMRCPSP | PSPLIB multi-family confirmation | `MMRCPSP_FAMILY_HOLDOUT_PASS` | 25/25 | 11/25 |
+| Port | BACASP-S R87/R88 | `PORT_PUBLIC_EXTERNAL_HOLDOUT_PASS` | 12/54 | 3/54 |
+| Port | factor-policy R85/R86 | `PORT_FACTOR_POLICY_HOLDOUT_PASS` | 16/54 | 1/54 |
 
-## MMRCPSP prospective repair protocol
+## Retained negative evidence
 
-- v1 holdout: `FAIL`, first counterexample `j102_10`.
-- Opened-row repair regression: `56/56`; not prospective.
-- Disjoint v2 holdout: `56/56` Pareto-nondominated.
+- The first FJSP family holdout failed its complete-reference protocol and contains a dominated instance.
+- The Hurink confirmation also contains one dominated instance.
+- The R89/R90 BACASP-S adapter-failure artifact is retained; R87/R88 contains dominated cases.
+- The original MMRCPSP failure remains bound to its nonprospective repair regression.
 
 ## Claim boundary
 
-- Supports: finite trajectory-action portability across compute, port, FJSP, and MMRCPSP models
-- Supports: post-freeze external holdout evidence for the registered FJSP and repaired MMRCPSP suites
-- Supports: hash-bound public-source and synthetic four-resource port evidence
-- Supports: exact generated-family oracle and bounded-penalty certificates
-- Does not support: global FJSP, MMRCPSP, or continuous-port optimality
+- Supports: hash-bound external-instance protocol portability across FJSP, MMRCPSP, and BACASP-S
+- Supports: prospective multi-family MMRCPSP evidence with retained earlier failure
+- Supports: prospective FJSP and port counterexamples that delimit the finite selector
+- Supports: finite trajectory-family oracle and bounded-penalty accounting
+- Does not support: global FJSP, MMRCPSP, berth-allocation, or quay-crane optimality
 - Does not support: dominance over arbitrary exact or state-of-the-art domain solvers
-- Does not support: physical port deployment or measured industrial reconfiguration cost
-- Does not support: automatic transfer of the server stochastic-stability certificate without a domain arrival/service model
+- Does not support: physical terminal deployment or measured industrial migration cost
+- Does not support: automatic transfer of server stochastic stability without a domain arrival and service model

@@ -9,26 +9,31 @@ from algorithm.experiments.or_generalization_certificate import (
 )
 
 
-def test_generalization_certificate_preserves_component_boundaries():
+def test_generalization_certificate_retains_positive_and_negative_evidence():
     report = build_certificate()
-    assert report["gate"] == {
-        "pass": True,
-        "status": "OR_GENERALIZATION_CERTIFICATE_PASS",
-        "component_count": 3,
-        "all_component_protocol_gates_auditable": True,
-        "all_successful_selected_policies_pareto_nondominated": True,
-        "arbitrary_domain_optimality_claim_ready": False,
-        "stochastic_stability_transfers_without_domain_model": False,
-    }
-    assert report["fjsp"]["ours_pareto_nondominated_count"] == 4
-    assert report["mmrcpsp"]["v1_prospective_gate_pass"] is False
-    assert report["mmrcpsp"]["repair_regression"][
-        "prospective_external_holdout_claim_ready"
-    ] is False
-    assert report["mmrcpsp"]["v2_ours_pareto_nondominated_count"] == 56
-    assert report["port"][
-        "selected_pareto_nondominated_on_every_registered_instance"
-    ] is True
+    gate = report["gate"]
+    assert gate["pass"] is True
+    assert gate["all_registered_outcomes_retained"] is True
+    assert gate["all_component_protocols_auditable"] is True
+    assert gate["all_selected_policies_pareto_nondominated"] is False
+    assert gate["performance_superiority_claim_ready"] is False
+    assert gate["arbitrary_domain_optimality_claim_ready"] is False
+
+    assert report["fjsp"]["first_family_holdout"]["protocol_pass"] is False
+    assert report["fjsp"]["first_family_holdout"]["pareto_nondominated_count"] == 19
+    assert report["fjsp"]["hurink_confirmation"]["protocol_pass"] is True
+    assert report["fjsp"]["hurink_confirmation"]["pareto_nondominated_count"] == 19
+
+    assert report["mmrcpsp"]["v1_failure_retained"] is True
+    assert report["mmrcpsp"]["opened_row_repair"]["prospective_claim_ready"] is False
+    assert report["mmrcpsp"]["multi_family_confirmation"]["instance_count"] == 25
+    assert report["mmrcpsp"]["multi_family_confirmation"]["pareto_nondominated_count"] == 25
+
+    factor = report["port"]["r85_r86_factor_policy_confirmation"]
+    assert factor["protocol_pass"] is True
+    assert factor["candidate_generation_on_holdout"] is False
+    assert factor["holdout_feedback_used_for_selection"] is False
+    assert report["port"]["performance_superiority_claim_ready"] is False
     assert report["artifact_sha256_excluding_self"]
 
 
@@ -42,5 +47,9 @@ def test_generalization_artifacts_are_byte_deterministic(tmp_path):
     write_artifacts(report, json_path, markdown_path)
     assert json_path.read_bytes() == first_json
     assert markdown_path.read_bytes() == first_markdown
-    assert json.loads(first_json)["gate"]["pass"] is True
-    assert "MMRCPSP prospective repair protocol" in markdown_report(report)
+    payload = json.loads(first_json)
+    assert payload["gate"]["pass"] is True
+    assert payload["gate"]["performance_superiority_claim_ready"] is False
+    markdown = markdown_report(report)
+    assert "Retained negative evidence" in markdown
+    assert "19/20" in markdown

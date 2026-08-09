@@ -90,6 +90,30 @@ def test_loaded_gate_rejects_undeclared_prelaunch_gpu_load(tmp_path):
     )
 
 
+def test_loaded_gate_rejects_undeclared_load_on_other_registered_gpu(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    assert row["gpu"] == 0
+    diagnostics = Path(row["diagnostics_log_path"])
+    lines = diagnostics.read_text(encoding="utf-8").splitlines()
+    lines[1] = "1, NVIDIA GeForce RTX 2080 Ti, 11264, 2048, 9000, 100"
+    diagnostics.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["diagnostics_sha256"] = hashlib.sha256(diagnostics.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_NODE_GPU_LOAD_AT_RESIDENT_START"
+        for issue in report["validation_errors"]
+    )
+
+
 def test_discovery_excludes_filtered_smoke_artifacts(tmp_path):
     full = tmp_path / f"{CAMPAIGN_PREFIX}_node007_r01_20260809_codeabc.json"
     smoke = tmp_path / (

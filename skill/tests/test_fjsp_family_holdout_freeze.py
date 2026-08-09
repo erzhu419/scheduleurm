@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from algorithm.experiments.fjsp_family_holdout_freeze import stratified_indices
+from algorithm.experiments.fjsp_family_holdout_freeze import (
+    public_bound_id,
+    stratified_indices,
+)
 
 
 @pytest.mark.parametrize(
@@ -21,3 +24,8 @@ def test_stratified_indices_are_deterministic_and_span_family(count, expected):
 def test_stratified_selection_rejects_tiny_families():
     with pytest.raises(ValueError, match="at least five"):
         stratified_indices(4)
+
+
+def test_public_bound_identifier_handles_dpp_prefix():
+    assert public_bound_id("DauzerePeresPaulli1994", "01a") == "dpp01a"
+    assert public_bound_id("BehnkeGeiger2012", "behnke1") == "behnke1"

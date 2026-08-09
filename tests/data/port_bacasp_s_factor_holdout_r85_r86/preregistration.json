@@ -1,0 +1,64 @@
+{
+  "claim_boundary": {
+    "mid_service_migration": false,
+    "physical_terminal_deployment": false,
+    "stochastic_stability_transfer": false,
+    "unrestricted_port_optimality": false
+  },
+  "development_compact_path": "md/experiment_artifacts/port_factor_policy_development_r87_r90_20260809.json",
+  "development_compact_sha256": "3bbecc6b8c4185a0bf860a139424a32f32f4f5329680ca04ce340b392451e8eb",
+  "development_content_sha256": "0c67c50e58f80deaa7498b426bae00411c7c1767b94b2a6eb0f565394c69faef",
+  "factor_policy_sha256": "2b1c3fcdd7e72f45c9431a062de082a7399aa0c3ac28c4520cc53aa4016b64fb",
+  "implementation_freeze": {
+    "implementation_sha256": {
+      "algorithm/experiments/port_factor_policy_development.py": "4c70e846e667975ac1cb23e5ca9cddd646349c98f569b0ab1697464c7e15601d",
+      "algorithm/experiments/port_factor_policy_holdout.py": "f784daedb66aec540ab4590e810ad5715fa5d7b443866fe8fdb7643ada8ae577",
+      "algorithm/experiments/port_factor_policy_holdout_freeze.py": "d7f14903e04d4a843ea3885472a7d329d12827ecbbc697e7bcc341d6d3a0c139",
+      "algorithm/experiments/port_public_benchmark_adapter.py": "543ce3bebd0cc4bb01d24faa96b959016f86913ff76f77d3d5c2ed20aa40206d",
+      "algorithm/experiments/port_public_external_holdout.py": "acbbe90e5dfb6597fc28125f62b21470bac3dbfab53de77fd2f1450aa55e1217",
+      "algorithm/experiments/port_scheduling_benchmark.py": "ff262291b19f63ab3d557efc342708b495ac5036f733e25dff1e189bfc625863",
+      "algorithm/experiments/port_scheduling_instances.py": "2591964494302d0adc8f015dbc92ea4fea8ed09926bbe437dd5f38255ec4d391",
+      "algorithm/experiments/port_trajectory_upgrade.py": "68dca4c47ad89fd71dba5bca8c775a666a2fd226c035ce51b6472edfa61ed8de"
+    },
+    "repository_commit": "d7ca80851555414a7cb85f9c86ca6c6a4f532af8"
+  },
+  "outputs": [
+    "md/experiment_artifacts/port_factor_policy_holdout_r85_r86_20260809.json.gz",
+    "md/experiment_artifacts/port_factor_policy_holdout_r85_r86_20260809.json",
+    "md/port_factor_policy_holdout_r85_r86_20260809.md"
+  ],
+  "protocol": {
+    "baseline_policies": [
+      "fcfs_static",
+      "spt_static",
+      "edd_static",
+      "reconfiguration_greedy"
+    ],
+    "candidate_generation_on_holdout": false,
+    "conditioning_features": [
+      "q_max_factor",
+      "speed_setup_factor",
+      "deadline_factor"
+    ],
+    "evaluation_metrics": [
+      "quay_makespan",
+      "mean_quay_flow_time",
+      "source_objective_cost"
+    ],
+    "holdout_feedback_used_for_selection": false,
+    "policy": "factor_conditioned_finite_trajectory"
+  },
+  "registered_on": "2026-08-09",
+  "schema_version": "scheduleurm.port_factor_policy_holdout.preregistration.v1",
+  "source": {
+    "factor_cell_count": 27,
+    "registered_instance_count": 54,
+    "replications": [
+      85,
+      86
+    ],
+    "repository": "https://github.com/juanfdata/bacasp_setup",
+    "repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+  },
+  "suite_manifest_sha256": "e3b0ede5dd0094b84246d4ba437375037f507b67d5374c4fa5f45b2c3dbd2d11"
+}

@@ -1,0 +1,67 @@
+{
+  "excluded_before_lcb": true,
+  "exclusion_rule": "Exclude a preregistered wave only when the independent host-process audit exceeds its registered conservative exposure threshold; never inspect the performance outcome when making the exclusion decision.",
+  "gate": "critical_gpu_loaded_wave_exclusion",
+  "host_cpu_audit": {
+    "conservative_burst_duration_s": 10.988473488,
+    "conservative_exposure": 0.0013422150572821772,
+    "exposure_threshold": 0.001,
+    "peak_unapproved_host_cpu_fraction": 0.08391666666666667,
+    "process": {
+      "command": "python3",
+      "cpu_pct": 200.0,
+      "host_cpu_fraction": 0.08333333333333333,
+      "host_nproc": 24,
+      "pgid": 1644960,
+      "pid": 1645009,
+      "rss_kb": 11792,
+      "sample_ns": 1786271010015844715
+    },
+    "scenario_id": "rl_after_cnn",
+    "unapproved_gpu_process_detected": false
+  },
+  "node": "jtl110gpu2",
+  "ordinary_running_tasks_touched": false,
+  "original_artifacts": [
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_host_cpu_contamination_excluded.json",
+      "sha256": "83808ef9e94589e9e182e6439994523fdc2f2f4d422092f21ed060da7b39489b"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_host_cpu_contamination_excluded.md",
+      "sha256": "c9c9fcdf893f39039dfc6bd30195b453a868702293effebcaae6b93ec527e69b"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu2_r07_20260809_host_cpu_contamination_excluded.json",
+      "sha256": "74e91ac60de3f7f36a0d84d29b558a7ff5f8621708981d84fca3734cab2450a2"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_jtl110gpu2_r07_20260809_host_cpu_contamination_excluded.md",
+      "sha256": "028e3a9cfddbc0ccd765b130907842f91f3301ad6ef6b58f20b1545238fc1c01"
+    }
+  ],
+  "performance_outcome_used_for_exclusion": false,
+  "protocol": "critical_gpu_loaded_natural_completion_v2",
+  "quarantined_raw_trees": [
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_cnn_after_llm_host_cpu_contamination_excluded",
+      "tree_sha256": "e6fcbf858957ccb3f84aa13ceade48b1e7dc29c6c3c57c221b8de649d415fc08"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_cnn_after_rl_host_cpu_contamination_excluded",
+      "tree_sha256": "0f88e934a07097429d21b57deec647912f2d67c000e988ac317d91e32cd66747"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_llm_after_cnn_host_cpu_contamination_excluded",
+      "tree_sha256": "3195757300417cb7e02153ae6e071a6fd97cc498427dad15fba4aee1458cde35"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_jtl110gpu2_r07_20260809_code1b42b9b7e37d_rl_after_cnn_host_cpu_contamination_excluded",
+      "tree_sha256": "e840d9e458033cf49abe5dd0cf0445d973c5bbd82a42410a579c289295336ca4"
+    }
+  ],
+  "replacement_policy": "Rerun the same registered calibration wave with identical frozen measurement code and configuration. Retain this excluded wave and its raw evidence; admit only the canonical replacement if its independent preflight/postflight audits pass.",
+  "split_role": "calibration",
+  "status": "EXCLUDED_HOST_CPU_CONTAMINATION",
+  "wave": 7
+}

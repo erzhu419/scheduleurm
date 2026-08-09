@@ -24,6 +24,9 @@ from algorithm.experiments.critical_gpu_loaded_completion_campaign import (
     CAMPAIGN_DATE,
     build_loaded_completion_campaign,
 )
+from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
+    _prelaunch_assigned_gpu_audit,
+)
 
 
 def run_safe_loaded_wave(
@@ -86,13 +89,51 @@ def run_safe_loaded_wave(
         allow_launch=True,
         keep_remote_output=keep_remote_output,
     )
+    row_prelaunch_audit = _audit_campaign_prelaunch_snapshots(
+        campaign=campaign,
+        node=node,
+    )
+    passed = bool(
+        campaign.get("pass") is True and row_prelaunch_audit["pass"] is True
+    )
     return {
         **common,
-        "status": "PASS" if campaign.get("pass") is True else "CAMPAIGN_INCOMPLETE",
-        "pass": campaign.get("pass") is True,
+        "status": (
+            "PASS"
+            if passed
+            else (
+                "ROW_PREFLIGHT_AUDIT_FAILED"
+                if campaign.get("pass") is True
+                else "CAMPAIGN_INCOMPLETE"
+            )
+        ),
+        "pass": passed,
         "launched": True,
         "idle_snapshot": idle,
         "campaign": campaign,
+        "row_prelaunch_audit": row_prelaunch_audit,
+    }
+
+
+def _audit_campaign_prelaunch_snapshots(
+    *, campaign: Mapping[str, Any], node: str
+) -> dict[str, Any]:
+    rows = list(campaign.get("rows") or [])
+    audits = []
+    for row in rows:
+        audit = _prelaunch_assigned_gpu_audit(row=row, node=node)
+        audits.append({"scenario_id": row.get("scenario_id"), **audit})
+    passed = bool(rows) and all(
+        audit.get("audit_ready") is True
+        and audit.get("assigned_gpu_idle") is True
+        and audit.get("all_registered_gpus_idle") is True
+        for audit in audits
+    )
+    return {
+        "pass": passed,
+        "expected_row_count": len(rows),
+        "audited_row_count": len(audits),
+        "audits": audits,
     }
 
 

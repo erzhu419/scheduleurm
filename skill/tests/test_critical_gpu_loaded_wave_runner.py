@@ -36,9 +36,18 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
 
     def campaign(**kwargs):
         calls.append(kwargs)
-        return {"status": "PASS", "pass": True}
+        return {"status": "PASS", "pass": True, "rows": [{"scenario_id": "a"}]}
 
     monkeypatch.setattr(runner, "build_loaded_completion_campaign", campaign)
+    monkeypatch.setattr(
+        runner,
+        "_prelaunch_assigned_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "assigned_gpu_idle": True,
+            "all_registered_gpus_idle": True,
+        },
+    )
 
     report = runner.run_safe_loaded_wave(
         node="node007",
@@ -50,6 +59,7 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
     assert report["status"] == "PASS"
     assert report["pass"] is True
     assert report["launched"] is True
+    assert report["row_prelaunch_audit"]["pass"] is True
     assert calls == [
         {
             "node": "node007",
@@ -58,6 +68,40 @@ def test_idle_preflight_launches_exact_requested_wave(monkeypatch):
             "keep_remote_output": True,
         }
     ]
+
+
+def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
+    monkeypatch.setattr(
+        runner,
+        "_gpu_idle_snapshot",
+        lambda _spec: {"ready": True, "selected_gpus": []},
+    )
+    monkeypatch.setattr(
+        runner,
+        "build_loaded_completion_campaign",
+        lambda **_kwargs: {
+            "status": "PASS",
+            "pass": True,
+            "rows": [{"scenario_id": "a"}],
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_prelaunch_assigned_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "assigned_gpu_idle": True,
+            "all_registered_gpus_idle": False,
+            "nonidle_registered_gpus": [{"gpu": 1}],
+        },
+    )
+
+    report = runner.run_safe_loaded_wave(node="node007", wave=5, allow_launch=True)
+
+    assert report["status"] == "ROW_PREFLIGHT_AUDIT_FAILED"
+    assert report["pass"] is False
+    assert report["launched"] is True
+    assert report["row_prelaunch_audit"]["pass"] is False
 
 
 def test_manifest_mode_never_runs_idle_probe(monkeypatch):

@@ -8,7 +8,6 @@ import pytest
 
 from algorithm.experiments.mmrcpsp_external_holdout import (
     ExternalHoldoutError,
-    build_external_holdout_report,
     frozen_protocol_sha256,
     validate_external_source,
     verify_pre_analysis_freeze,
@@ -19,11 +18,13 @@ SUITE = Path("tests/data/mmrcpsp_psplib_external_holdout")
 
 
 def test_policy_freeze_and_preregistration_are_repository_auditable():
-    audit = verify_pre_analysis_freeze()
+    audit = verify_pre_analysis_freeze(require_current_implementation=False)
     assert audit["pass"] is True
     assert audit["selection_registered_after_policy_freeze"] is True
     assert audit["instance_bytes_absent_at_preregistration"] is True
     assert len(audit["implementation_files"]) == 4
+    assert audit["current_implementation_matches_freeze"] is False
+    assert audit["historical_artifact_rerun_permitted"] is False
     assert frozen_protocol_sha256() == audit["protocol_config_sha256"]
 
 
@@ -60,8 +61,10 @@ def test_external_source_rejects_selection_drift(tmp_path: Path):
         )
 
 
-def test_frozen_policy_fails_closed_on_first_preregistered_counterexample():
-    report = build_external_holdout_report()
+def test_frozen_policy_historical_artifact_records_counterexample():
+    report = json.loads(
+        (SUITE / "mmrcpsp_psplib_external_holdout_gate.json").read_text()
+    )
     gate = report["gate"]
     assert gate["pass"] is False
     assert gate["prospective_external_holdout_ready"] is False

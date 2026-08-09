@@ -1,0 +1,112 @@
+{
+  "claim_boundary": {
+    "arbitrary_family_dominance": false,
+    "global_mmrcpsp_optimality": false,
+    "stochastic_stability_transfer": false
+  },
+  "implementation_freeze": {
+    "implementation_sha256": {
+      "algorithm/experiments/mmrcpsp_benchmark.py": "d2998f8579e3030d20cff0de42d572dc1f09e8379276c49a976b7f56af63d754",
+      "algorithm/experiments/mmrcpsp_family_holdout.py": "0ad6e83d3ebefc690f884b23a4d9cfc566d2eac2eb1261ce071ee3d6add2ca30",
+      "algorithm/experiments/mmrcpsp_family_holdout_freeze.py": "408aef37f8ea808f7b4d419e08fcf4e4532da75648b15c66dc9f3dac84d2eaf4",
+      "algorithm/experiments/mmrcpsp_instances.py": "d2d6e0dd0ef0ec9f9d9ff1795024aded81d567dd54e1b6e6200fc306819f99b2",
+      "algorithm/experiments/mmrcpsp_renewal_frame_upgrade.py": "4db0f2e63787ab30c68292df18aefa9e749302ca04a95007fad333e190688400",
+      "algorithm/experiments/mmrcpsp_trajectory_upgrade.py": "f0363c727cc85878bb8c14bfaab3bc76f2ae5befb1c91bf565f46e9533d21f5d",
+      "algorithm/experiments/or_exact_reference.py": "5e6a178fb1aaf0aea794f3f9b49a8442770e777999725eacb1648950e18d5a56",
+      "algorithm/experiments/trajectory_renewal_frame_score.py": "f9cc9b0a24f85b3ad616e69503b9813c6111888846fdd997c4d20a0a9899b0ad"
+    },
+    "repository_commit": "9464ff5901fee394d1d73bde916d1b2e9820d507"
+  },
+  "outputs": [
+    "tests/data/mmrcpsp_family_external_holdout/mmrcpsp_family_external_holdout_gate.json",
+    "tests/data/mmrcpsp_family_external_holdout/mmrcpsp_family_external_holdout_gate.md"
+  ],
+  "protocol": {
+    "cp_sat_budget_excludes_model_construction": true,
+    "cp_sat_workers": 1,
+    "fixed_reference_budget_s": 5.0,
+    "holdout_feedback_used_for_policy": false,
+    "matched_reference_floor_s": 0.05,
+    "per_instance_tuning": false,
+    "performance_is_not_a_protocol_pass_condition": true,
+    "policy": "scheduleurm_mmrcpsp_renewal_frame",
+    "run_cp_sat_reference": true
+  },
+  "registered_on": "2026-08-09",
+  "schema_version": "scheduleurm.mmrcpsp_family_holdout.preregistration.v1",
+  "selection": {
+    "excluded_development_family": "j10",
+    "families": [
+      "j12",
+      "j14",
+      "j16",
+      "j18",
+      "j20"
+    ],
+    "members": [
+      "j12/j1212_3.mm",
+      "j12/j1212_6.mm",
+      "j12/j1244_1.mm",
+      "j12/j1215_9.mm",
+      "j12/j122_8.mm",
+      "j14/j1422_1.mm",
+      "j14/j1413_10.mm",
+      "j14/j1463_5.mm",
+      "j14/j1432_3.mm",
+      "j14/j1438_8.mm",
+      "j16/j1653_9.mm",
+      "j16/j1661_5.mm",
+      "j16/j1635_9.mm",
+      "j16/j1638_2.mm",
+      "j16/j1612_4.mm",
+      "j18/j1810_7.mm",
+      "j18/j1834_2.mm",
+      "j18/j1842_10.mm",
+      "j18/j1838_8.mm",
+      "j18/j1846_2.mm",
+      "j20/j2041_2.mm",
+      "j20/j2056_3.mm",
+      "j20/j2011_4.mm",
+      "j20/j2064_8.mm",
+      "j20/j2045_1.mm"
+    ],
+    "rule": "Within each registered feasible public family, sort by (horizon, precedence_arc_count, total_mode_duration, filename) and take ranks floor(k(n-1)/4), k=0..4. Public optimum values are attached only after structural selection.",
+    "rule_uses_scheduleurm_outcomes": false
+  },
+  "source": {
+    "collection": "PSPLIB multi-mode RCPSP",
+    "family_tables": {
+      "j12": {
+        "download_url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j12&mode=mm&format=zip",
+        "instance_archive_sha256": "60bcc35e5851d652be20f77f6edef9803e341a3a56d3f148a8847583fd463b37",
+        "optimum_url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j12&mode=mm&type=opt",
+        "public_optimum_sha256": "0f04c33a4ff386d56731a8a7f7493f7d9800f746fd24c63458b681d507efcd01"
+      },
+      "j14": {
+        "download_url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j14&mode=mm&format=zip",
+        "instance_archive_sha256": "f14f6864e84b67657713af0a0ecb2feafef8ec40146b5ce6b4c53ae17d911575",
+        "optimum_url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j14&mode=mm&type=opt",
+        "public_optimum_sha256": "690c7f9ab27a4fb24a9bfeb36643d48aec26293a0fc904216ef453b6ad8ec072"
+      },
+      "j16": {
+        "download_url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j16&mode=mm&format=zip",
+        "instance_archive_sha256": "9f67d3cb73bc6451189a0a293a2f03faa6d71a3c86c4e75f6c79ee1e7b7e9089",
+        "optimum_url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j16&mode=mm&type=opt",
+        "public_optimum_sha256": "3c9d860b0ac2d485cb9a2fb94b497892ab9aeba47e9768561911cc8ead5f92e1"
+      },
+      "j18": {
+        "download_url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j18&mode=mm&format=zip",
+        "instance_archive_sha256": "2de143d316206b652360a909f46f5b95331849c9f964b564a59ed85c0aecbd11",
+        "optimum_url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j18&mode=mm&type=opt",
+        "public_optimum_sha256": "df8544d5141da9b782c16ca7ed3f957305199c4754e42ef03ddf906e65975856"
+      },
+      "j20": {
+        "download_url": "https://www.om-db.wi.tum.de/psplib/download_dataset.php?set=j20&mode=mm&format=zip",
+        "instance_archive_sha256": "184af2efbc3093abe8648496a0bee2620b10443c1fc33cb69bb3a8cd9fc4d63f",
+        "optimum_url": "https://www.om-db.wi.tum.de/psplib/download_solution.php?set=j20&mode=mm&type=opt",
+        "public_optimum_sha256": "e248727b7a6eae3af3dd1155275705ee010f5cfa160eea22ac55932461fcb6c2"
+      }
+    },
+    "landing_page": "https://www.om-db.wi.tum.de/psplib/data.php"
+  }
+}

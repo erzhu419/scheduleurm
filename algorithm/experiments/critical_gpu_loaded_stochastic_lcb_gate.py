@@ -213,8 +213,10 @@ def build_critical_gpu_loaded_stochastic_lcb_gate(
             "divided by the full overlap duration. One wave-maximum split-"
             "conformal margin jointly covers both functionals for all four "
             "actions. Every row also hash-verifies the pre-launch nvidia-smi "
-            "snapshot and rejects an assigned GPU already carrying undeclared "
-            "load. It neither populates the legacy workload/profile index nor "
+            "snapshot and rejects undeclared load on any registered GPU, so "
+            "same-GPU co-location rows do not silently absorb host/PCIe "
+            "contention from another card. It neither populates the legacy "
+            "workload/profile index nor "
             "extrapolates to unmeasured mixtures, hardware, or future workloads."
         ),
     }
@@ -409,6 +411,14 @@ def _audit_row(
             f"limits=({GPU_IDLE_MEMORY_LIMIT_MB} MB, {GPU_IDLE_UTIL_LIMIT_PCT}%)"
         ),
     )
+    require(
+        prelaunch_gpu.get("all_registered_gpus_idle") is True,
+        "UNDECLARED_NODE_GPU_LOAD_AT_RESIDENT_START",
+        (
+            f"nonidle_registered_gpus={prelaunch_gpu.get('nonidle_registered_gpus')!r}, "
+            f"limits=({GPU_IDLE_MEMORY_LIMIT_MB} MB, {GPU_IDLE_UTIL_LIMIT_PCT}%)"
+        ),
+    )
     require(row.get("resident_alive_at_target_start") is True, "OVERLAP_INVALID")
     require(row.get("resident_alive_at_target_end") is True, "OVERLAP_INVALID")
     require(_int_or(row.get("resident_returncode"), -1) == 0, "NATURAL_EXIT_INVALID")
@@ -477,8 +487,10 @@ def _prelaunch_assigned_gpu_audit(
 
     The completion campaign records an ``nvidia-smi`` snapshot before launching
     the resident and another after both tasks exit.  A row labelled with only a
-    controlled resident is invalid when the selected physical GPU was already
-    loaded by an undeclared process in the first snapshot.
+    controlled resident is invalid when either the selected physical GPU or a
+    different registered GPU was already loaded by an undeclared process in the
+    first snapshot.  The node-wide check prevents host/PCIe contention from
+    entering a row whose declared state contains only same-GPU co-location.
     """
 
     path_text = str(row.get("diagnostics_log_path") or "").strip()
@@ -563,13 +575,26 @@ def _prelaunch_assigned_gpu_audit(
             ),
         }
     selected = first_snapshot[gpu]
-    idle = bool(
+    assigned_idle = bool(
         selected["used_mb"] <= GPU_IDLE_MEMORY_LIMIT_MB
         and selected["util_pct"] <= GPU_IDLE_UTIL_LIMIT_PCT
     )
+    nonidle = [
+        dict(first_snapshot[index])
+        for index in sorted(first_snapshot)
+        if not (
+            first_snapshot[index]["used_mb"] <= GPU_IDLE_MEMORY_LIMIT_MB
+            and first_snapshot[index]["util_pct"] <= GPU_IDLE_UTIL_LIMIT_PCT
+        )
+    ]
     return {
         "audit_ready": True,
-        "assigned_gpu_idle": idle,
+        "assigned_gpu_idle": assigned_idle,
+        "all_registered_gpus_idle": not nonidle,
+        "nonidle_registered_gpus": nonidle,
+        "registered_gpu_snapshot": [
+            dict(first_snapshot[index]) for index in sorted(first_snapshot)
+        ],
         "gpu": gpu,
         "used_mb": selected["used_mb"],
         "util_pct": selected["util_pct"],

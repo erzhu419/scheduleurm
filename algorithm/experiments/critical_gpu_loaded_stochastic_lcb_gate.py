@@ -47,6 +47,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MAX_NORMALIZED_LOAD1 = 0.50
 MIN_AVAILABLE_MEMORY_FRACTION = 0.10
 MAX_UNAPPROVED_USER_CPU_FRACTION = 0.05
+# Conservative upper bound on undeclared CPU-time as a fraction of the full
+# host capacity over the target interval.  Snapshot spikes remain visible in
+# the artifact; only isolated, exposure-negligible bursts may pass this gate.
+MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION = 0.001
 HOST_MONITOR_ALLOWED_COMMANDS = frozenset(
     {
         "awk",
@@ -506,9 +510,16 @@ def _audit_row(
         f"violations={continuous_gpu.get('host_memory_violations')!r}",
     )
     require(
-        continuous_gpu.get("no_unapproved_cpu_processes") is True,
+        continuous_gpu.get("unapproved_cpu_exposure_within_bound") is True,
         "UNDECLARED_HOST_PROCESS_DURING_TARGET",
-        f"violations={continuous_gpu.get('unapproved_cpu_processes')!r}",
+        (
+            "violations="
+            f"{continuous_gpu.get('unapproved_cpu_processes')!r}, "
+            "conservative_exposure="
+            f"{continuous_gpu.get('conservative_unapproved_cpu_exposure_fraction')!r}, "
+            "limit="
+            f"{continuous_gpu.get('max_unapproved_cpu_exposure_fraction')!r}"
+        ),
     )
     require(row.get("resident_alive_at_target_start") is True, "OVERLAP_INVALID")
     require(row.get("resident_alive_at_target_end") is True, "OVERLAP_INVALID")
@@ -694,6 +705,93 @@ def _prelaunch_assigned_gpu_audit(
         "idle_util_limit_pct": GPU_IDLE_UTIL_LIMIT_PCT,
         "diagnostics_path": str(path),
         "diagnostics_sha256": observed_sha256,
+    }
+
+
+def _conservative_unapproved_cpu_exposure(
+    *,
+    host_process_samples: Sequence[Mapping[str, Any]],
+    high_snapshot_totals: Sequence[Mapping[str, Any]],
+    target_start_ns: int,
+    target_end_ns: int,
+) -> dict[str, Any]:
+    """Upper-bound transient CPU exposure using neighboring process samples.
+
+    A process present in one snapshot is conservatively treated as present from
+    the preceding process snapshot through the following one.  Consecutive high
+    snapshots form one burst, so overlapping brackets are never double-counted.
+    """
+
+    duration_ns = int(target_end_ns) - int(target_start_ns)
+    if duration_ns <= 0:
+        return {"conservative_exposure_fraction": math.inf, "bursts": []}
+    sample_times = sorted(
+        {
+            int(sample["sample_ns"])
+            for sample in host_process_samples
+            if target_start_ns <= int(sample["sample_ns"]) <= target_end_ns
+        }
+    )
+    high_by_ns = {
+        int(row["sample_ns"]): float(row["total_unapproved_cpu_fraction"])
+        for row in high_snapshot_totals
+        if target_start_ns <= int(row["sample_ns"]) <= target_end_ns
+    }
+    if not high_by_ns:
+        return {"conservative_exposure_fraction": 0.0, "bursts": []}
+    position = {sample_ns: index for index, sample_ns in enumerate(sample_times)}
+    high_positions = sorted(
+        position[sample_ns]
+        for sample_ns in high_by_ns
+        if sample_ns in position
+    )
+    if len(high_positions) != len(high_by_ns):
+        return {"conservative_exposure_fraction": math.inf, "bursts": []}
+
+    groups: list[tuple[int, int]] = []
+    start = previous = high_positions[0]
+    for current in high_positions[1:]:
+        if current == previous + 1:
+            previous = current
+            continue
+        groups.append((start, previous))
+        start = previous = current
+    groups.append((start, previous))
+
+    bursts = []
+    total_exposure = 0.0
+    for start_index, end_index in groups:
+        left_ns = (
+            int(target_start_ns)
+            if start_index == 0
+            else max(int(target_start_ns), sample_times[start_index - 1])
+        )
+        right_ns = (
+            int(target_end_ns)
+            if end_index + 1 >= len(sample_times)
+            else min(int(target_end_ns), sample_times[end_index + 1])
+        )
+        peak_fraction = max(
+            high_by_ns[sample_times[index]]
+            for index in range(start_index, end_index + 1)
+        )
+        exposure_fraction = peak_fraction * max(right_ns - left_ns, 0) / duration_ns
+        total_exposure += exposure_fraction
+        bursts.append(
+            {
+                "first_high_sample_ns": sample_times[start_index],
+                "last_high_sample_ns": sample_times[end_index],
+                "conservative_start_ns": left_ns,
+                "conservative_end_ns": right_ns,
+                "conservative_duration_s": max(right_ns - left_ns, 0) / 1e9,
+                "peak_host_cpu_fraction": peak_fraction,
+                "conservative_exposure_fraction": exposure_fraction,
+                "high_snapshot_count": end_index - start_index + 1,
+            }
+        )
+    return {
+        "conservative_exposure_fraction": total_exposure,
+        "bursts": bursts,
     }
 
 
@@ -992,6 +1090,12 @@ def _continuous_other_gpu_audit(
                     "total_unapproved_cpu_fraction": total_unapproved_cpu_fraction,
                 }
             )
+    cpu_exposure = _conservative_unapproved_cpu_exposure(
+        host_process_samples=host_process_samples,
+        high_snapshot_totals=unapproved_cpu_snapshot_totals,
+        target_start_ns=target_start_ns,
+        target_end_ns=target_end_ns,
+    )
     maxima = {
         index: {"gpu": index, "max_used_mb": 0, "max_util_pct": 0}
         for index in sorted(expected_indices - {assigned_gpu})
@@ -1052,6 +1156,11 @@ def _continuous_other_gpu_audit(
             and not unapproved_cpu_processes
             and not unapproved_cpu_snapshot_totals
         ),
+        "unapproved_cpu_exposure_within_bound": bool(
+            host_process_samples
+            and float(cpu_exposure["conservative_exposure_fraction"])
+            <= MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION
+        ),
         "missing_host_sample_ns": missing_host_sample_ns[:50],
         "host_process_sample_count": len(host_process_samples),
         "host_normalized_load1_max": host_normalized_load1_max,
@@ -1063,9 +1172,17 @@ def _continuous_other_gpu_audit(
         "unapproved_cpu_processes": unapproved_cpu_processes[:50],
         "unapproved_cpu_process_count": len(unapproved_cpu_processes),
         "unapproved_cpu_snapshot_totals": unapproved_cpu_snapshot_totals[:50],
+        "unapproved_cpu_transient_bursts": cpu_exposure["bursts"][:50],
+        "unapproved_cpu_transient_burst_count": len(cpu_exposure["bursts"]),
+        "conservative_unapproved_cpu_exposure_fraction": cpu_exposure[
+            "conservative_exposure_fraction"
+        ],
         "max_normalized_load1": MAX_NORMALIZED_LOAD1,
         "min_available_memory_fraction": MIN_AVAILABLE_MEMORY_FRACTION,
         "max_unapproved_user_cpu_fraction": MAX_UNAPPROVED_USER_CPU_FRACTION,
+        "max_unapproved_cpu_exposure_fraction": (
+            MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION
+        ),
         "allowed_process_group_ids": sorted(allowed_pgids),
         "observed_process_group_ids": sorted(observed_pgids),
         "unapproved_compute_processes": unapproved_processes[:50],

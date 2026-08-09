@@ -180,6 +180,101 @@ def test_loaded_gate_rejects_third_compute_process_on_assigned_gpu(tmp_path):
     )
 
 
+def test_loaded_gate_rejects_high_aggregate_host_load(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    host_lines = [index for index, line in enumerate(lines) if line.startswith("__HOST_SAMPLE__")]
+    lines[host_lines[1]] = "__HOST_SAMPLE__ 64 40.0 2.0 1.0 1048576 2097152"
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_HOST_LOAD_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
+def test_loaded_gate_rejects_low_available_host_memory(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    host_lines = [index for index, line in enumerate(lines) if line.startswith("__HOST_SAMPLE__")]
+    lines[host_lines[1]] = "__HOST_SAMPLE__ 64 2.0 2.0 1.0 1024 2097152"
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "INSUFFICIENT_HOST_MEMORY_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
+def test_loaded_gate_rejects_third_high_cpu_same_user_process(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    marker = [
+        index for index, line in enumerate(lines)
+        if line.startswith("__USER_PROC_SNAPSHOT__")
+    ][1]
+    lines.insert(marker + 1, "__USER_PROC__ 2999 1999 75.0 4096 python")
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "UNDECLARED_HOST_PROCESS_DURING_TARGET"
+        for issue in report["validation_errors"]
+    )
+
+
+def test_loaded_gate_rejects_missing_host_sample(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    payload = json.loads(paths[5].read_text(encoding="utf-8"))
+    row = payload["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    lines = monitor.read_text(encoding="utf-8").splitlines()
+    host_lines = [index for index, line in enumerate(lines) if line.startswith("__HOST_SAMPLE__")]
+    del lines[host_lines[1]]
+    monitor.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+    paths[5].write_text(json.dumps(payload), encoding="utf-8")
+
+    report = build_critical_gpu_loaded_stochastic_lcb_gate(
+        node=NODE, campaign_paths=paths
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert any(
+        issue["code"] == "HOST_MONITOR_TARGET_INTERVAL_NOT_COVERED"
+        for issue in report["validation_errors"]
+    )
+
+
 def test_discovery_excludes_filtered_smoke_artifacts(tmp_path):
     code_prefix = measurement_code_manifest()["sha256"][:12]
     full = tmp_path / (
@@ -274,18 +369,25 @@ def _row(spec, *, wave: int, index: int, root: Path) -> dict[str, object]:
         (
             "__GPU_PROC__ 2001 1001 GPU-a 1024",
             "__GPU_PROC__ 2002 1002 GPU-a 1024",
+            "__USER_PROC_SNAPSHOT__ 0",
+            "__USER_PROC__ 2001 1001 80.0 1024 python",
+            "__USER_PROC__ 2002 1002 80.0 1024 python",
         )
     )
+    host_snapshot = "__HOST_SAMPLE__ 64 2.0 1.5 1.0 1048576 2097152"
     monitor.write_text(
         "\n".join(
             (
                 "__GPU_SAMPLE_NS__ 99000000000",
+                host_snapshot,
                 snapshot,
                 process_snapshot,
                 "__GPU_SAMPLE_NS__ 105000000000",
+                host_snapshot,
                 snapshot,
                 process_snapshot,
                 "__GPU_SAMPLE_NS__ 111000000000",
+                host_snapshot,
                 snapshot,
                 process_snapshot,
             )

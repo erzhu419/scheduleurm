@@ -563,8 +563,25 @@ def _remote_script(
             'nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits > "$DIAG" 2>&1 || true',
             ': > "$GPU_MONITOR"',
             '(',
+            '  MONITOR_SAMPLE_INDEX=0',
+            '  MONITOR_UID=$(id -u)',
+            '  MONITOR_NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf "0")',
             '  while true; do',
             '    printf "__GPU_SAMPLE_NS__ %s\\n" "$(date +%s%N)"',
+            '    read -r LOAD1 LOAD5 LOAD15 _ < /proc/loadavg',
+            '    MEM_AVAILABLE_KB=0',
+            '    MEM_TOTAL_KB=0',
+            '    while read -r MEM_KEY MEM_VALUE _; do',
+            '      case "$MEM_KEY" in',
+            '        MemAvailable:) MEM_AVAILABLE_KB=$MEM_VALUE ;;',
+            '        MemTotal:) MEM_TOTAL_KB=$MEM_VALUE ;;',
+            '      esac',
+            '    done < /proc/meminfo',
+            (
+                '    printf "__HOST_SAMPLE__ %s %s %s %s %s %s\\n" '
+                '"$MONITOR_NPROC" "$LOAD1" "$LOAD5" "$LOAD15" '
+                '"$MEM_AVAILABLE_KB" "$MEM_TOTAL_KB"'
+            ),
             '    nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,utilization.gpu --format=csv,noheader,nounits || true',
             (
                 '    nvidia-smi --query-compute-apps=pid,gpu_uuid,used_memory '
@@ -578,6 +595,17 @@ def _remote_script(
                 'printf "__GPU_PROC__ %s %s %s %s\\n" '
                 '"$PROC_PID" "$PROC_PGID" "$PROC_UUID" "$PROC_MEM"; done'
             ),
+            '    if [ "$((MONITOR_SAMPLE_INDEX % 5))" -eq 0 ]; then',
+            '      printf "__USER_PROC_SNAPSHOT__ %s\\n" "$MONITOR_SAMPLE_INDEX"',
+            (
+                '      ps -U "$MONITOR_UID" -o pid=,pgid=,pcpu=,rss=,comm= '
+                '2>/dev/null | while read -r PROC_PID PROC_PGID PROC_CPU '
+                'PROC_RSS PROC_COMM; do printf '
+                '"__USER_PROC__ %s %s %s %s %s\\n" "$PROC_PID" '
+                '"$PROC_PGID" "$PROC_CPU" "$PROC_RSS" "$PROC_COMM"; done'
+            ),
+            '    fi',
+            '    MONITOR_SAMPLE_INDEX=$((MONITOR_SAMPLE_INDEX + 1))',
             '    sleep 1',
             '  done',
             ') >> "$GPU_MONITOR" 2>&1 &',

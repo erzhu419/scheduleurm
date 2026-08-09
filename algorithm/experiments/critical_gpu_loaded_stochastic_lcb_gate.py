@@ -43,6 +43,27 @@ EXPECTED_WAVES = tuple(ALL_WAVES)
 RESOURCE_STATE = "mixed_colocation"
 MIS_COVERAGE_ALPHA = 0.10
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MAX_NORMALIZED_LOAD1 = 0.50
+MIN_AVAILABLE_MEMORY_FRACTION = 0.10
+UNAPPROVED_USER_PROCESS_CPU_PCT = 25.0
+MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT = 50.0
+HOST_MONITOR_ALLOWED_COMMANDS = frozenset(
+    {
+        "awk",
+        "bash",
+        "date",
+        "grep",
+        "nvidia-smi",
+        "ps",
+        "sed",
+        "sleep",
+        "ssh",
+        "sshd",
+        "timeout",
+        "tr",
+        "wc",
+    }
+)
 
 
 def discover_campaign_paths(
@@ -220,9 +241,11 @@ def build_critical_gpu_loaded_stochastic_lcb_gate(
             "conformal margin jointly covers both functionals for all four "
             "actions. Every row also hash-verifies the pre-launch nvidia-smi "
             "snapshot and rejects undeclared load on any registered GPU, so "
-            "a hash-bound one-second sidecar covers the complete target interval "
-            "and same-GPU co-location rows do not silently absorb host/PCIe "
-            "contention from another card. It neither populates the legacy "
+            "a hash-bound one-second sidecar covers the complete target interval, "
+            "bounds aggregate host load and available memory, and rejects high-CPU "
+            "same-user processes outside the two controlled process groups. Thus "
+            "same-GPU co-location rows do not silently absorb undeclared host/PCIe "
+            "contention. It neither populates the legacy "
             "workload/profile index nor "
             "extrapolates to unmeasured mixtures, hardware, or future workloads."
         ),
@@ -459,6 +482,31 @@ def _audit_row(
         continuous_gpu.get("no_unapproved_compute_processes") is True,
         "UNDECLARED_GPU_COMPUTE_PROCESS_DURING_TARGET",
         f"unapproved={continuous_gpu.get('unapproved_compute_processes')!r}",
+    )
+    require(
+        continuous_gpu.get("host_interval_covered") is True,
+        "HOST_MONITOR_TARGET_INTERVAL_NOT_COVERED",
+        f"missing={continuous_gpu.get('missing_host_sample_ns')!r}",
+    )
+    require(
+        continuous_gpu.get("host_process_interval_sampled") is True,
+        "HOST_PROCESS_MONITOR_TARGET_INTERVAL_NOT_COVERED",
+        f"samples={continuous_gpu.get('host_process_sample_count')!r}",
+    )
+    require(
+        continuous_gpu.get("host_load_within_bound") is True,
+        "UNDECLARED_HOST_LOAD_DURING_TARGET",
+        f"violations={continuous_gpu.get('host_load_violations')!r}",
+    )
+    require(
+        continuous_gpu.get("host_memory_within_bound") is True,
+        "INSUFFICIENT_HOST_MEMORY_DURING_TARGET",
+        f"violations={continuous_gpu.get('host_memory_violations')!r}",
+    )
+    require(
+        continuous_gpu.get("no_unapproved_cpu_processes") is True,
+        "UNDECLARED_HOST_PROCESS_DURING_TARGET",
+        f"violations={continuous_gpu.get('unapproved_cpu_processes')!r}",
     )
     require(row.get("resident_alive_at_target_start") is True, "OVERLAP_INVALID")
     require(row.get("resident_alive_at_target_end") is True, "OVERLAP_INVALID")
@@ -734,9 +782,50 @@ def _continuous_other_gpu_audit(
                 "sample_ns": int(marker.group(1)),
                 "gpus": {},
                 "processes": [],
+                "host": None,
+                "user_process_sampled": False,
+                "user_processes": [],
             }
             continue
         if current is None:
+            continue
+        host = re.fullmatch(
+            r"__HOST_SAMPLE__\s+(\d+)\s+([-+0-9.eE]+)\s+"
+            r"([-+0-9.eE]+)\s+([-+0-9.eE]+)\s+(\d+)\s+(\d+)",
+            line.strip(),
+        )
+        if host:
+            current["host"] = {
+                "nproc": int(host.group(1)),
+                "load1": float(host.group(2)),
+                "load5": float(host.group(3)),
+                "load15": float(host.group(4)),
+                "mem_available_kb": int(host.group(5)),
+                "mem_total_kb": int(host.group(6)),
+            }
+            continue
+        process_snapshot = re.fullmatch(
+            r"__USER_PROC_SNAPSHOT__\s+(\d+)", line.strip()
+        )
+        if process_snapshot:
+            current["user_process_sampled"] = True
+            current["user_process_sample_index"] = int(process_snapshot.group(1))
+            continue
+        user_process = re.fullmatch(
+            r"__USER_PROC__\s+(\d+)\s+(-?\d+)\s+([-+0-9.eE]+)\s+"
+            r"(\d+)\s+(\S+)",
+            line.strip(),
+        )
+        if user_process:
+            current["user_processes"].append(
+                {
+                    "pid": int(user_process.group(1)),
+                    "pgid": int(user_process.group(2)),
+                    "cpu_pct": float(user_process.group(3)),
+                    "rss_kb": int(user_process.group(4)),
+                    "command": user_process.group(5),
+                }
+            )
             continue
         process = re.fullmatch(
             r"__GPU_PROC__\s+(\d+)\s+(-?\d+)\s+(\S+)\s+(\S+)",
@@ -793,6 +882,85 @@ def _continuous_other_gpu_audit(
     allowed_pgids = {resident_pgid, target_pgid}
     observed_pgids: set[int] = set()
     unapproved_processes = []
+    target_samples = [
+        sample
+        for sample in samples
+        if target_start_ns <= int(sample["sample_ns"]) <= target_end_ns
+    ]
+    missing_host_sample_ns = [
+        int(sample["sample_ns"])
+        for sample in target_samples
+        if not isinstance(sample.get("host"), Mapping)
+    ]
+    host_interval_covered = bool(target_samples) and not missing_host_sample_ns
+    host_process_samples = [
+        sample
+        for sample in target_samples
+        if sample.get("user_process_sampled") is True
+    ]
+    host_load_violations = []
+    host_memory_violations = []
+    host_normalized_load1_max = 0.0
+    host_available_memory_fraction_min = 1.0
+    for sample in target_samples:
+        host = sample.get("host")
+        if not isinstance(host, Mapping):
+            continue
+        nproc = int(host.get("nproc") or 0)
+        load1 = float(host.get("load1") or 0.0)
+        mem_available_kb = int(host.get("mem_available_kb") or 0)
+        mem_total_kb = int(host.get("mem_total_kb") or 0)
+        normalized_load1 = load1 / nproc if nproc > 0 else math.inf
+        available_fraction = (
+            mem_available_kb / mem_total_kb if mem_total_kb > 0 else 0.0
+        )
+        host_normalized_load1_max = max(
+            host_normalized_load1_max, normalized_load1
+        )
+        host_available_memory_fraction_min = min(
+            host_available_memory_fraction_min, available_fraction
+        )
+        if normalized_load1 > MAX_NORMALIZED_LOAD1:
+            host_load_violations.append(
+                {
+                    "sample_ns": int(sample["sample_ns"]),
+                    "load1": load1,
+                    "nproc": nproc,
+                    "normalized_load1": normalized_load1,
+                }
+            )
+        if available_fraction < MIN_AVAILABLE_MEMORY_FRACTION:
+            host_memory_violations.append(
+                {
+                    "sample_ns": int(sample["sample_ns"]),
+                    "mem_available_kb": mem_available_kb,
+                    "mem_total_kb": mem_total_kb,
+                    "available_fraction": available_fraction,
+                }
+            )
+    unapproved_cpu_processes = []
+    unapproved_cpu_snapshot_totals = []
+    for sample in host_process_samples:
+        sample_ns = int(sample["sample_ns"])
+        total_unapproved_cpu_pct = 0.0
+        for process in sample["user_processes"]:
+            pgid = int(process["pgid"])
+            command = str(process["command"])
+            if pgid in allowed_pgids or command in HOST_MONITOR_ALLOWED_COMMANDS:
+                continue
+            cpu_pct = float(process["cpu_pct"])
+            total_unapproved_cpu_pct += max(cpu_pct, 0.0)
+            if cpu_pct > UNAPPROVED_USER_PROCESS_CPU_PCT:
+                unapproved_cpu_processes.append(
+                    {"sample_ns": sample_ns, **process}
+                )
+        if total_unapproved_cpu_pct > MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT:
+            unapproved_cpu_snapshot_totals.append(
+                {
+                    "sample_ns": sample_ns,
+                    "total_unapproved_cpu_pct": total_unapproved_cpu_pct,
+                }
+            )
     maxima = {
         index: {"gpu": index, "max_used_mb": 0, "max_util_pct": 0}
         for index in sorted(expected_indices - {assigned_gpu})
@@ -826,6 +994,36 @@ def _continuous_other_gpu_audit(
         "other_registered_gpus_idle": not violations,
         "controlled_process_groups_observed": allowed_pgids <= observed_pgids,
         "no_unapproved_compute_processes": not unapproved_processes,
+        "host_interval_covered": host_interval_covered,
+        "host_process_interval_sampled": bool(host_process_samples),
+        "host_load_within_bound": bool(
+            host_interval_covered and not host_load_violations
+        ),
+        "host_memory_within_bound": bool(
+            host_interval_covered and not host_memory_violations
+        ),
+        "no_unapproved_cpu_processes": bool(
+            host_process_samples
+            and not unapproved_cpu_processes
+            and not unapproved_cpu_snapshot_totals
+        ),
+        "missing_host_sample_ns": missing_host_sample_ns[:50],
+        "host_process_sample_count": len(host_process_samples),
+        "host_normalized_load1_max": host_normalized_load1_max,
+        "host_available_memory_fraction_min": (
+            host_available_memory_fraction_min if target_samples else None
+        ),
+        "host_load_violations": host_load_violations[:50],
+        "host_memory_violations": host_memory_violations[:50],
+        "unapproved_cpu_processes": unapproved_cpu_processes[:50],
+        "unapproved_cpu_process_count": len(unapproved_cpu_processes),
+        "unapproved_cpu_snapshot_totals": unapproved_cpu_snapshot_totals[:50],
+        "max_normalized_load1": MAX_NORMALIZED_LOAD1,
+        "min_available_memory_fraction": MIN_AVAILABLE_MEMORY_FRACTION,
+        "unapproved_user_process_cpu_pct": UNAPPROVED_USER_PROCESS_CPU_PCT,
+        "max_unapproved_user_cpu_pct_per_snapshot": (
+            MAX_UNAPPROVED_USER_CPU_PCT_PER_SNAPSHOT
+        ),
         "allowed_process_group_ids": sorted(allowed_pgids),
         "observed_process_group_ids": sorted(observed_pgids),
         "unapproved_compute_processes": unapproved_processes[:50],

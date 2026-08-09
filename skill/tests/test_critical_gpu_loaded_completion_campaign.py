@@ -225,6 +225,11 @@ def test_remote_script_requires_natural_exit_and_observed_overlap():
     assert "TARGET_END_NS" in script
     assert "TARGET_START_LINE" in script
     assert "TARGET_END_LINE" in script
+    assert "__HOST_SAMPLE__" in script
+    assert "__USER_PROC_SNAPSHOT__" in script
+    assert "__USER_PROC__" in script
+    assert "MONITOR_SAMPLE_INDEX % 5" in script
+    assert "MemAvailable:" in script
     assert "sleep 0.25" in script
     assert "ScheduleurmColocation event=target_start" not in script
     assert "ScheduleurmColocation event=target_end" not in script

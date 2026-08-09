@@ -14,6 +14,7 @@ from algorithm.experiments.port_public_external_holdout import (
     _relation,
     verify_suite_manifest,
 )
+from algorithm.experiments.port_public_external_holdout import _digest
 from algorithm.experiments.port_scheduling_benchmark import BASELINE_POLICIES
 from algorithm.experiments.port_trajectory_upgrade import TrajectoryPlan
 
@@ -33,6 +34,7 @@ def test_suite_manifest_is_factor_complete_and_disjoint():
     assert audit["instance_count"] == 54
     assert audit["factor_cell_count"] == 27
     assert audit["replications_per_cell"] == 2
+    assert audit["registered_replications"] == [89, 90]
     assert audit["development_holdout_path_disjoint"] is True
     assert audit["development_holdout_hash_disjoint"] is True
 
@@ -45,6 +47,22 @@ def test_suite_manifest_tamper_fails_closed(tmp_path):
 
     with pytest.raises(PortHoldoutContractError, match="digest mismatch"):
         verify_suite_manifest(changed)
+
+
+def test_suite_manifest_accepts_only_explicit_registered_replication_pair(tmp_path):
+    manifest = json.loads(DEFAULT_SUITE_MANIFEST.read_text(encoding="utf-8"))
+    for row in manifest["instances"]:
+        row["replication"] = 87 if int(row["replication"]) == 89 else 88
+    manifest.pop("manifest_content_sha256_excluding_self", None)
+    manifest["manifest_content_sha256_excluding_self"] = _digest(manifest)
+    changed = tmp_path / "manifest.json"
+    changed.write_text(json.dumps(manifest), encoding="utf-8")
+
+    audit = verify_suite_manifest(changed, expected_replications=(87, 88))
+
+    assert audit["registered_replications"] == [87, 88]
+    with pytest.raises(PortHoldoutContractError, match="registered replication pair"):
+        verify_suite_manifest(changed, expected_replications=(89, 90))
 
 
 def test_frozen_plan_runs_one_public_holdout_without_candidate_search():
@@ -67,6 +85,25 @@ def test_frozen_plan_runs_one_public_holdout_without_candidate_search():
         TRAJECTORY_POLICY,
         *BASELINE_POLICIES,
     }
+
+
+def test_q5_holdout_row_is_source_feasible_after_capacity_intersection():
+    manifest = json.loads(DEFAULT_SUITE_MANIFEST.read_text(encoding="utf-8"))
+    development = json.loads(DEVELOPMENT_COMPACT.read_text(encoding="utf-8"))
+    selected = TrajectoryPlan(tuple(development["selected_global_plan"]["policies"]))
+    plans = {
+        TRAJECTORY_POLICY: selected,
+        **{policy: TrajectoryPlan((policy,)) for policy in BASELINE_POLICIES},
+    }
+    registered = next(
+        row for row in manifest["instances"] if int(row["q_max_factor"]) == 5
+    )
+
+    result = _evaluate_registered_instance(registered, plans)
+
+    assert result["crane_count"] == 5
+    assert result["selected_feasible"] is True
+    assert result["selected_mid_service_reconfiguration_count"] == 0
 
 
 def test_pareto_relation_distinguishes_dominance_tradeoff_and_tie():

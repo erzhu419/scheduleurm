@@ -3,8 +3,8 @@
 The development trajectory search is completed before this module is allowed
 to inspect holdout outcomes.  A preregistration binds the selected trajectory,
 search configuration, implementation files, baselines, metrics, and the
-R89/R90 factor-complete source manifest.  The holdout runner never generates,
-ranks, or tunes trajectory candidates.
+a factor-complete source manifest and its registered replication pair.  The
+holdout runner never generates, ranks, or tunes trajectory candidates.
 
 The public instances cover berth/quay/specific-crane source semantics only.
 They do not contain yard, gate, draft, or mid-service migration observations.
@@ -75,6 +75,7 @@ class PortHoldoutContractError(ValueError):
 def verify_suite_manifest(
     manifest_path: str | Path = DEFAULT_SUITE_MANIFEST,
     development_manifest_path: str | Path = DEVELOPMENT_SOURCE_MANIFEST,
+    expected_replications: Sequence[int] = EXPECTED_REPLICATIONS,
 ) -> dict[str, Any]:
     manifest_path = Path(manifest_path)
     manifest = _load_json(manifest_path)
@@ -130,8 +131,16 @@ def verify_suite_manifest(
         verified_rows.append({"local_path": str(local_path), "checks": checks})
     if set(cell_replicates) != expected_cells:
         raise PortHoldoutContractError("27-cell Q x S x D coverage is incomplete")
-    if any(tuple(sorted(values)) != EXPECTED_REPLICATIONS for values in cell_replicates.values()):
-        raise PortHoldoutContractError("each factor cell must contain R89 and R90")
+    registered_replications = tuple(sorted(int(value) for value in expected_replications))
+    if len(registered_replications) != 2 or len(set(registered_replications)) != 2:
+        raise PortHoldoutContractError("holdout must register exactly two replications")
+    if any(
+        tuple(sorted(values)) != registered_replications
+        for values in cell_replicates.values()
+    ):
+        raise PortHoldoutContractError(
+            "each factor cell must contain exactly the registered replication pair"
+        )
 
     development = _load_json(development_manifest_path)
     development_fixture = development.get("fixture") or {}
@@ -148,6 +157,7 @@ def verify_suite_manifest(
         "instance_count": len(rows),
         "factor_cell_count": len(cell_replicates),
         "replications_per_cell": 2,
+        "registered_replications": list(registered_replications),
         "development_holdout_path_disjoint": True,
         "development_holdout_hash_disjoint": True,
         "verified_rows": verified_rows,
@@ -212,10 +222,19 @@ def build_holdout_report(
     suite_manifest_path: str | Path = DEFAULT_SUITE_MANIFEST,
     preregistration_path: str | Path = DEFAULT_PREREGISTRATION,
 ) -> dict[str, Any]:
-    provenance = verify_suite_manifest(suite_manifest_path)
+    prereg = _load_json(preregistration_path)
+    registered_replications = tuple(
+        sorted(
+            int(value)
+            for value in prereg["split_rule"]["external_holdout_replications"]
+        )
+    )
+    provenance = verify_suite_manifest(
+        suite_manifest_path,
+        expected_replications=registered_replications,
+    )
     freeze = verify_preregistration(preregistration_path, suite_manifest_path)
     manifest = _load_json(suite_manifest_path)
-    prereg = _load_json(preregistration_path)
     frozen_plan = TrajectoryPlan(tuple(prereg["frozen_plan"]["policies"]))
     policy_plans = {
         TRAJECTORY_POLICY: frozen_plan,
@@ -240,7 +259,7 @@ def build_holdout_report(
                 }
             )
 
-    aggregate = _aggregate(rows)
+    aggregate = _aggregate(rows, registered_replications=registered_replications)
     protocol_pass = bool(
         provenance["ready"]
         and freeze["ready"]
@@ -296,7 +315,9 @@ def build_holdout_report(
         "claim_boundary": {
             "supports": [
                 "post-freeze evaluation on 54 hash-bound disjoint BACASP-S LargeMB instances",
-                "complete 27-cell Q x speed/setup x deadline coverage with R89/R90 replication",
+                "complete 27-cell Q x speed/setup x deadline coverage with "
+                + "/".join(f"R{value}" for value in registered_replications)
+                + " replication",
                 "same-input comparison with four frozen simulator policies",
                 "source-core feasibility and factor-stratified paired outcome summaries",
             ],
@@ -387,7 +408,11 @@ def _evaluate_registered_instance(
     }
 
 
-def _aggregate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def _aggregate(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    registered_replications: Sequence[int] = EXPECTED_REPLICATIONS,
+) -> dict[str, Any]:
     if not rows:
         return {
             "selected_pareto_nondominated_count": 0,
@@ -433,7 +458,13 @@ def _aggregate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "factor_cell_count": len(cells),
         "paired_policy_summaries": summaries,
         "bootstrap": {
-            "method": "factor-cell cluster bootstrap; both R89/R90 rows retained per sampled cell",
+            "method": (
+                "factor-cell cluster bootstrap; both registered replication rows "
+                "retained per sampled cell"
+            ),
+            "registered_replications": [
+                int(value) for value in registered_replications
+            ],
             "seed": BOOTSTRAP_SEED,
             "replicates": BOOTSTRAP_REPLICATES,
         },
@@ -562,6 +593,7 @@ def compact_certificate(
                 "instance_count",
                 "factor_cell_count",
                 "replications_per_cell",
+                "registered_replications",
                 "development_holdout_path_disjoint",
                 "development_holdout_hash_disjoint",
             )
@@ -610,8 +642,12 @@ def verify_artifact_pair(compact_path: str | Path = DEFAULT_COMPACT) -> dict[str
 def markdown_report(compact: Mapping[str, Any]) -> str:
     gate = compact["gate"]
     aggregate = compact["aggregate"]
+    replications = "/".join(
+        f"R{int(value)}"
+        for value in compact["provenance"]["registered_replications"]
+    )
     lines = [
-        "# BACASP-S R89/R90 external holdout",
+        f"# BACASP-S {replications} external holdout",
         "",
         f"- Status: `{gate['status']}`",
         f"- Instances: `{gate['completed_instance_count']}/{gate['registered_instance_count']}`.",

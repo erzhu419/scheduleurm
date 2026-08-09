@@ -24,6 +24,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = REPO_ROOT / "tests" / "data"
 CORE_INSTANCE = DATA_ROOT / "mmrcpsp_core.mm"
 RESERVE_INSTANCE = DATA_ROOT / "mmrcpsp_nonrenewable_reserve.mm"
+RENEWABLE_RESERVE_INSTANCE = (
+    DATA_ROOT / "mmrcpsp_renewable_infeasible_reserve.mm"
+)
 
 
 def test_parser_reads_psplib_precedence_modes_and_resource_kinds():
@@ -105,6 +108,35 @@ def test_nonrenewable_action_certificate_handles_cross_mode_coupling_exactly():
     # Per-coordinate minima are (0, 0), but no joint choice of three modes fits
     # capacities (4, 4).  The exact Pareto-frontier reserve must reject all rows.
     assert actions == ()
+
+
+def test_completion_reserve_excludes_permanently_renewable_infeasible_modes():
+    instance = parse_psplib_mm(RENEWABLE_RESERVE_INSTANCE)
+
+    actions = feasible_mode_actions(
+        instance,
+        eligible_job_ids=(2,),
+        unscheduled_job_ids=(2, 3, 4),
+        renewable_available=(2,),
+        nonrenewable_consumed=(0,),
+    )
+
+    # Job 3 mode 1 has low nonrenewable demand but requires three renewable
+    # units against a total capacity of two.  It cannot certify the aggressive
+    # job 2 mode; only the jointly completable mode remains admissible.
+    assert [(row.job_id, row.mode_id) for row in actions] == [(2, 2)]
+    assert actions[0].nonrenewable_reserve_after == (2,)
+
+
+@pytest.mark.parametrize("policy", POLICY_ORDER)
+def test_renewable_filtered_reserve_keeps_every_policy_completable(policy):
+    instance = parse_psplib_mm(RENEWABLE_RESERVE_INSTANCE)
+
+    result = schedule_instance(instance, policy)
+
+    assert result.feasible is True
+    assert result.failure_reason is None
+    assert result.metrics["resource_violation_units"] == 0.0
 
 
 def test_infeasible_instance_fails_the_gate_without_fabricating_a_schedule():

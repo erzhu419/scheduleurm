@@ -13,6 +13,7 @@ from algorithm.experiments.critical_gpu_loaded_completion_campaign import (
     SCENARIOS,
     TRAINING_WAVES,
     _split_role,
+    measurement_code_manifest,
 )
 from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
     _expected_scenarios,
@@ -115,9 +116,12 @@ def test_loaded_gate_rejects_undeclared_load_on_other_registered_gpu(tmp_path):
 
 
 def test_discovery_excludes_filtered_smoke_artifacts(tmp_path):
-    full = tmp_path / f"{CAMPAIGN_PREFIX}_node007_r01_20260809_codeabc.json"
+    code_prefix = measurement_code_manifest()["sha256"][:12]
+    full = tmp_path / (
+        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_code{code_prefix}.json"
+    )
     smoke = tmp_path / (
-        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_selabc_codeabc.json"
+        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_selabc_code{code_prefix}.json"
     )
     full.write_text("{}", encoding="utf-8")
     smoke.write_text("{}", encoding="utf-8")

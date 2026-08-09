@@ -34,6 +34,7 @@ from .critical_gpu_loaded_completion_campaign import (
     SCENARIOS,
     TRAINING_WAVES,
     _split_role,
+    measurement_code_manifest,
 )
 
 
@@ -47,8 +48,12 @@ def discover_campaign_paths(
     *, node: str, artifact_root: Path = ARTIFACT_ROOT
 ) -> dict[int, Path]:
     paths: dict[int, Path] = {}
+    code_prefix = measurement_code_manifest()["sha256"][:12]
     for wave in EXPECTED_WAVES:
-        prefix = f"{CAMPAIGN_PREFIX}_{node}_r{wave:02d}_{CAMPAIGN_DATE}_code"
+        prefix = (
+            f"{CAMPAIGN_PREFIX}_{node}_r{wave:02d}_{CAMPAIGN_DATE}_code"
+            f"{code_prefix}"
+        )
         matches = sorted(
             path
             for path in Path(artifact_root).glob(f"{prefix}*.json")

@@ -1,357 +1,121 @@
 {
-  "artifact_sha256_excluding_self": "b0843b2267d9de46a3b7998f718d835cff5ad582feaa497d3df63b082b835eac",
+  "artifact_sha256_excluding_self": "c1a66911980e7c23134968536f55e0bbae9d7ca486f7a7d3ea9963e5b2068885",
   "claim_boundary": {
     "does_not_support": [
-      "global FJSP, MMRCPSP, or continuous-port optimality",
+      "global FJSP, MMRCPSP, berth-allocation, or quay-crane optimality",
       "dominance over arbitrary exact or state-of-the-art domain solvers",
-      "physical port deployment or measured industrial reconfiguration cost",
-      "automatic transfer of the server stochastic-stability certificate without a domain arrival/service model"
+      "physical terminal deployment or measured industrial migration cost",
+      "automatic transfer of server stochastic stability without a domain arrival and service model"
     ],
     "supports": [
-      "finite trajectory-action portability across compute, port, FJSP, and MMRCPSP models",
-      "post-freeze external holdout evidence for the registered FJSP and repaired MMRCPSP suites",
-      "hash-bound public-source and synthetic four-resource port evidence",
-      "exact generated-family oracle and bounded-penalty certificates"
+      "hash-bound external-instance protocol portability across FJSP, MMRCPSP, and BACASP-S",
+      "prospective multi-family MMRCPSP evidence with retained earlier failure",
+      "prospective FJSP and port counterexamples that delimit the finite selector",
+      "finite trajectory-family oracle and bounded-penalty accounting"
     ]
   },
   "common_theorem_interface": {
-    "candidate_action": "a complete finite configuration trajectory, including placement, mode, or registered reconfiguration decisions",
-    "duration_boundary": "trajectory durations require the separate variable-duration frame drift theorem before any stochastic recurrence claim",
-    "finite_family_oracle": "each domain selects an exact maximizer over its explicitly generated finite trajectory family",
+    "candidate_action": "a finite configuration trajectory containing placement, mode, or registered reconfiguration decisions",
+    "duration_boundary": "variable-duration trajectories require the renewal-frame drift model before any stochastic recurrence transfer",
+    "finite_family_oracle": "the selector is audited against its explicitly generated finite trajectory family; this is not a domain-global optimum",
     "score": "Q^T lower_service(trajectory) - bounded_penalty(trajectory)"
   },
   "fjsp": {
-    "aggregate": {
-      "instance_count": 4,
-      "ours_strictly_pareto_dominates_every_classic_on_every_instance": false,
-      "ours_vs_each_classic": {
-        "earliest_completion_time": {
-          "baseline_pareto_dominates_count": 0,
-          "geomean_makespan_ratio": 0.796567017875,
-          "geomean_mean_flow_ratio": 1.065593652794,
-          "ours_pareto_dominates_count": 1,
-          "tradeoff_or_equal_count": 3
-        },
-        "fifo_job_order": {
-          "baseline_pareto_dominates_count": 0,
-          "geomean_makespan_ratio": 0.824993278597,
-          "geomean_mean_flow_ratio": 1.05011528143,
-          "ours_pareto_dominates_count": 0,
-          "tradeoff_or_equal_count": 4
-        },
-        "most_operations_remaining": {
-          "baseline_pareto_dominates_count": 0,
-          "geomean_makespan_ratio": 0.91216790907,
-          "geomean_mean_flow_ratio": 1.020770555283,
-          "ours_pareto_dominates_count": 1,
-          "tradeoff_or_equal_count": 3
-        },
-        "most_work_remaining": {
-          "baseline_pareto_dominates_count": 0,
-          "geomean_makespan_ratio": 0.927607703081,
-          "geomean_mean_flow_ratio": 0.922800608244,
-          "ours_pareto_dominates_count": 4,
-          "tradeoff_or_equal_count": 0
-        },
-        "shortest_processing_time": {
-          "baseline_pareto_dominates_count": 0,
-          "geomean_makespan_ratio": 0.698930762278,
-          "geomean_mean_flow_ratio": 1.000577469621,
-          "ours_pareto_dominates_count": 2,
-          "tradeoff_or_equal_count": 2
-        }
-      },
-      "policies": {
-        "earliest_completion_time": {
-          "geomean_makespan_over_bks": 1.311209116491,
-          "geomean_mean_flow_to_instance_best": 1.010029109628,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 0,
-          "mean_flow_best_or_tie_count": 2,
-          "pareto_frontier_count": 2,
-          "policy_label": "Earliest Completion Time (ECT)"
-        },
-        "fifo_job_order": {
-          "geomean_makespan_over_bks": 1.266029630582,
-          "geomean_mean_flow_to_instance_best": 1.024916623335,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 1,
-          "mean_flow_best_or_tie_count": 1,
-          "pareto_frontier_count": 2,
-          "policy_label": "First-In, First-Out (FIFO)"
-        },
-        "most_operations_remaining": {
-          "geomean_makespan_over_bks": 1.145036922861,
-          "geomean_mean_flow_to_instance_best": 1.05438053908,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 1,
-          "mean_flow_best_or_tie_count": 2,
-          "pareto_frontier_count": 3,
-          "policy_label": "Most Operations Remaining (MOR)"
-        },
-        "most_work_remaining": {
-          "geomean_makespan_over_bks": 1.125978074853,
-          "geomean_mean_flow_to_instance_best": 1.166319786465,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 1,
-          "mean_flow_best_or_tie_count": 0,
-          "pareto_frontier_count": 0,
-          "policy_label": "Most Work Remaining (MWKR)"
-        },
-        "ours_robust_maxweight": {
-          "geomean_makespan_over_bks": 1.305216778375,
-          "geomean_mean_flow_to_instance_best": 1.144046049338,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 0,
-          "mean_flow_best_or_tie_count": 0,
-          "pareto_frontier_count": 1,
-          "policy_label": "Ours: robust MaxWeight"
-        },
-        "ours_trajectory_configuration": {
-          "geomean_makespan_over_bks": 1.044465935734,
-          "geomean_mean_flow_to_instance_best": 1.076280608357,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 4,
-          "mean_flow_best_or_tie_count": 1,
-          "pareto_frontier_count": 4,
-          "policy_label": "Ours: trajectory robust MaxWeight"
-        },
-        "shortest_processing_time": {
-          "geomean_makespan_over_bks": 1.494376828299,
-          "geomean_mean_flow_to_instance_best": 1.075659447703,
-          "instance_count": 4,
-          "makespan_best_or_tie_count": 0,
-          "mean_flow_best_or_tie_count": 1,
-          "pareto_frontier_count": 0,
-          "policy_label": "Shortest Processing Time (SPT)"
-        }
-      }
+    "first_family_holdout": {
+      "artifact_sha256": "6cc2c74f7f88765639fe701cd26c15e963bf0051a8f4aa38cb1dff6ba56c104f",
+      "instance_count": 20,
+      "pareto_nondominated_count": 19,
+      "protocol_pass": false,
+      "status": "FJSP_FAMILY_HOLDOUT_FAIL",
+      "strict_every_baseline_count": 3
     },
-    "artifact_sha256": "a6059edefc1048853221f44a2da063038cf50a9fcff5fd240cc11aaf611f5e89",
-    "global_optimality_claim": false,
-    "instance_count": 4,
-    "ours_pareto_nondominated_count": 4,
-    "performance_superiority_claim_ready": false,
-    "protocol": "post_freeze_external_holdout",
-    "suite": "Kacem-Hammadi-Borne 2002"
+    "global_optimality_claim_ready": false,
+    "hurink_confirmation": {
+      "artifact_sha256": "8c5c51e6f58a6813255c453b827842396846724ff056a42e162165e53cce4572",
+      "complete_reference_coverage": true,
+      "instance_count": 20,
+      "pareto_nondominated_count": 19,
+      "protocol_pass": true,
+      "status": "FJSP_HURINK_HOLDOUT_PASS",
+      "strict_every_baseline_count": 0
+    },
+    "kacem_small_holdout": {
+      "artifact_sha256": "a6059edefc1048853221f44a2da063038cf50a9fcff5fd240cc11aaf611f5e89",
+      "instance_count": 4,
+      "pareto_nondominated_count": 4
+    },
+    "performance_superiority_claim_ready": false
   },
   "gate": {
-    "all_component_protocol_gates_auditable": true,
-    "all_successful_selected_policies_pareto_nondominated": true,
+    "all_component_protocols_auditable": true,
+    "all_registered_outcomes_retained": true,
+    "all_selected_policies_pareto_nondominated": false,
     "arbitrary_domain_optimality_claim_ready": false,
-    "component_count": 3,
+    "domain_count": 3,
     "pass": true,
-    "status": "OR_GENERALIZATION_CERTIFICATE_PASS",
+    "performance_superiority_claim_ready": false,
+    "status": "OR_GENERALIZATION_CERTIFICATE_PASS_MIXED_EVIDENCE",
     "stochastic_stability_transfers_without_domain_model": false
   },
   "mmrcpsp": {
-    "global_optimality_claim": false,
-    "repair_regression": {
+    "disjoint_v2": {
+      "artifact_sha256": "6c6cf15ab0902cfc17d71519c51ccef4eae287b358fb4110bc409f77e403e0f4",
+      "instance_count": 56,
+      "pareto_nondominated_count": 56
+    },
+    "global_optimality_claim_ready": false,
+    "multi_family_confirmation": {
+      "artifact_sha256": "a0c2592608d56c0a5021bad5e12375e1c75993a3281b63e42d350b12634fbba1",
+      "instance_count": 25,
+      "pareto_nondominated_count": 25,
+      "protocol_pass": true,
+      "public_optimum_attained_count": 7,
+      "status": "MMRCPSP_FAMILY_HOLDOUT_PASS",
+      "strict_every_baseline_count": 11
+    },
+    "opened_row_repair": {
+      "artifact_sha256": "20e71d07ab90baf8bba1c6d9f661b215225b56acfc5917266ca19e5859249dae",
       "instance_count": 56,
       "pass_count": 56,
-      "prospective_external_holdout_claim_ready": false,
-      "repair_implementation_commit": "c62cddd198d15faaa3d9c2d36415142a42caf727",
-      "selected_nondominated_count": 56
+      "prospective_claim_ready": false
     },
-    "repair_regression_artifact_sha256": "20e71d07ab90baf8bba1c6d9f661b215225b56acfc5917266ca19e5859249dae",
+    "performance_superiority_claim_ready": false,
     "v1_failure_artifact_sha256": "52f11b64d7967892930c48c95c365e1c780e4ecb950f6a836671b9d388bb425d",
-    "v1_first_failure": {
-      "exception_type": "TrajectoryUpgradeError",
-      "fail_closed": true,
-      "instance": "j102_10",
-      "reason": "j102_10: rollout seed scheduleurm_robust_maxweight is infeasible: resource_deadlock:eligible=[6, 9]:nonrenewable_consumed=[27, 20]"
-    },
-    "v1_prospective_gate_pass": false,
-    "v2_aggregate": {
-      "ours_strictly_dominates_every_baseline_instance_count": 25,
-      "ours_strictly_pareto_dominates_every_baseline_on_every_instance": false,
-      "policies": {
-        "greatest_rank_positional_weight": {
-          "geomean_makespan_to_instance_best": 1.124131832,
-          "geomean_mean_flow_to_instance_best": 1.098244086,
-          "pareto_frontier_count": 19
-        },
-        "minimum_slack": {
-          "geomean_makespan_to_instance_best": 1.11151151,
-          "geomean_mean_flow_to_instance_best": 1.108331555,
-          "pareto_frontier_count": 21
-        },
-        "most_total_successors": {
-          "geomean_makespan_to_instance_best": 1.131932866,
-          "geomean_mean_flow_to_instance_best": 1.102077719,
-          "pareto_frontier_count": 19
-        },
-        "scheduleurm_trajectory_robust_maxweight": {
-          "geomean_makespan_to_instance_best": 1.007239303,
-          "geomean_mean_flow_to_instance_best": 1.000193071,
-          "pareto_frontier_count": 56
-        },
-        "shortest_processing_time": {
-          "geomean_makespan_to_instance_best": 1.138783382,
-          "geomean_mean_flow_to_instance_best": 1.099112995,
-          "pareto_frontier_count": 20
-        }
-      }
-    },
-    "v2_artifact_sha256": "6c6cf15ab0902cfc17d71519c51ccef4eae287b358fb4110bc409f77e403e0f4",
-    "v2_instance_count": 56,
-    "v2_ours_pareto_nondominated_count": 56,
-    "v2_performance_superiority_claim_ready": false,
-    "v2_protocol": "disjoint_post_repair_external_holdout"
+    "v1_failure_retained": true
   },
   "port": {
-    "artifact_sha256": "195430e0b1eda556cf1a85478f162720651016024e6a28381d006873661f8a2e",
-    "bounded_penalty_certificate": {
-      "approximate_oracle_slope_alpha1": 0.0,
-      "finite_family_P0_bound": 0.000980061,
-      "pre_registered_uniform_P0_bound": 0.01,
-      "queue_independent": true,
-      "queue_scaled_penalty_slope_beta": 0.0,
-      "ready": true,
-      "risk_cap_per_selected_action": 4.0,
-      "selected_instance_penalties": [
-        0.000198128,
-        0.000439554,
-        0.000364833,
-        0.000266683
-      ]
+    "generated_trajectory_family": {
+      "artifact_sha256": "195430e0b1eda556cf1a85478f162720651016024e6a28381d006873661f8a2e",
+      "family_size": 31,
+      "oracle_gap_alpha0": 0.0,
+      "performance_superiority_claim_ready": false
     },
-    "full_event_ledger_hash": "06d262d67bc78e5346fa4b161af7fd5f54c32c8f47f6a94d1aede051f21fe8eb",
-    "generated_family_oracle_gap": 0.0,
     "performance_superiority_claim_ready": false,
-    "public_source_core_pareto": {
-      "cost_metrics": [
-        "quay_makespan",
-        "mean_quay_flow_time",
-        "source_objective_cost"
-      ],
-      "dominated_by": {
-        "edd_static": [
-          "reconfiguration_greedy",
-          "spt_static",
-          "trajectory_robust_global"
-        ],
-        "fcfs_static": [
-          "edd_static",
-          "reconfiguration_greedy",
-          "spt_static",
-          "trajectory_robust_global"
-        ],
-        "reconfiguration_greedy": [],
-        "spt_static": [],
-        "trajectory_robust_global": []
-      },
-      "nondominated_policies": [
-        "reconfiguration_greedy",
-        "spt_static",
-        "trajectory_robust_global"
-      ]
+    "pre_adapter_failure": {
+      "artifact_sha256": "71f95597ca9c67f50981066bf695a3070adcca18cb7ed1d1ef51d8ef754ec2e7",
+      "completed_instance_count": 36,
+      "registered_instance_count": 54,
+      "status": "PORT_PUBLIC_EXTERNAL_HOLDOUT_FAIL"
     },
-    "selected_global_plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
-    "selected_pareto_nondominated_on_every_registered_instance": true,
-    "synthetic_instance_pareto": [
-      {
-        "instance": "balanced_heterogeneous_8",
-        "pareto": {
-          "cost_metrics": [
-            "makespan",
-            "mean_flow_time",
-            "weighted_tardiness"
-          ],
-          "dominated_by": {
-            "edd_static": [
-              "fcfs_static",
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "fcfs_static": [
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "reconfiguration_greedy": [
-              "trajectory_robust_global"
-            ],
-            "spt_static": [
-              "reconfiguration_greedy",
-              "trajectory_robust_global"
-            ],
-            "trajectory_robust_global": []
-          },
-          "nondominated_policies": [
-            "trajectory_robust_global"
-          ]
-        }
-      },
-      {
-        "instance": "berth_crane_pressure_9",
-        "pareto": {
-          "cost_metrics": [
-            "makespan",
-            "mean_flow_time",
-            "weighted_tardiness"
-          ],
-          "dominated_by": {
-            "edd_static": [
-              "fcfs_static",
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "fcfs_static": [
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "reconfiguration_greedy": [],
-            "spt_static": [
-              "trajectory_robust_global"
-            ],
-            "trajectory_robust_global": []
-          },
-          "nondominated_policies": [
-            "reconfiguration_greedy",
-            "trajectory_robust_global"
-          ]
-        }
-      },
-      {
-        "instance": "yard_gate_surge_9",
-        "pareto": {
-          "cost_metrics": [
-            "makespan",
-            "mean_flow_time",
-            "weighted_tardiness"
-          ],
-          "dominated_by": {
-            "edd_static": [
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "fcfs_static": [
-              "edd_static",
-              "reconfiguration_greedy",
-              "spt_static",
-              "trajectory_robust_global"
-            ],
-            "reconfiguration_greedy": [
-              "trajectory_robust_global"
-            ],
-            "spt_static": [
-              "reconfiguration_greedy",
-              "trajectory_robust_global"
-            ],
-            "trajectory_robust_global": []
-          },
-          "nondominated_policies": [
-            "trajectory_robust_global"
-          ]
-        }
-      }
-    ],
-    "trajectory_family_size": 31
+    "r85_r86_factor_policy_confirmation": {
+      "artifact_sha256": "9d159d3a5d97761cdb2cc6b08788098d37d21ab56874a9548a23825c32b9f5e1",
+      "candidate_generation_on_holdout": false,
+      "holdout_feedback_used_for_selection": false,
+      "instance_count": 54,
+      "pareto_nondominated_count": 16,
+      "protocol_pass": true,
+      "status": "PORT_FACTOR_POLICY_HOLDOUT_PASS",
+      "strict_every_baseline_count": 1
+    },
+    "r87_r88_confirmation": {
+      "artifact_sha256": "6a737487e3633b79cc3bd626b56324717b560a2ccbdce76b617045cd92efe3e6",
+      "instance_count": 54,
+      "pareto_nondominated_count": 12,
+      "protocol_pass": true,
+      "status": "PORT_PUBLIC_EXTERNAL_HOLDOUT_PASS",
+      "strict_every_baseline_count": 3
+    },
+    "unrestricted_optimality_claim_ready": false
   },
-  "schema_version": "scheduleurm.or_generalization_certificate.v1"
+  "schema_version": "scheduleurm.or_generalization_certificate.v2"
 }

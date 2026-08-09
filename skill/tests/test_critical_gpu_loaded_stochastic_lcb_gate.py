@@ -385,16 +385,20 @@ def test_loaded_gate_rejects_missing_host_sample(tmp_path):
     )
 
 
-def test_discovery_excludes_filtered_smoke_artifacts(tmp_path):
+def test_discovery_accepts_only_canonical_artifact_with_excluded_distractors(tmp_path):
     code_prefix = measurement_code_manifest()["sha256"][:12]
     full = tmp_path / (
         f"{CAMPAIGN_PREFIX}_node007_r01_20260809_code{code_prefix}.json"
     )
     smoke = tmp_path / (
-        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_selabc_code{code_prefix}.json"
+        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_code{code_prefix}_selabc.json"
+    )
+    excluded = tmp_path / (
+        f"{CAMPAIGN_PREFIX}_node007_r01_20260809_code{code_prefix}_preaudit_excluded.json"
     )
     full.write_text("{}", encoding="utf-8")
     smoke.write_text("{}", encoding="utf-8")
+    excluded.write_text("{}", encoding="utf-8")
 
     assert discover_campaign_paths(node=NODE, artifact_root=tmp_path) == {1: full}
 

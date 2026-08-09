@@ -76,17 +76,12 @@ def discover_campaign_paths(
     paths: dict[int, Path] = {}
     code_prefix = measurement_code_manifest()["sha256"][:12]
     for wave in EXPECTED_WAVES:
-        prefix = (
+        canonical = Path(artifact_root) / (
             f"{CAMPAIGN_PREFIX}_{node}_r{wave:02d}_{CAMPAIGN_DATE}_code"
-            f"{code_prefix}"
+            f"{code_prefix}.json"
         )
-        matches = sorted(
-            path
-            for path in Path(artifact_root).glob(f"{prefix}*.json")
-            if "_sel" not in path.name
-        )
-        if len(matches) == 1:
-            paths[wave] = matches[0]
+        if canonical.is_file():
+            paths[wave] = canonical
     return paths
 
 

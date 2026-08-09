@@ -24,6 +24,7 @@ DEFAULT_PREREGISTRATION = DEFAULT_ROOT / "preregistration.json"
 DEFAULT_MANIFEST = DEFAULT_ROOT / "source_manifest.json"
 DEFAULT_JSON = DEFAULT_ROOT / "fjsp_family_external_holdout_gate.json"
 DEFAULT_MARKDOWN = DEFAULT_ROOT / "fjsp_family_external_holdout_gate.md"
+MATCHED_REFERENCE_FLOOR_S = 0.05
 
 
 class FJSPFamilyHoldoutError(ValueError):
@@ -134,9 +135,9 @@ def evaluate_instance(
     exact_reference = None
     if run_cp_sat:
         exact_reference = {
-            "matched_runtime": solve_fjsp_cp_sat(
+            "ours_runtime_matched_solver_budget": solve_fjsp_cp_sat(
                 instance,
-                time_limit_s=max(0.05, ours_runtime),
+                time_limit_s=max(MATCHED_REFERENCE_FLOOR_S, ours_runtime),
                 workers=1,
                 incumbent_schedule=ours["schedule"],
             ),
@@ -193,6 +194,8 @@ def build_holdout_report(
         manifest_path=manifest_path,
     )
     protocol = source["preregistration"]["protocol"]
+    if float(protocol["matched_reference_floor_s"]) != MATCHED_REFERENCE_FLOOR_S:
+        raise FJSPFamilyHoldoutError("matched-reference floor differs from frozen runner")
     rows = []
     for registered in source["verified_instances"]:
         rows.append(
@@ -259,6 +262,7 @@ def build_holdout_report(
         "claim_boundary": {
             "baseline_union_nondominance_is_construction_not_superiority": True,
             "cp_sat_reference_optimizes_makespan_only": True,
+            "cp_sat_time_limit_excludes_model_construction": True,
             "scope": "registered public families and instances only",
         },
     }

@@ -1698,6 +1698,37 @@ return bound。若单位时间 arrivals/service 成比例缩放，Lean 还构造
 \(B_F\le\tau_{\max}^2B\)。取所有 duration 为 1 时严格退化回原 slotted
 theorem，而不是另起一个不相干的模型。
 
+迁移动作还必须先做量纲一致的 trajectory 变换。令
+\(W_n^{rem}\) 为单任务剩余工作，\(\underline\mu_n^{old}\) 与
+\(\underline\mu_n^{new}\) 为源/目标 measured state 的单任务 lower-service
+rate，\(T_n^{mig}\) 为 checkpoint、sync、staging、warmup、lost work 和
+time-equivalent risk 的总时长。定义
+
+\[
+\underline\mu_n^{mig,eff}
+=
+\frac{W_n^{rem}}
+{T_n^{mig}+W_n^{rem}/\underline\mu_n^{new}}.
+\]
+
+只有
+
+\[
+\frac{W_n^{rem}}{\underline\mu_n^{old}}
+-
+\frac{W_n^{rem}}{\underline\mu_n^{new}}
+>T_n^{mig}
+\quad\Longleftrightarrow\quad
+\underline\mu_n^{mig,eff}>\underline\mu_n^{old}
+\]
+
+时迁移动作才进入 candidate family。不能把
+\(W_n^{rem}(\underline\mu_n^{new}-\underline\mu_n^{old})\) 与秒比较，也不能
+把 raw wall-clock seconds 直接从 \(Q^\top\underline\mu\) 中减掉。代码中的
+unified migration certificate 先用该条件 admission，再把迁移 trajectory 以
+\(\underline\mu_n^{mig,eff}\) 送入 lower-service selector；实际 JCT 评估仍用
+measured migration time 与 natural-completion destination model。
+
 Lean 对应文件是 Scheduleurm/FrameBasedStability.lean，对应 theorem 为：
 
 - secondOrderTerm_frame_le

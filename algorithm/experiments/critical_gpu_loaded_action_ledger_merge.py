@@ -41,7 +41,12 @@ from .critical_gpu_loaded_completion_campaign import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
-LOADED_SCOPE_NODES = ("jtl110gpu", "node007", "jtl311linux")
+LOADED_SCOPE_NODES = (
+    "jtl110gpu",
+    "jtl110gpu2",
+    "node007",
+    "jtl311linux",
+)
 DEFAULT_REPORT = ARTIFACT_ROOT / "critical_gpu_loaded_action_ledger_merge_20260809.json"
 DEFAULT_MARKDOWN = DEFAULT_REPORT.with_suffix(".md")
 DEFAULT_LEDGER = ARTIFACT_ROOT / "critical_gpu_loaded_action_ledger_20260809.json"
@@ -118,10 +123,10 @@ def build_critical_gpu_loaded_action_ledger_merge(
         "validation_errors": errors,
         "claim_boundary": (
             "The ledger certifies only the four registered, direction-sensitive "
-            "two-workload trajectories on the representative 3080Ti host "
-            "jtl110gpu, node007, and jtl311linux. The homogeneous jtl110gpu2 "
-            "host remains an equivalence audit and is not counted as an "
-            "independent loaded-state sample. Each action "
+            "two-workload trajectories on jtl110gpu, jtl110gpu2, node007, and "
+            "jtl311linux. The two nominally identical 3080Ti hosts remain separate "
+            "operational execution classes because their pre-registered "
+            "equivalence audit failed; their service rows are never pooled. Each action "
             "retains its complete two-coordinate lower-service vector. Exact-state "
             "cache rows are coordinate views, not independent-action claims, and "
             "cannot update the legacy workload/profile index. No claim is made for "

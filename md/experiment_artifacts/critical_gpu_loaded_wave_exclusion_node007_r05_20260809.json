@@ -1,0 +1,103 @@
+{
+  "campaign_result": {
+    "executed_scenario_count": 3,
+    "ready_row_count": 2,
+    "resident_returncode": -1,
+    "status": "INCOMPLETE",
+    "stopped_after_scenario": "rl_after_cnn",
+    "target_returncode": 143
+  },
+  "controlled_abort": {
+    "command_alive_after_abort": false,
+    "controlled_process_ids_terminated": [
+      53322,
+      15013,
+      15146,
+      15020,
+      15014,
+      18237,
+      18105,
+      18104,
+      15004
+    ],
+    "identity_check": "The supervisor and command child cmdlines were required to match the exact campaign control directory before signals were sent.",
+    "ordinary_running_tasks_touched": false,
+    "remote_done_marker_present": true,
+    "remote_supervisor_pid": 14995,
+    "supervisor_alive_after_abort": false
+  },
+  "excluded_before_lcb": true,
+  "exclusion_decision_basis": "The local scheduler state and the campaign's independent continuous monitor both recorded production BAPR jobs launched after the wave began. The controlled campaign was stopped after its data had become ineligible, without touching those jobs.",
+  "gate": "critical_gpu_loaded_wave_exclusion",
+  "node": "node007",
+  "ordinary_running_tasks_touched": false,
+  "original_artifacts": [
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_external_production_contamination_controlled_abort.json",
+      "sha256": "6a25ad3c3cd7428ca1b888fe33195b84756c0d0dd368ed541381f6328bfe9578"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_external_production_contamination_controlled_abort.md",
+      "sha256": "5d76fabbed27a835730cc4299a1c05d1d7d5cd5469c7a8b82390e5c4e70b69fe"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_node007_r05_20260809_external_production_contamination_controlled_abort.json",
+      "sha256": "4e2b5c26e0123027c3c87b495fdd91c24da911a554cb02f1da228a46824b741b"
+    },
+    {
+      "path": "md/experiment_artifacts/critical_gpu_loaded_wave_runner_node007_r05_20260809_external_production_contamination_controlled_abort.md",
+      "sha256": "2c061d71c34dffbb0491af4f071aedeb0b8938a8c5c082964a92c487b453c9a2"
+    }
+  ],
+  "performance_outcome_used_for_exclusion": false,
+  "production_tasks_observed": [
+    "t79247",
+    "t79248",
+    "t79249",
+    "t79250",
+    "t79251",
+    "t79252",
+    "t79253",
+    "t79254",
+    "t79255",
+    "t79256",
+    "t79257",
+    "t79258",
+    "t79259",
+    "t79260",
+    "t79261",
+    "t79262"
+  ],
+  "production_workload_family": "BAPR/regime-damping-headroom/v2",
+  "protocol": "critical_gpu_loaded_natural_completion_v2",
+  "quarantined_raw_trees": [
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm_external_production_contamination_controlled_abort",
+      "tree_sha256": "6ad6abf9c785b0d527c8ea96ed9d4ce9adee03191ac3a8d048a5ba20a2bc30ff"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn_external_production_contamination_controlled_abort",
+      "tree_sha256": "bce30c9c0d1b7de47fa51a434d58f60d61b61f784167a3ce1aeb4ba33a25fc8f"
+    },
+    {
+      "path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn_external_production_contamination_controlled_abort",
+      "tree_sha256": "b6b451c1445ea622d2ef322cfa00775d62da3c9c244446bd430562c75cbbd023"
+    }
+  ],
+  "replacement_policy": "Wait until all four registered GPUs are idle for five consecutive one-minute checks, then rerun the same calibration wave. Do not stop, pause, or modify the 16 production tasks.",
+  "row_audits": [
+    {
+      "other_registered_gpus_idle": false,
+      "scenario_id": "llm_after_cnn",
+      "unapproved_gpu_compute_observation_count": 160
+    },
+    {
+      "other_registered_gpus_idle": false,
+      "scenario_id": "rl_after_cnn",
+      "unapproved_gpu_compute_observation_count": 21104
+    }
+  ],
+  "split_role": "calibration",
+  "status": "EXCLUDED_EXTERNAL_PRODUCTION_CONTAMINATION_CONTROLLED_ABORT",
+  "wave": 5
+}

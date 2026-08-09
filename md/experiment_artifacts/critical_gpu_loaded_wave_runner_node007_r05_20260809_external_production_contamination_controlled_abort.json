@@ -1,0 +1,2798 @@
+{
+  "allow_launch": true,
+  "campaign": {
+    "algorithm_path": "controlled_theorem_measurement_direct",
+    "allow_launch": true,
+    "campaign_id": "critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d",
+    "capacity_boundary_count": 0,
+    "cross_node_parallelism_allowed": true,
+    "durable_remote_supervisor_required": true,
+    "environment_gate": {
+      "ready": true,
+      "reason": "",
+      "returncode": 0,
+      "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n\nLoading weights:   0%|          | 0/76 [00:00<?, ?it/s]\nLoading weights: 100%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588| 76/76 [00:00<00:00, 3829.36it/s]\n",
+      "stdout_tail": "ENV_READY\nRESAC_READY\n"
+    },
+    "executed_scenario_count": 3,
+    "fail_closed_after_first_nonterminal_row": true,
+    "final_measurement_code_manifest": {
+      "files": [
+        {
+          "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+          "sha256": "ed21922f769e2095583973709f1b76e07be6af1eb958b77f0a60a7532ffee3a1"
+        },
+        {
+          "path": "algorithm/experiments/critical_gpu_loaded_completion_campaign.py",
+          "sha256": "1218ad2a1b884e54766d0ddf3292a9b94dacf2b00b7073ac145603c03799af34"
+        },
+        {
+          "path": "algorithm/experiments/durable_remote_command.py",
+          "sha256": "ae801d70566aacb927e0d207c091ad95cfef97296005640259fedeb6290ca30b"
+        },
+        {
+          "path": "algorithm/experiments/gpu_progress_benchmark.py",
+          "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+        },
+        {
+          "path": "algorithm/experiments/progress_units.py",
+          "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+        },
+        {
+          "path": "algorithm/experiments/progress_wrapper.py",
+          "sha256": "dbd26ed0e16b2a549cf060411cd6fee2ea402c8aae311e031db56a6796268193"
+        },
+        {
+          "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+          "sha256": "16e63e2646c7ad0cae7692fa8b1b8263bed4903c32cbdfecbc5bc2f3fe65a8dc"
+        },
+        {
+          "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+          "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+        },
+        {
+          "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+          "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+        },
+        {
+          "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+          "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+        },
+        {
+          "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+          "sha256": "4852b935470552a570c04d05d81ba306780f767b96f9aee54b06c2dc97d2dfca"
+        },
+        {
+          "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+          "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+        },
+        {
+          "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+          "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+        }
+      ],
+      "sha256": "1b42b9b7e37dae96f6dd3097e3796a2dd8c7b8b123608ecda126c0b8dcd31666"
+    },
+    "full_resident_target_overlap_required": true,
+    "gate": "critical_gpu_loaded_completion_campaign",
+    "gpu_assignment": {
+      "cnn_after_llm": 0,
+      "cnn_after_rl": 3,
+      "llm_after_cnn": 1,
+      "rl_after_cnn": 2
+    },
+    "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+    "legacy_scheduler_limits_bypassed": true,
+    "measurement_code_manifest": {
+      "files": [
+        {
+          "path": "algorithm/experiments/critical_gpu_completion_campaign.py",
+          "sha256": "ed21922f769e2095583973709f1b76e07be6af1eb958b77f0a60a7532ffee3a1"
+        },
+        {
+          "path": "algorithm/experiments/critical_gpu_loaded_completion_campaign.py",
+          "sha256": "1218ad2a1b884e54766d0ddf3292a9b94dacf2b00b7073ac145603c03799af34"
+        },
+        {
+          "path": "algorithm/experiments/durable_remote_command.py",
+          "sha256": "ae801d70566aacb927e0d207c091ad95cfef97296005640259fedeb6290ca30b"
+        },
+        {
+          "path": "algorithm/experiments/gpu_progress_benchmark.py",
+          "sha256": "b6920fa34f025c78f12995707ea5407e7c45c07a97f2a2a82358bd7bdd98f0cb"
+        },
+        {
+          "path": "algorithm/experiments/progress_units.py",
+          "sha256": "293722b931966fac3433dd1b0bdf1a43083c2acef8eba68c2a3307b61bbd4c60"
+        },
+        {
+          "path": "algorithm/experiments/progress_wrapper.py",
+          "sha256": "dbd26ed0e16b2a549cf060411cd6fee2ea402c8aae311e031db56a6796268193"
+        },
+        {
+          "path": "algorithm/experiments/remote_workload_selected_profile_probe.py",
+          "sha256": "16e63e2646c7ad0cae7692fa8b1b8263bed4903c32cbdfecbc5bc2f3fe65a8dc"
+        },
+        {
+          "path": "algorithm/experiments/templates/gpu_matmul_progress.cmd.tpl",
+          "sha256": "f9b1299d279b100b84ee99674f374ca4637873aed005f86bbca880498e844fed"
+        },
+        {
+          "path": "algorithm/experiments/templates/resac_env_real_venv.cmd.tpl",
+          "sha256": "a003a5c34659fc89d3dabc034bb1505e46b1918ad73e4c2a81b143e9dfc59371"
+        },
+        {
+          "path": "algorithm/experiments/templates/torch_cnn_resnet50.cmd.tpl",
+          "sha256": "f6036c685e4c21f665dae88aeee6ff116b196c07ed51c27168a507accbfe797f"
+        },
+        {
+          "path": "algorithm/experiments/templates/torch_llm_distilgpt2.cmd.tpl",
+          "sha256": "4852b935470552a570c04d05d81ba306780f767b96f9aee54b06c2dc97d2dfca"
+        },
+        {
+          "path": "algorithm/experiments/torch_cnn_progress_benchmark.py",
+          "sha256": "b6f54d5e7fae703faf1ac501539b95885cfe7c1ad41432d221a7145577ed0a1f"
+        },
+        {
+          "path": "algorithm/experiments/torch_llm_progress_benchmark.py",
+          "sha256": "8f15e2afd0e1a53fc2bf1c4453398bc6a1964ac96e5d13d67709782925f74aaa"
+        }
+      ],
+      "sha256": "1b42b9b7e37dae96f6dd3097e3796a2dd8c7b8b123608ecda126c0b8dcd31666"
+    },
+    "measurement_code_unchanged": true,
+    "natural_completion_required": true,
+    "node": "node007",
+    "node_bucket": "gpu_2080ti_11gb_quad",
+    "ordinary_running_tasks_touched": false,
+    "pass": false,
+    "pre_registered_split": {
+      "calibration": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "holdout": 13,
+      "training": [
+        1,
+        2,
+        3
+      ]
+    },
+    "protocol": "critical_gpu_loaded_natural_completion_v2",
+    "ready_row_count": 2,
+    "registered_resident_total_units": {
+      "cnn_after_llm": 12000,
+      "cnn_after_rl": 80,
+      "llm_after_cnn": 600,
+      "rl_after_cnn": 18000
+    },
+    "registered_scenario_count": 4,
+    "rows": [
+      {
+        "capacity_boundary": false,
+        "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/diagnostics.log",
+        "diagnostics_sha256": "93d012c2ad75d72777c28442e2a696558939454020fc2e11ba2173955f5ec2e3",
+        "durable_transport": {
+          "control_cleanup_error": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+          "control_cleanup_ready": true,
+          "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm",
+          "elapsed_wall_s": 90.85652587401273,
+          "last_transport_error": "",
+          "launch_attempt_count": 1,
+          "long_command_replayed": false,
+          "poll_count": 6,
+          "protocol": "idempotent_detached_remote_supervisor_v1",
+          "remote_returncode": 0,
+          "resumed_existing": false,
+          "run_id": "critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm",
+          "state": "DONE",
+          "supervisor_pid": 282070,
+          "transient_transport_error_count": 0
+        },
+        "elapsed_wall_s": 113.76665616035461,
+        "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+        "gpu": 0,
+        "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/gpu_monitor.log",
+        "gpu_monitor_sha256": "e08ac8de0d3816e21d0d2d5d919d8c34af0bdfa839b473f8ae90fe3baab343ee",
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "legacy_scheduler_limits_bypassed": true,
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "ordinary_running_tasks_touched": false,
+        "post_colocation_count": 2,
+        "ready": true,
+        "reason": "",
+        "remote_returncode": 0,
+        "resident_alive_at_target_end": true,
+        "resident_alive_at_target_start": true,
+        "resident_completion_model": {
+          "amortized_unit_s": 0.004384364759904325,
+          "base_unit_s": 0.004370573163032532,
+          "checkpoint_observed_s": 1.0892939739860594,
+          "child_returncode": 0,
+          "completion_model_ready": true,
+          "completion_unit_s": 0.004384364759904325,
+          "counter_offset": 0,
+          "finalization_after_last_progress_s": 2.39616378583014,
+          "first_progress_unit": 5,
+          "interval_sample_count": 2399,
+          "last_progress_unit": 12000,
+          "loop_observed_units": 11995,
+          "loop_wall_s": 52.59045529505238,
+          "model_abs_error_s": 0.0,
+          "model_relative_error": 0.0,
+          "natural_exit": true,
+          "periodic_extra_s": 0.16543020447716117,
+          "phase_durations_s": {
+            "checkpoint": [
+              0.5467895600013435,
+              0.5425044139847159
+            ],
+            "final_save": [
+              0.5359016046859324
+            ],
+            "initialization": [
+              6.54255051119253
+            ],
+            "outer_loop": [
+              53.153253986965865
+            ],
+            "warmup": [
+              0.7121387859806418
+            ]
+          },
+          "predicted_total_s": 62.340548866894096,
+          "progress_observation_count": 2400,
+          "readiness_reason": "ready",
+          "save_observed_s": 0.5359016046859324,
+          "schema_version": 1,
+          "startup_overhead_s": 7.332007962212055,
+          "startup_to_first_progress_s": 7.353929786011577,
+          "stopped_on_stable": false,
+          "terminal_overhead_s": 2.39616378583014,
+          "total_units": 12000,
+          "total_wall_s": 62.340548866894096,
+          "unit": "step"
+        },
+        "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/resident.log",
+        "resident_mix": "resident_llm_target_cnn",
+        "resident_overlap_service": {
+          "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+          "boundary_source": "remote_line_count_and_nanosecond_bounds",
+          "completed_units_lower": 5545,
+          "conservative_rate_units_per_s": 228.10193327080918,
+          "duration_s": 24.30930733680725,
+          "end_epoch_s": 1786274172.4214318,
+          "end_line_count": 3430,
+          "first_progress_unit": 70,
+          "last_progress_unit": 5615,
+          "progress_observation_count": 1110,
+          "ready": true,
+          "reported_rate_median_units_per_s": 239.28306750000002,
+          "start_epoch_s": 1786274148.1121244,
+          "start_line_count": 52,
+          "unit": "step"
+        },
+        "resident_process_group_id": 282090,
+        "resident_ready_observations": 13,
+        "resident_returncode": 0,
+        "resident_stable_rate": 276.357948,
+        "resident_total_units": 12000,
+        "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "resident_workload_key": "gpu_llm_distilgpt2",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "cnn_after_llm",
+        "split_role": "calibration",
+        "target_completion_model": {
+          "amortized_unit_s": 0.05895031511594178,
+          "base_unit_s": 0.05896337162703276,
+          "checkpoint_observed_s": 0.03250898886471987,
+          "child_returncode": 0,
+          "completion_model_ready": true,
+          "completion_unit_s": 0.05895031511594178,
+          "counter_offset": 0,
+          "finalization_after_last_progress_s": 0.8733105990104377,
+          "first_progress_unit": 5,
+          "interval_sample_count": 59,
+          "last_progress_unit": 300,
+          "loop_observed_units": 295,
+          "loop_wall_s": 17.390342959202826,
+          "model_abs_error_s": 3.552713678800501e-15,
+          "model_relative_error": 1.4866778577836352e-16,
+          "natural_exit": true,
+          "periodic_extra_s": 0.0,
+          "phase_durations_s": {
+            "checkpoint": [
+              0.016693485900759697,
+              0.01581550296396017
+            ],
+            "final_save": [
+              0.026558508165180683
+            ],
+            "initialization": [
+              3.0661055222153664
+            ],
+            "outer_loop": [
+              17.705606441013515
+            ],
+            "warmup": [
+              2.1960417330265045
+            ]
+          },
+          "predicted_total_s": 23.896997323259708,
+          "progress_observation_count": 60,
+          "readiness_reason": "ready",
+          "save_observed_s": 0.026558508165180683,
+          "schema_version": 1,
+          "startup_overhead_s": 5.3385921894667385,
+          "startup_to_first_progress_s": 5.6333437650464475,
+          "stopped_on_stable": false,
+          "terminal_overhead_s": 0.8733105990104377,
+          "total_units": 300,
+          "total_wall_s": 23.89699732325971,
+          "unit": "step"
+        },
+        "target_end_ns": 1786274172421431714,
+        "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/target.log",
+        "target_process_group_id": 282594,
+        "target_returncode": 0,
+        "target_stable_rate": 17.0839038,
+        "target_start_ns": 1786274148112124441,
+        "target_total_units": 300,
+        "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "target_workload_key": "gpu_cnn_torch_resnet50",
+        "wave": 5
+      },
+      {
+        "capacity_boundary": false,
+        "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/diagnostics.log",
+        "diagnostics_sha256": "700fcac481c0b4a831a7b2aad22058a9ca8fdf55d0e9472654d2c15a2c10dded",
+        "durable_transport": {
+          "control_cleanup_error": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+          "control_cleanup_ready": true,
+          "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn",
+          "elapsed_wall_s": 57.183901966011035,
+          "last_transport_error": "",
+          "launch_attempt_count": 1,
+          "long_command_replayed": false,
+          "poll_count": 4,
+          "protocol": "idempotent_detached_remote_supervisor_v1",
+          "remote_returncode": 0,
+          "resumed_existing": false,
+          "run_id": "critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn",
+          "state": "DONE",
+          "supervisor_pid": 5806,
+          "transient_transport_error_count": 0
+        },
+        "elapsed_wall_s": 64.30838775634766,
+        "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+        "gpu": 1,
+        "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/gpu_monitor.log",
+        "gpu_monitor_sha256": "f9e59c5b94d25ed56e7f3f0b76459e599f624259b2e9d5dac5cab6ef8641b518",
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "legacy_scheduler_limits_bypassed": true,
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "ordinary_running_tasks_touched": false,
+        "post_colocation_count": 2,
+        "ready": true,
+        "reason": "",
+        "remote_returncode": 0,
+        "resident_alive_at_target_end": true,
+        "resident_alive_at_target_start": true,
+        "resident_completion_model": {
+          "amortized_unit_s": 0.049845226270248406,
+          "base_unit_s": 0.04771787757053971,
+          "checkpoint_observed_s": 0.04224675893783569,
+          "child_returncode": 0,
+          "completion_model_ready": true,
+          "completion_unit_s": 0.049845226270248406,
+          "counter_offset": 0,
+          "finalization_after_last_progress_s": 1.0109355943277478,
+          "first_progress_unit": 5,
+          "interval_sample_count": 119,
+          "last_progress_unit": 600,
+          "loop_observed_units": 595,
+          "loop_wall_s": 29.657909630797803,
+          "model_abs_error_s": 0.0,
+          "model_relative_error": 0.0,
+          "natural_exit": true,
+          "periodic_extra_s": 1.2657724763266742,
+          "phase_durations_s": {
+            "checkpoint": [
+              0.019896834157407284,
+              0.02234992478042841
+            ],
+            "final_save": [
+              0.017501411959528923
+            ],
+            "initialization": [
+              4.390921703074127
+            ],
+            "outer_loop": [
+              29.922631787136197
+            ],
+            "warmup": [
+              2.1587461391463876
+            ]
+          },
+          "predicted_total_s": 37.505537347402424,
+          "progress_observation_count": 120,
+          "readiness_reason": "ready",
+          "save_observed_s": 0.017501411959528923,
+          "schema_version": 1,
+          "startup_overhead_s": 6.58746599092563,
+          "startup_to_first_progress_s": 6.836692122276872,
+          "stopped_on_stable": false,
+          "terminal_overhead_s": 1.0109355943277478,
+          "total_units": 600,
+          "total_wall_s": 37.505537347402424,
+          "unit": "step"
+        },
+        "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/resident.log",
+        "resident_mix": "resident_cnn_target_llm",
+        "resident_overlap_service": {
+          "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+          "boundary_source": "remote_line_count_and_nanosecond_bounds",
+          "completed_units_lower": 295,
+          "conservative_rate_units_per_s": 18.837214722852465,
+          "duration_s": 15.660489320755005,
+          "end_epoch_s": 1786274276.8416812,
+          "end_line_count": 230,
+          "first_progress_unit": 20,
+          "last_progress_unit": 315,
+          "progress_observation_count": 60,
+          "ready": true,
+          "reported_rate_median_units_per_s": 20.783418949999998,
+          "start_epoch_s": 1786274261.181192,
+          "start_line_count": 19,
+          "unit": "step"
+        },
+        "resident_process_group_id": 5825,
+        "resident_ready_observations": 3,
+        "resident_returncode": 0,
+        "resident_stable_rate": 20.708482,
+        "resident_total_units": 600,
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "llm_after_cnn",
+        "split_role": "calibration",
+        "target_completion_model": {
+          "amortized_unit_s": 0.006881315258777693,
+          "base_unit_s": 0.005843798164278269,
+          "checkpoint_observed_s": 1.120547735132277,
+          "child_returncode": 0,
+          "completion_model_ready": true,
+          "completion_unit_s": 0.006881315258777693,
+          "counter_offset": 0,
+          "finalization_after_last_progress_s": 2.173585598822683,
+          "first_progress_unit": 5,
+          "interval_sample_count": 119,
+          "last_progress_unit": 600,
+          "loop_observed_units": 595,
+          "loop_wall_s": 4.094382578972727,
+          "model_abs_error_s": 0.0,
+          "model_relative_error": 0.0,
+          "natural_exit": true,
+          "periodic_extra_s": 0.6173226712271571,
+          "phase_durations_s": {
+            "checkpoint": [
+              0.5516917970962822,
+              0.5688559380359948
+            ],
+            "final_save": [
+              0.5618279227055609
+            ],
+            "initialization": [
+              8.250495136715472
+            ],
+            "outer_loop": [
+              4.69483241206035
+            ],
+            "warmup": [
+              0.8308471445925534
+            ]
+          },
+          "predicted_total_s": 15.42220102995634,
+          "progress_observation_count": 120,
+          "readiness_reason": "ready",
+          "save_observed_s": 0.5618279227055609,
+          "schema_version": 1,
+          "startup_overhead_s": 9.119826275867043,
+          "startup_to_first_progress_s": 9.15423285216093,
+          "stopped_on_stable": false,
+          "terminal_overhead_s": 2.173585598822683,
+          "total_units": 600,
+          "total_wall_s": 15.42220102995634,
+          "unit": "step"
+        },
+        "target_end_ns": 1786274276841681069,
+        "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/target.log",
+        "target_process_group_id": 7219,
+        "target_returncode": 0,
+        "target_stable_rate": 162.292975,
+        "target_start_ns": 1786274261181191900,
+        "target_total_units": 600,
+        "target_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "target_workload_key": "gpu_llm_distilgpt2",
+        "wave": 5
+      },
+      {
+        "capacity_boundary": false,
+        "diagnostics_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/diagnostics.log",
+        "diagnostics_sha256": "ca9ecf25d1681113cb03584013c6269f5414b2e46adbe0e5afa5b99e0ccffe28",
+        "durable_transport": {
+          "control_cleanup_error": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n",
+          "control_cleanup_ready": true,
+          "control_dir": "/tmp/scheduleurm_durable_control/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn",
+          "elapsed_wall_s": 2398.8694519209967,
+          "last_transport_error": "",
+          "launch_attempt_count": 1,
+          "long_command_replayed": false,
+          "poll_count": 143,
+          "protocol": "idempotent_detached_remote_supervisor_v1",
+          "remote_returncode": 0,
+          "resumed_existing": false,
+          "run_id": "critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn",
+          "state": "DONE",
+          "supervisor_pid": 14995,
+          "transient_transport_error_count": 0
+        },
+        "elapsed_wall_s": 2327.541386604309,
+        "eta_source": "task_native_tqdm_natural_completion_loaded_trajectory",
+        "gpu": 2,
+        "gpu_monitor_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/gpu_monitor.log",
+        "gpu_monitor_sha256": "aa079e01536a9f5430a0131b17e7cd1f6be9fad4de6a3480f06304c406d86e20",
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "legacy_scheduler_limits_bypassed": true,
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "ordinary_running_tasks_touched": false,
+        "post_colocation_count": 2,
+        "ready": false,
+        "reason": "rc=0;resident_rc=-1;target_rc=143;resident_ready=False;target_ready=False;alive_start=True;alive_end=False;ready_count=3;required_count=3;overlap_ready=True;stderr='bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)'",
+        "remote_returncode": 0,
+        "resident_alive_at_target_end": false,
+        "resident_alive_at_target_start": true,
+        "resident_completion_model": {},
+        "resident_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/resident.log",
+        "resident_mix": "resident_cnn_target_hybrid_rl",
+        "resident_overlap_service": {
+          "boundary_rule": "first-to-last resident progress counter inside remote target start/end line-count bounds divided by the full nanosecond overlap duration",
+          "boundary_source": "remote_line_count_and_nanosecond_bounds",
+          "completed_units_lower": 13620,
+          "conservative_rate_units_per_s": 6.2462415042888315,
+          "duration_s": 2180.51127076149,
+          "end_epoch_s": 1786276514.4576738,
+          "end_line_count": 11809,
+          "first_progress_unit": 15,
+          "last_progress_unit": 13635,
+          "progress_observation_count": 2725,
+          "ready": true,
+          "reported_rate_median_units_per_s": 6.58364075,
+          "start_epoch_s": 1786274333.946403,
+          "start_line_count": 18,
+          "unit": "step"
+        },
+        "resident_process_group_id": 15014,
+        "resident_ready_observations": 3,
+        "resident_returncode": -1,
+        "resident_stable_rate": 5.97274778,
+        "resident_total_units": 18000,
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "rl_after_cnn",
+        "split_role": "calibration",
+        "target_completion_model": {},
+        "target_end_ns": 1786276514457673836,
+        "target_log_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/target.log",
+        "target_process_group_id": 18104,
+        "target_returncode": 143,
+        "target_stable_rate": 0.0395256917,
+        "target_start_ns": 1786274333946403122,
+        "target_total_units": 40,
+        "target_workload_env": "Ant-v2",
+        "target_workload_key": "hybrid_rl_resac_ant",
+        "wave": 5
+      }
+    ],
+    "scenario_ids": [
+      "cnn_after_llm",
+      "llm_after_cnn",
+      "rl_after_cnn",
+      "cnn_after_rl"
+    ],
+    "scenario_parallelism": 1,
+    "scenario_parallelism_scope": "sequential_independent_action_measurement",
+    "schema_version": 1,
+    "selection": {
+      "filtered": false,
+      "scenario_ids": []
+    },
+    "split_role": "calibration",
+    "status": "INCOMPLETE",
+    "stopped_after_scenario": "rl_after_cnn",
+    "task_native_progress_required": true,
+    "terminate_on_stable": false,
+    "wave": 5
+  },
+  "downstream_row_level_prelaunch_audit_required": true,
+  "gate": "critical_gpu_loaded_wave_runner",
+  "idle_snapshot": {
+    "compute_process_rows": [],
+    "idle_memory_limit_mb": 512,
+    "idle_util_limit_pct": 5,
+    "ready": true,
+    "returncode": 0,
+    "selected_gpus": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 1,
+        "util_pct": 0
+      },
+      {
+        "index": 1,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 1,
+        "util_pct": 0
+      },
+      {
+        "index": 2,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 1,
+        "util_pct": 0
+      },
+      {
+        "index": 3,
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "total_mb": 11264,
+        "used_mb": 1,
+        "util_pct": 0
+      }
+    ],
+    "stderr_tail": "bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\nbash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)\n"
+  },
+  "launched": true,
+  "legacy_scheduler_limits_bypassed": true,
+  "node": "node007",
+  "ordinary_running_tasks_touched": false,
+  "pass": false,
+  "requires_all_registered_gpus_idle": true,
+  "row_prelaunch_audit": {
+    "audited_row_count": 3,
+    "audits": [
+      {
+        "continuous": {
+          "allowed_process_group_ids": [
+            282090,
+            282594
+          ],
+          "assigned_gpu": 0,
+          "audit_ready": true,
+          "conservative_unapproved_cpu_exposure_fraction": 0.0,
+          "controlled_process_groups_observed": true,
+          "first_sample_ns": 1786274140140344297,
+          "gpu_monitor_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/gpu_monitor.log",
+          "gpu_monitor_sha256": "e08ac8de0d3816e21d0d2d5d919d8c34af0bdfa839b473f8ae90fe3baab343ee",
+          "host_available_memory_fraction_min": 0.8342494663692244,
+          "host_interval_covered": true,
+          "host_load_violations": [],
+          "host_load_within_bound": true,
+          "host_memory_violations": [],
+          "host_memory_within_bound": true,
+          "host_normalized_load1_max": 0.08265625,
+          "host_process_interval_sampled": true,
+          "host_process_sample_count": 4,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "last_sample_ns": 1786274201279524113,
+          "max_normalized_load1": 0.5,
+          "max_unapproved_cpu_exposure_fraction": 0.001,
+          "max_unapproved_user_cpu_fraction": 0.05,
+          "min_available_memory_fraction": 0.1,
+          "missing_host_sample_ns": [],
+          "no_unapproved_compute_processes": true,
+          "no_unapproved_cpu_processes": true,
+          "observed_process_group_ids": [
+            282090,
+            282594
+          ],
+          "other_gpu_maxima": [
+            {
+              "gpu": 1,
+              "max_used_mb": 2571,
+              "max_util_pct": 6
+            },
+            {
+              "gpu": 2,
+              "max_used_mb": 2575,
+              "max_util_pct": 19
+            },
+            {
+              "gpu": 3,
+              "max_used_mb": 2575,
+              "max_util_pct": 10
+            }
+          ],
+          "other_registered_gpus_idle": false,
+          "resolved_transient_process_group_id_count": 0,
+          "resolved_transient_process_group_ids": [],
+          "sample_count": 48,
+          "sample_interval_s": 1,
+          "target_end_ns": 1786274172421431714,
+          "target_interval_covered": true,
+          "target_start_ns": 1786274148112124441,
+          "unapproved_compute_process_count": 0,
+          "unapproved_compute_processes": [],
+          "unapproved_cpu_exposure_within_bound": true,
+          "unapproved_cpu_process_count": 0,
+          "unapproved_cpu_processes": [],
+          "unapproved_cpu_snapshot_totals": [],
+          "unapproved_cpu_transient_burst_count": 0,
+          "unapproved_cpu_transient_bursts": [],
+          "violation_count": 40,
+          "violations": [
+            {
+              "gpu": 1,
+              "sample_ns": 1786274180102100057,
+              "used_mb": 655,
+              "util_pct": 0
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274181596069309,
+              "used_mb": 657,
+              "util_pct": 1
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274181596069309,
+              "used_mb": 655,
+              "util_pct": 2
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274181596069309,
+              "used_mb": 655,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274183262548091,
+              "used_mb": 659,
+              "util_pct": 2
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274183262548091,
+              "used_mb": 657,
+              "util_pct": 2
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274183262548091,
+              "used_mb": 659,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274184901615264,
+              "used_mb": 659,
+              "util_pct": 1
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274184901615264,
+              "used_mb": 659,
+              "util_pct": 1
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274184901615264,
+              "used_mb": 659,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274186515731513,
+              "used_mb": 659,
+              "util_pct": 2
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274186515731513,
+              "used_mb": 659,
+              "util_pct": 1
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274186515731513,
+              "used_mb": 659,
+              "util_pct": 3
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274188174244302,
+              "used_mb": 661,
+              "util_pct": 4
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274188174244302,
+              "used_mb": 659,
+              "util_pct": 7
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274188174244302,
+              "used_mb": 659,
+              "util_pct": 3
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274189806354749,
+              "used_mb": 661,
+              "util_pct": 5
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274189806354749,
+              "used_mb": 661,
+              "util_pct": 13
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274189806354749,
+              "used_mb": 659,
+              "util_pct": 2
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274191481694829,
+              "used_mb": 675,
+              "util_pct": 1
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274191481694829,
+              "used_mb": 665,
+              "util_pct": 2
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274191481694829,
+              "used_mb": 663,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274193126224645,
+              "used_mb": 949,
+              "util_pct": 2
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274193126224645,
+              "used_mb": 665,
+              "util_pct": 2
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274193126224645,
+              "used_mb": 667,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274194767466094,
+              "used_mb": 979,
+              "util_pct": 3
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274194767466094,
+              "used_mb": 1223,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274194767466094,
+              "used_mb": 695,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274196368634573,
+              "used_mb": 1519,
+              "util_pct": 0
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274196368634573,
+              "used_mb": 2031,
+              "util_pct": 1
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274196368634573,
+              "used_mb": 1531,
+              "util_pct": 1
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274197967351014,
+              "used_mb": 2043,
+              "util_pct": 6
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274197967351014,
+              "used_mb": 2059,
+              "util_pct": 19
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274197967351014,
+              "used_mb": 2571,
+              "util_pct": 10
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274199657145584,
+              "used_mb": 2571,
+              "util_pct": 1
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274199657145584,
+              "used_mb": 2571,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274199657145584,
+              "used_mb": 2571,
+              "util_pct": 0
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274201279524113,
+              "used_mb": 2571,
+              "util_pct": 0
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274201279524113,
+              "used_mb": 2575,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274201279524113,
+              "used_mb": 2575,
+              "util_pct": 0
+            }
+          ]
+        },
+        "prelaunch": {
+          "all_registered_gpus_idle": true,
+          "assigned_gpu_idle": true,
+          "audit_ready": true,
+          "diagnostics_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_cnn_after_llm/raw/diagnostics.log",
+          "diagnostics_sha256": "93d012c2ad75d72777c28442e2a696558939454020fc2e11ba2173955f5ec2e3",
+          "gpu": 0,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "nonidle_registered_gpus": [],
+          "registered_gpu_snapshot": [
+            {
+              "free_mb": 11010,
+              "gpu": 0,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 1,
+              "util_pct": 0
+            },
+            {
+              "free_mb": 11010,
+              "gpu": 1,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 1,
+              "util_pct": 0
+            },
+            {
+              "free_mb": 11010,
+              "gpu": 2,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 1,
+              "util_pct": 0
+            },
+            {
+              "free_mb": 11010,
+              "gpu": 3,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 1,
+              "util_pct": 0
+            }
+          ],
+          "used_mb": 1,
+          "util_pct": 0
+        },
+        "scenario_id": "cnn_after_llm"
+      },
+      {
+        "continuous": {
+          "allowed_process_group_ids": [
+            5825,
+            7219
+          ],
+          "assigned_gpu": 1,
+          "audit_ready": true,
+          "conservative_unapproved_cpu_exposure_fraction": 0.0,
+          "controlled_process_groups_observed": true,
+          "first_sample_ns": 1786274253585997051,
+          "gpu_monitor_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/gpu_monitor.log",
+          "gpu_monitor_sha256": "f9e59c5b94d25ed56e7f3f0b76459e599f624259b2e9d5dac5cab6ef8641b518",
+          "host_available_memory_fraction_min": 0.7757036956552127,
+          "host_interval_covered": true,
+          "host_load_violations": [],
+          "host_load_within_bound": true,
+          "host_memory_violations": [],
+          "host_memory_within_bound": true,
+          "host_normalized_load1_max": 0.3996875,
+          "host_process_interval_sampled": true,
+          "host_process_sample_count": 2,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "last_sample_ns": 1786274291266662677,
+          "max_normalized_load1": 0.5,
+          "max_unapproved_cpu_exposure_fraction": 0.001,
+          "max_unapproved_user_cpu_fraction": 0.05,
+          "min_available_memory_fraction": 0.1,
+          "missing_host_sample_ns": [],
+          "no_unapproved_compute_processes": false,
+          "no_unapproved_cpu_processes": true,
+          "observed_process_group_ids": [
+            5825,
+            7219,
+            284263,
+            284300,
+            284302,
+            284417,
+            284430,
+            284439,
+            284511,
+            284615,
+            284616,
+            284630,
+            284964,
+            285023,
+            285267,
+            285505,
+            286045,
+            286054
+          ],
+          "other_gpu_maxima": [
+            {
+              "gpu": 0,
+              "max_used_mb": 3379,
+              "max_util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "max_used_mb": 3903,
+              "max_util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "max_used_mb": 3903,
+              "max_util_pct": 100
+            }
+          ],
+          "other_registered_gpus_idle": false,
+          "resolved_transient_process_group_id_count": 1,
+          "resolved_transient_process_group_ids": [
+            {
+              "pid": 7262,
+              "reported_pgid": -1,
+              "resolution_rule": "same_pid_unique_positive_pgid_in_hash_bound_monitor",
+              "resolved_pgid": 7219,
+              "sample_ns": 1786274276618303299
+            }
+          ],
+          "sample_count": 24,
+          "sample_interval_s": 1,
+          "target_end_ns": 1786274276841681069,
+          "target_interval_covered": true,
+          "target_start_ns": 1786274261181191900,
+          "unapproved_compute_process_count": 160,
+          "unapproved_compute_processes": [
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274261678428765,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274263457143099,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "1228"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274265095737982,
+              "used_memory_mb": "722"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274266719230943,
+              "used_memory_mb": "712"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274266719230943,
+              "used_memory_mb": "712"
+            }
+          ],
+          "unapproved_cpu_exposure_within_bound": true,
+          "unapproved_cpu_process_count": 0,
+          "unapproved_cpu_processes": [],
+          "unapproved_cpu_snapshot_totals": [],
+          "unapproved_cpu_transient_burst_count": 0,
+          "unapproved_cpu_transient_bursts": [],
+          "violation_count": 72,
+          "violations": [
+            {
+              "gpu": 0,
+              "sample_ns": 1786274253585997051,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274253585997051,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274253585997051,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274255205698349,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274255205698349,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274255205698349,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274256812960402,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274256812960402,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274256812960402,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274258433241125,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274258433241125,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274258433241125,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274260045506413,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274260045506413,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274260045506413,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274261678428765,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274261678428765,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274261678428765,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274263457143099,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274263457143099,
+              "used_mb": 3895,
+              "util_pct": 96
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274263457143099,
+              "used_mb": 3895,
+              "util_pct": 98
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274265095737982,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274265095737982,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274265095737982,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274266719230943,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274266719230943,
+              "used_mb": 3895,
+              "util_pct": 97
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274266719230943,
+              "used_mb": 3895,
+              "util_pct": 97
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274268344171317,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274268344171317,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274268344171317,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274269968590234,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274269968590234,
+              "used_mb": 3895,
+              "util_pct": 99
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274269968590234,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274271641283528,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274271641283528,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274271641283528,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274273330953739,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274273330953739,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274273330953739,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274274982921054,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274274982921054,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274274982921054,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274276618303299,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274276618303299,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274276618303299,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274278279942297,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274278279942297,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274278279942297,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274279917863700,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "gpu": 2,
+              "sample_ns": 1786274279917863700,
+              "used_mb": 3895,
+              "util_pct": 100
+            }
+          ]
+        },
+        "prelaunch": {
+          "all_registered_gpus_idle": false,
+          "assigned_gpu_idle": false,
+          "audit_ready": true,
+          "diagnostics_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_llm_after_cnn/raw/diagnostics.log",
+          "diagnostics_sha256": "700fcac481c0b4a831a7b2aad22058a9ca8fdf55d0e9472654d2c15a2c10dded",
+          "gpu": 1,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "nonidle_registered_gpus": [
+            {
+              "free_mb": 7631,
+              "gpu": 0,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7631,
+              "gpu": 1,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7115,
+              "gpu": 2,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7115,
+              "gpu": 3,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3895,
+              "util_pct": 100
+            }
+          ],
+          "registered_gpu_snapshot": [
+            {
+              "free_mb": 7631,
+              "gpu": 0,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7631,
+              "gpu": 1,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3379,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7115,
+              "gpu": 2,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3895,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 7115,
+              "gpu": 3,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 3895,
+              "util_pct": 100
+            }
+          ],
+          "used_mb": 3379,
+          "util_pct": 100
+        },
+        "scenario_id": "llm_after_cnn"
+      },
+      {
+        "continuous": {
+          "allowed_process_group_ids": [
+            15014,
+            18104
+          ],
+          "assigned_gpu": 2,
+          "audit_ready": true,
+          "conservative_unapproved_cpu_exposure_fraction": 0.0,
+          "controlled_process_groups_observed": true,
+          "first_sample_ns": 1786274319173728353,
+          "gpu_monitor_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/gpu_monitor.log",
+          "gpu_monitor_sha256": "aa079e01536a9f5430a0131b17e7cd1f6be9fad4de6a3480f06304c406d86e20",
+          "host_available_memory_fraction_min": 0.7507178226984245,
+          "host_interval_covered": true,
+          "host_load_violations": [],
+          "host_load_within_bound": true,
+          "host_memory_violations": [],
+          "host_memory_within_bound": true,
+          "host_normalized_load1_max": 0.34390625,
+          "host_process_interval_sampled": true,
+          "host_process_sample_count": 264,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "last_sample_ns": 1786276513651230671,
+          "max_normalized_load1": 0.5,
+          "max_unapproved_cpu_exposure_fraction": 0.001,
+          "max_unapproved_user_cpu_fraction": 0.05,
+          "min_available_memory_fraction": 0.1,
+          "missing_host_sample_ns": [],
+          "no_unapproved_compute_processes": false,
+          "no_unapproved_cpu_processes": true,
+          "observed_process_group_ids": [
+            15014,
+            18104,
+            284263,
+            284300,
+            284302,
+            284417,
+            284430,
+            284439,
+            284511,
+            284615,
+            284616,
+            284630,
+            284964,
+            285023,
+            285267,
+            285505,
+            286045,
+            286054
+          ],
+          "other_gpu_maxima": [
+            {
+              "gpu": 0,
+              "max_used_mb": 4519,
+              "max_util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "max_used_mb": 4519,
+              "max_util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "max_used_mb": 4517,
+              "max_util_pct": 100
+            }
+          ],
+          "other_registered_gpus_idle": false,
+          "resolved_transient_process_group_id_count": 0,
+          "resolved_transient_process_group_ids": [],
+          "sample_count": 1328,
+          "sample_interval_s": 1,
+          "target_end_ns": 1786276514457673836,
+          "target_interval_covered": false,
+          "target_start_ns": 1786274333946403122,
+          "unapproved_compute_process_count": 21104,
+          "unapproved_compute_processes": [
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1238"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274334058846174,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1242"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1238"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274335659159203,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1242"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284511,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284511,
+              "pid": 284764,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285505,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 285505,
+              "pid": 286098,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284302,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284302,
+              "pid": 284686,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284439,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284439,
+              "pid": 284717,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1238"
+            },
+            {
+              "effective_pgid": 284263,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 284263,
+              "pid": 284691,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 285023,
+              "gpu_uuid": "GPU-f1f9f2a9-428d-2877-e1d5-f28b2f3ee9d3",
+              "pgid": 285023,
+              "pid": 286077,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1234"
+            },
+            {
+              "effective_pgid": 284430,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284430,
+              "pid": 284751,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284630,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 284630,
+              "pid": 284831,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 285267,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 285267,
+              "pid": 286097,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 286045,
+              "gpu_uuid": "GPU-554fefa8-ec07-42e7-2187-8f876b8a2022",
+              "pgid": 286045,
+              "pid": 286293,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284616,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284616,
+              "pid": 284802,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284615,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284615,
+              "pid": 284829,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 284964,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 284964,
+              "pid": 285766,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "1240"
+            },
+            {
+              "effective_pgid": 286054,
+              "gpu_uuid": "GPU-a443c9c4-0da8-bbbd-1209-12b89db2cdf3",
+              "pgid": 286054,
+              "pid": 286290,
+              "sample_ns": 1786274337332231018,
+              "used_memory_mb": "732"
+            },
+            {
+              "effective_pgid": 284300,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284300,
+              "pid": 284685,
+              "sample_ns": 1786274339013255322,
+              "used_memory_mb": "1242"
+            },
+            {
+              "effective_pgid": 284417,
+              "gpu_uuid": "GPU-31a0d7b1-7064-4a67-c0d3-11a920dd2e20",
+              "pgid": 284417,
+              "pid": 284687,
+              "sample_ns": 1786274339013255322,
+              "used_memory_mb": "1240"
+            }
+          ],
+          "unapproved_cpu_exposure_within_bound": true,
+          "unapproved_cpu_process_count": 0,
+          "unapproved_cpu_processes": [],
+          "unapproved_cpu_snapshot_totals": [],
+          "unapproved_cpu_transient_burst_count": 0,
+          "unapproved_cpu_transient_bursts": [],
+          "violation_count": 3984,
+          "violations": [
+            {
+              "gpu": 0,
+              "sample_ns": 1786274319173728353,
+              "used_mb": 4445,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274319173728353,
+              "used_mb": 4435,
+              "util_pct": 32
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274319173728353,
+              "used_mb": 4451,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274320802587687,
+              "used_mb": 4451,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274320802587687,
+              "used_mb": 4437,
+              "util_pct": 48
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274320802587687,
+              "used_mb": 4451,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274322507088088,
+              "used_mb": 4451,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274322507088088,
+              "used_mb": 4437,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274322507088088,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274324126257115,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274324126257115,
+              "used_mb": 4439,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274324126257115,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274325780836356,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274325780836356,
+              "used_mb": 4439,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274325780836356,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274327493821254,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274327493821254,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274327493821254,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274329144161878,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274329144161878,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274329144161878,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274330771827806,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274330771827806,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274330771827806,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274332453926899,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274332453926899,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274332453926899,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274334058846174,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274334058846174,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274334058846174,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274335659159203,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274335659159203,
+              "used_mb": 4443,
+              "util_pct": 0
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274335659159203,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274337332231018,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274337332231018,
+              "used_mb": 4443,
+              "util_pct": 69
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274337332231018,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274339013255322,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274339013255322,
+              "used_mb": 4445,
+              "util_pct": 98
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274339013255322,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274340708010497,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274340708010497,
+              "used_mb": 4445,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274340708010497,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274342437880921,
+              "used_mb": 4461,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274342437880921,
+              "used_mb": 4445,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274342437880921,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274344114271384,
+              "used_mb": 4461,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274344114271384,
+              "used_mb": 4451,
+              "util_pct": 100
+            },
+            {
+              "gpu": 3,
+              "sample_ns": 1786274344114271384,
+              "used_mb": 4459,
+              "util_pct": 100
+            },
+            {
+              "gpu": 0,
+              "sample_ns": 1786274345816005400,
+              "used_mb": 4461,
+              "util_pct": 100
+            },
+            {
+              "gpu": 1,
+              "sample_ns": 1786274345816005400,
+              "used_mb": 4457,
+              "util_pct": 100
+            }
+          ]
+        },
+        "prelaunch": {
+          "all_registered_gpus_idle": false,
+          "assigned_gpu_idle": false,
+          "audit_ready": true,
+          "diagnostics_path": "/home/erzhu419/.claude/scheduler/experiments/runs/critical_gpu_loaded_v2_node007_r05_20260809_code1b42b9b7e37d_rl_after_cnn/raw/diagnostics.log",
+          "diagnostics_sha256": "ca9ecf25d1681113cb03584013c6269f5414b2e46adbe0e5afa5b99e0ccffe28",
+          "gpu": 2,
+          "idle_memory_limit_mb": 512,
+          "idle_util_limit_pct": 5,
+          "nonidle_registered_gpus": [
+            {
+              "free_mb": 6565,
+              "gpu": 0,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4445,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 6575,
+              "gpu": 1,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4435,
+              "util_pct": 32
+            },
+            {
+              "free_mb": 6553,
+              "gpu": 2,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 6559,
+              "gpu": 3,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4451,
+              "util_pct": 100
+            }
+          ],
+          "registered_gpu_snapshot": [
+            {
+              "free_mb": 6565,
+              "gpu": 0,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4445,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 6575,
+              "gpu": 1,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4435,
+              "util_pct": 32
+            },
+            {
+              "free_mb": 6553,
+              "gpu": 2,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4457,
+              "util_pct": 100
+            },
+            {
+              "free_mb": 6559,
+              "gpu": 3,
+              "name": "NVIDIA GeForce RTX 2080 Ti",
+              "total_mb": 11264,
+              "used_mb": 4451,
+              "util_pct": 100
+            }
+          ],
+          "used_mb": 4457,
+          "util_pct": 100
+        },
+        "scenario_id": "rl_after_cnn"
+      }
+    ],
+    "expected_row_count": 3,
+    "pass": false
+  },
+  "schema_version": 1,
+  "status": "CAMPAIGN_INCOMPLETE",
+  "wave": 5
+}

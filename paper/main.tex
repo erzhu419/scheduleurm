@@ -2265,6 +2265,33 @@ are
 All quantities in \eqref{eq:frame-oracle}--\eqref{eq:frame-penalty} are in
 cumulative work units over the same frame; in particular, migration lost work
 cannot be inserted as an unmatched wall-clock scalar.
+For the controlled migration rows, let \(W_n^{\mathrm{rem}}>0\) be one task's
+remaining work, let \(\underline\mu_n^{\mathrm{old}}\) and
+\(\underline\mu_n^{\mathrm{new}}\) be its per-task lower-service rates in the
+measured source and destination states, and let \(T_n^{\mathrm{mig}}\) be the
+measured checkpoint, synchronization, staging, warmup, lost-work, and
+time-equivalent risk overhead.  The migration trajectory is represented by
+the duration-normalized lower service
+\begin{equation}
+  \underline\mu_n^{\mathrm{mig,eff}}
+  =
+  \frac{W_n^{\mathrm{rem}}}
+  {T_n^{\mathrm{mig}}+W_n^{\mathrm{rem}}/
+    \underline\mu_n^{\mathrm{new}}}.
+  \label{eq:migration-effective-lower-service}
+\end{equation}
+It enters the candidate family only when
+\begin{equation}
+  \frac{W_n^{\mathrm{rem}}}{\underline\mu_n^{\mathrm{old}}}
+  -
+  \frac{W_n^{\mathrm{rem}}}{\underline\mu_n^{\mathrm{new}}}
+  > T_n^{\mathrm{mig}},
+  \label{eq:migration-dimensional-admission}
+\end{equation}
+equivalently
+\(\underline\mu_n^{\mathrm{mig,eff}}>
+\underline\mu_n^{\mathrm{old}}\).  Thus wall-clock overhead first changes the
+trajectory duration; it is not subtracted directly from a service-rate score.
 
 \begin{proposition}[Variable-duration robust frame drift]
 \label{prop:frame-drift}
@@ -2312,7 +2339,7 @@ The quadratic queue inequality applied to
 \eqref{eq:frame-queue-dynamics}, followed by conditional expectation, gives
 \begin{equation}
   \begin{aligned}
-  \E[\Delta_{mathrm F}V(n)\mid\mathcal F_n^{\mathrm F}]
+  \E[\Delta_{\mathrm F}V(n)\mid\mathcal F_n^{\mathrm F}]
   \le{}& B_{\mathrm F}
   +\tau_n\left(Q^{\mathrm F}(n)\right)^{\!\top}\lambda\\
   &-\left(Q^{\mathrm F}(n)\right)^{\!\top}
@@ -2320,7 +2347,7 @@ The quadratic queue inequality applied to
   \end{aligned}
   \label{eq:frame-proof-base}
 \end{equation}
-where \(\Delta_{mathrm F}V(n)\) denotes the frame-to-frame Lyapunov increment.
+where \(\Delta_{\mathrm F}V(n)\) denotes the frame-to-frame Lyapunov increment.
 Full-action support slack implies
 \begin{equation}
   \left(Q^{\mathrm F}(n)\right)^{\!\top}\lambda

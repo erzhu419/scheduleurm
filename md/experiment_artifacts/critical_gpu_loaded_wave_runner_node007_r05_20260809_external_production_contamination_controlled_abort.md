@@ -1,0 +1,14 @@
+# Critical GPU Loaded-Wave Safe Runner
+
+- Status: `CAMPAIGN_INCOMPLETE`
+- Node: `node007`
+- Wave: `5`
+- Launched: `true`
+- All registered GPUs idle: `true`
+
+| GPU | Used MiB | Utilization |
+|---:|---:|---:|
+| 0 | 1 | 0% |
+| 1 | 1 | 0% |
+| 2 | 1 | 0% |
+| 3 | 1 | 0% |

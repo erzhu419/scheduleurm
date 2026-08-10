@@ -162,16 +162,43 @@ def build_stages(*, python: str = sys.executable, include_figure: bool = True) -
         ),
     ]
     if include_figure:
-        stages.append(
-            Stage(
-                "render_quadrant_figure",
-                (python, str(FIGURE_SCRIPT)),
-                tuple(
-                    Path(f"{FIGURE_STEM}.{suffix}")
-                    for suffix in ("svg", "pdf", "png", "tiff")
-                )
-                + (FIGURE_STEM.with_name(FIGURE_STEM.name + "_data.json"),),
-            )
+        stages.extend(
+            [
+                Stage(
+                    "render_quadrant_figure",
+                    (python, str(FIGURE_SCRIPT)),
+                    tuple(
+                        Path(f"{FIGURE_STEM}.{suffix}")
+                        for suffix in ("svg", "pdf", "png", "tiff")
+                    )
+                    + (FIGURE_STEM.with_name(FIGURE_STEM.name + "_data.json"),),
+                ),
+                Stage(
+                    "verify_manuscript_sync",
+                    (
+                        python,
+                        "-m",
+                        "algorithm.experiments.unified_hardware_manuscript_sync_gate",
+                    ),
+                    (
+                        ARTIFACT_ROOT
+                        / "unified_hardware_manuscript_sync_gate_20260810.json",
+                    ),
+                ),
+                Stage(
+                    "build_opre_manuscript",
+                    (
+                        "latexmk",
+                        "-cd",
+                        "-g",
+                        "-pdf",
+                        "-interaction=nonstopmode",
+                        "-halt-on-error",
+                        "paper/main.tex",
+                    ),
+                    (REPO_ROOT / "paper" / "main.pdf",),
+                ),
+            ]
         )
     return tuple(stages)
 

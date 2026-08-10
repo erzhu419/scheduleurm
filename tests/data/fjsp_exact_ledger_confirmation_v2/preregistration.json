@@ -1,0 +1,478 @@
+{
+  "claim_boundary": {
+    "arbitrary_family_dominance_claimed": false,
+    "cp_sat_feasible_is_not_optimality_proof": true,
+    "cp_sat_makespan_optimality_does_not_prove_multiobjective_optimality": true,
+    "exact_argmax_only_over_generated_candidate_family": true,
+    "global_fjsp_optimality_claimed": false,
+    "scope": "only the preregistered source instances",
+    "stochastic_stability_transfer_claimed": false
+  },
+  "freeze_before_outcomes": true,
+  "implementation_freeze": {
+    "files": {
+      "algorithm/experiments/fjsp_benchmark.py": "dc00ff2ae33f4c9d1267952a9237318563785d14ac08f85eaa36b08622bce65e",
+      "algorithm/experiments/fjsp_exact_ledger_confirmation_v2.py": "568c22feb695c03350f75f3e9121eae86b0ccfffdaaa378257d2962e75326893",
+      "algorithm/experiments/fjsp_exact_ledger_confirmation_v2_freeze.py": "d653b8fb8f0a53d64dd562bd5ace097374d8112475156154fae187e867fa6bc6",
+      "algorithm/experiments/fjsp_instances.py": "8542cc333fcee45c139dc8469f95551cd5967402d1b4d2106546a9abd4e9d2b1",
+      "algorithm/experiments/fjsp_renewal_frame_upgrade.py": "01906687ae536105a31ae2b7c62a0292400f42b10ce27160484cfded7caf66e2",
+      "algorithm/experiments/fjsp_trajectory_upgrade.py": "c121539db26180b9d4c1129e1b7535f138d84201594f1c08478ac060ddc2d0d9",
+      "algorithm/experiments/or_exact_reference.py": "5e6a178fb1aaf0aea794f3f9b49a8442770e777999725eacb1648950e18d5a56",
+      "algorithm/experiments/trajectory_renewal_frame_score.py": "f9cc9b0a24f85b3ad616e69503b9813c6111888846fdd997c4d20a0a9899b0ad"
+    },
+    "hash_algorithm": "sha256"
+  },
+  "protocol": {
+    "comparison_coordinates": [
+      "makespan_ticks",
+      "sum_completion_ticks"
+    ],
+    "cp_sat_gap_separate_from_candidate_family": true,
+    "cp_sat_objective": "makespan_only",
+    "cp_sat_time_limit_s": 5.0,
+    "cp_sat_workers": 1,
+    "exact_time_unit": "integer source-processing tick",
+    "holdout_feedback_used_for_policy": false,
+    "per_instance_tuning": false,
+    "performance_is_not_protocol_validity": true,
+    "policy": "scheduleurm_fjsp_renewal_frame",
+    "run_cp_sat_reference": true,
+    "same_action_disposition": "exact canonical operation-ledger fingerprint"
+  },
+  "registration_label": "fjsp-exact-ledger-confirmation-v2-20260810",
+  "schema_version": "scheduleurm.fjsp_exact_ledger_preregistration.v2",
+  "selection": {
+    "candidate_count": 264,
+    "excluded_previously_observed": [
+      {
+        "canonical_source_sha256": "cf5c462fe81d83b62a340dfab6fbdf22fb5978f2a36445c0796c4851b654e566",
+        "file_sha256": "aff832f6d993c71e2a458d735fe26945667cb7a00b5a7404bfba24d4fcf4f1a2",
+        "reason": "previously_observed",
+        "relative_path": "edata/abz9.txt"
+      },
+      {
+        "canonical_source_sha256": "92efe2cd3ddc7a4020500b894ee695202a6eb3b1e27d170b40bf66159c00f027",
+        "file_sha256": "17beeb58cebb934730958bbc704e4804d589fa17233e00f50327de34a6a4fc23",
+        "reason": "previously_observed",
+        "relative_path": "edata/car2.txt"
+      },
+      {
+        "canonical_source_sha256": "508e0284b0fb115f0b4ac2eadce0ec7d8dbe24fb9382037b8517951c4b91b534",
+        "file_sha256": "f31f7a98915305c6accf3561ba1720f92a1e545c0ae4de491f2e18a224ac16d0",
+        "reason": "previously_observed",
+        "relative_path": "edata/la10.txt"
+      },
+      {
+        "canonical_source_sha256": "f77334d0a19f66584dd1cd3fbfddbeaf24e461d7b9884d8af64651b1f905fed1",
+        "file_sha256": "22095e61ffd32784cd07369160a339b6aa0b82df910dc6b404efbedc218d5e76",
+        "reason": "previously_observed",
+        "relative_path": "edata/la20.txt"
+      },
+      {
+        "canonical_source_sha256": "30814fe76e44cc54483020644cbe7aba8f7e834dc5838ffc9fe9a4cdf91a8279",
+        "file_sha256": "fd77e4d2b258ded81316c5c77d978810b0c11cf5561926148bfce1bf28c3ad11",
+        "reason": "previously_observed",
+        "relative_path": "edata/la27.txt"
+      },
+      {
+        "canonical_source_sha256": "3bc2478f8d516104b06455156dcb85181b9954e79105251b6f9ee86e682b33f8",
+        "file_sha256": "370796f33bc1ef7f0938c90b1e792f90406b322c4f152d7deea12d593b2d1e44",
+        "reason": "previously_observed",
+        "relative_path": "rdata/abz9.txt"
+      },
+      {
+        "canonical_source_sha256": "b14afa1c26eaced8a5cf9e054bfb4dda1f36a7f4e78add0ce0d0abba1d01e76e",
+        "file_sha256": "8deb30d896061ae920d2494482c240e8c8fa77e66ecf6485d011ec9c2911c105",
+        "reason": "previously_observed",
+        "relative_path": "rdata/car2.txt"
+      },
+      {
+        "canonical_source_sha256": "5e2a306c6b91b8fd2b630dc193f49cc193bb691ff02ae720a949ae20ffeb15cf",
+        "file_sha256": "7b840fb399c03ece4aebe1756b2fef861a394bc97f6734a9ee222044c2f8abba",
+        "reason": "previously_observed",
+        "relative_path": "rdata/la10.txt"
+      },
+      {
+        "canonical_source_sha256": "cc79ccce96fa48be35d6bb49f64c62998a3593c2347f83054da4540362eca616",
+        "file_sha256": "f3749c2152384163488e9fe17d15237af0a78ec78d068e97f7141d2ceda0ce34",
+        "reason": "previously_observed",
+        "relative_path": "rdata/la20.txt"
+      },
+      {
+        "canonical_source_sha256": "2ba4e62fd07ca074a6152d21164235735597dcd277fd06eb25f309ae99fcd367",
+        "file_sha256": "29453088d6e474def03220dc879ee44f3ec634c6ae14ed37c8d8f5c48342e251",
+        "reason": "previously_observed",
+        "relative_path": "rdata/la27.txt"
+      },
+      {
+        "canonical_source_sha256": "b0b2a9310cbd1b668dbd2ca90b9afbbd69edd48f933f2179d20a5da5ec9c2746",
+        "file_sha256": "9c3e58509eca1144f9b8ad63d53770a59bf6d5ebc64971cec160f73bc251e872",
+        "reason": "previously_observed",
+        "relative_path": "sdata/abz9.txt"
+      },
+      {
+        "canonical_source_sha256": "5968c7941ceab1005fc97e5258e51d4f869634a5489ad906113db1cf539e8297",
+        "file_sha256": "7cd3b9a7fdfbe3d0926eef96bed0a6bf8fdb75566cc3d7775da7a8f1fc41fe32",
+        "reason": "previously_observed",
+        "relative_path": "sdata/car2.txt"
+      },
+      {
+        "canonical_source_sha256": "bfff79a58dd79fa680741be7e1427b8d60b374cb89e4960f6f791674dab28102",
+        "file_sha256": "f93a8ef77e58d5d37cbef0654c7c62549557ee4755a8c4912f74c5f6333b727c",
+        "reason": "previously_observed",
+        "relative_path": "sdata/la10.txt"
+      },
+      {
+        "canonical_source_sha256": "8ab9fa4512bec55289ae3e65aff6049424c0621f958b4f1395ff4918c803ea91",
+        "file_sha256": "ebd974c768ca72dd586af126211d5fdad337b7c444eeb4f8fa7d65a40fbcc880",
+        "reason": "previously_observed",
+        "relative_path": "sdata/la20.txt"
+      },
+      {
+        "canonical_source_sha256": "b199ace1cc794bf9261b9fd8b9c646e5f124d47ae42b7234332dcceb41e069f5",
+        "file_sha256": "3370988bd0368968f81f47329becfbecb914cc7718ccb728c98f968d7457918a",
+        "reason": "previously_observed",
+        "relative_path": "sdata/la27.txt"
+      },
+      {
+        "canonical_source_sha256": "4c3dad5daa38446379728f3fd20db67513dbeb1ff36f268398469002a55e9d86",
+        "file_sha256": "8fac98269dd0ca027e3bc532e39c30e072090caee7e69ea0a4b3d9ee66feca28",
+        "reason": "previously_observed",
+        "relative_path": "vdata/abz9.txt"
+      },
+      {
+        "canonical_source_sha256": "e1f96a2a1d64dadbda9a153d28f9c23af77dae9ec1e9151f602858b6b50915c0",
+        "file_sha256": "b0fb8e814afbe5e602e0a1d73b180cb9d264917e34730fb5d207a648227627c7",
+        "reason": "previously_observed",
+        "relative_path": "vdata/car2.txt"
+      },
+      {
+        "canonical_source_sha256": "e029371cc337d70631f633b3d89597dd9fb7c7b3fdaed8341f29b90e63119577",
+        "file_sha256": "7039144134615375c5a64fa658773fe13a687a9f820b103dd95c4dba20c178ba",
+        "reason": "previously_observed",
+        "relative_path": "vdata/la10.txt"
+      },
+      {
+        "canonical_source_sha256": "31b423f4da87750bf707f528aa4fa8bc69430366cccd5053bf1387c631c35d28",
+        "file_sha256": "9610bf26d1761a52a78091d229f2632ecdda15f1a4b8556e56c3ae1a2b8e6241",
+        "reason": "previously_observed",
+        "relative_path": "vdata/la20.txt"
+      },
+      {
+        "canonical_source_sha256": "3f8ce9ce7aa8d121ff94bc60d84485e33f575702e8cdba17d06958419f2716a2",
+        "file_sha256": "004129f4b5cbd080b3496bd19f6a5b90b5a52a48589d36b4fd383d14c0c7258f",
+        "reason": "previously_observed",
+        "relative_path": "vdata/la27.txt"
+      }
+    ],
+    "outcomes_observed_during_selection": false,
+    "schema_version": "scheduleurm.fjsp_exact_ledger_selection.v2",
+    "selected_count": 20,
+    "selected_instances": [
+      {
+        "canonical_source_sha256": "6774146598a38bf2274a643a467fd95f3da2425337f9031fedad3c9d64f3efe7",
+        "family": "edata",
+        "file_sha256": "b25704767748fe7e10a5565d90549d3a48db9687c8fa0185be14a8d6e43b0dee",
+        "job_count": 6,
+        "machine_count": 6,
+        "operation_count": 36,
+        "relative_path": "edata/ft06.txt",
+        "selection_scale": 216,
+        "size_bytes": 523
+      },
+      {
+        "canonical_source_sha256": "0103c554dc217c17fdf25b5356c0c341348691ef41069ac923548d5668e3dd7d",
+        "family": "edata",
+        "file_sha256": "0ae3fd6f364d2de36eba4d2391efad5692c3a9ef6cceb1a459703684be12779e",
+        "job_count": 15,
+        "machine_count": 5,
+        "operation_count": 75,
+        "relative_path": "edata/la09.txt",
+        "selection_scale": 375,
+        "size_bytes": 1076
+      },
+      {
+        "canonical_source_sha256": "b57c3a6aba5c43125f340ebc586ee0a24d9c5fb5f46735f7c58f9af33df90258",
+        "family": "edata",
+        "file_sha256": "5963b7dba80cc8d33df77aedff0c045865ea1c4d4047de4fd9b3160764408a1b",
+        "job_count": 10,
+        "machine_count": 10,
+        "operation_count": 100,
+        "relative_path": "edata/la19.txt",
+        "selection_scale": 1000,
+        "size_bytes": 1367
+      },
+      {
+        "canonical_source_sha256": "eee3b4137973edc8192a506a0b6a3fbfbb58d388ea49f31ab4a0c02a15a31c9e",
+        "family": "edata",
+        "file_sha256": "b565e50f72d73cd240f3588db023dc0e6e72f401b0ee6c4bbc0462d34fbeb5ce",
+        "job_count": 20,
+        "machine_count": 10,
+        "operation_count": 200,
+        "relative_path": "edata/la26.txt",
+        "selection_scale": 2000,
+        "size_bytes": 2729
+      },
+      {
+        "canonical_source_sha256": "7315774f684ed6db1cc901379f847d85dccd072ba1fee91669d886c2958dac7f",
+        "family": "edata",
+        "file_sha256": "a8da29114a4078b43f830245842ba0a560f0c7d8d1b8645d85261681112833fb",
+        "job_count": 20,
+        "machine_count": 15,
+        "operation_count": 300,
+        "relative_path": "edata/abz8.txt",
+        "selection_scale": 4500,
+        "size_bytes": 4033
+      },
+      {
+        "canonical_source_sha256": "aa9c90cfced215fb4d92fac0ea4b8731e78dd8d8a1f96ef9b73a1883f13ba446",
+        "family": "rdata",
+        "file_sha256": "f7b5c2945f36339c2497efc4a7768d698299adb6949c263a650c937bddef9342",
+        "job_count": 6,
+        "machine_count": 6,
+        "operation_count": 36,
+        "relative_path": "rdata/ft06.txt",
+        "selection_scale": 216,
+        "size_bytes": 779
+      },
+      {
+        "canonical_source_sha256": "f3c01dd9134933ee716e1bb84fed082d956757ce85e83a356255c37e284f32eb",
+        "family": "rdata",
+        "file_sha256": "56bf14d881e52cb09e45aa964979cd3c69b6b620167f120804441803a958cee9",
+        "job_count": 15,
+        "machine_count": 5,
+        "operation_count": 75,
+        "relative_path": "rdata/la09.txt",
+        "selection_scale": 375,
+        "size_bytes": 1540
+      },
+      {
+        "canonical_source_sha256": "3e04b5bc218d4215323d3b687e53dbc031bfa01fbb52a7d0d23b40c421713bf3",
+        "family": "rdata",
+        "file_sha256": "97d68753d4519ee118ef9fa0ca4e35da152762de3376c35da9a2be27e56c5746",
+        "job_count": 10,
+        "machine_count": 10,
+        "operation_count": 100,
+        "relative_path": "rdata/la19.txt",
+        "selection_scale": 1000,
+        "size_bytes": 2031
+      },
+      {
+        "canonical_source_sha256": "8d3f7096ea4f15dc52070bf470aeb193f2be8fbcfd8ef6be5396d37de059cd4b",
+        "family": "rdata",
+        "file_sha256": "60a2ef64f4e27a352028c8ebb0c9e9ee033c3ea2d59faba2ccc8dc0f0e850ad5",
+        "job_count": 20,
+        "machine_count": 10,
+        "operation_count": 200,
+        "relative_path": "rdata/la26.txt",
+        "selection_scale": 2000,
+        "size_bytes": 4041
+      },
+      {
+        "canonical_source_sha256": "76cacbd51a1775d1ee57081a5eddf7e0b110aba6bf7fd452a3e62359c0a3c8e7",
+        "family": "rdata",
+        "file_sha256": "0ea31285b66bfec108a905a0919cd405cd2ae761d2470de1247653e089e89dc1",
+        "job_count": 20,
+        "machine_count": 15,
+        "operation_count": 300,
+        "relative_path": "rdata/abz8.txt",
+        "selection_scale": 4500,
+        "size_bytes": 5945
+      },
+      {
+        "canonical_source_sha256": "80888c6f9466ac1c894058d87262a4ba3419dfa6fce67707eb49400990a76bcb",
+        "family": "sdata",
+        "file_sha256": "63bb2d117daedd81a55ceb49b122b981b66112451a298309cdb4782f21cc3e51",
+        "job_count": 6,
+        "machine_count": 6,
+        "operation_count": 36,
+        "relative_path": "sdata/ft06.txt",
+        "selection_scale": 216,
+        "size_bytes": 475
+      },
+      {
+        "canonical_source_sha256": "840bc231480d55188d39d825f7207caea89229a9ad64ae8704ac035346cc9cf7",
+        "family": "sdata",
+        "file_sha256": "b09c74de409cbf1a2912fc4aef7e9090147f70e56e1d7313e0fe6532044700e0",
+        "job_count": 15,
+        "machine_count": 5,
+        "operation_count": 75,
+        "relative_path": "sdata/la09.txt",
+        "selection_scale": 375,
+        "size_bytes": 988
+      },
+      {
+        "canonical_source_sha256": "1996c2c34c52437bfb26c664050808e06a4c5e32b40d6b0664953b98b31fc445",
+        "family": "sdata",
+        "file_sha256": "39a6fb999c0985123dc10b33e5f5c1954c355c58657a1eee2269a1627d24a659",
+        "job_count": 10,
+        "machine_count": 10,
+        "operation_count": 100,
+        "relative_path": "sdata/la19.txt",
+        "selection_scale": 1000,
+        "size_bytes": 1263
+      },
+      {
+        "canonical_source_sha256": "e55a4d2a5635d712bb806c4d82b8a09332e51f2e2e1714f8c99ac38d0fd1c8de",
+        "family": "sdata",
+        "file_sha256": "c8b2bd13fb6f18814448379c5af605ed71cc8e8848ec774b1340496424932a06",
+        "job_count": 20,
+        "machine_count": 10,
+        "operation_count": 200,
+        "relative_path": "sdata/la26.txt",
+        "selection_scale": 2000,
+        "size_bytes": 2513
+      },
+      {
+        "canonical_source_sha256": "3620642769f49f521fe601ae76d8b162facd3026ed10dc2ad8400a5221a6fdae",
+        "family": "sdata",
+        "file_sha256": "ddff43210b9757344ad83012353f7ca53fc5e4194c6834032629f14d20b4ed47",
+        "job_count": 20,
+        "machine_count": 15,
+        "operation_count": 300,
+        "relative_path": "sdata/abz8.txt",
+        "selection_scale": 4500,
+        "size_bytes": 3713
+      },
+      {
+        "canonical_source_sha256": "817bf32c0ab91c462783f2e28b0922f5e7cffba2b51cd538273dca52ca62c2b2",
+        "family": "vdata",
+        "file_sha256": "05f3ef78b075b97b41ea1a7cdec8a4b677f2dcaa92ee6f4c738d902353bda18b",
+        "job_count": 6,
+        "machine_count": 6,
+        "operation_count": 36,
+        "relative_path": "vdata/ft06.txt",
+        "selection_scale": 216,
+        "size_bytes": 1011
+      },
+      {
+        "canonical_source_sha256": "d17a5b1646c36f1e6fde498a54019efd3f1e419e5f6368f027855c06c59bdc14",
+        "family": "vdata",
+        "file_sha256": "2b42209f13de35c1519b9ffbbbec5d848185a2d1f5047210329a0e4bfbd66ea3",
+        "job_count": 15,
+        "machine_count": 5,
+        "operation_count": 75,
+        "relative_path": "vdata/la09.txt",
+        "selection_scale": 375,
+        "size_bytes": 1908
+      },
+      {
+        "canonical_source_sha256": "4f6a72ed85bc26ddcc2b2a62b542065875f8c02887a3247676a68ed5d5cb45ee",
+        "family": "vdata",
+        "file_sha256": "e886099d09474ad1cafa3b80eb80bb91f47ad58fb2cb08d7aeb811e856542505",
+        "job_count": 10,
+        "machine_count": 10,
+        "operation_count": 100,
+        "relative_path": "vdata/la19.txt",
+        "selection_scale": 1000,
+        "size_bytes": 4303
+      },
+      {
+        "canonical_source_sha256": "b1657ef25a647d3bb569553bb002399f595a33945c157e4076fe3d20b1ca9ba1",
+        "family": "vdata",
+        "file_sha256": "4a0be4082528b9a43b1e214929f5115174e42d79f750d6a078bc6b848019a95e",
+        "job_count": 20,
+        "machine_count": 10,
+        "operation_count": 200,
+        "relative_path": "vdata/la26.txt",
+        "selection_scale": 2000,
+        "size_bytes": 8249
+      },
+      {
+        "canonical_source_sha256": "f78f16e49bf2003ae2ce23d4688537227aea08ee67a373a0f6b0958422f66f5a",
+        "family": "vdata",
+        "file_sha256": "6cd81d46548b2bb3fe21733a348c4e0f131049fa5937c88eb3a4359c42d312aa",
+        "job_count": 20,
+        "machine_count": 15,
+        "operation_count": 300,
+        "relative_path": "vdata/abz8.txt",
+        "selection_scale": 4500,
+        "size_bytes": 17097
+      }
+    ],
+    "selection_rule": {
+      "description": "Exclude registered paths and source hashes; group by first relative-path component; sort by (operation_count*machine_count, job_count, machine_count, operation_count, relative_path); then retain all unused instances or deterministic equally spaced ranks within each family.",
+      "per_family": 5,
+      "source_format_exclusion_uses_outcomes": false,
+      "uses_algorithm_outcomes": false,
+      "uses_cp_sat_outcomes": false
+    },
+    "source_format_exclusions": [
+      {
+        "file_sha256": "56f57f0e7599f490e7f81c9082420bf1a845762dadefedb29df817223609589c",
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "edata/orb7.txt"
+      },
+      {
+        "file_sha256": "19713991dd82191df12b047ebe9bacc0f26ff2711a79983b4377a9975d679e21",
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "rdata/orb7.txt"
+      },
+      {
+        "file_sha256": "22e7ea4b3ad707069187321176aa31062a51d34ce063fe2425367a7d536a013b",
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "sdata/orb7.txt"
+      },
+      {
+        "file_sha256": "9074db53172444b99b9b01cc1b53790e92cf03204e621b656efee93aba87e125",
+        "reason": "job 9 operation 9 has non-positive processing time",
+        "relative_path": "vdata/orb7.txt"
+      }
+    ],
+    "unused_candidate_count": 240,
+    "used_registry": {
+      "relative_paths": [
+        "edata/abz9.txt",
+        "edata/car2.txt",
+        "edata/la10.txt",
+        "edata/la20.txt",
+        "edata/la27.txt",
+        "rdata/abz9.txt",
+        "rdata/car2.txt",
+        "rdata/la10.txt",
+        "rdata/la20.txt",
+        "rdata/la27.txt",
+        "sdata/abz9.txt",
+        "sdata/car2.txt",
+        "sdata/la10.txt",
+        "sdata/la20.txt",
+        "sdata/la27.txt",
+        "vdata/abz9.txt",
+        "vdata/car2.txt",
+        "vdata/la10.txt",
+        "vdata/la20.txt",
+        "vdata/la27.txt"
+      ],
+      "source_sha256": [
+        "004129f4b5cbd080b3496bd19f6a5b90b5a52a48589d36b4fd383d14c0c7258f",
+        "17beeb58cebb934730958bbc704e4804d589fa17233e00f50327de34a6a4fc23",
+        "22095e61ffd32784cd07369160a339b6aa0b82df910dc6b404efbedc218d5e76",
+        "29453088d6e474def03220dc879ee44f3ec634c6ae14ed37c8d8f5c48342e251",
+        "3370988bd0368968f81f47329becfbecb914cc7718ccb728c98f968d7457918a",
+        "370796f33bc1ef7f0938c90b1e792f90406b322c4f152d7deea12d593b2d1e44",
+        "7039144134615375c5a64fa658773fe13a687a9f820b103dd95c4dba20c178ba",
+        "7b840fb399c03ece4aebe1756b2fef861a394bc97f6734a9ee222044c2f8abba",
+        "7cd3b9a7fdfbe3d0926eef96bed0a6bf8fdb75566cc3d7775da7a8f1fc41fe32",
+        "8deb30d896061ae920d2494482c240e8c8fa77e66ecf6485d011ec9c2911c105",
+        "8fac98269dd0ca027e3bc532e39c30e072090caee7e69ea0a4b3d9ee66feca28",
+        "9610bf26d1761a52a78091d229f2632ecdda15f1a4b8556e56c3ae1a2b8e6241",
+        "9c3e58509eca1144f9b8ad63d53770a59bf6d5ebc64971cec160f73bc251e872",
+        "aff832f6d993c71e2a458d735fe26945667cb7a00b5a7404bfba24d4fcf4f1a2",
+        "b0fb8e814afbe5e602e0a1d73b180cb9d264917e34730fb5d207a648227627c7",
+        "ebd974c768ca72dd586af126211d5fdad337b7c444eeb4f8fa7d65a40fbcc880",
+        "f31f7a98915305c6accf3561ba1720f92a1e545c0ae4de491f2e18a224ac16d0",
+        "f3749c2152384163488e9fe17d15237af0a78ec78d068e97f7141d2ceda0ce34",
+        "f93a8ef77e58d5d37cbef0654c7c62549557ee4755a8c4912f74c5f6333b727c",
+        "fd77e4d2b258ded81316c5c77d978810b0c11cf5561926148bfce1bf28c3ad11"
+      ]
+    }
+  },
+  "selection_plan_sha256": "4a3c0c731ced140e99bc6a20ec85afcb26baffab9f768dbc5ca4c011f0ce1259",
+  "source_identity": {
+    "repository": "https://github.com/ScheduleOpt/benchmarks",
+    "repository_commit": "e5e62a01023ff827f658255b793fd1b86e5c1707",
+    "source_subdirectory": "flexible-jobshop/instances/fjsp/HurinkJurischThole1994",
+    "used_manifest_path": "tests/data/fjsp_hurink_external_holdout/source_manifest.json",
+    "used_manifest_sha256": "89b2195aa317158f00b1d9c2bc58466fa63a66c2d45e75344601275b41edb754"
+  }
+}

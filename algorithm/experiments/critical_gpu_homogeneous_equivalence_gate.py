@@ -255,6 +255,8 @@ def build_critical_gpu_homogeneous_equivalence_gate(
                 wave=matched_wave,
                 payload=payload,
                 expected_cells=expected_by_node[node],
+                admitted_cell_ids=set(expected_by_node[node]),
+                excluded_cell_ids=set(),
             )
         except Exception as exc:  # malformed external artifact is a contract failure
             errors.append(

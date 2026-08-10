@@ -1,0 +1,78 @@
+{
+  "claim_boundary": {
+    "global_mmrcpsp_optimality": false,
+    "positive_recurrence_from_finite_replay": false,
+    "production_arrival_model": false,
+    "psplib_wide_generalization": false,
+    "static_instance_outcomes_were_already_known": true
+  },
+  "implementation_freeze": {
+    "implementation_path": "algorithm/experiments/mmrcpsp_renewal_stream_benchmark.py",
+    "implementation_sha256": "15818c10a5384ab2eb18e509395dcaba992cce12cce0c084010a4c07b9f5a5b3",
+    "repository_commit": "660dc14240dff87259d8c5210682b773942860f9"
+  },
+  "outputs": [
+    "md/experiment_artifacts/mmrcpsp_renewal_stream_v1_20260810.json.gz",
+    "md/experiment_artifacts/mmrcpsp_renewal_stream_v1_20260810.json",
+    "md/mmrcpsp_renewal_stream_v1_20260810.md"
+  ],
+  "protocol": {
+    "arrival_tapes_observed_before_protocol_commit": false,
+    "horizon": 4800,
+    "performance_is_not_a_protocol_pass_condition": true,
+    "policies": [
+      "duration_normalized_robust_maxweight",
+      "unnormalized_robust_maxweight",
+      "shortest_registered_trajectory",
+      "longest_queue_then_shortest",
+      "round_robin_class"
+    ],
+    "scenarios": [
+      "static_backlog",
+      "poisson_nominal",
+      "bursty_nominal",
+      "load_035",
+      "load_065",
+      "load_090",
+      "load_105"
+    ],
+    "seeds": [11, 23, 37],
+    "stream_protocol_was_run_before_commit": false
+  },
+  "registered_on": "2026-08-10",
+  "schema_version": "scheduleurm.mmrcpsp_renewal_stream.preregistration.v1",
+  "selection": {
+    "member_count": 25,
+    "members": [
+      "j12/j1212_3.mm",
+      "j12/j1212_6.mm",
+      "j12/j1215_9.mm",
+      "j12/j122_8.mm",
+      "j12/j1244_1.mm",
+      "j14/j1413_10.mm",
+      "j14/j1422_1.mm",
+      "j14/j1432_3.mm",
+      "j14/j1438_8.mm",
+      "j14/j1463_5.mm",
+      "j16/j1612_4.mm",
+      "j16/j1635_9.mm",
+      "j16/j1638_2.mm",
+      "j16/j1653_9.mm",
+      "j16/j1661_5.mm",
+      "j18/j1810_7.mm",
+      "j18/j1834_2.mm",
+      "j18/j1838_8.mm",
+      "j18/j1842_10.mm",
+      "j18/j1846_2.mm",
+      "j20/j2011_4.mm",
+      "j20/j2041_2.mm",
+      "j20/j2045_1.mm",
+      "j20/j2056_3.mm",
+      "j20/j2064_8.mm"
+    ],
+    "source_holdout_preregistration_sha256": "f77acefc01f20ac362e2fede94137a8d482878a0b62afb4862c2c68edcc2e245",
+    "source_manifest_sha256": "f7cdc7065b084269df7a6e9e7cf8344db395b15b1778d3992a297f4b077f9c8c",
+    "source_root": "tests/data/mmrcpsp_family_external_holdout",
+    "static_selection_reused_without_member_changes": true
+  }
+}

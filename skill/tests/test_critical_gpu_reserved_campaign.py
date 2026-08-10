@@ -99,10 +99,16 @@ class _Lease:
 def test_failed_measurement_wave_retries_but_gate_does_not(monkeypatch, tmp_path):
     monkeypatch.setattr(campaign_module, "MeasurementReservation", lambda **_: _Lease())
     monkeypatch.setattr(campaign_module, "_wait_for_scheduler_ack", lambda **_: None)
+    clean_sample_requests = []
+
+    def fake_wait_for_clean_node(**kwargs):
+        clean_sample_requests.append(kwargs["consecutive_samples"])
+        return {"gpu_idle": {"ready": True}, "active_scheduler_tasks": []}
+
     monkeypatch.setattr(
         campaign_module,
         "_wait_for_clean_node",
-        lambda **_: {"gpu_idle": {"ready": True}, "active_scheduler_tasks": []},
+        fake_wait_for_clean_node,
     )
     returncodes = iter((3, 0))
     calls = []
@@ -122,6 +128,7 @@ def test_failed_measurement_wave_retries_but_gate_does_not(monkeypatch, tmp_path
     assert [row["returncode"] for row in report["commands"]] == [3, 0]
     assert [row["attempt"] for row in report["commands"]] == [1, 2]
     assert len(calls) == 2
+    assert clean_sample_requests == [5, 5]
 
     gate_calls = []
 

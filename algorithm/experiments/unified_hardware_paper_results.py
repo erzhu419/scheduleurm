@@ -192,6 +192,14 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
     ]
     if not hardware_ours:
         raise ValueError("hardware-local Scheduleurm population is empty")
+    hardware_static_ours = [
+        row for row in hardware_ours if row["arrival_family"] == "static"
+    ]
+    hardware_online_ours = [
+        row for row in hardware_ours if row["arrival_family"] != "static"
+    ]
+    if not hardware_static_ours or not hardware_online_ours:
+        raise ValueError("hardware-local replay must contain static and online populations")
     legacy_rows = [
         row for row in replay["legacy_comparison_rows"]
         if row["scenario_id"] in hardware_ids
@@ -207,7 +215,15 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
             "hardware_scenario_count": len(hardware_ids),
             "migration_scenario_count": len(migration_ids),
             "hardware_trace_count": len({str(row["trace_id"]) for row in hardware_ours}),
+            "hardware_static_trace_count": len(
+                {str(row["trace_id"]) for row in hardware_static_ours}
+            ),
+            "hardware_online_trace_count": len(
+                {str(row["trace_id"]) for row in hardware_online_ours}
+            ),
             "hardware_scheduleurm_run_count": len(hardware_ours),
+            "hardware_static_scheduleurm_run_count": len(hardware_static_ours),
+            "hardware_online_scheduleurm_run_count": len(hardware_online_ours),
             "complete_matrix_run_count": int(replay["run_count"]),
             "policy_count": int(replay["policy_count"]),
             "arrival_families": sorted({str(row["arrival_family"]) for row in hardware_ours}),
@@ -225,7 +241,8 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
         "sota_style": _sota_summary(pareto_rows),
         "ablations": _ablation_summary(runs, hardware_ids),
         "migration": _migration_summary(runs, migration_ids),
-        "queues": _queue_summary(hardware_ours),
+        "online_queues": _queue_summary(hardware_online_ours),
+        "queues": _queue_summary(hardware_online_ours),
         "slack": _slack_summary(slack),
     }
 
@@ -544,6 +561,8 @@ def tex_macros(report: Mapping[str, Any]) -> str:
     rows = {
         "UnifiedHardwareScenarioCount": population["hardware_scenario_count"],
         "UnifiedHardwareTraceCount": population["hardware_trace_count"],
+        "UnifiedHardwareStaticTraceCount": population["hardware_static_trace_count"],
+        "UnifiedHardwareOnlineTraceCount": population["hardware_online_trace_count"],
         "UnifiedCompleteMatrixRunCount": population["complete_matrix_run_count"],
         "UnifiedPolicyCount": population["policy_count"],
         "UnifiedLegacyMakespanGeoRatio": _fmt(legacy["legacy_to_ours_makespan_geomean_ratio"]),

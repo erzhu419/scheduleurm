@@ -888,8 +888,10 @@ def _transient_ssh_error(out: str | None, err: str | None) -> bool:
         "broken pipe",
         "server not responding",
     )
-    return any(needle in text for needle in needles) or bool(
-        re.search(r"connection closed by \S+ port \d+", text)
+    return (
+        any(needle in text for needle in needles)
+        or bool(re.search(r"connection closed by \S+ port \d+", text))
+        or bool(re.search(r"connection to \S+ port \d+ timed out", text))
     )
 
 

@@ -1,0 +1,143 @@
+{
+  "artifact_sha256_excluding_self": "afdbb03f4afa2818f6e5655afa2daf69a09556bedace9b8a4e656096bbf0c2df",
+  "claim_boundary": {
+    "does_not_support": [
+      "global FJSP, MMRCPSP, or port optimality",
+      "universal delay, makespan, or performance superiority",
+      "erasing the 21/21 MMRCPSP aggregate-delay counterexamples",
+      "calling the known MMRCPSP instance/action library a new structural holdout",
+      "positive recurrence inferred from finite replay",
+      "industrial terminal deployment or physical port safety certification",
+      "path-independent bitwise gzip identity"
+    ],
+    "supports": [
+      "a duration-normalized finite-trajectory scheduling interface across FJSP, MMRCPSP, and port models",
+      "exact registered-family oracle audits in all 35 MMRCPSP class-balance scenario/seed cells",
+      "a prospective arrival-tape MMRCPSP class-balance Pareto result with 35/35 nondominated cells",
+      "semantic reproduction of both deterministic MMRCPSP result matrices",
+      "statewise port transition feasibility with a measured finite-family oracle gap and penalty bound"
+    ]
+  },
+  "fjsp": {
+    "artifact_sha256": "0bf30925fd1380e2b11d84deaf1605374da6f9f83376c926b2e8213b4cdeb35d",
+    "baseline_union_nondominated_count": 20,
+    "cp_sat_exact_relations": {
+      "comparator_dominates": 14,
+      "same_action": 3,
+      "tradeoff": 3
+    },
+    "cp_sat_feasible_reference_count": 20,
+    "cp_sat_makespan_optimal_status_count": 10,
+    "fixed_budget_cp_sat_dominates_count": 14,
+    "global_fjsp_optimality_claim_ready": false,
+    "instance_count": 20,
+    "status": "FJSP_EXACT_LEDGER_CONFIRMATION_V2_PASS"
+  },
+  "fjsp_reproducibility": {
+    "artifact_sha256": "1194abe354a2fe6d2f300c7b423ccd23ee97b9e22c800e3e9fa091a2884d3512",
+    "candidate_exact_ledger_match_count": 20,
+    "cp_sat_numeric_gap_match_count": 17,
+    "cp_sat_qualitative_disposition_match_count": 20,
+    "status": "FJSP_REPLICATION_AUDIT_PASS_WITH_CP_SAT_VARIATION",
+    "strict_full_artifact_reproducibility_ready": false
+  },
+  "gate": {
+    "all_negative_results_retained": true,
+    "all_protocol_gates_pass": true,
+    "arbitrary_domain_optimality_claim_ready": false,
+    "domain_count": 3,
+    "industrial_port_deployment_claim_ready": false,
+    "pass": true,
+    "performance_superiority_claim_ready": false,
+    "positive_recurrence_from_finite_replay_claim_ready": false,
+    "semantic_reproducibility_audited": true,
+    "status": "OR_GENERALIZATION_V5_PASS_MIXED_REPRODUCIBLE_EVIDENCE"
+  },
+  "mmrcpsp": {
+    "prospective_class_balance_arrival_tape_holdout": {
+      "artifact_sha256": "fc03dd338ca030f9feb4f39f3b690065e01290ccec5710b477589d7b81471e09",
+      "baseline_dominates_count": 0,
+      "known_instance_and_action_library": true,
+      "metric_family_registered_after_v1_total_cost_result": true,
+      "new_arrival_tapes": true,
+      "new_structural_instance_holdout": false,
+      "ours_exact_oracle_run_count": 35,
+      "ours_nondominated_count": 35,
+      "ours_strict_every_baseline_count": 0,
+      "pareto_coordinates": [
+        "total_time_average_queue",
+        "max_class_time_average_queue",
+        "max_class_final_backlog"
+      ],
+      "performance_superiority_claim_ready": false,
+      "run_count": 175,
+      "scenario_seed_count": 35,
+      "status": "MMRCPSP_CLASS_BALANCE_HOLDOUT_PROTOCOL_PASS"
+    },
+    "reproducibility_audit": {
+      "artifact_sha256": "ce65269160569e1e04404bf5181d9152bb355055fbb129c496f43a86b987535d",
+      "pair_count": 2,
+      "path_independent_gzip_claim_ready": false,
+      "raw_gzip_container_match_count": 0,
+      "semantic_reproducibility_ready_count": 2,
+      "status": "MMRCPSP_SEMANTIC_REPRODUCIBILITY_PASS"
+    },
+    "v1_total_queue_result": {
+      "baseline_dominates_count": 21,
+      "ours_nondominated_count": 0,
+      "pareto_coordinates": [
+        "final_backlog",
+        "time_average_queue"
+      ],
+      "retained_negative_result": true,
+      "scenario_seed_count": 21,
+      "status": "MMRCPSP_RENEWAL_STREAM_PROTOCOL_PASS"
+    }
+  },
+  "port": {
+    "artifact_sha256": "fdce887133a8f02394987c6447a614bffe87eba1334ca85deaa932c20bdd5e80",
+    "global_port_optimality_claim_ready": false,
+    "industrial_deployment_claim_ready": false,
+    "source_core": {
+      "completed_source_vessels": 30,
+      "mid_service_migration_evidence": false,
+      "nondominated_policies": [
+        "reconfiguration_greedy",
+        "spt_static"
+      ],
+      "pareto_metrics": [
+        "quay_makespan",
+        "mean_quay_flow_time",
+        "source_objective_cost"
+      ],
+      "ready": true,
+      "robust_maxweight_dominated_by": [
+        "reconfiguration_greedy",
+        "spt_static"
+      ],
+      "scope_boundary": "The certificate covers the pinned BACASP source-core berth/quay mapping only; it does not validate re-berthing, crane reassignment, yard transfer, or migration."
+    },
+    "status": "PORT_STATEWISE_TRAJECTORY_V3_PASS",
+    "synthetic_migration": {
+      "duration_normalized_oracle_gap_alpha0": 0.0,
+      "finite_family_penalty_bound_P0": 2.54,
+      "persistent_transition_resources_checked": true,
+      "physical_terminal_observations_used": false,
+      "ready": true,
+      "scope_boundary": "This is a deterministic synthetic semi-Markov transition certificate, not evidence of execution by an industrial terminal control plane.",
+      "selected_candidate_id": "robust_delayed_reberth"
+    }
+  },
+  "prior_v4": {
+    "artifact_sha256": "84c84ffbf5156ca9ad8f7704fd70c64ba5259406ccabd887a1aa22779fc5be9b",
+    "retained_without_reinterpretation": true,
+    "status": "OR_GENERALIZATION_V4_PASS_MIXED_EVIDENCE"
+  },
+  "schema_version": "scheduleurm.or_generalization_certificate.v5",
+  "theorem_to_experiment_interpretation": {
+    "class_balance_result": "On prospectively frozen arrival tapes, the normalized robust policy is nondominated on total queue plus worst-class queue costs, but never strictly dominates every baseline.",
+    "logical_conclusion": "The two results identify an objective tradeoff and do not contradict the stability theorem or imply global delay superiority.",
+    "throughput_stability_statement": "The renewal-frame MaxWeight theorem controls drift under its slack assumptions; it is not a theorem of total-delay or makespan optimality.",
+    "v1_total_delay_result": "The shortest registered trajectory baseline dominates the one-project-at-a-time abstraction on aggregate delay costs."
+  }
+}

@@ -335,7 +335,7 @@ def run_reserved_campaign(
                             node=node,
                             lease=lease,
                             poll_s=poll_s,
-                            consecutive_samples=1,
+                            consecutive_samples=clean_samples,
                         )
                     wave_suffix = (
                         "" if command["wave"] is None

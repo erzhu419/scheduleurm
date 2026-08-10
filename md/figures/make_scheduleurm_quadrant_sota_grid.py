@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 from collections import defaultdict
@@ -200,7 +201,10 @@ def _aggregate_points(
 
 
 def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
-    report = load_report(artifact)
+    artifact = Path(artifact).resolve()
+    artifact_raw = artifact.read_bytes()
+    report = json.loads(artifact_raw.decode("utf-8"))
+    _validate_final_replay(report)
     points = quadrant_points(report)
     best_by_quadrant = scenario_best_policies(report)
     fig, axes = plt.subplots(2, 2, figsize=(7.05, 5.65), sharex=True, sharey=True)
@@ -296,11 +300,21 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
     data_path.write_text(
         json.dumps(
             {
-                "source_artifact": str(Path(artifact).resolve()),
+                "source_artifact": str(artifact),
+                "source_artifact_sha256": hashlib.sha256(artifact_raw).hexdigest(),
+                "source_gate": report["gate"],
+                "source_schema_version": report["schema_version"],
+                "source_run_count": int(report["run_count"]),
+                "source_policy_count": int(report["policy_count"]),
                 "normalization": "baseline_policy_cost_divided_by_scheduleurm_cost",
                 "included_scenario_kind": "hardware_local",
                 "included_migration_mode": "without_migration",
                 "aggregation": "geometric_mean_across_registered_scenarios_and_traces",
+                "included_hardware_scenario_ids": sorted(
+                    str(row["scenario_id"])
+                    for row in report["scenarios"]
+                    if row.get("scenario_kind") == "hardware_local"
+                ),
                 "points": points,
                 "best_sota_by_quadrant": best_by_quadrant,
             },
@@ -310,6 +324,26 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _validate_final_replay(report: dict) -> None:
+    expected = {
+        "gate": "unified_hardware_or_replay",
+        "schema_version": 2,
+        "status": "PASS",
+        "pass": True,
+        "comparison_kind": "same-cache_policy-semantics",
+        "full_stack_external_binary_comparison": False,
+    }
+    for key, value in expected.items():
+        if report.get(key) != value:
+            raise ValueError(
+                f"figure source {key} expected {value!r}, got {report.get(key)!r}"
+            )
+    if not report.get("pareto_rows") or not report.get("scenarios"):
+        raise ValueError("figure source lacks scenarios or Pareto rows")
+    if int(report.get("run_count") or 0) != len(report.get("runs") or []):
+        raise ValueError("figure source run_count does not match run matrix")
 
 
 def _best_policy(points: dict[str, dict[str, float]]) -> str:

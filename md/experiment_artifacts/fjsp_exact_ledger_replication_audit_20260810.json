@@ -1,0 +1,61 @@
+{
+  "artifact_sha256_excluding_self": "d1b50e51ebf02e1f12275e29650b60a4bf9738f10717c698d922c41664ba8318",
+  "candidate_exact_ledger_match_count": 20,
+  "candidate_exact_ledger_reproducibility_ready": true,
+  "candidate_family_aggregate_identical": true,
+  "claim_boundary": {
+    "does_not_support": "bitwise reproducibility of a wall-clock-limited CP-SAT incumbent or global FJSP optimality",
+    "interpretation": "The 5-second single-worker CP-SAT reference preserves status and Pareto relation here, but three incumbent objective gaps vary.",
+    "supports": "repeatability of the frozen candidate action ledgers and the qualitative fixed-budget comparator dispositions over these two runs"
+  },
+  "cp_sat_numeric_gap_match_count": 17,
+  "cp_sat_qualitative_disposition_match_count": 20,
+  "cp_sat_qualitative_disposition_reproducibility_ready": true,
+  "cp_sat_reference_aggregate_identical": true,
+  "cp_sat_wall_clock_numeric_reproducibility_ready": false,
+  "differing_cp_sat_numeric_gaps": [
+    {
+      "primary_candidate_family_minus_reference": {
+        "makespan_ticks": 90,
+        "sum_completion_ticks": 1722
+      },
+      "relative_path": "edata/la26.txt",
+      "replication_candidate_family_minus_reference": {
+        "makespan_ticks": 86,
+        "sum_completion_ticks": 1377
+      }
+    },
+    {
+      "primary_candidate_family_minus_reference": {
+        "makespan_ticks": 29,
+        "sum_completion_ticks": 622
+      },
+      "relative_path": "rdata/abz8.txt",
+      "replication_candidate_family_minus_reference": {
+        "makespan_ticks": 32,
+        "sum_completion_ticks": 582
+      }
+    },
+    {
+      "primary_candidate_family_minus_reference": {
+        "makespan_ticks": 201,
+        "sum_completion_ticks": 1722
+      },
+      "relative_path": "sdata/la26.txt",
+      "replication_candidate_family_minus_reference": {
+        "makespan_ticks": 206,
+        "sum_completion_ticks": 2323
+      }
+    }
+  ],
+  "execution_contract_identical": true,
+  "execution_count": 2,
+  "gate": {
+    "pass": true,
+    "status": "FJSP_REPLICATION_AUDIT_PASS_WITH_CP_SAT_VARIATION"
+  },
+  "instance_count": 20,
+  "schema_version": "scheduleurm.fjsp_exact_ledger.replication_audit.v1",
+  "source_contract_identical": true,
+  "strict_full_artifact_reproducibility_ready": false
+}

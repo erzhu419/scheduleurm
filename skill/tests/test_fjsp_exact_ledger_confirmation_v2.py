@@ -102,6 +102,27 @@ def test_unused_selection_is_outcome_blind_and_excludes_registered_source(
     }
 
 
+def test_source_format_exclusion_is_recorded_without_outcome_feedback(
+    tmp_path: Path,
+) -> None:
+    root = _source_tree(tmp_path)
+    malformed = root / "family_a" / "invalid.txt"
+    malformed.write_text("1 1\n1 1 1 0\n", encoding="utf-8")
+    report = select_unused_instances(
+        root,
+        ["family_a/a.txt", "family_a/invalid.txt"],
+        per_family=1,
+    )
+    assert report["selection_rule"]["source_format_exclusion_uses_outcomes"] is False
+    assert report["source_format_exclusions"] == [
+        {
+            "relative_path": "family_a/invalid.txt",
+            "file_sha256": sha256(malformed.read_bytes()).hexdigest(),
+            "reason": "job 0 operation 0 has non-positive processing time",
+        }
+    ]
+
+
 def test_source_preregistration_and_implementation_hashes_fail_closed(
     tmp_path: Path,
 ) -> None:

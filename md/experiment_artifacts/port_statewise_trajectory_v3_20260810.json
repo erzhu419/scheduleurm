@@ -1,0 +1,224 @@
+{
+  "artifact_sha256_excluding_self": "bc896d43e89fea6dd8a24017f98d33adacd1baaebc7c7661aa9ff58586a82537",
+  "execution_contract": {
+    "implementation_commit": "e29c49833b394e84f35fce28ffd26848950ebf65",
+    "implementation_path": "algorithm/experiments/port_statewise_trajectory_v3.py",
+    "implementation_sha256": "3805825e5a81cb6b81bde2329db79fb792bf00b130db5673dcdb39ae65ecd09f",
+    "results_observed_before_protocol_commit": false,
+    "wrapper_commit": "4285eb258f5e17e3aae1d6877826487f31428232",
+    "wrapper_path": "algorithm/experiments/port_statewise_trajectory_v3_artifact.py",
+    "wrapper_sha256": "b8eab023a33786295dc77c879383ef679e8d13db10172ed7a14855155d45f358"
+  },
+  "report": {
+    "artifact_hash": "d6e484a2bab526ff9489a989de29a8f2a381d7ee9a3f01a0664a0978de68211e",
+    "certificate_non_substitution_ready": true,
+    "certificates": {
+      "bacasp_source_core": {
+        "certificate_type": "bacasp_source_core_only",
+        "mid_service_migration_evidence": false,
+        "ready": true,
+        "scope_boundary": "The certificate covers the pinned BACASP source-core berth/quay mapping only; it does not validate re-berthing, crane reassignment, yard transfer, or migration.",
+        "source_artifact_hash": "1d4e57074672b036bbb1a63aee74606a8ac5fa8f0bed30887776bb4a7bf10458",
+        "source_core_metrics": {
+          "edd_static": {
+            "completed_source_vessels": 30,
+            "crane_setup_travel_duration": 6.521875,
+            "mean_quay_flow_time": 58.006666667,
+            "quay_makespan": 287.86875,
+            "source_objective_cost": 4318300.0
+          },
+          "fcfs_static": {
+            "completed_source_vessels": 30,
+            "crane_setup_travel_duration": 6.521875,
+            "mean_quay_flow_time": 58.826875,
+            "quay_makespan": 287.86875,
+            "source_objective_cost": 4392118.75
+          },
+          "reconfiguration_greedy": {
+            "completed_source_vessels": 30,
+            "crane_setup_travel_duration": 5.89375,
+            "mean_quay_flow_time": 15.240729167,
+            "quay_makespan": 178.11875,
+            "source_objective_cost": 705984.375
+          },
+          "robust_maxweight": {
+            "completed_source_vessels": 30,
+            "crane_setup_travel_duration": 5.75,
+            "mean_quay_flow_time": 18.627604167,
+            "quay_makespan": 183.196875,
+            "source_objective_cost": 960815.625
+          },
+          "spt_static": {
+            "completed_source_vessels": 30,
+            "crane_setup_travel_duration": 5.89375,
+            "mean_quay_flow_time": 15.240729167,
+            "quay_makespan": 178.11875,
+            "source_objective_cost": 705984.375
+          }
+        },
+        "source_core_pareto": {
+          "dominated_by": {
+            "edd_static": [
+              "reconfiguration_greedy",
+              "robust_maxweight",
+              "spt_static"
+            ],
+            "fcfs_static": [
+              "edd_static",
+              "reconfiguration_greedy",
+              "robust_maxweight",
+              "spt_static"
+            ],
+            "reconfiguration_greedy": [],
+            "robust_maxweight": [
+              "reconfiguration_greedy",
+              "spt_static"
+            ],
+            "spt_static": []
+          },
+          "metrics": [
+            "quay_makespan",
+            "mean_quay_flow_time",
+            "source_objective_cost"
+          ],
+          "nondominated_policies": [
+            "reconfiguration_greedy",
+            "spt_static"
+          ]
+        },
+        "synthetic_migration_evidence_used": false,
+        "time_invariant_assignment_only": true
+      },
+      "synthetic_migration": {
+        "bacasp_source_core_evidence_used": false,
+        "certificate_type": "synthetic_statewise_migration_only",
+        "generalized_cost_components_ready": {
+          "delay": true,
+          "lost_work": true,
+          "risk": true
+        },
+        "persistent_resource_kinds": [
+          "channel",
+          "transfer",
+          "tug"
+        ],
+        "physical_terminal_observations_used": false,
+        "ready": true,
+        "scope_boundary": "This is a deterministic synthetic semi-Markov transition certificate, not evidence of execution by an industrial terminal control plane.",
+        "selection": {
+          "feasible_candidate_ids": [
+            "spt_safe",
+            "reconfiguration_safe",
+            "robust_delayed_reberth"
+          ],
+          "finite_candidate_count": 4,
+          "finite_family_penalty_bound_P0": 2.54,
+          "oracle_duration_normalized_score": 11.455,
+          "oracle_gap_alpha0": 0.0,
+          "oracle_gap_alpha1": 0.0,
+          "persistent_transition_resources_checked": true,
+          "rejected_candidates": {
+            "conflicting_immediate_reberth": [
+              "persistent_resource_busy:channel:main,tug:t1:until=14"
+            ]
+          },
+          "safety_policy_families": [
+            "spt_statewise_safety",
+            "reconfiguration_greedy_statewise_safety"
+          ],
+          "score_semantic_frontier_ids": [
+            "reconfiguration_safe",
+            "robust_delayed_reberth",
+            "spt_safe"
+          ],
+          "score_semantic_pruning_exact": true,
+          "score_semantics": "(queue_weight dot cumulative_lower_service - generalized_penalty) / duration",
+          "selected_candidate": {
+            "bounded_nontransition_penalty": 0.0,
+            "candidate_id": "robust_delayed_reberth",
+            "cumulative_lower_service": {
+              "v_long": 16.0,
+              "v_short": 7.0
+            },
+            "duration": 12.0,
+            "duration_normalized_score": 11.455,
+            "metadata": {},
+            "policy_family": "statewise_robust_trajectory_v3",
+            "terminal_costs": {
+              "makespan": 70.0,
+              "mean_flow_time": 32.0,
+              "weighted_tardiness": 18.0
+            },
+            "total_penalty": 2.54,
+            "transition_penalty": 2.54,
+            "transitions": [
+              {
+                "complete_at": 9.0,
+                "cost": {
+                  "delay_penalty": 1.0,
+                  "delay_unit_cost": 0.2,
+                  "fixed_cost": 1.0,
+                  "lost_work": 0.5,
+                  "lost_work_penalty": 0.25,
+                  "lost_work_unit_cost": 0.5,
+                  "operation_delay": 5.0,
+                  "resource_cost": 0.2,
+                  "risk_impact": 3.0,
+                  "risk_penalty": 0.09,
+                  "risk_probability": 0.03,
+                  "total_penalty": 2.54
+                },
+                "duration": 5.0,
+                "kind": "reberth",
+                "resource_tokens": [
+                  "tug:t2",
+                  "channel:main"
+                ],
+                "start_time": 4.0,
+                "transition_id": "delayed_reberth",
+                "vessel_id": "v_long"
+              }
+            ],
+            "unnormalized_robust_numerator": 137.46
+          },
+          "selected_terminal_pareto": true,
+          "state_id": "synthetic_port_state_v3_demo",
+          "terminal_pareto_frontier_ids": [
+            "robust_delayed_reberth"
+          ]
+        },
+        "transition_kinds_exercised": [
+          "crane_reassignment",
+          "reberth"
+        ]
+      }
+    },
+    "claim_boundary": {
+      "does_not_support": [
+        "deployment in an operating industrial terminal",
+        "safety certification of physical tug, channel, crane, or yard operations",
+        "global optimality for arbitrary berth-allocation or crane-scheduling instances",
+        "using synthetic migration evidence as BACASP source evidence or vice versa"
+      ],
+      "supports": [
+        "a finite statewise candidate family containing both registered safety policies",
+        "persistent tug/channel/transfer exclusion over complete transition intervals",
+        "duration-normalized robust scoring with score-semantic dominance pruning",
+        "a separate terminal-cost Pareto audit that cannot override the robust oracle",
+        "separate BACASP source-core and synthetic migration certificates"
+      ]
+    },
+    "duration_normalized_oracle_ready": true,
+    "experiment": "port_statewise_trajectory_v3",
+    "finite_statewise_candidate_family_ready": true,
+    "global_port_optimality_claim_ready": false,
+    "industrial_deployment_claim_ready": false,
+    "pass": true,
+    "persistent_tug_channel_transfer_constraints_ready": true,
+    "schema_version": "scheduleurm.port.statewise_trajectory.v3",
+    "score_semantic_pruning_ready": true,
+    "status": "PORT_STATEWISE_TRAJECTORY_V3_PASS",
+    "terminal_pareto_audit_ready": true
+  },
+  "schema_version": "scheduleurm.port.statewise_trajectory.v3.artifact.v1"
+}

@@ -56,8 +56,12 @@ def test_stage_plan_orders_cache_slack_migration_replay_and_figure() -> None:
         "replay_hardware_quadrants",
         "export_paper_results",
         "render_quadrant_figure",
+        "verify_manuscript_sync",
+        "build_opre_manuscript",
     ]
-    assert all(stage.argv[0] == "python-test" for stage in build_stages(python="python-test"))
+    stages = build_stages(python="python-test")
+    assert all(stage.argv[0] == "python-test" for stage in stages[:-1])
+    assert stages[-1].argv[0] == "latexmk"
 
 
 def test_pipeline_stops_at_first_failed_stage(tmp_path: Path) -> None:

@@ -5,8 +5,11 @@ from pathlib import Path
 
 import pytest
 
+import algorithm.experiments.critical_gpu_reserved_campaign as campaign_module
+
 from algorithm.experiments.critical_gpu_reserved_campaign import (
     _active_scheduler_tasks,
+    _max_command_attempts,
     _parse_waves,
     _reservation_acknowledged,
     build_commands,
@@ -42,6 +45,15 @@ def test_command_plan_keeps_frozen_campaigns_separate():
     assert "--keep-remote-output" in rows[3]["argv"]
 
 
+def test_only_measurement_waves_receive_bounded_automatic_retries():
+    assert _max_command_attempts("empty", 2) == 3
+    assert _max_command_attempts("loaded", 2) == 3
+    assert _max_command_attempts("empty_gate", 2) == 1
+    assert _max_command_attempts("loaded_gate", 2) == 1
+    with pytest.raises(ValueError):
+        _max_command_attempts("loaded", -1)
+
+
 def test_ack_requires_new_cache_and_matching_reservation(tmp_path):
     cache = tmp_path / "cache.json"
     cache.write_text(json.dumps({
@@ -68,3 +80,62 @@ def test_active_scheduler_tasks_is_node_scoped(tmp_path):
         ]
     }))
     assert [row["id"] for row in _active_scheduler_tasks("node007", queue_file=queue)] == ["a"]
+
+
+class _Lease:
+    def __enter__(self):
+        return {
+            "reservation_id": "test-reservation",
+            "created_at": 1.0,
+        }
+
+    def __exit__(self, exc_type, exc, tb):
+        return None
+
+    def ensure_healthy(self):
+        return None
+
+
+def test_failed_measurement_wave_retries_but_gate_does_not(monkeypatch, tmp_path):
+    monkeypatch.setattr(campaign_module, "MeasurementReservation", lambda **_: _Lease())
+    monkeypatch.setattr(campaign_module, "_wait_for_scheduler_ack", lambda **_: None)
+    monkeypatch.setattr(
+        campaign_module,
+        "_wait_for_clean_node",
+        lambda **_: {"gpu_idle": {"ready": True}, "active_scheduler_tasks": []},
+    )
+    returncodes = iter((3, 0))
+    calls = []
+
+    def fake_run(argv, **kwargs):
+        calls.append(list(argv))
+        return campaign_module.subprocess.CompletedProcess(argv, next(returncodes))
+
+    monkeypatch.setattr(campaign_module.subprocess, "run", fake_run)
+    report = campaign_module.run_reserved_campaign(
+        node="jtl110gpu",
+        loaded_waves=(1,),
+        wave_retries=2,
+        output=tmp_path / "retry.json",
+    )
+    assert report["pass"] is True
+    assert [row["returncode"] for row in report["commands"]] == [3, 0]
+    assert [row["attempt"] for row in report["commands"]] == [1, 2]
+    assert len(calls) == 2
+
+    gate_calls = []
+
+    def failed_gate(argv, **kwargs):
+        gate_calls.append(list(argv))
+        return campaign_module.subprocess.CompletedProcess(argv, 3)
+
+    monkeypatch.setattr(campaign_module.subprocess, "run", failed_gate)
+    gate_report = campaign_module.run_reserved_campaign(
+        node="jtl110gpu",
+        run_loaded_gate=True,
+        wave_retries=5,
+        output=tmp_path / "gate.json",
+    )
+    assert gate_report["pass"] is False
+    assert gate_report["failed_after_attempts"] == 1
+    assert len(gate_calls) == 1

@@ -26,6 +26,25 @@ DEFAULT_OUTPUT = ARTIFACT_ROOT / "unified_hardware_paper_results_20260810.json"
 DEFAULT_MARKDOWN = REPO_ROOT / "md" / "unified_hardware_paper_results_20260810.md"
 DEFAULT_TEX = REPO_ROOT / "paper" / "generated" / "unified_hardware_results.tex"
 
+SOTA_POLICY_LABELS = {
+    "sota_gavel_finish_time_fairness": "Gavel finish-time fairness",
+    "sota_gavel_pollux_sia_table_goodput": "Gavel/Pollux/Sia table goodput",
+    "sota_iadeep_salus_interference_guard": "IADeep/Salus interference guard",
+    "sota_quadrant_composite": "Quadrant composite",
+    "sota_salus_iadeep_packing_guard": "Salus/IADeep packing guard",
+    "sota_sia_pollux_resource_adaptive": "Sia/Pollux resource-adaptive",
+    "sota_srpt_gittins_mean_flow_oracle": "SRPT/Gittins delay oracle",
+}
+
+ABLATION_LABELS = {
+    "ablation_delay_only": "Delay-only score",
+    "ablation_high_profile_tiebreak": "High-profile tie-break",
+    "ablation_no_bounded_penalty": "No bounded penalty",
+    "ablation_no_loaded_ledger": "No loaded-action ledger",
+    "ablation_no_migration": "No migration actions",
+    "ablation_support_only": "Support-only score",
+}
+
 
 def build_unified_hardware_paper_results(
     *,
@@ -154,6 +173,7 @@ def _validate_hash_chain(
 def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str, Any]:
     scenarios = list(replay["scenarios"])
     runs = list(replay["runs"])
+    scenario_metadata = {str(row["scenario_id"]): row for row in scenarios}
     hardware_ids = {
         str(row["scenario_id"])
         for row in scenarios
@@ -194,12 +214,64 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
             "quadrants": sorted({str(row["quadrant"]) for row in hardware_ours}),
         },
         "legacy": _legacy_summary(legacy_rows),
+        "online_legacy": _legacy_summary(
+            [row for row in legacy_rows if row["arrival_family"] != "static"]
+        ),
+        "static_scenarios": _static_scenario_summary(
+            runs,
+            hardware_ids,
+            scenario_metadata,
+        ),
         "sota_style": _sota_summary(pareto_rows),
         "ablations": _ablation_summary(runs, hardware_ids),
         "migration": _migration_summary(runs, migration_ids),
         "queues": _queue_summary(hardware_ours),
         "slack": _slack_summary(slack),
     }
+
+
+def _static_scenario_summary(
+    runs: Sequence[Mapping[str, Any]],
+    hardware_ids: set[str],
+    scenario_metadata: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Summarize like-for-like closed-batch comparisons by hardware scenario."""
+
+    grouped = _group_runs(runs, scenario_ids=hardware_ids, migration_mode="without_migration")
+    by_scenario: dict[str, list[tuple[Mapping[str, Any], Mapping[str, Any]]]] = {}
+    for (scenario_id, _trace_id), rows in grouped.items():
+        if not rows or str(rows[0]["arrival_family"]) != "static":
+            continue
+        by_scenario.setdefault(scenario_id, []).append(
+            (_one(rows, "ours"), _one(rows, "legacy"))
+        )
+
+    missing = sorted(hardware_ids - set(by_scenario))
+    if missing:
+        raise ValueError(f"static comparison lacks hardware scenarios {missing!r}")
+
+    output = []
+    for scenario_id, pairs in sorted(by_scenario.items()):
+        metadata = scenario_metadata[scenario_id]
+        output.append(
+            {
+                "scenario_id": scenario_id,
+                "quadrant": str(metadata["quadrant"]),
+                "node_bucket": str(metadata["node_bucket"]),
+                "workload_keys": [str(value) for value in metadata["workload_keys"]],
+                "trace_count": len(pairs),
+                "legacy_to_ours_makespan_geomean_ratio": _geomean(
+                    [_ratio(legacy["makespan_s"], ours["makespan_s"]) for ours, legacy in pairs]
+                ),
+                "legacy_to_ours_mean_flow_geomean_ratio": _geomean(
+                    [_ratio(legacy["mean_flow_s"], ours["mean_flow_s"]) for ours, legacy in pairs]
+                ),
+                "legacy_to_ours_p90_flow_geomean_ratio": _geomean(
+                    [_ratio(legacy["p90_flow_s"], ours["p90_flow_s"]) for ours, legacy in pairs]
+                ),
+            }
+        )
+    return output
 
 
 def _legacy_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
@@ -341,16 +413,36 @@ def _migration_summary(
 
 
 def _queue_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    mean_backlog = [float(row["mean_queue_backlog_jobs"]) for row in rows]
+    max_backlog = [float(row["max_queue_backlog_jobs"]) for row in rows]
+    mean_unfinished = [float(row["mean_unfinished_jobs"]) for row in rows]
+    max_unfinished = [float(row["max_unfinished_jobs"]) for row in rows]
     return {
         "run_count": len(rows),
-        "mean_of_time_weighted_queue_backlog_jobs": sum(
-            float(row["mean_queue_backlog_jobs"]) for row in rows
-        ) / len(rows),
-        "maximum_queue_backlog_jobs": max(int(row["max_queue_backlog_jobs"]) for row in rows),
-        "mean_of_time_weighted_unfinished_jobs": sum(
-            float(row["mean_unfinished_jobs"]) for row in rows
-        ) / len(rows),
-        "maximum_unfinished_jobs": max(int(row["max_unfinished_jobs"]) for row in rows),
+        "mean_of_time_weighted_queue_backlog_jobs": sum(mean_backlog) / len(mean_backlog),
+        "maximum_queue_backlog_jobs": int(max(max_backlog)),
+        "mean_of_time_weighted_unfinished_jobs": sum(mean_unfinished) / len(mean_unfinished),
+        "maximum_unfinished_jobs": int(max(max_unfinished)),
+        "distributions": {
+            "time_weighted_queue_backlog_jobs": _distribution(mean_backlog),
+            "maximum_queue_backlog_jobs": _distribution(max_backlog),
+            "time_weighted_unfinished_jobs": _distribution(mean_unfinished),
+            "maximum_unfinished_jobs": _distribution(max_unfinished),
+        },
+    }
+
+
+def _distribution(values: Sequence[float]) -> dict[str, float | int]:
+    if not values:
+        raise ValueError("distribution population is empty")
+    return {
+        "count": len(values),
+        "mean": sum(float(value) for value in values) / len(values),
+        "minimum": min(float(value) for value in values),
+        "p05": _quantile(values, 0.05),
+        "median": _quantile(values, 0.5),
+        "p95": _quantile(values, 0.95),
+        "maximum": max(float(value) for value in values),
     }
 
 
@@ -442,9 +534,13 @@ def _quantile(values: Sequence[float], fraction: float) -> float:
 def tex_macros(report: Mapping[str, Any]) -> str:
     population = report["population"]
     legacy = report["legacy"]
+    online_legacy = report["online_legacy"]
     sota = report["sota_style"]
+    ablations = report["ablations"]
     migration = report["migration"]
+    queues = report["queues"]
     slack = report["slack"]
+    queue_distributions = queues["distributions"]
     rows = {
         "UnifiedHardwareScenarioCount": population["hardware_scenario_count"],
         "UnifiedHardwareTraceCount": population["hardware_trace_count"],
@@ -454,12 +550,115 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedLegacyMeanFlowGeoRatio": _fmt(legacy["legacy_to_ours_mean_flow_geomean_ratio"]),
         "UnifiedLegacyMakespanWorstRatio": _fmt(legacy["legacy_to_ours_makespan_worst_ratio"]),
         "UnifiedLegacyMeanFlowWorstRatio": _fmt(legacy["legacy_to_ours_mean_flow_worst_ratio"]),
+        "UnifiedOnlineComparisonCount": online_legacy["comparison_count"],
+        "UnifiedOnlineLegacyMakespanGeoRatio": _fmt(
+            online_legacy["legacy_to_ours_makespan_geomean_ratio"]
+        ),
+        "UnifiedOnlineLegacyMeanFlowGeoRatio": _fmt(
+            online_legacy["legacy_to_ours_mean_flow_geomean_ratio"]
+        ),
+        "UnifiedOnlineLegacyMakespanMedianRatio": _fmt(
+            online_legacy["legacy_to_ours_makespan_median_ratio"]
+        ),
+        "UnifiedOnlineLegacyMeanFlowMedianRatio": _fmt(
+            online_legacy["legacy_to_ours_mean_flow_median_ratio"]
+        ),
+        "UnifiedOnlineLegacyMakespanMinRatio": _fmt(
+            online_legacy["legacy_to_ours_makespan_worst_ratio"]
+        ),
+        "UnifiedOnlineLegacyMeanFlowMinRatio": _fmt(
+            online_legacy["legacy_to_ours_mean_flow_worst_ratio"]
+        ),
+        "UnifiedOnlineLegacyMakespanPFiveRatio": _fmt(
+            online_legacy["legacy_to_ours_makespan_p05_ratio"]
+        ),
+        "UnifiedOnlineLegacyMeanFlowPFiveRatio": _fmt(
+            online_legacy["legacy_to_ours_mean_flow_p05_ratio"]
+        ),
+        "UnifiedOnlineLegacyMakespanPNinetyFiveRatio": _fmt(
+            online_legacy["legacy_to_ours_makespan_p95_ratio"]
+        ),
+        "UnifiedOnlineLegacyMeanFlowPNinetyFiveRatio": _fmt(
+            online_legacy["legacy_to_ours_mean_flow_p95_ratio"]
+        ),
+        "UnifiedQueueMeanBacklogMean": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["mean"]
+        ),
+        "UnifiedQueueMeanBacklogMedian": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["median"]
+        ),
+        "UnifiedQueueMeanBacklogMin": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["minimum"]
+        ),
+        "UnifiedQueueMeanBacklogPFive": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["p05"]
+        ),
+        "UnifiedQueueMeanBacklogPNinetyFive": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["p95"]
+        ),
+        "UnifiedQueueMaxBacklogMean": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["mean"]
+        ),
+        "UnifiedQueueMaxBacklogMedian": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["median"]
+        ),
+        "UnifiedQueueMaxBacklogMin": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["minimum"]
+        ),
+        "UnifiedQueueMaxBacklogPFive": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["p05"]
+        ),
+        "UnifiedQueueMaxBacklogPNinetyFive": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["p95"]
+        ),
         "UnifiedSotaNotDominated": "true" if sota["ours_not_dominated_in_every_trace"] else "false",
         "UnifiedMigrationScenarioCount": migration["comparison_count"],
+        "UnifiedMigrationSelectedCount": migration["migration_selected_count"],
+        "UnifiedMigrationMakespanGeoRatio": _fmt(
+            migration["without_to_with_makespan_geomean_ratio"]
+        ),
+        "UnifiedMigrationMeanFlowGeoRatio": _fmt(
+            migration["without_to_with_mean_flow_geomean_ratio"]
+        ),
         "UnifiedMinimumHardwareEta": _fmt(slack["minimum_eta"]),
     }
     lines = ["% Generated by unified_hardware_paper_results.py; do not edit manually."]
     lines.extend(f"\\providecommand{{\\{name}}}{{{value}}}" for name, value in rows.items())
+    table_rows = {
+        "UnifiedStaticLegacyRows": "\n".join(
+            f"{_latex_escape(row['scenario_id'])} & {row['trace_count']} & "
+            f"{_fmt(row['legacy_to_ours_makespan_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_mean_flow_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_p90_flow_geomean_ratio'])} \\\\"
+            for row in report["static_scenarios"]
+        ),
+        "UnifiedSotaPolicyRows": "\n".join(
+            f"{_latex_escape(SOTA_POLICY_LABELS.get(policy, policy))} & "
+            f"{row['comparison_count']} & "
+            f"{_fmt(row['baseline_to_ours_makespan_geomean_ratio'])} & "
+            f"{_fmt(row['baseline_to_ours_mean_flow_geomean_ratio'])} & "
+            f"{row['baseline_strictly_dominates_ours_count']} \\\\"
+            for policy, row in sorted(sota["policies"].items())
+        ),
+        "UnifiedAblationRows": "\n".join(
+            f"{_latex_escape(ABLATION_LABELS.get(policy, policy))} & "
+            f"{row['comparison_count']} & "
+            f"{_fmt(row['ablation_to_full_makespan_geomean_ratio'])} & "
+            f"{_fmt(row['ablation_to_full_mean_flow_geomean_ratio'])} & "
+            f"{row['ablation_strictly_dominates_full_count']} \\\\"
+            for policy, row in sorted(ablations.items())
+        ),
+        "UnifiedHardwareSlackRows": "\n".join(
+            f"{_latex_escape(row['node'])} & {_latex_escape(row['execution_class'])} & "
+            f"{_fmt(row['delta'])} & {_fmt(row['eta'])} & "
+            f"{_fmt(row['nominal_lcb_coverage'])} \\\\"
+            for row in slack["nodes"]
+        ),
+    }
+    lines.extend(
+        f"\\providecommand{{\\{name}}}{{%\n{value}\n}}"
+        for name, value in table_rows.items()
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -495,11 +694,42 @@ def markdown_report(report: Mapping[str, Any]) -> str:
             f"{row['baseline_strictly_dominates_ours_count']} |"
         )
     lines.extend(["", str(report.get("claim_boundary") or ""), ""])
+    lines.extend(
+        [
+            "## Static hardware-local legacy comparison",
+            "",
+            "| Scenario | Traces | Makespan legacy/ours | Mean flow legacy/ours | P90 flow legacy/ours |",
+            "|---|---:|---:|---:|---:|",
+        ]
+    )
+    for row in report.get("static_scenarios") or []:
+        lines.append(
+            f"| `{row['scenario_id']}` | {row['trace_count']} | "
+            f"{row['legacy_to_ours_makespan_geomean_ratio']:.6f} | "
+            f"{row['legacy_to_ours_mean_flow_geomean_ratio']:.6f} | "
+            f"{row['legacy_to_ours_p90_flow_geomean_ratio']:.6f} |"
+        )
+    lines.append("")
     return "\n".join(lines)
 
 
 def _fmt(value: Any) -> str:
     return f"{float(value):.6f}"
+
+
+def _latex_escape(value: Any) -> str:
+    text = str(value)
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "$": r"\$",
+        "#": r"\#",
+        "_": r"\_",
+        "{": r"\{",
+        "}": r"\}",
+    }
+    return "".join(replacements.get(character, character) for character in text)
 
 
 def write_outputs(

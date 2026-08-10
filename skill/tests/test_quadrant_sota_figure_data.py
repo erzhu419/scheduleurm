@@ -1,5 +1,8 @@
+import pytest
+
 from md.figures.make_scheduleurm_quadrant_sota_grid import (
     POLICY_ID_TO_BASELINE,
+    _validate_final_replay,
     quadrant_points,
     scenario_best_policies,
 )
@@ -44,6 +47,27 @@ def test_best_sota_uses_lower_baseline_over_ours_cost():
     best = scenario_best_policies(report)
 
     assert best["q01"] == POLICY_ID_TO_BASELINE["sota_srpt_gittins_mean_flow_oracle"]
+
+
+def test_final_figure_source_rejects_stale_or_incomplete_replay():
+    report = _report()
+    report.update(
+        {
+            "schema_version": 2,
+            "status": "PASS",
+            "pass": True,
+            "comparison_kind": "same-cache_policy-semantics",
+            "full_stack_external_binary_comparison": False,
+            "run_count": 1,
+            "policy_count": 8,
+            "runs": [{}],
+        }
+    )
+
+    _validate_final_replay(report)
+    report["schema_version"] = 1
+    with pytest.raises(ValueError, match="schema_version"):
+        _validate_final_replay(report)
 
 
 def _report():

@@ -42,11 +42,29 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert report["population"]["hardware_scenario_count"] == 7
     assert report["population"]["migration_scenario_count"] == 9
     assert report["legacy"]["comparison_count"] > 0
+    assert 0 < report["online_legacy"]["comparison_count"] < report["legacy"]["comparison_count"]
+    assert len(report["static_scenarios"]) == 7
+    assert {row["scenario_id"] for row in report["static_scenarios"]} == {
+        row["scenario_id"]
+        for row in replay["scenarios"]
+        if row["scenario_kind"] == "hardware_local"
+    }
+    assert all(row["trace_count"] == 1 for row in report["static_scenarios"])
     assert len(report["sota_style"]["policies"]) == 7
     assert len(report["ablations"]) == 6
     assert report["migration"]["comparison_count"] == 9
+    assert (
+        report["queues"]["distributions"]["time_weighted_queue_backlog_jobs"]["count"]
+        == report["population"]["hardware_scheduleurm_run_count"]
+    )
     assert report["slack"]["minimum_eta"] == 0.05
-    assert "\\UnifiedLegacyMakespanGeoRatio" in tex_macros(report)
+    tex_source = tex_macros(report)
+    assert "\\UnifiedLegacyMakespanGeoRatio" in tex_source
+    assert "\\UnifiedOnlineLegacyMakespanGeoRatio" in tex_source
+    assert "\\UnifiedStaticLegacyRows" in tex_source
+    assert "\\UnifiedSotaPolicyRows" in tex_source
+    assert "\\UnifiedAblationRows" in tex_source
+    assert "\\UnifiedHardwareSlackRows" in tex_source
 
     output = tmp_path / "summary.json"
     markdown = tmp_path / "summary.md"

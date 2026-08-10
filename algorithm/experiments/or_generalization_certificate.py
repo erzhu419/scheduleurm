@@ -22,6 +22,7 @@ DEFAULT_FJSP_FAMILY = (
     / "fjsp_family_external_holdout_gate.json"
 )
 DEFAULT_FJSP_HURINK = ARTIFACT_ROOT / "fjsp_hurink_holdout_20260809.json"
+DEFAULT_FJSP_NUMERIC = ARTIFACT_ROOT / "fjsp_numeric_disposition_gate_20260810.json"
 DEFAULT_MM_V1 = (
     DATA_ROOT
     / "mmrcpsp_psplib_external_holdout"
@@ -55,6 +56,7 @@ def build_certificate(
     fjsp_kacem_path: str | Path = DEFAULT_FJSP_KACEM,
     fjsp_family_path: str | Path = DEFAULT_FJSP_FAMILY,
     fjsp_hurink_path: str | Path = DEFAULT_FJSP_HURINK,
+    fjsp_numeric_path: str | Path = DEFAULT_FJSP_NUMERIC,
     mm_v1_path: str | Path = DEFAULT_MM_V1,
     mm_repair_path: str | Path = DEFAULT_MM_REPAIR,
     mm_v2_path: str | Path = DEFAULT_MM_V2,
@@ -68,6 +70,7 @@ def build_certificate(
         "fjsp_kacem": _load(fjsp_kacem_path),
         "fjsp_family": _load(fjsp_family_path),
         "fjsp_hurink": _load(fjsp_hurink_path),
+        "fjsp_numeric": _load(fjsp_numeric_path),
         "mm_v1": _load(mm_v1_path),
         "mm_repair": _load(mm_repair_path),
         "mm_v2": _load(mm_v2_path),
@@ -83,6 +86,11 @@ def build_certificate(
     _validate_fjsp_kacem(payload["fjsp_kacem"])
     _validate_fjsp_family(payload["fjsp_family"])
     _validate_fjsp_hurink(payload["fjsp_hurink"])
+    _validate_fjsp_numeric(
+        payload["fjsp_numeric"],
+        family_sha256=hashes["fjsp_family"],
+        hurink_sha256=hashes["fjsp_hurink"],
+    )
     _validate_mm_v1(payload["mm_v1"])
     _validate_mm_repair(payload["mm_repair"], hashes["mm_v1"])
     _validate_mm_v2(payload["mm_v2"])
@@ -94,13 +102,14 @@ def build_certificate(
 
     fjsp_family = payload["fjsp_family"]
     fjsp_hurink = payload["fjsp_hurink"]
+    fjsp_numeric = payload["fjsp_numeric"]
     mm_family = payload["mm_family"]
     port_failed = payload["port_failed"]
     port_confirmation = payload["port_confirmation"]
     port_factor = payload["port_factor"]
 
     report = {
-        "schema_version": "scheduleurm.or_generalization_certificate.v2",
+        "schema_version": "scheduleurm.or_generalization_certificate.v3",
         "gate": {
             "pass": True,
             "status": "OR_GENERALIZATION_CERTIFICATE_PASS_MIXED_EVIDENCE",
@@ -123,7 +132,19 @@ def build_certificate(
                 "artifact_sha256": hashes["fjsp_family"],
                 "status": fjsp_family["gate"]["status"],
                 "protocol_pass": fjsp_family["gate"]["pass"],
-                **_performance_counts(fjsp_family),
+                "instance_count": 20,
+                "pareto_nondominated_count": fjsp_numeric["groups"]
+                ["first_family_holdout"]
+                ["exact_ledger_pareto_nondominated_count"],
+                "source_reported_pareto_nondominated_count": fjsp_family
+                ["aggregate"]["ours_pareto_nondominated_count"],
+                "numeric_false_dominance_count": fjsp_numeric["groups"]
+                ["first_family_holdout"]["numeric_false_dominance_count"],
+                "fixed_cp_sat_dominates_generated_family_count": fjsp_numeric
+                ["groups"]["first_family_holdout"]
+                ["fixed_cp_sat_dominates_generated_family_count"],
+                "strict_every_baseline_count": fjsp_family["aggregate"]
+                ["ours_strict_every_baseline_count"],
             },
             "hurink_confirmation": {
                 "artifact_sha256": hashes["fjsp_hurink"],
@@ -131,7 +152,29 @@ def build_certificate(
                 "protocol_pass": fjsp_hurink["gate"]["pass"],
                 "complete_reference_coverage": fjsp_hurink["gate"]
                 ["complete_cp_sat_reference_coverage_ready"],
-                **_performance_counts(fjsp_hurink),
+                "instance_count": 20,
+                "pareto_nondominated_count": fjsp_numeric["groups"]
+                ["hurink_confirmation"]
+                ["exact_ledger_pareto_nondominated_count"],
+                "source_reported_pareto_nondominated_count": fjsp_hurink
+                ["aggregate"]["ours_pareto_nondominated_count"],
+                "numeric_false_dominance_count": fjsp_numeric["groups"]
+                ["hurink_confirmation"]["numeric_false_dominance_count"],
+                "fixed_cp_sat_dominates_generated_family_count": fjsp_numeric
+                ["groups"]["hurink_confirmation"]
+                ["fixed_cp_sat_dominates_generated_family_count"],
+                "strict_every_baseline_count": fjsp_hurink["aggregate"]
+                ["ours_strict_every_baseline_count"],
+            },
+            "numeric_disposition": {
+                "artifact_sha256": hashes["fjsp_numeric"],
+                "status": fjsp_numeric["gate"]["status"],
+                "source_protocol_artifacts_immutable": fjsp_numeric["gate"]
+                ["source_protocol_artifacts_immutable"],
+                "baseline_union_pareto_nondominance_ready": fjsp_numeric["gate"]
+                ["baseline_union_pareto_nondominance_ready"],
+                "fixed_cp_sat_candidate_family_gap_open": fjsp_numeric["gate"]
+                ["fixed_cp_sat_candidate_family_gap_open"],
             },
             "performance_superiority_claim_ready": False,
             "global_optimality_claim_ready": False,
@@ -219,7 +262,8 @@ def build_certificate(
             "supports": [
                 "hash-bound external-instance protocol portability across FJSP, MMRCPSP, and BACASP-S",
                 "prospective multi-family MMRCPSP evidence with retained earlier failure",
-                "prospective FJSP and port counterexamples that delimit the finite selector",
+                "exact-ledger FJSP baseline-union nondominance with immutable source artifacts",
+                "fixed-budget CP-SAT and port counterexamples that delimit the finite selector",
                 "finite trajectory-family oracle and bounded-penalty accounting",
             ],
             "does_not_support": [
@@ -294,6 +338,36 @@ def _validate_fjsp_hurink(report: Mapping[str, Any]) -> None:
     if aggregate.get("instance_count") != 20 or aggregate.get("ours_pareto_nondominated_count") != 19:
         raise GeneralizationCertificateError("Hurink FJSP counterexample drifted")
     _require_false_boundaries(gate, "Hurink FJSP")
+
+
+def _validate_fjsp_numeric(
+    report: Mapping[str, Any], *, family_sha256: str, hurink_sha256: str
+) -> None:
+    gate = report.get("gate") or {}
+    groups = report.get("groups") or {}
+    source = report.get("source_sha256") or {}
+    if report.get("schema_version") != "scheduleurm.fjsp_numeric_disposition.v2":
+        raise GeneralizationCertificateError("unexpected FJSP numeric disposition schema")
+    if gate.get("pass") is not True:
+        raise GeneralizationCertificateError("FJSP numeric disposition is not closed")
+    if gate.get("source_protocol_artifacts_immutable") is not True:
+        raise GeneralizationCertificateError("FJSP numeric disposition rewrote source artifacts")
+    if source.get("family") != family_sha256 or source.get("hurink_compact") != hurink_sha256:
+        raise GeneralizationCertificateError("FJSP numeric disposition source binding drifted")
+    expected = {
+        "first_family_holdout": (20, 1, 7),
+        "hurink_confirmation": (20, 1, 15),
+    }
+    for label, (nondominated, false_dominance, cp_sat_gap) in expected.items():
+        row = groups.get(label) or {}
+        if row.get("exact_ledger_pareto_nondominated_count") != nondominated:
+            raise GeneralizationCertificateError(f"{label} exact-ledger result drifted")
+        if row.get("numeric_false_dominance_count") != false_dominance:
+            raise GeneralizationCertificateError(f"{label} numeric disposition drifted")
+        if row.get("fixed_cp_sat_dominates_generated_family_count") != cp_sat_gap:
+            raise GeneralizationCertificateError(f"{label} CP-SAT gap drifted")
+    if gate.get("candidate_family_vs_fixed_reference_dominance_claim_ready") is not False:
+        raise GeneralizationCertificateError("FJSP candidate-family boundary drifted")
 
 
 def _validate_mm_v1(report: Mapping[str, Any]) -> None:
@@ -413,24 +487,31 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "",
         f"- Status: `{report['gate']['status']}`",
         "- Protocol completeness and performance superiority are separate gates.",
-        "- Counterexamples are retained and prevent a cross-domain dominance claim.",
+        "- Numeric dispositions and substantive counterexamples are kept separate.",
         "",
-        "| Domain | Prospective protocol | Status | Pareto-nondominated | Strict every-baseline |",
-        "|---|---|---|---:|---:|",
+        "| Domain | Prospective protocol | Status | Pareto-nondominated | Strict every-baseline | Fixed CP-SAT dominates |",
+        "|---|---|---|---:|---:|---:|",
     ]
     for domain, protocol, row in rows:
+        cp_sat_count = row.get("fixed_cp_sat_dominates_generated_family_count")
+        cp_sat_text = (
+            f"{cp_sat_count}/{row['instance_count']}"
+            if cp_sat_count is not None
+            else "n/a"
+        )
         lines.append(
             f"| {domain} | {protocol} | `{row['status']}` | "
             f"{row['pareto_nondominated_count']}/{row['instance_count']} | "
-            f"{row['strict_every_baseline_count']}/{row['instance_count']} |"
+            f"{row['strict_every_baseline_count']}/{row['instance_count']} | "
+            f"{cp_sat_text} |"
         )
     lines.extend(
         [
             "",
             "## Retained negative evidence",
             "",
-            "- The first FJSP family holdout failed its complete-reference protocol and contains a dominated instance.",
-            "- The Hurink confirmation also contains one dominated instance.",
+            "- The immutable FJSP source artifacts each reported 19/20 under mixed floating-point precision; the exact-ledger disposition reclassifies one same-action row in each artifact and yields 20/20 baseline-union nondominance.",
+            "- Fixed-budget CP-SAT trajectories still dominate the generated family on 7/20 first-family and 15/20 Hurink rows; this is a substantive candidate-family gap, not a numerical artifact.",
             "- The R89/R90 BACASP-S adapter-failure artifact is retained; R87/R88 contains dominated cases.",
             "- The original MMRCPSP failure remains bound to its nonprospective repair regression.",
             "",
@@ -486,6 +567,7 @@ def main() -> None:
     parser.add_argument("--fjsp-kacem", type=Path, default=DEFAULT_FJSP_KACEM)
     parser.add_argument("--fjsp-family", type=Path, default=DEFAULT_FJSP_FAMILY)
     parser.add_argument("--fjsp-hurink", type=Path, default=DEFAULT_FJSP_HURINK)
+    parser.add_argument("--fjsp-numeric", type=Path, default=DEFAULT_FJSP_NUMERIC)
     parser.add_argument("--mm-v1", type=Path, default=DEFAULT_MM_V1)
     parser.add_argument("--mm-repair", type=Path, default=DEFAULT_MM_REPAIR)
     parser.add_argument("--mm-v2", type=Path, default=DEFAULT_MM_V2)
@@ -501,6 +583,7 @@ def main() -> None:
         fjsp_kacem_path=args.fjsp_kacem,
         fjsp_family_path=args.fjsp_family,
         fjsp_hurink_path=args.fjsp_hurink,
+        fjsp_numeric_path=args.fjsp_numeric,
         mm_v1_path=args.mm_v1,
         mm_repair_path=args.mm_repair,
         mm_v2_path=args.mm_v2,

@@ -1,5 +1,5 @@
 {
-  "artifact_sha256_excluding_self": "c1a66911980e7c23134968536f55e0bbae9d7ca486f7a7d3ea9963e5b2068885",
+  "artifact_sha256_excluding_self": "2e98792c63ebb2a37773aad33ba25a5fbecddf1882c77262647e7cfa02097d23",
   "claim_boundary": {
     "does_not_support": [
       "global FJSP, MMRCPSP, berth-allocation, or quay-crane optimality",
@@ -10,7 +10,8 @@
     "supports": [
       "hash-bound external-instance protocol portability across FJSP, MMRCPSP, and BACASP-S",
       "prospective multi-family MMRCPSP evidence with retained earlier failure",
-      "prospective FJSP and port counterexamples that delimit the finite selector",
+      "exact-ledger FJSP baseline-union nondominance with immutable source artifacts",
+      "fixed-budget CP-SAT and port counterexamples that delimit the finite selector",
       "finite trajectory-family oracle and bounded-penalty accounting"
     ]
   },
@@ -23,9 +24,12 @@
   "fjsp": {
     "first_family_holdout": {
       "artifact_sha256": "6cc2c74f7f88765639fe701cd26c15e963bf0051a8f4aa38cb1dff6ba56c104f",
+      "fixed_cp_sat_dominates_generated_family_count": 7,
       "instance_count": 20,
-      "pareto_nondominated_count": 19,
+      "numeric_false_dominance_count": 1,
+      "pareto_nondominated_count": 20,
       "protocol_pass": false,
+      "source_reported_pareto_nondominated_count": 19,
       "status": "FJSP_FAMILY_HOLDOUT_FAIL",
       "strict_every_baseline_count": 3
     },
@@ -33,9 +37,12 @@
     "hurink_confirmation": {
       "artifact_sha256": "8c5c51e6f58a6813255c453b827842396846724ff056a42e162165e53cce4572",
       "complete_reference_coverage": true,
+      "fixed_cp_sat_dominates_generated_family_count": 15,
       "instance_count": 20,
-      "pareto_nondominated_count": 19,
+      "numeric_false_dominance_count": 1,
+      "pareto_nondominated_count": 20,
       "protocol_pass": true,
+      "source_reported_pareto_nondominated_count": 19,
       "status": "FJSP_HURINK_HOLDOUT_PASS",
       "strict_every_baseline_count": 0
     },
@@ -43,6 +50,13 @@
       "artifact_sha256": "a6059edefc1048853221f44a2da063038cf50a9fcff5fd240cc11aaf611f5e89",
       "instance_count": 4,
       "pareto_nondominated_count": 4
+    },
+    "numeric_disposition": {
+      "artifact_sha256": "c92e6bf414b625f8d51bda7ffe2b3fe140d551af89ac8378882b831cdf92ec04",
+      "baseline_union_pareto_nondominance_ready": true,
+      "fixed_cp_sat_candidate_family_gap_open": true,
+      "source_protocol_artifacts_immutable": true,
+      "status": "FJSP_NUMERIC_DISPOSITION_PASS"
     },
     "performance_superiority_claim_ready": false
   },
@@ -117,5 +131,5 @@
     },
     "unrestricted_optimality_claim_ready": false
   },
-  "schema_version": "scheduleurm.or_generalization_certificate.v2"
+  "schema_version": "scheduleurm.or_generalization_certificate.v3"
 }

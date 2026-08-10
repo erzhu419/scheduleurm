@@ -1,7 +1,10 @@
 {
-  "claim_boundary": "This disposition corrects only two baseline-union Pareto relations whose stored schedules are identical but whose mean-flow values were rounded at different precisions. It does not alter either prospective source artifact and does not remove the separate CP-SAT candidate-family gap.",
+  "claim_boundary": "This disposition corrects only two baseline-union Pareto relations whose stored schedules are identical but whose mean-flow values were rounded at different precisions. It does not alter either prospective source artifact. Fixed-budget CP-SAT schedules are audited separately; their dominance relations remain candidate-family gaps and are not reclassified as numerical artifacts.",
   "gate": {
+    "baseline_union_pareto_nondominance_ready": true,
+    "candidate_family_vs_fixed_reference_dominance_claim_ready": false,
     "exact_completion_ledger_ready": true,
+    "fixed_cp_sat_candidate_family_gap_open": true,
     "global_fjsp_optimality_claim_ready": false,
     "pass": true,
     "protocol_integrity_separate_from_performance": true,
@@ -11,6 +14,7 @@
   "groups": {
     "first_family_holdout": {
       "exact_ledger_pareto_nondominated_count": 20,
+      "fixed_cp_sat_dominates_generated_family_count": 7,
       "instance_count": 20,
       "numeric_false_dominance_count": 1,
       "old_pareto_nondominated_count": 19,
@@ -64,6 +68,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "90",
+            "schedule_fingerprint": "802596f7684413711a30c7f251db3221ee601f8be72cde492bd351e00683f477",
+            "sum_completion_ticks": "781"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -124,6 +136,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "131",
+            "schedule_fingerprint": "b8093ac30d4217b9a170c5c2c4aabfb906e044b2b670d148c435b3660588db69",
+            "sum_completion_ticks": "1958"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -184,6 +204,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 50,
+            "makespan_ticks": "260",
+            "schedule_fingerprint": "97107b430d401e855fbcdc0e57f6774e5bd76adc7299beb80cc1e0a66f8739c6",
+            "sum_completion_ticks": "7725"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -244,6 +272,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 100,
+            "makespan_ticks": "428",
+            "schedule_fingerprint": "393ca332a2cc8b2bd17d3cb73171e13a8e0e81a91514da7037f9d279ce0c7e96",
+            "sum_completion_ticks": "24875"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -304,6 +340,9 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": null,
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "reference_unavailable",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -364,6 +403,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "938",
+            "schedule_fingerprint": "b07048f450896f30f15551f37ee06d2b81a6f2805be2300e5c15e0827046979c",
+            "sum_completion_ticks": "8990"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -424,6 +471,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "918",
+            "schedule_fingerprint": "33bf38b330ef3696335ad97adb283bc69100051574abda3f91f059cbc304e702",
+            "sum_completion_ticks": "8847"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -486,6 +541,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "927",
+            "schedule_fingerprint": "740e28cc8f970cd4f0e84fc2d9a56c04d84842133275d9ace19273b86f33ac43",
+            "sum_completion_ticks": "13230"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": true,
           "old_baseline_dominators": [
             "ours_robust_maxweight"
@@ -548,6 +611,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "1200",
+            "schedule_fingerprint": "80a462eb9414e1f6a2601b048a1d0b38ef47d23ea598b45291be1519fb52957d",
+            "sum_completion_ticks": "16737"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -608,6 +679,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "1163",
+            "schedule_fingerprint": "8cbe250a1b6be5e56ce2ab0bcf27ecd5407f4dfc87833dcc36b825badc17b30a",
+            "sum_completion_ticks": "16417"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -668,6 +747,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "2959",
+            "schedule_fingerprint": "f6168de37aa70378f8e69118e4a24859d20310082aae5a1881b6b87de245bcc6",
+            "sum_completion_ticks": "28601"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -728,6 +815,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "2524",
+            "schedule_fingerprint": "313836889d475f55224a2b2c6db063f6eb3b9827e8b5f0c81bf432531a0a1eb8",
+            "sum_completion_ticks": "24554"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -788,6 +883,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "2137",
+            "schedule_fingerprint": "ce953b2cd1be065b24c9ad67ff1edacb909afaadac7df5f523bb02649580341d",
+            "sum_completion_ticks": "31357"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -848,6 +951,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "2791",
+            "schedule_fingerprint": "541fd0923692550a23983148d3f412d50bddc2b40816d54f216b9f12377640c8",
+            "sum_completion_ticks": "52635"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -908,6 +1019,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "2204",
+            "schedule_fingerprint": "35db0fc929063abbddb03c1332d36f13dd55502a776501f6736acde3f76ab073",
+            "sum_completion_ticks": "43249"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -968,6 +1087,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 2,
+            "makespan_ticks": "66",
+            "schedule_fingerprint": "390031fc5b6a3c8747289dcd9f18c30e9171fd8dcf4a7ff7139a9d44b5685800",
+            "sum_completion_ticks": "127"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1028,6 +1155,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 3,
+            "makespan_ticks": "119",
+            "schedule_fingerprint": "d9018fd62a71b114e5d5bf310d42c0586ce017d1964ef5d23d15ac7dc98b125d",
+            "sum_completion_ticks": "270"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1088,6 +1223,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 4,
+            "makespan_ticks": "516",
+            "schedule_fingerprint": "028a01f89b049716ad6224c650d2df30bcd4773a2b466a9fe08baedd552c4917",
+            "sum_completion_ticks": "1835"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1148,6 +1291,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 7,
+            "makespan_ticks": "514",
+            "schedule_fingerprint": "1647ac03e8ef16619bdfa2c060453bcd76836d671078f4d04c4fabc15574aff7",
+            "sum_completion_ticks": "3296"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1208,6 +1359,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 12,
+            "makespan_ticks": "1196",
+            "schedule_fingerprint": "13e3bb0c18649abc860e0412e8205eddf09c7ec92c1a15feb0e74f059dbae84f",
+            "sum_completion_ticks": "11519"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1223,6 +1382,7 @@
     },
     "hurink_confirmation": {
       "exact_ledger_pareto_nondominated_count": 20,
+      "fixed_cp_sat_dominates_generated_family_count": 15,
       "instance_count": 20,
       "numeric_false_dominance_count": 1,
       "old_pareto_nondominated_count": 19,
@@ -1276,6 +1436,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 13,
+            "makespan_ticks": "6454",
+            "schedule_fingerprint": "c790f5b83179d4680f7610a469442cf999f59bf75d347e6db39af1b499f03f4d",
+            "sum_completion_ticks": "52873"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1336,6 +1504,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "866",
+            "schedule_fingerprint": "428882f3528acef241031ee08a016c06e4bf66af618cbfcdf0d5322b4129fbc8",
+            "sum_completion_ticks": "10845"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1396,6 +1572,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "857",
+            "schedule_fingerprint": "722caed7db25bad1c0c225c878e23fa7554d99276584f5826cda4c8004bf3d89",
+            "sum_completion_ticks": "7826"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1456,6 +1640,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "1312",
+            "schedule_fingerprint": "44e9bae99bcddfa9d6184fa96765fba6bf2f43a16ed9c491b3fb7e483ee47a62",
+            "sum_completion_ticks": "23731"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1516,6 +1708,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "699",
+            "schedule_fingerprint": "4019b78e46f44e3c35731ddff69659ddce04d31ec653ab64f950c9415ee7f2b9",
+            "sum_completion_ticks": "12780"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1576,6 +1776,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 13,
+            "makespan_ticks": "5986",
+            "schedule_fingerprint": "b009f5352aa088aaaedf82893248936f35d69dfec91335ad1ce9d8ed16a5f16f",
+            "sum_completion_ticks": "60655"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1636,6 +1844,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "805",
+            "schedule_fingerprint": "bf75f18dea45f97d80b79c1f8560b0d51fbfe796dd8859b2a2a2c888ed700717",
+            "sum_completion_ticks": "10694"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1696,6 +1912,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "756",
+            "schedule_fingerprint": "0a50da5152d51405008b77121eea505955c9fe0fe2b433c7cf21df817ef9cf9f",
+            "sum_completion_ticks": "7165"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1756,6 +1980,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "1203",
+            "schedule_fingerprint": "db696cf2457c3f2b044d4a02c3fd2c199f247e83e9b4241810f4f50aa07953fb",
+            "sum_completion_ticks": "21420"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1816,6 +2048,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "617",
+            "schedule_fingerprint": "46ce6c8740ef2db414eb8b14959fef3dced309b446f4f09838b0e72b05a3e883",
+            "sum_completion_ticks": "11742"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1876,6 +2116,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 13,
+            "makespan_ticks": "7166",
+            "schedule_fingerprint": "7726f3ad986b446d5389a6b2647465e8be7096cf6d1734877efbe62d366bfbe4",
+            "sum_completion_ticks": "55384"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1936,6 +2184,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "958",
+            "schedule_fingerprint": "7b6ac6862e2bea13a3aefc6fa9e8d36a31c0db4cdfbebb9fbbc2ecdebd055924",
+            "sum_completion_ticks": "11743"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -1996,6 +2252,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "902",
+            "schedule_fingerprint": "35959b7129f67dba2e8c895fc20eada0fd75449778d1c4174a8be200854d4f71",
+            "sum_completion_ticks": "8210"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "tradeoff",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2056,6 +2320,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "1344",
+            "schedule_fingerprint": "ed38d576e7bba37578fbedd03b5e47dc5bf48f54f2a6621b207516b0a49c58e9",
+            "sum_completion_ticks": "23763"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2116,6 +2388,14 @@
             "ours_robust_maxweight": "same_action",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "774",
+            "schedule_fingerprint": "8dbacb8552cbfdbbbdd519eb91924645a5b22a0b59870882854dab323454eaef",
+            "sum_completion_ticks": "14432"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2176,6 +2456,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 13,
+            "makespan_ticks": "5930",
+            "schedule_fingerprint": "13f1528fb2f12eb4370b186faf869454d95cf43c3e56efbbb7c291f9bc7bc0f3",
+            "sum_completion_ticks": "64534"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2238,6 +2526,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "tradeoff"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 15,
+            "makespan_ticks": "812",
+            "schedule_fingerprint": "47952908358925e9a5c79c1b1cf997dc747e6925b185f1a62a71634ccc2e92af",
+            "sum_completion_ticks": "10272"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "baseline_dominates",
           "numeric_false_dominance": true,
           "old_baseline_dominators": [
             "most_work_remaining"
@@ -2300,6 +2596,14 @@
             "ours_robust_maxweight": "tradeoff",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 10,
+            "makespan_ticks": "756",
+            "schedule_fingerprint": "3eb0b14e5c4a1020295be9ac7132290d994673b529d04f4eb28f222bab9fad35",
+            "sum_completion_ticks": "6163"
+          },
+          "fixed_cp_sat_optimality_proved": true,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2360,6 +2664,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "1103",
+            "schedule_fingerprint": "9bc7ec0184fd8ad03ee00881ddd6209ba1fdebeea4cb31e7c9b16997434cb5e4",
+            "sum_completion_ticks": "21407"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2420,6 +2732,14 @@
             "ours_robust_maxweight": "ours_dominates",
             "shortest_processing_time": "ours_dominates"
           },
+          "fixed_cp_sat_exact_ledger": {
+            "job_count": 20,
+            "makespan_ticks": "522",
+            "schedule_fingerprint": "5581f1fbe60818fd29933b44aec16ac08cf0c01cf1fe105c49e52579425acc41",
+            "sum_completion_ticks": "10240"
+          },
+          "fixed_cp_sat_optimality_proved": false,
+          "fixed_cp_sat_relation": "same_action",
           "numeric_false_dominance": false,
           "old_baseline_dominators": [],
           "old_ours_pareto_nondominated": true,
@@ -2486,6 +2806,14 @@
         "ours_robust_maxweight": "same_action",
         "shortest_processing_time": "ours_dominates"
       },
+      "fixed_cp_sat_exact_ledger": {
+        "job_count": 15,
+        "makespan_ticks": "927",
+        "schedule_fingerprint": "740e28cc8f970cd4f0e84fc2d9a56c04d84842133275d9ace19273b86f33ac43",
+        "sum_completion_ticks": "13230"
+      },
+      "fixed_cp_sat_optimality_proved": false,
+      "fixed_cp_sat_relation": "baseline_dominates",
       "group": "first_family_holdout",
       "numeric_false_dominance": true,
       "old_baseline_dominators": [
@@ -2551,6 +2879,14 @@
         "ours_robust_maxweight": "tradeoff",
         "shortest_processing_time": "tradeoff"
       },
+      "fixed_cp_sat_exact_ledger": {
+        "job_count": 15,
+        "makespan_ticks": "812",
+        "schedule_fingerprint": "47952908358925e9a5c79c1b1cf997dc747e6925b185f1a62a71634ccc2e92af",
+        "sum_completion_ticks": "10272"
+      },
+      "fixed_cp_sat_optimality_proved": false,
+      "fixed_cp_sat_relation": "baseline_dominates",
       "group": "hurink_confirmation",
       "numeric_false_dominance": true,
       "old_baseline_dominators": [
@@ -2566,7 +2902,7 @@
       "relative_path": "vdata/la10.txt"
     }
   ],
-  "schema_version": "scheduleurm.fjsp_numeric_disposition.v1",
+  "schema_version": "scheduleurm.fjsp_numeric_disposition.v2",
   "source_sha256": {
     "family": "6cc2c74f7f88765639fe701cd26c15e963bf0051a8f4aa38cb1dff6ba56c104f",
     "hurink_compact": "8c5c51e6f58a6813255c453b827842396846724ff056a42e162165e53cce4572",

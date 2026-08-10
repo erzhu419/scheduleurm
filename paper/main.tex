@@ -252,10 +252,11 @@ External scheduler comparison & Registered policy-semantics baselines evaluated
 on the same measured service cache, plus scoped adapter or same-host runtime
 probes when available. & Does not claim direct full-stack superiority over every
 external scheduler or original multi-node deployment. \\
-Cross-domain trajectory portability & Frozen FJSP, repaired disjoint MMRCPSP,
-and registered port holdouts with exact generated-family oracle audits. & Does
-not claim arbitrary domain-solver dominance, industrial port validation, or
-automatic transfer of server stability. \\
+Cross-domain trajectory portability & Frozen FJSP integer ledgers, MMRCPSP
+renewal-stream and class-balance arrival-tape protocols, and separated port
+source-core and synthetic-migration certificates with exact registered-family
+oracle audits. & Does not claim arbitrary domain-solver dominance, industrial
+port validation, or automatic transfer of server stability. \\
 Learning and hidden-regime extensions & Formal conditional results and finite
 active-bucket replay checks, forced exploration, switching, and detector-delay
 records. & Treated as extensions rather than main live performance or complete
@@ -1776,67 +1777,102 @@ cumulative-oracle/rate-oracle equivalence for positive duration.  The
 deterministic holdouts in this subsection test the candidate/oracle/penalty
 layer and do not by themselves instantiate a stochastic arrival model.
 
-The protocols were frozen before their reported external holdouts.  The FJSP
-study retains a failed 20-instance, four-family protocol and then evaluates a
-separate 20-instance confirmation drawn from the untouched Hurink edata,
-rdata, sdata, and vdata families \citep{hurink1994tabu}.  The MMRCPSP study adds
-25 PSPLIB instances, five each from j12, j14, j16, j18, and j20, after retaining
-both the original failed holdout and its nonprospective repair regression
-\citep{kolisch1997psplib}.  The port study develops a factor-conditioned policy
-on BACASP-S replications R87--R90, freezes the resulting 27-cell mapping, and
-then evaluates all 54 untouched R85/R86 instances \citep{correcher2024berth}.
-Table~\ref{tab:or-generalization} reports the resulting mixed evidence.
-The registered FJSP baselines are first-in-first-out (FIFO), earliest completion
+The latest confirmation protocols augment, rather than overwrite, the earlier
+feasibility holdouts.  The FJSP confirmation selects 20 previously unused
+instances from the Hurink edata, rdata, sdata, and vdata families
+\citep{hurink1994tabu}.  For each instance, the robust selector and five fixed
+dispatch rules are compared using exact integer makespan and sum-completion
+ledgers.  The fixed rules are first-in-first-out (FIFO), earliest completion
 time (ECT), shortest processing time (SPT), most operations remaining (MOR), and
-most work remaining (MWKR).  The MMRCPSP baselines are SPT, minimum slack,
-greatest rank positional weight, and most total successors.  Best-known
-solution (BKS) below refers only to the makespan value distributed with an FJSP
-instance.
+most work remaining (MWKR).  A separate five-second, single-worker OR-Tools
+9.14 Constraint Programming with Boolean Satisfiability (CP-SAT) run provides a
+makespan reference \citep{perron2023cpsat}.  Its sum-completion coordinate is
+descriptive because CP-SAT optimizes makespan only, and a feasible status is not
+an optimality proof.
+
+The MMRCPSP experiment registers 25 feasible PSPLIB trajectories, five each
+from j12, j14, j16, j18, and j20 \citep{kolisch1997psplib}.  One action completes
+one project from one registered class.  Seven exogenous unit-time arrival
+scenarios are replayed against duration-normalized robust MaxWeight,
+unnormalized robust MaxWeight, shortest registered trajectory, longest queue
+then shortest trajectory, and round-robin class selection.  The first stream
+matrix uses three seeds; a later class-balance protocol freezes five new arrival
+tapes.  The class-balance metric family was registered after observing the
+first matrix but before observing those new tapes.  It is therefore a
+prospective arrival-tape check on a known instance and action library, not a new
+structural-instance holdout.
+
+The port evidence keeps two models non-substitutable.  The BACASP-S source-core
+certificate evaluates a 30-vessel berth/quay instance with crane travel and
+setup times \citep{correcher2024berth}; it contains no mid-service migration.
+The separate synthetic statewise certificate models re-berthing and crane
+reassignment with persistent channel and tug resources, lost work, delay, and
+risk penalties, but uses no physical terminal observations.  Table~\ref{tab:or-generalization}
+reports the resulting mixed evidence.
 
 \begin{table}[H]
 \TABLE{Cross-domain finite-trajectory holdouts.\label{tab:or-generalization}}{
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
 \begin{tabular}{@{}
->{\raggedright\arraybackslash}p{0.13\linewidth}
->{\raggedright\arraybackslash}p{0.22\linewidth}
->{\raggedright\arraybackslash}p{0.23\linewidth}
->{\raggedright\arraybackslash}p{0.32\linewidth}@{}}
+>{\raggedright\arraybackslash}p{0.12\linewidth}
+>{\raggedright\arraybackslash}p{0.24\linewidth}
+>{\raggedright\arraybackslash}p{0.31\linewidth}
+>{\raggedright\arraybackslash}p{0.23\linewidth}@{}}
 \toprule
 Domain & Frozen protocol & Candidate result & Claim boundary \\
 \midrule
-FJSP & First public-family holdout plus untouched Hurink confirmation; 20
-instances each & First protocol failed and was 19/20 nondominated; Hurink
-protocol passed with complete reference coverage and was 19/20 nondominated,
-0/20 strictly better than every registered rule & One dominated Hurink
-counterexample is retained; no global optimum or arbitrary-solver claim. \\
-MMRCPSP & Prospective PSPLIB j12--j20 family confirmation; 25 instances &
-Pareto-nondominated on 25/25; strictly better than every registered rule on
-11/25; attained the public makespan optimum on 7/25 & The original failure,
-opened-row repair, and disjoint 56-instance v2 result remain in the artifact;
-no all-solver claim. \\
-Port & BACASP-S 27-factor-cell R85/R86 confirmation; 54 instances & Protocol
-completed 54/54; Pareto-nondominated on 16/54; strictly better than every
-registered rule on 1/54 & The 38/54 reconfiguration-greedy counterexamples are
-retained; no continuous-quay optimum, yard/gate validation, or physical-port
+FJSP & 20 unused Hurink instances; six registered policies; independent
+five-second, one-worker CP-SAT reference & Robust selector nondominated 20/20
+against fixed rules.  CP-SAT feasible 20/20, optimal status 10/20, and dominates
+the selected ledger 14/20.  Qualitative relations reproduce 20/20; exact
+numeric gaps reproduce 17/20. & CP-SAT is makespan-only and wall-clock limited;
+no global optimum or arbitrary-solver claim. \\
+MMRCPSP aggregate queue & 25-class action library; seven scenarios, three seeds,
+and five policies; 105 runs & Exact robust oracle 21/21 scenario/seed cells, but
+shortest trajectory dominates it 21/21 on final backlog and time-average total
+queue. & Retained negative result; no total-delay superiority or recurrence
 claim. \\
+MMRCPSP class balance & Same known library; seven scenarios, five new seeds, and
+five policies; 175 runs & Exact robust oracle and Pareto nondominance 35/35 on
+total time-average queue, worst-class time-average queue, and worst-class final
+backlog.  Strictly better than every baseline 0/35; baseline dominance 0/35. &
+New arrival tapes, not new structural instances; no universal performance
+claim. \\
+Port & 30-vessel BACASP-S source core plus a separate synthetic statewise
+migration certificate & Source-core robust MaxWeight is dominated by
+reconfiguration-greedy and SPT.  Synthetic robust delayed re-berthing is selected
+with \(\alpha_0=\alpha_1=0\) and finite-family \(P_0=2.54\). & No physical
+migration observation, industrial deployment, yard/gate validation, or global
+port optimum. \\
 \bottomrule
 \end{tabular}
-}{Nondominance is with respect to the registered finite policy family and the
-reported makespan/mean-flow objectives, not all domain algorithms.}
+}{Every comparison is scoped to its registered finite policy family and stated
+cost coordinates.  The rows deliberately retain comparator wins and do not
+assert domain-wide superiority.}
 \end{table}
 
-The failed MMRCPSP v1 holdout is part of the evidence rather than discarded: its
-first counterexample exposed a renewable-resource feasibility error in the
-nonrenewable reserve dynamic program.  After repairing the candidate generator,
-all opened rows passed a repair regression, the disjoint v2 holdout passed
-56/56 instances, and the later multi-family confirmation passed its protocol.
-The FJSP and port results are deliberately not summarized as performance
-successes: each contains registered-policy counterexamples.  The port manifests
-hash-bind the raw BACASP-S files, adapter, frozen factor mapping, and result;
-the source has berth/crane travel and setup data but no yard or gate layer.
-These boundaries prevent portability evidence from becoming a domain-wide
-state-of-the-art claim.
+Two negative chains are especially informative.  First, the earlier MMRCPSP
+instance-feasibility holdout exposed a renewable-resource error in the
+nonrenewable reserve dynamic program; its opened-row regression and disjoint
+repair holdout remain archived.  Second, the new renewal-stream result shows
+that a valid exact MaxWeight oracle need not minimize aggregate delay: the
+shortest-trajectory baseline wins every aggregate-queue cell.  The prospective
+class-balance result instead establishes a 35/35 nondominated tradeoff, not
+strict superiority.  This is consistent with the mathematics: the
+renewal-frame theorem controls drift under slack assumptions and is not a
+theorem of makespan or total-delay optimality.
+
+The FJSP candidate ledgers and all qualitative CP-SAT relations reproduce on a
+second run.  Three exact CP-SAT gaps vary because a five-second wall-clock
+budget can return different incumbents; this variation is reported rather than
+treated as candidate-ledger drift.  Both MMRCPSP matrices reproduce exactly
+after decompression.  Their raw gzip hashes differ only because the gzip header
+stores the output basename.  Finally, the port source-core and synthetic
+migration certificates remain separate: the former contains the physical
+BACASP-S data but no migration, whereas the latter contains migration semantics
+but no physical terminal observations.  These boundaries prevent portability
+evidence from becoming a domain-wide state-of-the-art claim.
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}
@@ -1955,8 +1991,10 @@ robust candidate improves legacy completion metrics and is not Pareto-dominated
 by registered policy-semantics baselines evaluated on the same measured service
 cache.  Controlled live launches and strict scheduler-history evidence show how
 the theorem-facing objects can be produced by an operational scheduler.  Frozen
-finite-trajectory holdouts on FJSP, MMRCPSP, and port instances further test the
-candidate/oracle/penalty interface, without claiming domain-wide optimality or
+finite-trajectory experiments on FJSP, MMRCPSP, and port models further test the
+candidate/oracle/penalty interface.  Their mixed results include
+independent-solver and registered-policy counterexamples, so they support
+portability of the interface without claiming domain-wide optimality or
 automatic transfer of the server stochastic model.
 
 The contribution is therefore not a universal claim about every future workload

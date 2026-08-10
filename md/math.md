@@ -1614,7 +1614,7 @@ co-location superiority 写成定理结论。
 
 ---
 
-# 13. 2026-08-09 variable-duration trajectory closure 与 OR 泛化
+# 13. 2026-08-10 variable-duration trajectory closure 与 OR 泛化
 
 服务器迁移、港口换泊/换岸桥、FJSP 的整条机器序列和 MMRCPSP 的整条
 mode trajectory 都不能直接塞进 unit-slot theorem。它们共同要求把 action
@@ -1802,21 +1802,35 @@ exact generated-family oracle audit。
 - MMRCPSP：precedence、renewable capacity、nonrenewable budget 与 mode duration；
 - server：CPU/GPU/memory/topology、co-location interference、checkpointability 与 node-local service。
 
-2026-08-09 的冻结后证据是：
+最新冻结证据不再只报 candidate-family 内部 PASS，而是同时保留独立 comparator、
+负结果和复现审计：
 
 | Domain | Protocol | Result | 不能外推的结论 |
 |---|---|---|---|
-| FJSP | post-freeze Kacem holdout | 4/4 selected trajectory Pareto-nondominated | arbitrary FJSP solver/global optimum |
-| MMRCPSP | disjoint post-repair PSPLIB holdout | 56/56 selected trajectory Pareto-nondominated | all-instance dominance；v1 failure 不能删除 |
-| Port | pinned BACASP-S core + 3 registered synthetic instances | 4/4 selected trajectory Pareto-nondominated；generated-family gap 0 | continuous-quay MILP reproduction、industrial yard/gate validation |
+| FJSP | 20 个冻结的 Hurink unused instances；6 个 registered policies；独立 5 秒单 worker CP-SAT | candidate ledger 对 fixed rules 20/20 nondominated；CP-SAT 20/20 feasible、10/20 OPTIMAL、14/20 同时支配 candidate；qualitative relation 20/20 复现，numeric gap 17/20 复现 | CP-SAT 只优化 makespan 且受 wall-clock budget 限制；不能 claim global optimum/all-solver dominance |
+| MMRCPSP aggregate queue | 25-class known action library；7 scenarios \(\times\) 3 seeds \(\times\) 5 policies = 105 runs | ours 是 21/21 exact registered-family oracle，但 shortest trajectory 在 final backlog 与 time-average total queue 上 21/21 支配 ours | throughput/drift theorem 不是 total-delay optimality theorem；不能 claim recurrence from finite replay |
+| MMRCPSP class balance | 同一个 known library；7 scenarios \(\times\) 5 个新 arrival-tape seeds \(\times\) 5 policies = 175 runs | 在 total average queue、max-class average queue、max-class final backlog 上，ours 35/35 nondominated；strict-all 0/35；baseline-dominates 0/35；exact oracle 35/35 | metric family 在 aggregate-queue v1 后登记，但在新 arrival tapes 前冻结；不是 new structural-instance holdout，也不是 universal superiority |
+| Port | 30-vessel BACASP-S source core；另有独立 synthetic statewise migration certificate | source-core robust MaxWeight 被 reconfiguration-greedy/SPT 支配；synthetic delayed-reberth action 的 generated-family \(\alpha_0=\alpha_1=0\)，\(P_0=2.54\) | source core 没有 mid-service migration；synthetic model 没有 physical terminal observations；不能 claim industrial deployment/global port optimum |
 
-MMRCPSP 的 v1 preregistered holdout 在 j102_10 fail，原因是 reserve DP
-错误地把 renewable-infeasible future modes 当作 nonrenewable completion
-witness。修复后先做 opened-row regression，再对与 development/repair rows
-都 disjoint 的 v2 holdout 做 56/56 检验。这个失败链必须保留，因为它说明
-candidate generator 的 feasibility certificate 不是事后包装。
+MMRCPSP 有两条名称容易混淆、但必须同时保留的失败链。早期
+**instance-feasibility holdout v1** 在 `j102_10` fail，原因是 reserve DP 错误地
+把 renewable-infeasible future modes 当作 nonrenewable completion witness；
+修复后才有 opened-row regression 和 disjoint repair holdout。新的
+**renewal-stream v1** 则没有 feasibility/oracle bug，它的负结果是目标层面的：
+在 one-project-per-action abstraction 中，shortest trajectory 对 aggregate queue
+delay 更有利。后续 class-balance holdout 使用新 arrival tapes，证明的是
+total queue 与 worst-class queue 之间 35/35 nondominated tradeoff，而不是把
+21/21 aggregate-delay counterexample 删除。
+
+复现证据也分层：FJSP candidate integer ledgers 与 CP-SAT qualitative
+disposition 都是 20/20 一致；受 5 秒 wall-clock 限制的 CP-SAT exact numeric gap
+只有 17/20 一致。MMRCPSP 两个 deterministic experiment matrix 在解压后的 full
+JSON、去除 gzip-container self-hash 后的 compact semantics、以及 Markdown 上都
+exact reproduction；raw gzip 不同只来自 FNAME header 的输出 basename。
 
 因此目前能写的强结论是：**finite trajectory-action candidate/oracle/
-penalty interface 在 compute、port、FJSP、MMRCPSP 的已登记实例上可移植，
-且变量时长 frame drift 已有独立 Lean closure。** 不能写成这些 deterministic
-holdout 自动证明各域 stochastic stability，也不能写成击败任意域 SOTA。
+penalty interface 在 compute、port、FJSP、MMRCPSP 的已登记 family 上可移植，
+变量时长 frame drift 已有独立 Lean closure，并且反例准确划清 stability、
+total delay 与 class balance 三类目标。** 不能写成 deterministic/finite replay
+自动证明各域 stochastic recurrence，也不能写成击败任意域 SOTA、工业港口
+控制或任意 exact solver。

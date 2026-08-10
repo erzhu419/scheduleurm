@@ -38,6 +38,8 @@ def test_command_plan_keeps_frozen_campaigns_separate():
     ]
     assert rows[0]["argv"][2] == "algorithm.experiments.critical_gpu_completion_campaign"
     assert rows[3]["argv"][2] == "algorithm.experiments.critical_gpu_loaded_wave_runner"
+    assert "--keep-remote-output" not in rows[0]["argv"]
+    assert "--keep-remote-output" in rows[3]["argv"]
 
 
 def test_ack_requires_new_cache_and_matching_reservation(tmp_path):

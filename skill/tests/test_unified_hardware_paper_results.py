@@ -41,8 +41,15 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert report["pass"] is True
     assert report["population"]["hardware_scenario_count"] == 7
     assert report["population"]["migration_scenario_count"] == 9
+    assert report["population"]["hardware_trace_count"] == (
+        report["population"]["hardware_static_trace_count"]
+        + report["population"]["hardware_online_trace_count"]
+    )
     assert report["legacy"]["comparison_count"] > 0
     assert 0 < report["online_legacy"]["comparison_count"] < report["legacy"]["comparison_count"]
+    assert report["online_legacy"]["comparison_count"] == report["population"][
+        "hardware_online_trace_count"
+    ]
     assert len(report["static_scenarios"]) == 7
     assert {row["scenario_id"] for row in report["static_scenarios"]} == {
         row["scenario_id"]
@@ -55,8 +62,9 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert report["migration"]["comparison_count"] == 9
     assert (
         report["queues"]["distributions"]["time_weighted_queue_backlog_jobs"]["count"]
-        == report["population"]["hardware_scheduleurm_run_count"]
+        == report["population"]["hardware_online_scheduleurm_run_count"]
     )
+    assert report["queues"] == report["online_queues"]
     assert report["slack"]["minimum_eta"] == 0.05
     tex_source = tex_macros(report)
     assert "\\UnifiedLegacyMakespanGeoRatio" in tex_source

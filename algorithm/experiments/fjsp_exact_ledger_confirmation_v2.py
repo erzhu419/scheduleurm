@@ -16,7 +16,11 @@ import re
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
 from algorithm.experiments.fjsp_benchmark import POLICY_ORDER, build_schedule
-from algorithm.experiments.fjsp_instances import FJSPInstance, load_fjsp_instance
+from algorithm.experiments.fjsp_instances import (
+    FJSPInstance,
+    FJSPParseError,
+    load_fjsp_instance,
+)
 from algorithm.experiments.fjsp_renewal_frame_upgrade import (
     build_fjsp_renewal_frame_schedule,
 )
@@ -79,6 +83,7 @@ def select_unused_instances(
 
     discovered: list[dict[str, Any]] = []
     excluded: list[dict[str, str]] = []
+    source_format_exclusions: list[dict[str, str]] = []
     seen_paths: set[str] = set()
     for candidate in candidate_paths:
         path = _resolve_beneath(root, candidate)
@@ -89,7 +94,17 @@ def select_unused_instances(
             )
         seen_paths.add(relative)
         raw_hash = _file_sha256(path)
-        instance = load_fjsp_instance(path)
+        try:
+            instance = load_fjsp_instance(path)
+        except FJSPParseError as exc:
+            source_format_exclusions.append(
+                {
+                    "relative_path": relative,
+                    "file_sha256": raw_hash,
+                    "reason": str(exc),
+                }
+            )
+            continue
         canonical_hash = instance.source_sha256
         if (
             relative in used_paths
@@ -161,6 +176,7 @@ def select_unused_instances(
             "per_family": int(per_family) if per_family is not None else None,
             "uses_algorithm_outcomes": False,
             "uses_cp_sat_outcomes": False,
+            "source_format_exclusion_uses_outcomes": False,
         },
         "used_registry": {
             "relative_paths": sorted(used_paths),
@@ -172,6 +188,9 @@ def select_unused_instances(
         "selected_instances": selected,
         "excluded_previously_observed": sorted(
             excluded, key=lambda row: row["relative_path"]
+        ),
+        "source_format_exclusions": sorted(
+            source_format_exclusions, key=lambda row: row["relative_path"]
         ),
         "outcomes_observed_during_selection": False,
     }
@@ -698,6 +717,10 @@ def _validate_selection_plan(selection: Mapping[str, Any]) -> None:
         raise FJSPExactLedgerConfirmationError("selection consumed algorithm outcomes")
     if rule.get("uses_cp_sat_outcomes") is not False:
         raise FJSPExactLedgerConfirmationError("selection consumed CP-SAT outcomes")
+    if rule.get("source_format_exclusion_uses_outcomes") is not False:
+        raise FJSPExactLedgerConfirmationError(
+            "source-format exclusion consumed outcomes"
+        )
     if selection.get("outcomes_observed_during_selection") is not False:
         raise FJSPExactLedgerConfirmationError("selection is not outcome blind")
     members = selection.get("selected_instances")
@@ -731,6 +754,22 @@ def _validate_selection_plan(selection: Mapping[str, Any]) -> None:
                 raise FJSPExactLedgerConfirmationError(f"invalid selected {key}")
     if len(paths) != len(set(paths)) or len(hashes) != len(set(hashes)):
         raise FJSPExactLedgerConfirmationError("selected instances are not unique")
+    exclusions = selection.get("source_format_exclusions")
+    if not isinstance(exclusions, list):
+        raise FJSPExactLedgerConfirmationError("missing source-format exclusion ledger")
+    for row in exclusions:
+        if not isinstance(row, Mapping) or set(row) != {
+            "relative_path",
+            "file_sha256",
+            "reason",
+        }:
+            raise FJSPExactLedgerConfirmationError(
+                "invalid source-format exclusion row"
+            )
+        _safe_relative_path(row["relative_path"])
+        _validated_sha256(row["file_sha256"], label="excluded source hash")
+        if not str(row["reason"]).strip():
+            raise FJSPExactLedgerConfirmationError("empty source-format reason")
 
 
 def _selection_sort_key(row: Mapping[str, Any]) -> tuple[Any, ...]:

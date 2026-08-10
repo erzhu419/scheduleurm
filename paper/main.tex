@@ -1752,20 +1752,29 @@ same selector exactly maximizes generated-family robust score
 \begin{equation}
   a_n\in\argmax_{a\in\mathcal A_n^{\mathrm{traj}}}
   \left\{
-    \left(Q^{\mathrm F}(n)\right)^{\!\top}\lowermu_{n,\mathrm{cum}}(a)
-    -P_n^{\mathrm F}(a)
+    \frac{
+      \left(Q^{\mathrm F}(n)\right)^{\!\top}
+      \underline S_n^{\mathrm F}(a)-P_n^{\mathrm F}(a)}
+    {\tau_n(a)}
   \right\},
   \label{eq:trajectory-selector}
 \end{equation}
 Here \(n\) indexes decision frames, \(Q^{\mathrm F}(n)\) is the frame-boundary
 backlog or urgency vector, \(\mathcal A_n^{\mathrm{traj}}\) is the finite
-generated trajectory family, \(\lowermu_{n,\mathrm{cum}}(a)\) is the cumulative
-lower-service vector, and \(P_n^{\mathrm F}(a)\) is the cumulative bounded
-trajectory penalty.  The queue/urgency coordinates and feasibility oracle are
+generated trajectory family, \(\underline S_n^{\mathrm F}(a)\) is the
+cumulative lower-service vector, \(P_n^{\mathrm F}(a)\) is the cumulative
+bounded trajectory penalty, and \(\tau_n(a)>0\) is the trajectory duration.  Dividing
+the denominator by a positive horizon common to every action in the frame
+does not change the argmax; this is the normalized score used by the artifact.
+The duration factor is essential: maximizing the unnormalized cumulative
+numerator is generally not equivalent when candidate trajectories have
+different lengths.  The queue/urgency coordinates and feasibility oracle are
 domain-specific.  Proposition~\ref{prop:frame-drift} supplies the
-variable-duration stochastic interface; the deterministic holdouts in this
-subsection test the candidate/oracle/penalty layer and do not by themselves
-instantiate a stochastic arrival model.
+variable-duration stochastic interface, and the Lean theorem
+\texttt{frameApproximateOracle\_iff\_durationNormalized} checks the corresponding
+cumulative-oracle/rate-oracle equivalence for positive duration.  The
+deterministic holdouts in this subsection test the candidate/oracle/penalty
+layer and do not by themselves instantiate a stochastic arrival model.
 
 The protocols were frozen before their reported external holdouts.  The FJSP
 study retains a failed 20-instance, four-family protocol and then evaluates a

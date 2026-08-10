@@ -1631,7 +1631,27 @@ Q^{F}(n+1)
 \]
 
 这里 \(A^{F}(n)\) 与 \(S^{F}(n)\) 都是 frame 内累计量，不能把 wall-clock
-migration seconds 直接和 service units 相加。若
+migration seconds 直接和 service units 相加。
+
+对可变时长 candidate，确定性 selector 也必须先按 duration 归一化。若
+\(\mathcal A_n^{traj}\) 是 frame \(n\) 的有限 trajectory family，
+\(\underline S_n^{F}(a)\) 是累计 lower-service vector，
+\(P_n^F(a)\) 是同一 frame 的累计 bounded penalty，则
+
+\[
+a_n\in\arg\max_{a\in\mathcal A_n^{traj}}
+\frac{(Q^F(n))^\top\underline S_n^{F}(a)-P_n^F(a)}
+{\tau_n(a)}.
+\]
+
+实现把分母写成 \(\tau_n(a)/H_n\)，其中 \(H_n>0\) 对同一 frame 的所有
+candidate 相同，因此与上式具有完全相同的 argmax。不能省略分母；只有
+所有 candidate duration 相等时，未归一化累计 score 才与 renewal-frame
+score 等价。Lean 的
+`frameApproximateOracle_iff_durationNormalized` 对正 duration 下的累计
+oracle inequality 与 rate-normalized inequality 给出严格等价。
+
+若
 
 \[
 \mathbb E[A_i^{F}(n)\mid\mathcal F_n^{F}]\le\tau_n\lambda_i,

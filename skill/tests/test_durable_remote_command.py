@@ -89,6 +89,43 @@ def test_durable_remote_command_recovers_ambiguous_transient_launch(tmp_path, mo
     assert audit["long_command_replayed"] is False
 
 
+def test_durable_remote_command_retries_numeric_peer_poll_timeout(tmp_path, monkeypatch):
+    poll_count = 0
+
+    def fake_capture(node, command, prefix, *, timeout_s):
+        nonlocal poll_count
+        if "__DURABLE_STATE__ LAUNCHED" in command:
+            return 0, "__DURABLE_STATE__ LAUNCHED\n__DURABLE_PID__ 654\n", ""
+        if command.startswith("if [ ! -d"):
+            poll_count += 1
+            if poll_count == 1:
+                return 255, "", "Connection to 1.14.255.221 port 23035 timed out"
+            return 0, "__DURABLE_STATE__ DONE\n__DURABLE_RC__ 0\n__DURABLE_PID__ 654\n", ""
+        if "cat --" in command:
+            return 0, "", ""
+        if command.startswith("rm -rf --"):
+            return 0, "", ""
+        raise AssertionError(command)
+
+    monkeypatch.setattr(durable, "_run_remote_capture", fake_capture)
+    monkeypatch.setattr(durable.time, "sleep", lambda _seconds: None)
+
+    rc, _, _, audit = durable.run_durable_remote_capture(
+        "node",
+        "echo once",
+        tmp_path / "run",
+        run_id="registered-run-poll-timeout",
+        timeout_s=60,
+        poll_interval_s=0,
+    )
+
+    assert rc == 0
+    assert audit["poll_count"] == 2
+    assert audit["transient_transport_error_count"] == 1
+    assert audit["launch_attempt_count"] == 1
+    assert audit["long_command_replayed"] is False
+
+
 def test_durable_remote_command_rejects_unsafe_run_id(tmp_path):
     with pytest.raises(ValueError, match="unsafe durable run id"):
         durable.run_durable_remote_capture(

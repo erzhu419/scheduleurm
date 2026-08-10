@@ -38,7 +38,7 @@ DEFAULT_LOADED_LEDGER = ARTIFACT_ROOT / "critical_gpu_loaded_action_ledger_20260
 DEFAULT_MIGRATION_CERTIFICATE = ARTIFACT_ROOT / "unified_migration_recalibration_certificate_20260809.json"
 DEFAULT_OUTPUT = ARTIFACT_ROOT / "unified_hardware_or_replay_20260809.json"
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 EXPECTED_QUADRANTS = ("q00", "q01", "q10", "q11")
 EXPECTED_ARRIVAL_FAMILIES = ("static", "poisson", "bursty", "load_sweep")
 EXPECTED_MIGRATION_MODES = ("without_migration", "with_migration")
@@ -114,9 +114,19 @@ class LowerAction:
     penalty_units: float
     loaded_action: bool = False
     migration_action: bool = False
+    target_batch_width: int = 0
+    required_job_counts: tuple[tuple[str, int], ...] = ()
 
     def service_vector(self) -> dict[str, float]:
         return dict(self.lower_service_vector)
+
+    def batch_width(self) -> int:
+        return int(self.target_batch_width or self.profile)
+
+    def job_requirements(self) -> dict[str, int]:
+        if self.required_job_counts:
+            return dict(self.required_job_counts)
+        return {self.workload_key: self.batch_width()}
 
     def snapshot(self) -> dict[str, Any]:
         return {
@@ -131,6 +141,8 @@ class LowerAction:
             "penalty_units": self.penalty_units,
             "loaded_action": self.loaded_action,
             "migration_action": self.migration_action,
+            "target_batch_width": self.batch_width(),
+            "required_job_counts": self.job_requirements(),
             "selection_service_view": "lower_service",
         }
 
@@ -210,6 +222,17 @@ class TraceSpec:
     load_factor: float | None
     seed: int
     jobs: tuple[TraceJob, ...]
+    workload_unit_scales: tuple[tuple[str, float], ...]
+
+    def unit_scales(self) -> dict[str, float]:
+        return dict(self.workload_unit_scales)
+
+
+@dataclass
+class ReplayJobState:
+    job: TraceJob
+    remaining_units: float
+    available_at: float
 
 
 @dataclass(frozen=True)
@@ -415,7 +438,9 @@ def _report_header(
             "critical_gpu_statewise_sota_replay_gate": "static/Poisson GPU scopes only",
             "critical_q00_q10_phase_sota_replay_gate": "static/Poisson q00/q10 only",
             "sota_quadrant_pareto_gate": "aggregates historical measured-cache policy semantics",
-            "online_arrival_experiments": "implemented inside or_submission_closure.py, not a standalone module",
+            "online_arrival_experiments": (
+                "recomputed here by the shared-lane joint event simulator"
+            ),
             "legacy_migration_artifacts": "physical costs are reusable only after rates are rebound to this cache",
         },
     }
@@ -532,6 +557,8 @@ def _validate_loaded_ledger(
         if set(vector) != {target_key, resident_key}:
             raise ValueError(f"{action_id}: loaded vector coordinates mismatch")
         profile = _positive_int(row.get("profile"), f"{action_id}.profile")
+        if profile != 2:
+            raise ValueError(f"{action_id}: directional loaded replay requires profile 2")
         node_bucket = _required_text(row, "node_bucket", action_id)
         resident_mix = _required_text(row, "resident_mix", action_id)
         common = {
@@ -583,11 +610,20 @@ def _validate_loaded_ledger(
                     lower_service_vector=tuple(sorted(vector.items())),
                     penalty_units=penalty,
                     loaded_action=True,
+                    target_batch_width=1,
+                    required_job_counts=tuple(sorted(((resident_key, 1), (target_key, 1)))),
                 ),
-                evaluation=_evaluation_from_record(
-                    action_id,
-                    target_record,
-                    kind="semi_markov_target_natural_completion_with_resident_lcb_accounting",
+                evaluation=EvaluationAction(
+                    action_id=action_id,
+                    completion_point_rate=_completion_point_rate(target_record),
+                    completion_group_units=_completion_group_units(target_record),
+                    replay_job_units=_completion_group_units(target_record),
+                    fixed_overhead_s=0.0,
+                    completion_model_sample_count=int(target_record.completion_model_sample_count),
+                    eta_source=target_record.eta_source,
+                    completion_model_kind=(
+                        "semi_markov_target_natural_completion_with_resident_lcb_accounting"
+                    ),
                 ),
             )
         )
@@ -733,6 +769,8 @@ def _validate_migration_certificate(
                 lower_service=current_rate,
                 lower_service_vector=((workload_key, current_rate),),
                 penalty_units=0.0,
+                target_batch_width=1,
+                required_job_counts=((workload_key, 1),),
             ),
             evaluation=EvaluationAction(
                 action_id=keep_id,
@@ -757,6 +795,8 @@ def _validate_migration_certificate(
                 lower_service_vector=((workload_key, effective_migration_rate),),
                 penalty_units=0.0,
                 migration_action=True,
+                target_batch_width=1,
+                required_job_counts=((workload_key, 1),),
             ),
             evaluation=EvaluationAction(
                 action_id=action_id,
@@ -993,12 +1033,31 @@ def _build_trace(
     seed = int(protocol["seed"])
     rng = random.Random(f"{scenario.scenario_id}|{family}|{process}|{load}|{seed}")
     jobs: list[TraceJob] = []
+    unit_scales: dict[str, float] = {}
     for workload_key in scenario.workload_keys:
         actions = [action for action in scenario.actions if action.lower.workload_key == workload_key]
         if not actions:
             raise ValueError(f"{scenario.scenario_id}: no actions for {workload_key}")
-        canonical_units = mean(_canonical_units(action) for action in actions)
-        lower_capacity = max(action.lower.lower_service for action in actions) * scenario.resource_count
+        action_units = [_canonical_units(action) for action in actions]
+        canonical_units = mean(action_units)
+        if any(
+            not math.isclose(value, canonical_units, rel_tol=1e-6, abs_tol=1e-9)
+            for value in action_units
+        ):
+            raise ValueError(
+                f"{scenario.scenario_id}/{workload_key}: action job-unit scales disagree"
+            )
+        unit_scales[workload_key] = canonical_units
+        dedicated = [
+            action
+            for action in actions
+            if not action.lower.loaded_action and not action.lower.migration_action
+        ]
+        capacity_actions = dedicated or actions
+        lower_capacity = (
+            max(action.lower.lower_service for action in capacity_actions)
+            * scenario.resource_count
+        )
         arrivals = _arrival_times(
             count=int(jobs_per_workload),
             process=process,
@@ -1026,6 +1085,7 @@ def _build_trace(
         load_factor=(float(load) if load is not None else None),
         seed=seed,
         jobs=tuple(jobs),
+        workload_unit_scales=tuple(sorted(unit_scales.items())),
     )
 
 
@@ -1066,33 +1126,23 @@ def _run_policy(
 ) -> dict[str, Any]:
     if migration_mode not in EXPECTED_MIGRATION_MODES:
         raise ValueError(f"unsupported migration mode {migration_mode!r}")
-    completions: dict[str, float] = {}
-    selected_counts: dict[str, int] = {}
-    selection_audit: list[dict[str, Any]] = []
-    backlog_vector = {
-        workload: sum(job.total_units for job in trace.jobs if job.workload_key == workload)
-        for workload in scenario.workload_keys
-    }
-    for workload in scenario.workload_keys:
-        jobs = [job for job in trace.jobs if job.workload_key == workload]
-        actions = [action for action in scenario.actions if action.lower.workload_key == workload]
-        allowed = _allowed_actions(actions, policy=policy, migration_mode=migration_mode)
-        if not allowed:
-            raise ValueError(f"{scenario.scenario_id}/{policy.name}: no allowed action for {workload}")
-        result, counts, audits = _simulate_workload(
-            jobs=jobs,
-            actions=allowed,
-            policy=policy,
-            quadrant=scenario.quadrant,
-            resource_count=scenario.resource_count,
-            backlog_vector=backlog_vector,
-        )
-        completions.update(result)
-        for action_id, count in counts.items():
-            selected_counts[action_id] = selected_counts.get(action_id, 0) + count
-        selection_audit.extend(audits)
+    allowed = _allowed_actions(
+        scenario.actions,
+        policy=policy,
+        migration_mode=migration_mode,
+    )
+    if not allowed:
+        raise ValueError(f"{scenario.scenario_id}/{policy.name}: no allowed actions")
+    completions, selected_counts, selection_audit, queue_metrics = _simulate_scenario(
+        trace=trace,
+        actions=allowed,
+        policy=policy,
+        quadrant=scenario.quadrant,
+        resource_count=scenario.resource_count,
+    )
     flows = [completions[job.job_id] - job.arrival_s for job in trace.jobs]
     makespan = max(completions.values(), default=0.0)
+    system_population = _system_population_metrics(trace.jobs, completions)
     return {
         "scenario_id": scenario.scenario_id,
         "scenario_kind": scenario.scenario_kind,
@@ -1112,8 +1162,14 @@ def _run_policy(
         "makespan_s": makespan,
         "mean_flow_s": mean(flows) if flows else 0.0,
         "p90_flow_s": _quantile(flows, 0.90),
+        "mean_queue_backlog_jobs": queue_metrics["mean_queue_backlog_jobs"],
+        "max_queue_backlog_jobs": queue_metrics["max_queue_backlog_jobs"],
+        "mean_unfinished_jobs": system_population["mean_unfinished_jobs"],
+        "max_unfinished_jobs": system_population["max_unfinished_jobs"],
         "selected_action_counts": dict(sorted(selected_counts.items())),
         "selection_audit": selection_audit,
+        "resource_simulation": "shared_lane_joint_event_v2",
+        "workload_unit_scales": trace.unit_scales(),
         "selection_service_view": "lower_service",
         "evaluation_service_view": "natural_completion_point",
     }
@@ -1138,71 +1194,295 @@ def _allowed_actions(
     return tuple(out)
 
 
-def _simulate_workload(
+def _simulate_scenario(
     *,
-    jobs: Sequence[TraceJob],
+    trace: TraceSpec,
     actions: Sequence[ReplayAction],
     policy: PolicyDescriptor,
     quadrant: str,
     resource_count: int,
-    backlog_vector: Mapping[str, float],
-) -> tuple[dict[str, float], dict[str, int], list[dict[str, Any]]]:
-    pending = sorted(jobs, key=lambda job: (job.arrival_s, job.job_id))
+) -> tuple[
+    dict[str, float],
+    dict[str, int],
+    list[dict[str, Any]],
+    dict[str, float | int],
+]:
+    states = {
+        job.job_id: ReplayJobState(
+            job=job,
+            remaining_units=float(job.total_units),
+            available_at=float(job.arrival_s),
+        )
+        for job in trace.jobs
+    }
     available = [0.0 for _ in range(max(1, int(resource_count)))]
     completions: dict[str, float] = {}
     counts: dict[str, int] = {}
     audits: list[dict[str, Any]] = []
-    while pending:
+    queue_events: list[tuple[float, int]] = [
+        (float(job.arrival_s), 1) for job in trace.jobs
+    ]
+    unit_scales = trace.unit_scales()
+    while states:
         lane = min(range(len(available)), key=lambda index: (available[index], index))
-        now = max(available[lane], pending[0].arrival_s)
-        ready = [job for job in pending if job.arrival_s <= now + 1e-12]
+        now = float(available[lane])
+        ready = [
+            state
+            for state in states.values()
+            if state.job.arrival_s <= now + 1e-12
+            and state.available_at <= now + 1e-12
+        ]
         if not ready:
-            now = pending[0].arrival_s
-            ready = [job for job in pending if job.arrival_s <= now + 1e-12]
-        remaining = len(pending)
-        lower_views = tuple(action.lower for action in actions)
+            next_time = min(
+                max(state.job.arrival_s, state.available_at)
+                for state in states.values()
+            )
+            if next_time <= now + 1e-12:
+                raise ValueError("joint replay cannot advance to a ready job")
+            available[lane] = next_time
+            continue
+
+        ready_counts = _state_counts(ready)
+        feasible = [
+            action
+            for action in actions
+            if _requirements_satisfied(action.lower.job_requirements(), ready_counts)
+        ]
+        if not feasible:
+            future = [
+                max(state.job.arrival_s, state.available_at)
+                for state in states.values()
+                if max(state.job.arrival_s, state.available_at) > now + 1e-12
+            ]
+            if future:
+                available[lane] = min(future)
+                continue
+            raise ValueError(
+                f"no feasible joint action for ready counts {ready_counts!r}"
+            )
+
+        backlog_work = _state_work(ready)
+        normalized_backlog = {
+            key: value / _positive_float(unit_scales.get(key), f"unit scale {key}")
+            for key, value in backlog_work.items()
+        }
+        remaining_counts = _state_counts(ready)
+        oldest_ready_workload = min(
+            ready,
+            key=lambda state: (state.job.arrival_s, state.job.job_id),
+        ).job.workload_key
         selected_lower = _select_lower_action(
             policy=policy,
-            actions=lower_views,
+            actions=tuple(action.lower for action in feasible),
             quadrant=quadrant,
-            ready_count=len(ready),
-            remaining_count=remaining,
-            backlog_vector={
-                **dict(backlog_vector),
-                pending[0].workload_key: sum(job.total_units for job in pending),
-            },
+            remaining_count=len(ready),
+            backlog_vector=normalized_backlog,
+            workload_unit_scales=unit_scales,
+            remaining_counts=remaining_counts,
+            oldest_ready_workload=oldest_ready_workload,
         )
-        action = next(action for action in actions if action.lower.action_id == selected_lower.action_id)
-        width = max(1, min(int(action.lower.profile), len(ready)))
-        if policy.semantic_key in {"delay_oracle", "ablation_delay_only"}:
-            ready.sort(key=lambda job: (job.total_units, job.arrival_s, job.job_id))
-        else:
-            ready.sort(key=lambda job: (job.arrival_s, job.job_id))
-        batch = ready[:width]
-        per_task_rate = action.evaluation.completion_point_rate / float(max(1, action.lower.profile))
+        action = next(
+            action for action in feasible
+            if action.lower.action_id == selected_lower.action_id
+        )
+        target_width = action.lower.batch_width()
+        target_pool = [
+            state for state in ready
+            if state.job.workload_key == action.lower.workload_key
+        ]
+        target_pool.sort(key=lambda state: _job_order_key(state, policy))
+        targets = target_pool[:target_width]
+        if len(targets) != target_width:
+            raise ValueError(f"{action.lower.action_id}: target width is infeasible")
+
+        used = {state.job.job_id for state in targets}
+        residents: dict[str, list[ReplayJobState]] = {}
+        for workload_key, required in action.lower.job_requirements().items():
+            remaining_required = required - (
+                target_width if workload_key == action.lower.workload_key else 0
+            )
+            if remaining_required <= 0:
+                continue
+            pool = [
+                state for state in ready
+                if state.job.workload_key == workload_key
+                and state.job.job_id not in used
+            ]
+            pool.sort(key=lambda state: _job_order_key(state, policy))
+            selected = pool[:remaining_required]
+            if len(selected) != remaining_required:
+                raise ValueError(f"{action.lower.action_id}: resident requirement is infeasible")
+            residents[workload_key] = selected
+            used.update(state.job.job_id for state in selected)
+        queue_events.append((now, -len(used)))
+
+        per_task_rate = (
+            action.evaluation.completion_point_rate / float(target_width)
+        )
         if not math.isfinite(per_task_rate) or per_task_rate <= 0.0:
             raise ValueError(f"{action.lower.action_id}: invalid completion point rate")
-        overhead = action.evaluation.fixed_overhead_s
+        overhead = float(action.evaluation.fixed_overhead_s)
         batch_end = now
-        for job in batch:
-            finish = now + overhead + job.total_units / per_task_rate
-            completions[job.job_id] = finish
+        for state in targets:
+            finish = now + overhead + state.remaining_units / per_task_rate
+            completions[state.job.job_id] = finish
             batch_end = max(batch_end, finish)
-            pending.remove(job)
+            del states[state.job.job_id]
+
+        frame_duration = batch_end - now
+        vector = action.lower.service_vector()
+        for workload_key, resident_states in residents.items():
+            aggregate_rate = _positive_float(
+                vector.get(workload_key),
+                f"{action.lower.action_id}:{workload_key} resident rate",
+            )
+            per_resident_rate = aggregate_rate / len(resident_states)
+            for state in resident_states:
+                completion_offset = state.remaining_units / per_resident_rate
+                if completion_offset <= frame_duration + 1e-12:
+                    completions[state.job.job_id] = now + completion_offset
+                    del states[state.job.job_id]
+                else:
+                    state.remaining_units -= per_resident_rate * frame_duration
+                    state.available_at = batch_end
+                    queue_events.append((batch_end, 1))
+
         available[lane] = batch_end
         counts[action.lower.action_id] = counts.get(action.lower.action_id, 0) + 1
         audits.append(
             {
                 "action_id": action.lower.action_id,
+                "target_workload_key": action.lower.workload_key,
                 "selection_service_view": "lower_service",
                 "evaluation_service_view": "natural_completion_point",
                 "loaded_action": action.lower.loaded_action,
                 "migration_action": action.lower.migration_action,
-                "batch_width": width,
-                "remaining_count_before": remaining,
+                "target_batch_width": target_width,
+                "required_job_counts": action.lower.job_requirements(),
+                "resident_job_counts": {
+                    key: len(value) for key, value in residents.items()
+                },
+                "resource_lane": lane,
+                "frame_start_s": now,
+                "frame_end_s": batch_end,
+                "remaining_count_before": len(ready),
+                "ready_count_before": len(ready),
+                "normalized_backlog_vector": normalized_backlog,
             }
         )
-    return completions, counts, audits
+    horizon = max(completions.values(), default=0.0)
+    return completions, counts, audits, _queue_metrics(queue_events, horizon=horizon)
+
+
+def _state_counts(states: Sequence[ReplayJobState]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for state in states:
+        key = state.job.workload_key
+        counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def _state_work(states: Sequence[ReplayJobState]) -> dict[str, float]:
+    work: dict[str, float] = {}
+    for state in states:
+        key = state.job.workload_key
+        work[key] = work.get(key, 0.0) + float(state.remaining_units)
+    return work
+
+
+def _lane_frames_do_not_overlap(audits: Sequence[Mapping[str, Any]]) -> bool:
+    by_lane: dict[int, list[tuple[float, float]]] = {}
+    for row in audits:
+        lane = int(row.get("resource_lane") or 0)
+        start = _nonnegative_float(row.get("frame_start_s"), "frame start")
+        end = _nonnegative_float(row.get("frame_end_s"), "frame end")
+        if end + 1e-12 < start:
+            return False
+        by_lane.setdefault(lane, []).append((start, end))
+    return all(
+        all(
+            current[0] + 1e-12 >= previous[1]
+            for previous, current in zip(rows, rows[1:])
+        )
+        for rows in (sorted(values) for values in by_lane.values())
+    )
+
+
+def _requirements_satisfied(
+    requirements: Mapping[str, int], ready_counts: Mapping[str, int]
+) -> bool:
+    return all(int(ready_counts.get(key, 0)) >= int(count) for key, count in requirements.items())
+
+
+def _job_order_key(
+    state: ReplayJobState, policy: PolicyDescriptor
+) -> tuple[Any, ...]:
+    if policy.semantic_key in {"delay_oracle", "ablation_delay_only"}:
+        return (state.remaining_units, state.job.arrival_s, state.job.job_id)
+    return (state.job.arrival_s, state.job.job_id)
+
+
+def _system_population_metrics(
+    jobs: Sequence[TraceJob], completions: Mapping[str, float]
+) -> dict[str, float | int]:
+    events: dict[float, list[int]] = {}
+    for job in jobs:
+        completion = _finite_float(completions[job.job_id], "completion time")
+        if completion + 1e-12 < job.arrival_s:
+            raise ValueError(f"{job.job_id}: completion precedes arrival")
+        events.setdefault(float(job.arrival_s), [0, 0])[0] += 1
+        events.setdefault(completion, [0, 0])[1] += 1
+    if not events:
+        return {"mean_unfinished_jobs": 0.0, "max_unfinished_jobs": 0}
+    count = 0
+    maximum = 0
+    area = 0.0
+    previous = min(events)
+    for timestamp in sorted(events):
+        area += count * (timestamp - previous)
+        arrivals, departures = events[timestamp]
+        count += arrivals
+        maximum = max(maximum, count)
+        count -= departures
+        if count < 0:
+            raise ValueError("backlog event accounting became negative")
+        previous = timestamp
+    horizon = max(events)
+    return {
+        "mean_unfinished_jobs": area / horizon if horizon > 0.0 else 0.0,
+        "max_unfinished_jobs": maximum,
+    }
+
+
+def _queue_metrics(
+    events: Sequence[tuple[float, int]], *, horizon: float
+) -> dict[str, float | int]:
+    grouped: dict[float, list[int]] = {}
+    for timestamp, delta in events:
+        if not math.isfinite(timestamp) or timestamp < 0.0:
+            raise ValueError("queue event time must be finite and nonnegative")
+        grouped.setdefault(float(timestamp), []).append(int(delta))
+    if not grouped:
+        return {"mean_queue_backlog_jobs": 0.0, "max_queue_backlog_jobs": 0}
+    count = 0
+    maximum = 0
+    area = 0.0
+    previous = min(grouped)
+    for timestamp in sorted(grouped):
+        area += count * (timestamp - previous)
+        deltas = grouped[timestamp]
+        count += sum(delta for delta in deltas if delta > 0)
+        maximum = max(maximum, count)
+        count += sum(delta for delta in deltas if delta < 0)
+        if count < 0:
+            raise ValueError("queue event accounting became negative")
+        previous = timestamp
+    if count != 0:
+        raise ValueError(f"queue event accounting did not close: {count}")
+    return {
+        "mean_queue_backlog_jobs": area / horizon if horizon > 0.0 else 0.0,
+        "max_queue_backlog_jobs": maximum,
+    }
 
 
 def _select_lower_action(
@@ -1210,40 +1490,57 @@ def _select_lower_action(
     policy: PolicyDescriptor,
     actions: Sequence[LowerAction],
     quadrant: str,
-    ready_count: int,
     remaining_count: int,
     backlog_vector: Mapping[str, float],
+    workload_unit_scales: Mapping[str, float],
+    remaining_counts: Mapping[str, int],
+    oldest_ready_workload: str,
 ) -> LowerAction:
     if not actions:
         raise ValueError("lower-service selector received no actions")
-    feasible = [action for action in actions if action.profile <= max(1, ready_count)]
-    if not feasible:
-        min_profile = min(action.profile for action in actions)
-        feasible = [action for action in actions if action.profile == min_profile]
+    feasible = list(actions)
+
+    def normalized_rate(workload_key: str, rate: float) -> float:
+        scale = _positive_float(
+            workload_unit_scales.get(workload_key),
+            f"unit scale {workload_key}",
+        )
+        return float(rate) / scale
 
     def support(action: LowerAction, *, penalty: bool = True) -> float:
         value = sum(
-            max(0.0, float(backlog_vector.get(key, 0.0))) * float(rate)
+            max(0.0, float(backlog_vector.get(key, 0.0)))
+            * normalized_rate(key, rate)
             for key, rate in action.lower_service_vector
         )
         return value - (action.penalty_units if penalty else 0.0)
 
     def target_support(action: LowerAction, *, penalty: bool = True) -> float:
-        value = float(backlog_vector.get(action.workload_key, remaining_count)) * action.lower_service
+        value = float(
+            backlog_vector.get(action.workload_key, remaining_count)
+        ) * normalized_rate(action.workload_key, action.lower_service)
         return value - (action.penalty_units if penalty else 0.0)
 
     def lower_flow(action: LowerAction) -> float:
-        return float(max(1, action.profile)) / max(action.lower_service, 1e-12)
+        return float(action.batch_width()) / max(
+            normalized_rate(action.workload_key, action.lower_service),
+            1e-12,
+        )
 
     def low_profile_key(action: LowerAction) -> tuple[Any, ...]:
         return (action.profile, action.penalty_units, action.action_id)
 
     semantic = policy.semantic_key
     if semantic == "legacy_fixed_caps":
-        workload_key = feasible[0].workload_key
+        workload_key = oldest_ready_workload
+        workload_actions = [
+            action for action in feasible if action.workload_key == workload_key
+        ]
+        if not workload_actions:
+            workload_actions = feasible
         fixed_profile = int(LEGACY_FIXED_PROFILES.get(workload_key, 1))
         return min(
-            feasible,
+            workload_actions,
             key=lambda action: (
                 abs(action.profile - fixed_profile),
                 action.profile > fixed_profile,
@@ -1268,13 +1565,42 @@ def _select_lower_action(
             return min(guarded, key=lambda action: (lower_flow(action), low_profile_key(action)))
         return max(feasible, key=lambda action: (target_support(action), -action.profile, action.action_id))
     if semantic == "resource_adaptive_goodput":
-        if remaining_count >= 8:
-            return max(feasible, key=lambda action: (target_support(action), -lower_flow(action), -action.profile, action.action_id))
-        return min(feasible, key=lambda action: (lower_flow(action), -target_support(action), low_profile_key(action)))
+        high_backlog = [
+            action
+            for action in feasible
+            if int(remaining_counts.get(action.workload_key, 0)) >= 8
+        ]
+        if high_backlog:
+            return max(
+                high_backlog,
+                key=lambda action: (
+                    target_support(action),
+                    -lower_flow(action),
+                    -action.profile,
+                    action.action_id,
+                ),
+            )
+        return min(
+            feasible,
+            key=lambda action: (
+                lower_flow(action),
+                -target_support(action),
+                low_profile_key(action),
+            ),
+        )
     if semantic == "packing_guard":
         conservative = [action for action in feasible if action.profile <= 2]
         pool = conservative or feasible
-        return max(pool, key=lambda action: (action.lower_service / max(1, action.profile), target_support(action), -action.profile, action.action_id))
+        return max(
+            pool,
+            key=lambda action: (
+                normalized_rate(action.workload_key, action.lower_service)
+                / action.batch_width(),
+                target_support(action),
+                -action.profile,
+                action.action_id,
+            ),
+        )
     if semantic == "ablation_no_bounded_penalty":
         return max(feasible, key=lambda action: (support(action, penalty=False), -lower_flow(action), -action.profile, action.action_id))
     if semantic == "ablation_high_profile_tiebreak":
@@ -1446,6 +1772,26 @@ def _coverage_checks(
             row["evaluation_service_view"] == "natural_completion_point"
             and all(audit["evaluation_service_view"] == "natural_completion_point" for audit in row["selection_audit"])
             for row in runs
+        ),
+        "all_runs_share_physical_lanes_across_workloads": all(
+            row.get("resource_simulation") == "shared_lane_joint_event_v2"
+            and _lane_frames_do_not_overlap(row.get("selection_audit") or [])
+            for row in runs
+        ),
+        "all_backlog_metrics_finite": all(
+            math.isfinite(float(row.get("mean_queue_backlog_jobs") or 0.0))
+            and 0.0 <= float(row.get("mean_queue_backlog_jobs") or 0.0)
+            <= float(row.get("max_queue_backlog_jobs") or 0.0) + 1e-12
+            and math.isfinite(float(row.get("mean_unfinished_jobs") or 0.0))
+            and 0.0 <= float(row.get("mean_unfinished_jobs") or 0.0)
+            <= float(row.get("max_unfinished_jobs") or 0.0) + 1e-12
+            for row in runs
+        ),
+        "all_loaded_actions_require_resident_and_target": all(
+            action.lower.batch_width() == 1
+            and sum(action.lower.job_requirements().values()) == 2
+            and set(action.lower.job_requirements()) == set(action.lower.service_vector())
+            for action in inputs.loaded_actions
         ),
         "loaded_action_ledger_consumed": bool(inputs.loaded_actions)
         and all(any(action.lower.action_id == loaded.lower.action_id for scenario in hardware for action in scenario.actions) for loaded in inputs.loaded_actions),
@@ -1821,7 +2167,12 @@ def _claim_boundary() -> str:
         "policy-semantics implementations on the same cache, not direct full-stack "
         "executions of Gavel, Pollux, Sia, IADeep, Salus, or any other external "
         "binary. PASS is an evidence/coverage result; superiority remains a "
-        "separate computed diagnostic and is never a gate assumption."
+        "separate computed diagnostic and is never a gate assumption. Hardware "
+        "scenarios use a shared-lane joint event simulator: workload classes on "
+        "one node compete for the same GPU or CPU lanes, and a directional loaded "
+        "action consumes one resident and one target queue coordinate. Queue and "
+        "service coordinates are divided by fixed task-native canonical-work "
+        "scales before MaxWeight scoring."
     )
 
 

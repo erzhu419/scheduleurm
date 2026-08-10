@@ -34,6 +34,7 @@ def test_valid_inputs_build_complete_fail_closed_replay_matrix(tmp_path):
 
     assert report["status"] == "PASS"
     assert report["pass"] is True
+    assert report["schema_version"] == 2
     assert all(report["coverage_checks"].values())
     assert {row["quadrant"] for row in report["scenarios"]} == set(EXPECTED_QUADRANTS)
     assert {row["arrival_family"] for row in report["runs"]} == set(EXPECTED_ARRIVAL_FAMILIES)
@@ -49,6 +50,8 @@ def test_valid_inputs_build_complete_fail_closed_replay_matrix(tmp_path):
     }
     assert any(row["policy"] == OURS_POLICY for row in report["runs"])
     assert all(row["completed_jobs"] == row["job_count"] for row in report["runs"])
+    assert all(row["resource_simulation"] == "shared_lane_joint_event_v2" for row in report["runs"])
+    assert all(row["mean_queue_backlog_jobs"] >= 0.0 for row in report["runs"])
     assert report["comparison_kind"] == "same-cache_policy-semantics"
     assert report["full_stack_external_binary_comparison"] is False
     assert "not direct full-stack" in report["claim_boundary"]
@@ -63,6 +66,33 @@ def test_valid_inputs_build_complete_fail_closed_replay_matrix(tmp_path):
         if row["policy"] == LEGACY_POLICY
         for audit in row["selection_audit"]
     )
+    loaded_audits = [
+        audit
+        for row in report["runs"]
+        for audit in row["selection_audit"]
+        if audit["loaded_action"]
+    ]
+    assert loaded_audits
+    assert all(
+        audit["target_batch_width"] == 1
+        and sum(audit["required_job_counts"].values()) == 2
+        and sum(audit["resident_job_counts"].values()) == 1
+        for audit in loaded_audits
+    )
+    joint_run = next(
+        row
+        for row in report["runs"]
+        if row["scenario_id"] == "q01:gpu_test_dual_gpuA"
+        and row["arrival_family"] == "static"
+        and row["migration_mode"] == "without_migration"
+        and row["policy"] == OURS_POLICY
+    )
+    workloads_by_lane = {}
+    for audit in joint_run["selection_audit"]:
+        workloads_by_lane.setdefault(audit["resource_lane"], set()).add(
+            audit["target_workload_key"]
+        )
+    assert any(len(workloads) > 1 for workloads in workloads_by_lane.values())
     migration_ours = [
         row
         for row in report["runs"]
@@ -193,7 +223,7 @@ def test_history_eta_is_never_admitted_to_natural_completion_view(tmp_path):
     assert "history ETA is forbidden" in report["blockers"][0]["detail"]
 
 
-def test_completion_points_change_metrics_but_not_lower_service_selection(tmp_path):
+def test_completion_points_change_metrics_without_entering_the_selector(tmp_path):
     first = tmp_path / "first"
     second = tmp_path / "second"
     paths_a = _write_fixture(first)
@@ -217,17 +247,23 @@ def test_completion_points_change_metrics_but_not_lower_service_selection(tmp_pa
     )
 
     assert report_a["pass"] and report_b["pass"]
-    selected_a = {
-        (row["scenario_id"], row["trace_id"], row["migration_mode"], row["policy"]): row["selected_action_counts"]
+    first_a = {
+        (row["scenario_id"], row["trace_id"], row["migration_mode"], row["policy"]): row["selection_audit"][0]["action_id"]
         for row in report_a["runs"]
         if row["arrival_family"] == "static"
     }
-    selected_b = {
-        (row["scenario_id"], row["trace_id"], row["migration_mode"], row["policy"]): row["selected_action_counts"]
+    first_b = {
+        (row["scenario_id"], row["trace_id"], row["migration_mode"], row["policy"]): row["selection_audit"][0]["action_id"]
         for row in report_b["runs"]
         if row["arrival_family"] == "static"
     }
-    assert selected_a == selected_b
+    assert first_a == first_b
+    assert all(
+        audit["selection_service_view"] == "lower_service"
+        for report in (report_a, report_b)
+        for row in report["runs"]
+        for audit in row["selection_audit"]
+    )
     metrics_a = [(row["makespan_s"], row["mean_flow_s"]) for row in report_a["runs"]]
     metrics_b = [(row["makespan_s"], row["mean_flow_s"]) for row in report_b["runs"]]
     assert metrics_a != metrics_b
@@ -310,6 +346,70 @@ def test_nonbeneficial_migration_is_not_an_admitted_action(tmp_path):
     assert scenario["action_ids"] == [f"keep:{row['action_id']}"]
 
 
+def test_diagonal_work_unit_rescaling_preserves_policy_trajectory_and_jct(tmp_path):
+    original_paths = _write_fixture(tmp_path / "original")
+    scaled_paths = _write_fixture(tmp_path / "scaled")
+    cache = json.loads(scaled_paths["cache"].read_text(encoding="utf-8"))
+    factor = 1000.0
+    for row in cache["records"]:
+        if row["workload_key"] != "gpu_llm_distilgpt2":
+            continue
+        row["total_units"] *= factor
+        row["aggregate_rate"] *= factor
+        row["per_task_rates"] = [value * factor for value in row["per_task_rates"]]
+        if row.get("completion_group_total_units", 0.0) > 0.0:
+            row["completion_group_total_units"] *= factor
+        if row.get("completion_unit_s", 0.0) > 0.0:
+            row["completion_unit_s"] /= factor
+    _write_json(scaled_paths["cache"], cache)
+
+    ledger = json.loads(scaled_paths["ledger"].read_text(encoding="utf-8"))
+    for action in ledger["actions"]:
+        vector = action["lower_service_vector"]
+        if "gpu_llm_distilgpt2" in vector:
+            vector["gpu_llm_distilgpt2"] *= factor
+    _write_json(scaled_paths["ledger"], ledger)
+    migration = json.loads(scaled_paths["migration"].read_text(encoding="utf-8"))
+    migration["service_cache_sha256"] = _sha256(scaled_paths["cache"])
+    _write_json(scaled_paths["migration"], migration)
+
+    kwargs = {"loads": (0.50,), "seeds": (7,), "jobs_per_workload": 3}
+    original = build_unified_hardware_or_replay(
+        cache_path=original_paths["cache"],
+        loaded_ledger_path=original_paths["ledger"],
+        migration_certificate_path=original_paths["migration"],
+        **kwargs,
+    )
+    scaled = build_unified_hardware_or_replay(
+        cache_path=scaled_paths["cache"],
+        loaded_ledger_path=scaled_paths["ledger"],
+        migration_certificate_path=scaled_paths["migration"],
+        **kwargs,
+    )
+
+    assert original["pass"] and scaled["pass"]
+    identity_fields = ("scenario_id", "trace_id", "migration_mode", "policy")
+    metric_fields = (
+        "makespan_s",
+        "mean_flow_s",
+        "p90_flow_s",
+        "mean_queue_backlog_jobs",
+    )
+    for left, right in zip(original["runs"], scaled["runs"], strict=True):
+        assert tuple(left[field] for field in identity_fields) == tuple(
+            right[field] for field in identity_fields
+        )
+        assert left["selected_action_counts"] == right["selected_action_counts"]
+        assert [row["action_id"] for row in left["selection_audit"]] == [
+            row["action_id"] for row in right["selection_audit"]
+        ]
+        assert left["max_queue_backlog_jobs"] == right["max_queue_backlog_jobs"]
+        for field in metric_fields:
+            assert abs(left[field] - right[field]) <= 1e-12 * max(
+                1.0, abs(left[field]), abs(right[field])
+            )
+
+
 def _write_fixture(root: Path, *, completion_scale: float = 1.0) -> dict[str, Path]:
     root.mkdir(parents=True, exist_ok=True)
     cache_path = root / "unified_cache.json"
@@ -341,6 +441,7 @@ def _write_fixture(root: Path, *, completion_scale: float = 1.0) -> dict[str, Pa
             completion_scale,
             state="mixed_colocation",
             mix="resident_llm_target_cnn",
+            total_units=20.0,
         ),
         _lower_only_record(
             "gpu_llm_distilgpt2",
@@ -361,6 +462,7 @@ def _write_fixture(root: Path, *, completion_scale: float = 1.0) -> dict[str, Pa
             completion_scale,
             state="mixed_colocation",
             mix="resident_cnn_target_hybrid_rl",
+            total_units=20.0,
         ),
         _lower_only_record(
             "gpu_cnn_torch_resnet50",
@@ -498,9 +600,10 @@ def _completion_record(
     *,
     state: str = "empty",
     mix: str = "",
+    total_units: float | None = None,
 ) -> ProfileRecord:
-    total_units = float(profile * 20)
-    wall = total_units / point_rate * completion_scale
+    group_units = float(total_units if total_units is not None else profile * 20)
+    wall = group_units / point_rate * completion_scale
     return ProfileRecord(
         workload_key=workload_key,
         command_fingerprint=f"synthetic:{workload_key}:{node_bucket}:{state}:{mix}:p{profile}",
@@ -508,7 +611,7 @@ def _completion_record(
         node_bucket=node_bucket,
         profile=profile,
         unit="iteration",
-        total_units=total_units,
+        total_units=group_units,
         aggregate_rate=lower_rate,
         per_task_rates=tuple(lower_rate / profile for _ in range(profile)),
         source="synthetic-fixture",
@@ -520,8 +623,8 @@ def _completion_record(
         completion_model_ready=True,
         completion_model_sample_count=12,
         completion_total_wall_s=wall,
-        completion_group_total_units=total_units,
-        completion_unit_s=wall / total_units,
+        completion_group_total_units=group_units,
+        completion_unit_s=wall / group_units,
         allocation_workers=1,
         colocation_count=profile,
     )

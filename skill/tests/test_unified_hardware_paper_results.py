@@ -73,6 +73,8 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert "\\UnifiedSotaPolicyRows" in tex_source
     assert "\\UnifiedAblationRows" in tex_source
     assert "\\UnifiedHardwareSlackRows" in tex_source
+    assert "\\UnifiedOnlineArrivalFamilyRows" in tex_source
+    assert "\\UnifiedOnlineQuadrantRows" in tex_source
 
     output = tmp_path / "summary.json"
     markdown = tmp_path / "summary.md"

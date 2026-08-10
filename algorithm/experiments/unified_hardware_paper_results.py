@@ -676,6 +676,22 @@ def tex_macros(report: Mapping[str, Any]) -> str:
             f"{_fmt(row['nominal_lcb_coverage'])} \\\\"
             for row in slack["nodes"]
         ),
+        "UnifiedOnlineArrivalFamilyRows": "\n".join(
+            f"{_latex_escape(family)} & {row['comparison_count']} & "
+            f"{_fmt(row['legacy_to_ours_makespan_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_mean_flow_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_makespan_worst_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_mean_flow_worst_ratio'])} \\\\"
+            for family, row in sorted(online_legacy["by_arrival_family"].items())
+        ),
+        "UnifiedOnlineQuadrantRows": "\n".join(
+            f"{_latex_escape(quadrant)} & {row['comparison_count']} & "
+            f"{_fmt(row['legacy_to_ours_makespan_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_mean_flow_geomean_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_makespan_worst_ratio'])} & "
+            f"{_fmt(row['legacy_to_ours_mean_flow_worst_ratio'])} \\\\"
+            for quadrant, row in sorted(online_legacy["by_quadrant"].items())
+        ),
     }
     lines.extend(
         f"\\providecommand{{\\{name}}}{{%\n{value}\n}}"

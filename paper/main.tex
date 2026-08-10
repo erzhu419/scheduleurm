@@ -1764,13 +1764,18 @@ Here \(n\) indexes decision frames, \(Q^{\mathrm F}(n)\) is the frame-boundary
 backlog or urgency vector, \(\mathcal A_n^{\mathrm{traj}}\) is the finite
 generated trajectory family, \(\underline S_n^{\mathrm F}(a)\) is the
 cumulative lower-service vector, \(P_n^{\mathrm F}(a)\) is the cumulative
-bounded trajectory penalty, and \(\tau_n(a)>0\) is the trajectory duration.  Dividing
-the denominator by a positive horizon common to every action in the frame
-does not change the argmax; this is the normalized score used by the artifact.
-The duration factor is essential: maximizing the unnormalized cumulative
-numerator is generally not equivalent when candidate trajectories have
-different lengths.  The queue/urgency coordinates and feasibility oracle are
-domain-specific.  Proposition~\ref{prop:frame-drift} supplies the
+bounded trajectory penalty, and \(\tau_n(a)>0\) is the trajectory duration.
+For the FJSP and MMRCPSP renewal experiments, the artifact uses the actual
+duration ratio \(\tau_n(a)/H_n\), where the positive normalization constant
+\(H_n\) is common to the frame.  For each registered port context, every
+completed trajectory is instead idle-padded to a candidate-independent common
+horizon \(H_n\); division by that common horizon preserves the scalar ordering.
+The duration factor is essential in the former case: maximizing the
+unnormalized cumulative numerator is generally not equivalent when candidate
+trajectories have different lengths.  The port terminal coordinates are
+bounded virtual cost service, not physical vessel departures.  The
+queue/urgency coordinates and feasibility oracle are domain-specific.
+Proposition~\ref{prop:frame-drift} supplies the
 variable-duration stochastic interface, and the Lean theorem
 \texttt{frameApproximateOracle\_iff\_durationNormalized} checks the corresponding
 cumulative-oracle/rate-oracle equivalence for positive duration.  The
@@ -1790,10 +1795,16 @@ makespan reference \citep{perron2023cpsat}.  Its sum-completion coordinate is
 descriptive because CP-SAT optimizes makespan only, and a feasible status is not
 an optimality proof.
 
-The MMRCPSP experiment registers 25 feasible PSPLIB trajectories, five each
-from j12, j14, j16, j18, and j20 \citep{kolisch1997psplib}.  One action completes
-one project from one registered class.  Seven exogenous unit-time arrival
-scenarios are replayed against duration-normalized robust MaxWeight,
+The prospective structural MMRCPSP holdout registers 25 PSPLIB instances, five
+each from j12, j14, j16, j18, and j20 \citep{kolisch1997psplib}.  The selected
+candidate is Pareto nondominated against the frozen heuristic family on all 25
+instances, strictly dominates every heuristic on 11, and attains the public
+makespan optimum on 7; its geometric-mean makespan ratio to the public optimum
+is 1.1667.  These figures do not imply global or universal superiority.  The
+subsequent stochastic experiment reuses the resulting known 25-class action
+library, where one action completes one project from one registered class.
+Seven exogenous unit-time arrival scenarios are replayed against
+duration-normalized robust MaxWeight,
 unnormalized robust MaxWeight, shortest registered trajectory, longest queue
 then shortest trajectory, and round-robin class selection.  The first stream
 matrix uses three seeds; a later class-balance protocol freezes five new arrival
@@ -1802,16 +1813,26 @@ first matrix but before observing those new tapes.  It is therefore a
 prospective arrival-tape check on a known instance and action library, not a new
 structural-instance holdout.
 
-The port evidence keeps two models non-substitutable.  The BACASP-S source-core
-certificate evaluates a 30-vessel berth/quay instance with crane travel and
-setup times \citep{correcher2024berth}; it contains no mid-service migration.
-The separate synthetic statewise certificate models re-berthing and crane
-reassignment with persistent channel and tug resources, lost work, delay, and
-risk penalties, but uses no physical terminal observations.  Table~\ref{tab:or-generalization}
-reports the resulting mixed evidence.
+The port evidence keeps physical source semantics and synthetic migration
+semantics non-substitutable.  The BACASP-S source-core certificate evaluates a
+30-vessel berth/quay instance with crane travel and setup times
+\citep{correcher2024berth}; it contains no mid-service migration.  Three
+synthetic event-driven instances add berth, quay-crane, yard-block, and
+gate-lane resources together with re-berthing, crane reassignment, and yard
+rehandle.  One locked 31-trajectory family is evaluated over the public and
+three synthetic contexts, giving 124 feasible trajectory-context ledgers and
+zero generated-family oracle gap.  The globally selected plan is Pareto
+nondominated on the public source-core comparison and all three synthetic
+comparisons.  This current-code refresh is a reproducible registered replay,
+not a prospective holdout.  A separate frame certificate verifies that all 31
+trajectories fit each context's positive candidate-independent horizon and that
+the referenced Lean frame file compiles.  Because the selected terminal
+coordinates are virtual costs, this does not provide a stochastic
+physical-service or positive-recurrence certificate.
+Table~\ref{tab:or-generalization} reports the resulting mixed evidence.
 
-\begin{table}[H]
-\TABLE{Cross-domain finite-trajectory holdouts.\label{tab:or-generalization}}{
+\begin{table}[!t]
+\TABLE{Cross-domain finite-trajectory evidence.\label{tab:or-generalization}}{
 \scriptsize
 \renewcommand{\arraystretch}{1.05}
 \begin{tabular}{@{}
@@ -1828,7 +1849,12 @@ against fixed rules.  CP-SAT feasible 20/20, optimal status 10/20, and dominates
 the selected ledger 14/20.  Qualitative relations reproduce 20/20; exact
 numeric gaps reproduce 17/20. & CP-SAT is makespan-only and wall-clock limited;
 no global optimum or arbitrary-solver claim. \\
-MMRCPSP aggregate queue & 25-class action library; seven scenarios, three seeds,
+MMRCPSP structural holdout & 25 prospective PSPLIB instances across j12, j14,
+j16, j18, and j20 & Candidate nondominated 25/25 against frozen heuristics;
+strictly dominates every heuristic 11/25; attains public makespan optimum 7/25;
+geometric-mean makespan/optimum 1.1667. & Public optimum and CP-SAT reference
+are makespan-only; no global or universal superiority claim. \\
+MMRCPSP aggregate queue & Known 25-class action library; seven scenarios, three seeds,
 and five policies; 105 runs & Exact robust oracle 21/21 scenario/seed cells, but
 shortest trajectory dominates it 21/21 on final backlog and time-average total
 queue. & Retained negative result; no total-delay superiority or recurrence
@@ -1839,12 +1865,14 @@ total time-average queue, worst-class time-average queue, and worst-class final
 backlog.  Strictly better than every baseline 0/35; baseline dominance 0/35. &
 New arrival tapes, not new structural instances; no universal performance
 claim. \\
-Port & 30-vessel BACASP-S source core plus a separate synthetic statewise
-migration certificate & Source-core robust MaxWeight is dominated by
-reconfiguration-greedy and SPT.  Synthetic robust delayed re-berthing is selected
-with \(\alpha_0=\alpha_1=0\) and finite-family \(P_0=2.54\). & No physical
-migration observation, industrial deployment, yard/gate validation, or global
-port optimum. \\
+Port & 30-vessel BACASP-S source core; three registered four-resource synthetic
+instances; one locked 31-trajectory family & All 124 trajectory-context pairs
+are feasible with generated-family \(\alpha_0=\alpha_1=0\); selected global plan
+is Pareto nondominated on the public context and 3/3 synthetic contexts.  The
+earlier statewise source-core robust policy remains dominated by
+reconfiguration-greedy and SPT. & Registered replay, not prospective holdout;
+virtual-cost frame bridge is compiled, but no physical migration observation,
+stochastic port slack, industrial deployment, or global port optimum. \\
 \bottomrule
 \end{tabular}
 }{Every comparison is scoped to its registered finite policy family and stated
@@ -1866,13 +1894,16 @@ theorem of makespan or total-delay optimality.
 The FJSP candidate ledgers and all qualitative CP-SAT relations reproduce on a
 second run.  Three exact CP-SAT gaps vary because a five-second wall-clock
 budget can return different incumbents; this variation is reported rather than
-treated as candidate-ledger drift.  Both MMRCPSP matrices reproduce exactly
-after decompression.  Their raw gzip hashes differ only because the gzip header
-stores the output basename.  Finally, the port source-core and synthetic
-migration certificates remain separate: the former contains the physical
-BACASP-S data but no migration, whereas the latter contains migration semantics
-but no physical terminal observations.  These boundaries prevent portability
-evidence from becoming a domain-wide state-of-the-art claim.
+treated as candidate-ledger drift.  Both MMRCPSP stream matrices reproduce
+exactly after decompression.  Their raw gzip hashes differ only because the
+gzip header stores the output basename.  The refreshed port ledger removes
+only observed wall-clock runtime fields and uses a fixed gzip header;
+independent runs are therefore byte-identical as well as semantically
+identical.  The port source-core and synthetic migration semantics remain
+separate: the former contains BACASP-S data but no migration, whereas the
+latter contains migration semantics but no physical terminal observations.
+These boundaries prevent portability evidence from becoming a domain-wide
+state-of-the-art claim.
 
 \subsection{Formal and production artifacts}
 \label{subsec:formal-production}

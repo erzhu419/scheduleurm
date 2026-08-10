@@ -9,6 +9,7 @@ from algorithm.experiments.unified_hardware_or_replay import (
     EXPECTED_ARRIVAL_FAMILIES,
     EXPECTED_MIGRATION_MODES,
     EXPECTED_QUADRANTS,
+    LEGACY_POLICY,
     OURS_POLICY,
     build_unified_hardware_or_replay,
 )
@@ -43,12 +44,25 @@ def test_valid_inputs_build_complete_fail_closed_replay_matrix(tmp_path):
     assert {row["policy"] for row in report["runs"] if row["policy_category"] == "ablation"} == {
         name for name, _ in ABLATION_POLICIES
     }
+    assert {row["policy"] for row in report["runs"] if row["policy_category"] == "legacy"} == {
+        LEGACY_POLICY
+    }
     assert any(row["policy"] == OURS_POLICY for row in report["runs"])
     assert all(row["completed_jobs"] == row["job_count"] for row in report["runs"])
     assert report["comparison_kind"] == "same-cache_policy-semantics"
     assert report["full_stack_external_binary_comparison"] is False
     assert "not direct full-stack" in report["claim_boundary"]
     assert report["performance_diagnostics"]["diagnostic_only_not_a_gate_condition"] is True
+    assert report["legacy_comparison_rows"]
+    assert report["performance_diagnostics"]["legacy"]["comparison_count"] == len(
+        report["legacy_comparison_rows"]
+    )
+    assert all(
+        not audit["loaded_action"] and not audit["migration_action"]
+        for row in report["runs"]
+        if row["policy"] == LEGACY_POLICY
+        for audit in row["selection_audit"]
+    )
     migration_ours = [
         row
         for row in report["runs"]
@@ -85,6 +99,7 @@ def test_missing_input_waits_without_partial_results(tmp_path):
     assert report["pass"] is False
     assert report["runs"] == []
     assert report["pareto_rows"] == []
+    assert report["legacy_comparison_rows"] == []
     assert report["blockers"] == [
         {
             "code": "MISSING_INPUT",

@@ -859,6 +859,35 @@ B+P_0+\alpha_0
 
 ### Implementation selector used by the replay layer
 
+2026-08-10 的最终 hardware-local replay 使用 **joint shared-lane event
+semantics**，而不是把每个 workload 坐标分别放到一份完整 GPU/CPU pool 上再把
+结果相加。对同一 hardware scenario：
+
+1. CNN、LLM、RL、GPU-compute 或 CPU workload 共同竞争同一组物理 lane；任意
+   时刻每条 lane 最多承载一个已选择的 configuration frame。
+2. MaxWeight 打分前，class \(i\) 的 remaining work 和所有 action 的第 \(i\)
+   个 service coordinate 同时除以固定正的 canonical-work scale \(c_i\)。因此 CNN step、LLM
+   step、RL iteration 和 CPU unit 被转换到同一 canonical-job-rate 坐标；只改变
+   某一类任务的计数单位并同步改变 \(c_i\)，不能改变候选动作排序。主 theorem
+   直接应用于换算后的 canonical-job queue dynamics。这里的 \(c_i\) 是 task-native
+   work 到 canonical job 的单位换算，不是 diagonal LCB theorem 中控制 confidence
+   radius 的 service scale \(s_i\)；两个符号和涵义不能混用。
+3. directional loaded action 不是“profile 2 的两个 target”。它要求 queue 中
+   同时存在一个预注册 resident 和一个 target；target 用 task-native natural
+   completion model 决定 frame duration，resident 只在该 overlap frame 内获得
+   certified lower-service credit，未完成的 resident 带 remaining work 返回
+   queue。
+4. migration action 只处理一个 controlled target，并以实测
+   checkpoint/sync/staging/warmup/lost-work 后的 variable-duration frame 进入同一
+   selector。所有 workload 共用 lane 和所有 lane frame 不重叠，是最终 replay
+   的 fail-closed gate，而不是事后描述。
+
+这四条消除了旧版 per-workload replay 会让每个 workload 都看到完整 lane count
+的资源复制问题，也防止把 directional co-location row 错解为两个同类 target。
+因此旧 schema-v1 的 performance 数字不能进入最终论文；只有通过 shared-lane、
+required resident/target、natural completion 和 hash-chain audits 的 schema-v2
+输出可以进入正文。
+
 当前 OR closure runner 里的 candidate policy 不是无惩罚的纯 makespan argmin，也不是固定 profile。为了和上面的 approximate-oracle theorem 对齐，`algorithm/experiments/adaptive_trace_policy.py` 使用 queue-adaptive robust MaxWeight penalty：
 
 [

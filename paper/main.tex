@@ -433,6 +433,7 @@ Symbol & Meaning \\
 \(r_i(a)\) & coordinate confidence radius for service of action \(a\) \\
 \(s_i\) & positive service-unit scale for class \(i\) \\
 \(C_s\) & uniform upper bound on the service-unit scales \(s_i\) \\
+\(c_i\) & task-native work units in one canonical replay job of class \(i\) \\
 \bottomrule
 \end{tabular}
 }{The notation avoids reusing one symbol for multiple meanings.  Acronyms are
@@ -1273,6 +1274,25 @@ counts, arrival times, and measured service cache.  Static arrivals are used for
 the first comparison because all-job completion time is then unambiguous.  The
 online-arrival experiment then runs Poisson and bursty traces at load factors
 0.50, 0.70, 0.85, and 0.95 with three random seeds for each task set.
+
+The replay is a joint event simulation, not a sum of independent
+single-workload simulations.  All workload classes assigned to one hardware
+scenario compete for the same physical CPU or GPU lanes.  Before robust
+MaxWeight scoring, each class's residual work and every service coordinate are
+divided by the same fixed positive canonical-work scale \(c_i\).  The resulting
+coordinates are unfinished canonical jobs and canonical jobs per unit time, so
+the queue recursion and the main theorem are applied in those coordinates.
+Changing the numerical task-native unit of one workload, together with its
+\(c_i\), therefore cannot change an action ordering.  This unit conversion is
+separate from the LCB error scales \(s_i\) in
+Proposition~\ref{prop:diagonal-lcb}.  A directional loaded action
+requires one resident job and one target job on the same lane.  Its frame
+duration is the target's task-native natural-completion time, while the
+resident receives only its certified overlap lower service; any unfinished
+resident returns to the queue with its remaining work.  Migration likewise
+occupies one lane for its measured variable-duration frame.  These rules make
+resource competition, co-location direction, and frame duration explicit and
+connect the replay semantics to Proposition~\ref{prop:frame-drift}.
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
 legacy Scheduleurm caps.  The metric is completion of all jobs in the task list,

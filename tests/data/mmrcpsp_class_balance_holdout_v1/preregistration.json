@@ -1,0 +1,61 @@
+{
+  "claim_boundary": {
+    "global_mmrcpsp_optimality": false,
+    "known_instance_and_action_library": true,
+    "new_structural_instance_holdout": false,
+    "performance_superiority": false,
+    "positive_recurrence_from_finite_replay": false,
+    "v1_total_cost_result_retained": true
+  },
+  "implementation_freeze": {
+    "implementation_commit": "2dc63fac2cd28470ed5c1b0915f5e5919edac317",
+    "implementation_path": "algorithm/experiments/mmrcpsp_class_balance_holdout.py",
+    "implementation_sha256": "b795668723a2cdecf77f5781f9b20da29d17e77ae364802c624232d85d6fa983"
+  },
+  "metric_protocol": {
+    "coordinates": [
+      "total_time_average_queue",
+      "max_class_time_average_queue",
+      "max_class_final_backlog"
+    ],
+    "lower_is_better": true,
+    "metric_family_registered_after_v1_total_cost_result": true,
+    "pareto_dominance_requires_no_worse_all_and_strict_one": true,
+    "performance_is_not_a_protocol_pass_condition": true
+  },
+  "outputs": [
+    "md/experiment_artifacts/mmrcpsp_class_balance_holdout_v1_20260810.json.gz",
+    "md/experiment_artifacts/mmrcpsp_class_balance_holdout_v1_20260810.json",
+    "md/mmrcpsp_class_balance_holdout_v1_20260810.md"
+  ],
+  "registered_on": "2026-08-10",
+  "schema_version": "scheduleurm.mmrcpsp_class_balance_holdout.preregistration.v1",
+  "source": {
+    "action_library_rebuilt_for_holdout": false,
+    "arrival_tapes_observed_before_protocol_commit": false,
+    "artifact_path": "md/experiment_artifacts/mmrcpsp_renewal_stream_v1_20260810.json.gz",
+    "artifact_sha256": "385b2fda1de5f8e65e18e422f43415e6ac9a1946051617db1191c23947dbad6b",
+    "static_instance_outcomes_known": true,
+    "v1_arrival_tape_seeds_excluded": [11, 23, 37]
+  },
+  "stream_protocol": {
+    "horizon": 4800,
+    "policies": [
+      "duration_normalized_robust_maxweight",
+      "unnormalized_robust_maxweight",
+      "shortest_registered_trajectory",
+      "longest_queue_then_shortest",
+      "round_robin_class"
+    ],
+    "scenarios": [
+      "static_backlog",
+      "poisson_nominal",
+      "bursty_nominal",
+      "load_035",
+      "load_065",
+      "load_090",
+      "load_105"
+    ],
+    "seeds": [101, 211, 307, 401, 503]
+  }
+}

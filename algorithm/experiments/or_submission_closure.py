@@ -620,11 +620,11 @@ def build_reviewer_supplement(
     }
     if build_report.get("stdout") or build_report.get("stderr") or build_report.get("status") != "SKIPPED":
         build_log_text = (
-            "COMMAND\n=======\n"
+            "COMMAND\n-------\n"
             + " ".join(str(x) for x in (build_report.get("command") or []))
-            + "\n\nSTDOUT\n======\n"
+            + "\n\nSTDOUT\n------\n"
             + str(build_report.get("stdout") or "")
-            + "\nSTDERR\n======\n"
+            + "\nSTDERR\n------\n"
             + str(build_report.get("stderr") or "")
         )
         for log_name in ("lean_build_log.txt", "build.log"):

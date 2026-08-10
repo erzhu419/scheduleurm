@@ -1,0 +1,80 @@
+{
+  "artifact_sha256_excluding_self": "627fac0e642105f7f8992575ca9afd94414d13fbd34fe8ebb3f6193e98d830f0",
+  "claim_boundary": {
+    "does_not_support": "path-independent bitwise identity of gzip containers whose headers retain different output basenames",
+    "supports": "exact semantic reproduction of both deterministic MMRCPSP experiment matrices under the frozen code and input ledgers"
+  },
+  "gate": {
+    "bitwise_path_independent_gzip_claim_ready": false,
+    "pair_count": 2,
+    "pass": true,
+    "raw_gzip_container_match_count": 0,
+    "semantic_reproducibility_ready_count": 2,
+    "status": "MMRCPSP_SEMANTIC_REPRODUCIBILITY_PASS"
+  },
+  "pairs": [
+    {
+      "container_difference_explanation": "Python gzip embeds the output basename in the optional FNAME header; a different output path changes container bytes and the compact file's recorded gzip hash without changing decompressed results.",
+      "decompressed_full_artifact_equal": true,
+      "excluded_compact_fields": [
+        "artifact_sha256_excluding_self",
+        "full_artifact_gzip_sha256"
+      ],
+      "expected_schema": "scheduleurm.mmrcpsp_renewal_stream.compact.v1",
+      "gzip_header_original_filename": {
+        "primary": "mmrcpsp_renewal_stream_v1_20260810.json",
+        "reproduction": "mmrcpsp_renewal_stream_v1_repro_20260810.json"
+      },
+      "hashes": {
+        "primary_compact_raw": "c7d13f4974df8a45fa8562e251d38687e6a701f0e317196025a3c0319eaa46d5",
+        "primary_compact_semantic": "7fe2567075d73d6781672fdd64f1895f53eda8caa916f9b96fbcef1d3e24df01",
+        "primary_decompressed_full": "1f96a8f52ef74e2945e47405604b9416fd0c575edb884f012e467e05b4c3b1e7",
+        "primary_gzip": "385b2fda1de5f8e65e18e422f43415e6ac9a1946051617db1191c23947dbad6b",
+        "primary_markdown": "3f679aa2a925921cb9b5b532a8a22a4538f7d24eefb190a6fd9a012ff0ca0026",
+        "reproduction_compact_raw": "7a3ebb36b39ac631dfb2162e1e77215bea6f18a49ed05799d98e7130c1c93c6c",
+        "reproduction_compact_semantic": "7fe2567075d73d6781672fdd64f1895f53eda8caa916f9b96fbcef1d3e24df01",
+        "reproduction_decompressed_full": "1f96a8f52ef74e2945e47405604b9416fd0c575edb884f012e467e05b4c3b1e7",
+        "reproduction_gzip": "84a01d159ffcc1a84cd98ec0089bbfb7670386c189bfa2c9359600a2df3c249e",
+        "reproduction_markdown": "3f679aa2a925921cb9b5b532a8a22a4538f7d24eefb190a6fd9a012ff0ca0026"
+      },
+      "markdown_equal": true,
+      "name": "mmrcpsp_renewal_stream_v1",
+      "path_independent_gzip_container_reproducibility_ready": false,
+      "raw_gzip_container_equal": false,
+      "semantic_compact_artifact_equal": true,
+      "semantic_reproducibility_ready": true
+    },
+    {
+      "container_difference_explanation": "Python gzip embeds the output basename in the optional FNAME header; a different output path changes container bytes and the compact file's recorded gzip hash without changing decompressed results.",
+      "decompressed_full_artifact_equal": true,
+      "excluded_compact_fields": [
+        "artifact_sha256_excluding_self",
+        "full_artifact_gzip_sha256"
+      ],
+      "expected_schema": "scheduleurm.mmrcpsp_class_balance_holdout.compact.v1",
+      "gzip_header_original_filename": {
+        "primary": "mmrcpsp_class_balance_holdout_v1_20260810.json",
+        "reproduction": "mmrcpsp_class_balance_holdout_v1_repro_20260810.json"
+      },
+      "hashes": {
+        "primary_compact_raw": "fc03dd338ca030f9feb4f39f3b690065e01290ccec5710b477589d7b81471e09",
+        "primary_compact_semantic": "1867f6232e0a39ad8b5f263b77b5dcd5b4dc1b2d6da75ef85648231f5ba90e4b",
+        "primary_decompressed_full": "10cab494f3081a72ac2ffc28265129ff26b1ca125d11836a7f030ab76987114f",
+        "primary_gzip": "8a369d220441577f26330d731f62aafe4475bf03eb3c56eacefa9fc86de061c1",
+        "primary_markdown": "f73cb3d9f8e7eb226aa8b9c5cc731b37ffd53ad87268ea0b9cce3ae3ea1f198a",
+        "reproduction_compact_raw": "ef5b7510ce53d45af8d078264631e94765f3a0185641d0c9cae3a6d3fdfe04a2",
+        "reproduction_compact_semantic": "1867f6232e0a39ad8b5f263b77b5dcd5b4dc1b2d6da75ef85648231f5ba90e4b",
+        "reproduction_decompressed_full": "10cab494f3081a72ac2ffc28265129ff26b1ca125d11836a7f030ab76987114f",
+        "reproduction_gzip": "63f808e02c17e929c243a67357864fac98ddc68d89e31866108fc05020c02219",
+        "reproduction_markdown": "f73cb3d9f8e7eb226aa8b9c5cc731b37ffd53ad87268ea0b9cce3ae3ea1f198a"
+      },
+      "markdown_equal": true,
+      "name": "mmrcpsp_class_balance_holdout_v1",
+      "path_independent_gzip_container_reproducibility_ready": false,
+      "raw_gzip_container_equal": false,
+      "semantic_compact_artifact_equal": true,
+      "semantic_reproducibility_ready": true
+    }
+  ],
+  "schema_version": "scheduleurm.mmrcpsp.reproducibility_audit.v1"
+}

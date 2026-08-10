@@ -26,12 +26,15 @@ REQUIRED_MANUSCRIPT_TOKENS = (
     r"\UnifiedOnlineLegacyMakespanGeoRatio",
     r"\UnifiedOnlineLegacyMeanFlowGeoRatio",
     r"\UnifiedStaticLegacyRows",
+    r"\UnifiedOnlineArrivalFamilyRows",
+    r"\UnifiedOnlineQuadrantRows",
     r"\UnifiedSotaPolicyRows",
     r"\UnifiedAblationRows",
     r"\UnifiedHardwareSlackRows",
     r"\UnifiedQueueMeanBacklogMean",
     r"\UnifiedQueueMaxBacklogMean",
     r"\UnifiedMigrationMakespanGeoRatio",
+    r"\UnifiedMigrationMeanFlowGeoRatio",
     r"\UnifiedMinimumHardwareEta",
 )
 

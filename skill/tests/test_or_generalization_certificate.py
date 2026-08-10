@@ -20,9 +20,24 @@ def test_generalization_certificate_retains_positive_and_negative_evidence():
     assert gate["arbitrary_domain_optimality_claim_ready"] is False
 
     assert report["fjsp"]["first_family_holdout"]["protocol_pass"] is False
-    assert report["fjsp"]["first_family_holdout"]["pareto_nondominated_count"] == 19
+    assert report["fjsp"]["first_family_holdout"]["pareto_nondominated_count"] == 20
+    assert report["fjsp"]["first_family_holdout"][
+        "source_reported_pareto_nondominated_count"
+    ] == 19
+    assert report["fjsp"]["first_family_holdout"][
+        "fixed_cp_sat_dominates_generated_family_count"
+    ] == 7
     assert report["fjsp"]["hurink_confirmation"]["protocol_pass"] is True
-    assert report["fjsp"]["hurink_confirmation"]["pareto_nondominated_count"] == 19
+    assert report["fjsp"]["hurink_confirmation"]["pareto_nondominated_count"] == 20
+    assert report["fjsp"]["hurink_confirmation"][
+        "fixed_cp_sat_dominates_generated_family_count"
+    ] == 15
+    assert report["fjsp"]["numeric_disposition"][
+        "baseline_union_pareto_nondominance_ready"
+    ] is True
+    assert report["fjsp"]["numeric_disposition"][
+        "fixed_cp_sat_candidate_family_gap_open"
+    ] is True
 
     assert report["mmrcpsp"]["v1_failure_retained"] is True
     assert report["mmrcpsp"]["opened_row_repair"]["prospective_claim_ready"] is False
@@ -52,4 +67,6 @@ def test_generalization_artifacts_are_byte_deterministic(tmp_path):
     assert payload["gate"]["performance_superiority_claim_ready"] is False
     markdown = markdown_report(report)
     assert "Retained negative evidence" in markdown
-    assert "19/20" in markdown
+    assert "20/20" in markdown
+    assert "7/20" in markdown
+    assert "15/20" in markdown

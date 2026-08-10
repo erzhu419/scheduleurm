@@ -39,6 +39,12 @@ def test_exact_relation_distinguishes_dominance_and_distinct_tie() -> None:
 def test_frozen_artifacts_reclassify_only_two_false_dominance_rows() -> None:
     report = build_disposition()
     assert report["gate"]["pass"] is True
+    assert report["gate"]["baseline_union_pareto_nondominance_ready"] is True
+    assert report["gate"]["fixed_cp_sat_candidate_family_gap_open"] is True
+    assert (
+        report["gate"]["candidate_family_vs_fixed_reference_dominance_claim_ready"]
+        is False
+    )
     assert len(report["numeric_false_dominance_rows"]) == 2
     assert {
         (row["group"], row["relative_path"])
@@ -49,3 +55,9 @@ def test_frozen_artifacts_reclassify_only_two_false_dominance_rows() -> None:
     }
     for group in report["groups"].values():
         assert group["exact_ledger_pareto_nondominated_count"] == 20
+    assert report["groups"]["first_family_holdout"][
+        "fixed_cp_sat_dominates_generated_family_count"
+    ] == 7
+    assert report["groups"]["hurink_confirmation"][
+        "fixed_cp_sat_dominates_generated_family_count"
+    ] == 15

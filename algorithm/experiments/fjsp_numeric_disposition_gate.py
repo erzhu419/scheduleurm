@@ -163,6 +163,10 @@ def build_disposition(
             "numeric_false_dominance_count": sum(
                 bool(row["numeric_false_dominance"]) for row in audited
             ),
+            "fixed_cp_sat_dominates_generated_family_count": sum(
+                row["fixed_cp_sat_relation"] == "baseline_dominates"
+                for row in audited
+            ),
             "rows": audited,
         }
         all_false_dominance.extend(
@@ -179,13 +183,19 @@ def build_disposition(
         == 20
     )
     return {
-        "schema_version": "scheduleurm.fjsp_numeric_disposition.v1",
+        "schema_version": "scheduleurm.fjsp_numeric_disposition.v2",
         "gate": {
             "pass": ready,
             "status": "FJSP_NUMERIC_DISPOSITION_PASS" if ready else "FJSP_NUMERIC_DISPOSITION_FAIL",
             "source_protocol_artifacts_immutable": True,
             "protocol_integrity_separate_from_performance": True,
             "exact_completion_ledger_ready": ready,
+            "baseline_union_pareto_nondominance_ready": ready,
+            "fixed_cp_sat_candidate_family_gap_open": any(
+                group["fixed_cp_sat_dominates_generated_family_count"] > 0
+                for group in reports.values()
+            ),
+            "candidate_family_vs_fixed_reference_dominance_claim_ready": False,
             "global_fjsp_optimality_claim_ready": False,
         },
         "source_sha256": source_hashes,
@@ -195,7 +205,9 @@ def build_disposition(
             "This disposition corrects only two baseline-union Pareto relations "
             "whose stored schedules are identical but whose mean-flow values were "
             "rounded at different precisions. It does not alter either prospective "
-            "source artifact and does not remove the separate CP-SAT candidate-family gap."
+            "source artifact. Fixed-budget CP-SAT schedules are audited separately; "
+            "their dominance relations remain candidate-family gaps and are not "
+            "reclassified as numerical artifacts."
         ),
     }
 
@@ -213,6 +225,14 @@ def _audit_row(row: Mapping[str, Any]) -> dict[str, Any]:
     exact_nondominated = not any(
         relation == "baseline_dominates" for relation in relations.values()
     )
+    fixed_reference = result.get("exact_reference", {}).get("fixed_budget", {})
+    fixed_cp_sat_ledger = None
+    fixed_cp_sat_relation = "reference_unavailable"
+    if fixed_reference.get("feasible_solution") is True and fixed_reference.get("schedule"):
+        fixed_cp_sat_ledger = exact_completion_ledger(
+            fixed_reference["schedule"], job_count=job_count
+        )
+        fixed_cp_sat_relation = exact_relation(ours, fixed_cp_sat_ledger)
     old_nondominated = bool(result["ours_pareto_nondominated"])
     old_dominators = sorted(
         policy
@@ -237,6 +257,11 @@ def _audit_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "ours_exact_ledger": ours,
         "exact_relations": relations,
         "baseline_exact_ledgers": ledgers,
+        "fixed_cp_sat_relation": fixed_cp_sat_relation,
+        "fixed_cp_sat_exact_ledger": fixed_cp_sat_ledger,
+        "fixed_cp_sat_optimality_proved": bool(
+            fixed_reference.get("optimality_proved") is True
+        ),
     }
 
 
@@ -265,15 +290,16 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         "- Frozen source artifacts rewritten: `false`",
         "- Comparison coordinates: `(makespan_ticks, sum_completion_ticks)`",
         "",
-        "| Holdout | Old nondominated | Exact-ledger nondominated | False dominance |",
-        "|---|---:|---:|---:|",
+        "| Holdout | Old nondominated | Exact-ledger nondominated | False dominance | CP-SAT dominates |",
+        "|---|---:|---:|---:|---:|",
     ]
     for label, group in report["groups"].items():
         count = int(group["instance_count"])
         lines.append(
             f"| `{label}` | {group['old_pareto_nondominated_count']}/{count} | "
             f"{group['exact_ledger_pareto_nondominated_count']}/{count} | "
-            f"{group['numeric_false_dominance_count']} |"
+            f"{group['numeric_false_dominance_count']} | "
+            f"{group['fixed_cp_sat_dominates_generated_family_count']}/{count} |"
         )
     lines.extend(["", "## Dispositions", ""])
     for row in report["numeric_false_dominance_rows"]:

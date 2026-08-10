@@ -81,6 +81,16 @@ WORKLOAD_CONTRACTS: dict[str, dict[str, str]] = {
 }
 
 OURS_POLICY = "scheduleurm_unified_robust_maxweight"
+LEGACY_POLICY = "legacy_fixed_caps"
+LEGACY_FIXED_PROFILES = {
+    "gpu_cnn_torch_resnet50": 3,
+    "gpu_heavy_jax_matmul": 3,
+    "gpu_llm_distilgpt2": 3,
+    "hybrid_rl_resac_ant": 5,
+    "light_control_local": 1,
+    "cpu_heavy_local_bench": 9,
+    "freqduet_cpu_surrogate": 1,
+}
 ABLATION_POLICIES: tuple[tuple[str, str], ...] = (
     ("ablation_support_only", "support scorer without delay tie-break"),
     ("ablation_delay_only", "delay proxy without support-preserving guard"),
@@ -276,6 +286,7 @@ def build_unified_hardware_or_replay(
             "blockers": blockers,
             "runs": [],
             "pareto_rows": [],
+            "legacy_comparison_rows": [],
         }
 
     try:
@@ -292,6 +303,7 @@ def build_unified_hardware_or_replay(
             "blockers": [_issue("INPUT_CONTRACT_INVALID", detail=str(exc))],
             "runs": [],
             "pareto_rows": [],
+            "legacy_comparison_rows": [],
         }
 
     try:
@@ -310,6 +322,7 @@ def build_unified_hardware_or_replay(
             jobs_per_workload=jobs_per_workload,
         )
         pareto_rows = _pareto_rows(runs)
+        legacy_rows = _legacy_comparison_rows(runs)
         checks = _coverage_checks(
             scenarios=scenarios,
             policies=policies,
@@ -325,11 +338,12 @@ def build_unified_hardware_or_replay(
             "blockers": [_issue("REPLAY_FAILED_CLOSED", detail=f"{type(exc).__name__}: {exc}")],
             "runs": [],
             "pareto_rows": [],
+            "legacy_comparison_rows": [],
             "input_manifest": _input_manifest(inputs),
         }
 
     passed = all(bool(value) for value in checks.values())
-    diagnostics = _performance_diagnostics(pareto_rows)
+    diagnostics = _performance_diagnostics(pareto_rows, legacy_rows)
     return {
         **common,
         "status": "PASS" if passed else "FAIL_COVERAGE",
@@ -349,6 +363,7 @@ def build_unified_hardware_or_replay(
         "run_count": len(runs),
         "runs": runs,
         "pareto_rows": pareto_rows,
+        "legacy_comparison_rows": legacy_rows,
         "coverage_checks": checks,
         "performance_diagnostics": diagnostics,
         "claim_boundary": _claim_boundary(),
@@ -874,7 +889,16 @@ def _policy_descriptors() -> tuple[PolicyDescriptor, ...]:
             metadata={
                 "objective": "lower-service MaxWeight with bounded penalty and support-preserving delay tie-break",
             },
-        )
+        ),
+        PolicyDescriptor(
+            name=LEGACY_POLICY,
+            category="legacy",
+            semantic_key="legacy_fixed_caps",
+            metadata={
+                "objective": "fixed historical co-location caps without loaded-ledger or migration actions",
+                "fixed_profiles": dict(LEGACY_FIXED_PROFILES),
+            },
+        ),
     ]
     for spec in sota_baseline_specs():
         rows.append(
@@ -1102,6 +1126,10 @@ def _allowed_actions(
     for action in actions:
         if migration_mode == "without_migration" and action.lower.migration_action:
             continue
+        if policy.semantic_key == "legacy_fixed_caps" and (
+            action.lower.migration_action or action.lower.loaded_action
+        ):
+            continue
         if policy.semantic_key == "ablation_no_migration" and action.lower.migration_action:
             continue
         if policy.semantic_key == "ablation_no_loaded_ledger" and action.lower.loaded_action:
@@ -1211,6 +1239,18 @@ def _select_lower_action(
         return (action.profile, action.penalty_units, action.action_id)
 
     semantic = policy.semantic_key
+    if semantic == "legacy_fixed_caps":
+        workload_key = feasible[0].workload_key
+        fixed_profile = int(LEGACY_FIXED_PROFILES.get(workload_key, 1))
+        return min(
+            feasible,
+            key=lambda action: (
+                abs(action.profile - fixed_profile),
+                action.profile > fixed_profile,
+                -action.profile,
+                action.action_id,
+            ),
+        )
     if semantic in {"throughput_table_goodput", "finish_time_fairness", "ablation_support_only"}:
         return max(feasible, key=lambda action: (target_support(action), -lower_flow(action), -action.profile, action.action_id))
     if semantic in {"delay_oracle", "ablation_delay_only"}:
@@ -1294,6 +1334,48 @@ def _pareto_rows(runs: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+def _legacy_comparison_rows(
+    runs: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    grouped: dict[tuple[str, str, str], list[Mapping[str, Any]]] = {}
+    for row in runs:
+        grouped.setdefault(
+            (str(row["scenario_id"]), str(row["trace_id"]), str(row["migration_mode"])),
+            [],
+        ).append(row)
+    out = []
+    for (scenario_id, trace_id, migration_mode), rows in sorted(grouped.items()):
+        ours = _one(rows, lambda row: row["policy_category"] == "ours", "ours")
+        legacy = _one(rows, lambda row: row["policy_category"] == "legacy", "legacy")
+        out.append(
+            {
+                "scenario_id": scenario_id,
+                "trace_id": trace_id,
+                "quadrant": ours["quadrant"],
+                "arrival_family": ours["arrival_family"],
+                "migration_mode": migration_mode,
+                "ours_policy": ours["policy"],
+                "legacy_policy": legacy["policy"],
+                "legacy_to_ours_makespan_ratio": _ratio(
+                    legacy["makespan_s"], ours["makespan_s"]
+                ),
+                "legacy_to_ours_mean_flow_ratio": _ratio(
+                    legacy["mean_flow_s"], ours["mean_flow_s"]
+                ),
+                "ours_strictly_pareto_dominates_legacy": _dominates(
+                    ours, legacy, tolerance=0.0
+                ),
+                "ours_tolerance_pareto_dominates_legacy": _dominates(
+                    ours, legacy, tolerance=PARETO_TOLERANCE
+                ),
+                "legacy_strictly_pareto_dominates_ours": _dominates(
+                    legacy, ours, tolerance=0.0
+                ),
+            }
+        )
+    return out
+
+
 def _coverage_checks(
     *,
     scenarios: Sequence[Scenario],
@@ -1306,6 +1388,7 @@ def _coverage_checks(
     expected_policy_names = {policy.name for policy in policies}
     sota_names = {policy.name for policy in policies if policy.category == "sota_style"}
     ablation_names = {policy.name for policy in policies if policy.category == "ablation"}
+    legacy_names = {policy.name for policy in policies if policy.category == "legacy"}
     quadrants = {scenario.quadrant for scenario in hardware}
     per_quadrant_arrivals = {
         quadrant: {
@@ -1351,6 +1434,7 @@ def _coverage_checks(
             spec.policy.name for spec in sota_baseline_specs()
         },
         "all_ablation_policies_registered": ablation_names == {name for name, _ in ABLATION_POLICIES},
+        "legacy_fixed_caps_registered": legacy_names == {LEGACY_POLICY},
         "complete_policy_arrival_migration_matrix": matrix_keys == expected_keys,
         "all_jobs_naturally_completed": all(int(row["completed_jobs"]) == int(row["job_count"]) for row in runs),
         "all_selection_bound_to_lower_service": all(
@@ -1368,11 +1452,20 @@ def _coverage_checks(
         "migration_certificate_consumed": bool(inputs.migration_rows)
         and len(inputs.migration_scenarios) == len(inputs.migration_rows),
         "both_migration_modes_present": {str(row["migration_mode"]) for row in runs} == set(EXPECTED_MIGRATION_MODES),
+        "legacy_excludes_loaded_and_migration_actions": all(
+            not audit["loaded_action"] and not audit["migration_action"]
+            for row in runs
+            if row["policy_category"] == "legacy"
+            for audit in row["selection_audit"]
+        ),
         "policy_semantics_only": True,
     }
 
 
-def _performance_diagnostics(pareto_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+def _performance_diagnostics(
+    pareto_rows: Sequence[Mapping[str, Any]],
+    legacy_rows: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
     by_quadrant = {}
     for quadrant in EXPECTED_QUADRANTS:
         rows = [row for row in pareto_rows if row["quadrant"] == quadrant]
@@ -1388,8 +1481,27 @@ def _performance_diagnostics(pareto_rows: Sequence[Mapping[str, Any]]) -> dict[s
                 row["ours_tolerance_dominates_every_sota_style_policy"] for row in rows
             ),
         }
+    makespan_ratios = [float(row["legacy_to_ours_makespan_ratio"]) for row in legacy_rows]
+    mean_flow_ratios = [float(row["legacy_to_ours_mean_flow_ratio"]) for row in legacy_rows]
+    legacy = {
+        "comparison_count": len(legacy_rows),
+        "legacy_to_ours_makespan_geomean_ratio": _geomean(makespan_ratios),
+        "legacy_to_ours_mean_flow_geomean_ratio": _geomean(mean_flow_ratios),
+        "legacy_to_ours_worst_makespan_ratio": min(makespan_ratios, default=0.0),
+        "legacy_to_ours_worst_mean_flow_ratio": min(mean_flow_ratios, default=0.0),
+        "ours_strictly_dominates_legacy_in_every_comparison": bool(legacy_rows) and all(
+            row["ours_strictly_pareto_dominates_legacy"] for row in legacy_rows
+        ),
+        "ours_tolerance_dominates_legacy_in_every_comparison": bool(legacy_rows) and all(
+            row["ours_tolerance_pareto_dominates_legacy"] for row in legacy_rows
+        ),
+        "legacy_strictly_dominates_ours_count": sum(
+            bool(row["legacy_strictly_pareto_dominates_ours"]) for row in legacy_rows
+        ),
+    }
     return {
         "by_quadrant": by_quadrant,
+        "legacy": legacy,
         "strong_superiority_claim_ready": all(
             row["ours_strictly_dominates_every_policy_in_every_comparison"]
             for row in by_quadrant.values()
@@ -1650,6 +1762,13 @@ def _ratio(numerator: Any, denominator: Any) -> float:
     return _nonnegative_float(numerator, "ratio numerator") / den
 
 
+def _geomean(values: Sequence[float]) -> float:
+    if not values:
+        return 0.0
+    positive = [_positive_float(value, "geomean value") for value in values]
+    return math.exp(sum(math.log(value) for value in positive) / len(positive))
+
+
 def _dominates(left: Mapping[str, Any], right: Mapping[str, Any], *, tolerance: float) -> bool:
     upper = 1.0 + max(0.0, float(tolerance))
     left_ms = float(left["makespan_s"])
@@ -1696,7 +1815,9 @@ def _claim_boundary() -> str:
         "and their rates must be rebound to the exact cache hash. A migration's "
         "risk-adjusted delay is folded into its duration-normalized effective lower "
         "service before selection; raw seconds are never subtracted from a service "
-        "score. SOTA rows are "
+        "score. The legacy row implements fixed historical co-location caps on "
+        "the same measured cache and is not a fresh execution of the default "
+        "legacy scheduler. SOTA rows are "
         "policy-semantics implementations on the same cache, not direct full-stack "
         "executions of Gavel, Pollux, Sia, IADeep, Salus, or any other external "
         "binary. PASS is an evidence/coverage result; superiority remains a "

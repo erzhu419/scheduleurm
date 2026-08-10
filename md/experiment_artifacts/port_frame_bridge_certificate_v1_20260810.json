@@ -1,0 +1,126 @@
+{
+  "artifact_sha256_excluding_self": "d935d8a701ab6e1d1dd2fe1d0b3dbbdb2e46c1a56ea6b8193aa6198f912493da",
+  "claim_boundary": {
+    "does_not_support": [
+      "identifying terminal virtual-cost coordinates with physical port service",
+      "a calibrated stochastic vessel-arrival and service model",
+      "positive slack, local return, or physical-port positive recurrence",
+      "inferring a Markov-chain theorem from finite deterministic replay"
+    ],
+    "supports": [
+      "a deterministic fixed-frame embedding of every registered port trajectory",
+      "positive finite frame horizons and exact finite-family virtual-objective selection",
+      "a compiled Lean theorem interface for variable-duration drift under separately supplied assumptions"
+    ]
+  },
+  "finite_family": {
+    "candidate_context_pair_count": 124,
+    "candidate_count": 31,
+    "context_count": 4,
+    "exact_oracle_gap_alpha0": 0.0,
+    "finite_family_penalty_bound_P0": 0.000645255,
+    "oracle_slope_alpha1": 0.0,
+    "queue_scaled_penalty_slope_beta": 0.0
+  },
+  "frame_rows": [
+    {
+      "all_trajectories_fit_common_horizon": true,
+      "candidate_count": 31,
+      "common_frame_horizon_H": 671.310506567,
+      "context": "public_bacasp_s",
+      "duration_metric": "quay_makespan",
+      "fixed_H_division_preserves_scalar_order": true,
+      "maximum_idle_padding": 494.81050656699995,
+      "observed_duration_max": 287.86875,
+      "observed_duration_min": 176.5,
+      "positive_common_denominator": true
+    },
+    {
+      "all_trajectories_fit_common_horizon": true,
+      "candidate_count": 31,
+      "common_frame_horizon_H": 2259.315795885,
+      "context": "synthetic:balanced_heterogeneous_8",
+      "duration_metric": "makespan",
+      "fixed_H_division_preserves_scalar_order": true,
+      "maximum_idle_padding": 2035.7578379200002,
+      "observed_duration_max": 371.02060504,
+      "observed_duration_min": 223.557957965,
+      "positive_common_denominator": true
+    },
+    {
+      "all_trajectories_fit_common_horizon": true,
+      "candidate_count": 31,
+      "common_frame_horizon_H": 2287.746365872,
+      "context": "synthetic:berth_crane_pressure_9",
+      "duration_metric": "makespan",
+      "fixed_H_division_preserves_scalar_order": true,
+      "maximum_idle_padding": 2050.540185558,
+      "observed_duration_max": 380.495730853,
+      "observed_duration_min": 237.206180314,
+      "positive_common_denominator": true
+    },
+    {
+      "all_trajectories_fit_common_horizon": true,
+      "candidate_count": 31,
+      "common_frame_horizon_H": 2825.838496119,
+      "context": "synthetic:yard_gate_surge_9",
+      "duration_metric": "makespan",
+      "fixed_H_division_preserves_scalar_order": true,
+      "maximum_idle_padding": 2543.224313628,
+      "observed_duration_max": 392.81270274,
+      "observed_duration_min": 282.614182491,
+      "positive_common_denominator": true
+    }
+  ],
+  "gate": {
+    "deterministic_virtual_frame_interface_ready": true,
+    "lean_variable_duration_frame_theorem_ready": true,
+    "local_return_certificate_ready": false,
+    "pass": true,
+    "physical_port_positive_recurrence_claim_ready": false,
+    "physical_service_frame_interface_ready": false,
+    "port_slack_certificate_ready": false,
+    "status": "PORT_DETERMINISTIC_VIRTUAL_FRAME_BRIDGE_PASS",
+    "stochastic_port_arrival_service_model_ready": false
+  },
+  "inputs": {
+    "full_decompressed_sha256": "04d9b03d43f0a40ff1b40d6253082ec5e172d95469e9c84e196ad3bb79f4f0d7",
+    "full_gzip_sha256": "e9734b2d5869c202f7486199401a2ae7a8e1fc80146f60bbd2d2bf6d83bf29bb",
+    "full_semantic_artifact_hash": "77a8095148e7f087347888be2d81279d62f05cb4ff63bd88aab70063787efc15",
+    "refresh_compact_sha256": "5c1b60e6b576773d322d4fd19760738f2f9262f264314d668e72f38ca147ff22"
+  },
+  "lean": {
+    "build": {
+      "command": "lake env lean Scheduleurm/FrameBasedStability.lean",
+      "compile_exit_code": 0,
+      "compile_ready": true,
+      "lean_version": "Lean (version 4.28.0, x86_64-unknown-linux-gnu, commit 7e01a1bf5c70fc6167d49c345d3bf80596e9a79b, Release)",
+      "lean_version_command_exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    "source": {
+      "forbidden_tokens": [],
+      "missing_theorems": [],
+      "relative_path": "Scheduleurm/FrameBasedStability.lean",
+      "required_theorems": [
+        "secondOrderTerm_frame_le",
+        "frameApproximateOracle_iff_durationNormalized",
+        "frame_approximate_maxWeight_lyapunov_drift",
+        "frame_approximate_maxWeight_lyapunov_drift_uniform",
+        "frame_lyapunov_drift_duration_one",
+        "elapsedFrameTime_le",
+        "frame_nat_model_positive_recurrent_via_finite_set"
+      ],
+      "sha256": "4ae87101c6647cb401002ccc9765c30cae3ee9528f7133b616076c98ceaabf74",
+      "source_contract_ready": true
+    }
+  },
+  "mathematical_mapping": {
+    "embedding": "for each registered context, idle-pad every completed trajectory to its candidate-independent horizon H; all candidates then have the same positive frame duration",
+    "lean_connection": "FrameBasedStability proves the duration-normalized oracle equivalence, frame drift, uniform minimum-duration drift, elapsed-time bound, and conditional finite-set recurrence",
+    "ordering": "division of a context's scalar virtual-service-minus-penalty score by the common H preserves its finite-family ordering",
+    "terminal_coordinate_semantics": "bounded virtual terminal-cost service nu_j=(U_j-C_j)/U_j; not physical vessel departures"
+  },
+  "schema_version": "scheduleurm.port_frame_bridge_certificate.v1"
+}

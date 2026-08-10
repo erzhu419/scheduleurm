@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -20,7 +21,18 @@ from algorithm.experiments.critical_gpu_lcb_cache_merge import (
     build_critical_gpu_lcb_cache_merge,
     main,
 )
+from algorithm.experiments.critical_gpu_all_hardware_lcb_cache_merge import (
+    DEFAULT_JTL311_GATE,
+    EFFECTIVE_NODE_BUCKET,
+    build_critical_gpu_all_hardware_lcb_cache_merge,
+)
 from simulation.service_cache import ProfileRecord, ServiceRateCache
+
+
+def test_all_hardware_default_consumes_the_stochastic_gate_producer_filename():
+    assert DEFAULT_JTL311_GATE.name == (
+        "critical_gpu_stochastic_lcb_gate_v5_jtl311linux_20260803.json"
+    )
 
 
 def _write(path: Path, payload: object) -> None:
@@ -131,6 +143,29 @@ def _passing_gate(node: str) -> dict:
     }
 
 
+def _passing_gate_with_training_capacity_exclusion(node: str) -> dict:
+    gate = _passing_gate(node)
+    excluded = gate["certificate"]["rows"].pop(0)
+    gate.update(
+        {
+            "admitted_cell_count": 8,
+            "training_capacity_excluded_cell_count": 1,
+            "candidate_support_frozen_from_training_waves": True,
+            "training_capacity_excluded_cells": [
+                {
+                    **excluded,
+                    "support_status": "TRAINING_CAPACITY_EXCLUDED",
+                    "first_capacity_wave": 2,
+                    "capacity_waves": [2],
+                    "later_success_cannot_readmit": True,
+                    "lower_service": 0.0,
+                }
+            ],
+        }
+    )
+    return gate
+
+
 def _gate_files(tmp_path: Path) -> dict[str, Path]:
     paths = {}
     for node in REPRESENTATIVE_NODES:
@@ -231,6 +266,60 @@ def test_pass_merge_is_exact_per_gpu_and_preserves_legacy_index(tmp_path):
     assert record.hardware_class == NODE_SPECS["node007"].hardware_class
     assert record.eta_source == ETA_SOURCE
     assert record.command_fingerprint == COMMAND_FINGERPRINT
+
+
+def test_merge_inserts_only_training_admitted_positive_service_actions(tmp_path):
+    base = tmp_path / "base.json"
+    _base_cache(base)
+    gates = _gate_files(tmp_path)
+    reduced = _passing_gate_with_training_capacity_exclusion("jtl311linux")
+    _write(gates["jtl311linux"], reduced)
+
+    report = build_critical_gpu_lcb_cache_merge(
+        base_cache_path=base,
+        gate_paths=gates,
+    )
+
+    assert report["status"] == "PASS"
+    assert report["expected_total_registered_rows"] == 27
+    assert report["expected_total_inserted_rows"] == 26
+    assert report["inserted_count"] == 26
+
+
+def test_all_hardware_merge_preserves_explicit_jtl311_capacity_exclusion(tmp_path):
+    available_cache = tmp_path / "available-cache.json"
+    _base_cache(available_cache)
+    available_bytes = available_cache.read_bytes()
+    available_report = tmp_path / "available-report.json"
+    _write(
+        available_report,
+        {
+            "gate": "critical_gpu_available_lcb_cache_merge",
+            "status": "PASS",
+            "pass": True,
+            "available_scope_cache_ready": True,
+            "inserted_count": 27,
+            "cache_output_sha256": hashlib.sha256(available_bytes).hexdigest(),
+        },
+    )
+    jtl_gate = tmp_path / "jtl311-gate.json"
+    _write(jtl_gate, _passing_gate_with_training_capacity_exclusion("jtl311linux"))
+
+    report = build_critical_gpu_all_hardware_lcb_cache_merge(
+        available_cache_path=available_cache,
+        available_report_path=available_report,
+        jtl311_gate_path=jtl_gate,
+    )
+
+    assert report["status"] == "PASS"
+    assert report["expected_registered_count"] == 9
+    assert report["expected_inserted_count"] == 8
+    assert report["inserted_count"] == 8
+    assert report["training_capacity_excluded_count"] == 1
+    assert all(
+        row["node_bucket"] == EFFECTIVE_NODE_BUCKET
+        for row in report["inserted_rows"]
+    )
 
 
 @pytest.mark.parametrize(

@@ -244,6 +244,12 @@ def build_commands(
     return commands
 
 
+def _max_command_attempts(phase: str, wave_retries: int) -> int:
+    if int(wave_retries) < 0:
+        raise ValueError("wave_retries must be nonnegative")
+    return 1 + int(wave_retries) if str(phase) in {"empty", "loaded"} else 1
+
+
 def run_reserved_campaign(
     *,
     node: str,
@@ -254,6 +260,7 @@ def run_reserved_campaign(
     poll_s: float = 60.0,
     clean_samples: int = 5,
     ttl_s: float = 900.0,
+    wave_retries: int = 2,
     output: Path,
 ) -> dict[str, Any]:
     if node not in NODE_SPECS:
@@ -282,8 +289,12 @@ def run_reserved_campaign(
         "existing_tasks_drain_naturally": True,
         "legacy_scheduler_limits_bypassed_by_frozen_campaign": True,
         "external_manual_launches_still_rejected_by_process_audit": True,
+        "wave_retries_after_initial_attempt": int(wave_retries),
+        "gates_retried": False,
         "commands": [],
     }
+    if int(wave_retries) < 0:
+        raise ValueError("wave_retries must be nonnegative")
     _write_report(output, report)
     lease = MeasurementReservation(
         node=node,
@@ -310,55 +321,79 @@ def run_reserved_campaign(
                 consecutive_samples=clean_samples,
             )
             for index, command in enumerate(commands):
-                lease.ensure_healthy()
-                if index > 0 and command["phase"] in {"empty", "loaded"}:
-                    _wait_for_clean_node(
-                        node=node,
-                        lease=lease,
-                        poll_s=poll_s,
-                        consecutive_samples=1,
+                max_attempts = _max_command_attempts(
+                    str(command["phase"]), int(wave_retries)
+                )
+                command_passed = False
+                for attempt in range(1, max_attempts + 1):
+                    lease.ensure_healthy()
+                    if (
+                        command["phase"] in {"empty", "loaded"}
+                        and (index > 0 or attempt > 1)
+                    ):
+                        _wait_for_clean_node(
+                            node=node,
+                            lease=lease,
+                            poll_s=poll_s,
+                            consecutive_samples=1,
+                        )
+                    wave_suffix = (
+                        "" if command["wave"] is None
+                        else f"_r{int(command['wave']):02d}"
                     )
-                wave_suffix = (
-                    "" if command["wave"] is None
-                    else f"_r{int(command['wave']):02d}"
-                )
-                log_path = output.with_name(
-                    f"{output.stem}_{index:02d}_{command['phase']}{wave_suffix}.log"
-                )
-                row = {
-                    **command,
-                    "started_at": time.time(),
-                    "log_path": str(log_path),
-                }
-                report["commands"].append(row)
-                report["status"] = f"RUNNING_{str(command['phase']).upper()}"
-                _write_report(output, report)
-                print(
-                    f"[{node}] start {command['phase']} wave={command['wave']} "
-                    f"log={log_path}",
-                    flush=True,
-                )
-                with log_path.open("w", encoding="utf-8") as log_handle:
-                    completed = subprocess.run(
-                        command["argv"],
-                        cwd=str(Path(__file__).resolve().parents[2]),
-                        stdout=log_handle,
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                        check=False,
+                    attempt_suffix = (
+                        "" if max_attempts == 1 else f"_try{attempt:02d}"
                     )
-                row["finished_at"] = time.time()
-                row["returncode"] = int(completed.returncode)
-                row["pass"] = completed.returncode == 0
-                _write_report(output, report)
-                print(
-                    f"[{node}] finish {command['phase']} wave={command['wave']} "
-                    f"rc={completed.returncode}",
-                    flush=True,
-                )
-                if completed.returncode != 0:
+                    log_path = output.with_name(
+                        f"{output.stem}_{index:02d}_{command['phase']}"
+                        f"{wave_suffix}{attempt_suffix}.log"
+                    )
+                    row = {
+                        **command,
+                        "attempt": attempt,
+                        "max_attempts": max_attempts,
+                        "started_at": time.time(),
+                        "log_path": str(log_path),
+                    }
+                    report["commands"].append(row)
+                    report["status"] = f"RUNNING_{str(command['phase']).upper()}"
+                    _write_report(output, report)
+                    print(
+                        f"[{node}] start {command['phase']} wave={command['wave']} "
+                        f"attempt={attempt}/{max_attempts} log={log_path}",
+                        flush=True,
+                    )
+                    with log_path.open("w", encoding="utf-8") as log_handle:
+                        completed = subprocess.run(
+                            command["argv"],
+                            cwd=str(Path(__file__).resolve().parents[2]),
+                            stdout=log_handle,
+                            stderr=subprocess.STDOUT,
+                            text=True,
+                            check=False,
+                        )
+                    row["finished_at"] = time.time()
+                    row["returncode"] = int(completed.returncode)
+                    row["pass"] = completed.returncode == 0
+                    _write_report(output, report)
+                    print(
+                        f"[{node}] finish {command['phase']} wave={command['wave']} "
+                        f"attempt={attempt}/{max_attempts} rc={completed.returncode}",
+                        flush=True,
+                    )
+                    if completed.returncode == 0:
+                        command_passed = True
+                        break
+                    if attempt < max_attempts:
+                        print(
+                            f"[{node}] retry {command['phase']} wave={command['wave']} "
+                            "after fail-closed nonzero return",
+                            flush=True,
+                        )
+                if not command_passed:
                     report["status"] = "COMMAND_FAILED"
                     report["failed_command_index"] = index
+                    report["failed_after_attempts"] = max_attempts
                     report["finished_at"] = time.time()
                     _write_report(output, report)
                     return report
@@ -386,6 +421,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--poll-s", type=float, default=60.0)
     parser.add_argument("--clean-samples", type=int, default=5)
     parser.add_argument("--ttl-s", type=float, default=900.0)
+    parser.add_argument("--wave-retries", type=int, default=2)
     parser.add_argument("--output", type=Path)
     return parser
 
@@ -407,6 +443,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         poll_s=args.poll_s,
         clean_samples=args.clean_samples,
         ttl_s=args.ttl_s,
+        wave_retries=args.wave_retries,
         output=output,
     )
     print(json.dumps({"status": report["status"], "pass": report["pass"]}, indent=2))

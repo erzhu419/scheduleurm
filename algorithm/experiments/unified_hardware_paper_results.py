@@ -230,6 +230,9 @@ def _summarize(replay: Mapping[str, Any], slack: Mapping[str, Any]) -> dict[str,
             "quadrants": sorted({str(row["quadrant"]) for row in hardware_ours}),
         },
         "legacy": _legacy_summary(legacy_rows),
+        "static_legacy": _legacy_summary(
+            [row for row in legacy_rows if row["arrival_family"] == "static"]
+        ),
         "online_legacy": _legacy_summary(
             [row for row in legacy_rows if row["arrival_family"] != "static"]
         ),
@@ -551,6 +554,7 @@ def _quantile(values: Sequence[float], fraction: float) -> float:
 def tex_macros(report: Mapping[str, Any]) -> str:
     population = report["population"]
     legacy = report["legacy"]
+    static_legacy = report["static_legacy"]
     online_legacy = report["online_legacy"]
     sota = report["sota_style"]
     ablations = report["ablations"]
@@ -569,6 +573,19 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedLegacyMeanFlowGeoRatio": _fmt(legacy["legacy_to_ours_mean_flow_geomean_ratio"]),
         "UnifiedLegacyMakespanWorstRatio": _fmt(legacy["legacy_to_ours_makespan_worst_ratio"]),
         "UnifiedLegacyMeanFlowWorstRatio": _fmt(legacy["legacy_to_ours_mean_flow_worst_ratio"]),
+        "UnifiedStaticComparisonCount": static_legacy["comparison_count"],
+        "UnifiedStaticLegacyMakespanGeoRatio": _fmt(
+            static_legacy["legacy_to_ours_makespan_geomean_ratio"]
+        ),
+        "UnifiedStaticLegacyMeanFlowGeoRatio": _fmt(
+            static_legacy["legacy_to_ours_mean_flow_geomean_ratio"]
+        ),
+        "UnifiedStaticLegacyMakespanWorstRatio": _fmt(
+            static_legacy["legacy_to_ours_makespan_worst_ratio"]
+        ),
+        "UnifiedStaticLegacyMeanFlowWorstRatio": _fmt(
+            static_legacy["legacy_to_ours_mean_flow_worst_ratio"]
+        ),
         "UnifiedOnlineComparisonCount": online_legacy["comparison_count"],
         "UnifiedOnlineLegacyMakespanGeoRatio": _fmt(
             online_legacy["legacy_to_ours_makespan_geomean_ratio"]
@@ -615,6 +632,9 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedQueueMeanBacklogPNinetyFive": _fmt(
             queue_distributions["time_weighted_queue_backlog_jobs"]["p95"]
         ),
+        "UnifiedQueueMeanBacklogMax": _fmt(
+            queue_distributions["time_weighted_queue_backlog_jobs"]["maximum"]
+        ),
         "UnifiedQueueMaxBacklogMean": _fmt(
             queue_distributions["maximum_queue_backlog_jobs"]["mean"]
         ),
@@ -630,7 +650,21 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedQueueMaxBacklogPNinetyFive": _fmt(
             queue_distributions["maximum_queue_backlog_jobs"]["p95"]
         ),
+        "UnifiedQueueMaxBacklogMax": _fmt(
+            queue_distributions["maximum_queue_backlog_jobs"]["maximum"]
+        ),
+        "UnifiedSotaPolicyCount": len(sota["policies"]),
         "UnifiedSotaNotDominated": "true" if sota["ours_not_dominated_in_every_trace"] else "false",
+        "UnifiedSotaConclusion": (
+            "is not Pareto-dominated by any registered SOTA-style policy on any replay trace"
+            if sota["ours_not_dominated_in_every_trace"]
+            else "is Pareto-dominated on at least one replay trace"
+        ),
+        "UnifiedAblationPolicyCount": len(ablations),
+        "UnifiedAblationDominatesFullCount": sum(
+            int(row["ablation_strictly_dominates_full_count"])
+            for row in ablations.values()
+        ),
         "UnifiedMigrationScenarioCount": migration["comparison_count"],
         "UnifiedMigrationSelectedCount": migration["migration_selected_count"],
         "UnifiedMigrationMakespanGeoRatio": _fmt(

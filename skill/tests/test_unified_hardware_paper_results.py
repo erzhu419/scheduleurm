@@ -46,6 +46,9 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
         + report["population"]["hardware_online_trace_count"]
     )
     assert report["legacy"]["comparison_count"] > 0
+    assert report["static_legacy"]["comparison_count"] == report["population"][
+        "hardware_static_trace_count"
+    ]
     assert 0 < report["online_legacy"]["comparison_count"] < report["legacy"]["comparison_count"]
     assert report["online_legacy"]["comparison_count"] == report["population"][
         "hardware_online_trace_count"
@@ -69,6 +72,11 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     tex_source = tex_macros(report)
     assert "\\UnifiedLegacyMakespanGeoRatio" in tex_source
     assert "\\UnifiedOnlineLegacyMakespanGeoRatio" in tex_source
+    assert "\\UnifiedStaticLegacyMakespanGeoRatio" in tex_source
+    assert "\\UnifiedQueueMeanBacklogMax" in tex_source
+    assert "\\UnifiedQueueMaxBacklogMax" in tex_source
+    assert "\\UnifiedSotaConclusion" in tex_source
+    assert "\\UnifiedAblationDominatesFullCount" in tex_source
     assert "\\UnifiedStaticLegacyRows" in tex_source
     assert "\\UnifiedSotaPolicyRows" in tex_source
     assert "\\UnifiedAblationRows" in tex_source

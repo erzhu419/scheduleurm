@@ -226,6 +226,7 @@ def build_commands(
                 "--wave",
                 str(int(wave)),
                 "--allow-launch",
+                "--keep-remote-output",
             ],
         })
     if run_loaded_gate:

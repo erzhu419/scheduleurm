@@ -48,6 +48,12 @@
 \newcommand{\normone}[1]{\left\|#1\right\|_1}
 \newcommand{\norminf}[1]{\left\|#1\right\|_\infty}
 
+\IfFileExists{generated/unified_hardware_results.tex}{%
+  \input{generated/unified_hardware_results.tex}%
+}{%
+  \input{generated/unified_hardware_results_fallback.tex}%
+}
+
 \MANUSCRIPTNO{OPRE-2026-XXXX}
 \RUNAUTHOR{Anonymous}
 \RUNTITLE{Robust Candidate MaxWeight Certificates}
@@ -77,9 +83,10 @@ diagonal-scaling, and variable-duration frame statements.
 We instantiate the model in Scheduleurm, an operational research-cluster scheduler.  The
 implementation records measured lower-service rows, admissible candidate
 configurations, penalty terms, oracle gaps, and production-admission status.
-Across declared finite service slices and 192 Poisson and bursty replay
-scenarios, the robust candidate improves geometric-mean makespan by
-\(1.61\times\) and mean flow by \(4.02\times\) over legacy Scheduleurm caps.
+Across \UnifiedOnlineComparisonCount{} online-arrival measured-cache replay
+traces, the robust candidate improves geometric-mean makespan by
+\(\UnifiedOnlineLegacyMakespanGeoRatio\times\) and mean flow by
+\(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) over legacy Scheduleurm caps.
 On the same measured service cache, it is not Pareto-dominated by the registered
 policy-semantics baselines used to represent throughput, delay, and
 interference-control schedulers.  The evidence supports a measured finite-slice
@@ -1272,8 +1279,9 @@ The main benchmark uses one explicit task list per quadrant and one mixed
 portfolio.  All policies receive the same jobs, total work units, resource-pool
 counts, arrival times, and measured service cache.  Static arrivals are used for
 the first comparison because all-job completion time is then unambiguous.  The
-online-arrival experiment then runs Poisson and bursty traces at load factors
-0.50, 0.70, 0.85, and 0.95 with three random seeds for each task set.
+online-arrival experiment then runs nominal-load Poisson and bursty traces and
+a four-level load sweep at factors 0.50, 0.70, 0.85, and 0.95, with three random
+seeds for every hardware-local task set.
 
 The replay is a joint event simulation, not a sum of independent
 single-workload simulations.  All workload classes assigned to one hardware
@@ -1295,58 +1303,54 @@ resource competition, co-location direction, and frame duration explicit and
 connect the replay semantics to Proposition~\ref{prop:frame-drift}.
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
-legacy Scheduleurm caps.  The metric is completion of all jobs in the task list,
-not the time to finish a single job.  In the task names, convolutional neural
-network (CNN) denotes the vision workload family and large language model (LLM)
-denotes the language-model workload family.
+legacy Scheduleurm caps on \UnifiedStaticComparisonCount{} closed-batch traces.
+The metric is completion of all jobs in the task list, not the time to finish a
+single job.  In the task names, convolutional neural network (CNN) denotes the
+vision workload family and large language model (LLM) denotes the
+language-model workload family.
 
 \begin{table}[t]
 \TABLE{Candidate policy versus legacy Scheduleurm on explicit task lists.\label{tab:legacy-results}}{
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.25\linewidth}
-                >{\raggedright\arraybackslash}p{0.35\linewidth}rrr@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.35\linewidth}rrrr@{}}
 \toprule
-Task list & Candidate profile & Makespan & Mean flow & p90 flow \\
+Hardware-local task list & Traces & Makespan & Mean flow & p90 flow \\
 \midrule
-q00 light control & light-control profile 13 & \(11.814\times\) & \(11.758\times\) & \(11.814\times\) \\
-q01 GPU compute & JAX GPU profile 1 & \(1.470\times\) & \(1.560\times\) & \(1.555\times\) \\
-q01 CNN ResNet-50 & CNN profile 5 & \(1.259\times\) & \(1.173\times\) & \(1.164\times\) \\
-q01 LLM DistilGPT-2 & LLM profile 8 & \(2.723\times\) & \(2.622\times\) & \(2.669\times\) \\
-q01 GPU model portfolio & JAX GPU 1; CNN 5; LLM 8 & \(1.613\times\) & \(1.599\times\) & \(1.624\times\) \\
-q10 CPU-host bound & CPU profile 8 & \(1.539\times\) & \(1.535\times\) & \(1.534\times\) \\
-q11 CPU/GPU coupled & hybrid RL profile 5 & \(1.005\times\) & \(1.000\times\) & \(1.000\times\) \\
-Mixed portfolio & CPU 8; JAX GPU 1; CNN 4; LLM 8; hybrid RL 5 & \(1.012\times\) & \(1.162\times\) & \(0.994\times\) \\
+\UnifiedStaticLegacyRows
 \bottomrule
 \end{tabular}
 }{Ratios are legacy divided by candidate, so larger is better for Scheduleurm candidate.
-Each row uses the current robust feasible family; q11 profile 6 and above are excluded.
-p90 is the 90th percentile of job flow time.}
+Each row is derived from the same hash-bound schema-v2 replay as the online,
+SOTA-style, ablation, migration, and slack summaries.  p90 is the 90th
+percentile of job flow time.}
 \end{table}
 
 \emph{Scope.}  Table~\ref{tab:legacy-results} compares all-job completion on
 declared task lists using measured service rows.
 
-Table~\ref{tab:online-ci} summarizes the online-arrival experiment.  It contains
-192 scenarios: eight task sets, two arrival modes, four load factors, and three
-seeds.  The adaptive candidate completed every job in every scenario.  Relative
-to legacy caps, its geometric-mean improvement was \(1.618\times\) for makespan
-and \(4.180\times\) for mean flow.  The worst scenario-level ratios over legacy
-were \(1.003\times\) for makespan and \(1.000\times\) for mean flow.  No online
-scenario Pareto-dominated the candidate after the task-native
-estimated-time-to-completion (ETA) refresh and the trace-context action-union
-selector.  The maximum
-observed candidate backlog was 90 jobs, and the maximum time-weighted mean
-backlog was 48.112 jobs.
+Table~\ref{tab:online-ci} summarizes \UnifiedOnlineComparisonCount{}
+online-arrival comparisons spanning nominal Poisson, nominal bursty, and
+Poisson/bursty load-sweep traces.  The adaptive candidate completed every job in
+every admitted trace.  Relative to legacy caps, its geometric-mean improvement
+was \(\UnifiedOnlineLegacyMakespanGeoRatio\times\) for makespan and
+\(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) for mean flow.  The minimum
+scenario-level ratios were \(\UnifiedOnlineLegacyMakespanMinRatio\times\) and
+\(\UnifiedOnlineLegacyMeanFlowMinRatio\times\), respectively.  The largest
+observed candidate queue backlog was \UnifiedQueueMaxBacklogMax{} jobs, and the
+largest time-weighted mean queue backlog was
+\UnifiedQueueMeanBacklogMax{} jobs.  All ETA-dependent rows use task-native
+natural-completion models; history fallback is excluded from the admitted
+population.
 
 \begin{table}[t]
-\TABLE{Online replay distribution over 192 scenarios.\label{tab:online-ci}}{
+\TABLE{Online replay distribution over \UnifiedOnlineComparisonCount{} comparisons.\label{tab:online-ci}}{
 \begin{tabular}{l r r r r r}
 \toprule
 Metric & Geomean/mean & Median & Min & 5\% & 95\% \\
 \midrule
-Legacy / candidate makespan & 1.618 & 1.248 & 1.003 & 1.007 & 9.835 \\
-Legacy / candidate mean flow & 4.180 & 2.492 & 1.000 & 1.027 & 179.178 \\
-Candidate mean backlog jobs & 7.783 & 8.318 & 1.099 & 1.763 & 27.657 \\
-Candidate max backlog jobs & 23.654 & 24.000 & 4.000 & 7.000 & 65.000 \\
+Legacy / candidate makespan & \UnifiedOnlineLegacyMakespanGeoRatio & \UnifiedOnlineLegacyMakespanMedianRatio & \UnifiedOnlineLegacyMakespanMinRatio & \UnifiedOnlineLegacyMakespanPFiveRatio & \UnifiedOnlineLegacyMakespanPNinetyFiveRatio \\
+Legacy / candidate mean flow & \UnifiedOnlineLegacyMeanFlowGeoRatio & \UnifiedOnlineLegacyMeanFlowMedianRatio & \UnifiedOnlineLegacyMeanFlowMinRatio & \UnifiedOnlineLegacyMeanFlowPFiveRatio & \UnifiedOnlineLegacyMeanFlowPNinetyFiveRatio \\
+Candidate mean backlog jobs & \UnifiedQueueMeanBacklogMean & \UnifiedQueueMeanBacklogMedian & \UnifiedQueueMeanBacklogMin & \UnifiedQueueMeanBacklogPFive & \UnifiedQueueMeanBacklogPNinetyFive \\
+Candidate max backlog jobs & \UnifiedQueueMaxBacklogMean & \UnifiedQueueMaxBacklogMedian & \UnifiedQueueMaxBacklogMin & \UnifiedQueueMaxBacklogPFive & \UnifiedQueueMaxBacklogPNinetyFive \\
 \bottomrule
 \end{tabular}
 }{No online scenario Pareto-dominated the candidate.  No ablated policy
@@ -1355,14 +1359,45 @@ external-policy diagnostics exceed the 0.5\% tolerance, but none is a
 Pareto-dominance violation.}
 \end{table}
 
-The ablation experiment isolates the effects of legacy caps, scalar profile
-selection, support-only makespan scoring, delay-only mean-flow scoring,
-statewise interference guarding, bounded profile penalties, and the profile
-tie-break rule.  Across the 24 static, Poisson, and bursty traces, no ablation
-Pareto-dominated the full queue-adaptive robust lower-service scorer.  The full
-candidate retained geometric improvements of \(1.736\times\) in makespan and
-\(3.005\times\) in mean flow over legacy.  These comparisons use the same
-measured service cache as the main replay.
+\begin{table}[t]
+\TABLE{Online replay strata from the same hash-bound population.\label{tab:online-strata}}{
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Stratum & Comparisons & Makespan geomean & Mean-flow geomean & Makespan min & Mean-flow min \\
+\midrule
+\multicolumn{6}{@{}l}{\emph{Arrival-family strata}} \\
+\UnifiedOnlineArrivalFamilyRows
+\addlinespace
+\multicolumn{6}{@{}l}{\emph{Quadrant strata}} \\
+\UnifiedOnlineQuadrantRows
+\bottomrule
+\end{tabular}
+}{Ratios are legacy divided by candidate.  The load-sweep family contains both
+Poisson and bursty arrivals at the four registered load factors.}
+\end{table}
+
+The ablation experiment isolates support-only and delay-only scoring, bounded
+penalties, statewise loaded actions, migration actions, and the profile
+tie-break rule.  Table~\ref{tab:ablation-results} evaluates
+\UnifiedAblationPolicyCount{} pre-registered removals on the same cache and
+traces as the full policy.  The full policy is Pareto-dominated in
+\UnifiedAblationDominatesFullCount{} ablation comparisons; the table reports all
+single-metric changes rather than treating a non-dominance result as evidence
+that every module improves every metric.
+
+\begin{table}[t]
+\TABLE{Component ablations on the unified replay population.\label{tab:ablation-results}}{
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.38\linewidth}rrrr@{}}
+\toprule
+Ablated policy & Comparisons & Makespan ratio & Mean-flow ratio & Dominance count \\
+\midrule
+\UnifiedAblationRows
+\bottomrule
+\end{tabular}
+}{Ratios are ablated policy divided by the full policy, so values above one
+favor the full policy.  Dominance count is the number of traces on which the
+ablation strictly Pareto-dominates the full policy.}
+\end{table}
 
 \subsection{Policy-semantics replay baselines}
 \label{subsec:policy-semantics-baselines}
@@ -1405,16 +1440,12 @@ Scheduleurm-native multi-node history claim.  It does not require claiming that
 each external scheduler has been run through its original multi-node control
 plane.
 
-Table~\ref{tab:sota-matrix} reports the task-list policy-semantics aggregate
-over the 16 static and Poisson measured-cache scenarios used by the
-external-action-union gate.  The 192-scenario online replay is reported
-separately in Table~\ref{tab:online-ci}.  In both gates, the candidate is not
-Pareto-dominated by any registered external-policy diagnostic row under the
-same measured service cache.  The expanded q01 CNN/LLM buckets remove the
-earlier aggregate makespan tradeoff with the throughput-table endpoint: the
-candidate now improves makespan and mean-flow against that endpoint, although
-some single-metric scenario losses remain as diagnostic rows rather than
-Pareto-dominance violations.
+Table~\ref{tab:sota-matrix} reports all \UnifiedSotaPolicyCount{} registered
+policy-semantics families over the hash-bound hardware-local replay population.
+The result is stated directly from the exported diagnostic:
+Scheduleurm \UnifiedSotaConclusion.  This does not imply that Scheduleurm wins
+each metric on each trace; the per-policy ratios and strict-dominance counts
+retain those distinctions.
 
 Figure~\ref{fig:sota-comparison} visualizes the same policy-semantics comparison
 as a four-quadrant cost frontier.  Each panel normalizes a registered
@@ -1442,24 +1473,18 @@ not direct full-stack external binary execution.}
 \end{figure}
 
 \begin{table}[t]
-\TABLE{Task-list policy-semantics aggregate on identical measured service cache.\label{tab:sota-matrix}}{
-\begin{tabular}{l r r}
+\TABLE{Policy-semantics aggregate on the identical measured service cache.\label{tab:sota-matrix}}{
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.40\linewidth}rrrr@{}}
 \toprule
-Policy-semantics baseline & Makespan ratio & Mean-flow ratio \\
+Policy-semantics baseline & Comparisons & Makespan ratio & Mean-flow ratio & Dominance count \\
 \midrule
-Throughput table goodput & \(1.0064\times\) & \(1.0003\times\) \\
-Delay oracle & \(1.0063\times\) & \(1.0002\times\) \\
-Interference guard & \(1.0025\times\) & \(0.99996\times\) \\
-Finish-time fairness & \(0.999996\times\) & \(1.00001\times\) \\
-Resource-adaptive goodput & \(1.000002\times\) & \(1.000006\times\) \\
-Packing guard & \(0.999996\times\) & \(1.00001\times\) \\
-Quadrant composite & \(1.0064\times\) & \(1.0003\times\) \\
+\UnifiedSotaPolicyRows
 \bottomrule
 \end{tabular}
-}{Entries are aggregate baseline-versus-candidate ratios across the static and
-Poisson task-list scenarios, so values above one favor the candidate.  A row would dominate
-the candidate only if both makespan and mean-flow ratios were materially below
-one; no such row appears under the 0.5\% replay tolerance.}
+}{Entries are baseline divided by candidate, so values above one favor the
+candidate.  Dominance count is evaluated trace by trace under the registered
+0.5\% replay tolerance.  These are policy-semantics rows, not full-stack
+external-system executions.}
 \end{table}
 
 We also evaluate the stronger theory-facing construction in which external
@@ -1472,62 +1497,22 @@ profile alone: a candidate is a finite configuration trajectory containing the
 placement/profile, resource partition, admission order, and statewise drain
 rule.  This distinction matters on the ResNet-50 bucket, where the same profile
 supports different finish-time and interference-drain trajectories.
-Table~\ref{tab:sota-union} shows that the metric-specific action unions match
-or improve the external-policy envelopes on every measured task-list scenario within the
-0.5\% replay tolerance.  The fixed Pareto-slack union policy goes one step
-further for the measured static/Poisson task-list frontier: it enumerates the
-finite measured Scheduleurm+external action family and chooses the configuration
-maximizing the smaller of the normalized makespan and mean-flow slack.  The
-online-arrival replay uses the same finite action union with a trace-context
-online-Pareto-slack tie-break: closed-batch ResNet-50 queues use the measured
-Scheduleurm tail-drain action, while rolling Poisson or bursty ResNet-50
-queues use the measured resource-adaptive admission trajectory already
-registered in the candidate union; heterogeneous portfolios keep the measured
-Scheduleurm bridge action.  Under these fixed rules, no registered
-external-policy diagnostic row Pareto-dominates the candidate in the
-measured-cache task-list frontier or in the 192 online scenarios; the guarded
-and adaptive-scalarized rows remain useful
-ablations rather than the main dominance certificate.
+The unified replay evaluates that finite Scheduleurm-plus-external action family
+directly instead of importing aggregate completion times from an older replay.
+For every registered trace, the selector enumerates only actions with a
+hardware-local lower-service row and applies the same canonical scaling,
+penalty accounting, lane feasibility, and variable-duration completion model.
+Table~\ref{tab:sota-matrix} therefore reports the action-union comparison on the
+same population as Tables~\ref{tab:legacy-results}--\ref{tab:online-strata}; no
+separately normalized table of absolute times is mixed into the claim.
 
-\begin{table}[!htbp]
-\TABLE{External-policy action union on identical measured service cache.\label{tab:sota-union}}{
-\small
-\renewcommand{\arraystretch}{1.08}
-\begin{tabular}{@{}
->{\raggedright\arraybackslash}p{0.24\linewidth}
->{\raggedleft\arraybackslash}p{0.15\linewidth}
->{\raggedleft\arraybackslash}p{0.18\linewidth}
->{\raggedright\arraybackslash}p{0.31\linewidth}
-@{}}
-\toprule
-Policy family & Sum makespan & Mean flow & Interpretation \\
-\midrule
-Current Scheduleurm online-Pareto-slack candidate & 149027.703 & 3129.521 & Theorem-facing fixed candidate. \\
-External best fixed makespan policy & 149027.163 & 3129.547 & Finish-time-fairness / packing-guard style drain. \\
-External best fixed mean-flow policy & 149395.706 & 3129.389 & IADeep/Salus-style interference guard. \\
-Scheduleurm+external Pareto-slack union & 149027.271 & 3129.542 & Static/Poisson measured-cache frontier certificate. \\
-Scheduleurm+external makespan union & 149027.163 & 3129.534 & Metric-specific action-union diagnostic. \\
-Scheduleurm+external guarded union & 149639.695 & 3129.907 & Guarded mean-flow action-union ablation. \\
-Legacy Scheduleurm caps & 341169.248 & 16137.121 & Legacy fixed-cap reference. \\
-\bottomrule
-\end{tabular}
-}{Times are in seconds.  The action-union rows are policy-semantics selectors over
-measured service actions, not direct executions of Gavel, Pollux, Sia, IADeep,
-or Salus.  The Pareto-slack policy is not Pareto-dominated by any registered
-external-policy row and matches both measured-cache envelopes within tolerance.}
-\end{table}
-
-The strict measured-cache claim is separate from a direct-system claim.  On the
-measured cache, every task-list scenario is noninferior to the registered
-external-policy envelope in both makespan and mean flow.  The last missing row
-was the ResNet-50 tail/admission case.  The final fixed candidate treats a
-configuration action as a measured trajectory, not merely as a co-location
-profile: closed-batch ResNet-50 queues use the measured profile-5 tail-drain
-SRF action, and rolling Poisson/bursty ResNet-50 queues use the measured
-profile-5 resource-adaptive admission trajectory.  This resolves the q01
-ResNet-50 row and the inherited q01 portfolio and mixed-portfolio rows.  Across
-q00, q01, q10, q11, and the mixed portfolio, the candidate is noninferior to the
-measured-cache policy-semantics frontier.  The statement remains a
+The strict measured-cache claim is separate from a direct-system claim.  The
+final fixed candidate treats a configuration action as a measured trajectory,
+not merely as a co-location profile: the action identifies the hardware class,
+resource state, resident/target direction, admission order, and drain rule.
+Across q00, q01, q10, and q11, the exported trace-level comparison records
+whether any registered baseline Pareto-dominates that fixed candidate.  The
+statement remains a
 measured-cache policy-semantics claim, not a direct full-stack superiority
 claim over external binaries.
 
@@ -1561,89 +1546,69 @@ default production-dispatch claim.
 \subsection{Theorem-condition and live-sanity checks}
 \label{subsec:condition-checks}
 
-The measured portfolio finite slice also instantiates the slack inequality in
-Theorem~\ref{thm:main}.  With load
-\(\lambda_i=0.8\,\mu_i(a_{\mathrm{selected}})\), the candidate family equals
-the measured action slice, so \(L\rho=0\).  The resulting certificate is
+The hardware-local lower-service experiment instantiates the slack inequality
+in Theorem~\ref{thm:main} separately on each of four GPU execution classes.
+For each class, the selected one-sided lower confidence bound (LCB) of a
+dedicated action is used as that workload's diagonal service scale.  The four
+normalized workload coordinates therefore have unit dedicated service, and an
+equal stationary mix supplies \(1/4\) normalized work units per slot to each
+coordinate.  At load fraction 0.8, the registered Bernoulli model has
 \begin{equation}
   \begin{aligned}
-  \delta &= 0.081934686,\\
-  \epsilon_{\mathrm{est}} &= \beta=\alpha_1=0,\\
-  \eta &= 0.081934686.
+  \delta
+    &=\frac{1}{4}-\frac{0.8}{4}=0.05,\\
+  \eta
+    &=\delta-(L\rho+\epsilon_{\mathrm{est}}+\beta+\alpha_1)\\
+    &=\UnifiedMinimumHardwareEta.
   \end{aligned}
+  \label{eq:hardware-local-slack}
 \end{equation}
-The finite-support second-moment bound is \(B=11209514.9680047\), and the resulting
-finite-set threshold is \(N=136810386\).  The selected measured service vector
-uses CPU profile 8, JAX GPU profile 1, CNN profile 4, LLM profile 8, and hybrid
-RL profile 5.  This is a theorem-condition certificate for
-a declared finite-support load model; it is not a claim that the static replay
-trace is itself a stationary arrival process.  The zero modeled losses arise
-because this certificate uses an exact enumerated measured slice and an exact
-service-map oracle.  They should not be read as evidence that a broad
-fabric-cover metric has already been calibrated with \(L\rho=0\), or that
-holdout lower-service error vanishes outside the measured rows.
-For smaller candidate families, the artifact now reports a greedy finite-feature
-k-center cover curve; those rows quantify the nonzero \(L\rho\) that must be
-paid before invoking the fabric-cover theorem away from the exact measured
-slice.
-
-The selected-profile stochastic LCB diagnostic is computed on profile-level
-aggregate service windows, matching the service coordinate used by the theorem.
-All 11 selected targets have at least 20 aggregate windows after the
-supplemental progress measurements.  The stronger mean-service statements are
-not supported by these data: the absolute mean-service holdout diagnostic gives
-\(\epsilon_{\mathrm{est}}=1196.0765\) and \(\eta=-1195.9945\), while the
-diagonal-normalized diagnostic gives
-\(\epsilon_{\mathrm{est}}^{\mathrm{norm}}=0.9687\) against normalized slack
-\(\delta^{\mathrm{norm}}=0.2\), hence \(\eta^{\mathrm{norm}}=-0.7687\).  The
-stochastic certificate therefore uses the LCB service vector itself as the
-lower-service action family.  For arrivals scaled to 0.8 of that vector, the
-selected-profile lower-service capacity certificate has positive slack
-\(\delta_{\mathrm{LCB}}=0.0341241\).  The coordinate LCB ratios for CPU, CNN,
-JAX GPU, LLM, and hybrid RL are 0.3560, 0.6506, 0.7881, 0.6550, and 0.4165,
-respectively.
-Table~\ref{tab:lower-service-certificates} reports the resulting positive
-drift margins.
-\emph{Scope.}  The positive \(\eta\) values in
-Table~\ref{tab:lower-service-certificates} are finite measured-slice
-certificates.  The stochastic result is a lower-service capacity certificate,
-not a certificate for 0.8 of the measured mean-service vector.
+Here the candidate family is the exact finite set of measured dedicated
+actions, service is already the admitted one-sided LCB, and the finite oracle
+is exact and unpenalized.  Thus the certificate records
+\(L\rho=\epsilon_{\mathrm{est}}=\beta=\alpha_1=0\) relative to that
+lower-service action family; it does not assert zero mean-service estimation
+error.  The submission gate requires the exported minimum
+\(\UnifiedMinimumHardwareEta\) to be strictly positive.  Table~\ref{tab:lower-service-certificates} is generated from the same
+cache hash as the replay.  Its four rows are separate hardware-local stochastic
+models and do not pool nominally identical hosts.
 
 \begin{table}[t]
-\TABLE{Finite measured lower-service capacity certificates.\label{tab:lower-service-certificates}}{
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.28\linewidth}
-                >{\raggedright\arraybackslash}p{0.46\linewidth}r@{}}
+\TABLE{Hardware-local lower-service stability certificates.\label{tab:lower-service-certificates}}{
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.18\linewidth}
+                >{\raggedright\arraybackslash}p{0.36\linewidth}rrr@{}}
 \toprule
-Task set & Selected measured profiles & \(\eta\) \\
+Node & Execution class & \(\delta\) & \(\eta\) & LCB coverage \\
 \midrule
-q00 light control & light-control profile 13 & 123.0121 \\
-q01 GPU-bound compute & JAX GPU profile 1 & 18.3409 \\
-q01 CNN ResNet-50 & CNN profile 7 & 13.3236 \\
-q01 LLM DistilGPT-2 & LLM profile 8 & 449.7591 \\
-q01 GPU model portfolio & JAX GPU 1; CNN 7; LLM 8 & 13.3236 \\
-q10 CPU-host bound & CPU profile 8 & 10.2331 \\
-q11 CPU/GPU coupled & hybrid RL profile 5 & 0.053191 \\
-Mixed portfolio & CPU 8; JAX GPU 1; CNN 7; LLM 8; hybrid RL 5 & 0.053191 \\
+\UnifiedHardwareSlackRows
 \bottomrule
 \end{tabular}
-}{Each row is a stability certificate, not a replay-performance estimate: the
-finite-slice rows use the finite measured lower-service model at load fraction
-0.8, and the selected-profile stochastic row uses the LCB lower-service model
-described in the text.  Performance replay tables elsewhere use empirical
-measured means on the same service cache.  The certificates here support the
-declared finite slice and do not claim stochastic generalization beyond the
-measured or LCB-admitted profiles.}
+}{Each row uses four normalized Bernoulli arrival streams at load fraction 0.8.
+LCB coverage is nominal per node; cross-node simultaneous coverage uses the
+reported union-bound certificate.  These rows certify exact measured dedicated
+actions.  Loaded co-location actions remain statewise replay evidence rather
+than being silently absorbed into this empty-state stochastic model.}
 \end{table}
 
-The replay model was checked against fresh progress-window live measurements on
-representative measured service-cache rows, not only on the final selected
-profiles.  For the q01 profile-4 row, replay predicted a makespan of 1661.313
-seconds, whereas the fresh live proxy was 1652.248 seconds, a relative error of
-0.005457.  For q11 profile 2, replay predicted 38382.365 seconds and the fresh
-live proxy was 37760.000 seconds, a relative error of 0.016215.  For the mixed
-portfolio, composed live slices gave relative errors of 0.007349 on makespan,
-0.005417 on mean flow, and 0.007964 on p90 flow.  These are progress-window
-sanity checks; the long jobs were not all run to natural completion.
+The final service cache does not infer job completion time from a short
+steady-state window.  Every admitted GPU row contains a task-native
+natural-completion model with separate initialization, periodic work, and final
+checkpoint/output phases; no history-fallback row is admitted.  Empty and
+loaded rows are keyed by physical execution class, workload, profile, and
+directional resident/target state.  Consequently, rates from node007 are not
+borrowed for either jtl110 host or jtl311linux, and loaded target rates cannot
+overwrite empty-state legacy indices.
+
+The same cache also re-evaluates the controlled migration ledger.  Across
+\UnifiedMigrationScenarioCount{} registered pure-CPU, pure-GPU, and hybrid-RL
+counterfactuals, migration is selected in \UnifiedMigrationSelectedCount{}
+cases.  The geometric ratios of without-migration to with-migration completion
+cost are \(\UnifiedMigrationMakespanGeoRatio\times\) for makespan and
+\(\UnifiedMigrationMeanFlowGeoRatio\times\) for mean flow.  These ratios are
+reported even when they equal or fall below one: the admissibility rule charges
+checkpoint flush, synchronization, environment staging, resume warmup, lost
+work, and failure risk before selecting a move.  Ordinary running user jobs are
+not migration candidates.
 
 We also ran a corner-case marginal-efficiency experiment while the cluster was
 idle.
@@ -2037,9 +2002,10 @@ diagonal-scaling, and frame statements are formalized in Lean.
 
 Scheduleurm provides a concrete instantiation of the theorem.  Its measured
 finite slices close the lower-service stability conditions for declared
-workload domains.  On explicit task lists and 192 online replay scenarios, the
-robust candidate improves legacy completion metrics and is not Pareto-dominated
-by registered policy-semantics baselines evaluated on the same measured service
+workload domains.  On \UnifiedStaticComparisonCount{} closed-batch and
+\UnifiedOnlineComparisonCount{} online replay comparisons, the robust candidate
+improves legacy completion metrics and its trace-level relationship to every
+registered policy-semantics baseline is reported on the same measured service
 cache.  Controlled live launches and strict scheduler-history evidence show how
 the theorem-facing objects can be produced by an operational scheduler.  Frozen
 finite-trajectory experiments on FJSP, MMRCPSP, and port models further test the

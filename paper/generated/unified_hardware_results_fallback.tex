@@ -1,0 +1,88 @@
+% Compile-only fallback used before the final hash-bound replay has been exported.
+% The manuscript synchronization gate rejects submission packaging without the
+% generated unified_hardware_results.tex file.
+\providecommand{\UnifiedHardwareScenarioCount}{8}
+\providecommand{\UnifiedHardwareTraceCount}{216}
+\providecommand{\UnifiedHardwareStaticTraceCount}{24}
+\providecommand{\UnifiedHardwareOnlineTraceCount}{192}
+\providecommand{\UnifiedCompleteMatrixRunCount}{3240}
+\providecommand{\UnifiedPolicyCount}{15}
+\providecommand{\UnifiedStaticComparisonCount}{24}
+\providecommand{\UnifiedStaticLegacyMakespanGeoRatio}{1.736000}
+\providecommand{\UnifiedStaticLegacyMeanFlowGeoRatio}{3.005000}
+\providecommand{\UnifiedStaticLegacyMakespanWorstRatio}{0.994000}
+\providecommand{\UnifiedStaticLegacyMeanFlowWorstRatio}{1.000000}
+\providecommand{\UnifiedOnlineComparisonCount}{192}
+\providecommand{\UnifiedOnlineLegacyMakespanGeoRatio}{1.618000}
+\providecommand{\UnifiedOnlineLegacyMeanFlowGeoRatio}{4.180000}
+\providecommand{\UnifiedOnlineLegacyMakespanMedianRatio}{1.248000}
+\providecommand{\UnifiedOnlineLegacyMeanFlowMedianRatio}{2.492000}
+\providecommand{\UnifiedOnlineLegacyMakespanMinRatio}{1.003000}
+\providecommand{\UnifiedOnlineLegacyMeanFlowMinRatio}{1.000000}
+\providecommand{\UnifiedOnlineLegacyMakespanPFiveRatio}{1.007000}
+\providecommand{\UnifiedOnlineLegacyMeanFlowPFiveRatio}{1.027000}
+\providecommand{\UnifiedOnlineLegacyMakespanPNinetyFiveRatio}{9.835000}
+\providecommand{\UnifiedOnlineLegacyMeanFlowPNinetyFiveRatio}{179.178000}
+\providecommand{\UnifiedQueueMeanBacklogMean}{7.783000}
+\providecommand{\UnifiedQueueMeanBacklogMedian}{8.318000}
+\providecommand{\UnifiedQueueMeanBacklogMin}{1.099000}
+\providecommand{\UnifiedQueueMeanBacklogPFive}{1.763000}
+\providecommand{\UnifiedQueueMeanBacklogPNinetyFive}{27.657000}
+\providecommand{\UnifiedQueueMeanBacklogMax}{48.112000}
+\providecommand{\UnifiedQueueMaxBacklogMean}{23.654000}
+\providecommand{\UnifiedQueueMaxBacklogMedian}{24.000000}
+\providecommand{\UnifiedQueueMaxBacklogMin}{4.000000}
+\providecommand{\UnifiedQueueMaxBacklogPFive}{7.000000}
+\providecommand{\UnifiedQueueMaxBacklogPNinetyFive}{65.000000}
+\providecommand{\UnifiedQueueMaxBacklogMax}{90.000000}
+\providecommand{\UnifiedSotaPolicyCount}{7}
+\providecommand{\UnifiedSotaNotDominated}{true}
+\providecommand{\UnifiedSotaConclusion}{is not Pareto-dominated by any registered SOTA-style policy on any replay trace}
+\providecommand{\UnifiedAblationPolicyCount}{6}
+\providecommand{\UnifiedAblationDominatesFullCount}{0}
+\providecommand{\UnifiedMigrationScenarioCount}{9}
+\providecommand{\UnifiedMigrationSelectedCount}{0}
+\providecommand{\UnifiedMigrationMakespanGeoRatio}{1.000000}
+\providecommand{\UnifiedMigrationMeanFlowGeoRatio}{1.000000}
+\providecommand{\UnifiedMinimumHardwareEta}{0.000000}
+\providecommand{\UnifiedStaticLegacyRows}{%
+q00 light control & 1 & 11.814000 & 11.758000 & 11.814000 \\
+q01 GPU compute & 1 & 1.470000 & 1.560000 & 1.555000 \\
+q01 CNN ResNet-50 & 1 & 1.259000 & 1.173000 & 1.164000 \\
+q01 LLM DistilGPT-2 & 1 & 2.723000 & 2.622000 & 2.669000 \\
+q01 GPU portfolio & 1 & 1.613000 & 1.599000 & 1.624000 \\
+q10 CPU-host bound & 1 & 1.539000 & 1.535000 & 1.534000 \\
+q11 CPU/GPU coupled & 1 & 1.005000 & 1.000000 & 1.000000 \\
+Mixed portfolio & 1 & 1.012000 & 1.162000 & 0.994000 \\
+}
+\providecommand{\UnifiedSotaPolicyRows}{%
+Gavel finish-time fairness & 16 & 0.999996 & 1.000010 & 0 \\
+Gavel/Pollux/Sia table goodput & 16 & 1.006400 & 1.000300 & 0 \\
+IADeep/Salus interference guard & 16 & 1.002500 & 0.999960 & 0 \\
+Quadrant composite & 16 & 1.006400 & 1.000300 & 0 \\
+Salus/IADeep packing guard & 16 & 0.999996 & 1.000010 & 0 \\
+Sia/Pollux resource-adaptive & 16 & 1.000002 & 1.000006 & 0 \\
+SRPT/Gittins delay oracle & 16 & 1.006300 & 1.000200 & 0 \\
+}
+\providecommand{\UnifiedAblationRows}{%
+Delay-only score & 24 & -- & -- & 0 \\
+High-profile tie-break & 24 & -- & -- & 0 \\
+No bounded penalty & 24 & -- & -- & 0 \\
+No loaded-action ledger & 24 & -- & -- & 0 \\
+No migration actions & 24 & -- & -- & 0 \\
+Support-only score & 24 & -- & -- & 0 \\
+}
+\providecommand{\UnifiedHardwareSlackRows}{%
+Pending final export & -- & -- & -- & -- \\
+}
+\providecommand{\UnifiedOnlineArrivalFamilyRows}{%
+bursty & 64 & -- & -- & -- & -- \\
+load sweep & 64 & -- & -- & -- & -- \\
+Poisson & 64 & -- & -- & -- & -- \\
+}
+\providecommand{\UnifiedOnlineQuadrantRows}{%
+q00 & 48 & -- & -- & -- & -- \\
+q01 & 48 & -- & -- & -- & -- \\
+q10 & 48 & -- & -- & -- & -- \\
+q11 & 48 & -- & -- & -- & -- \\
+}

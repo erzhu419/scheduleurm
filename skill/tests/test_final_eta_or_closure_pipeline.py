@@ -54,6 +54,7 @@ def test_stage_plan_orders_cache_slack_migration_replay_and_figure() -> None:
         "recalculate_migration_rates",
         "certify_migration_actions",
         "replay_hardware_quadrants",
+        "export_paper_results",
         "render_quadrant_figure",
     ]
     assert all(stage.argv[0] == "python-test" for stage in build_stages(python="python-test"))

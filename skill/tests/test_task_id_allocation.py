@@ -1,3 +1,19 @@
+from skill import scheduler_task_ids as ids
+
+
+def test_task_id_module_allocates_batch_across_t9999(check):
+    state = {"next_id": 9998, "tasks": [{"id": "t0001"}, {"id": "manual"}]}
+
+    allocated = ids.allocate_task_ids(state, 4)
+
+    check("task id module allocates monotonically across t9999",
+          allocated == ["t9998", "t9999", "t10000", "t10001"],
+          diag=str(allocated))
+    check("task id module stores next counter after batch",
+          state["next_id"] == 10002,
+          diag=f"next_id={state.get('next_id')}")
+
+
 def test_task_id_allocation_crosses_t9999_without_wrap(check, sch):
     state = {"next_id": 9999, "tasks": [{"id": "t9998"}]}
 

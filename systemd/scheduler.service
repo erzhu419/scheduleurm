@@ -7,7 +7,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=-%h/.claude/scheduler/scheduler.env
-ExecStart=/usr/bin/python3 %h/.claude/skills/scheduler/scheduler.py watch
+ExecStart=/usr/bin/python3 %h/.claude/skills/scheduler/scheduler.py watch --ignore-dispatch-intent
 # Restart=always (was on-failure): SIGKILL'd processes (kernel OOM) exit with no clean
 # status, which `on-failure` would NOT count as failure → systemd wouldn't restart. Codex P1.
 # `always` covers SIGKILL + clean-exit-with-error + crash uniformly. Watcher itself is idempotent

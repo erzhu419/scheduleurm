@@ -20,10 +20,8 @@ from __future__ import annotations
 
 import json
 import os
-import shlex
 import subprocess
 import sys
-import importlib.util
 from pathlib import Path
 from typing import Optional
 
@@ -39,21 +37,6 @@ SCHED = os.environ.get(
 QUEUE = Path.home() / ".claude" / "scheduler" / "queue.json"
 
 mcp = FastMCP("scheduler")
-
-
-def _scheduler_module():
-    """Load scheduler.py so MCP log reads honor relay/proxy node routing."""
-    try:
-        sched_path = Path(SCHED).expanduser()
-        spec = importlib.util.spec_from_file_location("scheduleurm_skill_scheduler", sched_path)
-        if spec is None or spec.loader is None:
-            return None
-        module = importlib.util.module_from_spec(spec)
-        sys.modules.setdefault("scheduleurm_skill_scheduler", module)
-        spec.loader.exec_module(module)
-        return module
-    except Exception:
-        return None
 
 
 def _run(args: list[str], timeout: int = 60) -> dict:
@@ -400,6 +383,36 @@ def cancel_task(task_id: str, force: bool = False) -> dict:
 
 
 @mcp.tool()
+def cancel_tasks(
+    task_ids: Optional[list[str]] = None,
+    project: Optional[str] = None,
+    signature: Optional[str] = None,
+    force: bool = False,
+    dry_run: bool = False,
+) -> dict:
+    """Cancel many scheduler tasks in one batch transaction.
+
+    `task_ids` accepts explicit IDs and range tokens such as `t21001-t21080`.
+    `project` and `signature` are glob selectors. Selector-only calls are previewed when
+    dry_run=True; mutating selector calls receive the required confirmation flag.
+    If any selected task is running, force=True is required and must be explicitly
+    approved by the user first.
+    """
+    args = ["cancel-batch", *(task_ids or [])]
+    if project:
+        args += ["--project", project]
+    if signature:
+        args += ["--signature", signature]
+    if force:
+        args.append("--force")
+    if dry_run:
+        args.append("--dry-run")
+    elif (project or signature) and not task_ids:
+        args.append("--confirm")
+    return _run(args, timeout=300)
+
+
+@mcp.tool()
 def history(signature: Optional[str] = None) -> dict:
     """Get resource peak history per signature (peak_vram_mb, peak_ram_mb, n_runs).
 
@@ -433,64 +446,22 @@ def queue_dump(filter_status: Optional[str] = None) -> dict:
 def task_log(task_id: str, tail_lines: int = 50) -> dict:
     """Read the last N lines of a task's stdout/stderr log.
 
-    Use to debug failures or check progress. The log path differs by node (local: under
-    ~/.claude/scheduler/logs/, remote: /tmp/sched_<id>.log on the remote host).
+    Uses scheduler.py's own task-log command so MCP sees the same hot-queue/archive
+    lookup and node routing as the CLI.
     """
-    # Get log_path from queue.json
+    lines = max(1, int(tail_lines))
+    result = _run(["task-log", task_id, "-n", str(lines), "--json"], timeout=45)
+    if not result.get("stdout"):
+        return result
     try:
-        data = json.loads(QUEUE.read_text())
+        payload = json.loads(result["stdout"])
     except Exception as e:
-        return {"ok": False, "stderr": f"queue read failed: {e}"}
-    task = next((t for t in data.get("tasks", []) if t.get("id") == task_id), None)
-    if not task:
-        return {"ok": False, "stderr": f"task {task_id} not found in queue"}
-    log_path = task.get("log_path")
-    node = task.get("node")
-    if not log_path:
-        return {"ok": False, "stderr": f"task {task_id} has no log_path (likely not yet launched)"}
-    # Local node: read directly
-    if node == "local" or not node:
-        try:
-            with open(log_path) as f:
-                lines = f.readlines()
-            return {"ok": True, "log_path": log_path, "tail": "".join(lines[-tail_lines:])}
-        except Exception as e:
-            return {"ok": False, "stderr": f"could not read {log_path}: {e}"}
-    # Remote node: use scheduler.py's node routing when available. This handles
-    # relay-backed HPC nodes such as node001-node006, where direct `ssh node002`
-    # from the MCP host is not valid.
-    sched = _scheduler_module()
-    if sched is not None and hasattr(sched, "run_on"):
-        try:
-            rc, out, err = sched.run_on(
-                node,
-                f"tail -n {int(tail_lines)} {shlex.quote(log_path)}",
-                timeout=20,
-                check=False,
-            )
-            return {
-                "ok": rc == 0,
-                "log_path": f"{node}:{log_path}",
-                "tail": out,
-                "stderr": err,
-            }
-        except Exception as e:
-            return {"ok": False, "stderr": f"scheduler-routed tail failed: {e}"}
-
-    # Remote node fallback: plain ssh tail.
-    try:
-        r = subprocess.run(
-            ["ssh", node, f"tail -n {tail_lines} {log_path}"],
-            capture_output=True, text=True, timeout=15,
-        )
-        return {
-            "ok": r.returncode == 0,
-            "log_path": f"{node}:{log_path}",
-            "tail": r.stdout,
-            "stderr": r.stderr,
-        }
-    except Exception as e:
-        return {"ok": False, "stderr": f"ssh tail failed: {e}"}
+        result["ok"] = False
+        result["stderr"] = f"task-log returned non-json output: {e}; stderr={result.get('stderr', '')}"
+        return result
+    if result.get("stderr") and not payload.get("stderr"):
+        payload["stderr"] = result["stderr"]
+    return payload
 
 
 if __name__ == "__main__":

@@ -88,6 +88,7 @@ def run(check, sch):
                   t.get("probe_unknown_count") == 1
                   and "ssh timeout" in t.get("last_probe_unknown_reason", ""))
             t["probe_unknown_since"] = time.time() - 120
+            state["_last_running_probe_at"] = time.time() - sch.RUNNING_PROBE_MIN_INTERVAL_S - 1
             sch.update_running_tasks(state)
             check("reconnect dead+success syncs terminal done",
                   t["status"] == "done" and not t.get("probe_unknown_since"))
@@ -111,6 +112,7 @@ def run(check, sch):
             ])
             sch.update_running_tasks(state)
             parent["probe_unknown_since"] = time.time() - 180
+            state["_last_running_probe_at"] = time.time() - sch.RUNNING_PROBE_MIN_INTERVAL_S - 1
             sch.update_running_tasks(state)
             retry = next((x for x in state["tasks"] if x.get("parent_id") == "tfail"), None)
             check("reconnect dead+no-success syncs failed parent",

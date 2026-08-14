@@ -156,28 +156,19 @@ are left at the default LocalBackend policy:
   claims and FIFO intent heads so queue stalls are visible without grepping
   watcher logs.
 
-This is not a full replacement for slurm — there's no central daemon, no
-fairshare accounting, no quotas, no preemption across schedulers. It provides
-atomic capacity exclusion plus FIFO-with-backfill launch admission.
-
-If a small node has Slurm installed but should still pack multiple GPU jobs per
-card, leave it at the default policy and set `enable_claims=True` if it is shared.
-Default/`auto` Slurm routing is hardware-aware: nodes that look cluster-class
-(by default >=128 schedulable CPU cores or >=8 GPUs) only hand LLM, multi-GPU,
-large-VRAM, or large-CPU tasks to Slurm; small one-GPU tasks keep scheduleurm
-packing. Use `NODES["x"]["slurm_backend"] = "slurm"` or per-bucket
-`slurm_gpu_backend="slurm"` / `slurm_cpu_backend="slurm"` only when Slurm should
-own queueing for that node/bucket unconditionally. Existing Slurm jobs keep being
-tracked by `slurm_job_id`; only future launches are affected.
+This is not a full multi-user fairshare system: there's no central accounting
+daemon, no quotas, and no preemption across schedulers. It provides atomic
+capacity exclusion plus FIFO-with-backfill launch admission. Existing historical
+external records such as old `slurm_job_id` tasks are read-only compatibility
+records; new launches are scheduleurm-managed.
 
 ## What it deliberately doesn't do
 
 - **Full multi-user fairshare** — launch admission is FIFO-with-backfill, but
   there are no quotas, no weighted priority across schedulers, no per-user
-  limits, and no preemption. Use Slurm for those.
+  limits, and no preemption.
 - **Cluster-wide DAG** — task A → task B chaining isn't here. Use bash with `wait-for`, chain in your launcher script, or use `submit --wait-for-file PATH` for simple artifact-gated follow-up jobs.
 - **Large external data sync** — first-launch staging rsyncs the task `cwd`, not arbitrary parent/sibling data directories. Known SimpleSAC snapshot/per-file bus-data runs are pinned local unless `--allow-remote-large-data` is passed after manually staging the data.
 - **Hot-reload of NODES** — edit `scheduler.py`, re-run `install.sh`, watcher restart picks it up. No live config reload (would complicate the lock semantics).
 - **Cross-node tensor sharing** — every task is a single-node operation. Multi-node training is the user's responsibility (NCCL/MPI/torchrun).
 - **Auto-scale / spawn nodes** — `NODES` is fixed. If you need elasticity, add nodes statically and let `dispatch` ignore offline ones (probe failure = skip).
-- **Replace SLURM** — if you have a real multi-user HPC cluster, opt that node into SLURM. This is for the messy mostly-single-user case where SLURM is overkill and scheduleurm's packing/claims are the better default.

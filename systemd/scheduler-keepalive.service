@@ -1,0 +1,9 @@
+[Unit]
+Description=ensure scheduler watcher service is running and making progress
+Documentation=file:%h/.claude/skills/scheduler/SKILL.md
+
+[Service]
+Type=oneshot
+EnvironmentFile=-%h/.claude/scheduler/scheduler.env
+ExecStart=/usr/bin/python3 %h/.claude/skills/scheduler/scripts/watcher_keepalive.py
+TimeoutStartSec=90

@@ -1,0 +1,11 @@
+[Unit]
+Description=periodically restart scheduler watcher if it was stopped or failed
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

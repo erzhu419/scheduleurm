@@ -130,47 +130,13 @@ python3 $sch cancel t0042
 
 Full subcommand list: `python3 scheduler.py --help`.
 
-## Installing slurm on cluster nodes (`install-slurm` subcommand)
+## Slurm support status
 
-scheduleurm ships a tool that installs slurm + munge on a target node from source,
-with graceful 3-tier fallback. Use it once per node; the tool detects existing
-installs and is idempotent.
-
-```bash
-# Install on local + every NODES entry. Default tag: slurm-23-11-9-1 (LTS).
-scheduleurm install-slurm
-
-# Single node:
-scheduleurm install-slurm --node jtl110gpu --sudo-pass <password>
-
-# Different version:
-scheduleurm install-slurm --tag slurm-24-05-0-1
-```
-
-**3-tier fallback chain (per node, in order):**
-
-1. **Tier 1 — github clone on the node**: ssh in, `git clone --depth 1 -b <tag> https://github.com/SchedMD/slurm.git`, build with `./configure && make -j && sudo make install`. Requires github reach from the node.
-2. **Tier 2 — rsync from local cache**: if tier 1 fails (corp network, air-gapped node), the local box clones once into `~/.cache/scheduleurm/slurm-src/`, then rsyncs to the node and runs the same build script with `--source-dir`. Requires github reach from the local box only.
-3. **Tier 3 — LocalBackend fallback**: if both fail, the tool reports `no-local-cache` / `failed-rsync` / etc. The node continues to work via `LocalBackend` (ssh+nohup+setsid) — no slurm needed for scheduleurm to function. You can rerun the install later when network or sudo issues are resolved.
-
-What the install script does on success:
-- Installs build deps via apt: `build-essential autoconf libtool libmunge-dev libnl-3-dev libssl-dev …`
-- Builds slurm from source to `/usr/local`
-- Generates `/etc/munge/munge.key` if missing, starts munge daemon
-- Creates `slurm` user, runtime dirs (`/var/spool/slurmctld`, `/var/log/slurm`, …)
-- Writes a sensible default `/etc/slurm/slurm.conf` based on detected CPUs/RAM/GPUs (uses `proctrack/linuxproc` to avoid cgroup version issues)
-- Auto-detects `/dev/nvidia[0-9]` and writes `gres.conf`
-- Installs systemd units, starts `slurmctld` + `slurmd`, runs `sinfo` to verify
-
-What it doesn't do (out of scope; manual if you need them):
-- Multi-node cluster setup (cross-node munge key sync, `ControlMachine` config)
-- LDAP / AD user federation
-- Slurmdbd accounting database
-
-After install, restart the watcher so `HybridBackend` re-detects the node:
-```bash
-systemctl --user restart scheduler
-```
+New launches are scheduler-managed only. The old Slurm install/submit path has
+been removed because it did not match the current automatic placement workflow.
+Existing historical records with `slurm_job_id` are treated as read-only legacy
+records so old queue/history files can still be inspected, but scheduleurm will
+not submit, cancel, probe, or rebalance new jobs through Slurm.
 
 ## Load-balanced migration (Phase 3.0)
 
@@ -196,11 +162,11 @@ ETA is the load-imbalance signal, not task count (one 30-hour job ≠ thirty 1-h
 For best ETA accuracy, **wrap the training loop with tqdm**. The skill auto-checks scripts at submit time and proposes adding `from tqdm import tqdm; for x in tqdm(loop): ...` if missing — your loop's existing per-iter logging stays intact, tqdm just adds the bar.
 
 The same progress signal is also folded into `~/.claude/scheduler/runtime_history.json`.
-For later Slurm submissions with the same cmd/cwd/env parameters, scheduleurm uses
-`p80(projected total runtime) × 1.2` as `--time` (10-minute floor, 7-day cap) before
-falling back to the legacy signature EWMA × 3 / 24h default. The exact runtime key
-intentionally ignores signature/project/description labels so a harmless signature
-rename does not lose local timing history.
+For later scheduler placement and ETA display with the same cmd/cwd/env parameters,
+scheduleurm uses runtime-history projections before falling back to the legacy
+signature EWMA/default duration. The exact runtime key intentionally ignores
+signature/project/description labels so a harmless signature rename does not lose
+local timing history.
 
 Tunables (all env-var overridable; no code edit; takes effect after watcher restart):
 
@@ -228,61 +194,15 @@ Migration emits a `task_migrated` event in `~/.claude/scheduler/logs/watcher.log
   jtl110gpu2  GPU0=..., GPU1=...  cpu=...  ram_free=...  eta_load=1.9d
 ```
 
-## Slurm coexistence (Phase 2)
+## Backend routing
 
-scheduleurm defaults to its own LocalBackend placement for small jobs even if a target
-node has `sbatch` and `squeue` installed. Slurm is opt-in or hardware-aware: set
-`NODES["node"]["slurm_backend"] = "slurm"` to force a real shared cluster through Slurm,
-set `slurm_gpu_backend` / `slurm_cpu_backend` per resource bucket, or submit a task with
-explicit `--slurm-partition/account/qos` fields. Without a force setting, cluster-class
-nodes (default: >=128 schedulable CPU cores or >=8 GPUs) route only LLM, multi-GPU,
-large-VRAM, or large-CPU jobs through Slurm; small one-GPU jobs keep scheduleurm packing.
-In Slurm mode scheduleurm generates an
-`sbatch` script (with `--gres=gpu:1`, `--mem`, `--cpus-per-task`, `--time` from exact
-runtime history first, then history EWMA × 3, and your task's `--cmd` as body), submits it
-via stdin, tracks liveness via `squeue`, and kills via `scancel`.
-
-| Target node | What you get |
-|---|---|
-| Default, including small nodes that merely have slurm installed | scheduleurm runs `ssh + nohup + setsid`; with `enable_claims=True` per node it adds atomic cross-scheduler / cross-user resource exclusion via `/tmp/scheduleurm/claims.json + flock` |
-| Forced Slurm node, explicit Slurm task, or hardware-aware large task on a large Slurm-capable node | scheduleurm generates sbatch, slurm handles cross-user queueing + cgroup isolation + walltime. scheduleurm still does signature dedup, history-based estimation, resume injection. |
-| Mixed deployment | Per-node/per-task — node A can be Slurm opt-in, node B can be scheduleurm local, and existing `slurm_job_id` tasks keep being tracked by SlurmBackend |
-
-What scheduleurm keeps owning even on slurm nodes (because slurm doesn't): per-signature p80
-history estimation, automatic resume-from-checkpoint flag injection, cross-task `--ckpt-dir`
-conflict detection, env-deploy (docker/conda) wrapping, MCP/skill UI, auto-adoption of
-externally-launched processes.
-
-**Slurm-routed tasks bypass scheduleurm's local capacity gate.** scheduleurm's normal `dispatch`
-runs `probe_node` and refuses placement when CPU/RAM/VRAM doesn't fit instantly — that's the
-right thing for `LocalBackend` (we ARE the placement decider). For slurm nodes it would be
-catastrophically wrong: the login node usually has no GPU, and busy clusters are exactly
-when slurm's queue earns its keep. So opt-in Slurm routes short-circuit `pick_placement` —
-scheduleurm hands the task off via `sbatch` and slurm queues it. Default-local nodes still
-get the instant-fit gate; if both local and Slurm can take a task, local wins because it
-starts now.
-
-What slurm owns when present: queue ordering across users, cgroup-based memory/CPU caps,
-walltime enforcement, GPU pinning via `--gres`. Peak VRAM/RAM tracking via `sstat`/`sacct`
-isn't enabled in v1 — slurm enforces declared limits, so peak ≈ declared in practice.
-
-For small personal nodes where Slurm is installed but GPU sharing is desired, do nothing:
-the default is LocalBackend placement/VRAM packing. On large nodes, default/`auto` Slurm
-routing only catches heavyweight jobs; use `slurm_backend="local"` to force packing or
-`slurm_backend="slurm"` to force Slurm for every future launch on that node. Per-bucket
-overrides are `NODES["node"]["slurm_gpu_backend"] = "slurm"` / `slurm_cpu_backend = "slurm"`.
-Tasks with explicit Slurm fields route only to Slurm-capable nodes; scheduleurm will not
-silently ignore those fields by launching them locally.
-If that node should pack despite `nvidia-smi` showing 100% util, also set
-`NODES["node"]["gpu_util_saturation_pct"] = None` so placement relies on
-VRAM/1⁄3/RAM/CPU checks rather than util.
-
-The class hierarchy:
+All new launches use the scheduler's own backend routing:
 
 - `Backend` (ABC) — `launch(task, node_state=None)` / `kill` / `batch_probe`
 - `LocalBackend` — `ssh + nohup` path; calls `_ClaimManager.claim()` first when the node has `enable_claims=True` (Phase 3.2 / 3.4)
-- `SlurmBackend` — `sbatch` / `scancel` / `squeue`
-- `HybridBackend` — per-node routing; this is what `_BACKEND` actually is
+- `WindowsBackend` — Windows CPU-node launch/probe path
+- `LegacyExternalBackend` — read-only compatibility for old externally-managed records such as historical `slurm_job_id` tasks
+- `HybridBackend` — local/windows/legacy routing; this is what `_BACKEND` actually is
 
 **Phase 3.2 / 3.4 cross-scheduler claims (shipped)**:
 
@@ -335,12 +255,10 @@ if `/proc`/`nvidia-smi` is unavailable, it falls back to claims-only behavior.
 Use `scheduler claims [--node NODE]` to inspect both active claims and FIFO
 intents; `status`, `why`, and `tui` surface intent counts/head tickets too.
 
-Not a slurm replacement — there is no fairshare accounting, quota system, or
-preemption across users. The claims layer provides atomic over-commit
-prevention plus FIFO-with-backfill launch admission. If you need the rest of
-slurm's feature set, install slurm and opt that node into
-`slurm_backend="slurm"`; the layers compose (a node can have slurm installed
-AND `enable_claims` for scheduleurm-local launches that bypass slurm's queue).
+This is still not a full multi-user fairshare system: there is no quota system
+or cross-scheduler preemption. The claims layer provides atomic over-commit
+prevention plus FIFO-with-backfill launch admission for scheduler-managed
+launches.
 
 ## Architecture (one screen)
 

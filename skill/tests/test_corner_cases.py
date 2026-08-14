@@ -33,9 +33,6 @@ def _base_task(**overrides):
         "resume_flag": "",
         "result_dir": None,
         "local_result_dir": None,
-        "slurm_partition": "",
-        "slurm_account": "",
-        "slurm_qos": "",
         "priority": "normal",
         "ram_mb": 1000,
         "est_vram_mb": 1000,
@@ -82,6 +79,9 @@ def run(check, sch):
         finally:
             sch.NODES.clear()
             sch.NODES.update(saved)
+
+    def module_src(name: str) -> str:
+        return open(os.path.join(os.path.dirname(sch.__file__), name), encoding="utf-8").read()
 
     def case_env_value_with_equals():
         return sch._parse_env(["A=x=y=z"]) == {"A": "x=y=z"}
@@ -289,7 +289,7 @@ def run(check, sch):
                 "gpus": [{"idx": 0, "total_mb": 12000, "free_mb": 12000,
                           "used_mb": 0, "util_pct": 0}]}
         ok, why = sch._node_resources_ok(task, node, dict(local_cfg))
-        return (not ok) and "cpu:" in why
+        return (not ok) and "cpu" in why.lower()
 
     def case_remote_cpu_only_still_checks_cpu_pressure():
         task = _base_task(est_vram_mb=0, cpu_cores=2, ram_mb=1000)
@@ -409,10 +409,16 @@ def run(check, sch):
             sch.NODES.clear()
             sch.NODES.update(saved_nodes)
 
-    def case_slurm_bucket_missing_est_defaults_gpu():
-        return sch._slurm_pending_bucket_for_task({}) == "gpu"
+    def case_deprecated_slurm_fields_do_not_request_slurm():
+        task = {"node": "node001", "slurm_partition": "gpu", "est_vram_mb": 1000}
+        backend = sch.HybridBackend()
+        return (
+            not hasattr(sch, "_task_requests_slurm")
+            and not hasattr(backend, "_node_wants_slurm")
+            and isinstance(backend._backend_for("node001", task), sch.LocalBackend)
+        )
 
-    def case_format_task_location_slurm_cpu_and_gpu():
+    def case_format_task_location_legacy_cpu_and_gpu():
         cpu = sch._format_task_location({
             "node": "n1", "slurm_job_id": 12, "slurm_state": "PENDING",
             "est_vram_mb": 0, "gpu_idx": None,
@@ -421,7 +427,7 @@ def run(check, sch):
             "node": "n1", "slurm_job_id": 13, "slurm_state": "RUNNING",
             "est_vram_mb": 1000, "gpu_idx": None,
         })
-        return cpu == "n1:SLURM-CPU#12:PENDING" and gpu == "n1:SLURM-GPU#13:RUNNING"
+        return cpu == "n1:LEGACY-CPU#12:PENDING" and gpu == "n1:LEGACY-GPU#13:RUNNING"
 
     def case_jtl110cpu_is_windows_cpu_node():
         def _inner():
@@ -447,8 +453,7 @@ def run(check, sch):
         return with_temp_nodes(_inner)
 
     def case_real_scheduler_source_defines_windows_cpu_nodes():
-        path = getattr(sch, "__file__", "") or ""
-        src = open(path, encoding="utf-8").read()
+        src = module_src("scheduler_node/inventory.py")
         return (
             '"jtl110cpu"' in src
             and '"jtl110cpu2"' in src
@@ -511,10 +516,11 @@ def run(check, sch):
         def _inner():
             plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"])
             return (
-                len(plan) == 2
+                len(plan) == 4
                 and sum(p["items"] for p in plan) == 901
-                and all(p["physical_cores"] == 128 for p in plan)
-                and all(p["workers"] == 113 for p in plan)
+                and all(p["workers"] <= 60 for p in plan)
+                and all(p.get("unsplit_workers") == 113 for p in plan)
+                and all(p.get("worker_lane_count") == 2 for p in plan)
                 and max(p["waves"] for p in plan) == 4
                 and {p["node"] for p in plan} == {"jtl110cpu", "jtl110cpu2"}
             )
@@ -529,15 +535,21 @@ def run(check, sch):
                                "total_cpu": 128, "logical_cpu": 256},
             }
             plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
-            by_node = {p["node"]: p for p in plan}
+            rows_by_node = {}
+            for row in plan:
+                rows_by_node.setdefault(row["node"], []).append(row)
+            items_by_node = {node: sum(row["items"] for row in rows)
+                             for node, rows in rows_by_node.items()}
+            first_by_node = {node: rows[0] for node, rows in rows_by_node.items()}
             return (
-                len(plan) == 2
-                and by_node["jtl110cpu"]["items"] == 300
-                and by_node["jtl110cpu2"]["items"] == 601
-                and by_node["jtl110cpu"]["workers"] == 60
-                and by_node["jtl110cpu2"]["workers"] == 121
-                and by_node["jtl110cpu"]["physical_cores"] == 64
-                and by_node["jtl110cpu"]["total_physical_cores"] == 128
+                len(plan) == 4
+                and items_by_node["jtl110cpu"] == 300
+                and items_by_node["jtl110cpu2"] == 601
+                and first_by_node["jtl110cpu"]["workers"] == 60
+                and all(row["workers"] <= 60 for row in plan)
+                and first_by_node["jtl110cpu"]["physical_cores"] == 64
+                and first_by_node["jtl110cpu"]["total_physical_cores"] == 128
+                and {row.get("worker_lane_count") for row in rows_by_node["jtl110cpu2"]} == {3}
                 and max(p["waves"] for p in plan) == 5
             )
         return with_temp_nodes(_inner)
@@ -552,11 +564,12 @@ def run(check, sch):
             }
             plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
             return (
-                len(plan) == 1
-                and plan[0]["node"] == "jtl110cpu2"
-                and plan[0]["items"] == 901
-                and plan[0]["workers"] == 113
-                and plan[0]["waves"] == 8
+                len(plan) == 2
+                and {p["node"] for p in plan} == {"jtl110cpu2"}
+                and sum(p["items"] for p in plan) == 901
+                and all(p["workers"] <= 60 for p in plan)
+                and {p.get("worker_lane_count") for p in plan} == {2}
+                and max(p["waves"] for p in plan) == 8
             )
         return with_temp_nodes(_inner)
 
@@ -580,19 +593,22 @@ def run(check, sch):
             }
             plan = sch._cpu_batch_plan(901, ["jtl110cpu", "jtl110cpu2"], states)
             payload = sch._cpu_batch_log_payload(901, plan, states, templates={"cmd": "python eval.py"})
-            nodes = {n["node"]: n for n in payload["nodes"]}
+            rows_by_node = {}
+            for row in payload["nodes"]:
+                rows_by_node.setdefault(row["node"], []).append(row)
             return (
                 payload["total_items"] == 901
-                and payload["node_count"] == 2
-                and nodes["jtl110cpu"]["assigned_items"] == 300
-                and nodes["jtl110cpu"]["free_physical_cores_used_for_plan"] == 64
-                and nodes["jtl110cpu"]["live_node"]["logical_cpu"] == 256
-                and nodes["jtl110cpu2"]["wave_plan"]["waves"] == nodes["jtl110cpu2"]["waves"]
+                and payload["node_count"] == 4
+                and sum(row["assigned_items"] for row in rows_by_node["jtl110cpu"]) == 300
+                and rows_by_node["jtl110cpu"][0]["free_physical_cores_used_for_plan"] == 64
+                and rows_by_node["jtl110cpu"][0]["live_node"]["logical_cpu"] == 256
+                and all(row["wave_plan"]["waves"] == row["waves"] for row in rows_by_node["jtl110cpu2"])
             )
         return with_temp_nodes(_inner)
 
     def case_cpu_ownership_snapshot_separates_ours_external_and_other():
-        saved = sch._ClaimManager.__dict__["scheduler_id"]
+        had_local_scheduler_id = "scheduler_id" in sch._ClaimManager.__dict__
+        saved_scheduler_id = sch._ClaimManager.__dict__.get("scheduler_id")
         try:
             sch._ClaimManager.scheduler_id = staticmethod(lambda: "this-scheduler")
             state = {"tasks": [
@@ -615,10 +631,17 @@ def run(check, sch):
                 and row["external_tracked_task_ids"] == ["tOther"]
             )
         finally:
-            sch._ClaimManager.scheduler_id = saved
+            if had_local_scheduler_id:
+                sch._ClaimManager.scheduler_id = saved_scheduler_id
+            else:
+                try:
+                    delattr(sch._ClaimManager, "scheduler_id")
+                except AttributeError:
+                    pass
 
     def case_dispatch_cycle_payload_includes_cpu_accounting():
-        saved = sch._ClaimManager.__dict__["scheduler_id"]
+        had_local_scheduler_id = "scheduler_id" in sch._ClaimManager.__dict__
+        saved_scheduler_id = sch._ClaimManager.__dict__.get("scheduler_id")
         try:
             sch._ClaimManager.scheduler_id = staticmethod(lambda: "sid")
             state = {"tasks": [
@@ -637,7 +660,13 @@ def run(check, sch):
                 and payload["no_fit"][0]["reason"] == "waiting"
             )
         finally:
-            sch._ClaimManager.scheduler_id = saved
+            if had_local_scheduler_id:
+                sch._ClaimManager.scheduler_id = saved_scheduler_id
+            else:
+                try:
+                    delattr(sch._ClaimManager, "scheduler_id")
+                except AttributeError:
+                    pass
 
     def case_cpu_parallel_template_and_auto_worker_flag():
         plan = {
@@ -666,12 +695,21 @@ def run(check, sch):
             sch.NODES.update(saved)
 
     def case_submit_cpu_batch_cli_exists():
-        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        cli_src = open(os.path.join(os.path.dirname(sch.__file__), "scheduler_commands/cli.py"), encoding="utf-8").read()
+        cpu_plan_src = open(
+            os.path.join(os.path.dirname(sch.__file__), "scheduler_cpu/plan.py"),
+            encoding="utf-8",
+        ).read()
+        cpu_submit_runtime_src = open(
+            os.path.join(os.path.dirname(sch.__file__), "scheduler_cpu/submit_runtime.py"),
+            encoding="utf-8",
+        ).read()
         return (
-            "submit-cpu-batch" in src
-            and "cpu-plan" in src
-            and "cmd_submit_cpu_batch" in src
-            and "SCHEDULEURM_CPU_WORKERS" in src
+            "submit-cpu-batch" in cli_src
+            and "cpu-plan" in cli_src
+            and callable(getattr(sch, "cmd_submit_cpu_batch", None))
+            and "def cmd_submit_cpu_batch" in cpu_submit_runtime_src
+            and "SCHEDULEURM_CPU_WORKERS" in cpu_plan_src
         )
 
     def case_cpu_parallel_env_keeps_zero_start_index():
@@ -693,13 +731,12 @@ def run(check, sch):
         )
 
     def case_gpu_servers_use_auto_ram_detection():
-        try:
-            src = open(sch.__file__, encoding="utf-8").read()
-        except Exception:
-            return False
-        line1 = next((ln for ln in src.splitlines() if '"jtl110gpu":' in ln), "")
-        line2 = next((ln for ln in src.splitlines() if '"jtl110gpu2":' in ln), "")
-        return '"ram_mb": 0' in line1 and '"ram_mb": 0' in line2
+        src = module_src("scheduler_node/inventory.py")
+        return (
+            '"jtl110gpu":' in src
+            and '"jtl110gpu2":' in src
+            and src.count('"ram_mb": 0') >= 2
+        )
 
     def case_claim_capacity_uses_probed_ram_when_auto():
         saved = dict(sch.NODES)
@@ -779,7 +816,7 @@ def run(check, sch):
                     calls.append((node, ps))
                     return 0, "OK\n", ""
                 sch._run_windows_ps = fake_ps
-                cwd = r"F:\erzhu419_smoke\offline-sumo"
+                cwd = rf"F:\erzhu419_smoke\offline-sumo-{time.time_ns()}"
                 ok, msg = sch._stage_cwd_for_launch({"cwd": cwd}, "jtl110cpu")
                 state = sch._stage_cwd_check("jtl110cpu", cwd)
                 return (
@@ -812,12 +849,17 @@ def run(check, sch):
         return with_temp_nodes(_inner)
 
     def case_windows_stage_helper_uses_tar_over_ssh():
-        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        src = module_src("scheduler_launch/staging_runtime.py")
+        staging_src = module_src("scheduler_staging/launch_cwd.py")
         return (
             "def _stage_local_dir_to_windows" in src
-            and '"tar", "-C"' in src
-            and "_ssh_base_args(target_node)" in src
-            and "tar -xf - -C $dest" in src
+            and "_stage_local_dir_to_windows_impl" in src
+            and "def stage_local_dir_to_windows" in staging_src
+            and '"tar", "-h", "-C"' in staging_src
+            and "deps.ssh_base_args(target_node)" in staging_src
+            and "tar -xf - -C $dest" in staging_src
+            and "stage_local_dir_to_windows" in staging_src
+            and "deps.node_is_windows(target_node)" in staging_src
         )
 
     def case_windows_explicit_env_spec_rejected_without_network():
@@ -1018,12 +1060,12 @@ def run(check, sch):
         return with_temp_nodes(_inner)
 
     def case_windows_probe_has_process_cpu_delta_fallback():
-        import inspect
-        src = inspect.getsource(sch._probe_windows_node)
+        from pathlib import Path
+        src = (Path(sch.__file__).resolve().parent / "scheduler_windows/probe.py").read_text()
         return (
-            "GetProcessesByName" in src
-            and "TotalProcessorTime.TotalSeconds" in src
-            and "Start-Sleep -Milliseconds 700" in src
+            "WINDOWS_FULL_NODE_PROBE_PS" in src
+            and "Get-CimInstance Win32_Processor" in src
+            and "Get-Counter '\\Processor(_Total)\\% Processor Time'" in src
         )
 
     def case_windows_probe_error_hints_ssh_key_auth():
@@ -1040,21 +1082,26 @@ def run(check, sch):
         return with_temp_nodes(_inner)
 
     def case_windows_wrapper_logs_cpu_plan_and_resource_progress():
-        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        launcher_src = module_src("scheduler_windows/launcher.py")
+        backend_src = module_src("scheduler_windows/backend.py")
+        config_src = module_src("scheduler_config.py")
         return (
-            "scheduleurm cpu-plan" in src
-            and "scheduleurm resource-progress" in src
-            and "resource_log_interval_s" in src
-            and "WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S" in src
+            "scheduleurm cpu-plan" in launcher_src
+            and "scheduleurm resource-progress" in launcher_src
+            and "resource_log_interval_s" in (launcher_src + backend_src)
+            and "WINDOWS_WRAPPER_RESOURCE_LOG_INTERVAL_S" in config_src
         )
 
     def case_watcher_has_periodic_node_cpu_accounting_log():
-        src = open(getattr(sch, "__file__", ""), encoding="utf-8").read()
+        cli_src = module_src("scheduler_commands/cli.py")
+        watch_src = module_src("scheduler_watch/iteration.py")
+        dispatch_src = module_src("scheduler_dispatch/command.py")
+        accounting_src = module_src("scheduler_resource/accounting.py")
         return (
-            "--resource-log-interval" in src
-            and "node_cpu_accounting" in src
-            and "_cpu_ownership_snapshot" in src
-            and "dispatch_cycle" in src
+            "--resource-log-interval" in cli_src
+            and "node_cpu_accounting" in watch_src
+            and "cpu_ownership_snapshot" in accounting_src
+            and "dispatch_cycle" in (dispatch_src + watch_src)
         )
 
     def case_bapr_seed_loop_splits_run_seed_tasks():
@@ -1241,8 +1288,7 @@ def run(check, sch):
         ("require_gpu_idx limits placement", case_require_gpu_idx_limits_placement),
         ("allowed_nodes limits candidate family", case_allowed_nodes_limits_candidate_family),
         ("one-third override allows manual GPU packing", case_one_third_override_allows_manual_gpu_packing),
-        ("slurm bucket missing estimate defaults gpu", case_slurm_bucket_missing_est_defaults_gpu),
-        ("format task location slurm cpu and gpu", case_format_task_location_slurm_cpu_and_gpu),
+        ("format task location legacy cpu and gpu", case_format_task_location_legacy_cpu_and_gpu),
         ("jtl110cpu configured as Windows CPU node", case_jtl110cpu_is_windows_cpu_node),
         ("jtl110cpu2 configured as Windows CPU node", case_jtl110cpu2_is_windows_cpu_node),
         ("scheduler source defines Windows CPU nodes", case_real_scheduler_source_defines_windows_cpu_nodes),

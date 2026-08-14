@@ -130,58 +130,18 @@ python3 $sch cancel t0042
 
 完整子命令：`python3 scheduler.py --help`。
 
-## 跟 Slurm 共存（Phase 2）
+## Slurm 支持状态
 
-scheduleurm 对小任务默认仍由自己做 LocalBackend 放置，即使目标节点装了 `sbatch` 和 `squeue`
-也不会自动一股脑交给 Slurm。Slurm 现在是显式 opt-in 或硬件感知自动路由：真实共享集群上设置
-`NODES["node"]["slurm_backend"] = "slurm"` 强制 Slurm，或按资源桶设置
-`slurm_gpu_backend` / `slurm_cpu_backend`，也可以在任务上显式传
-`--slurm-partition/account/qos`。如果不强制，只有看起来像集群级的大节点（默认 >=128 个可调度
-CPU core 或 >=8 张 GPU）上的 LLM、多卡、大显存、大 CPU 任务会自动走 Slurm；一张卡能塞多个的
-小任务仍走 scheduleurm packing。进入 Slurm 模式后，scheduleurm 会生成 `sbatch`
-脚本（带 `--gres=gpu:1`、`--mem`、`--cpus-per-task`、`--time` 优先来自相同 cmd/cwd/env 的 runtime 历史，否则用历史 EWMA × 3、body 是你的
-`--cmd`），通过 stdin 提交，靠 `squeue` 跟踪生死，靠 `scancel` 取消。
-
-| 目标节点 | 你拿到什么 |
-|---|---|
-| 默认，包括只是装了 slurm 的小节点 | scheduleurm 直接 `ssh + nohup + setsid`；`enable_claims=True` 时通过 `/tmp/scheduleurm/claims.json + flock` 做跨 scheduler / 跨用户原子互斥 |
-| 强制 Slurm 节点、显式 Slurm 任务，或大 Slurm-capable 节点上的大任务 | scheduleurm 生成 sbatch，slurm 处理跨用户排队 + cgroup 隔离 + walltime。scheduleurm 仍然做 run identity 去重、ckpt 冲突检测、history 估计、resume 注入 |
-| 混合部署 | 按节点/任务判断 —— A 节点 opt-in 走 Slurm，B 节点由 scheduleurm 本地放置；已有 `slurm_job_id` 的任务继续由 SlurmBackend 跟踪 |
-
-scheduleurm 在 slurm 节点上**仍然**owns 的（因为 slurm 不做这些）：每 signature 的 p80 历史
-估计、run identity 重复运行去重、ckpt resume flag 自动注入、跨任务 `--ckpt-dir` 冲突检测、env-deploy（docker/conda）
-包装、MCP/skill UI、外部启动进程的自动 adopt。
-
-运行中的任务会从日志尾部解析 `tqdm` / `[Epoch i/N]` / `Iter i/N` 这类进度，推算总耗时并写入
-`~/.claude/scheduler/runtime_history.json`。后续相同 cmd/cwd/env 参数的 slurm 任务会用
-`p80(预计总耗时) × 1.2` 作为 walltime（最少 10 分钟，最多 7 天）。精确 runtime key 不包含
-signature/project/description，所以仅改 signature 后缀或描述不会丢掉本地测试得到的耗时历史。
-
-**Slurm-routed 任务会绕开 scheduleurm 的本地容量门**。scheduleurm 的 `dispatch` 正常会跑 `probe_node`
-看 CPU/RAM/VRAM 实时是否够，不够就拒绝放置 —— 对 `LocalBackend` 是对的（它就是 placement
-决策者）。但对 slurm 节点这是灾难：登录节点通常根本没 GPU，集群繁忙的时候恰恰是 slurm 排队
-最有用的时候。所以 opt-in 的 Slurm 路径会直接短路 `pick_placement`，scheduleurm 把任务通过
-`sbatch` 交出去，slurm 自己排队。默认本地节点照旧走即时容量门；如果本地和 Slurm 都能接，本地
-赢，因为本地立刻起。
-
-slurm **接管**的：跨用户队列排序、cgroup 内存/CPU 上限、walltime 强制、`--gres` GPU 绑定。
-通过 `sstat`/`sacct` 抓 peak VRAM/RAM 在 v1 没启用 —— slurm 已经强制 declared 上限，所以
-peak ≈ declared。
-
-对 jtl110gpu / jtl110gpu2 这种小型个人节点，如果装了 Slurm 但仍希望一张 GPU 上按显存碎片塞多个任务，
-不用额外设置：默认就是 scheduleurm 的 LocalBackend 放置/VRAM packing。大节点上的默认/`auto`
-只会自动接管重任务；如果要强制本地 packing，用 `slurm_backend="local"`，如果要强制所有未来任务都
-交给 Slurm，用 `slurm_backend="slurm"`，也可以只设置
-`slurm_gpu_backend = "slurm"` / `slurm_cpu_backend = "slurm"`。显式带
-`--slurm-partition/account/qos` 的任务只会发给 Slurm-capable 节点，scheduleurm 不会静默忽略这些字段然后本地启动。如果该节点即使 `nvidia-smi` 显示 100% util
-也要继续按显存塞任务，再设 `NODES["node"]["gpu_util_saturation_pct"] = None`，让放置只看
-VRAM / 1⁄3+grace 规则 / RAM / CPU。
+新的任务只走 scheduleurm 自己的调度/派发路径。旧 Slurm 安装和提交路径已经移除；历史
+queue/history 里带 `slurm_job_id` 的记录仍可作为只读 legacy 记录展示，但 scheduleurm 不再通过
+Slurm 提交、取消、探测或迁移新任务。
 
 类层次：
 - `Backend`（ABC）—— `launch(task, node_state=None)` / `kill` / `batch_probe`
 - `LocalBackend` —— `ssh + nohup` 路径，`enable_claims` 时调用 `_ClaimManager.claim()` 做 Phase 3.2 跨 scheduler 互斥
-- `SlurmBackend` —— `sbatch` / `scancel` / `squeue`
-- `HybridBackend` —— 按节点路由；`_BACKEND` 实际就是这个
+- `WindowsBackend` —— Windows CPU 节点 launch/probe 路径
+- `LegacyExternalBackend` —— 只读兼容旧外部管理记录，例如历史 `slurm_job_id` 任务
+- `HybridBackend` —— local/windows/legacy 路由；`_BACKEND` 实际就是这个
 
 **Phase 3.2 跨 scheduler claims 层（已实装）**：
 
@@ -207,8 +167,8 @@ claim 脚本还会在持有远端 flock 时做一次 best-effort live resource r
 `scheduler claims [--node NODE]` 可以直接看 active claims 和 FIFO intents；`status`、`why`、
 `tui` 也会显示 intent 数量/队头。
 
-不替代 slurm —— claims 层提供 over-commit 防护和 FIFO-with-backfill 入场控制，但不做 fairshare、
-用户配额、跨 scheduler 抢占。要那些能力就把共享集群节点显式设置成 `slurm_backend="slurm"`。
+claims 层提供 over-commit 防护和 FIFO-with-backfill 入场控制，但不做 fairshare、用户配额、
+跨 scheduler 抢占。
 
 ## 架构（一屏看完）
 

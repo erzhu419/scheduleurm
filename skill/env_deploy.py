@@ -193,7 +193,7 @@ def push_image(node_host: Optional[str], image: str, timeout_s: int = 1800) -> t
 class _ShellLiteral(str):
     """Marker subclass: this arg is already shell-safe; the docker_run join must NOT
     shlex.quote it. Used for GPU specs whose value is a runtime-expanded env var
-    (e.g. `device=$CUDA_VISIBLE_DEVICES` for slurm pin-passthrough). shlex.quote
+    (e.g. `device=$CUDA_VISIBLE_DEVICES` for inherited pin-passthrough). shlex.quote
     would single-quote the `$` and break the bash expansion."""
     pass
 
@@ -215,12 +215,9 @@ def wrap_cmd_docker(inner: str, image: str, cwd: str, gpu_idx: Optional[int],
        `--gpus all` would let a task assigned to GPU1 see/use GPU0 too — silent
        placement violation.
 
-    2. **Runtime pin (SlurmBackend, Phase 2.6)**: gpu_runtime_env="CUDA_VISIBLE_DEVICES".
-       Emits `--gpus "device=$CUDA_VISIBLE_DEVICES"` so the docker pin matches
-       whatever GPU slurm's gres allocator chose at job runtime. Without this,
-       gpu_idx would either be None (Phase 2.3 behavior — task gets NO GPU
-       inside the container even though slurm allocated one) or a stale
-       scheduleurm-picked value that doesn't match slurm's actual allocation.
+    2. **Runtime pin**: gpu_runtime_env="CUDA_VISIBLE_DEVICES". Emits
+       `--gpus "device=$CUDA_VISIBLE_DEVICES"` so the docker pin can follow a
+       caller-provided runtime GPU binding instead of a static scheduleurm index.
 
     CPU-only: gpu_idx=None AND gpu_runtime_env=None. No `--gpus` flag; explicitly
     null CUDA_VISIBLE_DEVICES inside the container.
@@ -245,10 +242,10 @@ def wrap_cmd_docker(inner: str, image: str, cwd: str, gpu_idx: Optional[int],
     if cpus and cpus > 0:
         args += ["--cpus", str(cpus)]
     if gpu_runtime_env:
-        # Slurm path: docker pins to whatever GPU slurm has set in this env var at runtime.
+        # Passthrough path: docker pins to whatever GPU the parent env exposes at runtime.
         # The arg must be unquoted at shell-join time so `$CUDA_VISIBLE_DEVICES` expands.
         # We wrap in double quotes so a value like "0,1" stays as one arg even if any of
-        # those bytes were spaces (paranoia — slurm uses comma, not space).
+        # those bytes were spaces (paranoia — CUDA lists use comma, not space).
         args += ["--gpus", _ShellLiteral(f'"device=${gpu_runtime_env}"')]
         args += ["-e", "CUDA_VISIBLE_DEVICES=0"]
     elif gpu_idx is not None:

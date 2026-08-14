@@ -1,15 +1,18 @@
 """Interactive TUI for `scheduler status` — sortable table, filter, auto-refresh.
 Run via `python ~/.claude/skills/scheduler/scheduler.py tui`.
 
-Probe runs in a background thread so SSH timeouts (up to 5s/node) never block the UI.
-Sort/filter operate on the cached snapshot — instant response.
+Node telemetry is read from the watcher's atomic probe cache first.  If that
+cache is unavailable, at most one live probe runs in the background; slow SSH
+timeouts never blank or block the UI.  Sort/filter operate on the cached
+snapshot — instant response.
 
 Keys:
   r / q / a    → filter to running / queued / all active
-  f            → focus filter input (substring match against id/project/location/owner/slurm/sig/desc)
+  f            → focus filter input (substring match against id/project/location/owner/sig/desc)
   1..9         → sort by column (id / status / node / project / owner / runtime / vram / ram / eta)
   R            → reverse sort direction
   p / P        → bump task priority up / down (only for queued tasks)
+  l            → show current row's task-log tail
   c            → copy current row's task id to clipboard (paste e.g. into `cancel`/`show`)
   ctrl+r       → force refresh now
   ctrl+c       → quit
@@ -25,11 +28,15 @@ import time
 from pathlib import Path
 
 try:
+    from textual import work
     from rich.text import Text
     from textual.app import App, ComposeResult
     from textual.binding import Binding
+    from textual.containers import Container
     from textual.reactive import reactive
+    from textual.screen import ModalScreen
     from textual.widgets import DataTable, Footer, Header, Input, Static
+    from textual.widgets import TextArea
     from textual.worker import Worker, WorkerState
 except ImportError:
     sys.exit("textual not installed. Run: pip install --user textual")
@@ -39,8 +46,14 @@ import scheduler as sch  # noqa: E402
 
 _SCHED_SOURCE = Path(getattr(sch, "__file__", Path(__file__).with_name("scheduler.py"))).resolve()
 _TUI_SOURCE = Path(__file__).resolve()
+_NODE_INVENTORY_MODULE = sys.modules.get("scheduler_node.inventory")
+_NODE_INVENTORY_SOURCE = Path(
+    getattr(_NODE_INVENTORY_MODULE, "__file__", _SCHED_SOURCE)
+).resolve()
 _SOURCE_MTIMES = {}
-for _src in (_SCHED_SOURCE, _TUI_SOURCE):
+PROBE_UNKNOWN_WARN_S = max(0, int(os.environ.get("SCHEDULEURM_TUI_PROBE_UNKNOWN_WARN_S", "180")))
+TERMINAL_TASK_STATUSES = frozenset({"done", "failed", "cancelled"})
+for _src in (_SCHED_SOURCE, _TUI_SOURCE, _NODE_INVENTORY_SOURCE):
     try:
         _SOURCE_MTIMES[_src] = _src.stat().st_mtime_ns
     except OSError:
@@ -76,7 +89,8 @@ def _probe_unknown_age(task, now=None):
 
 def _display_status(task, now=None):
     status = task.get("status") or "-"
-    if status == "running" and _probe_unknown_age(task, now) is not None:
+    age = _probe_unknown_age(task, now)
+    if status == "running" and age is not None and age >= PROBE_UNKNOWN_WARN_S:
         return "running?"
     return status
 
@@ -84,7 +98,7 @@ def _display_status(task, now=None):
 def _display_node(task, now=None):
     node = sch._format_task_location(task)
     age = _probe_unknown_age(task, now)
-    if age is not None:
+    if age is not None and age >= PROBE_UNKNOWN_WARN_S:
         return f"{node} probe?{_fmt_min(age)}"
     return node
 
@@ -97,10 +111,20 @@ def _int_or_default(value, default=-1):
 
 
 def _fmt_eta(t, hist):
+    if t.get("status") in TERMINAL_TASK_STATUSES:
+        return "-"
     eta = _int_or_default(t.get("eta_seconds"), 0)
+    source = sch._eta_source_base(t.get("eta_source"))
+    tag = sch._eta_source_tag(t.get("eta_source")) if hasattr(sch, "_eta_source_tag") else "est"
+    current = _int_or_default(t.get("runtime_current_unit"), 0)
+    total = _int_or_default(t.get("runtime_total_units"), 0)
+    progress = f" {current}/{total}" if current > 0 and total >= current else ""
     if eta > 0:
-        tag = sch._eta_source_tag(t.get("eta_source")) if hasattr(sch, "_eta_source_tag") else (t.get("eta_source") or "?")
-        return f"~{_fmt_min(eta)} {tag}"
+        if source in ("runtime_history_overrun", "duration_ewma_overrun"):
+            return "? hist"
+        return f"~{_fmt_min(eta)} {tag}{progress}"
+    if t.get("status") == "running" and total > 0 and current >= total:
+        return "finishing live"
     sig = t.get("signature") or ""
     h = hist.get(sig, {})
     if isinstance(h, int): h = {"vram_mb": h}
@@ -137,9 +161,7 @@ _NODE_SUMMARY_HIDDEN_NAMES = {"zhengliang-hpc"}
 
 def _node_display_name(n):
     name = str(n.get("name") or "")
-    if name == "node007-direct":
-        return "node007"
-    return name
+    return "node007" if name == "node007-direct" else name
 
 
 def _node_summary_visible(n):
@@ -153,7 +175,7 @@ def _node_sort_key(n):
         "jtl110gpu": 1,
         "jtl110gpu2": 2,
         "jtl311linux": 3,
-        "node007-direct": 4,
+        "node007": 4,
     }
     cpu_order = {
         "jtl110cpu": 0,
@@ -173,13 +195,16 @@ def _node_sort_key(n):
         return (0, 50, _node_display_name(n))
     if name.startswith("node"):
         return (1, 50, _node_display_name(n))
-    if n.get("slurm_cluster"):
-        return (9, 0, _node_display_name(n))
     return (8, 0, _node_display_name(n))
 
 
 def _node_tail_summary(n):
-    load = n.get("loadavg")
+    reservation_s = ""
+    if n.get("measurement_reservation_active"):
+        reservation = n.get("measurement_reservation") or {}
+        purpose = str(reservation.get("purpose") or "calibration")
+        reservation_s = f"MEASUREMENT-RESERVED({purpose})"
+    load = n.get("observed_loadavg", n.get("loadavg"))
     load_s = f"load={load:.1f}" if isinstance(load, (int, float)) else ""
     host_cpu = n.get("host_cpu_load_pct")
     if host_cpu is not None:
@@ -191,10 +216,28 @@ def _node_tail_summary(n):
     if n.get("probe_fallback"):
         load_s = (load_s + "," if load_s else "") + str(n.get("probe_fallback"))
     ram_s = sch._format_node_ram_summary(n)
-    cpu_s = f"cpu={n.get('free_cpu','?')}/{n.get('total_cpu','?')}"
+    total_cpu = n.get("total_cpu", "?")
+    observed_free = n.get("observed_free_cpu")
+    slot_free = n.get("cpu_slot_free", n.get("free_cpu"))
+    guard_free = n.get("cpu_hard_free")
+    startup_reserved = n.get("cpu_hard_reserved")
+    if observed_free is not None:
+        controls = []
+        if slot_free is not None and slot_free != observed_free:
+            controls.append(f"slot={slot_free}")
+        if guard_free is not None and guard_free != observed_free:
+            controls.append(f"guard={guard_free}")
+        if startup_reserved:
+            controls.append(f"startup={startup_reserved}")
+        control_s = f"({','.join(controls)})" if controls else ""
+        cpu_s = f"cpu={observed_free}/{total_cpu} live{control_s}"
+    else:
+        cpu_s = f"cpu={n.get('free_cpu','?')}/{total_cpu}"
     claim_s = sch._format_node_claim_summary(n)
     claim_s = claim_s.strip() if claim_s else ""
-    return "  ".join(s for s in (cpu_s, load_s, ram_s, claim_s) if s)
+    return "  ".join(
+        s for s in (reservation_s, cpu_s, load_s, ram_s, claim_s) if s
+    )
 
 
 def _node_summary_line(nodes):
@@ -212,17 +255,11 @@ def _node_summary_line(nodes):
             # Defense in depth: error strings often contain ssh argv like ['ssh', '-o', ...]
             # which Rich parses as markup tags. Strip brackets even though markup is disabled.
             err = (n.get("error", "?") or "?")[:72].replace("[", "(").replace("]", ")")
+            state = "WAIT" if n.get("probe_pending") else "DOWN"
             lines.append(
-                f"{name:<{name_w}} {'DOWN':<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  {err}"
+                f"{name:<{name_w}} {state:<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  {err}"
             )
             continue
-        if n.get("slurm_cluster"):
-            lines.append(
-                f"{name:<{name_w}} {'slurm':<5} {'-':>13} {'-':>9} {'-':>5} {'-':>9}  "
-                f"{sch._format_slurm_cluster_summary(n)}"
-            )
-            continue
-
         tail = _node_tail_summary(n)
         gpus = sorted(n.get("gpus") or [], key=lambda g: _int_or_default(g.get("idx"), 999))
         if not gpus:
@@ -235,7 +272,7 @@ def _node_summary_line(nodes):
             used_mb = _int_or_default(g.get("used_mb"), 0)
             total_mb = _int_or_default(g.get("total_mb"), 0)
             free_mb = _int_or_default(g.get("free_mb"), 0)
-            mem_pct = used_mb * 100 // max(total_mb, 1)
+            mem_pct = int(round(used_mb * 100 / max(total_mb, 1)))
             util = f"{_int_or_default(g.get('util_pct'), 0)}%"
             cu = g.get("util_pct_compute")
             if cu is not None:
@@ -270,7 +307,9 @@ def _watcher_status_line():
     if not alive:
         return f"WATCHER DOWN: pid={pid or '?'} is not alive; queue statuses may be stale"
     now = time.time()
+    progress_ts = float(raw.get("last_progress_ts") or 0)
     last_update = max(
+        progress_ts,
         float(raw.get("last_resource_log_ts") or 0),
         float(raw.get("last_heartbeat_ts") or 0),
         float(raw.get("started_at") or 0),
@@ -278,64 +317,12 @@ def _watcher_status_line():
     resource_interval = int(raw.get("resource_log_interval") or 0)
     stale_after = max(600, 2 * resource_interval + 120) if resource_interval else 900
     if last_update and now - last_update > stale_after:
-        return f"WATCHER STALE: pid={pid}, last update {_fmt_min(now - last_update)} ago"
+        phase = str(raw.get("phase") or "unknown")
+        return (
+            f"WATCHER STALE: pid={pid}, phase={phase}, "
+            f"last progress {_fmt_min(now - last_update)} ago"
+        )
     return ""
-
-
-def _slurm_status_for_tui(state):
-    up = str(state or "").upper()
-    if up in ("RUNNING", "COMPLETING"):
-        return "running"
-    if up in ("PENDING", "CONFIGURING", "RESIZING", "SUSPENDED"):
-        return "queued"
-    if up in ("COMPLETED", "CANCELLED", "FAILED", "TIMEOUT", "NODE_FAIL", "OUT_OF_MEMORY"):
-        return up.lower()
-    return "launching"
-
-
-def _virtual_slurm_tasks_from_nodes(nodes, existing_tasks):
-    existing_slurm_ids = {
-        str(t.get("slurm_job_id"))
-        for t in existing_tasks
-        if t.get("slurm_job_id") is not None
-    }
-    existing_ids = {str(t.get("id")) for t in existing_tasks if t.get("id")}
-    out = []
-    for n in nodes or []:
-        if not n.get("alive") or not n.get("slurm_cluster"):
-            continue
-        for job in n.get("slurm_jobs") or []:
-            job_id = str(job.get("job_id") or "").strip()
-            if not job_id or job_id in existing_slurm_ids:
-                continue
-            task_id = f"slurm:{job_id}"
-            if task_id in existing_ids:
-                continue
-            bucket = job.get("bucket") or "cpu"
-            state = job.get("state") or "UNKNOWN"
-            cpus = _int_or_default(job.get("cpus"), 0)
-            out.append({
-                "id": task_id,
-                "status": _slurm_status_for_tui(state),
-                "node": job.get("nodes") or n.get("name"),
-                "project": job.get("name") or "slurm",
-                "priority": "-",
-                "cpu_cores": cpus,
-                "ram_mb": 0,
-                "est_vram_mb": 1 if bucket == "gpu" else 0,
-                "process_owner": job.get("user"),
-                "submitted_by": job.get("user"),
-                "origin": "external",
-                "auto_adopted": True,
-                "slurm_job_id": job_id,
-                "slurm_state": state,
-                "slurm_gres": job.get("gres"),
-                "description": (
-                    f"slurm {state} cpus={cpus or '?'} "
-                    f"mem={job.get('mem') or '?'} gres={job.get('gres') or '?'}"
-                ),
-            })
-    return out
 
 
 COLUMNS = [
@@ -384,7 +371,85 @@ SORT_KEYS = ["id", "status", "node", "project", "owner", "priority", "runtime", 
 TUI_LAYOUT_FILE = sch.STATE_DIR / "tui_layout.json"
 HEADER_SEPARATOR = "│"
 HEADER_RESIZE_GRAB_CELLS = 2
-PROBE_STALE_AFTER_S = float(os.environ.get("SCHEDULEURM_TUI_PROBE_STALE_AFTER_S", "30"))
+NODE_CACHE_FRESH_S = max(1, int(os.environ.get("SCHEDULEURM_TUI_NODE_CACHE_FRESH_S", "300")))
+NODE_CACHE_FALLBACK_S = max(
+    NODE_CACHE_FRESH_S,
+    int(os.environ.get("SCHEDULEURM_TUI_NODE_CACHE_FALLBACK_S", "86400")),
+)
+TASK_LOG_TAIL_LINES = max(1, int(os.environ.get("SCHEDULEURM_TUI_TASK_LOG_LINES", "120")))
+
+
+class TaskLogScreen(ModalScreen):
+    CSS = """
+    TaskLogScreen {
+        align: center middle;
+    }
+    #task_log_dialog {
+        width: 92%;
+        height: 82%;
+        border: solid $accent;
+        background: $surface;
+        padding: 1;
+    }
+    #task_log_title {
+        height: 1;
+        color: $accent;
+        margin-bottom: 1;
+    }
+    #task_log_body {
+        height: 1fr;
+    }
+    """
+    BINDINGS = [
+        Binding("escape", "close", "Close"),
+        Binding("q", "close", "Close"),
+    ]
+
+    def __init__(self, title: str, body: str):
+        super().__init__()
+        self._title = title
+        self._body = body
+
+    def compose(self) -> ComposeResult:
+        yield Container(
+            Static(self._title, id="task_log_title", markup=False),
+            TextArea(
+                self._body,
+                read_only=True,
+                show_line_numbers=False,
+                soft_wrap=False,
+                id="task_log_body",
+            ),
+            id="task_log_dialog",
+        )
+
+    def action_close(self):
+        self.dismiss()
+
+
+def _read_task_log_payload(task_id: str, lines: int = TASK_LOG_TAIL_LINES) -> dict:
+    with sch.state_lock(shared=True, purpose="tui-task-log:snapshot"):
+        task, source = sch._find_task_record(task_id, include_archive=True)
+    if not task:
+        return {
+            "ok": False,
+            "id": task_id,
+            "status": "",
+            "node": "",
+            "log_path": "",
+            "source": "",
+            "text": f"task {task_id} not found in queue or archive",
+        }
+    ok, log_path, text = sch._tail_task_log(task, lines=lines)
+    return {
+        "ok": bool(ok),
+        "id": task.get("id") or task_id,
+        "status": task.get("status") or "",
+        "node": task.get("node") or "",
+        "log_path": log_path or task.get("log_path") or "",
+        "source": source,
+        "text": text if text else "(empty log)",
+    }
 
 
 def _clamp_column_width(key: str, width) -> int:
@@ -469,15 +534,64 @@ class SchedulerDataTable(DataTable):
             event.stop()
 
 
-def _probe_snapshot():
-    """Background worker — gathers everything the UI needs in one go.
+def _configured_probe_names():
+    return [
+        str(name)
+        for name, info in getattr(sch, "NODES", {}).items()
+        if not (info or {}).get("monitor_only")
+        and not (info or {}).get("retired")
+    ]
 
-    The TUI is a read-only monitor. Do not take scheduler's global state lock
-    here: a watcher dispatch can legitimately hold it while SSH/Slurm work is
-    in flight, and blocking on that lock makes the device list look frozen.
-    queue.json is written with atomic os.replace(), so unlocked reads are safe
-    for display; the watcher remains responsible for mutating/reconciling state.
-    """
+
+def _node_probe_cache_snapshot(max_age_s: int):
+    """Return a nonblocking, display-ready watcher telemetry snapshot."""
+    expected = _configured_probe_names()
+    try:
+        cached = sch._load_node_probe_cache(max_age_s=max_age_s)
+    except Exception:
+        cached = {}
+
+    nodes = []
+    complete = bool(expected)
+    for name in expected:
+        rec = cached.get(name) if isinstance(cached, dict) else None
+        if isinstance(rec, dict):
+            rec = dict(rec)
+            # The watcher cache is the TUI's normal telemetry source, not an
+            # exceptional fallback.  Snapshot age is rendered separately.
+            rec.pop("probe_fallback", None)
+            rec.pop("probe_cache_age_s", None)
+            nodes.append(rec)
+        else:
+            complete = False
+            nodes.append({
+                "name": name,
+                "alive": False,
+                "probe_pending": True,
+                "error": "waiting for first node probe",
+            })
+
+    ts = 0.0
+    if cached:
+        try:
+            ts = Path(sch.NODE_PROBE_CACHE_FILE).stat().st_mtime
+        except Exception:
+            ages = [
+                int(rec.get("probe_cache_age_s") or 0)
+                for rec in cached.values()
+                if isinstance(rec, dict)
+            ]
+            ts = time.time() - max(ages, default=0)
+    return {
+        "nodes": nodes,
+        "ts": ts,
+        "complete": complete,
+        "source": "watcher-cache" if cached else "pending",
+    }
+
+
+def _load_display_state():
+    """Read atomically-written display state without taking the scheduler lock."""
     try:
         state = sch.load_state()
     except Exception:
@@ -486,24 +600,76 @@ def _probe_snapshot():
         hist = sch.load_history()
     except Exception:
         hist = {}
+    return state, hist
+
+
+def _probe_snapshot():
+    """Gather one node snapshot without ever making the TUI wait on a state lock.
+
+    A healthy watcher already probes and persists every node, so consuming its
+    cache avoids duplicate SSH storms.  A live probe is only a recovery path
+    for a missing or old cache.  State/history are read after that potentially
+    slow operation so its result cannot roll task rows back in time.
+    """
+    node_snap = _node_probe_cache_snapshot(NODE_CACHE_FRESH_S)
+    if not node_snap["complete"]:
+        try:
+            live_nodes = sch.probe_all()
+        except Exception:
+            live_nodes = []
+        if live_nodes:
+            node_snap = {
+                "nodes": live_nodes,
+                "ts": time.time(),
+                "complete": True,
+                "source": "live-probe",
+            }
+        else:
+            node_snap = _node_probe_cache_snapshot(NODE_CACHE_FALLBACK_S)
+
+    state, hist = _load_display_state()
     try:
-        nodes = sch.probe_all()
+        sch._apply_cpu_slot_accounting_to_nodes(state, node_snap["nodes"])
     except Exception:
-        nodes = []
-    return {"state": state, "hist": hist, "nodes": nodes, "ts": time.time()}
+        pass
+    return {
+        "state": state,
+        "hist": hist,
+        "nodes": node_snap["nodes"],
+        "ts": node_snap["ts"],
+        "node_source": node_snap["source"],
+    }
 
 
 def _fast_snapshot():
-    """Cheap first paint: show queue rows before SSH/Slurm/node probes finish."""
+    """Cheap first paint: tasks plus cached/placeholder nodes, with no SSH."""
+    state, hist = _load_display_state()
+    node_snap = _node_probe_cache_snapshot(NODE_CACHE_FALLBACK_S)
     try:
-        state = sch.load_state()
+        sch._apply_cpu_slot_accounting_to_nodes(state, node_snap["nodes"])
     except Exception:
-        state = {"tasks": []}
-    try:
-        hist = sch.load_history()
-    except Exception:
-        hist = {}
-    return {"state": state, "hist": hist, "nodes": [], "ts": 0}
+        pass
+    return {
+        "state": state,
+        "hist": hist,
+        "nodes": node_snap["nodes"],
+        "ts": node_snap["ts"],
+        "node_source": node_snap["source"],
+    }
+
+
+def _merge_fast_snapshot(previous: dict, fast: dict) -> dict:
+    """Keep newer live telemetry when the watcher cache has not caught up yet."""
+    previous = previous or {}
+    previous_nodes = previous.get("nodes") or []
+    fast_nodes = fast.get("nodes") or []
+    previous_ts = float(previous.get("ts") or 0)
+    fast_ts = float(fast.get("ts") or 0)
+    if previous_nodes and (not fast_nodes or fast_ts < previous_ts):
+        fast["nodes"] = previous_nodes
+        fast["ts"] = previous_ts
+        fast["node_source"] = previous.get("node_source", "live-probe")
+    return fast
 
 
 class SchedulerTUI(App):
@@ -531,6 +697,7 @@ class SchedulerTUI(App):
         Binding("R", "reverse_sort", "Reverse"),
         Binding("p", "bump_priority(1)", "↑prio"),
         Binding("P", "bump_priority(-1)", "↓prio"),
+        Binding("l", "view_log", "Log"),
         Binding("c", "copy_id", "Copy ID"),
         Binding("ctrl+r", "refresh_now", "Refresh"),
         Binding("ctrl+c", "quit", "Quit"),
@@ -545,8 +712,6 @@ class SchedulerTUI(App):
         super().__init__()
         self._snap = {"state": {"tasks": []}, "hist": {}, "nodes": [], "ts": 0}
         self._probing = False
-        self._probe_started_at = 0.0
-        self._probe_generation = 0
         self.column_order, self.column_widths = _load_tui_layout()
         self._table_layout_sig = None
         self._column_drag = None
@@ -558,7 +723,7 @@ class SchedulerTUI(App):
         # strings can include `[` `]` (e.g. ssh argv `['ssh', '-o', 'BatchMode=yes']`) which Rich
         # would otherwise parse as malformed markup and raise "Expected markup value".
         yield Static("(loading...)", id="node_summary", markup=False)
-        yield Input(placeholder="filter (id/project/location/owner/slurm/sig/desc) — Enter to apply, Esc to close", id="filter_input")
+        yield Input(placeholder="filter (id/project/location/owner/sig/desc) — Enter to apply, Esc to close", id="filter_input")
         yield SchedulerDataTable(id="task_table", zebra_stripes=True, cursor_type="row")
         yield Footer()
 
@@ -742,12 +907,8 @@ class SchedulerTUI(App):
 
     # Background probe ---------------------------------------------------
     def _refresh_fast_state(self):
-        """Refresh task rows from queue.json even while node probes are stuck."""
-        fast = _fast_snapshot()
-        previous = self._snap or {}
-        fast["nodes"] = previous.get("nodes", [])
-        fast["ts"] = previous.get("ts", 0)
-        self._snap = fast
+        """Refresh tasks and watcher telemetry while a live probe is in flight."""
+        self._snap = _merge_fast_snapshot(self._snap, _fast_snapshot())
         self._render_from_cache()
 
     def _kick_probe(self):
@@ -759,27 +920,22 @@ class SchedulerTUI(App):
             os.execv(sys.executable, [sys.executable, *sys.argv])
         if self._probing:
             self._refresh_fast_state()
-            if time.time() - self._probe_started_at < PROBE_STALE_AFTER_S:
-                return
-        self._probing = True
-        self._probe_started_at = time.time()
-        self._probe_generation += 1
-        generation = self._probe_generation
-        self.run_worker(self._do_probe(generation), exclusive=False, thread=True, name="probe")
-
-    async def _do_probe(self, generation: int):
-        snap = _probe_snapshot()
-        if generation != self._probe_generation:
+            # Python cannot safely cancel a probe thread.  Starting a new
+            # generation here used to discard every result when several down
+            # nodes made a probe slower than the stale threshold.
             return
+        self._probing = True
+        self.run_worker(self._do_probe(), exclusive=False, thread=True, name="probe")
+
+    async def _do_probe(self):
+        snap = _probe_snapshot()
         self._snap = snap
         self._probing = False
-        self._probe_started_at = 0.0
         self.call_from_thread(self._render_from_cache)
 
     def on_worker_state_changed(self, event):
         if event.worker.name == "probe" and event.state == WorkerState.ERROR:
             self._probing = False
-            self._probe_started_at = 0.0
 
     # Actions ------------------------------------------------------------
     def action_set_filter(self, status: str):
@@ -819,6 +975,14 @@ class SchedulerTUI(App):
     def action_refresh_now(self):
         self._kick_probe()
 
+    def _selected_task_id(self):
+        table = self.query_one(DataTable)
+        try:
+            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
+            return row_key.value if row_key else None
+        except Exception:
+            return None
+
     def on_data_table_header_selected(self, event):
         """Click a column header → sort by it."""
         if time.time() < self._suppress_header_sort_until:
@@ -829,12 +993,7 @@ class SchedulerTUI(App):
             self.action_sort_by(key)
 
     def action_bump_priority(self, direction: int):
-        table = self.query_one(DataTable)
-        try:
-            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
-            tid = row_key.value if row_key else None
-        except Exception:
-            return
+        tid = self._selected_task_id()
         if not tid: return
         import fcntl
         sp = sch.QUEUE_FILE; lp = sch.LOCK_FILE
@@ -861,17 +1020,47 @@ class SchedulerTUI(App):
         self._snap["state"] = state
         self._render_from_cache()
 
+    def action_view_log(self):
+        tid = self._selected_task_id()
+        if not tid:
+            self.notify("no row selected", severity="warning", timeout=2)
+            return
+        self.notify(f"loading task-log {tid}...", timeout=2)
+        self._load_task_log_worker(str(tid))
+
+    @work(thread=True, exclusive=False, group="task-log")
+    def _load_task_log_worker(self, tid: str):
+        try:
+            payload = _read_task_log_payload(tid, lines=TASK_LOG_TAIL_LINES)
+        except Exception as e:
+            payload = {
+                "ok": False,
+                "id": tid,
+                "status": "",
+                "node": "",
+                "log_path": "",
+                "source": "",
+                "text": f"task-log failed: {e}",
+            }
+        self.call_from_thread(self._show_task_log_payload, payload)
+
+    def _show_task_log_payload(self, payload: dict):
+        tid = payload.get("id") or "?"
+        status = payload.get("status") or "?"
+        node = payload.get("node") or "?"
+        log_path = payload.get("log_path") or "?"
+        source = payload.get("source") or "?"
+        title = f"{tid} {status} {node}:{log_path} [{source}]"
+        if not payload.get("ok"):
+            self.notify(f"task-log {tid} failed", severity="error", timeout=4)
+        self.push_screen(TaskLogScreen(title, payload.get("text") or "(empty log)"))
+
     def action_copy_id(self):
         """Copy the cursor row's task id to the system clipboard. Tries multiple backends in
         order so it works on WSL2 (clip.exe), X11 (xclip), Wayland (wl-copy), macOS (pbcopy),
         and falls back to Textual's OSC 52 path if available. Notifies via toast either way —
         on failure shows the id so user can mouse-select it from the toast as a last resort."""
-        table = self.query_one(DataTable)
-        try:
-            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
-            tid = row_key.value if row_key else None
-        except Exception:
-            tid = None
+        tid = self._selected_task_id()
         if not tid:
             self.notify("no row selected", severity="warning", timeout=2)
             return
@@ -906,7 +1095,12 @@ class SchedulerTUI(App):
         text = "" if value is None else str(value)
         style = ""
         if status == "running?":
-            style = "bold yellow" if key == "status" else "yellow"
+            if key == "status":
+                style = "bold yellow"
+            elif key == "node":
+                style = "yellow"
+            else:
+                style = "green"
         elif status == "running":
             style = "bold green" if key == "status" else "green"
         return Text(text, style=style, overflow="fold", no_wrap=False)
@@ -925,7 +1119,6 @@ class SchedulerTUI(App):
                 summary = watcher_line + "\n" + summary
             self.query_one("#node_summary", Static).update(summary)
             tasks = list(state.get("tasks", []))
-            tasks.extend(_virtual_slurm_tasks_from_nodes(nodes, tasks))
             if self.state_filter == "running":
                 tasks = [t for t in tasks if t.get("status") == "running"]
             elif self.state_filter == "queued":
@@ -940,7 +1133,7 @@ class SchedulerTUI(App):
                         "" if t.get(k) is None else str(t.get(k))
                         for k in ("id", "project", "node", "signature", "description",
                                   "origin", "submitted_by", "process_owner",
-                                  "slurm_job_id", "slurm_state", "node_probe_state",
+                                  "node_probe_state",
                                   "last_probe_unknown_reason", "last_status_sync_reason")
                     )
                     fields.append(sch._format_task_owner(t))
@@ -954,6 +1147,8 @@ class SchedulerTUI(App):
                     return now - t["started_at"]
                 return 0.0
             def eta_secs(t):
+                if t.get("status") in TERMINAL_TASK_STATUSES:
+                    return 1e12
                 # Sort key for the eta column. Prefer scheduleurm's live
                 # eta_seconds, which comes from tqdm/progress log parsing.
                 direct = _int_or_default(t.get("eta_seconds"), 0)
@@ -979,8 +1174,6 @@ class SchedulerTUI(App):
                 "status": lambda t: _display_status(t, now),
                 "node": lambda t: (
                     t.get("node") or "~",
-                    0 if t.get("slurm_job_id") else 1,
-                    _int_or_default(t.get("slurm_job_id")),
                     t.get("gpu_idx") if t.get("gpu_idx") is not None else -1,
                 ),
                 "project": lambda t: t.get("project", ""),

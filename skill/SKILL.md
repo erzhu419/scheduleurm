@@ -1,7 +1,7 @@
 ---
 name: scheduler
 description: Multi-resource (CPU + RAM + VRAM) scheduler across local 4060 + jtl110gpu (2x 3080Ti) + jtl110gpu2 (2x 3080Ti) + jtl311linux (2x RTX 2080) + jtl110cpu/jtl110cpu2 (Windows CPU-only 128 physical cores each). Use whenever the user wants to launch ANY computation that consumes meaningful resources — GPU training, CPU-only training, data preprocessing, batch evaluation. Trigger phrases (English / 中文 — both fire equally, examples not exhaustive) — RUN A JOB / SUBMIT A JOB / LAUNCH A JOB / TRAIN / EVAL / INFERENCE / RUN THIS SCRIPT / RUN THIS PYTHON / RUN THIS EVAL / RUN A SWEEP / DATA PREP / N_WORKERS / --device cpu / multi-worker / multi-seed / "kick off X" / "fire off X" / "queue up X" / "schedule X" / "dispatch X" / "deploy X" / "send to GPU" / "put on jtl110gpu" / 跑训练 / 跑评估 / 跑推理 / 跑这个脚本 / 跑这个 python / 跑这个评估 / 跑 X / 提交任务 / 派活 / 派任务 / 部署 / 在 GPU 上跑 / 在 jtl110gpu 跑. STATUS QUERIES — "GPU free?" / "any free RAM?" / "what's running?" / "which node has room?" / "node status" / "show queue" / "show jobs" / "show tasks" / "how many tasks running" / GPU 还空吗 / 显存还够吗 / 哪个节点空 / 现在跑啥呢 / 节点状态 / 看看队列 / 看看任务. JOB CONTROL — "cancel job" / "kill job" / "stop job" / "clear queue" / "forget X" / "rebalance" / "redispatch" / "reassign" / 取消任务 / 杀掉任务 / 停止任务 / 清空队列 / 重新分配 / 重新派发 — also fire whenever a node frees up and queued work should be re-routed. CPU-only tasks must use --vram 0. Handles 1/3-VRAM packing rule, CPU/RAM constraints, WSL OOM defense on local, git-sync precheck, checkpoint resume, Windows CPU-node auto pinning, and auto-discovery of externally-launched tasks (GPU and Linux CPU).
-argument-hint: "[submit | submit-cpu-batch | cpu-plan | dispatch | status | doctor | profile-local | results | cancel | forget | clear-queue | show | history | adopt]"
+argument-hint: "[submit | submit-jsonl | submit-cpu-batch | cpu-plan | dispatch | status | doctor | profile-local | task-log | results | cancel | cancel-batch | forget | clear-queue | show | history | adopt]"
 allowed-tools: Bash(*), Read
 ---
 
@@ -180,6 +180,7 @@ Background watcher (`scheduler.service` systemd user unit) runs `dispatch` every
 ## What the scheduler enforces (you don't need to re-check these)
 
 - **VRAM 1/3+grace packing rule**: GPU already past the 1/3+grace freeze line will not accept more tasks (RL plateau heuristic). Single big task on an empty card is the exception.
+- **Explicit peak reservation**: a submitted `--vram` value remains reserved for the task's full lifetime. TUI task rows still show live allocator use, but dispatch uses the reserved peak so a low-memory startup phase cannot admit a second task that later OOMs.
 - **Optional GPU compute-saturation guard (util ≥ 85%)**: strict nodes may block packing when an occupied GPU is compute-saturated. Local/jtl110gpu/jtl110gpu2/jtl311linux set `gpu_util_saturation_pct=None`, so RL packing is governed by VRAM/CPU/RAM rather than util.
 - **CPU constraint**: total declared `cpu_cores` of tasks running on a node must not exceed budget. CPU-saturated node is auto-skipped — won't pile on.
 - **RAM constraint**: free RAM minus task's request must remain above headroom (25% local, 10% remote). A positive `ram_mb` in `NODES` is an explicit cap; `ram_mb=0`/unset means use the probed `MemTotal`, which is the default for the GPU servers.
@@ -214,15 +215,13 @@ These fire at `submit` time and must be addressed by the submitter — you canno
 
 The justification + override flags are persisted on the task record so future-you can audit why a CPU/no-ckpt/no-resume task was permitted.
 
-## Relay / jump-host Slurm note
+## Relay / jump-host SSH note
 
 For `local -> gpu2 -> zhengliang-hpc` relay commands, ordinary remote shell
 commands must run the outer SSH with `ssh -n`. Without `-n`, an inner `ssh` or
 `rsync` started on gpu2 can consume the outer SSH stdin and cause later
-rsync/sbatch commands in the parent script to be skipped. In scheduler code,
+rsync commands in the parent script to be skipped. In scheduler code,
 use `run_on()` / `_ssh_no_stdin_args()` for those ordinary relay commands.
-Do **not** use `ssh -n` for the Slurm submit path that streams the script to
-`sbatch /dev/stdin`; that path intentionally needs stdin.
 
 ## Reboot recovery (automatic — but know the contract)
 
@@ -391,6 +390,17 @@ Watcher does this every 60s automatically — only run manually if user wants it
 - Queued: instant `cancel t0007`
 - Running: ALWAYS confirm with user first, then `cancel t0007 --force`
 
+### "批量取消 / cancel a submitted batch"
+```bash
+# Explicit IDs, comma groups, and inclusive ranges execute atomically.
+python ~/.claude/skills/scheduler/scheduler.py cancel-batch t21001-t21080
+
+# Project/signature selectors preview first, then require --confirm.
+python ~/.claude/skills/scheduler/scheduler.py cancel-batch --project 'Laplace-*'
+python ~/.claude/skills/scheduler/scheduler.py cancel-batch --project 'Laplace-*' --confirm
+```
+If any selected task is running, the whole batch is refused unless the user explicitly approved `--force`.
+
 ### "清空队列 / clear queue"
 1. Dry-run: `clear-queue` (no flag) shows what would die
 2. Confirm with user
@@ -470,15 +480,13 @@ The first thing to run when a queued task seems stuck. Far better than parsing `
 
 ### "和别的 scheduler / 别的用户共用节点 / 抢资源" (Phase 3.2)
 
-非 slurm 节点上多个 scheduleurm 实例（不同 state dir、不同 OS user，或两者都不同）想共用同一台机器时，set `NODES["x"]["enable_claims"] = True` 在 scheduler.py 的 NODES 配置里。然后：
+多个 scheduleurm 实例（不同 state dir、不同 OS user，或两者都不同）想共用同一台机器时，set `NODES["x"]["enable_claims"] = True` 在 scheduler.py 的 NODES 配置里。然后：
 
 - `LocalBackend.launch` 在 `ssh+nohup` 之前会去 `/tmp/scheduleurm/claims.json`（节点本地）拿 flock，做 atomic CPU/RAM/VRAM capacity check。输了的 scheduler 收到 `CLAIM_RACE:` 信号，dispatch 把任务回到队列等下个 cycle，**不**计 `launch_fail_count`。
 - `probe_all` 会把所有 pending claim（已 claim 但还没拿到 PID 的）扣进 free 资源里 —— 对方 scheduler 的 `pick_placement` 直接看到资源被占。
 - watcher 每 cycle 一次 `renew_many + gc_stale`，崩溃的 scheduler 留下的 claim 会按 TTL（默认 1h）过期 + 死 PID 检测自动清理。
 
 什么时候不开：单用户 / 单 scheduler 配置不需要，开了反而每次 launch 多一次 ssh + flock。所以是 per-node opt-in。
-
-slurm 节点不需要开 —— slurm 自己有 gres + cgroup 处理这个。
 
 ### "history 里这个 sig 有个 9GB 的离群值 / 清掉 / 改" (Phase 3.1)
 ```bash

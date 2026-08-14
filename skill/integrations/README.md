@@ -14,9 +14,10 @@ The Python tool is **untouched**: this is a thin sub-process wrapper that transl
 | `doctor` | `scheduler.py doctor [--fix]` | audit/fix queued eval-before-train and SimpleSAC data-placement invariants |
 | `show_task` | `scheduler.py show tXXXX` | "看看 t0007", debug a specific task |
 | `cancel_task` | `scheduler.py cancel tXXXX [--force]` | "取消 tXXXX" — running needs confirm + force |
+| `cancel_tasks` | `scheduler.py cancel-batch ...` | Batch cancel IDs/ranges/project/signature in one transaction; running needs confirm + force |
 | `history` | `scheduler.py history [--signature]` | "看看 RE-SAC 的资源画像" |
 | `queue_dump` | reads `queue.json` directly | structured filtering: "list all failed offline-sumo tasks in last hour" |
-| `task_log` | reads task `log_path` | debug failures, check progress |
+| `task_log` | `scheduler.py task-log` | debug failures, check progress |
 
 The tool descriptions in `scheduler_mcp.py` are written so the host LLM can auto-route user intent to the right call without explicit "use scheduler" instruction — same auto-detection Claude Code's SKILL.md provides, just via MCP standard.
 
@@ -129,7 +130,7 @@ The wrapper invokes `python scheduler.py ...` so it inherits whatever python is 
 ## Caveats
 
 - **No shell access via this MCP**: tools wrap *scheduler operations*, not arbitrary commands. If the host LLM needs to read code / edit files / run other commands, pair this with a generic Bash-MCP server.
-- **Local file access**: `queue_dump` / `task_log` read directly from `~/.claude/scheduler/queue.json` and the local log paths. For remote-node logs, the wrapper uses `ssh <node> tail ...` — same SSH config as scheduler.py.
+- **Local file access**: `queue_dump` reads directly from `~/.claude/scheduler/queue.json`. `task_log` calls `scheduler.py task-log --json`, so completed-task archive lookup and remote-node routing stay identical to the CLI.
 - **MCP server runs as the user that launched it**. Don't expose this over network without auth — anyone connected can submit/cancel tasks.
 
 ## Maintenance

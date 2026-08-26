@@ -1,0 +1,693 @@
+{
+  "all_measurements_ready": true,
+  "calibration_waves": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "certificate": {
+    "all_holdout_bounds_valid": true,
+    "calibration_wave_count": 9,
+    "conformal_rank": 9,
+    "constructed": true,
+    "finite_sample_rank_ready": true,
+    "rows": [
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 282.8196858150834,
+        "frozen_target_completion_s": 13.24405944605006,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 282.8196858150834,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.058977248837297755,
+            "startup_overhead_s": 8.488022240811699,
+            "terminal_overhead_s": 1.2174022750004951
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 294.0474387510373,
+        "holdout_actual_target_completion_s": 12.802971423307131,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 3.884173435651024,
+          "gpu_llm_distilgpt2": 242.4812265920143
+        },
+        "node": "jtl110gpu",
+        "node_bucket": "gpu_3080ti_12gb_dual",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 282.81283784530945,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.05801242251863942,
+            "startup_overhead_s": 8.509637957134778,
+            "terminal_overhead_s": 1.2392305609992036
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 282.81283784530945,
+        "operational_target_completion_s": 13.229613869252347,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 120,
+        "resident_measurement_total_units": 12000,
+        "resident_mix": "resident_llm_target_cnn",
+        "resident_point_relative_error": 0.038206763348957166,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "resident_workload_key": "gpu_llm_distilgpt2",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "cnn_after_llm",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 242.4812265920143,
+        "simultaneous_upper_target_completion_s": 15.447301979177313,
+        "target_canonical_total_units": 60,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 4.686412084836273,
+        "target_lower_service_units_per_s": 3.884173435651024,
+        "target_measurement_total_units": 300,
+        "target_point_relative_error": 0.03332370524302945,
+        "target_service_unit": "step",
+        "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "target_workload_key": "gpu_cnn_torch_resnet50",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 0.12201727022626349,
+        "frozen_target_completion_s": 13.599121078916188,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 0.12201727022626349,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.07576862164540897,
+            "startup_overhead_s": 7.812512897192211,
+            "terminal_overhead_s": 1.2404908829994383
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 0.1223891453419479,
+        "holdout_actual_target_completion_s": 14.26631001528818,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 3.782760928593074,
+          "hybrid_rl_resac_ant": 0.10461399553784421
+        },
+        "node": "jtl110gpu",
+        "node_bucket": "gpu_3080ti_12gb_dual",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 0.12189308541673906,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.0756599836734557,
+            "startup_overhead_s": 8.500407195807917,
+            "terminal_overhead_s": 1.2358391164998466
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 0.12189308541673906,
+        "operational_target_completion_s": 14.275845332715104,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 40,
+        "resident_measurement_total_units": 80,
+        "resident_mix": "resident_hybrid_rl_target_cnn",
+        "resident_point_relative_error": 0.004053136606378659,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "iter",
+        "resident_workload_env": "Ant-v2",
+        "resident_workload_key": "hybrid_rl_resac_ant",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "cnn_after_rl",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 0.10461399553784421,
+        "simultaneous_upper_target_completion_s": 15.861430614468109,
+        "target_canonical_total_units": 60,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 4.20571261494404,
+        "target_lower_service_units_per_s": 3.782760928593074,
+        "target_measurement_total_units": 3000,
+        "target_point_relative_error": 0.0006683800798317973,
+        "target_service_unit": "step",
+        "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "target_workload_key": "gpu_cnn_torch_resnet50",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 23.821513825560675,
+        "frozen_target_completion_s": 12.072558453443394,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 23.821513825560675,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.004163190270591862,
+            "startup_overhead_s": 10.341283872973959,
+            "terminal_overhead_s": 1.2316917479984113
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 23.7456279484275,
+        "holdout_actual_target_completion_s": 13.626682207916142,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 20.42386078979414,
+          "gpu_llm_distilgpt2": 8.522174330969264
+        },
+        "node": "jtl110gpu",
+        "node_bucket": "gpu_3080ti_12gb_dual",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 23.57315438360356,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.004192431726052838,
+            "startup_overhead_s": 10.236534663208804,
+            "terminal_overhead_s": 1.233163216498724
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 23.57315438360356,
+        "operational_target_completion_s": 11.972789686833869,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 60,
+        "resident_measurement_total_units": 600,
+        "resident_mix": "resident_cnn_target_llm",
+        "resident_point_relative_error": 0.007263381924391856,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "llm_after_cnn",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 20.42386078979414,
+        "simultaneous_upper_target_completion_s": 14.080913548544116,
+        "target_canonical_total_units": 120,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 8.80625218736579,
+        "target_lower_service_units_per_s": 8.522174330969264,
+        "target_measurement_total_units": 600,
+        "target_point_relative_error": 0.12137162192873907,
+        "target_service_unit": "step",
+        "target_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "target_workload_key": "gpu_llm_distilgpt2",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 18.901667520635737,
+        "frozen_target_completion_s": 664.4800294868963,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 18.901667520635737,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 12.8536357391282,
+            "startup_overhead_s": 145.45962315377002,
+            "terminal_overhead_s": 4.874976767998305
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 18.881583267768466,
+        "holdout_actual_target_completion_s": 662.6566382950004,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 16.205730205198304,
+          "hybrid_rl_resac_ant": 0.051611507341817055
+        },
+        "node": "jtl110gpu",
+        "node_bucket": "gpu_3080ti_12gb_dual",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 18.866637999624338,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 12.842634801615368,
+            "startup_overhead_s": 145.36142161898726,
+            "terminal_overhead_s": 5.165176567498747
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 18.866637999624338,
+        "operational_target_completion_s": 664.2319902511007,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 60,
+        "resident_measurement_total_units": 18000,
+        "resident_mix": "resident_cnn_target_hybrid_rl",
+        "resident_point_relative_error": 0.0007915262153698904,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "rl_after_cnn",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 16.205730205198304,
+        "simultaneous_upper_target_completion_s": 775.020960637414,
+        "target_canonical_total_units": 40,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 0.06036308653440647,
+        "target_lower_service_units_per_s": 0.051611507341817055,
+        "target_measurement_total_units": 40,
+        "target_point_relative_error": 0.0023773276612056244,
+        "target_service_unit": "iter",
+        "target_workload_env": "Ant-v2",
+        "target_workload_key": "hybrid_rl_resac_ant",
+        "training_sample_count": 3
+      }
+    ],
+    "simultaneous_ratio_margin": 0.16635704046045752,
+    "simultaneous_scope": {
+      "functionals": [
+        "target_completion_time",
+        "resident_inverse_service"
+      ],
+      "functionals_per_scenario": 2,
+      "joint_functional_count_per_wave": 8,
+      "scenario_count": 4
+    },
+    "wave_max_scores": [
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.10496624154002454,
+        "scored_functional_count": 8,
+        "wave": 4
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.16635704046045752,
+        "scored_functional_count": 8,
+        "wave": 5
+      },
+      {
+        "maximizing_functional": "resident_inverse_service",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.018864129888584102,
+        "scored_functional_count": 8,
+        "wave": 6
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_llm",
+        "maximum_ratio_score": 0.04561727439892849,
+        "scored_functional_count": 8,
+        "wave": 7
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.05123845327624443,
+        "scored_functional_count": 8,
+        "wave": 8
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.1467595736720877,
+        "scored_functional_count": 8,
+        "wave": 9
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.07517732930927679,
+        "scored_functional_count": 8,
+        "wave": 10
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_llm",
+        "maximum_ratio_score": 0.09429152960052556,
+        "scored_functional_count": 8,
+        "wave": 11
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_rl",
+        "maximum_ratio_score": 0.02849223494114561,
+        "scored_functional_count": 8,
+        "wave": 12
+      }
+    ]
+  },
+  "certificate_ready": true,
+  "claim_boundary": "This is a hardware-local certificate for four registered, direction-sensitive two-workload GPU co-location trajectories. Target completion includes initialization, the canonical outer-loop work, checkpoints/final save, and natural exit. Resident service is the counter increment strictly inside the target start/end markers divided by the full overlap duration. One wave-maximum split-conformal margin jointly covers both functionals for all four actions. Every row also hash-verifies the pre-launch nvidia-smi snapshot and rejects undeclared load on any registered GPU, so a hash-bound one-second sidecar covers the complete target interval, bounds aggregate host load and available memory, and rejects high-CPU same-user processes outside the two controlled process groups. Thus same-GPU co-location rows do not silently absorb undeclared host/PCIe contention. It neither populates the legacy workload/profile index nor extrapolates to unmeasured mixtures, hardware, or future workloads.",
+  "expected_observation_count": 52,
+  "expected_scenario_count": 4,
+  "expected_scenarios": [
+    {
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "profile": 2,
+      "profile_axis": "total_tasks_per_gpu",
+      "resident_canonical_total_units": 120,
+      "resident_measurement_total_units": 12000,
+      "resident_mix": "resident_llm_target_cnn",
+      "resident_service_unit": "step",
+      "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "resident_workload_key": "gpu_llm_distilgpt2",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "cnn_after_llm",
+      "target_canonical_total_units": 60,
+      "target_measurement_total_units": 300,
+      "target_service_unit": "step",
+      "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "target_workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "profile": 2,
+      "profile_axis": "total_tasks_per_gpu",
+      "resident_canonical_total_units": 40,
+      "resident_measurement_total_units": 80,
+      "resident_mix": "resident_hybrid_rl_target_cnn",
+      "resident_service_unit": "iter",
+      "resident_workload_env": "Ant-v2",
+      "resident_workload_key": "hybrid_rl_resac_ant",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "cnn_after_rl",
+      "target_canonical_total_units": 60,
+      "target_measurement_total_units": 3000,
+      "target_service_unit": "step",
+      "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "target_workload_key": "gpu_cnn_torch_resnet50"
+    },
+    {
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "profile": 2,
+      "profile_axis": "total_tasks_per_gpu",
+      "resident_canonical_total_units": 60,
+      "resident_measurement_total_units": 600,
+      "resident_mix": "resident_cnn_target_llm",
+      "resident_service_unit": "step",
+      "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "resident_workload_key": "gpu_cnn_torch_resnet50",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "llm_after_cnn",
+      "target_canonical_total_units": 120,
+      "target_measurement_total_units": 600,
+      "target_service_unit": "step",
+      "target_workload_env": "distilgpt2_forward_fp16_b2_s128",
+      "target_workload_key": "gpu_llm_distilgpt2"
+    },
+    {
+      "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+      "node": "jtl110gpu",
+      "node_bucket": "gpu_3080ti_12gb_dual",
+      "profile": 2,
+      "profile_axis": "total_tasks_per_gpu",
+      "resident_canonical_total_units": 60,
+      "resident_measurement_total_units": 18000,
+      "resident_mix": "resident_cnn_target_hybrid_rl",
+      "resident_service_unit": "step",
+      "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+      "resident_workload_key": "gpu_cnn_torch_resnet50",
+      "resource_state": "mixed_colocation",
+      "scenario_id": "rl_after_cnn",
+      "target_canonical_total_units": 40,
+      "target_measurement_total_units": 40,
+      "target_service_unit": "iter",
+      "target_workload_env": "Ant-v2",
+      "target_workload_key": "hybrid_rl_resac_ant"
+    }
+  ],
+  "expected_wave_count": 13,
+  "gate": "critical_gpu_loaded_stochastic_lcb_gate",
+  "hardware_class": "NVIDIA_RTX_3080Ti_12GB",
+  "holdout_wave": 13,
+  "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+  "measurement_protocol": "critical_gpu_loaded_natural_completion_v2",
+  "miscoverage_alpha": 0.1,
+  "node": "jtl110gpu",
+  "node_bucket": "gpu_3080ti_12gb_dual",
+  "nominal_simultaneous_coverage": 0.9,
+  "pass": true,
+  "ready_observation_count": 52,
+  "resource_state": "mixed_colocation",
+  "same_measurement_code_all_waves": true,
+  "schema_version": 1,
+  "source_artifacts": [
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r01_20260809_codec920b9678a92.json",
+      "sha256": "622b12b90ba4c23e20212b31760b245efdf5b4f684fb844d95a5f4318aea5841",
+      "status": "PASS",
+      "wave": 1
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r02_20260809_codec920b9678a92.json",
+      "sha256": "3b5e537f1db73654bd1a168da81e4bfe831ce5e828cf269643091a583e819bd3",
+      "status": "PASS",
+      "wave": 2
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r03_20260809_codec920b9678a92.json",
+      "sha256": "727299db912778ea5317f7c200a02c3c9718a6fcbb206e4d3d42773b737c79d6",
+      "status": "PASS",
+      "wave": 3
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r04_20260809_codec920b9678a92.json",
+      "sha256": "d02c630197f09f75ac5361d1b0431f8242f8fcda7aa6eb97c7f142b28c932b22",
+      "status": "PASS",
+      "wave": 4
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r05_20260809_codec920b9678a92.json",
+      "sha256": "9291f064d66846c67a9ce14bd60e995045b3f39ac6e1517c4f901e54de09265d",
+      "status": "PASS",
+      "wave": 5
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r06_20260809_codec920b9678a92.json",
+      "sha256": "78e82da5e1aee4d54c16e5a82a1229dc5226eab5b5266879ef36332dad0e392c",
+      "status": "PASS",
+      "wave": 6
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r07_20260809_codec920b9678a92.json",
+      "sha256": "3f58475201abbf8385c634ca7b42a1845fb2dcf4710d9588a8c159a61730ad57",
+      "status": "PASS",
+      "wave": 7
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r08_20260809_codec920b9678a92.json",
+      "sha256": "991ad28b639f75a04fb488ecab271bc9c9fbaf0aa0d15917f2367670f044f7e1",
+      "status": "PASS",
+      "wave": 8
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r09_20260809_codec920b9678a92.json",
+      "sha256": "6ba9bfb08931d4c0e1936ea76a357bb06430690efec30ed9178476f4582f6ade",
+      "status": "PASS",
+      "wave": 9
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r10_20260809_codec920b9678a92.json",
+      "sha256": "156cc3d732806cdd15c2c5c94cffe33d9bf436bc1f21a8529d75e847966f9f14",
+      "status": "PASS",
+      "wave": 10
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r11_20260809_codec920b9678a92.json",
+      "sha256": "90ad73020320e2a8c94e2546327a078bd4576589505c7113fc68e3a6dc1250cd",
+      "status": "PASS",
+      "wave": 11
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r12_20260809_codec920b9678a92.json",
+      "sha256": "bedd1c04baa214432f583f0df2fd527ddce8f40695a1ed3b7d60adb370adde6e",
+      "status": "PASS",
+      "wave": 12
+    },
+    {
+      "measurement_code_sha256": "c920b9678a92051735bd2961c011761443a31e7d35ea1aa01f46ee33ddbb6194",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_jtl110gpu_r13_20260809_codec920b9678a92.json",
+      "sha256": "239eb9fa673fccd72688370744e776832a6b5cabb72564302cf9eccc37836c8e",
+      "status": "PASS",
+      "wave": 13
+    }
+  ],
+  "status": "PASS",
+  "training_waves": [
+    1,
+    2,
+    3
+  ],
+  "validation_errors": [],
+  "wait_reasons": [],
+  "wave_audits": [
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "training",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 1
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "training",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 2
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "training",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 3
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 4
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 5
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 6
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 7
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 8
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 9
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 10
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 11
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 12
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "holdout",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 13
+    }
+  ]
+}

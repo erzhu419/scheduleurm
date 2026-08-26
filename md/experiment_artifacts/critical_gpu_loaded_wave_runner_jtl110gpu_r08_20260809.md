@@ -2,7 +2,7 @@
 
 - Status: `PASS`
 - Node: `jtl110gpu`
-- Wave: `1`
+- Wave: `8`
 - Launched: `true`
 - All registered GPUs idle: `true`
 

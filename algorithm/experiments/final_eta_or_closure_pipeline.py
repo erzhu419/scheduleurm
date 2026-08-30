@@ -20,6 +20,8 @@ from algorithm.experiments.critical_gpu_all_hardware_lcb_cache_merge import (
     DEFAULT_JTL311_GATE,
 )
 from algorithm.experiments.critical_gpu_available_lcb_cache_merge import (
+    DEFAULT_CACHE_OUTPUT as AVAILABLE_CACHE,
+    DEFAULT_MARKDOWN as AVAILABLE_MARKDOWN,
     DEFAULT_REPORT as AVAILABLE_REPORT,
 )
 from algorithm.experiments.critical_gpu_loaded_action_ledger_merge import (
@@ -105,6 +107,15 @@ def preflight_sources(sources: Mapping[str, Path] | None = None) -> dict[str, An
 
 def build_stages(*, python: str = sys.executable, include_figure: bool = True) -> tuple[Stage, ...]:
     stages = [
+        Stage(
+            "merge_available_empty_cache",
+            (python, "-m", "algorithm.experiments.critical_gpu_available_lcb_cache_merge"),
+            (
+                Path(AVAILABLE_REPORT),
+                Path(AVAILABLE_MARKDOWN),
+                Path(AVAILABLE_CACHE),
+            ),
+        ),
         Stage(
             "merge_all_hardware_empty_cache",
             (python, "-m", "algorithm.experiments.critical_gpu_all_hardware_lcb_cache_merge"),

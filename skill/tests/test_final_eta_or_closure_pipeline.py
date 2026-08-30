@@ -48,6 +48,7 @@ def test_stage_plan_orders_cache_slack_migration_replay_and_figure() -> None:
     names = [stage.name for stage in build_stages(python="python-test")]
 
     assert names == [
+        "merge_available_empty_cache",
         "merge_all_hardware_empty_cache",
         "certify_all_hardware_statewise_slack",
         "merge_loaded_action_ledger",

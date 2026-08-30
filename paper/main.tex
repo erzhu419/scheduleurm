@@ -53,6 +53,7 @@
 }{%
   \input{generated/unified_hardware_results_fallback.tex}%
 }
+\input{generated/or_generalization_v7_results.tex}
 
 \MANUSCRIPTNO{OPRE-2026-XXXX}
 \RUNAUTHOR{Anonymous}
@@ -1767,18 +1768,72 @@ cumulative-oracle/rate-oracle equivalence for positive duration.  The
 deterministic holdouts in this subsection test the candidate/oracle/penalty
 layer and do not by themselves instantiate a stochastic arrival model.
 
-The latest confirmation protocols augment, rather than overwrite, the earlier
-feasibility holdouts.  The FJSP confirmation selects 20 previously unused
-instances from the Hurink edata, rdata, sdata, and vdata families
-\citep{hurink1994tabu}.  For each instance, the robust selector and five fixed
-dispatch rules are compared using exact integer makespan and sum-completion
-ledgers.  The fixed rules are first-in-first-out (FIFO), earliest completion
-time (ECT), shortest processing time (SPT), most operations remaining (MOR), and
-most work remaining (MWKR).  A separate five-second, single-worker OR-Tools
-9.14 Constraint Programming with Boolean Satisfiability (CP-SAT) run provides a
-makespan reference \citep{perron2023cpsat}.  Its sum-completion coordinate is
-descriptive because CP-SAT optimizes makespan only, and a feasible status is not
-an optimality proof.
+The following monotonicity result connects those experiments directly to the
+support-loss theorem.  It distinguishes enlarging a registered action family
+from tuning the score after observing a holdout.
+
+\begin{proposition}[Finite action-union monotonicity]
+\label{prop:action-union-monotonicity}
+Let \(\mathcal A^{\mathrm{base}}\subseteq
+\mathcal A^{\mathrm{union}}\subseteq\Afull\).  If, for every \(q\geq 0\),
+\begin{equation}
+  H_{\Afull}(q)
+  \leq H_{\mathcal A^{\mathrm{base}}}(q)
+    +\epsilon\normone{q},
+  \label{eq:base-action-support-gap}
+\end{equation}
+where \(\epsilon\) is the certified base-family support loss,
+then the same inequality holds with
+\(\mathcal A^{\mathrm{union}}\) in place of
+\(\mathcal A^{\mathrm{base}}\).  If \(\lambda\) has full-action support slack
+\(\delta\), the expanded family therefore satisfies
+\begin{equation}
+  q^\top\lambda+(\delta-\epsilon)\normone{q}
+  \leq H_{\mathcal A^{\mathrm{union}}}(q).
+  \label{eq:action-union-capacity-slack}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Action-set inclusion gives
+\(H_{\mathcal A^{\mathrm{base}}}(q)\leq
+H_{\mathcal A^{\mathrm{union}}}(q)\).  Chaining this inequality with
+\eqref{eq:base-action-support-gap} proves the inherited support loss.  Applying
+the full-action support-slack step used in
+Lemma~\ref{lem:support-after-losses} to that inherited gap gives
+\eqref{eq:action-union-capacity-slack}; estimation, penalty, and oracle losses
+are deducted only afterward.  The Lean theorems
+\path{support_gap_mono_under_candidate_expansion} and
+\path{candidate_capacity_slack_loss_under_expansion} check the two
+statements.
+\end{proof}
+
+The FJSP evidence uses two chronologically separated protocols on Hurink edata,
+rdata, sdata, and vdata instances \citep{hurink1994tabu}.  The first protocol
+compared the robust selector and five fixed dispatch rules using exact integer
+makespan and sum-completion ledgers.  The fixed rules were first-in-first-out
+(FIFO), earliest completion time (ECT), shortest processing time (SPT), most
+operations remaining (MOR), and most work remaining (MWKR).  A separate
+five-second, single-worker OR-Tools 9.14 Constraint Programming with Boolean
+Satisfiability (CP-SAT) run provided a makespan reference
+\citep{perron2023cpsat}.  Although the original family was nondominated against
+the fixed rules on all 20 instances, the CP-SAT trajectory dominated it on 14.
+This was an action-space failure, not evidence that a different score
+coefficient would repair the family.
+
+We therefore froze a finite action-union policy before inspecting a disjoint
+\FjspUnionInstanceCount-instance holdout.  For each instance, the union contains
+the exact maximizer of the original generated family and the independently
+generated CP-SAT trajectory after feasibility verification; the robust score is
+unchanged.  The exact union argmax selected the same trajectory as CP-SAT on
+\FjspUnionSameSolverCount{}/\FjspUnionInstanceCount{} instances.  Relative to
+the old family, it improved both coordinates on
+\FjspUnionImprovesBaseCount{}, was identical on \FjspUnionSameBaseCount{}, and
+gave one tradeoff on \FjspUnionTradeoffBaseCount{}; the geometric-mean ratios
+were \FjspUnionMakespanRatio{} for makespan and \FjspUnionFlowRatio{} for sum
+completion.  This closes the registered action-space gap.  It does not claim to
+beat CP-SAT after the CP-SAT trajectory has become a member of the candidate
+family, and a feasible CP-SAT status remains distinct from an optimality proof.
 
 The prospective structural MMRCPSP holdout registers 25 PSPLIB instances, five
 each from j12, j14, j16, j18, and j20 \citep{kolisch1997psplib}.  The selected
@@ -1798,22 +1853,36 @@ first matrix but before observing those new tapes.  It is therefore a
 prospective arrival-tape check on a known instance and action library, not a new
 structural-instance holdout.
 
-The port evidence keeps physical source semantics and synthetic migration
-semantics non-substitutable.  The BACASP-S source-core certificate evaluates a
-30-vessel berth/quay instance with crane travel and setup times
-\citep{correcher2024berth}; it contains no mid-service migration.  Three
-synthetic event-driven instances add berth, quay-crane, yard-block, and
-gate-lane resources together with re-berthing, crane reassignment, and yard
-rehandle.  One locked 31-trajectory family is evaluated over the public and
-three synthetic contexts, giving 124 feasible trajectory-context ledgers and
-zero generated-family oracle gap.  The globally selected plan is Pareto
-nondominated on the public source-core comparison and all three synthetic
-comparisons.  This current-code refresh is a reproducible registered replay,
-not a prospective holdout.  A separate frame certificate verifies that all 31
-trajectories fit each context's positive candidate-independent horizon and that
-the referenced Lean frame file compiles.  Because the selected terminal
-coordinates are virtual costs, this does not provide a stochastic
-physical-service or positive-recurrence certificate.
+The port evidence likewise separates a failed policy restriction from its
+action-union revision.  The first prospective BACASP-S source-core holdout used
+54 instances from replications 83 and 84, with crane travel and setup times
+preserved \citep{correcher2024berth}.  The statewise robust policy was
+nondominated on only \PortStatewiseNondominatedCount{}/
+\PortStatewiseInstanceCount{} instances.  Against both SPT and
+reconfiguration-greedy, the baseline dominated on 27 instances, the robust
+policy dominated on 12, and 15 were tradeoffs.  We retain this failure.
+
+After observing it, we froze an 11-plan family before inspecting the disjoint
+replication-81/82 outcomes.  The family contains five singleton policies and six
+fixed composite trajectories.  Exact selection uses candidate-independent
+terminal virtual service and zero outer penalty, while each trajectory retains
+the audited low-level robust MaxWeight decisions.  On the
+\PortUnionInstanceCount{} new instances, the selected action was Pareto
+nondominated on \PortUnionNondominatedCount{} and strictly dominated all four
+baselines on \PortUnionStrictAllCount{}; the remaining 30 tied the best SPT or
+reconfiguration-greedy action.  Relative to either of those two strongest
+baselines, the geometric-mean ratios were 0.9659 for mean quay flow time,
+0.9886 for quay makespan, and 0.9456 for source objective cost.  There were no
+baseline-dominates cases on the action-union holdout.
+
+The earlier registered port replay remains a separate deterministic frame
+check.  Its locked 31-trajectory family gives 124 feasible trajectory-context
+ledgers and zero generated-family oracle gap over one source-core and three
+synthetic migration contexts.  The frame certificate verifies a positive
+candidate-independent horizon and a compiled Lean frame interface.  The
+terminal coordinates are virtual costs, not physical vessel departures;
+neither prospective holdout supplies stochastic port slack, observed industrial
+migration cost, or positive recurrence.
 Table~\ref{tab:or-generalization} reports the resulting mixed evidence.
 
 \begin{table}[!t]
@@ -1828,12 +1897,14 @@ Table~\ref{tab:or-generalization} reports the resulting mixed evidence.
 \toprule
 Domain & Frozen protocol & Candidate result & Claim boundary \\
 \midrule
-FJSP & 20 unused Hurink instances; six registered policies; independent
-five-second, one-worker CP-SAT reference & Robust selector nondominated 20/20
-against fixed rules.  CP-SAT feasible 20/20, optimal status 10/20, and dominates
-the selected ledger 14/20.  Qualitative relations reproduce 20/20; exact
-numeric gaps reproduce 17/20. & CP-SAT is makespan-only and wall-clock limited;
-no global optimum or arbitrary-solver claim. \\
+FJSP & Initial 20-instance diagnostic, followed by a disjoint prospective
+\FjspUnionInstanceCount-instance action-union holdout; fixed-budget,
+single-worker CP-SAT & Initial CP-SAT dominance 14/20 retained.  Expanded-family
+argmax matches the solver trajectory \FjspUnionSameSolverCount{}/
+\FjspUnionInstanceCount{}; versus the old family: \FjspUnionImprovesBaseCount{}
+improvements, \FjspUnionSameBaseCount{} identical, and
+\FjspUnionTradeoffBaseCount{} tradeoff. & Action-space closure, not CP-SAT or
+global FJSP superiority. \\
 MMRCPSP structural holdout & 25 prospective PSPLIB instances across j12, j14,
 j16, j18, and j20 & Candidate nondominated 25/25 against frozen heuristics;
 strictly dominates every heuristic 11/25; attains public makespan optimum 7/25;
@@ -1850,14 +1921,15 @@ total time-average queue, worst-class time-average queue, and worst-class final
 backlog.  Strictly better than every baseline 0/35; baseline dominance 0/35. &
 New arrival tapes, not new structural instances; no universal performance
 claim. \\
-Port & 30-vessel BACASP-S source core; three registered four-resource synthetic
-instances; one locked 31-trajectory family & All 124 trajectory-context pairs
-are feasible with generated-family \(\alpha_0=\alpha_1=0\); selected global plan
-is Pareto nondominated on the public context and 3/3 synthetic contexts.  The
-earlier statewise source-core robust policy remains dominated by
-reconfiguration-greedy and SPT. & Registered replay, not prospective holdout;
-virtual-cost frame bridge is compiled, but no physical migration observation,
-stochastic port slack, industrial deployment, or global port optimum. \\
+Port & Two disjoint 54-instance BACASP-S prospective holdouts: statewise policy
+on replications 83/84, then a frozen \PortUnionCandidateCount-plan action union
+on 81/82 & Statewise policy nondominated \PortStatewiseNondominatedCount{}/
+\PortStatewiseInstanceCount{}; SPT/reconfiguration-greedy each dominate 27.
+Action union nondominated \PortUnionNondominatedCount{}/
+\PortUnionInstanceCount{} and strict-all \PortUnionStrictAllCount{}/
+\PortUnionInstanceCount{}, with no baseline dominance. & Registered virtual-cost
+family only; no physical migration observation, stochastic port slack,
+industrial deployment, or global port optimum. \\
 \bottomrule
 \end{tabular}
 }{Every comparison is scoped to its registered finite policy family and stated
@@ -1865,28 +1937,35 @@ cost coordinates.  The rows deliberately retain comparator wins and do not
 assert domain-wide superiority.}
 \end{table}
 
-Two negative chains are especially informative.  First, the earlier MMRCPSP
+Three negative chains are especially informative.  First, the earlier MMRCPSP
 instance-feasibility holdout exposed a renewable-resource error in the
 nonrenewable reserve dynamic program; its opened-row regression and disjoint
 repair holdout remain archived.  Second, the new renewal-stream result shows
 that a valid exact MaxWeight oracle need not minimize aggregate delay: the
 shortest-trajectory baseline wins every aggregate-queue cell.  The prospective
 class-balance result instead establishes a 35/35 nondominated tradeoff, not
-strict superiority.  This is consistent with the mathematics: the
+strict superiority.  Third, the initial FJSP solver comparison and the port
+replication-83/84 holdout exposed candidate-family restrictions: an external
+solver trajectory dominated 14/20 FJSP ledgers, while SPT and
+reconfiguration-greedy each dominated 27/54 statewise port decisions.  The
+subsequent action unions were frozen before their disjoint outcomes and removed
+those registered-family dominance cases.
+Proposition~\ref{prop:action-union-monotonicity} explains why feasible expansion
+cannot worsen the support-loss certificate; it does not turn the revised finite
+family into a universal optimum.  This is consistent with the mathematics: the
 renewal-frame theorem controls drift under slack assumptions and is not a
 theorem of makespan or total-delay optimality.
 
-The FJSP candidate ledgers and all qualitative CP-SAT relations reproduce on a
-second run.  Three exact CP-SAT gaps vary because a five-second wall-clock
-budget can return different incumbents; this variation is reported rather than
-treated as candidate-ledger drift.  Both MMRCPSP stream matrices reproduce
-exactly after decompression.  Their raw gzip hashes differ only because the
-gzip header stores the output basename.  The refreshed port ledger removes
-only observed wall-clock runtime fields and uses a fixed gzip header;
-independent runs are therefore byte-identical as well as semantically
-identical.  The port source-core and synthetic migration semantics remain
-separate: the former contains BACASP-S data but no migration, whereas the
-latter contains migration semantics but no physical terminal observations.
+The initial FJSP candidate ledgers and all qualitative CP-SAT relations
+reproduce on a second run; three exact gaps vary because a five-second
+wall-clock budget can return different incumbents.  The disjoint solver-action
+holdout instead verifies the retained integer schedules and exact union argmax
+on every instance.  Both MMRCPSP stream matrices reproduce exactly after
+decompression.  The two port prospective artifacts bind compact certificates
+to their full ledgers and preserve the negative and revised protocols
+separately.  The port source-core and synthetic migration semantics also remain
+separate: the former contains BACASP-S data but no observed migration, whereas
+the latter contains migration semantics but no physical terminal observations.
 These boundaries prevent portability evidence from becoming a domain-wide
 state-of-the-art claim.
 
@@ -1997,8 +2076,9 @@ resulting \(L\rho\) support loss, while diagonal scaling preserves the meaning o
 lower-confidence service across heterogeneous workload units.  A separate
 variable-duration frame result extends the same slack accounting to cumulative
 configuration trajectories and recovers the slotted theorem at unit duration.
-The fixed-family, queue-indexed statewise, candidate-construction,
-diagonal-scaling, and frame statements are formalized in Lean.
+Candidate-family expansion is support-loss monotone.  The fixed-family,
+queue-indexed statewise, candidate-construction, action-union, diagonal-scaling,
+and frame statements are formalized in Lean.
 
 Scheduleurm provides a concrete instantiation of the theorem.  Its measured
 finite slices close the lower-service stability conditions for declared
@@ -2010,9 +2090,11 @@ cache.  Controlled live launches and strict scheduler-history evidence show how
 the theorem-facing objects can be produced by an operational scheduler.  Frozen
 finite-trajectory experiments on FJSP, MMRCPSP, and port models further test the
 candidate/oracle/penalty interface.  Their mixed results include
-independent-solver and registered-policy counterexamples, so they support
-portability of the interface without claiming domain-wide optimality or
-automatic transfer of the server stochastic model.
+independent-solver and registered-policy counterexamples.  Disjoint prospective
+action unions remove the corresponding registered-family dominance cases while
+retaining those failures.  The evidence therefore supports portability of the
+interface without claiming domain-wide optimality or automatic transfer of the
+server stochastic model.
 
 The contribution is therefore not a universal claim about every future workload
 or every external scheduler implementation.  It is a mathematical and empirical

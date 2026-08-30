@@ -11,6 +11,8 @@ Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.m
 | Full-action stationary-mix slack implies support-function slack | `/home/erzhu419/mine_code/proof/Scheduleurm/CapacityRegion.lean` | `capacity_slack_implies_support_slack` |
 | Downward-closed capacity slack implies support-function slack | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_downward_capacity_support_slack` |
 | Finite feature-cell candidate construction with containment, cardinality, and nonzero \(L\rho\) support loss | `/home/erzhu419/mine_code/proof/Scheduleurm/CandidateApprox.lean` | `finite_feature_cell_candidate_certificate` |
+| Candidate-family expansion cannot worsen a certified support gap | `/home/erzhu419/mine_code/proof/Scheduleurm/ActionUnion.lean` | `support_gap_mono_under_candidate_expansion` |
+| Candidate-family expansion preserves the base support-loss capacity margin \(\delta-\epsilon\) | `/home/erzhu419/mine_code/proof/Scheduleurm/ActionUnion.lean` | `candidate_capacity_slack_loss_under_expansion` |
 | Fabric-cover candidate support approximation \(H^{full}\le H^{cand}+L\rho\|q\|_1\) | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_approximation` |
 | Fabric-cover support approximation from a concrete projection and feature-sensitivity calibration | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_approximation_from_calibration` |
 | Constructive coordinate-Hausdorff capacity-set approximation | `/home/erzhu419/mine_code/proof/Scheduleurm/MainTheorems.lean` | `main_candidate_restricted_capacity_coordinate_hausdorff` |

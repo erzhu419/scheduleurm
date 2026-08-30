@@ -219,6 +219,7 @@ WORKLOAD_SPECS: tuple[WorkloadSpec, ...] = (
 NODE_WORKLOAD_PROFILE_OVERRIDES: dict[tuple[str, str], tuple[int, ...]] = {
     ("gpu_a", "gpu_llm_distilgpt2"): (1, 3, 8),
     ("gpu_b", "gpu_llm_distilgpt2"): (1, 3, 8),
+    ("cpu_a", "gpu_cnn_torch_resnet50"): (1, 2),
     ("cpu_a", "gpu_llm_distilgpt2"): (1, 3, 5),
 }
 

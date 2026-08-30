@@ -44,6 +44,18 @@ def test_hardware_local_llm_profiles_respect_measured_capacity():
     assert workload_profiles("cpu_a", llm) == (1, 3, 5)
 
 
+def test_cpu_a_cnn_profiles_exclude_observed_p3_capacity_boundary():
+    cnn = next(
+        spec
+        for spec in WORKLOAD_SPECS
+        if spec.workload_key == "gpu_cnn_torch_resnet50"
+    )
+    assert workload_profiles("cpu_a", cnn) == (1, 2)
+    assert workload_profiles("gpu_a", cnn) == (1, 3)
+    assert workload_profiles("gpu_b", cnn) == (1, 3)
+    assert workload_profiles("node007", cnn) == (1, 3)
+
+
 def test_hardware_classes_are_not_collapsed():
     assert NODE_SPECS["gpu_a"].node_bucket != NODE_SPECS["node007"].node_bucket
     assert NODE_SPECS["cpu_a"].node_bucket != NODE_SPECS["node007"].node_bucket

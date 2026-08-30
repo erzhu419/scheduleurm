@@ -18,6 +18,7 @@ from algorithm.experiments.critical_gpu_loaded_completion_campaign import (
 from algorithm.experiments.critical_gpu_loaded_stochastic_lcb_gate import (
     MAX_UNAPPROVED_USER_CPU_EXPOSURE_FRACTION,
     _conservative_unapproved_cpu_exposure,
+    _continuous_other_gpu_audit,
     _expected_scenarios,
     build_critical_gpu_loaded_stochastic_lcb_gate,
     discover_campaign_paths,
@@ -383,6 +384,33 @@ def test_loaded_gate_rejects_missing_host_sample(tmp_path):
         issue["code"] == "HOST_MONITOR_TARGET_INTERVAL_NOT_COVERED"
         for issue in report["validation_errors"]
     )
+
+
+def test_continuous_audit_drops_interrupted_epilogue_after_target(tmp_path):
+    row = _campaign(5, root=tmp_path)["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    with monitor.open("a", encoding="utf-8") as stream:
+        stream.write("__GPU_SAMPLE_NS__ 112000000000\n")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+
+    audit = _continuous_other_gpu_audit(row=row, node=NODE)
+
+    assert audit["audit_ready"] is True
+    assert audit["target_interval_covered"] is True
+    assert audit["dropped_interrupted_epilogue_sample_ns"] == [112000000000]
+
+
+def test_continuous_audit_rejects_interrupted_sample_inside_target(tmp_path):
+    row = _campaign(5, root=tmp_path)["rows"][1]
+    monitor = Path(row["gpu_monitor_log_path"])
+    with monitor.open("a", encoding="utf-8") as stream:
+        stream.write("__GPU_SAMPLE_NS__ 105500000000\n")
+    row["gpu_monitor_sha256"] = hashlib.sha256(monitor.read_bytes()).hexdigest()
+
+    audit = _continuous_other_gpu_audit(row=row, node=NODE)
+
+    assert audit["audit_ready"] is False
+    assert audit["error_code"] == "GPU_MONITOR_SAMPLES_INVALID"
 
 
 def test_discovery_accepts_only_canonical_artifact_with_excluded_distractors(tmp_path):

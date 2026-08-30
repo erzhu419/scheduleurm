@@ -953,18 +953,39 @@ def _continuous_other_gpu_audit(
             }
     if current is not None:
         samples.append(current)
-    incomplete = [
-        int(sample["sample_ns"])
-        for sample in samples
-        if set(sample["gpus"]) != expected_indices
+    incomplete_samples = [
+        sample for sample in samples if set(sample["gpus"]) != expected_indices
     ]
-    if len(samples) < 2 or incomplete:
+    dropped_interrupted_epilogue_sample_ns: list[int] = []
+    if incomplete_samples:
+        trailing = samples[-1] if samples else None
+        if (
+            len(incomplete_samples) == 1
+            and incomplete_samples[0] is trailing
+            and int(trailing["sample_ns"]) > target_end_ns
+        ):
+            dropped_interrupted_epilogue_sample_ns.append(
+                int(trailing["sample_ns"])
+            )
+            samples.pop()
+        else:
+            incomplete = [
+                int(sample["sample_ns"]) for sample in incomplete_samples
+            ]
+            return {
+                "audit_ready": False,
+                "target_interval_covered": False,
+                "other_registered_gpus_idle": False,
+                "error_code": "GPU_MONITOR_SAMPLES_INVALID",
+                "detail": f"samples={len(samples)}, incomplete={incomplete[:10]!r}",
+            }
+    if len(samples) < 2:
         return {
             "audit_ready": False,
             "target_interval_covered": False,
             "other_registered_gpus_idle": False,
             "error_code": "GPU_MONITOR_SAMPLES_INVALID",
-            "detail": f"samples={len(samples)}, incomplete={incomplete[:10]!r}",
+            "detail": f"samples={len(samples)}, incomplete=[]",
         }
 
     samples.sort(key=lambda sample: int(sample["sample_ns"]))
@@ -1190,6 +1211,9 @@ def _continuous_other_gpu_audit(
         "first_sample_ns": first_sample_ns,
         "last_sample_ns": last_sample_ns,
         "sample_count": len(samples),
+        "dropped_interrupted_epilogue_sample_ns": (
+            dropped_interrupted_epilogue_sample_ns
+        ),
         "sample_interval_s": 1,
         "other_gpu_maxima": [maxima[index] for index in sorted(maxima)],
         "violations": violations[:50],

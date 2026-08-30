@@ -1,0 +1,231 @@
+{
+  "baseline_policies": [
+    "fcfs_static",
+    "spt_static",
+    "edd_static",
+    "reconfiguration_greedy"
+  ],
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "method": "factor-cell cluster bootstrap with both replications per sampled cell",
+    "replicates": 5000,
+    "seed": 20260809
+  },
+  "claim_boundary": [
+    "exact only over the registered deterministic action family",
+    "no unrestricted BACASP-S optimum or author-algorithm comparison",
+    "no physical-port or stochastic-stability claim"
+  ],
+  "data_freeze_commit": "1f74191f8cc223ca4f0bec0d34cd941e87bd5ef7",
+  "evaluation_metrics": [
+    "quay_makespan",
+    "mean_quay_flow_time",
+    "source_objective_cost"
+  ],
+  "execution_budget": {
+    "candidate_count": 11,
+    "candidate_family_revision_after_holdout": false,
+    "per_instance_tuning": false,
+    "rollouts_per_candidate_per_instance": 1
+  },
+  "failure_policy": {
+    "baseline_dominance": "retain in performance denominator",
+    "infeasible_or_deadlocked": "retain as failure",
+    "no_post_holdout_tuning": true,
+    "parse_error": "retain as failure"
+  },
+  "frozen_action_family": [
+    {
+      "mode": "full_rollout",
+      "period": 1,
+      "plan_id": "plan|edd_static",
+      "policies": [
+        "edd_static"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|edd_static+robust_maxweight+reconfiguration_greedy",
+      "policies": [
+        "edd_static",
+        "robust_maxweight",
+        "reconfiguration_greedy"
+      ]
+    },
+    {
+      "mode": "full_rollout",
+      "period": 1,
+      "plan_id": "plan|fcfs_static",
+      "policies": [
+        "fcfs_static"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|fcfs_static+robust_maxweight+spt_static",
+      "policies": [
+        "fcfs_static",
+        "robust_maxweight",
+        "spt_static"
+      ]
+    },
+    {
+      "mode": "full_rollout",
+      "period": 1,
+      "plan_id": "plan|reconfiguration_greedy",
+      "policies": [
+        "reconfiguration_greedy"
+      ]
+    },
+    {
+      "mode": "full_rollout",
+      "period": 1,
+      "plan_id": "plan|robust_maxweight",
+      "policies": [
+        "robust_maxweight"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|robust_maxweight+edd_static+spt_static",
+      "policies": [
+        "robust_maxweight",
+        "edd_static",
+        "spt_static"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|robust_maxweight+spt_static+edd_static",
+      "policies": [
+        "robust_maxweight",
+        "spt_static",
+        "edd_static"
+      ]
+    },
+    {
+      "mode": "full_rollout",
+      "period": 1,
+      "plan_id": "plan|spt_static",
+      "policies": [
+        "spt_static"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|spt_static+robust_maxweight+reconfiguration_greedy",
+      "policies": [
+        "spt_static",
+        "robust_maxweight",
+        "reconfiguration_greedy"
+      ]
+    },
+    {
+      "mode": "rolling_periodic",
+      "period": 3,
+      "plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
+      "policies": [
+        "spt_static",
+        "robust_maxweight",
+        "robust_maxweight"
+      ]
+    }
+  ],
+  "holdout_outcomes_observed_before_freeze": false,
+  "implementation_file_sha256": {
+    "algorithm/experiments/port_public_action_union.py": "f8557ed536a285de5fa9d7e7f1ae519e41a22fe594913948ce2e04b81ee0d8c3",
+    "algorithm/experiments/port_public_action_union_holdout.py": "cad13667cd8ffbbaf0bbf64a6e9ca3c2714fe48a512b50a01ccc80b72bc96a27",
+    "algorithm/experiments/port_public_action_union_holdout_freeze.py": "32efec4e6a18df147dc561dd8e02a2f8514ca22bf5cce70c8319d22984074194",
+    "algorithm/experiments/port_public_benchmark_adapter.py": "543ce3bebd0cc4bb01d24faa96b959016f86913ff76f77d3d5c2ed20aa40206d",
+    "algorithm/experiments/port_public_external_holdout.py": "acbbe90e5dfb6597fc28125f62b21470bac3dbfab53de77fd2f1450aa55e1217",
+    "algorithm/experiments/port_scheduling_benchmark.py": "ff262291b19f63ab3d557efc342708b495ac5036f733e25dff1e189bfc625863",
+    "algorithm/experiments/port_scheduling_instances.py": "2591964494302d0adc8f015dbc92ea4fea8ed09926bbe437dd5f38255ec4d391",
+    "algorithm/experiments/port_trajectory_upgrade.py": "68dca4c47ad89fd71dba5bca8c775a666a2fd226c035ce51b6472edfa61ed8de"
+  },
+  "implementation_freeze_commit": "1f74191f8cc223ca4f0bec0d34cd941e87bd5ef7",
+  "outer_score_config": {
+    "action_penalty_weight": 1.0,
+    "atomic_policy_order": [
+      "robust_maxweight",
+      "fcfs_static",
+      "spt_static",
+      "edd_static",
+      "reconfiguration_greedy"
+    ],
+    "beam_width": 2,
+    "local_improvement_rounds": 1,
+    "period": 3,
+    "reconfiguration_cost_weight": 1.0,
+    "reconfiguration_duration_weight": 1.0,
+    "risk_cap_per_action": 4.0,
+    "risk_weight": 0.25,
+    "rolling_seeds": [
+      [
+        "robust_maxweight",
+        "spt_static",
+        "edd_static"
+      ],
+      [
+        "robust_maxweight",
+        "edd_static",
+        "spt_static"
+      ],
+      [
+        "spt_static",
+        "robust_maxweight",
+        "reconfiguration_greedy"
+      ],
+      [
+        "edd_static",
+        "robust_maxweight",
+        "reconfiguration_greedy"
+      ],
+      [
+        "fcfs_static",
+        "robust_maxweight",
+        "spt_static"
+      ]
+    ],
+    "terminal_penalty_cap": 0.0
+  },
+  "outputs": {
+    "compact_artifact": "md/experiment_artifacts/port_action_union_r81_r82_20260830.json",
+    "full_artifact": "md/experiment_artifacts/port_action_union_r81_r82_20260830_full.json.gz",
+    "markdown": "md/port_action_union_r81_r82_20260830.md"
+  },
+  "preregistration_sha256_excluding_self": "3b0f599783e53ecf76bacf3c5570db9104b523e7c2c5492e5aed8838612aa94d",
+  "protocol": "post_freeze_disjoint_large_mb_r81_r82_action_union",
+  "registered_on": "2026-08-30",
+  "schema_version": "scheduleurm.port_action_union_preregistration.v1",
+  "split_rule": {
+    "all_registered_rows_remain_in_denominator": true,
+    "deadline_factors": [
+      "1",
+      "1.5",
+      "2"
+    ],
+    "external_holdout_replications": [
+      81,
+      82
+    ],
+    "q_max_factors": [
+      5,
+      10,
+      15
+    ],
+    "registered_instance_count": 54,
+    "speed_setup_factors": [
+      "160-0.2",
+      "200-0.15",
+      "240-0.1"
+    ]
+  },
+  "suite_manifest_file_sha256": "9efb269addf0fb8f1055c0eb927c1730c78286d678f66d6d4a7df606dbec9ba5",
+  "suite_manifest_path": "tests/data/port_bacasp_s_action_union_holdout_r81_r82/source_manifest.json",
+  "upstream_repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+}

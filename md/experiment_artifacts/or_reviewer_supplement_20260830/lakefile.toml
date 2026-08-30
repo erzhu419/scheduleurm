@@ -1,0 +1,171 @@
+name = "proof"
+version = "0.1.0"
+defaultTargets = ["proof"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.28.0"
+
+# ─── 通用（根目录） ───
+[[lean_lib]]
+name = "ApproxContraction"
+
+# ─── RE-SAC ───
+[[lean_lib]]
+name = "RESAC"
+srcDir = "RE-SAC"
+
+[[lean_lib]]
+name = "«RESAC-Counterproof»"
+srcDir = "RE-SAC"
+
+[[lean_lib]]
+name = "SoftBellman"
+srcDir = "RE-SAC"
+
+# ─── BA-PR ───
+[[lean_lib]]
+name = "BAPR"
+srcDir = "BAPR"
+
+[[lean_lib]]
+name = "«BAPR-Counterproof»"
+srcDir = "BAPR"
+
+# ─── BAMOR ───
+[[lean_lib]]
+name = "BAMOR"
+srcDir = "BAMOR"
+
+[[lean_lib]]
+name = "«BAMOR-Counterproof»"
+srcDir = "BAMOR"
+
+[[lean_lib]]
+name = "BAMORRegimeBelief"
+srcDir = "BAMOR"
+roots = ["RegimeBelief"]
+
+# ─── CS-BAPR ───
+[[lean_lib]]
+name = "CSBAPR"
+srcDir = "CS-BAPR"
+
+[[lean_lib]]
+name = "«CSBAPR-Counterproof»"
+srcDir = "CS-BAPR"
+
+# ─── BAPR-HRO ───
+[[lean_lib]]
+name = "BAPRHRO"
+srcDir = "BAPR-HRO"
+roots = ["BAPRHRO"]
+
+[[lean_lib]]
+name = "BAPRHRO_V2"
+srcDir = "BAPR-HRO"
+roots = ["BAPRHRO_V2"]
+
+[[lean_lib]]
+name = "LowerBound"
+srcDir = "BAPR-HRO"
+roots = ["LowerBound"]
+
+[[lean_lib]]
+name = "Irrecoverability"
+srcDir = "BAPR-HRO"
+roots = ["Irrecoverability"]
+
+[[lean_lib]]
+name = "IrrecoverabilityBridge"
+srcDir = "BAPR-HRO"
+roots = ["IrrecoverabilityBridge"]
+
+[[lean_lib]]
+name = "EXP3Regret"
+srcDir = "BAPR-HRO"
+roots = ["EXP3Regret"]
+
+[[lean_lib]]
+name = "AdaptiveConvergence"
+srcDir = "BAPR-HRO"
+roots = ["AdaptiveConvergence"]
+
+[[lean_lib]]
+name = "Architecture"
+srcDir = "BAPR-HRO"
+roots = ["Architecture"]
+
+# ─── Scheduleurm configuration queueing-control proofs ───
+[[lean_lib]]
+name = "Scheduleurm"
+srcDir = "."
+roots = [
+  "Scheduleurm.Basic",
+  "Scheduleurm.SupportFunction",
+  "Scheduleurm.CandidateApprox",
+  "Scheduleurm.CapacityRegion",
+  "Scheduleurm.MaxWeightDrift",
+  "Scheduleurm.RegimeBelief",
+  "Scheduleurm.SweetSpot",
+  "Scheduleurm.Learning",
+  "Scheduleurm.DiagonalScaling",
+  "Scheduleurm.RobustPolicy",
+  "Scheduleurm.PenaltyGrowth",
+  "Scheduleurm.PiecewiseStationary",
+  "Scheduleurm.Regret",
+  "Scheduleurm.FosterLyapunov",
+  "Scheduleurm.MarkovRecurrence",
+  "Scheduleurm.QueueRecurrence",
+  "Scheduleurm.IntegerQueue",
+  "Scheduleurm.StochasticQueueModel",
+  "Scheduleurm.ConcreteStochasticModel",
+  "Scheduleurm.OperationalCapacity",
+  "Scheduleurm.RegimeStability",
+  "Scheduleurm.Concentration",
+  "Scheduleurm.ConcentrationProbability",
+  "Scheduleurm.StructuredLearning",
+  "Scheduleurm.HausdorffCapacity",
+  "Scheduleurm.CapacityGeometry",
+  "Scheduleurm.OperationalMetric",
+  "Scheduleurm.FrameBasedStability",
+  "Scheduleurm.MainTheorems",
+]
+
+# ─── Wasserstein (Optimal Transport) ───
+[[lean_lib]]
+name = "WassersteinCoupling"
+srcDir = "Wasserstein"
+roots = ["Coupling"]
+
+[[lean_lib]]
+name = "WassersteinDistance"
+srcDir = "Wasserstein"
+roots = ["Distance"]
+
+[[lean_lib]]
+name = "WassersteinDRO"
+srcDir = "Wasserstein"
+roots = ["DRO"]
+
+[[lean_lib]]
+name = "WassersteinDROBellman"
+srcDir = "Wasserstein"
+roots = ["DROBellman"]
+
+# ─── AM-HT ───
+[[lean_lib]]
+name = "AMHT"
+srcDir = "AM-HT"
+
+# ─── MC-WM (Residual MDP convergence) ───
+[[lean_lib]]
+name = "MCWM_ResidualMDP"
+srcDir = "MC-WM"
+roots = ["ResidualMDP"]
+
+# ─── 可执行入口 ───
+[[lean_exe]]
+name = "proof"
+root = "Main"

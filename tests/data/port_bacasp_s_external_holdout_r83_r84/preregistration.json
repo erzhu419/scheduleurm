@@ -1,0 +1,105 @@
+{
+  "baseline_policies": [
+    "fcfs_static",
+    "spt_static",
+    "edd_static",
+    "reconfiguration_greedy"
+  ],
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "method": "factor-cell cluster bootstrap; both R83/R84 rows retained per sampled cell",
+    "replicates": 5000,
+    "seed": 20260809
+  },
+  "claim_boundary": [
+    "fixed-slot source-core projection only",
+    "no BACASP-S mid-service migration",
+    "no author-algorithm or unrestricted-optimum comparison",
+    "no physical-port or stochastic-stability claim"
+  ],
+  "data_freeze_commit": "30e1ae2ca6e5bf146f4611d003293b8c079e4366",
+  "development_candidate_family_size": 31,
+  "development_compact_artifact": "md/experiment_artifacts/port_trajectory_upgrade_v2_compact_20260809.json",
+  "development_compact_file_sha256": "1fa29e264fceff2936f3b4b15547a0ee384fcaff27a448dc8688ce865c5c7d92",
+  "development_full_artifact": "md/experiment_artifacts/port_trajectory_upgrade_v2_full_20260809.json.gz",
+  "development_full_gzip_sha256": "46df76bd1d59cea5dc67fbc7d2e77d1ac55c0b8fb6e969e0f08c8549916ee69a",
+  "evaluation_metrics": [
+    "quay_makespan",
+    "mean_quay_flow_time",
+    "source_objective_cost"
+  ],
+  "execution_budget": {
+    "deployment_policy": "one frozen periodic trajectory",
+    "holdout_rollouts_per_policy_per_instance": 1,
+    "ours_holdout_candidate_search": false
+  },
+  "failure_policy": {
+    "baseline_dominance": "retain in performance denominator",
+    "infeasible_or_deadlocked": "retain as failure",
+    "no_post_holdout_tuning": true,
+    "parse_error": "retain as failure"
+  },
+  "frozen_plan": {
+    "mode": "rolling_periodic",
+    "period": 3,
+    "plan_id": "plan|spt_static+robust_maxweight+robust_maxweight",
+    "policies": [
+      "spt_static",
+      "robust_maxweight",
+      "robust_maxweight"
+    ]
+  },
+  "frozen_search_config_sha256": "320f51e5e4b882245a2167aa73fdf9426099a8028fdcbcc7c4a87c86427959a9",
+  "holdout_outcomes_observed_before_freeze": false,
+  "implementation_file_sha256": {
+    "algorithm/experiments/port_public_benchmark_adapter.py": "543ce3bebd0cc4bb01d24faa96b959016f86913ff76f77d3d5c2ed20aa40206d",
+    "algorithm/experiments/port_public_external_holdout.py": "acbbe90e5dfb6597fc28125f62b21470bac3dbfab53de77fd2f1450aa55e1217",
+    "algorithm/experiments/port_public_external_holdout_freeze.py": "d39849a01ba295a76b746ca3ba92202fe436bedc2489a8ecf38d8fa09fa17092",
+    "algorithm/experiments/port_scheduling_benchmark.py": "ff262291b19f63ab3d557efc342708b495ac5036f733e25dff1e189bfc625863",
+    "algorithm/experiments/port_scheduling_instances.py": "2591964494302d0adc8f015dbc92ea4fea8ed09926bbe437dd5f38255ec4d391",
+    "algorithm/experiments/port_trajectory_upgrade.py": "68dca4c47ad89fd71dba5bca8c775a666a2fd226c035ce51b6472edfa61ed8de"
+  },
+  "implementation_freeze_commit": "30e1ae2ca6e5bf146f4611d003293b8c079e4366",
+  "outputs": {
+    "compact_artifact": "md/experiment_artifacts/port_bacasp_s_external_holdout_r83_r84_20260830.json",
+    "full_artifact": "md/experiment_artifacts/port_bacasp_s_external_holdout_r83_r84_20260830_full.json.gz",
+    "markdown": "md/port_bacasp_s_external_holdout_r83_r84_20260830.md"
+  },
+  "performance_diagnostic": "selected frozen plan Pareto-nondominance count and paired ratios",
+  "preregistration_sha256_excluding_self": "013fb915a72e92c0f56c2f11f88e76378f29c07121138f521b80ea5339b62529",
+  "primary_protocol_gate": "all 54 rows authentic, parsed, feasible, and retained",
+  "protocol": "post_freeze_disjoint_large_mb_r83_r84_after_adapter_correction",
+  "registered_on": "2026-08-30",
+  "schema_version": "scheduleurm.port_bacasp_s_preregistration.v1",
+  "score_boundary": {
+    "development_outer_selector": "normalized terminal-cost virtual service minus bounded penalty",
+    "holdout_outcomes_used_for_selection": false,
+    "low_level": "statewise Q^T physical lower_service minus action penalty"
+  },
+  "split_rule": {
+    "all_registered_rows_remain_in_denominator": true,
+    "deadline_factors": [
+      "1",
+      "1.5",
+      "2"
+    ],
+    "external_holdout_replications": [
+      83,
+      84
+    ],
+    "q_max_factors": [
+      5,
+      10,
+      15
+    ],
+    "registered_instance_count": 54,
+    "speed_setup_factors": [
+      "160-0.2",
+      "200-0.15",
+      "240-0.1"
+    ]
+  },
+  "suite_manifest_file_sha256": "49917bebf0ffcdb3dff9025f303efb4bd9250d2f34f1797d86aa0430332aeb3f",
+  "suite_manifest_path": "tests/data/port_bacasp_s_external_holdout_r83_r84/source_manifest.json",
+  "upstream_repository_commit": "e8eda86ec0435105ca313afe85987e4f4ab2cbd7"
+}

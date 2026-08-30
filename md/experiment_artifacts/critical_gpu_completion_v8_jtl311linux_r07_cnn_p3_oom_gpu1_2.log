@@ -1,0 +1,23 @@
+ScheduleurmPhase name=admission_delay event=start delay_s=1.5
+ScheduleurmPhase name=admission_delay event=end delay_s=1.5
+ScheduleurmPhase name=initialization event=start
+ScheduleurmPhase name=initialization event=end
+BENCH_START backend=torch device='NVIDIA GeForce RTX 2080' model=resnet50 mode=train batch=32 image=224 amp=true label=critical_gpu_completion_v8_jtl311linux_r07_20260803_gpu_cnn_torch_resnet50_p3_code5f5319f7b76c_profile_3_per_gpu_gpu1_5
+ScheduleurmPhase name=warmup event=start
+Traceback (most recent call last):
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 271, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 113, in main
+    _step(model, image, target, criterion, optimizer, scaler, args.mode, args.amp, manual_sgd=manual_sgd)
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 251, in _step
+    scaler.scale(loss).backward()
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/_tensor.py", line 581, in backward
+    torch.autograd.backward(
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/autograd/__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/autograd/graph.py", line 825, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 7.60 GiB of which 3.44 MiB is free. Process 3203967 has 1.77 GiB memory in use. Process 3204111 has 4.11 GiB memory in use. Including non-PyTorch memory, this process has 1.71 GiB memory in use. Of the allocated memory 1.49 GiB is allocated by PyTorch, and 67.49 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+ScheduleurmCompletionModel {"amortized_unit_s":0.0,"base_unit_s":0.0,"checkpoint_observed_s":0,"child_returncode":1,"completion_model_ready":false,"completion_unit_s":0.0,"counter_offset":0,"finalization_after_last_progress_s":0.0,"first_progress_unit":null,"interval_sample_count":0,"last_progress_unit":null,"loop_observed_units":0,"loop_wall_s":0.0,"model_abs_error_s":0.0,"model_relative_error":0.0,"natural_exit":false,"periodic_extra_s":0.0,"phase_durations_s":{"admission_delay":[1.5001259309938177],"initialization":[4.65099272999214]},"predicted_total_s":0.0,"progress_observation_count":0,"readiness_reason":"child_returncode_1","save_observed_s":0,"schema_version":1,"startup_overhead_s":0.0,"startup_to_first_progress_s":0.0,"stopped_on_stable":false,"terminal_overhead_s":0.0,"total_units":60,"total_wall_s":9.35750723601086,"unit":"step"}

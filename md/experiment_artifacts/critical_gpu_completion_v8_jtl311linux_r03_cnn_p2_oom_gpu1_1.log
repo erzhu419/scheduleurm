@@ -1,0 +1,59 @@
+ScheduleurmPhase name=admission_delay event=start delay_s=0.75
+ScheduleurmPhase name=admission_delay event=end delay_s=0.75
+ScheduleurmPhase name=initialization event=start
+ScheduleurmPhase name=initialization event=end
+BENCH_START backend=torch device='NVIDIA GeForce RTX 2080' model=resnet50 mode=train batch=32 image=224 amp=true label=critical_gpu_completion_v8_jtl311linux_r03_20260803_gpu_cnn_torch_resnet50_p2_code4bd098dd7911_profile_2_per_gpu_gpu1_3
+ScheduleurmPhase name=warmup event=start
+Traceback (most recent call last):
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 271, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 113, in main
+    _step(model, image, target, criterion, optimizer, scaler, args.mode, args.amp, manual_sgd=manual_sgd)
+  File "/tmp/scheduleurm_progress_wrapper_pkg/algorithm/experiments/torch_cnn_progress_benchmark.py", line 248, in _step
+    output = model(image)
+             ^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torchvision/models/resnet.py", line 285, in forward
+    return self._forward_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torchvision/models/resnet.py", line 274, in _forward_impl
+    x = self.layer2(x)
+        ^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torchvision/models/resnet.py", line 155, in forward
+    out = self.bn3(out)
+          ^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 193, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/erzhu419/.venvs/scheduleurm-torch-bench/lib/python3.11/site-packages/torch/nn/functional.py", line 2812, in batch_norm
+    return torch.batch_norm(
+           ^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 26.00 MiB. GPU 0 has a total capacity of 7.60 GiB of which 19.50 MiB is free. Process 3526273 has 6.37 GiB memory in use. Including non-PyTorch memory, this process has 1.21 GiB memory in use. Of the allocated memory 1.02 GiB is allocated by PyTorch, and 53.97 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+ScheduleurmCompletionModel {"amortized_unit_s":0.0,"base_unit_s":0.0,"checkpoint_observed_s":0,"child_returncode":1,"completion_model_ready":false,"completion_unit_s":0.0,"counter_offset":0,"finalization_after_last_progress_s":0.0,"first_progress_unit":null,"interval_sample_count":0,"last_progress_unit":null,"loop_observed_units":0,"loop_wall_s":0.0,"model_abs_error_s":0.0,"model_relative_error":0.0,"natural_exit":false,"periodic_extra_s":0.0,"phase_durations_s":{"admission_delay":[0.7501392679987475],"initialization":[2.439621758006979]},"predicted_total_s":0.0,"progress_observation_count":0,"readiness_reason":"child_returncode_1","save_observed_s":0,"schema_version":1,"startup_overhead_s":0.0,"startup_to_first_progress_s":0.0,"stopped_on_stable":false,"terminal_overhead_s":0.0,"total_units":60,"total_wall_s":4.432506213022862,"unit":"step"}

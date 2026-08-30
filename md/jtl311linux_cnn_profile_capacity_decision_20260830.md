@@ -27,8 +27,17 @@ valid certificate.
 ## Action-space decision
 
 For the `gpu_2080_8gb_dual` hardware class, replace the CNN action profiles
-`(1, 3)` with `(1, 2)`. Other hardware classes retain their registered CNN
-profiles. Qualify CNN p2 in an excluded smoke wave, then rerun all 13 empty-state
-waves for `jtl311linux` under one unchanged measurement-code manifest. The old
-p3 failure remains evidence for the hardware-local capacity boundary and must
-not enter the positive lower-service cache.
+`(1, 3)` with a qualification family `(1, 2)`. Other hardware classes retain
+their registered CNN profiles. The p2 action first passed an excluded smoke
+wave and training waves 1--2, but failed in training wave 3: one child observed
+another CNN process at 6.37 GiB, used 1.21 GiB itself, and failed an additional
+26 MiB allocation with only 19.5 MiB free. The source log is preserved as
+`critical_gpu_completion_v8_jtl311linux_r03_cnn_p2_oom_gpu1_1.log`.
+
+Because this failure occurred inside the pre-registered training split, the
+stochastic gate freezes the positive CNN support at p1. P2 remains in the
+declared qualification family so every later row is audited, but all later p2
+successes are diagnostic only and cannot re-admit the action. Both p2 and p3
+therefore have zero lower service in the theorem-facing cache for this hardware
+class. The 13-wave campaign continues under the unchanged measurement-code
+manifest; it does not restart or discard the observed failure.

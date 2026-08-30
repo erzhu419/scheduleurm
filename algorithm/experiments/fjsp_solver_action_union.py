@@ -185,6 +185,8 @@ def build_fjsp_solver_action_union(
             "adds_distinct_action": solver_adds_distinct_action,
             "objective": str(solver.get("objective", "makespan")),
             "wall_time_s": solver.get("wall_time_s"),
+            "schedule": list(solver.get("schedule") or ()) if solver_feasible else [],
+            "verifier": solver.get("verifier") if solver_feasible else None,
             "runtime_reported_separately": True,
             "global_multiobjective_optimality_claimed": False,
         },
@@ -195,6 +197,8 @@ def build_fjsp_solver_action_union(
             "selected_renewal_score": base["selection"]["score_audit"][
                 "renewal_score"
             ],
+            "selected_metrics": dict(base["metrics"]),
+            "selected_schedule": list(base["schedule"]),
         },
         "config": config.snapshot(),
         "gate": {

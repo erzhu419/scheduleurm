@@ -47,6 +47,9 @@ def test_solver_action_union_is_exact_and_deduplicates_same_action():
         "selection"
     ]["base_family_unique_action_count"]
     assert report["solver_candidate"]["global_multiobjective_optimality_claimed"] is False
+    assert report["solver_candidate"]["schedule"]
+    assert report["solver_candidate"]["verifier"]["pass"] is True
+    assert report["base_family"]["selected_schedule"]
 
 
 def test_infeasible_solver_preserves_base_policy_without_admitting_action():

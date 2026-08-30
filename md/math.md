@@ -1831,16 +1831,61 @@ exact generated-family oracle audit。
 - MMRCPSP：precedence、renewable capacity、nonrenewable budget 与 mode duration；
 - server：CPU/GPU/memory/topology、co-location interference、checkpointability 与 node-local service。
 
+新一轮 FJSP/port 证据对应一个很直接但关键的 action-union theorem。令
+
+\[
+\mathcal A^{base}\subseteq\mathcal A^{union}\subseteq\mathcal A^{full}.
+\]
+
+若旧候选族已经满足
+
+\[
+H_{\mathcal A^{full}}(q)
+\le
+H_{\mathcal A^{base}}(q)+\epsilon\lVert q\rVert_1,
+\qquad q\ge 0,
+\]
+
+则 action-set inclusion 立即给出
+
+\[
+H_{\mathcal A^{base}}(q)
+\le H_{\mathcal A^{union}}(q),
+\]
+
+因此
+
+\[
+H_{\mathcal A^{full}}(q)
+\le
+H_{\mathcal A^{union}}(q)+\epsilon\lVert q\rVert_1.
+\]
+
+若 full family 对 \(\lambda\) 有 support slack \(\delta\)，则 expanded family
+继承完全相同的 candidate-loss 预算：
+
+\[
+q^\top\lambda+(\delta-\epsilon)\lVert q\rVert_1
+\le H_{\mathcal A^{union}}(q).
+\]
+
+这说明把经过 feasibility audit 的 external solver/policy trajectory 加入有限
+candidate family，不会削弱原 capacity/slack certificate。它也说明实验上应该
+扩动作空间，而不是看到 comparator win 后继续调 score。Lean 对应
+`Scheduleurm/ActionUnion.lean` 中的
+`support_gap_mono_under_candidate_expansion` 与
+`candidate_capacity_slack_loss_under_expansion`。
+
 最新冻结证据不再只报 candidate-family 内部 PASS，而是同时保留独立 comparator、
 负结果和复现审计：
 
 | Domain | Protocol | Result | 不能外推的结论 |
 |---|---|---|---|
-| FJSP | 20 个冻结的 Hurink unused instances；6 个 registered policies；独立 5 秒单 worker CP-SAT | candidate ledger 对 fixed rules 20/20 nondominated；CP-SAT 20/20 feasible、10/20 OPTIMAL、14/20 同时支配 candidate；qualitative relation 20/20 复现，numeric gap 17/20 复现 | CP-SAT 只优化 makespan 且受 wall-clock budget 限制；不能 claim global optimum/all-solver dominance |
+| FJSP | 第一组 20-instance diagnostic 暴露 CP-SAT gap；随后在另一组 prospective 20-instance Hurink holdout 上冻结 old-family exact maximizer + feasibility-audited CP-SAT trajectory 的 action union | 初始 fixed family 对 fixed rules 20/20 nondominated，但被 CP-SAT 14/20 同时支配；新 action union 与 CP-SAT trajectory 20/20 相同，相对 old family 为 18 improve、1 same、1 tradeoff，geomean makespan/base=0.9129，sum-completion/base=0.9117 | 这是 registered action-space closure，不是“击败 CP-SAT”；CP-SAT 只优化 makespan且受 5 秒 wall-clock budget 限制，不能 claim global optimum/all-solver dominance |
 | MMRCPSP structural holdout | 25 个 prospective PSPLIB instances，j12/j14/j16/j18/j20 各 5 个 | 对 frozen heuristics 25/25 nondominated、11/25 strict-all；7/25 达到 public makespan optimum；geomean makespan/optimum = 1.1667 | public optimum/CP-SAT 只对应 makespan；不能 claim global/universal superiority |
 | MMRCPSP aggregate queue | 上述 structural holdout 形成的 25-class known action library；7 scenarios \(\times\) 3 seeds \(\times\) 5 policies = 105 runs | ours 是 21/21 exact registered-family oracle，但 shortest trajectory 在 final backlog 与 time-average total queue 上 21/21 支配 ours | throughput/drift theorem 不是 total-delay optimality theorem；不能 claim recurrence from finite replay |
 | MMRCPSP class balance | 同一个 known library；7 scenarios \(\times\) 5 个新 arrival-tape seeds \(\times\) 5 policies = 175 runs | 在 total average queue、max-class average queue、max-class final backlog 上，ours 35/35 nondominated；strict-all 0/35；baseline-dominates 0/35；exact oracle 35/35 | metric family 在 aggregate-queue v1 后登记，但在新 arrival tapes 前冻结；不是 new structural-instance holdout，也不是 universal superiority |
-| Port | 30-vessel BACASP-S source core；3 个 registered berth/quay/yard/gate synthetic instances；同一个 31-trajectory family | 124/124 trajectory-context pairs feasible，generated-family \(\alpha_0=\alpha_1=0\)；global selected plan 在 public context 和 3/3 synthetic contexts 都 nondominated；早期 statewise source-core robust policy 被 reconfiguration-greedy/SPT 支配的反例继续保留 | current-code refresh 是 registered replay，不是 prospective holdout；terminal coordinates 是 virtual cost service，不是 physical departures；不能 claim stochastic port recurrence/industrial deployment/global optimum |
+| Port | R83/R84 的 54-instance prospective statewise holdout；观察负结果后冻结 11-plan action union，再在未观察的 R81/R82 54-instance holdout 上评估 | statewise policy 仅 27/54 nondominated、12/54 strict-all；对 SPT 与 reconfiguration-greedy 都是 baseline-dominates 27、ours-dominates 12、tradeoff 15。新 action union 54/54 nondominated、24/54 strict-all，其余 30 tie、0 baseline-dominates；对最强两个 baseline 的 geomean mean-flow/makespan/source-cost ratio 为 0.9659/0.9886/0.9456 | action union 只在 registered virtual-cost family 内 exact；terminal coordinates 不是 physical departures；不能 claim stochastic port recurrence/industrial deployment/global optimum |
 
 MMRCPSP 有两条名称容易混淆、但必须同时保留的失败链。早期
 **instance-feasibility holdout v1** 在 `j102_10` fail，原因是 reserve DP 错误地
@@ -1852,13 +1897,16 @@ delay 更有利。后续 class-balance holdout 使用新 arrival tapes，证明�
 total queue 与 worst-class queue 之间 35/35 nondominated tradeoff，而不是把
 21/21 aggregate-delay counterexample 删除。
 
-复现证据也分层：FJSP candidate integer ledgers 与 CP-SAT qualitative
+复现证据也分层：初始 FJSP candidate integer ledgers 与 CP-SAT qualitative
 disposition 都是 20/20 一致；受 5 秒 wall-clock 限制的 CP-SAT exact numeric gap
-只有 17/20 一致。MMRCPSP 两个 deterministic experiment matrix 在解压后的 full
-JSON、去除 gzip-container self-hash 后的 compact semantics、以及 Markdown 上都
-exact reproduction；raw gzip 不同只来自 FNAME header 的输出 basename。新的 port
-refresh 进一步剔除唯一非确定性的 `runtime_seconds_observed` telemetry，并固定 gzip
-mtime/FNAME，因此不同输出路径的完整压缩 ledger 也 byte-identical。
+只有 17/20 一致。新的 disjoint FJSP action-union holdout 则把 solver trajectory
+本身作为 action 保存并重新做 integer feasibility audit，20/20 都是 exact union
+argmax。MMRCPSP 两个 deterministic experiment matrix 在解压后的 full JSON、去除
+gzip-container self-hash 后的 compact semantics、以及 Markdown 上都 exact
+reproduction；raw gzip 不同只来自 FNAME header 的输出 basename。Port 的 R83/R84
+负结果与 R81/R82 action-union 结果分别绑定 compact/full scientific artifact，不能
+用后一轮覆盖前一轮。早期 registered replay 仍剔除非确定性的
+`runtime_seconds_observed` telemetry，并固定 gzip mtime/FNAME。
 
 Port 的 frame 接口需要再分一层。对每个 registered context，31 个 trajectory 都在
 同一个由输入数据推导、与 candidate 无关的正 horizon \(H\) 内完成，因此可以在
@@ -1873,9 +1921,10 @@ recurrence。
 
 因此目前能写的强结论是：**finite trajectory-action candidate/oracle/
 penalty interface 在 compute、port、FJSP、MMRCPSP 的已登记 family 上可移植；
-MMRCPSP 同时有 structural-instance holdout 与独立 arrival-tape holdout；port 的
-deterministic virtual-frame embedding 和变量时长 frame drift 已有独立 Lean closure，
-并且反例准确划清 stability、
-total delay 与 class balance 三类目标。** 不能写成 deterministic/finite replay
-自动证明各域 stochastic recurrence，也不能写成击败任意域 SOTA、工业港口
-控制或任意 exact solver。
+feasibility-audited action union 在数学上不增加 support loss，并在 disjoint FJSP 与
+port holdout 上消除了已观察到的 registered-family dominance；MMRCPSP 同时有
+structural-instance holdout 与独立 arrival-tape holdout；port 的 deterministic
+virtual-frame embedding 和变量时长 frame drift 已有独立 Lean closure；所有负结果
+继续划清 stability、total delay、class balance 与有限族 performance 四类目标。**
+不能写成 deterministic/finite replay 自动证明各域 stochastic recurrence，也不能写成
+击败任意域 SOTA、工业港口控制或任意 exact solver。

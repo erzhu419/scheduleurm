@@ -1,0 +1,523 @@
+{
+  "artifact_sha256_excluding_self": "5b5567e863bd611ad38a8d010f17bb208526371682a20c5f3496eccea6fa7b25",
+  "claim_boundary": {
+    "does_not_support": [
+      "global FJSP, MMRCPSP, or port optimality",
+      "beating CP-SAT after its trajectory is admitted to the candidate family",
+      "erasing the port statewise-policy or MMRCPSP aggregate-delay counterexamples",
+      "universal delay, makespan, or source-objective superiority",
+      "physical-port positive recurrence or industrial deployment"
+    ],
+    "supports": [
+      "prospective 20-instance FJSP finite action-union evaluation",
+      "prospective 54-instance port statewise-policy counterexample",
+      "prospective 54-instance port finite action-union evaluation",
+      "prospective MMRCPSP structural and arrival-tape holdouts",
+      "finite-family selector portability across three scheduling domains"
+    ]
+  },
+  "fjsp": {
+    "previous_fixed_family_evidence": {
+      "artifact_sha256": "0bf30925fd1380e2b11d84deaf1605374da6f9f83376c926b2e8213b4cdeb35d",
+      "baseline_union_nondominated_count": 20,
+      "cp_sat_exact_relations": {
+        "comparator_dominates": 14,
+        "same_action": 3,
+        "tradeoff": 3
+      },
+      "cp_sat_feasible_reference_count": 20,
+      "cp_sat_makespan_optimal_status_count": 10,
+      "fixed_budget_cp_sat_dominates_count": 14,
+      "global_fjsp_optimality_claim_ready": false,
+      "instance_count": 20,
+      "status": "FJSP_EXACT_LEDGER_CONFIRMATION_V2_PASS"
+    },
+    "prospective_solver_action_union_holdout": {
+      "base_family_relation_counts": {
+        "ours_dominates": 18,
+        "same_action": 1,
+        "tradeoff": 1
+      },
+      "effective_union_action_count_max": 64,
+      "effective_union_action_count_min": 16,
+      "exact_union_argmax_count": 20,
+      "geomean_selected_over_base": {
+        "makespan": 0.912877691053,
+        "sum_completion": 0.911656688001
+      },
+      "geomean_selected_over_solver": {
+        "makespan": 1.0,
+        "sum_completion": 1.0
+      },
+      "global_fjsp_optimality_claim_ready": false,
+      "instance_count": 20,
+      "selected_nondominated_count": 20,
+      "solver_feasible_count": 20,
+      "solver_relation_counts": {
+        "same_action": 20
+      },
+      "status": "FJSP_SOLVER_ACTION_UNION_HOLDOUT_PASS",
+      "trajectory_generator_count": 7
+    }
+  },
+  "gate": {
+    "all_negative_results_retained": true,
+    "all_protocol_gates_pass": true,
+    "arbitrary_domain_optimality_claim_ready": false,
+    "domain_count": 3,
+    "fjsp_solver_action_union_holdout_ready": true,
+    "pass": true,
+    "performance_superiority_claim_ready": false,
+    "physical_port_stability_claim_ready": false,
+    "port_action_union_holdout_ready": true,
+    "status": "OR_GENERALIZATION_V7_PASS_PROSPECTIVE_ACTION_UNIONS"
+  },
+  "inputs": {
+    "fjsp_solver_action_union_sha256": "01da81a71bdf0a02708aaf6d36744c92f3ee0379fc02632a5802c605c934beb4",
+    "port_r81_r82_action_union_sha256": "17f04fb817ffb2176bc9432c37130ee1921d9278fd44796264d8f6c0b9833e4f",
+    "port_r83_r84_negative_sha256": "748de7056c365b1c6e3cc8e7328c7d08bda4d7c8e64779609cf90f5e2e27ed3f",
+    "v6_sha256": "e845f023a4a1e3b58835f9472aa76beb17b96345089583f10ff36f46d7ed81b3"
+  },
+  "mmrcpsp": {
+    "prospective_class_balance_arrival_tapes": {
+      "artifact_sha256": "fc03dd338ca030f9feb4f39f3b690065e01290ccec5710b477589d7b81471e09",
+      "baseline_dominates_count": 0,
+      "known_instance_and_action_library": true,
+      "metric_family_registered_after_v1_total_cost_result": true,
+      "new_arrival_tapes": true,
+      "new_structural_instance_holdout": false,
+      "ours_exact_oracle_run_count": 35,
+      "ours_nondominated_count": 35,
+      "ours_strict_every_baseline_count": 0,
+      "pareto_coordinates": [
+        "total_time_average_queue",
+        "max_class_time_average_queue",
+        "max_class_final_backlog"
+      ],
+      "performance_superiority_claim_ready": false,
+      "run_count": 175,
+      "scenario_seed_count": 35,
+      "status": "MMRCPSP_CLASS_BALANCE_HOLDOUT_PROTOCOL_PASS"
+    },
+    "prospective_structural_family_holdout": {
+      "families": {
+        "j12": 5,
+        "j14": 5,
+        "j16": 5,
+        "j18": 5,
+        "j20": 5
+      },
+      "geomean_ours_makespan_over_public_optimum": 1.1667426545801287,
+      "instance_count": 25,
+      "ours_attains_public_optimum_count": 7,
+      "ours_pareto_nondominated_count": 25,
+      "ours_strict_every_baseline_count": 11,
+      "performance_superiority_claim_ready": false,
+      "status": "MMRCPSP_FAMILY_HOLDOUT_PASS"
+    },
+    "renewal_stream_total_queue": {
+      "baseline_dominates_count": 21,
+      "ours_nondominated_count": 0,
+      "pareto_coordinates": [
+        "final_backlog",
+        "time_average_queue"
+      ],
+      "retained_negative_result": true,
+      "scenario_seed_count": 21,
+      "status": "MMRCPSP_RENEWAL_STREAM_PROTOCOL_PASS"
+    },
+    "reproducibility_audit": {
+      "artifact_sha256": "ce65269160569e1e04404bf5181d9152bb355055fbb129c496f43a86b987535d",
+      "pair_count": 2,
+      "path_independent_gzip_claim_ready": false,
+      "raw_gzip_container_match_count": 0,
+      "semantic_reproducibility_ready_count": 2,
+      "status": "MMRCPSP_SEMANTIC_REPRODUCIBILITY_PASS"
+    }
+  },
+  "port": {
+    "deterministic_frame_and_previous_registered_evidence": {
+      "deterministic_frame_bridge": {
+        "deterministic_virtual_frame_interface_ready": true,
+        "finite_family": {
+          "candidate_context_pair_count": 124,
+          "candidate_count": 31,
+          "context_count": 4,
+          "exact_oracle_gap_alpha0": 0.0,
+          "finite_family_penalty_bound_P0": 0.000645255,
+          "oracle_slope_alpha1": 0.0,
+          "queue_scaled_penalty_slope_beta": 0.0
+        },
+        "frame_rows": [
+          {
+            "all_trajectories_fit_common_horizon": true,
+            "candidate_count": 31,
+            "common_frame_horizon_H": 671.310506567,
+            "context": "public_bacasp_s",
+            "duration_metric": "quay_makespan",
+            "fixed_H_division_preserves_scalar_order": true,
+            "maximum_idle_padding": 494.81050656699995,
+            "observed_duration_max": 287.86875,
+            "observed_duration_min": 176.5,
+            "positive_common_denominator": true
+          },
+          {
+            "all_trajectories_fit_common_horizon": true,
+            "candidate_count": 31,
+            "common_frame_horizon_H": 2259.315795885,
+            "context": "synthetic:balanced_heterogeneous_8",
+            "duration_metric": "makespan",
+            "fixed_H_division_preserves_scalar_order": true,
+            "maximum_idle_padding": 2035.7578379200002,
+            "observed_duration_max": 371.02060504,
+            "observed_duration_min": 223.557957965,
+            "positive_common_denominator": true
+          },
+          {
+            "all_trajectories_fit_common_horizon": true,
+            "candidate_count": 31,
+            "common_frame_horizon_H": 2287.746365872,
+            "context": "synthetic:berth_crane_pressure_9",
+            "duration_metric": "makespan",
+            "fixed_H_division_preserves_scalar_order": true,
+            "maximum_idle_padding": 2050.540185558,
+            "observed_duration_max": 380.495730853,
+            "observed_duration_min": 237.206180314,
+            "positive_common_denominator": true
+          },
+          {
+            "all_trajectories_fit_common_horizon": true,
+            "candidate_count": 31,
+            "common_frame_horizon_H": 2825.838496119,
+            "context": "synthetic:yard_gate_surge_9",
+            "duration_metric": "makespan",
+            "fixed_H_division_preserves_scalar_order": true,
+            "maximum_idle_padding": 2543.224313628,
+            "observed_duration_max": 392.81270274,
+            "observed_duration_min": 282.614182491,
+            "positive_common_denominator": true
+          }
+        ],
+        "lean_compile_exit_code": 0,
+        "lean_source_sha256": "4ae87101c6647cb401002ccc9765c30cae3ee9528f7133b616076c98ceaabf74",
+        "physical_port_positive_recurrence_claim_ready": false,
+        "physical_service_frame_interface_ready": false,
+        "status": "PORT_DETERMINISTIC_VIRTUAL_FRAME_BRIDGE_PASS"
+      },
+      "registered_trajectory_refresh": {
+        "all_candidate_results_feasible": true,
+        "evaluated_context_count": 4,
+        "exact_generated_family_oracle_gap_alpha0": 0.0,
+        "migration_analogues_in_candidate_family": [
+          "crane_reassignment",
+          "reberth",
+          "yard_rehandle"
+        ],
+        "ours_synthetic_pareto_nondominated_count": 3,
+        "ours_synthetic_pareto_nondominated_total": 3,
+        "prospective_holdout_claim_ready": false,
+        "public_source_core_ours_pareto_nondominated": true,
+        "status": "PORT_TRAJECTORY_REGISTERED_REFRESH_PASS",
+        "synthetic_instance_count": 3,
+        "trajectory_context_pair_count": 124,
+        "trajectory_family_size": 31
+      },
+      "source_core_and_statewise_migration": {
+        "artifact_sha256": "fdce887133a8f02394987c6447a614bffe87eba1334ca85deaa932c20bdd5e80",
+        "global_port_optimality_claim_ready": false,
+        "industrial_deployment_claim_ready": false,
+        "source_core": {
+          "completed_source_vessels": 30,
+          "mid_service_migration_evidence": false,
+          "nondominated_policies": [
+            "reconfiguration_greedy",
+            "spt_static"
+          ],
+          "pareto_metrics": [
+            "quay_makespan",
+            "mean_quay_flow_time",
+            "source_objective_cost"
+          ],
+          "ready": true,
+          "robust_maxweight_dominated_by": [
+            "reconfiguration_greedy",
+            "spt_static"
+          ],
+          "scope_boundary": "The certificate covers the pinned BACASP source-core berth/quay mapping only; it does not validate re-berthing, crane reassignment, yard transfer, or migration."
+        },
+        "status": "PORT_STATEWISE_TRAJECTORY_V3_PASS",
+        "synthetic_migration": {
+          "duration_normalized_oracle_gap_alpha0": 0.0,
+          "finite_family_penalty_bound_P0": 2.54,
+          "persistent_transition_resources_checked": true,
+          "physical_terminal_observations_used": false,
+          "ready": true,
+          "scope_boundary": "This is a deterministic synthetic semi-Markov transition certificate, not evidence of execution by an industrial terminal control plane.",
+          "selected_candidate_id": "robust_delayed_reberth"
+        }
+      }
+    },
+    "prospective_finite_action_union_holdout": {
+      "candidate_count": 11,
+      "instance_count": 54,
+      "paired_policy_summaries": {
+        "edd_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.267131893,
+                0.278203447
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.272577415
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.570187613,
+                0.578830004
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.574360285
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.196870426,
+                0.211455461
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.20390539
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 54
+          }
+        },
+        "fcfs_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.261557167,
+                0.272083111
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.26671649
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.57010008,
+                0.578948981
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.574369906
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.191729128,
+                0.206596782
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.198934306
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 54
+          }
+        },
+        "reconfiguration_greedy": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.958444484,
+                0.973319824
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.965929305
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.986299536,
+                0.99097961
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.988591561
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.933935228,
+                0.957674959
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.945590721
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 24,
+            "tie": 30
+          }
+        },
+        "spt_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.95847461,
+                0.973288764
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.965929305
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.98623892,
+                0.991010872
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.988591561
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.933597589,
+                0.957516951
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.945590721
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 24,
+            "tie": 30
+          }
+        }
+      },
+      "performance_nondominance_ready": true,
+      "performance_superiority_claim_ready": false,
+      "selected_pareto_nondominated_count": 54,
+      "selected_plan_counts": {
+        "plan|reconfiguration_greedy": 30,
+        "plan|spt_static+robust_maxweight+reconfiguration_greedy": 6,
+        "plan|spt_static+robust_maxweight+robust_maxweight": 18
+      },
+      "selected_strictly_dominates_every_baseline_count": 24,
+      "status": "PORT_ACTION_UNION_HOLDOUT_PASS"
+    },
+    "prospective_statewise_external_holdout": {
+      "instance_count": 54,
+      "paired_policy_summaries": {
+        "edd_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.287792345,
+                0.312789973
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.299922383
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.583003592,
+                0.603201721
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.592452031
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.214024198,
+                0.24108243
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.226891665
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 54
+          }
+        },
+        "fcfs_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                0.280559374,
+                0.304571791
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.292147884
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.583147391,
+                0.603301695
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.592818678
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                0.207684471,
+                0.234590039
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.220045488
+            }
+          },
+          "relation_counts": {
+            "ours_dominates": 54
+          }
+        },
+        "reconfiguration_greedy": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                1.031200563,
+                1.050653105
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 1.040860549
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.989433618,
+                1.001280091
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.995363474
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                1.03901549,
+                1.068844231
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 1.053661824
+            }
+          },
+          "relation_counts": {
+            "baseline_dominates": 27,
+            "ours_dominates": 12,
+            "tradeoff": 15
+          }
+        },
+        "spt_static": {
+          "metrics": {
+            "mean_quay_flow_time": {
+              "cluster_bootstrap_95pct": [
+                1.031056812,
+                1.050471769
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 1.040880809
+            },
+            "quay_makespan": {
+              "cluster_bootstrap_95pct": [
+                0.989488734,
+                1.001544148
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 0.995374803
+            },
+            "source_objective_cost": {
+              "cluster_bootstrap_95pct": [
+                1.038296442,
+                1.068792114
+              ],
+              "geometric_mean_ratio_ours_over_baseline": 1.053769023
+            }
+          },
+          "relation_counts": {
+            "baseline_dominates": 27,
+            "ours_dominates": 12,
+            "tradeoff": 15
+          }
+        }
+      },
+      "performance_nondominance_ready": false,
+      "retained_negative_result": true,
+      "selected_pareto_nondominated_count": 27,
+      "selected_strictly_dominates_every_baseline_count": 12,
+      "status": "PORT_PUBLIC_EXTERNAL_HOLDOUT_PASS"
+    }
+  },
+  "schema_version": "scheduleurm.or_generalization_certificate.v7",
+  "theorem_to_experiment_interpretation": {
+    "action_union_interpretation": "An external solver or policy trajectory is admitted as another finite candidate action; matching it is action-space closure, not solver superiority.",
+    "common_interface": "Each domain exposes a finite family of feasible variable-duration trajectory actions and audits exact selection over that registered family.",
+    "stability_boundary": "Deterministic trajectory feasibility does not supply stochastic arrivals, physical service, positive slack, or local return."
+  }
+}

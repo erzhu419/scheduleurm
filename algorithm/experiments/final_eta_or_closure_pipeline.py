@@ -163,6 +163,20 @@ def build_stages(*, python: str = sys.executable, include_figure: bool = True) -
             (ARTIFACT_ROOT / "unified_hardware_or_replay_20260809.json",),
         ),
         Stage(
+            "certify_or_generalization_v7",
+            (
+                python,
+                "-m",
+                "algorithm.experiments.or_generalization_certificate_v7",
+                "--force",
+            ),
+            (
+                ARTIFACT_ROOT / "or_generalization_certificate_v7_20260830.json",
+                REPO_ROOT / "md" / "or_generalization_certificate_v7_20260830.md",
+                REPO_ROOT / "paper" / "generated" / "or_generalization_v7_results.tex",
+            ),
+        ),
+        Stage(
             "export_paper_results",
             (python, "-m", "algorithm.experiments.unified_hardware_paper_results"),
             (

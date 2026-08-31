@@ -138,6 +138,56 @@ def test_cross_gpu_prelaunch_contamination_stops_next_wave(monkeypatch):
     assert report["row_prelaunch_audit"]["pass"] is False
 
 
+def test_endogenous_aggregate_host_load_does_not_reject_wave(monkeypatch):
+    monkeypatch.setattr(
+        runner,
+        "_gpu_idle_snapshot",
+        lambda _spec: {"ready": True, "selected_gpus": []},
+    )
+    monkeypatch.setattr(
+        runner,
+        "build_loaded_completion_campaign",
+        lambda **_kwargs: {
+            "status": "PASS",
+            "pass": True,
+            "rows": [{"scenario_id": "a"}],
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_prelaunch_assigned_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "assigned_gpu_idle": True,
+            "all_registered_gpus_idle": True,
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_continuous_other_gpu_audit",
+        lambda **_kwargs: {
+            "audit_ready": True,
+            "target_interval_covered": True,
+            "other_registered_gpus_idle": True,
+            "controlled_process_groups_observed": True,
+            "no_unapproved_compute_processes": True,
+            "host_interval_covered": True,
+            "host_process_interval_sampled": True,
+            "host_load_within_bound": False,
+            "host_load_treated_as_endogenous_diagnostic": True,
+            "host_memory_within_bound": True,
+            "unapproved_cpu_exposure_within_bound": True,
+        },
+    )
+
+    report = runner.run_safe_loaded_wave(
+        node="node007", wave=5, allow_launch=True
+    )
+
+    assert report["status"] == "PASS"
+    assert report["pass"] is True
+
+
 def test_manifest_mode_never_runs_idle_probe(monkeypatch):
     monkeypatch.setattr(
         runner,

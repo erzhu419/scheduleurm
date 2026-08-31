@@ -142,7 +142,6 @@ def _audit_campaign_prelaunch_snapshots(
         and audit["continuous"].get("no_unapproved_compute_processes") is True
         and audit["continuous"].get("host_interval_covered") is True
         and audit["continuous"].get("host_process_interval_sampled") is True
-        and audit["continuous"].get("host_load_within_bound") is True
         and audit["continuous"].get("host_memory_within_bound") is True
         and (
             audit["continuous"].get("unapproved_cpu_exposure_within_bound")

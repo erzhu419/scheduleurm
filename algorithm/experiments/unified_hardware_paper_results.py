@@ -276,6 +276,7 @@ def _static_scenario_summary(
         output.append(
             {
                 "scenario_id": scenario_id,
+                "display_label": _hardware_scenario_display_label(metadata),
                 "quadrant": str(metadata["quadrant"]),
                 "node_bucket": str(metadata["node_bucket"]),
                 "workload_keys": [str(value) for value in metadata["workload_keys"]],
@@ -292,6 +293,16 @@ def _static_scenario_summary(
             }
         )
     return output
+
+
+def _hardware_scenario_display_label(metadata: Mapping[str, Any]) -> str:
+    quadrant = str(metadata["quadrant"])
+    node_bucket = str(metadata["node_bucket"])
+    if node_bucket.startswith("gpu_"):
+        host = node_bucket.rsplit(":", 1)[-1]
+    else:
+        host = node_bucket.split(":", 1)[0]
+    return f"{quadrant} {host}"
 
 
 def _legacy_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
@@ -338,9 +349,12 @@ def _sota_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     if not rows:
         raise ValueError("SOTA comparison population is empty")
     by_policy: dict[str, list[Mapping[str, Any]]] = {}
+    by_quadrant: dict[str, list[Mapping[str, Any]]] = {}
     for row in rows:
+        quadrant = str(row["quadrant"])
         for comparison in row["comparisons"]:
             by_policy.setdefault(str(comparison["baseline_policy"]), []).append(comparison)
+            by_quadrant.setdefault(quadrant, []).append(comparison)
     policy_rows = {}
     for policy, comparisons in sorted(by_policy.items()):
         makespan = [1.0 / _positive(row["ours_to_baseline_makespan_ratio"], "SOTA ratio") for row in comparisons]
@@ -356,8 +370,52 @@ def _sota_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                 bool(row["ours_strictly_pareto_dominates"]) for row in comparisons
             ),
         }
+    quadrant_rows = {}
+    for quadrant, comparisons in sorted(by_quadrant.items()):
+        dominating = [
+            row for row in comparisons if bool(row["baseline_strictly_pareto_dominates"])
+        ]
+        quadrant_rows[quadrant] = {
+            "trace_count": sum(str(row["quadrant"]) == quadrant for row in rows),
+            "policy_trace_comparison_count": len(comparisons),
+            "baseline_strictly_dominates_ours_count": len(dominating),
+            "ours_strictly_dominates_baseline_count": sum(
+                bool(row["ours_strictly_pareto_dominates"]) for row in comparisons
+            ),
+            "worst_ours_to_dominating_baseline_makespan_ratio": max(
+                (float(row["ours_to_baseline_makespan_ratio"]) for row in dominating),
+                default=1.0,
+            ),
+            "worst_ours_to_dominating_baseline_mean_flow_ratio": max(
+                (float(row["ours_to_baseline_mean_flow_ratio"]) for row in dominating),
+                default=1.0,
+            ),
+            "worst_ours_to_dominating_baseline_cost_ratio": max(
+                (
+                    max(
+                        float(row["ours_to_baseline_makespan_ratio"]),
+                        float(row["ours_to_baseline_mean_flow_ratio"]),
+                    )
+                    for row in dominating
+                ),
+                default=1.0,
+            ),
+        }
+    all_comparisons = [row for values in by_policy.values() for row in values]
     return {
         "comparison_trace_count": len(rows),
+        "policy_trace_comparison_count": len(all_comparisons),
+        "baseline_strictly_dominates_ours_count": sum(
+            bool(row["baseline_strictly_pareto_dominates"]) for row in all_comparisons
+        ),
+        "ours_strictly_dominates_baseline_count": sum(
+            bool(row["ours_strictly_pareto_dominates"]) for row in all_comparisons
+        ),
+        "ours_better_on_both_geomean_policy_count": sum(
+            row["baseline_to_ours_makespan_geomean_ratio"] > 1.0
+            and row["baseline_to_ours_mean_flow_geomean_ratio"] > 1.0
+            for row in policy_rows.values()
+        ),
         "ours_not_dominated_in_every_trace": all(
             bool(row["ours_not_pareto_dominated_by_any_sota_style_policy"])
             for row in rows
@@ -367,6 +425,7 @@ def _sota_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             for row in rows
         ),
         "policies": policy_rows,
+        "by_quadrant": quadrant_rows,
     }
 
 
@@ -617,6 +676,9 @@ def tex_macros(report: Mapping[str, Any]) -> str:
         "UnifiedOnlineLegacyMeanFlowPNinetyFiveRatio": _fmt(
             online_legacy["legacy_to_ours_mean_flow_p95_ratio"]
         ),
+        "UnifiedOnlineLegacyDominatesOursCount": online_legacy[
+            "legacy_strictly_dominates_ours_count"
+        ],
         "UnifiedQueueMeanBacklogMean": _fmt(
             queue_distributions["time_weighted_queue_backlog_jobs"]["mean"]
         ),
@@ -654,6 +716,33 @@ def tex_macros(report: Mapping[str, Any]) -> str:
             queue_distributions["maximum_queue_backlog_jobs"]["maximum"]
         ),
         "UnifiedSotaPolicyCount": len(sota["policies"]),
+        "UnifiedSotaPolicyTraceComparisonCount": sota["policy_trace_comparison_count"],
+        "UnifiedSotaDominatesOursCount": sota["baseline_strictly_dominates_ours_count"],
+        "UnifiedOursDominatesSotaCount": sota["ours_strictly_dominates_baseline_count"],
+        "UnifiedSotaAggregateBothMetricWinCount": sota[
+            "ours_better_on_both_geomean_policy_count"
+        ],
+        "UnifiedSotaQZeroZeroDominanceCount": sota["by_quadrant"]["q00"][
+            "baseline_strictly_dominates_ours_count"
+        ],
+        "UnifiedSotaQZeroOneDominanceCount": sota["by_quadrant"]["q01"][
+            "baseline_strictly_dominates_ours_count"
+        ],
+        "UnifiedSotaQOneZeroDominanceCount": sota["by_quadrant"]["q10"][
+            "baseline_strictly_dominates_ours_count"
+        ],
+        "UnifiedSotaQOneOneDominanceCount": sota["by_quadrant"]["q11"][
+            "baseline_strictly_dominates_ours_count"
+        ],
+        "UnifiedSotaQZeroOneWorstCostRatio": _fmt(
+            sota["by_quadrant"]["q01"]["worst_ours_to_dominating_baseline_cost_ratio"]
+        ),
+        "UnifiedSotaQOneZeroWorstCostRatio": _fmt(
+            sota["by_quadrant"]["q10"]["worst_ours_to_dominating_baseline_cost_ratio"]
+        ),
+        "UnifiedSotaQOneOneWorstCostRatio": _fmt(
+            sota["by_quadrant"]["q11"]["worst_ours_to_dominating_baseline_cost_ratio"]
+        ),
         "UnifiedSotaNotDominated": "true" if sota["ours_not_dominated_in_every_trace"] else "false",
         "UnifiedSotaConclusion": (
             "is not Pareto-dominated by any registered SOTA-style policy on any replay trace"
@@ -682,7 +771,7 @@ def tex_macros(report: Mapping[str, Any]) -> str:
     lines.extend(f"\\providecommand{{\\{name}}}{{{value}}}" for name, value in rows.items())
     table_rows = {
         "UnifiedStaticLegacyRows": "\n".join(
-            f"{_latex_escape(row['scenario_id'])} & {row['trace_count']} & "
+            f"{_latex_escape(row['display_label'])} & {row['trace_count']} & "
             f"{_fmt(row['legacy_to_ours_makespan_geomean_ratio'])} & "
             f"{_fmt(row['legacy_to_ours_mean_flow_geomean_ratio'])} & "
             f"{_fmt(row['legacy_to_ours_p90_flow_geomean_ratio'])} \\\\"
@@ -750,6 +839,9 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"- Legacy/ours makespan geomean: `{legacy.get('legacy_to_ours_makespan_geomean_ratio', 0):.6f}`",
         f"- Legacy/ours mean-flow geomean: `{legacy.get('legacy_to_ours_mean_flow_geomean_ratio', 0):.6f}`",
         f"- SOTA non-dominance on every trace: `{str(bool(sota.get('ours_not_dominated_in_every_trace'))).lower()}`",
+        f"- SOTA policy-trace comparisons: `{sota.get('policy_trace_comparison_count', 0)}`",
+        f"- SOTA strict dominance of ours: `{sota.get('baseline_strictly_dominates_ours_count', 0)}`",
+        f"- Ours strict dominance of SOTA: `{sota.get('ours_strictly_dominates_baseline_count', 0)}`",
         f"- Migration comparisons: `{migration.get('comparison_count', 0)}`",
         f"- Minimum hardware-local eta: `{slack.get('minimum_eta', 0):.6f}`",
         "",
@@ -764,6 +856,23 @@ def markdown_report(report: Mapping[str, Any]) -> str:
             f"{row['baseline_to_ours_makespan_geomean_ratio']:.6f} | "
             f"{row['baseline_to_ours_mean_flow_geomean_ratio']:.6f} | "
             f"{row['baseline_strictly_dominates_ours_count']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## SOTA-style trace-level dominance by quadrant",
+            "",
+            "| Quadrant | Traces | Policy-trace comparisons | Baseline dominates | Ours dominates | Worst ours/baseline cost among baseline wins |",
+            "|---|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for quadrant, row in sorted((sota.get("by_quadrant") or {}).items()):
+        lines.append(
+            f"| `{quadrant}` | {row['trace_count']} | "
+            f"{row['policy_trace_comparison_count']} | "
+            f"{row['baseline_strictly_dominates_ours_count']} | "
+            f"{row['ours_strictly_dominates_baseline_count']} | "
+            f"{row['worst_ours_to_dominating_baseline_cost_ratio']:.6f} |"
         )
     lines.extend(["", str(report.get("claim_boundary") or ""), ""])
     lines.extend(

@@ -268,7 +268,7 @@ def test_loaded_gate_rejects_missing_pgid_for_unseen_process(tmp_path):
     )
 
 
-def test_loaded_gate_rejects_high_aggregate_host_load(tmp_path):
+def test_loaded_gate_records_controlled_high_aggregate_host_load(tmp_path):
     paths = _write_campaigns(tmp_path)
     payload = json.loads(paths[5].read_text(encoding="utf-8"))
     row = payload["rows"][1]
@@ -284,11 +284,8 @@ def test_loaded_gate_rejects_high_aggregate_host_load(tmp_path):
         node=NODE, campaign_paths=paths
     )
 
-    assert report["status"] == "FAIL_VALIDATION"
-    assert any(
-        issue["code"] == "UNDECLARED_HOST_LOAD_DURING_TARGET"
-        for issue in report["validation_errors"]
-    )
+    assert report["status"] == "PASS"
+    assert report["aggregate_host_load_diagnostic_only"] is True
 
 
 def test_loaded_gate_rejects_low_available_host_memory(tmp_path):

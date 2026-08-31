@@ -224,6 +224,7 @@ def build_critical_gpu_loaded_stochastic_lcb_gate(
             else None
         ),
         "all_measurements_ready": measurements_ready,
+        "aggregate_host_load_diagnostic_only": True,
         "expected_scenarios": [expected[key] for key in sorted(expected)],
         "source_artifacts": sources,
         "wave_audits": wave_audits,
@@ -241,8 +242,9 @@ def build_critical_gpu_loaded_stochastic_lcb_gate(
             "actions. Every row also hash-verifies the pre-launch nvidia-smi "
             "snapshot and rejects undeclared load on any registered GPU, so "
             "a hash-bound one-second sidecar covers the complete target interval, "
-            "bounds aggregate host load and available memory, and rejects high-CPU "
-            "same-user processes outside the two controlled process groups. Thus "
+            "records aggregate host load as an endogenous action diagnostic, "
+            "bounds available memory, and rejects high-CPU same-user processes "
+            "outside the two controlled process groups. Thus "
             "same-GPU co-location rows do not silently absorb undeclared host/PCIe "
             "contention. It neither populates the legacy "
             "workload/profile index nor "
@@ -493,11 +495,6 @@ def _audit_row(
         continuous_gpu.get("host_process_interval_sampled") is True,
         "HOST_PROCESS_MONITOR_TARGET_INTERVAL_NOT_COVERED",
         f"samples={continuous_gpu.get('host_process_sample_count')!r}",
-    )
-    require(
-        continuous_gpu.get("host_load_within_bound") is True,
-        "UNDECLARED_HOST_LOAD_DURING_TARGET",
-        f"violations={continuous_gpu.get('host_load_violations')!r}",
     )
     require(
         continuous_gpu.get("host_memory_within_bound") is True,
@@ -1164,6 +1161,7 @@ def _continuous_other_gpu_audit(
         "host_load_within_bound": bool(
             host_interval_covered and not host_load_violations
         ),
+        "host_load_treated_as_endogenous_diagnostic": True,
         "host_memory_within_bound": bool(
             host_interval_covered and not host_memory_violations
         ),

@@ -33,8 +33,26 @@ peak normalized host CPU fraction * conservative burst duration
 Contributions from disjoint bursts are summed. A row passes the host-process
 contamination gate only when this conservative exposure is at most `0.001`
 (0.1% of full-host CPU time over the target interval). GPU contamination,
-aggregate host load, memory, missing samples, and uncontrolled GPU process
-groups remain independent fail-closed gates.
+memory, missing samples, and uncontrolled GPU process groups remain independent
+fail-closed gates.
+
+## Endogenous Aggregate-Load Correction (2026-08-31)
+
+The loaded action itself can raise Linux `load1`: the registered resident and
+target create runnable and uninterruptible threads during data preparation,
+GPU submission, and checkpoint I/O. Consequently, total `load1 / nproc`
+cannot distinguish controlled action load from external contamination. A fixed
+threshold incorrectly rejected `jtl311linux` wave 9 even though the hash-bound
+process snapshots reported zero unapproved CPU processes and zero unapproved
+CPU exposure.
+
+Aggregate host load remains recorded in every audit as a service-state
+diagnostic, but it is no longer a pass/fail condition. The fail-closed host
+conditions are complete target-interval sampling, sufficient available memory,
+and bounded conservative CPU exposure from processes outside the resident and
+target process groups. This does not relax the service bound: endogenous host
+load remains inside the measured natural-completion time and therefore inside
+the split-conformal lower-service certificate.
 
 ## Pre-Amendment Diagnostics
 

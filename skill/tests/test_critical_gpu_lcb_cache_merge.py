@@ -426,6 +426,9 @@ def test_cli_pass_writes_complete_cache_snapshot(tmp_path):
     assert cache.is_file()
     disk_report = json.loads(report.read_text(encoding="utf-8"))
     assert disk_report["cache_output_written"] is True
+    assert disk_report["cache_output_sha256"] == hashlib.sha256(
+        cache.read_bytes()
+    ).hexdigest()
     assert "service_cache_snapshot" not in disk_report
     loaded = ServiceRateCache.load(cache)
     assert loaded.lookup_statewise_exact(

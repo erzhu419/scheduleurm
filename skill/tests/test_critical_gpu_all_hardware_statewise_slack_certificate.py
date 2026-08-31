@@ -77,7 +77,11 @@ def _sources(tmp_path: Path, *, exclude_jtl_profile: bool = True) -> tuple[Path,
                 force_replace=True,
             )
         gate = {
-            "gate": "critical_gpu_stochastic_lcb_gate",
+            "gate": (
+                "critical_gpu_p10_transport_correction_gate"
+                if node == "node007"
+                else "critical_gpu_stochastic_lcb_gate"
+            ),
             "schema_version": 1,
             "status": "PASS",
             "pass": True,
@@ -87,6 +91,21 @@ def _sources(tmp_path: Path, *, exclude_jtl_profile: bool = True) -> tuple[Path,
             "certificate": {"rows": rows},
             "training_capacity_excluded_cells": excluded,
         }
+        if node == "node007":
+            gate.update(
+                {
+                    "correction_measurement_protocol": (
+                        "critical_gpu_p10_transport_correction_v2"
+                    ),
+                    "correction_scope": (
+                        "pre_registered_measurement_transport_integrity"
+                    ),
+                    "performance_conditioned_selection": False,
+                    "all_measurements_ready": True,
+                    "same_correction_measurement_code_all_waves": True,
+                    "same_source_measurement_code_all_waves": True,
+                }
+            )
         path = tmp_path / f"{node}_gate.json"
         gate_paths[node] = path
         gate_hashes[node] = _write_json(path, gate)

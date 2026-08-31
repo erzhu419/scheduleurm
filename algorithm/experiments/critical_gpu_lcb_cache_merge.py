@@ -171,9 +171,10 @@ def build_critical_gpu_lcb_cache_merge(
         "source_gate_contract": "v5_PASS",
         "resource_state": RESOURCE_STATE,
         "expected_cells_per_node": EXPECTED_CELL_COUNT_PER_NODE,
-        "expected_total_inserted_rows": (
+        "expected_total_registered_rows": (
             len(REPRESENTATIVE_NODES) * EXPECTED_CELL_COUNT_PER_NODE
         ),
+        "expected_total_inserted_rows": None,
         "source_gate_audits": gate_audits,
         "wait_reasons": wait_reasons,
         "validation_errors": validation_errors,
@@ -184,8 +185,9 @@ def build_critical_gpu_lcb_cache_merge(
         "inserted_rows": [],
         "claim_boundary": (
             "The final cache exists only when jtl110gpu, node007, and "
-            "jtl311linux each provide a hardware-local v5 PASS certificate for "
-            "all nine pre-registered empty-state GPU actions. Rows are exact "
+            "jtl311linux each provide a hardware-local v5 PASS certificate. All "
+            "nine registered profiles per node remain audited, while only the "
+            "training-admitted positive-service actions enter the cache. Rows are exact "
             "workload_env x node_bucket x resource_state x profile records; "
             "they never update the legacy workload/profile fallback."
         ),
@@ -215,10 +217,12 @@ def build_critical_gpu_lcb_cache_merge(
     legacy_before = _legacy_index_snapshot(cache)
     inserted: list[dict[str, Any]] = []
     exact_keys: set[tuple[Any, ...]] = set()
+    expected_total = 0
     try:
         for node in REPRESENTATIVE_NODES:
             payload, source_path = gate_payloads[node]
             rows = _validated_gate_rows(payload, node=node, path=source_path)
+            expected_total += len(rows)
             for row in rows:
                 record = _profile_record(row, source=source_path)
                 exact_key = (
@@ -255,7 +259,7 @@ def build_critical_gpu_lcb_cache_merge(
         )
         return {**common, "status": "FAIL_VALIDATION", "pass": False}
 
-    expected_total = len(REPRESENTATIVE_NODES) * EXPECTED_CELL_COUNT_PER_NODE
+    common["expected_total_inserted_rows"] = expected_total
     if len(inserted) != expected_total:
         common["validation_errors"].append(
             _issue(
@@ -367,6 +371,43 @@ def _validated_gate_rows(
     }
     if len(expected) != EXPECTED_CELL_COUNT_PER_NODE:
         raise RuntimeError(f"campaign declares {len(expected)} cells for {node}")
+    excluded_rows = payload.get("training_capacity_excluded_cells") or []
+    if not isinstance(excluded_rows, list):
+        raise ValueError(f"{path}: training capacity exclusions must be a list")
+    excluded: dict[tuple[str, str, str, int], Mapping[str, Any]] = {}
+    for row in excluded_rows:
+        if not isinstance(row, Mapping):
+            raise ValueError(f"{path}: capacity exclusion must be an object")
+        key = _row_key(row)
+        if key in excluded:
+            raise ValueError(f"{path}: duplicate capacity exclusion {key!r}")
+        excluded[key] = row
+    if not set(excluded).issubset(expected):
+        raise ValueError(
+            f"{path}: unregistered capacity exclusions "
+            f"{sorted(set(excluded) - set(expected))!r}"
+        )
+    if excluded:
+        if payload.get("candidate_support_frozen_from_training_waves") is not True:
+            raise ValueError(f"{path}: excluded support was not frozen in training")
+        if int(payload.get("training_capacity_excluded_cell_count") or -1) != len(excluded):
+            raise ValueError(f"{path}: capacity exclusion count mismatch")
+        for key, row in excluded.items():
+            if row.get("support_status") != "TRAINING_CAPACITY_EXCLUDED":
+                raise ValueError(f"{path}: invalid capacity support status for {key!r}")
+            if row.get("later_success_cannot_readmit") is not True:
+                raise ValueError(f"{path}: capacity exclusion permits re-admission")
+            if _finite_float(row.get("lower_service"), f"{path}: excluded lower_service") != 0.0:
+                raise ValueError(f"{path}: excluded action must have zero lower service")
+            if int(row.get("first_capacity_wave") or 0) not in TRAINING_WAVES:
+                raise ValueError(f"{path}: exclusion was not discovered in training")
+    admitted_expected = {
+        key: cell for key, cell in expected.items() if key not in excluded
+    }
+    declared_admitted = payload.get("admitted_cell_count")
+    if declared_admitted is not None and int(declared_admitted) != len(admitted_expected):
+        raise ValueError(f"{path}: admitted cell count mismatch")
+
     observed: dict[tuple[str, str, str, int], Mapping[str, Any]] = {}
     for row in rows:
         if not isinstance(row, Mapping):
@@ -375,16 +416,16 @@ def _validated_gate_rows(
         if key in observed:
             raise ValueError(f"{path}: duplicate certificate row {key!r}")
         observed[key] = row
-    if set(observed) != set(expected):
+    if set(observed) != set(admitted_expected):
         raise ValueError(
             f"{path}: certificate cell set mismatch; "
-            f"missing={sorted(set(expected) - set(observed))!r}, "
-            f"unexpected={sorted(set(observed) - set(expected))!r}"
+            f"missing={sorted(set(admitted_expected) - set(observed))!r}, "
+            f"unexpected={sorted(set(observed) - set(admitted_expected))!r}"
         )
     for key, row in observed.items():
         _validate_certificate_row(
             row,
-            expected=expected[key],
+            expected=admitted_expected[key],
             node=node,
             path=path,
         )
@@ -665,10 +706,14 @@ def write_merge_outputs(
     passed = bool(report.get("pass")) and report.get("status") == "PASS"
     snapshot = report.get("service_cache_snapshot")
     cache_written = bool(passed and isinstance(snapshot, Mapping))
+    cache_payload = None
     if cache_written:
+        cache_payload = (
+            json.dumps(snapshot, indent=2, sort_keys=True, allow_nan=False) + "\n"
+        )
         _atomic_write(
             cache_output_path,
-            json.dumps(snapshot, indent=2, sort_keys=True, allow_nan=False) + "\n",
+            cache_payload,
         )
     disk_report = {
         key: value for key, value in report.items() if key != "service_cache_snapshot"
@@ -679,6 +724,11 @@ def write_merge_outputs(
             "markdown_path": str(markdown_path),
             "cache_output_path": str(cache_output_path),
             "cache_output_written": cache_written,
+            "cache_output_sha256": (
+                hashlib.sha256(cache_payload.encode("utf-8")).hexdigest()
+                if cache_payload is not None
+                else None
+            ),
             "preexisting_cache_output_not_modified": bool(
                 not cache_written and cache_output_path.exists()
             ),

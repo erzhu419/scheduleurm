@@ -1,0 +1,473 @@
+{
+  "cache_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_all_hardware_gpu_phase_20260809.json",
+  "cache_sha256": "5eac04c5574e8b869271bc6e0ffce18ec0fc5627bfa016fb0a7c83cbc8865c57",
+  "claim_boundary": "PASS certifies four separate hardware-local, four-class stochastic models at the declared load, conditional on the hash-linked one-sided LCB events. Diagonal normalization resolves heterogeneous service units. The simultaneous four-node value is only the displayed union-bound lower bound; the primary statistical statement remains per-node. This does not estimate organic production arrivals, certify loaded co-location dynamics, or pool rates across physical nodes.",
+  "errors": [],
+  "expected_nodes": [
+    "jtl110gpu",
+    "jtl110gpu2",
+    "node007",
+    "jtl311linux"
+  ],
+  "gate": "critical_gpu_all_hardware_statewise_slack_certificate",
+  "load_fraction": 0.8,
+  "merge_report_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_all_hardware_lcb_cache_merge_20260809.json",
+  "merge_report_sha256": "5c36d7bbeb36c9ae2f24a27439b971cb66dfe065d958cf536d71cc5ab024aad8",
+  "minimum_eta": 0.04999999999999999,
+  "nodes": [
+    {
+      "bounded_drift_constant_B": 4.0,
+      "candidate_actions": [
+        {
+          "action": "dedicate_all_gpus_to_gpu_cnn_torch_resnet50",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 1.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_heavy_jax_matmul",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 1.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_llm_distilgpt2",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 1.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_hybrid_rl_resac_ant",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 1.0
+          }
+        }
+      ],
+      "class_count": 4,
+      "classes": [
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 13.865231012042777,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 13.865231012042777,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "resnet50_synthetic_train_amp_b32_224",
+          "workload_key": "gpu_cnn_torch_resnet50"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 23.806546816643706,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 23.806546816643706,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "jax_matmul_8192",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 71.99910917903262,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 71.99910917903262,
+          "selected_profile": 8,
+          "service_unit": "step",
+          "workload_env": "distilgpt2_forward_fp16_b2_s128",
+          "workload_key": "gpu_llm_distilgpt2"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 0.2823923069744846,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 0.2823923069744846,
+          "selected_profile": 5,
+          "service_unit": "iter",
+          "workload_env": "Ant-v2",
+          "workload_key": "hybrid_rl_resac_ant"
+        }
+      ],
+      "delta": 0.04999999999999999,
+      "error_budget": {
+        "L_rho": 0.0,
+        "alpha_1": 0.0,
+        "beta": 0.0,
+        "epsilon_est": 0.0,
+        "reason": "exact measured dedicated actions; one-sided admitted lower service; unpenalized exact finite MaxWeight oracle"
+      },
+      "eta": 0.04999999999999999,
+      "miscoverage_alpha": 0.1,
+      "node": "jtl110gpu",
+      "nominal_lcb_coverage": 0.9,
+      "normalized_bernoulli_arrival_mean_per_class": 0.2,
+      "normalized_stationary_service_per_class": 0.25,
+      "operational_execution_class": "gpu_3080ti_12gb_dual:jtl110gpu",
+      "ready": true,
+      "source_gate_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v8_jtl110gpu_20260803.json",
+      "source_gate_sha256": "e30a6bccc44dd84e944234da209c93a16237e99525494fa89ec91082457ee160",
+      "stationary_mix": {
+        "dedicate_all_gpus_to_gpu_cnn_torch_resnet50": 0.25,
+        "dedicate_all_gpus_to_gpu_heavy_jax_matmul": 0.25,
+        "dedicate_all_gpus_to_gpu_llm_distilgpt2": 0.25,
+        "dedicate_all_gpus_to_hybrid_rl_resac_ant": 0.25
+      }
+    },
+    {
+      "bounded_drift_constant_B": 4.0,
+      "candidate_actions": [
+        {
+          "action": "dedicate_all_gpus_to_gpu_cnn_torch_resnet50",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 1.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_heavy_jax_matmul",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 1.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_llm_distilgpt2",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 1.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_hybrid_rl_resac_ant",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 1.0
+          }
+        }
+      ],
+      "class_count": 4,
+      "classes": [
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 21.677473341397153,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 21.677473341397153,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "resnet50_synthetic_train_amp_b32_224",
+          "workload_key": "gpu_cnn_torch_resnet50"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 31.489804726070282,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 31.489804726070282,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "jax_matmul_8192",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 113.73880529813727,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 113.73880529813727,
+          "selected_profile": 8,
+          "service_unit": "step",
+          "workload_env": "distilgpt2_forward_fp16_b2_s128",
+          "workload_key": "gpu_llm_distilgpt2"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 0.3213288899660667,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 0.3213288899660667,
+          "selected_profile": 5,
+          "service_unit": "iter",
+          "workload_env": "Ant-v2",
+          "workload_key": "hybrid_rl_resac_ant"
+        }
+      ],
+      "delta": 0.04999999999999999,
+      "error_budget": {
+        "L_rho": 0.0,
+        "alpha_1": 0.0,
+        "beta": 0.0,
+        "epsilon_est": 0.0,
+        "reason": "exact measured dedicated actions; one-sided admitted lower service; unpenalized exact finite MaxWeight oracle"
+      },
+      "eta": 0.04999999999999999,
+      "miscoverage_alpha": 0.1,
+      "node": "jtl110gpu2",
+      "nominal_lcb_coverage": 0.9,
+      "normalized_bernoulli_arrival_mean_per_class": 0.2,
+      "normalized_stationary_service_per_class": 0.25,
+      "operational_execution_class": "gpu_3080ti_12gb_dual:jtl110gpu2",
+      "ready": true,
+      "source_gate_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v8_jtl110gpu2_20260803.json",
+      "source_gate_sha256": "561e07f6a414be3eada5bb25725cd724120e4d39100324010d422f6e4cc6519f",
+      "stationary_mix": {
+        "dedicate_all_gpus_to_gpu_cnn_torch_resnet50": 0.25,
+        "dedicate_all_gpus_to_gpu_heavy_jax_matmul": 0.25,
+        "dedicate_all_gpus_to_gpu_llm_distilgpt2": 0.25,
+        "dedicate_all_gpus_to_hybrid_rl_resac_ant": 0.25
+      }
+    },
+    {
+      "bounded_drift_constant_B": 4.0,
+      "candidate_actions": [
+        {
+          "action": "dedicate_all_gpus_to_gpu_cnn_torch_resnet50",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 1.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_heavy_jax_matmul",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 1.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_llm_distilgpt2",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 1.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_hybrid_rl_resac_ant",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 1.0
+          }
+        }
+      ],
+      "class_count": 4,
+      "classes": [
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 45.69187909684453,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 45.69187909684453,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "resnet50_synthetic_train_amp_b32_224",
+          "workload_key": "gpu_cnn_torch_resnet50"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 10.541554291137693,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 10.541554291137693,
+          "selected_profile": 1,
+          "service_unit": "step",
+          "workload_env": "jax_matmul_8192",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 71.86259568197013,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 71.86259568197013,
+          "selected_profile": 10,
+          "service_unit": "step",
+          "workload_env": "distilgpt2_forward_fp16_b2_s128",
+          "workload_key": "gpu_llm_distilgpt2"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 0.5698722835907818,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 0.5698722835907818,
+          "selected_profile": 2,
+          "service_unit": "iter",
+          "workload_env": "Ant-v2",
+          "workload_key": "hybrid_rl_resac_ant"
+        }
+      ],
+      "delta": 0.04999999999999999,
+      "error_budget": {
+        "L_rho": 0.0,
+        "alpha_1": 0.0,
+        "beta": 0.0,
+        "epsilon_est": 0.0,
+        "reason": "exact measured dedicated actions; one-sided admitted lower service; unpenalized exact finite MaxWeight oracle"
+      },
+      "eta": 0.04999999999999999,
+      "miscoverage_alpha": 0.1,
+      "node": "node007",
+      "nominal_lcb_coverage": 0.9,
+      "normalized_bernoulli_arrival_mean_per_class": 0.2,
+      "normalized_stationary_service_per_class": 0.25,
+      "operational_execution_class": "gpu_2080ti_11gb_quad:node007",
+      "ready": true,
+      "source_gate_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v9_node007_20260808.json",
+      "source_gate_sha256": "fc7f9922ba9aeff33e1ca15bf8aa6ea41377680586f239c432fb358f133447dd",
+      "stationary_mix": {
+        "dedicate_all_gpus_to_gpu_cnn_torch_resnet50": 0.25,
+        "dedicate_all_gpus_to_gpu_heavy_jax_matmul": 0.25,
+        "dedicate_all_gpus_to_gpu_llm_distilgpt2": 0.25,
+        "dedicate_all_gpus_to_hybrid_rl_resac_ant": 0.25
+      }
+    },
+    {
+      "bounded_drift_constant_B": 4.0,
+      "candidate_actions": [
+        {
+          "action": "dedicate_all_gpus_to_gpu_cnn_torch_resnet50",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 1.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_heavy_jax_matmul",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 1.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_gpu_llm_distilgpt2",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 1.0,
+            "hybrid_rl_resac_ant": 0.0
+          }
+        },
+        {
+          "action": "dedicate_all_gpus_to_hybrid_rl_resac_ant",
+          "normalized_service_vector": {
+            "gpu_cnn_torch_resnet50": 0.0,
+            "gpu_heavy_jax_matmul": 0.0,
+            "gpu_llm_distilgpt2": 0.0,
+            "hybrid_rl_resac_ant": 1.0
+          }
+        }
+      ],
+      "class_count": 4,
+      "classes": [
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 5.202928879054988,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 5.202928879054988,
+          "selected_profile": 1,
+          "service_unit": "step",
+          "workload_env": "resnet50_synthetic_train_amp_b32_224",
+          "workload_key": "gpu_cnn_torch_resnet50"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 2.2332474656956527,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 2.2332474656956527,
+          "selected_profile": 1,
+          "service_unit": "step",
+          "workload_env": "jax_matmul_8192",
+          "workload_key": "gpu_heavy_jax_matmul"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 30.263864891277056,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 30.263864891277056,
+          "selected_profile": 3,
+          "service_unit": "step",
+          "workload_env": "distilgpt2_forward_fp16_b2_s128",
+          "workload_key": "gpu_llm_distilgpt2"
+        },
+        {
+          "completion_model_sample_count": 12,
+          "diagonal_normalization_scale_units_per_s": 0.1421197889082112,
+          "eta_source": "task_native_tqdm_progress_natural_completion_operational_pre_holdout_mean_jct_wave_max_split_conformal_lcb",
+          "normalized_dedicated_service": 1.0,
+          "physical_lower_service_units_per_s": 0.1421197889082112,
+          "selected_profile": 2,
+          "service_unit": "iter",
+          "workload_env": "Ant-v2",
+          "workload_key": "hybrid_rl_resac_ant"
+        }
+      ],
+      "delta": 0.04999999999999999,
+      "error_budget": {
+        "L_rho": 0.0,
+        "alpha_1": 0.0,
+        "beta": 0.0,
+        "epsilon_est": 0.0,
+        "reason": "exact measured dedicated actions; one-sided admitted lower service; unpenalized exact finite MaxWeight oracle"
+      },
+      "eta": 0.04999999999999999,
+      "miscoverage_alpha": 0.1,
+      "node": "jtl311linux",
+      "nominal_lcb_coverage": 0.9,
+      "normalized_bernoulli_arrival_mean_per_class": 0.2,
+      "normalized_stationary_service_per_class": 0.25,
+      "operational_execution_class": "gpu_2080_8gb_dual:jtl311linux",
+      "ready": true,
+      "source_gate_path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v5_jtl311linux_20260803.json",
+      "source_gate_sha256": "f9cdfcb04d40f2655fbe526930a85fea7d052b2af16164929a7a26a234137a08",
+      "stationary_mix": {
+        "dedicate_all_gpus_to_gpu_cnn_torch_resnet50": 0.25,
+        "dedicate_all_gpus_to_gpu_heavy_jax_matmul": 0.25,
+        "dedicate_all_gpus_to_gpu_llm_distilgpt2": 0.25,
+        "dedicate_all_gpus_to_hybrid_rl_resac_ant": 0.25
+      }
+    }
+  ],
+  "normalization": "diagonal class-specific scale equal to the admitted hardware-local physical lower service of the selected dedicated action",
+  "pass": true,
+  "schema_version": 1,
+  "simultaneous_four_node_union_bound_coverage": 0.6,
+  "status": "PASS",
+  "stochastic_model": "four independent Bernoulli normalized-work arrival streams per hardware-local queueing system with exact finite dedicated actions"
+}

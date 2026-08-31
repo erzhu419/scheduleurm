@@ -1,5 +1,6 @@
 {
-  "all_measurements_ready": false,
+  "aggregate_host_load_diagnostic_only": true,
+  "all_measurements_ready": true,
   "calibration_waves": [
     4,
     5,
@@ -12,13 +13,339 @@
     12
   ],
   "certificate": {
-    "all_holdout_bounds_valid": false,
-    "constructed": false,
-    "finite_sample_rank_ready": false,
-    "rows": []
+    "all_holdout_bounds_valid": true,
+    "calibration_wave_count": 9,
+    "conformal_rank": 9,
+    "constructed": true,
+    "finite_sample_rank_ready": true,
+    "rows": [
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 226.15665909188783,
+        "frozen_target_completion_s": 9.20482668635175,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 226.15665909188783,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.058021252023813835,
+            "startup_overhead_s": 5.063872105922448,
+            "terminal_overhead_s": 0.659679459000472
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 229.94255598795522,
+        "holdout_actual_target_completion_s": 9.446519347207651,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 5.708658253147247,
+          "gpu_llm_distilgpt2": 198.06502366945853
+        },
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 228.84243722973594,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.05832226454236908,
+            "startup_overhead_s": 5.541156509967118,
+            "terminal_overhead_s": 0.6396647610235959
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 228.84243722973594,
+        "operational_target_completion_s": 9.68015714353286,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 120,
+        "resident_measurement_total_units": 12000,
+        "resident_mix": "resident_llm_target_cnn",
+        "resident_point_relative_error": 0.004784319951096427,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "resident_workload_key": "gpu_llm_distilgpt2",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "cnn_after_llm",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 198.06502366945853,
+        "simultaneous_upper_target_completion_s": 10.51035065322422,
+        "target_canonical_total_units": 60,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 6.3515457698962665,
+        "target_lower_service_units_per_s": 5.708658253147247,
+        "target_measurement_total_units": 300,
+        "target_point_relative_error": 0.024732685948954374,
+        "target_service_unit": "step",
+        "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "target_workload_key": "gpu_cnn_torch_resnet50",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 0.0963457389447826,
+        "frozen_target_completion_s": 10.055441136931563,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 0.0963457389447826,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.06563692383605362,
+            "startup_overhead_s": 5.229901357803152,
+            "terminal_overhead_s": 0.8873243489651941
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 0.09351616269394222,
+        "holdout_actual_target_completion_s": 9.539998958120027,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 5.225748837496235,
+          "hybrid_rl_resac_ant": 0.08437832934557322
+        },
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 0.09374776844993539,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.06388131698931859,
+            "startup_overhead_s": 5.188935825999151,
+            "terminal_overhead_s": 0.8853669284726493
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 0.09374776844993539,
+        "operational_target_completion_s": 9.907181773830915,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 40,
+        "resident_measurement_total_units": 80,
+        "resident_mix": "resident_hybrid_rl_target_cnn",
+        "resident_point_relative_error": 0.002476638789715541,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "iter",
+        "resident_workload_env": "Ant-v2",
+        "resident_workload_key": "hybrid_rl_resac_ant",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "cnn_after_rl",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 0.08437832934557322,
+        "simultaneous_upper_target_completion_s": 11.481608065332747,
+        "target_canonical_total_units": 60,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 6.289308862966976,
+        "target_lower_service_units_per_s": 5.225748837496235,
+        "target_measurement_total_units": 3000,
+        "target_point_relative_error": 0.03848876895299437,
+        "target_service_unit": "step",
+        "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "target_workload_key": "gpu_cnn_torch_resnet50",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 27.924722256620715,
+        "frozen_target_completion_s": 9.663849793673403,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 27.924722256620715,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 0.005997192420206275,
+            "startup_overhead_s": 6.864875641248889,
+            "terminal_overhead_s": 2.0793110619997606
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 28.062913224130885,
+        "holdout_actual_target_completion_s": 9.897199947147302,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 24.45610399857127,
+          "gpu_llm_distilgpt2": 10.875005500651058
+        },
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 27.88898196718069,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 0.006055849967250491,
+            "startup_overhead_s": 7.454949335200015,
+            "terminal_overhead_s": 2.152713728515664
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 27.88898196718069,
+        "operational_target_completion_s": 10.334365059785739,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 60,
+        "resident_measurement_total_units": 600,
+        "resident_mix": "resident_cnn_target_llm",
+        "resident_point_relative_error": 0.00619790452833789,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "llm_after_cnn",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 24.45610399857127,
+        "simultaneous_upper_target_completion_s": 11.034477177304959,
+        "target_canonical_total_units": 120,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 12.124641377442106,
+        "target_lower_service_units_per_s": 10.875005500651058,
+        "target_measurement_total_units": 600,
+        "target_point_relative_error": 0.04417058511225115,
+        "target_service_unit": "step",
+        "target_workload_env": "distilgpt2_forward_fp16_b2_s128",
+        "target_workload_key": "gpu_llm_distilgpt2",
+        "training_sample_count": 3
+      },
+      {
+        "calibration_wave_count": 9,
+        "frozen_resident_overlap_service_units_per_s": 20.83327660042099,
+        "frozen_target_completion_s": 767.1239859716436,
+        "frozen_training_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 20.83327660042099,
+          "sample_count": 3,
+          "target_phase": {
+            "completion_unit_s": 15.097744774974835,
+            "startup_overhead_s": 157.53940438764403,
+            "terminal_overhead_s": 5.6747905850061215
+          }
+        },
+        "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
+        "holdout_actual_resident_overlap_service_units_per_s": 21.438785889095104,
+        "holdout_actual_target_completion_s": 753.8300036690198,
+        "holdout_wave": 13,
+        "lower_service_bound_kind": "wave_max_joint_target_time_resident_service_split_conformal",
+        "lower_service_vector": {
+          "gpu_cnn_torch_resnet50": 18.2455092834486,
+          "hybrid_rl_resac_ant": 0.04566598602291157
+        },
+        "node": "node007",
+        "node_bucket": "gpu_2080ti_11gb_quad",
+        "operational_pre_holdout_model": {
+          "fit": "componentwise_median",
+          "resident_overlap_service_units_per_s": 21.108415606610386,
+          "sample_count": 12,
+          "target_phase": {
+            "completion_unit_s": 15.011035686551342,
+            "startup_overhead_s": 156.8222999336274,
+            "terminal_overhead_s": 5.684302859008312
+          }
+        },
+        "operational_resident_overlap_service_units_per_s": 21.108415606610386,
+        "operational_target_completion_s": 762.9480302546893,
+        "profile": 2,
+        "profile_axis": "total_tasks_per_gpu",
+        "resident_canonical_total_units": 60,
+        "resident_measurement_total_units": 18000,
+        "resident_mix": "resident_cnn_target_hybrid_rl",
+        "resident_point_relative_error": 0.015409934321549537,
+        "resident_service_holdout_covered": true,
+        "resident_service_unit": "step",
+        "resident_workload_env": "resnet50_synthetic_train_amp_b32_224",
+        "resident_workload_key": "gpu_cnn_torch_resnet50",
+        "resource_state": "mixed_colocation",
+        "scenario_id": "rl_after_cnn",
+        "simultaneous_lower_resident_overlap_service_units_per_s": 18.2455092834486,
+        "simultaneous_upper_target_completion_s": 875.9254640846071,
+        "target_canonical_total_units": 40,
+        "target_completion_holdout_covered": true,
+        "target_holdout_realized_service_units_per_s": 0.05306236128213675,
+        "target_lower_service_units_per_s": 0.04566598602291157,
+        "target_measurement_total_units": 40,
+        "target_point_relative_error": 0.012095600521723142,
+        "target_service_unit": "iter",
+        "target_workload_env": "Ant-v2",
+        "target_workload_key": "hybrid_rl_resac_ant",
+        "training_sample_count": 3
+      }
+    ],
+    "simultaneous_ratio_margin": 0.1418303691484173,
+    "simultaneous_scope": {
+      "functionals": [
+        "target_completion_time",
+        "resident_inverse_service"
+      ],
+      "functionals_per_scenario": 2,
+      "joint_functional_count_per_wave": 8,
+      "scenario_count": 4
+    },
+    "wave_max_scores": [
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.1151971920120276,
+        "scored_functional_count": 8,
+        "wave": 4
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.12872922959908917,
+        "scored_functional_count": 8,
+        "wave": 5
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.04269640174792477,
+        "scored_functional_count": 8,
+        "wave": 6
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.09013961165873652,
+        "scored_functional_count": 8,
+        "wave": 7
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_llm",
+        "maximum_ratio_score": 0.08405805777917386,
+        "scored_functional_count": 8,
+        "wave": 8
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.06870359689741323,
+        "scored_functional_count": 8,
+        "wave": 9
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_llm",
+        "maximum_ratio_score": 0.07719400185962444,
+        "scored_functional_count": 8,
+        "wave": 10
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "llm_after_cnn",
+        "maximum_ratio_score": 0.1418303691484173,
+        "scored_functional_count": 8,
+        "wave": 11
+      },
+      {
+        "maximizing_functional": "target_completion_time",
+        "maximizing_scenario": "cnn_after_llm",
+        "maximum_ratio_score": 0.0846327786245713,
+        "scored_functional_count": 8,
+        "wave": 12
+      }
+    ]
   },
-  "certificate_ready": false,
-  "claim_boundary": "This is a hardware-local certificate for four registered, direction-sensitive two-workload GPU co-location trajectories. Target completion includes initialization, the canonical outer-loop work, checkpoints/final save, and natural exit. Resident service is the counter increment strictly inside the target start/end markers divided by the full overlap duration. One wave-maximum split-conformal margin jointly covers both functionals for all four actions. Every row also hash-verifies the pre-launch nvidia-smi snapshot and rejects an assigned GPU already carrying undeclared load. It neither populates the legacy workload/profile index nor extrapolates to unmeasured mixtures, hardware, or future workloads.",
+  "certificate_ready": true,
+  "claim_boundary": "This is a hardware-local certificate for four registered, direction-sensitive two-workload GPU co-location trajectories. Target completion includes initialization, the canonical outer-loop work, checkpoints/final save, and natural exit. Resident service is the counter increment strictly inside the target start/end markers divided by the full overlap duration. One wave-maximum split-conformal margin jointly covers both functionals for all four actions. Every row also hash-verifies the pre-launch nvidia-smi snapshot and rejects undeclared load on any registered GPU, so a hash-bound one-second sidecar covers the complete target interval, records aggregate host load as an endogenous action diagnostic, bounds available memory, and rejects high-CPU same-user processes outside the two controlled process groups. Thus same-GPU co-location rows do not silently absorb undeclared host/PCIe contention. It neither populates the legacy workload/profile index nor extrapolates to unmeasured mixtures, hardware, or future workloads.",
   "expected_observation_count": 52,
   "expected_scenario_count": 4,
   "expected_scenarios": [
@@ -29,7 +356,7 @@
       "profile": 2,
       "profile_axis": "total_tasks_per_gpu",
       "resident_canonical_total_units": 120,
-      "resident_measurement_total_units": 4800,
+      "resident_measurement_total_units": 12000,
       "resident_mix": "resident_llm_target_cnn",
       "resident_service_unit": "step",
       "resident_workload_env": "distilgpt2_forward_fp16_b2_s128",
@@ -57,7 +384,7 @@
       "resource_state": "mixed_colocation",
       "scenario_id": "cnn_after_rl",
       "target_canonical_total_units": 60,
-      "target_measurement_total_units": 600,
+      "target_measurement_total_units": 3000,
       "target_service_unit": "step",
       "target_workload_env": "resnet50_synthetic_train_amp_b32_224",
       "target_workload_key": "gpu_cnn_torch_resnet50"
@@ -107,124 +434,118 @@
   "gate": "critical_gpu_loaded_stochastic_lcb_gate",
   "hardware_class": "NVIDIA_RTX_2080Ti_11GB",
   "holdout_wave": 13,
-  "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
+  "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
   "measurement_protocol": "critical_gpu_loaded_natural_completion_v2",
   "miscoverage_alpha": 0.1,
   "node": "node007",
   "node_bucket": "gpu_2080ti_11gb_quad",
   "nominal_simultaneous_coverage": 0.9,
-  "pass": false,
-  "ready_observation_count": 18,
+  "pass": true,
+  "ready_observation_count": 52,
   "resource_state": "mixed_colocation",
   "same_measurement_code_all_waves": true,
   "schema_version": 1,
   "source_artifacts": [
     {
-      "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
-      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r01_20260809_code2da54aa0aa42.json",
-      "sha256": "b63b1a460f24c4e833a123bfa87332bb3b7d5423a3d3fbf0a11befea832c2872",
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r01_20260809_codea410bdae44da.json",
+      "sha256": "6375581b23c619922635b719df1520080d11b1ef451187cdfd9978dfe1c1337c",
       "status": "PASS",
       "wave": 1
     },
     {
-      "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
-      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r02_20260809_code2da54aa0aa42.json",
-      "sha256": "56243473d9af9481bd592fff6430877b0f2981eca9e1f4cb78607c79630d1a69",
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r02_20260809_codea410bdae44da.json",
+      "sha256": "89ea24ccf48fd6965d98b085293e8998ded427517af439ee84a0afcd0367b169",
       "status": "PASS",
       "wave": 2
     },
     {
-      "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
-      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r03_20260809_code2da54aa0aa42.json",
-      "sha256": "2045d397afae5e6400f63b086277a6d7f2d01502341bf59eac818decd13f3d18",
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r03_20260809_codea410bdae44da.json",
+      "sha256": "461fa08b8c69e1bdc639a1823c103511d935bceca0b53e818b0174470db79be5",
       "status": "PASS",
       "wave": 3
     },
     {
-      "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
-      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r04_20260809_code2da54aa0aa42.json",
-      "sha256": "4fc35559cf0c0af7f789f049b1fa517f3db76c4525f3c4c3f1687329f2ac93e4",
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r04_20260809_codea410bdae44da.json",
+      "sha256": "711221669077b0d1acd86ac763ae1573ce80eaa9ddf130dd498e4b2eaa17ae0b",
       "status": "PASS",
       "wave": 4
     },
     {
-      "measurement_code_sha256": "2da54aa0aa42ced07ffa9b14bf4292ee333e991559d47ebcb94c51c922701b99",
-      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r05_20260809_code2da54aa0aa42.json",
-      "sha256": "01a22a89ad3be27b9274c90a869d2b9950f079c11e9941439d1b2b1b490ca4b8",
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r05_20260809_codea410bdae44da.json",
+      "sha256": "06b703bd0ff8f923b5f113942e90744da84707da4b37b99bbd3f650531bc6df7",
       "status": "PASS",
       "wave": 5
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r06_20260809_codea410bdae44da.json",
+      "sha256": "e2e46c802d5359dcab936c5d42875faa435cee3ad7fd01ae770ccc1fd5ce533b",
+      "status": "PASS",
+      "wave": 6
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r07_20260809_codea410bdae44da.json",
+      "sha256": "b95eef59322935e1a66d105ab9780622b7315b624602b28ec88875ef3b569c45",
+      "status": "PASS",
+      "wave": 7
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r08_20260809_codea410bdae44da.json",
+      "sha256": "c135c7c590f6690253ae6f0b60ae66a5cf5f372d13accf77e48644566fd2767a",
+      "status": "PASS",
+      "wave": 8
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r09_20260809_codea410bdae44da.json",
+      "sha256": "b4bdf7bb08a1c77d0f01fe2cc4ea1ece3fd9859402552492116192854877ba37",
+      "status": "PASS",
+      "wave": 9
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r10_20260809_codea410bdae44da.json",
+      "sha256": "891b9040bdae0e09ed712af2c26d4a872cf5102e5bb75a245ad1d6acc56c40cd",
+      "status": "PASS",
+      "wave": 10
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r11_20260809_codea410bdae44da.json",
+      "sha256": "fadea6536fde9c8bee405f9bf0b0685e77b93e7d6c068a30536e8bccf423d231",
+      "status": "PASS",
+      "wave": 11
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r12_20260809_codea410bdae44da.json",
+      "sha256": "c26b7d66b7fe159ba516105bd71d8e43ae5819ddd66e6ece6302fd559d4c8864",
+      "status": "PASS",
+      "wave": 12
+    },
+    {
+      "measurement_code_sha256": "a410bdae44dad85e3adacfff9bbf2f0ff0a3c9e74c6568cda26abb6643a5ffe1",
+      "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_v2_node007_r13_20260809_codea410bdae44da.json",
+      "sha256": "591230ce8a9503bf2dd9b7ede46a58b9a29bf7531e0fb4a6b907e3b4ea3eced4",
+      "status": "PASS",
+      "wave": 13
     }
   ],
-  "status": "FAIL_VALIDATION",
+  "status": "PASS",
   "training_waves": [
     1,
     2,
     3
   ],
-  "validation_errors": [
-    {
-      "code": "ASSIGNED_GPU_NOT_IDLE_AT_RESIDENT_START",
-      "detail": "gpu=1, used_mb=1431, util_pct=0, limits=(512 MB, 5%)",
-      "scenario": "llm_after_cnn",
-      "wave": 5
-    },
-    {
-      "code": "ASSIGNED_GPU_NOT_IDLE_AT_RESIDENT_START",
-      "detail": "gpu=2, used_mb=721, util_pct=99, limits=(512 MB, 5%)",
-      "scenario": "rl_after_cnn",
-      "wave": 5
-    }
-  ],
-  "wait_reasons": [
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 6
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 7
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 8
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 9
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 10
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 11
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 12
-    },
-    {
-      "code": "MISSING_WAVE",
-      "detail": "None",
-      "scenario": null,
-      "wave": 13
-    }
-  ],
+  "validation_errors": [],
+  "wait_reasons": [],
   "wave_audits": [
     {
       "campaign_pass": true,
@@ -274,12 +595,100 @@
       "campaign_pass": true,
       "missing_scenarios": [],
       "observed_scenario_count": 4,
-      "ready_scenario_count": 2,
+      "ready_scenario_count": 4,
       "split_role": "calibration",
       "unexpected_scenarios": [],
-      "validation_error_count": 2,
+      "validation_error_count": 0,
       "wait_count": 0,
       "wave": 5
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 6
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 7
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 8
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 9
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 10
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 11
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "calibration",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 12
+    },
+    {
+      "campaign_pass": true,
+      "missing_scenarios": [],
+      "observed_scenario_count": 4,
+      "ready_scenario_count": 4,
+      "split_role": "holdout",
+      "unexpected_scenarios": [],
+      "validation_error_count": 0,
+      "wait_count": 0,
+      "wave": 13
     }
   ]
 }

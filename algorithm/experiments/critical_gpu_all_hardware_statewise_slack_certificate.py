@@ -35,6 +35,7 @@ EXPECTED_WORKLOADS = frozenset(
     }
 )
 LOAD_FRACTION = 0.80
+NODE007_CORRECTION_PROTOCOL = "critical_gpu_p10_transport_correction_v2"
 
 
 def build_critical_gpu_all_hardware_statewise_slack_certificate(
@@ -326,13 +327,7 @@ def _validated_provenance(
         if digest != str(audit.get("sha256") or ""):
             raise ValueError(f"{path}: source gate hash mismatch")
         payload = json.loads(raw.decode("utf-8"))
-        if not (
-            payload.get("gate") == "critical_gpu_stochastic_lcb_gate"
-            and payload.get("status") == "PASS"
-            and payload.get("pass") is True
-            and payload.get("certificate_ready") is True
-            and payload.get("node") == node
-        ):
+        if not _source_gate_contract_ready(payload, node=node):
             raise ValueError(f"{path}: source gate is not passing for {node}")
         alpha = float(payload.get("miscoverage_alpha"))
         if not 0.0 < alpha < 1.0:
@@ -348,6 +343,31 @@ def _validated_provenance(
             "miscoverage_alpha": alpha,
         }
     return out
+
+
+def _source_gate_contract_ready(payload: Mapping[str, Any], *, node: str) -> bool:
+    common_ready = bool(
+        payload.get("status") == "PASS"
+        and payload.get("pass") is True
+        and payload.get("certificate_ready") is True
+        and payload.get("node") == node
+    )
+    if not common_ready:
+        return False
+    if payload.get("gate") == "critical_gpu_stochastic_lcb_gate":
+        return True
+    return bool(
+        node == "node007"
+        and payload.get("gate") == "critical_gpu_p10_transport_correction_gate"
+        and payload.get("correction_measurement_protocol")
+        == NODE007_CORRECTION_PROTOCOL
+        and payload.get("correction_scope")
+        == "pre_registered_measurement_transport_integrity"
+        and payload.get("performance_conditioned_selection") is False
+        and payload.get("all_measurements_ready") is True
+        and payload.get("same_correction_measurement_code_all_waves") is True
+        and payload.get("same_source_measurement_code_all_waves") is True
+    )
 
 
 def _resolve_linked_path(raw: object, *, anchor: Path) -> Path:

@@ -1,0 +1,409 @@
+{
+  "finished_at": 1788214632.4582255,
+  "gate": "final_eta_or_closure_pipeline",
+  "launches_remote_work": false,
+  "pass": true,
+  "preflight": {
+    "blockers": [],
+    "pass": true,
+    "source_rows": [
+      {
+        "gate": "critical_gpu_available_lcb_cache_merge",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "available_empty_cache_report",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_available_lcb_cache_merge_gate_20260808.json",
+        "sha256": "4532a1be49f634dfdb9c47d2e6c15709788814ceab227554abd985bd1f9ea533",
+        "status": "PASS"
+      },
+      {
+        "gate": "critical_gpu_stochastic_lcb_gate",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "jtl311linux_empty_lcb_gate",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_stochastic_lcb_gate_v5_jtl311linux_20260803.json",
+        "sha256": "f9cdfcb04d40f2655fbe526930a85fea7d052b2af16164929a7a26a234137a08",
+        "status": "PASS"
+      },
+      {
+        "gate": "critical_gpu_loaded_stochastic_lcb_gate",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "jtl110gpu_loaded_lcb_gate",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_jtl110gpu_20260809.json",
+        "sha256": "a2f38399529be56b2beb38a537f49b141d6df22152f121eb0d3cdeef8f5c955d",
+        "status": "PASS"
+      },
+      {
+        "gate": "critical_gpu_loaded_stochastic_lcb_gate",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "jtl110gpu2_loaded_lcb_gate",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_jtl110gpu2_20260809.json",
+        "sha256": "3aa47912a2a5eeaa461dedce33ae90f5b6f5393299a59728b9e7470d008d02eb",
+        "status": "PASS"
+      },
+      {
+        "gate": "critical_gpu_loaded_stochastic_lcb_gate",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "node007_loaded_lcb_gate",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_node007_20260809.json",
+        "sha256": "61538d8a45bec5ee0629752609a9fd991a308d7618e6de685aad03e9f394aa6a",
+        "status": "PASS"
+      },
+      {
+        "gate": "critical_gpu_loaded_stochastic_lcb_gate",
+        "gate_pass": true,
+        "gate_status": "PASS",
+        "label": "jtl311linux_loaded_lcb_gate",
+        "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_stochastic_lcb_gate_jtl311linux_20260809.json",
+        "sha256": "61868e553a8cd1d4390980522b212fa44937e308b9f4d400cc488ecda58b14ef",
+        "status": "PASS"
+      }
+    ],
+    "status": "PASS"
+  },
+  "schema_version": 1,
+  "stages": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_available_lcb_cache_merge"
+      ],
+      "finished_at": 1788214580.669598,
+      "name": "merge_available_empty_cache",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_available_lcb_cache_merge_gate_20260808.json",
+          "sha256": "4532a1be49f634dfdb9c47d2e6c15709788814ceab227554abd985bd1f9ea533"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_available_lcb_cache_merge_gate_20260808.md",
+          "sha256": "fa44132151a7a5707dea3544202717f088ebb40fffd73cd512e91696557ed2e7"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_available_gpu_phase_20260808.json",
+          "sha256": "321f3ebadea2afb37e146668d9c07d4bebebe12357fba1227261e22900d59da6"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214580.5298622,
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"cache_output_written\": true,\n  \"pass\": true,\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_all_hardware_lcb_cache_merge"
+      ],
+      "finished_at": 1788214580.8033993,
+      "name": "merge_all_hardware_empty_cache",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_all_hardware_lcb_cache_merge_20260809.json",
+          "sha256": "5c36d7bbeb36c9ae2f24a27439b971cb66dfe065d958cf536d71cc5ab024aad8"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_all_hardware_gpu_phase_20260809.json",
+          "sha256": "5eac04c5574e8b869271bc6e0ffce18ec0fc5627bfa016fb0a7c83cbc8865c57"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214580.6709409,
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"cache_output_written\": true,\n  \"pass\": true,\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_all_hardware_statewise_slack_certificate"
+      ],
+      "finished_at": 1788214580.8971846,
+      "name": "certify_all_hardware_statewise_slack",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_all_hardware_statewise_slack_20260810.json",
+          "sha256": "3d9de21a02fc7ef968df9164ab9559e273717dfd95a87ef0913758a18c739582"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/critical_gpu_all_hardware_statewise_slack_20260810.md",
+          "sha256": "e198aec043bafc518ea266f8aeda355d9077f5a95ff6aff427d01f7e8e5368bf"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214580.804749,
+      "stderr_tail": "",
+      "stdout_tail": "{\"pass\": true, \"status\": \"PASS\"}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.critical_gpu_loaded_action_ledger_merge"
+      ],
+      "finished_at": 1788214581.0488615,
+      "name": "merge_loaded_action_ledger",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_action_ledger_merge_20260809.json",
+          "sha256": "0859ad14a150040ecebfd6f6112a48f8a0f25598bf2df47773b3815467bf6ca9"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/critical_gpu_loaded_action_ledger_20260809.json",
+          "sha256": "a46da56b54cf8e0fc4421a87d35c8fd39818210c2a4ed553c296086e9661090a"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/service_cache_v2_cpu_gpu_loaded_final_20260809.json",
+          "sha256": "5371aa3ab055b65244b86a1b5933ca801f074e5b02d44f355b0609f472cf5d21"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214580.897423,
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"cache_output_written\": true,\n  \"ledger_output_written\": true,\n  \"pass\": true,\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.migration_rate_recalibration_gate"
+      ],
+      "finished_at": 1788214581.1519008,
+      "name": "recalculate_migration_rates",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/migration_rate_recalibration_gate_20260809.json",
+          "sha256": "8f7ef7cc21aa7b91e2cbe6848a610173e7462a448b8e5bdd290dc374e359c08b"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/migration_rate_recalibration_gate_20260809.md",
+          "sha256": "5b9f38f615c5afbf25751a4d1debb3b4d2597422f0fbe88075149d4a84b99fcd"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214581.0503612,
+      "stderr_tail": "",
+      "stdout_tail": "{\"pass\": true, \"status\": \"PASS\"}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.unified_migration_recalibration_certificate"
+      ],
+      "finished_at": 1788214581.2284236,
+      "name": "certify_migration_actions",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/unified_migration_recalibration_certificate_20260809.json",
+          "sha256": "5cf69d93ed94274a3f9f8e7554704b7be613b80dd5a4532c1f4d84fc3e1dd4e7"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/unified_migration_recalibration_certificate_20260809.md",
+          "sha256": "8ba13cd30aba2b0e9eb8f1a6466ca4b53c692a04bda626b5e2c468a94746f7ee"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214581.152271,
+      "stderr_tail": "",
+      "stdout_tail": "{\"pass\": true, \"status\": \"MIGRATION_RECALIBRATION_PASS\"}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.unified_hardware_or_replay"
+      ],
+      "finished_at": 1788214622.9208384,
+      "name": "replay_hardware_quadrants",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/unified_hardware_or_replay_20260809.json",
+          "sha256": "9238ce6b40e236c745a909a7d49fac94711616358ab34eff5874bf66ddcc79e1"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214581.2286518,
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"pass\": true,\n  \"status\": \"PASS\"\n}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.or_generalization_certificate_v7",
+        "--force"
+      ],
+      "finished_at": 1788214623.2616503,
+      "name": "certify_or_generalization_v7",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/or_generalization_certificate_v7_20260830.json",
+          "sha256": "17d37bc70703390556d832953b62f9e1392aaf288a1012401b18deeea1bd3826"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/or_generalization_certificate_v7_20260830.md",
+          "sha256": "94d503af3bdbc1d18956580f11d55186941efe4b0c881c860e9ec894b975164f"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/paper/generated/or_generalization_v7_results.tex",
+          "sha256": "b6b2ebf613febd2cab49f4c46e5765b9b433d4c0594ca8891101e5d70d637d04"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214623.1899912,
+      "stderr_tail": "",
+      "stdout_tail": "{\"all_negative_results_retained\": true, \"all_protocol_gates_pass\": true, \"arbitrary_domain_optimality_claim_ready\": false, \"domain_count\": 3, \"fjsp_solver_action_union_holdout_ready\": true, \"pass\": true, \"performance_superiority_claim_ready\": false, \"physical_port_stability_claim_ready\": false, \"port_action_union_holdout_ready\": true, \"status\": \"OR_GENERALIZATION_V7_PASS_PROSPECTIVE_ACTION_UNIONS\"}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.unified_hardware_paper_results"
+      ],
+      "finished_at": 1788214625.2792976,
+      "name": "export_paper_results",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/unified_hardware_paper_results_20260810.json",
+          "sha256": "0a53bf41f376d03117ac51a71d113470cc954ae83473418f010734fc2f91fa6a"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/unified_hardware_paper_results_20260810.md",
+          "sha256": "815f2eeb0a404124aa29b28d15f62cac10c8695da3167440c899f67f5ebea4b6"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/paper/generated/unified_hardware_results.tex",
+          "sha256": "8f4dc08574924f64fbcc82eb8cfa2c8f176d6ca26f6684e2915fce05016ad9b8"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214623.2619784,
+      "stderr_tail": "",
+      "stdout_tail": "{\"pass\": true, \"status\": \"PASS\"}\n"
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "/home/erzhu419/mine_code/scheduleurm/md/figures/make_scheduleurm_quadrant_sota_grid.py"
+      ],
+      "finished_at": 1788214629.3871336,
+      "name": "render_quadrant_figure",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/figures/scheduleurm_quadrant_sota_grid.svg",
+          "sha256": "ea9ce9f2f62d040aa5b37e7c8b5ee7a8e97285710ff7748e7f1fabb678fdb468"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/figures/scheduleurm_quadrant_sota_grid.pdf",
+          "sha256": "9ac593dd40f20c8e598b5b9227ba19731f485626699a824b194bd3562033b3c5"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/figures/scheduleurm_quadrant_sota_grid.png",
+          "sha256": "4d56c180ed3f277e5dd7cd04dc2e9910860b40dca16ab12aef3a734481bd183e"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/figures/scheduleurm_quadrant_sota_grid.tiff",
+          "sha256": "12614ab085d920525d7d0aad1e88d49946966664bde4284fb666ba4906da7b99"
+        },
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/figures/scheduleurm_quadrant_sota_grid_data.json",
+          "sha256": "43cb29cd84b810c82bb7b27f4eed35380d18bcc79a166f605baa6ab11459576d"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214625.2796116,
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "algorithm.experiments.unified_hardware_manuscript_sync_gate"
+      ],
+      "finished_at": 1788214631.5981495,
+      "name": "verify_manuscript_sync",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/md/experiment_artifacts/unified_hardware_manuscript_sync_gate_20260810.json",
+          "sha256": "3d32bd389907c62ce6a35a557e92179e6b267f832f2252122b81d3606cfab92c"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214629.3888419,
+      "stderr_tail": "",
+      "stdout_tail": "{\"pass\": true, \"status\": \"PASS\"}\n"
+    },
+    {
+      "argv": [
+        "latexmk",
+        "-cd",
+        "-g",
+        "-pdf",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "paper/main.tex"
+      ],
+      "finished_at": 1788214632.457684,
+      "name": "build_opre_manuscript",
+      "outputs": [
+        {
+          "exists": true,
+          "path": "/home/erzhu419/mine_code/scheduleurm/paper/main.pdf",
+          "sha256": "f92e6fe8cd6f463ee31ed2898417137c5dfc0f0e6d212f74d3b5d4fe024a76d2"
+        }
+      ],
+      "pass": true,
+      "returncode": 0,
+      "started_at": 1788214631.598318,
+      "stderr_tail": "Rc files read:\n  /etc/LatexMk\nLatexmk: This is Latexmk, John Collins, 20 November 2021, version: 4.76.\nLatexmk: Changing directory to 'paper/'\nRule 'bibtex main': The following rules & subrules became out-of-date:\n      'bibtex main'\n------------\nRun number 1 of rule 'bibtex main'\n------------\n------------\nRunning 'bibtex  \"main.aux\"'\n------------\nRule 'pdflatex': File changes, etc:\n   Changed files, or newly in use since previous run(s):\n      '../md/figures/scheduleurm_quadrant_sota_grid.pdf'\n------------\nRun number 1 of rule 'pdflatex'\n------------\n------------\nRunning 'pdflatex  -interaction=nonstopmode -halt-on-error -recorder  \"main.tex\"'\n------------\nLatexmk: Found input bbl file 'main.bbl'\nLatexmk: Log file says output to 'main.pdf'\nLatexmk: Found bibliography file(s) [references.bib]\nLatexmk: Undoing directory change\n",
+      "stdout_tail": "hare/texlive/texmf-dist/tex/generic/kastrup/binhex.tex)\namsthm NOT loaded\n) (/usr/share/texlive/texmf-dist/tex/latex/tools/bm.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/endnotes/endnotes.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/natbib/natbib.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/booktabs/booktabs.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/enumitem/enumitem.sty)\n(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty)\n(./generated/unified_hardware_results.tex)\n(./generated/or_generalization_v7_results.tex)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/t1ntxtlf.fd) (./main.aux)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/omlntxmi.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/untxexa.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/lmsntxsy.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/lmxntxexx.fd)\n(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii\n[Loading MPS to PDF converter (version 2006.09.02).]\n) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty\n(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg))\n(/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)\n(/usr/share/texmf/tex/latex/tex-gyre/t1qhv.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/ot1ntxtlf.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd)\n\nLaTeX Font Warning: Font shape `OT1/cmr/bx/n' in size <5.5> not available\n(Font)              size <5> substituted on input line 135.\n\n\nLaTeX Font Warning: Font shape `OML/cmm/b/it' in size <5.5> not available\n(Font)              size <5> substituted on input line 135.\n\n\nLaTeX Font Warning: Font shape `OMS/cmsy/b/n' in size <5.5> not available\n(Font)              size <5> substituted on input line 135.\n\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/untxmia.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/untxsym.fd)\n(/usr/share/texlive/texmf-dist/tex/latex/newtx/untxsyc.fd) [1{/home/erzhu419/.t\nexlive2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./informs_Logo.pdf>]\n[2 <../md/figures/scheduleurm_fig1_nature_python_combo.pdf>] [3] [4] [5]\n[6]\n\nLaTeX Warning: Text page 7 contains only floats.\n\n[7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] [18] [19] [20] [21]\n[22] [23 <../md/figures/scheduleurm_quadrant_sota_grid.pdf>] [24] [25] [26]\n[27] (/usr/share/texlive/texmf-dist/tex/latex/newtx/t1ntxtt.fd) [28] [29]\n[30] [31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41] [42] [43]\n(./main.bbl [44] [45]) [46] (./main.aux)\n\nLaTeX Font Warning: Size substitutions with differences\n(Font)              up to 0.5pt have occurred.\n\n ){/usr/share/texmf/fonts/enc/dvips/tex-gyre/q-ec-sc.enc}{/usr/share/texmf/font\ns/enc/dvips/tex-gyre/q-ec.enc}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/ne\nwtx/ntx-ec-tlf.enc}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1\n-tlf.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/newtx/NewTXMI.pfb></\nusr/share/texlive/texmf-dist/fonts/type1/public/newtx/NewTXMI5.pfb></usr/share/\ntexlive/texmf-dist/fonts/type1/public/newtx/NewTXMI7.pfb></usr/share/texmf/font\ns/type1/public/tex-gyre/qhvb.pfb></usr/share/texmf/fonts/type1/public/tex-gyre/\nqhvbi.pfb></usr/share/texmf/fonts/type1/public/tex-gyre/qhvr.pfb></usr/share/te\nxlive/texmf-dist/fonts/type1/public/txfonts/t1xtt.pfb></usr/share/texlive/texmf\n-dist/fonts/type1/public/newtx/txexs.pfb></usr/share/texlive/texmf-dist/fonts/t\nype1/public/newtx/txmiaX.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/\ntxfonts/txsyb.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/newtx/txsys\n.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/newtx/ztmb.pfb></usr/sha\nre/texlive/texmf-dist/fonts/type1/public/newtx/ztmr.pfb></usr/share/texlive/tex\nmf-dist/fonts/type1/public/newtx/ztmri.pfb>\nOutput written on main.pdf (46 pages, 469735 bytes).\nTranscript written on main.log.\nLatexmk: Examining 'main.log'\n=== TeX engine is 'pdfTeX'\nLatexmk: All targets (main.pdf) are up-to-date\n"
+    }
+  ],
+  "started_at": 1788214580.5282717,
+  "status": "PASS",
+  "touches_running_tasks": false
+}

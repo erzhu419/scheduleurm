@@ -20,4 +20,4 @@ Run `lake env lean ScheduleurmUpload.lean` from the proof root. The captured bui
 ## Static Audit
 
 `sorry`/`admit`/`axiom` static grep hits outside comments: `0`.
-`ScheduleurmUpload.lean` SHA-256: `25f0c744fb10fe8a9c3399f5072d5d16a81084082ab0264e92e9e7c8d08739c2`.
+`ScheduleurmUpload.lean` SHA-256: `ecafd9dbabad28871583c27e4e699290d227a05945c2b352568883f271aa73c3`.

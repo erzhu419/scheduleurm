@@ -88,11 +88,13 @@ Across \UnifiedOnlineComparisonCount{} online-arrival measured-cache replay
 traces, the robust candidate improves geometric-mean makespan by
 \(\UnifiedOnlineLegacyMakespanGeoRatio\times\) and mean flow by
 \(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) over legacy Scheduleurm caps.
-On the same measured service cache, it is not Pareto-dominated by the registered
-policy-semantics baselines used to represent throughput, delay, and
-interference-control schedulers.  The evidence supports a measured finite-slice
-stability and performance claim, with external full-stack and future-workload
-generalization left outside the main claim.
+On the same measured service cache, it has lower aggregate geometric-mean
+makespan and mean flow for \UnifiedSotaAggregateBothMetricWinCount{} of
+\UnifiedSotaPolicyCount{} registered policy-semantics baselines.  At trace level,
+a baseline strictly Pareto-dominates it in \UnifiedSotaDominatesOursCount{} of
+\UnifiedSotaPolicyTraceComparisonCount{} policy-trace comparisons.  The evidence
+supports a measured finite-slice stability and performance claim, with external
+full-stack and future-workload generalization left outside the main claim.
 }%
 
 \KEYWORDS{stochastic processing networks; MaxWeight scheduling; heterogeneous clusters; graphics-processing-unit co-location; robust optimization; formal verification; queueing networks}
@@ -373,7 +375,7 @@ EC.6.  Each mathematical symbol is reserved for one meaning; in particular,
 \begin{table}[t]
 \TABLE{Notation.\label{tab:notation}}{
 \scriptsize
-\renewcommand{\arraystretch}{0.92}
+\renewcommand{\arraystretch}{0.90}
 \begin{tabular}{@{}p{0.27\textwidth}p{0.62\textwidth}@{}}
 \toprule
 Symbol & Meaning \\
@@ -1295,13 +1297,20 @@ Changing the numerical task-native unit of one workload, together with its
 \(c_i\), therefore cannot change an action ordering.  This unit conversion is
 separate from the LCB error scales \(s_i\) in
 Proposition~\ref{prop:diagonal-lcb}.  A directional loaded action
-requires one resident job and one target job on the same lane.  Its frame
-duration is the target's task-native natural-completion time, while the
-resident receives only its certified overlap lower service; any unfinished
-resident returns to the queue with its remaining work.  Migration likewise
-occupies one lane for its measured variable-duration frame.  These rules make
-resource competition, co-location direction, and frame duration explicit and
-connect the replay semantics to Proposition~\ref{prop:frame-drift}.
+requires one resident job and one target job on the same lane.  Evaluation uses
+a phase-aware task-native completion model: a fresh launch charges initialization
+once, the measured loop rate advances a common physical-work horizon, and
+checkpoint or final-output time is charged once at completion.  Keep and
+migration continuations do not repay completed initialization; migration uses
+its measured checkpoint, transfer, staging, and resume delay instead.  Actions
+for the same workload may have different probe horizons, but they must share the
+same physical work unit and are compared over the shortest naturally completed
+horizon.  A loaded frame ends when its target completes; resident service is
+truncated at the resident's remaining work, and any unfinished resident returns
+to the queue.  Migration likewise occupies one lane for its measured
+variable-duration frame.  These rules make resource competition, co-location
+direction, phase overhead, and frame duration explicit and connect the replay
+semantics to Proposition~\ref{prop:frame-drift}.
 
 Table~\ref{tab:legacy-results} compares the current candidate policy with the
 legacy Scheduleurm caps on \UnifiedStaticComparisonCount{} closed-batch traces.
@@ -1339,8 +1348,8 @@ scenario-level ratios were \(\UnifiedOnlineLegacyMakespanMinRatio\times\) and
 observed candidate queue backlog was \UnifiedQueueMaxBacklogMax{} jobs, and the
 largest time-weighted mean queue backlog was
 \UnifiedQueueMeanBacklogMax{} jobs.  All ETA-dependent rows use task-native
-natural-completion models; history fallback is excluded from the admitted
-population.
+phase-aware natural-completion models; history fallback is excluded from the
+admitted population.
 
 \begin{table}[t]
 \TABLE{Online replay distribution over \UnifiedOnlineComparisonCount{} comparisons.\label{tab:online-ci}}{
@@ -1354,10 +1363,11 @@ Candidate mean backlog jobs & \UnifiedQueueMeanBacklogMean & \UnifiedQueueMeanBa
 Candidate max backlog jobs & \UnifiedQueueMaxBacklogMean & \UnifiedQueueMaxBacklogMedian & \UnifiedQueueMaxBacklogMin & \UnifiedQueueMaxBacklogPFive & \UnifiedQueueMaxBacklogPNinetyFive \\
 \bottomrule
 \end{tabular}
-}{No online scenario Pareto-dominated the candidate.  No ablated policy
-Pareto-dominated the full candidate.  Some single-metric losses against
-external-policy diagnostics exceed the 0.5\% tolerance, but none is a
-Pareto-dominance violation.}
+}{Legacy strictly Pareto-dominates the candidate in
+\UnifiedOnlineLegacyDominatesOursCount{} online traces; those tail cases remain
+in the reported distribution.  Policy-semantics and ablation dominance counts
+are reported separately in Tables~\ref{tab:sota-matrix} and
+\ref{tab:ablation-results}.}
 \end{table}
 
 \begin{table}[t]
@@ -1448,16 +1458,32 @@ Scheduleurm \UnifiedSotaConclusion.  This does not imply that Scheduleurm wins
 each metric on each trace; the per-policy ratios and strict-dominance counts
 retain those distinctions.
 
+Across all \UnifiedSotaPolicyTraceComparisonCount{} registered policy-trace
+comparisons, a baseline strictly dominates the fixed candidate in
+\UnifiedSotaDominatesOursCount{} cases.  The quadrant counts are q00:
+\UnifiedSotaQZeroZeroDominanceCount{}, q01:
+\UnifiedSotaQZeroOneDominanceCount{}, q10:
+\UnifiedSotaQOneZeroDominanceCount{}, and q11:
+\UnifiedSotaQOneOneDominanceCount{}.  Among those baseline wins, the largest
+candidate-to-baseline cost ratio is \UnifiedSotaQZeroOneWorstCostRatio{} in q01,
+\UnifiedSotaQOneZeroWorstCostRatio{} in q10, and
+\UnifiedSotaQOneOneWorstCostRatio{} in q11.  Thus the aggregate result favors
+the candidate for all \UnifiedSotaAggregateBothMetricWinCount{} registered
+families, while the trace-level result remains a measured tradeoff rather than
+uniform Pareto superiority.
+
 Figure~\ref{fig:sota-comparison} visualizes the same policy-semantics comparison
 as a four-quadrant cost frontier.  Each panel normalizes a registered
 SOTA-style policy by the fixed Scheduleurm candidate: the horizontal coordinate
 is mean-flow cost divided by Scheduleurm's mean-flow cost and the vertical
-coordinate is makespan cost divided by Scheduleurm's makespan cost.  Thus the
-Scheduleurm policy is fixed at \((1,1)\), and points above or to the right of
-the star are costlier under the same measured service cache.  The quadrant
-labels also show that the best SOTA-style family changes across workload
-regimes.  The figure is intentionally scoped to measured-cache policy-semantics
-comparison and is not a direct external binary benchmark.
+coordinate is makespan cost divided by Scheduleurm's makespan cost.  Each point
+is a geometric mean over the registered hardware-local traces in that quadrant.
+Thus the Scheduleurm policy is fixed at \((1,1)\); points above or to the right
+are costlier on the corresponding aggregate metric, whereas points below or to
+the left favor the baseline.  The label identifies the nearest aggregate
+SOTA-style family under a minimax cost ratio.  The figure is intentionally
+scoped to measured-cache policy-semantics comparison and is not a direct
+external binary benchmark.
 
 \begin{figure}[t]
 \centering
@@ -1467,7 +1493,9 @@ the red star is Scheduleurm at \((1,1)\).  Other markers are registered
 SOTA-style policy families evaluated on the same task-native measured service
 cache, with \(x=\) normalized mean-flow cost and \(y=\) normalized makespan
 cost, both expressed as policy cost divided by Scheduleurm cost.  The box in
-each panel reports the scenario-level best SOTA-style family for that quadrant.
+each panel reports the nearest aggregate SOTA-style family under the maximum of
+the two displayed cost ratios.  Points summarize geometric means and do not
+erase the trace-level baseline wins reported in Table~\ref{tab:sota-matrix}.
 The comparison is a policy-semantics replay on shared measured service rows,
 not direct full-stack external binary execution.}
 \label{fig:sota-comparison}
@@ -1483,9 +1511,10 @@ Policy-semantics baseline & Comparisons & Makespan ratio & Mean-flow ratio & Dom
 \bottomrule
 \end{tabular}
 }{Entries are baseline divided by candidate, so values above one favor the
-candidate.  Dominance count is evaluated trace by trace under the registered
-0.5\% replay tolerance.  These are policy-semantics rows, not full-stack
-external-system executions.}
+candidate.  Dominance count is strict trace-by-trace Pareto dominance with zero
+tolerance; aggregate ratios are geometric means and can favor the candidate
+even when some traces favor a baseline.  These are policy-semantics rows, not
+full-stack external-system executions.}
 \end{table}
 
 We also evaluate the stronger theory-facing construction in which external
@@ -1531,18 +1560,15 @@ finite candidate family used by the theorem-facing replay; they are not used as
 evidence that the production scheduler already defaults to the optional global
 batch policy.
 
-On the q01 GPU-heavy list, the node007 profile-1 measurement now lies on the
-measured service envelope, so the candidate and the table-goodput/delay
-external-policy rows all select profile 1 on the single-workload q01 replay.  The
-implemented
-statewise logic is a lower-service no-upshift drain, not a hidden post-hoc rule:
-it cannot raise the base action and it only lowers a profile after service and
-waiting-backlog guards pass.
-The optional global-batch version improves q01 compute, q01 LLM, the q01 model
-portfolio, and the mixed portfolio relative to the current candidate.  It leaves
-q01 CNN, q10, and q11 non-regressed under the 0.5\% replay tolerance.  The paper
-therefore treats global batching as an algorithmic upgrade path rather than as a
-default production-dispatch claim.
+Finite-population drainability is enforced before a batched action is selected.
+The replay checks integer reachability of both the currently ready jobs and the
+entire registered unfinished population under the feasible batch widths.  If
+the ready set cannot be drained but a future registered arrival makes the full
+population drainable, dispatch is deferred to that arrival; otherwise only an
+action that leaves a drainable remainder is admitted.  This statewise rule is
+part of the candidate semantics and is audited in every frame.  It prevents an
+otherwise high-rate co-location profile from stranding a serial tail, without
+using realized completion time during action selection.
 
 \subsection{Theorem-condition and live-sanity checks}
 \label{subsec:condition-checks}
@@ -1592,9 +1618,11 @@ than being silently absorbed into this empty-state stochastic model.}
 \end{table}
 
 The final service cache does not infer job completion time from a short
-steady-state window.  Every admitted GPU row contains a task-native
-natural-completion model with separate initialization, periodic work, and final
-checkpoint/output phases; no history-fallback row is admitted.  Empty and
+steady-state window alone.  Every admitted evaluation action contains a
+task-native phase-aware completion model with separate initialization, periodic
+work, and final checkpoint/output phases; no history-fallback row is admitted.
+Actions for one workload share a physical work unit and a common completed-work
+horizon.  Empty and
 loaded rows are keyed by physical execution class, workload, profile, and
 directional resident/target state.  Consequently, rates from node007 are not
 borrowed for either jtl110 host or jtl311linux, and loaded target rates cannot

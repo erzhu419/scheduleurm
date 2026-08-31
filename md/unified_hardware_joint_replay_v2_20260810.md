@@ -22,9 +22,9 @@ The task-native measurement artifacts themselves are unaffected.
    physical CPU/GPU lanes in one event-driven simulation.
 2. A dedicated profile-p action requires and dispatches p target jobs on one
    lane.  A directional loaded action requires exactly one resident and one
-   target job, completes the target with its natural-completion model, and
-   credits the resident only with its certified lower service during that
-   measured semi-Markov frame.
+   target job, completes the target with a phase-aware natural-completion model,
+   and credits the resident only with its certified lower service until either
+   the measured semi-Markov frame ends or the resident work is exhausted.
 3. A resident that does not finish during the loaded frame returns to the
    schedulable queue with reduced remaining work.  It cannot be selected by a
    second lane while the frame is active.
@@ -41,6 +41,13 @@ The task-native measurement artifacts themselves are unaffected.
 7. The legacy row uses historical fixed profile semantics on the same final
    measured cache and cannot consume loaded or migration actions.  It is not a
    fresh execution of the default legacy scheduler.
+8. Actions for one workload must share a physical work unit.  Different probe
+   horizons are evaluated over the shortest naturally completed horizon, with
+   full initialization and terminal output charged once per fresh job.
+9. A finite-population tail-drain guard admits a batch width only when the ready
+   set and registered unfinished population remain integer-drainable.  When a
+   future registered arrival is needed to form a drainable batch, replay waits
+   for that arrival instead of launching a remainder-stranding action.
 
 ## Fail-closed checks
 
@@ -48,7 +55,7 @@ The final replay gate now requires:
 
 - all four quadrants and all static, Poisson, bursty, and load-sweep protocols;
 - one complete policy/arrival/migration matrix;
-- task-native natural completion for every evaluated action;
+- phase-aware task-native natural completion for every evaluated action;
 - shared-lane simulation and nonoverlapping lane frames in every run;
 - finite queue and unfinished-population metrics;
 - loaded actions whose required queue coordinates exactly match their
@@ -56,12 +63,14 @@ The final replay gate now requires:
 - migration rows rebound to the exact final cache hash; and
 - no loaded or migration action in the legacy policy.
 
-The focused synthetic regression suite exercises mixed q01 workloads on shared
-lanes, resident/target consumption, completion-blind lower-service selection,
-migration admission, stale-cache rejection, and missing-input failure.  The
-final numerical replay must still wait for all four hardware-local empty and
-loaded measurement gates; this document does not substitute synthetic results
-for those measurements.
+The focused regression suite exercises mixed q01 workloads on shared lanes,
+resident/target consumption, completion-blind lower-service selection,
+different probe horizons, physical-work-unit rejection, finite-population tail
+drain, migration admission, stale-cache rejection, and missing-input failure.
+The final four-node empty and loaded measurement gates passed under one
+hash-bound service cache, and the resulting schema-v2 replay completed 16,920
+policy runs.  Synthetic tests remain regression evidence, not a substitute for
+those measurements.
 
 ## Claim boundary
 

@@ -247,7 +247,7 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
             ax.text(
                 0.97,
                 0.94,
-                "best SOTA\n" + POLICY_LABELS.get(best_policy, best_policy),
+                "nearest SOTA\n" + POLICY_LABELS.get(best_policy, best_policy),
                 transform=ax.transAxes,
                 ha="right",
                 va="top",
@@ -284,7 +284,7 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
     fig.text(
         0.02,
         0.965,
-        "Four-quadrant measured-cache policy-semantics comparison (lower is better; Scheduleurm = 1)",
+        "Four-quadrant measured-cache policy-semantics comparison (geometric-mean cost; lower is better)",
         ha="left",
         va="top",
         fontsize=7.7,
@@ -292,7 +292,11 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
     )
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(f"{output}.svg", bbox_inches="tight")
+    svg_path = Path(f"{output}.svg")
+    fig.savefig(svg_path, bbox_inches="tight")
+    svg_path.write_text(
+        "\n".join(line.rstrip() for line in svg_path.read_text().splitlines()) + "\n"
+    )
     fig.savefig(f"{output}.pdf", bbox_inches="tight")
     fig.savefig(f"{output}.png", dpi=450, bbox_inches="tight")
     fig.savefig(f"{output}.tiff", dpi=600, bbox_inches="tight", pil_kwargs={"compression": "tiff_lzw"})
@@ -317,6 +321,7 @@ def draw(*, artifact: Path = ARTIFACT, output: Path = OUT) -> None:
                 ),
                 "points": points,
                 "best_sota_by_quadrant": best_by_quadrant,
+                "nearest_sota_definition": "minimum maximum aggregate cost ratio; ties broken by sum then policy id",
             },
             indent=2,
             sort_keys=True,

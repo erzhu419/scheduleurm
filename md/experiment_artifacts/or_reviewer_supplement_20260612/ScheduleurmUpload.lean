@@ -363,6 +363,105 @@ theorem metric_cover_support_gap
     candidate_cover_from_metric_lipschitz full cand μ d hL hmetric hlip
   exact support_gap_from_candidate_cover full cand μ (mul_nonneg hL hρ) hcover
 
+/-! ## Constructive finite-feature-cell candidate families -/
+
+section FiniteFeatureCells
+
+variable {C : Type*} [DecidableEq C]
+
+/-- Active feature cells induced by the full action family. -/
+def activeFeatureCells
+    (full : ActionFamily A) (cell : A → C) : Finset C :=
+  full.acts.image cell
+
+/-- Construct a candidate family by retaining one representative for every
+active feature cell.  Duplicate representatives are removed by `Finset.image`.
+-/
+def candidateFamilyFromFeatureCells
+    (full : ActionFamily A) (cell : A → C) (rep : C → A) : ActionFamily A where
+  acts := (activeFeatureCells full cell).image rep
+  nonempty := (full.nonempty.image cell).image rep
+
+/-- If each active-cell representative is a full action, the constructed
+candidate family is a subset of the full family. -/
+theorem candidateFamilyFromFeatureCells_subset
+    (full : ActionFamily A) (cell : A → C) (rep : C → A)
+    (hrep : ∀ a ∈ full.acts, rep (cell a) ∈ full.acts) :
+    ActionFamily.Subset (candidateFamilyFromFeatureCells full cell rep) full := by
+  intro b hb
+  rcases Finset.mem_image.mp hb with ⟨c, hc, rfl⟩
+  rcases Finset.mem_image.mp hc with ⟨a, ha, rfl⟩
+  exact hrep a ha
+
+/-- The number of constructed candidates is at most the number of available
+feature cells. -/
+theorem candidateFamilyFromFeatureCells_card_le_active
+    (full : ActionFamily A) (cell : A → C) (rep : C → A) :
+    (candidateFamilyFromFeatureCells full cell rep).acts.card
+      ≤ (activeFeatureCells full cell).card := by
+  exact Finset.card_image_le
+
+/-- If the feature-cell type is finite, the candidate count is also bounded by
+the total number of available cell labels. -/
+theorem candidateFamilyFromFeatureCells_card_le
+    [Fintype C]
+    (full : ActionFamily A) (cell : A → C) (rep : C → A) :
+    (candidateFamilyFromFeatureCells full cell rep).acts.card
+      ≤ Fintype.card C := by
+  change ((full.acts.image cell).image rep).card ≤ Fintype.card C
+  calc
+    ((full.acts.image cell).image rep).card
+        ≤ (full.acts.image cell).card :=
+      candidateFamilyFromFeatureCells_card_le_active full cell rep
+    _ ≤ (Finset.univ : Finset C).card :=
+      Finset.card_le_card (Finset.subset_univ _)
+    _ = Fintype.card C := Finset.card_univ
+
+/-- A representative-radius certificate makes the finite-cell construction a
+metric candidate cover. -/
+theorem featureCellCandidate_metricCover
+    (full : ActionFamily A) (cell : A → C) (rep : C → A)
+    (d : A → A → ℝ) (ρ : ℝ)
+    (hradius : ∀ a ∈ full.acts, d a (rep (cell a)) ≤ ρ) :
+    MetricCandidateCovers full
+      (candidateFamilyFromFeatureCells full cell rep) d ρ := by
+  intro a ha
+  refine ⟨rep (cell a), ?_, hradius a ha⟩
+  apply Finset.mem_image.mpr
+  refine ⟨cell a, ?_, rfl⟩
+  exact Finset.mem_image.mpr ⟨a, ha, rfl⟩
+
+/-- **Constructive finite-cell candidate certificate.**
+
+A finite feature partition, one valid representative per active cell, a
+representative-radius certificate, and service Lipschitzness jointly give:
+
+* candidate containment in the full action family;
+* candidate cardinality at most the number of feature cells;
+* support-function loss at most `L * ρ` in every nonnegative queue direction.
+-/
+theorem finite_feature_cell_candidate_certificate
+    (full : ActionFamily A) (cell : A → C) (rep : C → A)
+    (μ : A → ServiceVec I) (d : A → A → ℝ)
+    {L ρ : ℝ}
+    (hL : 0 ≤ L) (hρ : 0 ≤ ρ)
+    (hrep : ∀ a ∈ full.acts, rep (cell a) ∈ full.acts)
+    (hradius : ∀ a ∈ full.acts, d a (rep (cell a)) ≤ ρ)
+    (hlip : ServiceLipschitz μ d L) :
+    ActionFamily.Subset
+        (candidateFamilyFromFeatureCells full cell rep) full ∧
+      (candidateFamilyFromFeatureCells full cell rep).acts.card
+        ≤ (activeFeatureCells full cell).card ∧
+      SupportGapAtMost full
+        (candidateFamilyFromFeatureCells full cell rep) μ (L * ρ) := by
+  refine ⟨candidateFamilyFromFeatureCells_subset full cell rep hrep, ?_, ?_⟩
+  · exact candidateFamilyFromFeatureCells_card_le_active full cell rep
+  · exact metric_cover_support_gap full
+      (candidateFamilyFromFeatureCells full cell rep) μ d
+      hL hρ (featureCellCandidate_metricCover full cell rep d ρ hradius) hlip
+
+end FiniteFeatureCells
+
 end Scheduleurm
 
 
@@ -6223,5 +6322,359 @@ theorem main_active_bucket_local_failure_union_bound
       (fun ω => ∀ b ∈ active, E b ω)
       (∑ b ∈ active, δ b) := by
   exact active_finset_all_events_failure_probability ℙ active E δ hfail
+
+end Scheduleurm
+
+
+/-! ## Source: Scheduleurm/FrameBasedStability.lean -/
+
+
+/-!
+# Variable-duration frame stability for Scheduleurm
+
+This file closes the event-driven boundary used by migration and port actions.
+A frame has a strictly positive physical duration `τ`, cumulative arrivals
+`τ λ`, and an arbitrary cumulative lower-service vector `ServCum`.  The robust
+oracle is charged in cumulative units, including bounded and queue-scaled
+optimization and reconfiguration losses.
+
+The main drift theorem proves
+
+`ΔV ≤ B + α₀ + P₀ - τ (δ - ε - α₁ - β) ||Q||₁`.
+
+Thus a uniform lower frame duration transfers a positive per-unit-time slack
+to a uniform embedded-chain Foster drift.  A separate upper duration bound
+controls elapsed physical time.  The duration-one corollary reduces exactly to
+the ordinary slotted queue update; no uniformization or zero-duration action is
+silently assumed.
+-/
+
+noncomputable section
+
+set_option linter.unusedSectionVars false
+set_option linter.unusedVariables false
+
+namespace Scheduleurm
+
+open BigOperators
+
+variable {I A : Type*} [Fintype I] [DecidableEq I] [DecidableEq A]
+
+/-- Pointwise scalar multiplication for arrival and service vectors. -/
+def scaleService (c : ℝ) (v : ServiceVec I) : ServiceVec I :=
+  fun i => c * v i
+
+/-- Cumulative arrivals during a frame of duration `τ`. -/
+def frameArrivals (τ : ℝ) (lam : ServiceVec I) : ServiceVec I :=
+  scaleService τ lam
+
+/-- Queue update at a frame boundary. -/
+def frameQueueStep
+    (Q lam ServCum : ServiceVec I) (τ : ℝ) : ServiceVec I :=
+  queueStep Q (frameArrivals τ lam) ServCum
+
+/-- Duration-normalized cumulative service.  It is used only when `τ > 0`. -/
+def normalizedCumulativeService (τ : ℝ) (ServCum : ServiceVec I) : ServiceVec I :=
+  fun i => ServCum i / τ
+
+lemma scaleService_nonnegative
+    {c : ℝ} {v : ServiceVec I}
+    (hc : 0 ≤ c) (hv : Nonnegative v) :
+    Nonnegative (scaleService c v) := by
+  intro i
+  exact mul_nonneg hc (hv i)
+
+lemma dot_scaleService (q v : ServiceVec I) (c : ℝ) :
+    dot q (scaleService c v) = c * dot q v := by
+  unfold dot scaleService
+  calc
+    ∑ i : I, q i * (c * v i) = ∑ i : I, c * (q i * v i) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    _ = c * ∑ i : I, q i * v i := by
+      rw [Finset.mul_sum]
+
+lemma dot_normalizedCumulativeService
+    (q ServCum : ServiceVec I) (τ : ℝ) :
+    dot q (normalizedCumulativeService τ ServCum) = dot q ServCum / τ := by
+  unfold dot normalizedCumulativeService
+  calc
+    ∑ i : I, q i * (ServCum i / τ) = ∑ i : I, (q i * ServCum i) / τ := by
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    _ = (∑ i : I, q i * ServCum i) / τ := by
+      rw [Finset.sum_div]
+
+lemma secondOrderTerm_scaleService
+    (Arr Serv : ServiceVec I) (τ : ℝ) :
+    secondOrderTerm (scaleService τ Arr) (scaleService τ Serv)
+      = τ^2 * secondOrderTerm Arr Serv := by
+  unfold secondOrderTerm scaleService
+  calc
+    ∑ i : I, (((τ * Arr i)^2 + (τ * Serv i)^2) / 2)
+        = ∑ i : I, τ^2 * (((Arr i)^2 + (Serv i)^2) / 2) := by
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+    _ = τ^2 * ∑ i : I, (((Arr i)^2 + (Serv i)^2) / 2) := by
+          rw [Finset.mul_sum]
+
+/-- A rate-level second-order bound becomes a frame bound under `τ ≤ τmax`. -/
+theorem secondOrderTerm_frame_le
+    {Arr Serv : ServiceVec I} {τ τmax Bunit : ℝ}
+    (hτ : 0 ≤ τ) (hupper : τ ≤ τmax) (hBunit : 0 ≤ Bunit)
+    (hsecond : secondOrderTerm Arr Serv ≤ Bunit) :
+    secondOrderTerm (scaleService τ Arr) (scaleService τ Serv)
+      ≤ τmax^2 * Bunit := by
+  rw [secondOrderTerm_scaleService]
+  have hτmax : 0 ≤ τmax := le_trans hτ hupper
+  have hsquares : τ^2 ≤ τmax^2 := by nlinarith
+  have hterm : 0 ≤ secondOrderTerm Arr Serv := by
+    unfold secondOrderTerm
+    positivity
+  calc
+    τ^2 * secondOrderTerm Arr Serv
+        ≤ τmax^2 * secondOrderTerm Arr Serv :=
+          mul_le_mul_of_nonneg_right hsquares hterm
+    _ ≤ τmax^2 * Bunit :=
+          mul_le_mul_of_nonneg_left hsecond (sq_nonneg τmax)
+
+/-- Cumulative robust-oracle obligation over one frame. -/
+def FrameApproximateOracle
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    (Q ServCum : ServiceVec I)
+    (τ ε α0 α1 penalty : ℝ) : Prop :=
+  τ * support full μ Q
+    ≤ dot Q ServCum
+      + τ * ε * l1 Q
+      + α0
+      + τ * α1 * l1 Q
+      + penalty
+
+/-- Reconfiguration, migration and risk loss with bounded and linear parts. -/
+def FramePenaltyBound
+    (Q : ServiceVec I) (τ penalty P0 β : ℝ) : Prop :=
+  penalty ≤ P0 + τ * β * l1 Q
+
+/-- The cumulative oracle inequality is exactly the duration-normalized
+inequality when `τ > 0`. -/
+theorem frameApproximateOracle_iff_durationNormalized
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    (Q ServCum : ServiceVec I)
+    {τ ε α0 α1 penalty : ℝ} (hτ : 0 < τ) :
+    FrameApproximateOracle full μ Q ServCum τ ε α0 α1 penalty ↔
+      support full μ Q
+        ≤ (dot Q ServCum
+            + τ * ε * l1 Q
+            + α0
+            + τ * α1 * l1 Q
+            + penalty) / τ := by
+  unfold FrameApproximateOracle
+  simpa [mul_comm] using (le_div_iff₀ hτ).symm
+
+/-- Variable-duration robust MaxWeight pressure inequality. -/
+theorem frame_approximate_maxWeight_negative_drift
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    {Q lam ServCum : ServiceVec I}
+    {τ δ ε α0 α1 penalty P0 β B : ℝ}
+    (hτ : 0 < τ)
+    (hQ : Nonnegative Q)
+    (hcap : InCapacityWithSlack full μ lam δ)
+    (horacle : FrameApproximateOracle
+      full μ Q ServCum τ ε α0 α1 penalty)
+    (hpenalty : FramePenaltyBound Q τ penalty P0 β)
+    (hSecond : secondOrderTerm (frameArrivals τ lam) ServCum ≤ B) :
+    secondOrderTerm (frameArrivals τ lam) ServCum
+        + dot Q (frameArrivals τ lam) - dot Q ServCum
+      ≤ B + α0 + P0
+        - τ * (δ - ε - α1 - β) * l1 Q := by
+  have hSlack : dot Q lam + δ * l1 Q ≤ support full μ Q :=
+    capacity_slack_implies_support_slack full μ hQ hcap
+  have hτnonneg : 0 ≤ τ := le_of_lt hτ
+  have hScaledSlack :
+      τ * (dot Q lam + δ * l1 Q) ≤ τ * support full μ Q :=
+    mul_le_mul_of_nonneg_left hSlack hτnonneg
+  have hOracleExpanded := horacle
+  unfold FrameApproximateOracle at hOracleExpanded
+  have hPenaltyExpanded := hpenalty
+  unfold FramePenaltyBound at hPenaltyExpanded
+  rw [frameArrivals, dot_scaleService] at *
+  nlinarith
+
+/-- Full variable-duration frame Lyapunov drift theorem. -/
+theorem frame_approximate_maxWeight_lyapunov_drift
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    {Q lam ServCum : ServiceVec I}
+    {τ δ ε α0 α1 penalty P0 β B : ℝ}
+    (hτ : 0 < τ)
+    (hQ : Nonnegative Q) (hlam : Nonnegative lam)
+    (hServCum : Nonnegative ServCum)
+    (hcap : InCapacityWithSlack full μ lam δ)
+    (horacle : FrameApproximateOracle
+      full μ Q ServCum τ ε α0 α1 penalty)
+    (hpenalty : FramePenaltyBound Q τ penalty P0 β)
+    (hSecond : secondOrderTerm (frameArrivals τ lam) ServCum ≤ B) :
+    Lyapunov (frameQueueStep Q lam ServCum τ) - Lyapunov Q
+      ≤ B + α0 + P0
+        - τ * (δ - ε - α1 - β) * l1 Q := by
+  have hArr : Nonnegative (frameArrivals τ lam) := by
+    unfold frameArrivals
+    exact scaleService_nonnegative (le_of_lt hτ) hlam
+  have hQueue := lyapunov_queue_step_bound
+    (Q := Q) (Arr := frameArrivals τ lam) (Serv := ServCum)
+    hQ hArr hServCum
+  have hPressure := frame_approximate_maxWeight_negative_drift
+    full μ hτ hQ hcap horacle hpenalty hSecond
+  unfold frameQueueStep
+  exact le_trans hQueue hPressure
+
+/-- A positive per-time slack and a positive minimum frame duration give a
+uniform embedded-chain Foster coefficient. -/
+theorem frame_approximate_maxWeight_lyapunov_drift_uniform
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    {Q lam ServCum : ServiceVec I}
+    {τ τmin δ ε α0 α1 penalty P0 β B : ℝ}
+    (hτ : 0 < τ) (hτmin : 0 < τmin) (hlower : τmin ≤ τ)
+    (hmargin : 0 < δ - ε - α1 - β)
+    (hQ : Nonnegative Q) (hlam : Nonnegative lam)
+    (hServCum : Nonnegative ServCum)
+    (hcap : InCapacityWithSlack full μ lam δ)
+    (horacle : FrameApproximateOracle
+      full μ Q ServCum τ ε α0 α1 penalty)
+    (hpenalty : FramePenaltyBound Q τ penalty P0 β)
+    (hSecond : secondOrderTerm (frameArrivals τ lam) ServCum ≤ B) :
+    Lyapunov (frameQueueStep Q lam ServCum τ) - Lyapunov Q
+      ≤ B + α0 + P0
+        - τmin * (δ - ε - α1 - β) * l1 Q := by
+  have hdrift := frame_approximate_maxWeight_lyapunov_drift
+    full μ hτ hQ hlam hServCum hcap horacle hpenalty hSecond
+  have hbacklog := l1_nonneg Q
+  have hscaled :
+      τmin * (δ - ε - α1 - β) * l1 Q
+        ≤ τ * (δ - ε - α1 - β) * l1 Q := by
+    have hnonneg : 0 ≤ (δ - ε - α1 - β) * l1 Q :=
+      mul_nonneg (le_of_lt hmargin) hbacklog
+    simpa [mul_assoc] using mul_le_mul_of_nonneg_right hlower hnonneg
+  linarith
+
+/-- Duration one recovers the ordinary slotted queue theorem with all error
+and penalty terms retained. -/
+theorem frame_lyapunov_drift_duration_one
+    (full : ActionFamily A) (μ : A → ServiceVec I)
+    {Q lam Serv : ServiceVec I}
+    {δ ε α0 α1 penalty P0 β B : ℝ}
+    (hQ : Nonnegative Q) (hlam : Nonnegative lam)
+    (hServ : Nonnegative Serv)
+    (hcap : InCapacityWithSlack full μ lam δ)
+    (horacle : support full μ Q
+      ≤ dot Q Serv + ε * l1 Q + α0 + α1 * l1 Q + penalty)
+    (hpenalty : penalty ≤ P0 + β * l1 Q)
+    (hSecond : secondOrderTerm lam Serv ≤ B) :
+    Lyapunov (queueStep Q lam Serv) - Lyapunov Q
+      ≤ B + α0 + P0 - (δ - ε - α1 - β) * l1 Q := by
+  have hFrameOracle : FrameApproximateOracle
+      full μ Q Serv 1 ε α0 α1 penalty := by
+    unfold FrameApproximateOracle
+    simpa [one_mul, add_assoc] using horacle
+  have hFramePenalty : FramePenaltyBound Q 1 penalty P0 β := by
+    unfold FramePenaltyBound
+    simpa using hpenalty
+  have hSecondFrame : secondOrderTerm (frameArrivals 1 lam) Serv ≤ B := by
+    simpa [frameArrivals, scaleService, secondOrderTerm] using hSecond
+  have hdrift := frame_approximate_maxWeight_lyapunov_drift
+    full μ (τ := 1) (B := B) (by norm_num) hQ hlam hServ hcap
+    hFrameOracle hFramePenalty hSecondFrame
+  have hscale : scaleService 1 lam = lam := by
+    funext i
+    simp [scaleService]
+  unfold frameQueueStep frameArrivals at hdrift
+  rw [hscale] at hdrift
+  simpa using hdrift
+
+/-- Elapsed physical time over the first `n` frames. -/
+def elapsedFrameTime (duration : ℕ → ℝ) (n : ℕ) : ℝ :=
+  ∑ k ∈ Finset.range n, duration k
+
+/-- Uniformly bounded frame durations transfer frame-count bounds to physical
+time bounds. -/
+theorem elapsedFrameTime_le
+    (duration : ℕ → ℝ) {τmax : ℝ}
+    (hupper : ∀ k, duration k ≤ τmax) (n : ℕ) :
+    elapsedFrameTime duration n ≤ (n : ℝ) * τmax := by
+  unfold elapsedFrameTime
+  calc
+    ∑ k ∈ Finset.range n, duration k
+        ≤ ∑ k ∈ Finset.range n, τmax := by
+          apply Finset.sum_le_sum
+          intro k hk
+          exact hupper k
+    _ = (n : ℝ) * τmax := by simp
+
+/-- Embedded frame-boundary positive recurrence under the uniform frame drift.
+The calendar-time interpretation additionally uses `elapsedFrameTime_le`. -/
+theorem frame_nat_model_positive_recurrent_via_finite_set
+    (M : NatQueueTransitionModel I)
+    {B α0 P0 τmin margin α : ℝ} {N : ℕ}
+    (hτmin : 0 < τmin) (hmargin : 0 < margin) (hα : 0 < α)
+    (hN : B + α0 + P0 + α ≤ τmin * margin * (N : ℝ))
+    (hdet : ∀ Q : NatQueueState I,
+      M.deterministicDrift Q
+        ≤ B + α0 + P0 - τmin * margin * natQueueL1 Q)
+    (hreturn : ∀ Q : NatQueueState I,
+      natQueueSmallSet (I := I) N Q →
+        FiniteExpectedReturnTimeToSet M.K (natQueueSmallSet (I := I) N) Q) :
+    PositiveRecurrentViaFiniteSet M.K (natQueueSmallSet (I := I) N) := by
+  have hη : 0 < τmin * margin := mul_pos hτmin hmargin
+  apply nat_model_linear_drift_positive_recurrent_via_finite_set
+    M (B := B + α0 + P0) (η := τmin * margin) (α := α) (N := N)
+    hη hα
+  · nlinarith
+  · intro Q
+    have h := hdet Q
+    nlinarith
+  · exact hreturn
+
+
+/-! ## Source: Scheduleurm/ActionUnion.lean -/
+
+/-!
+# Scheduleurm: finite candidate action unions
+
+This section formalizes the monotonicity used when a feasible external solver
+or policy trajectory is admitted into an already certified finite candidate
+family. Candidate expansion cannot worsen the certified support loss, so the
+expanded family inherits the same capacity-slack guarantee.
+-/
+
+/-- Enlarging a finite candidate family cannot worsen any previously certified
+support-function loss. -/
+theorem support_gap_mono_under_candidate_expansion
+    (full base expanded : ActionFamily A) (mu : A -> ServiceVec I) {epsilon : Real}
+    (hsubset : ActionFamily.Subset base expanded)
+    (hgap : SupportGapAtMost full base mu epsilon) :
+    SupportGapAtMost full expanded mu epsilon := by
+  intro q hq
+  exact le_trans (hgap q hq)
+    (by
+      simpa [add_comm] using
+        (add_le_add_right
+          (support_mono base expanded mu q hsubset) (epsilon * l1 q)))
+
+/-- A certified candidate-family expansion inherits the base family's
+full-action support loss and therefore preserves the same capacity-slack lower
+bound. -/
+theorem candidate_capacity_slack_loss_under_expansion
+    (full base expanded : ActionFamily A) (mu : A -> ServiceVec I)
+    {lam q : ServiceVec I} {delta epsilon : Real}
+    (hq : Nonnegative q)
+    (hcap : InCapacityWithSlack full mu lam delta)
+    (hsubset : ActionFamily.Subset base expanded)
+    (hgap : SupportGapAtMost full base mu epsilon) :
+    dot q lam + (delta - epsilon) * l1 q <= support expanded mu q := by
+  exact candidate_capacity_slack_loss full expanded mu hq hcap
+    (support_gap_mono_under_candidate_expansion
+      full base expanded mu hsubset hgap)
 
 end Scheduleurm

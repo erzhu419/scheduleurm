@@ -60,7 +60,19 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
         if row["scenario_kind"] == "hardware_local"
     }
     assert all(row["trace_count"] == 1 for row in report["static_scenarios"])
+    assert all(
+        row["display_label"].startswith(f"{row['quadrant']} ")
+        for row in report["static_scenarios"]
+    )
     assert len(report["sota_style"]["policies"]) == 7
+    assert report["sota_style"]["policy_trace_comparison_count"] == (
+        report["sota_style"]["comparison_trace_count"] * 7
+    )
+    assert set(report["sota_style"]["by_quadrant"]) == {"q00", "q01", "q10", "q11"}
+    assert all(
+        row["policy_trace_comparison_count"] == row["trace_count"] * 7
+        for row in report["sota_style"]["by_quadrant"].values()
+    )
     assert len(report["ablations"]) == 6
     assert report["migration"]["comparison_count"] == 9
     assert (
@@ -76,6 +88,9 @@ def test_passing_schema_v2_replay_exports_one_consistent_paper_summary(tmp_path)
     assert "\\UnifiedQueueMeanBacklogMax" in tex_source
     assert "\\UnifiedQueueMaxBacklogMax" in tex_source
     assert "\\UnifiedSotaConclusion" in tex_source
+    assert "\\UnifiedSotaPolicyTraceComparisonCount" in tex_source
+    assert "\\UnifiedSotaDominatesOursCount" in tex_source
+    assert "\\UnifiedSotaQZeroOneWorstCostRatio" in tex_source
     assert "\\UnifiedAblationDominatesFullCount" in tex_source
     assert "\\UnifiedStaticLegacyRows" in tex_source
     assert "\\UnifiedSotaPolicyRows" in tex_source

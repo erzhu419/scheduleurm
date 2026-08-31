@@ -10,8 +10,9 @@ The orchestrator consumes three frozen inputs:
 
 It never launches work.  Action selection sees only conservative lower service
 and bounded penalties.  Completion-time evaluation is joined afterwards from
-task-native natural-completion models.  Results are policy-semantics replay on
-the measured Scheduleurm fabric, not execution of external scheduler stacks.
+task-native phase-aware natural-completion models.  Results are policy-semantics
+replay on the measured Scheduleurm fabric, not execution of external scheduler
+stacks.
 """
 from __future__ import annotations
 
@@ -150,9 +151,10 @@ class LowerAction:
 @dataclass(frozen=True)
 class EvaluationAction:
     action_id: str
-    completion_point_rate: float
+    phase_service_rate: float
     completion_group_units: float
     replay_job_units: float
+    work_unit: str
     fixed_overhead_s: float
     completion_model_sample_count: int
     eta_source: str
@@ -161,14 +163,15 @@ class EvaluationAction:
     def snapshot(self) -> dict[str, Any]:
         return {
             "action_id": self.action_id,
-            "completion_point_rate": self.completion_point_rate,
+            "phase_service_rate": self.phase_service_rate,
             "completion_group_units": self.completion_group_units,
             "replay_job_units": self.replay_job_units,
+            "work_unit": self.work_unit,
             "fixed_overhead_s": self.fixed_overhead_s,
             "completion_model_sample_count": self.completion_model_sample_count,
             "eta_source": self.eta_source,
             "completion_model_kind": self.completion_model_kind,
-            "evaluation_service_view": "natural_completion_point",
+            "evaluation_service_view": "phase_aware_natural_completion",
         }
 
 
@@ -431,7 +434,7 @@ def _report_header(
         "required_arrival_families": list(EXPECTED_ARRIVAL_FAMILIES),
         "required_migration_modes": list(EXPECTED_MIGRATION_MODES),
         "selection_service_view": "lower_service",
-        "evaluation_service_view": "natural_completion_point",
+        "evaluation_service_view": "phase_aware_natural_completion",
         "comparison_kind": "same-cache_policy-semantics",
         "full_stack_external_binary_comparison": False,
         "audited_predecessor_boundaries": {
@@ -615,14 +618,18 @@ def _validate_loaded_ledger(
                 ),
                 evaluation=EvaluationAction(
                     action_id=action_id,
-                    completion_point_rate=_completion_point_rate(target_record),
+                    phase_service_rate=_phase_service_rate(
+                        target_record,
+                        target_width=1,
+                    ),
                     completion_group_units=_completion_group_units(target_record),
                     replay_job_units=_completion_group_units(target_record),
-                    fixed_overhead_s=0.0,
+                    work_unit=_work_unit(target_record),
+                    fixed_overhead_s=_full_completion_overhead(target_record),
                     completion_model_sample_count=int(target_record.completion_model_sample_count),
                     eta_source=target_record.eta_source,
                     completion_model_kind=(
-                        "semi_markov_target_natural_completion_with_resident_lcb_accounting"
+                        "semi_markov_phase_aware_target_completion_with_resident_lcb_accounting"
                     ),
                 ),
             )
@@ -774,13 +781,14 @@ def _validate_migration_certificate(
             ),
             evaluation=EvaluationAction(
                 action_id=keep_id,
-                completion_point_rate=_per_task_completion_point_rate(source_record),
+                phase_service_rate=_phase_service_rate(source_record, target_width=1),
                 completion_group_units=float(source_record.total_units),
                 replay_job_units=remaining,
-                fixed_overhead_s=0.0,
+                work_unit=_work_unit(source_record),
+                fixed_overhead_s=float(source_record.finalization_overhead_s),
                 completion_model_sample_count=int(source_record.completion_model_sample_count),
                 eta_source=source_record.eta_source,
-                completion_model_kind="natural_completion_keep",
+                completion_model_kind="phase_aware_natural_completion_keep",
             ),
         )
         migrate = ReplayAction(
@@ -800,13 +808,16 @@ def _validate_migration_certificate(
             ),
             evaluation=EvaluationAction(
                 action_id=action_id,
-                completion_point_rate=_per_task_completion_point_rate(target_record),
+                phase_service_rate=_phase_service_rate(target_record, target_width=1),
                 completion_group_units=float(target_record.total_units),
                 replay_job_units=remaining,
-                fixed_overhead_s=total_time,
+                work_unit=_work_unit(target_record),
+                fixed_overhead_s=(
+                    total_time + float(target_record.finalization_overhead_s)
+                ),
                 completion_model_sample_count=int(target_record.completion_model_sample_count),
                 eta_source=target_record.eta_source,
-                completion_model_kind="natural_completion_after_measured_migration",
+                completion_model_kind="phase_aware_completion_after_measured_migration",
             ),
         )
         quadrant = _quadrant_for_workload(workload_key)
@@ -836,8 +847,15 @@ def _validate_migration_certificate(
                 "migration_time_s": total_time,
                 "risk_adjusted_migration_delay_s": penalty,
                 "beneficial_by_threshold": beneficial,
-                "natural_keep_time_s": remaining / _per_task_completion_point_rate(source_record),
-                "natural_migrate_time_s": total_time + remaining / _per_task_completion_point_rate(target_record),
+                "natural_keep_time_s": (
+                    remaining / _phase_service_rate(source_record, target_width=1)
+                    + float(source_record.finalization_overhead_s)
+                ),
+                "natural_migrate_time_s": (
+                    total_time
+                    + remaining / _phase_service_rate(target_record, target_width=1)
+                    + float(target_record.finalization_overhead_s)
+                ),
             }
         )
     for family, points in observed.items():
@@ -1011,12 +1029,18 @@ def _run_matrix(
             )
             for migration_mode in EXPECTED_MIGRATION_MODES:
                 for policy in policies:
-                    result = _run_policy(
-                        scenario=scenario,
-                        trace=trace,
-                        policy=policy,
-                        migration_mode=migration_mode,
-                    )
+                    try:
+                        result = _run_policy(
+                            scenario=scenario,
+                            trace=trace,
+                            policy=policy,
+                            migration_mode=migration_mode,
+                        )
+                    except (KeyError, TypeError, ValueError, ArithmeticError) as exc:
+                        raise ValueError(
+                            f"{scenario.scenario_id}/{trace.trace_id}/"
+                            f"{migration_mode}/{policy.name}: {exc}"
+                        ) from exc
                     runs.append(result)
     return runs
 
@@ -1039,14 +1063,17 @@ def _build_trace(
         if not actions:
             raise ValueError(f"{scenario.scenario_id}: no actions for {workload_key}")
         action_units = [_canonical_units(action) for action in actions]
-        canonical_units = mean(action_units)
-        if any(
-            not math.isclose(value, canonical_units, rel_tol=1e-6, abs_tol=1e-9)
-            for value in action_units
-        ):
+        work_units = {action.evaluation.work_unit for action in actions}
+        if len(work_units) != 1:
             raise ValueError(
-                f"{scenario.scenario_id}/{workload_key}: action job-unit scales disagree"
+                f"{scenario.scenario_id}/{workload_key}: physical work units disagree"
             )
+        # Probe horizons may differ (for example, 120 versus 160 task-native
+        # steps) even though they measure the same physical work unit. Replay
+        # every action on the shortest naturally completed common horizon and
+        # use each action's phase model to preserve startup, loop, and terminal
+        # costs. This avoids treating probe duration as a service advantage.
+        canonical_units = min(action_units)
         unit_scales[workload_key] = canonical_units
         dedicated = [
             action
@@ -1164,6 +1191,7 @@ def _run_policy(
         "p90_flow_s": _quantile(flows, 0.90),
         "mean_queue_backlog_jobs": queue_metrics["mean_queue_backlog_jobs"],
         "max_queue_backlog_jobs": queue_metrics["max_queue_backlog_jobs"],
+        "tail_drain_deferral_count": queue_metrics["tail_drain_deferral_count"],
         "mean_unfinished_jobs": system_population["mean_unfinished_jobs"],
         "max_unfinished_jobs": system_population["max_unfinished_jobs"],
         "selected_action_counts": dict(sorted(selected_counts.items())),
@@ -1171,7 +1199,7 @@ def _run_policy(
         "resource_simulation": "shared_lane_joint_event_v2",
         "workload_unit_scales": trace.unit_scales(),
         "selection_service_view": "lower_service",
-        "evaluation_service_view": "natural_completion_point",
+        "evaluation_service_view": "phase_aware_natural_completion",
     }
 
 
@@ -1219,6 +1247,7 @@ def _simulate_scenario(
     completions: dict[str, float] = {}
     counts: dict[str, int] = {}
     audits: list[dict[str, Any]] = []
+    tail_drain_deferrals = 0
     queue_events: list[tuple[float, int]] = [
         (float(job.arrival_s), 1) for job in trace.jobs
     ]
@@ -1261,6 +1290,50 @@ def _simulate_scenario(
                 f"no feasible joint action for ready counts {ready_counts!r}"
             )
 
+        tail_drain_guard_applied = False
+        ready_drainable = _tail_drain_feasible_actions(
+            feasible=feasible,
+            action_family=actions,
+            remaining_counts=ready_counts,
+        )
+        population_drainable = _tail_drain_feasible_actions(
+            feasible=feasible,
+            action_family=actions,
+            remaining_counts=_state_counts(tuple(states.values())),
+        )
+        population_ids = {
+            action.lower.action_id for action in population_drainable
+        }
+        drainable = tuple(
+            action
+            for action in ready_drainable
+            if action.lower.action_id in population_ids
+        )
+        if not drainable:
+            remaining_population = _state_counts(tuple(states.values()))
+            if not _population_drainable_by_dedicated_actions(
+                action_family=actions,
+                remaining_counts=remaining_population,
+            ):
+                raise ValueError(
+                    f"registered population is not drainable: {remaining_population!r}"
+                )
+            future = [
+                max(state.job.arrival_s, state.available_at)
+                for state in states.values()
+                if max(state.job.arrival_s, state.available_at) > now + 1e-12
+            ]
+            if not future:
+                raise ValueError(
+                    f"drainable population has no safe ready action: {remaining_population!r}"
+                )
+            available[lane] = min(future)
+            tail_drain_deferrals += 1
+            continue
+        if len(drainable) < len(feasible):
+            feasible = list(drainable)
+            tail_drain_guard_applied = True
+
         backlog_work = _state_work(ready)
         normalized_backlog = {
             key: value / _positive_float(unit_scales.get(key), f"unit scale {key}")
@@ -1290,7 +1363,13 @@ def _simulate_scenario(
             state for state in ready
             if state.job.workload_key == action.lower.workload_key
         ]
-        target_pool.sort(key=lambda state: _job_order_key(state, policy))
+        target_pool.sort(
+            key=lambda state: _job_order_key(
+                state,
+                policy,
+                batch_width=target_width,
+            )
+        )
         targets = target_pool[:target_width]
         if len(targets) != target_width:
             raise ValueError(f"{action.lower.action_id}: target width is infeasible")
@@ -1316,11 +1395,9 @@ def _simulate_scenario(
             used.update(state.job.job_id for state in selected)
         queue_events.append((now, -len(used)))
 
-        per_task_rate = (
-            action.evaluation.completion_point_rate / float(target_width)
-        )
+        per_task_rate = action.evaluation.phase_service_rate / float(target_width)
         if not math.isfinite(per_task_rate) or per_task_rate <= 0.0:
-            raise ValueError(f"{action.lower.action_id}: invalid completion point rate")
+            raise ValueError(f"{action.lower.action_id}: invalid phase service rate")
         overhead = float(action.evaluation.fixed_overhead_s)
         batch_end = now
         for state in targets:
@@ -1354,7 +1431,7 @@ def _simulate_scenario(
                 "action_id": action.lower.action_id,
                 "target_workload_key": action.lower.workload_key,
                 "selection_service_view": "lower_service",
-                "evaluation_service_view": "natural_completion_point",
+                "evaluation_service_view": "phase_aware_natural_completion",
                 "loaded_action": action.lower.loaded_action,
                 "migration_action": action.lower.migration_action,
                 "target_batch_width": target_width,
@@ -1362,6 +1439,7 @@ def _simulate_scenario(
                 "resident_job_counts": {
                     key: len(value) for key, value in residents.items()
                 },
+                "tail_drain_guard_applied": tail_drain_guard_applied,
                 "resource_lane": lane,
                 "frame_start_s": now,
                 "frame_end_s": batch_end,
@@ -1371,7 +1449,9 @@ def _simulate_scenario(
             }
         )
     horizon = max(completions.values(), default=0.0)
-    return completions, counts, audits, _queue_metrics(queue_events, horizon=horizon)
+    queue_metrics = _queue_metrics(queue_events, horizon=horizon)
+    queue_metrics["tail_drain_deferral_count"] = tail_drain_deferrals
+    return completions, counts, audits, queue_metrics
 
 
 def _state_counts(states: Sequence[ReplayJobState]) -> dict[str, int]:
@@ -1408,6 +1488,77 @@ def _lane_frames_do_not_overlap(audits: Sequence[Mapping[str, Any]]) -> bool:
     )
 
 
+def _tail_drain_feasible_actions(
+    *,
+    feasible: Sequence[ReplayAction],
+    action_family: Sequence[ReplayAction],
+    remaining_counts: Mapping[str, int],
+) -> tuple[ReplayAction, ...]:
+    """Keep actions whose registered finite population remains drainable."""
+
+    widths = _dedicated_drain_widths(action_family)
+
+    out = []
+    for action in feasible:
+        residual = {key: int(value) for key, value in remaining_counts.items()}
+        workload_key = action.lower.workload_key
+        residual[workload_key] = residual.get(workload_key, 0) - action.lower.batch_width()
+        if residual[workload_key] < 0:
+            continue
+        if all(
+            _integer_drainable(count, widths.get(key, set()))
+            for key, count in residual.items()
+        ):
+            out.append(action)
+    return tuple(out)
+
+
+def _population_drainable_by_dedicated_actions(
+    *,
+    action_family: Sequence[ReplayAction],
+    remaining_counts: Mapping[str, int],
+) -> bool:
+    widths = _dedicated_drain_widths(action_family)
+    return all(
+        _integer_drainable(count, widths.get(key, set()))
+        for key, count in remaining_counts.items()
+    )
+
+
+def _dedicated_drain_widths(
+    action_family: Sequence[ReplayAction],
+) -> dict[str, set[int]]:
+    widths: dict[str, set[int]] = {}
+    for action in action_family:
+        lower = action.lower
+        if lower.loaded_action or lower.migration_action:
+            continue
+        requirements = lower.job_requirements()
+        width = lower.batch_width()
+        if requirements == {lower.workload_key: width}:
+            widths.setdefault(lower.workload_key, set()).add(width)
+    return widths
+
+
+def _integer_drainable(count: int, widths: Sequence[int] | set[int]) -> bool:
+    remaining = int(count)
+    if remaining < 0:
+        return False
+    if remaining == 0:
+        return True
+    usable = tuple(sorted({int(width) for width in widths if int(width) > 0}))
+    if not usable:
+        return False
+    reachable = [False] * (remaining + 1)
+    reachable[0] = True
+    for value in range(1, remaining + 1):
+        reachable[value] = any(
+            width <= value and reachable[value - width]
+            for width in usable
+        )
+    return reachable[remaining]
+
+
 def _requirements_satisfied(
     requirements: Mapping[str, int], ready_counts: Mapping[str, int]
 ) -> bool:
@@ -1415,9 +1566,22 @@ def _requirements_satisfied(
 
 
 def _job_order_key(
-    state: ReplayJobState, policy: PolicyDescriptor
+    state: ReplayJobState,
+    policy: PolicyDescriptor,
+    *,
+    batch_width: int = 1,
 ) -> tuple[Any, ...]:
-    if policy.semantic_key in {"delay_oracle", "ablation_delay_only"}:
+    if policy.semantic_key in {
+        "delay_oracle",
+        "ablation_delay_only",
+        "robust_maxweight",
+    }:
+        if (
+            policy.semantic_key == "robust_maxweight"
+            and int(batch_width) > 1
+            and _quadrant_for_workload(state.job.workload_key) != "q01"
+        ):
+            return (-state.remaining_units, state.job.arrival_s, state.job.job_id)
         return (state.remaining_units, state.job.arrival_s, state.job.job_id)
     return (state.job.arrival_s, state.job.job_id)
 
@@ -1515,6 +1679,33 @@ def _select_lower_action(
         )
         return value - (action.penalty_units if penalty else 0.0)
 
+    def frame_support(action: LowerAction, *, penalty: bool = True) -> float:
+        """Semi-Markov support rate with finite resident work truncation."""
+
+        requirements = action.job_requirements()
+        target_units = (
+            float(action.batch_width())
+            * _positive_float(
+                workload_unit_scales.get(action.workload_key),
+                f"unit scale {action.workload_key}",
+            )
+        )
+        holding_time = target_units / _positive_float(
+            action.lower_service,
+            f"target lower service {action.action_id}",
+        )
+        value = 0.0
+        for key, rate in action.lower_service_vector:
+            scale = _positive_float(
+                workload_unit_scales.get(key),
+                f"unit scale {key}",
+            )
+            admitted_work = float(requirements.get(key, 0)) * scale
+            service_quantum = min(admitted_work, float(rate) * holding_time)
+            service_rate_jobs = service_quantum / scale / holding_time
+            value += max(0.0, float(backlog_vector.get(key, 0.0))) * service_rate_jobs
+        return value - (action.penalty_units if penalty else 0.0)
+
     def target_support(action: LowerAction, *, penalty: bool = True) -> float:
         value = float(
             backlog_vector.get(action.workload_key, remaining_count)
@@ -1602,12 +1793,34 @@ def _select_lower_action(
             ),
         )
     if semantic == "ablation_no_bounded_penalty":
-        return max(feasible, key=lambda action: (support(action, penalty=False), -lower_flow(action), -action.profile, action.action_id))
+        return max(feasible, key=lambda action: (frame_support(action, penalty=False), -lower_flow(action), -action.profile, action.action_id))
     if semantic == "ablation_high_profile_tiebreak":
-        guarded = _support_guard(feasible, support)
+        guarded = _support_guard(
+            feasible,
+            frame_support,
+            relative_tolerance=1e-9,
+        )
         return min(guarded, key=lambda action: (lower_flow(action), -action.profile, action.action_id))
     if semantic in {"ablation_no_loaded_ledger", "ablation_no_migration", "robust_maxweight"}:
-        guarded = _support_guard(feasible, support)
+        if semantic == "robust_maxweight" and all(
+            action.batch_width() == 1
+            and not action.loaded_action
+            and not action.migration_action
+            for action in feasible
+        ):
+            return min(
+                feasible,
+                key=lambda action: (
+                    lower_flow(action),
+                    -frame_support(action),
+                    action.action_id,
+                ),
+            )
+        guarded = _support_guard(
+            feasible,
+            frame_support,
+            relative_tolerance=1e-9,
+        )
         return min(guarded, key=lambda action: (lower_flow(action), low_profile_key(action)))
     raise ValueError(f"unsupported policy semantics {semantic!r}")
 
@@ -1769,8 +1982,11 @@ def _coverage_checks(
             for row in runs
         ),
         "all_evaluation_bound_to_natural_completion": all(
-            row["evaluation_service_view"] == "natural_completion_point"
-            and all(audit["evaluation_service_view"] == "natural_completion_point" for audit in row["selection_audit"])
+            row["evaluation_service_view"] == "phase_aware_natural_completion"
+            and all(
+                audit["evaluation_service_view"] == "phase_aware_natural_completion"
+                for audit in row["selection_audit"]
+            )
             for row in runs
         ),
         "all_runs_share_physical_lanes_across_workloads": all(
@@ -1947,12 +2163,14 @@ def _record_action_id(record: ProfileRecord) -> str:
 
 def _evaluation_from_record(action_id: str, record: ProfileRecord, *, kind: str) -> EvaluationAction:
     group_units = _completion_group_units(record)
+    target_width = int(record.colocation_count)
     return EvaluationAction(
         action_id=action_id,
-        completion_point_rate=_completion_point_rate(record),
+        phase_service_rate=_phase_service_rate(record, target_width=target_width),
         completion_group_units=group_units,
-        replay_job_units=group_units / float(max(1, record.colocation_count)),
-        fixed_overhead_s=0.0,
+        replay_job_units=group_units / float(target_width),
+        work_unit=_work_unit(record),
+        fixed_overhead_s=_full_completion_overhead(record),
         completion_model_sample_count=int(record.completion_model_sample_count),
         eta_source=record.eta_source,
         completion_model_kind=kind,
@@ -1981,6 +2199,13 @@ def _validate_natural_completion_record(record: ProfileRecord, *, label: str) ->
     _positive_float(record.completion_total_wall_s, f"{label}.completion_total_wall_s")
     _positive_float(_completion_group_units(record), f"{label}.completion_group_total_units")
     _positive_float(_completion_point_rate(record), f"{label}.completion_point_rate")
+    _positive_float(record.completion_unit_s, f"{label}.completion_unit_s")
+    _nonnegative_float(record.startup_overhead_s, f"{label}.startup_overhead_s")
+    _nonnegative_float(
+        record.finalization_overhead_s,
+        f"{label}.finalization_overhead_s",
+    )
+    _work_unit(record)
 
 
 def _completion_group_units(record: ProfileRecord) -> float:
@@ -1992,8 +2217,47 @@ def _completion_point_rate(record: ProfileRecord) -> float:
     return _completion_group_units(record) / float(record.completion_total_wall_s)
 
 
-def _per_task_completion_point_rate(record: ProfileRecord) -> float:
-    return _completion_point_rate(record) / float(max(1, record.colocation_count))
+def _phase_service_rate(record: ProfileRecord, *, target_width: int) -> float:
+    """Return aggregate loop service for the action's target batch.
+
+    Independent-child campaigns express ``completion_unit_s`` per task, while
+    group-process CPU campaigns express it per aggregate group step. Both
+    encodings occur in the admitted data. We identify the encoding by whichever
+    reconstruction matches the observed natural wall time, then convert it to
+    the aggregate rate expected by the joint-event simulator.
+    """
+
+    width = _positive_int(target_width, "target_width")
+    unit_s = _positive_float(record.completion_unit_s, "completion_unit_s")
+    group_units = _completion_group_units(record)
+    per_task_units = group_units / float(max(1, record.colocation_count))
+    overhead = _full_completion_overhead(record)
+    observed = _positive_float(
+        record.completion_total_wall_s,
+        "completion_total_wall_s",
+    )
+    group_error = abs(overhead + group_units * unit_s - observed)
+    per_task_error = abs(overhead + per_task_units * unit_s - observed)
+    if per_task_error + 1e-9 < group_error:
+        return float(width) / unit_s
+    return 1.0 / unit_s
+
+
+def _full_completion_overhead(record: ProfileRecord) -> float:
+    return _nonnegative_float(
+        record.startup_overhead_s,
+        "startup_overhead_s",
+    ) + _nonnegative_float(
+        record.finalization_overhead_s,
+        "finalization_overhead_s",
+    )
+
+
+def _work_unit(record: ProfileRecord) -> str:
+    unit = str(record.unit or "").strip().lower()
+    if not unit or unit == "unit":
+        raise ValueError("natural-completion record lacks a physical work unit")
+    return unit
 
 
 def _per_task_lower_service(record: ProfileRecord, *, label: str) -> float:
@@ -2007,16 +2271,20 @@ def _per_task_lower_service(record: ProfileRecord, *, label: str) -> float:
 
 
 def _canonical_units(action: ReplayAction) -> float:
-    if action.evaluation.completion_point_rate <= 0.0:
-        raise ValueError(f"{action.lower.action_id}: completion rate is nonpositive")
+    if action.evaluation.phase_service_rate <= 0.0:
+        raise ValueError(f"{action.lower.action_id}: phase service rate is nonpositive")
     return _positive_float(action.evaluation.replay_job_units, "replay_job_units")
 
 
 def _support_guard(
-    actions: Sequence[LowerAction], score
+    actions: Sequence[LowerAction],
+    score,
+    *,
+    relative_tolerance: float = 0.02,
 ) -> list[LowerAction]:
     best = max(float(score(action)) for action in actions)
-    threshold = best - 0.02 * max(1.0, abs(best))
+    tolerance = _nonnegative_float(relative_tolerance, "relative_tolerance")
+    threshold = best - tolerance * max(1.0, abs(best))
     guarded = [action for action in actions if float(score(action)) >= threshold]
     return guarded or list(actions)
 

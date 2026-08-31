@@ -11,6 +11,7 @@ from algorithm.experiments.unified_hardware_or_replay import (
     EXPECTED_QUADRANTS,
     LEGACY_POLICY,
     OURS_POLICY,
+    _integer_drainable,
     build_unified_hardware_or_replay,
 )
 from simulation.service_cache import ProfileRecord, ServiceRateCache
@@ -408,6 +409,84 @@ def test_diagonal_work_unit_rescaling_preserves_policy_trajectory_and_jct(tmp_pa
             assert abs(left[field] - right[field]) <= 1e-12 * max(
                 1.0, abs(left[field]), abs(right[field])
             )
+
+
+def test_different_probe_horizons_share_a_phase_aware_replay_job(tmp_path):
+    paths = _write_fixture(tmp_path)
+    cache = json.loads(paths["cache"].read_text(encoding="utf-8"))
+    for row in cache["records"]:
+        if not (
+            row["workload_key"] == "light_control_local"
+            and row["node_bucket"] == "node003:cpu_hpc_192c"
+            and row["profile"] == 2
+        ):
+            continue
+        row["total_units"] *= 2.0
+        row["completion_group_total_units"] *= 2.0
+        row["completion_total_wall_s"] *= 2.0
+        break
+    else:
+        raise AssertionError("fixture lacks the second light-control profile")
+    _write_json(paths["cache"], cache)
+    migration = json.loads(paths["migration"].read_text(encoding="utf-8"))
+    migration["service_cache_sha256"] = _sha256(paths["cache"])
+    _write_json(paths["migration"], migration)
+
+    report = build_unified_hardware_or_replay(
+        cache_path=paths["cache"],
+        loaded_ledger_path=paths["ledger"],
+        migration_certificate_path=paths["migration"],
+        loads=(0.50,),
+        seeds=(3,),
+        jobs_per_workload=2,
+    )
+
+    assert report["pass"]
+    q00_rows = [row for row in report["runs"] if row["quadrant"] == "q00"]
+    assert q00_rows
+    assert all(row["workload_unit_scales"]["light_control_local"] == 20.0 for row in q00_rows)
+    assert all(
+        row["evaluation_service_view"] == "phase_aware_natural_completion"
+        for row in q00_rows
+    )
+
+
+def test_replay_rejects_incommensurate_physical_work_units(tmp_path):
+    paths = _write_fixture(tmp_path)
+    cache = json.loads(paths["cache"].read_text(encoding="utf-8"))
+    for row in cache["records"]:
+        if (
+            row["workload_key"] == "light_control_local"
+            and row["node_bucket"] == "node003:cpu_hpc_192c"
+            and row["profile"] == 2
+        ):
+            row["unit"] = "epoch"
+            break
+    else:
+        raise AssertionError("fixture lacks the second light-control profile")
+    _write_json(paths["cache"], cache)
+    migration = json.loads(paths["migration"].read_text(encoding="utf-8"))
+    migration["service_cache_sha256"] = _sha256(paths["cache"])
+    _write_json(paths["migration"], migration)
+
+    report = build_unified_hardware_or_replay(
+        cache_path=paths["cache"],
+        loaded_ledger_path=paths["ledger"],
+        migration_certificate_path=paths["migration"],
+        loads=(0.50,),
+        seeds=(3,),
+        jobs_per_workload=2,
+    )
+
+    assert report["status"] == "FAIL_REPLAY"
+    assert "physical work units disagree" in report["blockers"][0]["detail"]
+
+
+def test_finite_tail_guard_avoids_stranding_a_two_five_batch_remainder():
+    assert _integer_drainable(6, {2, 5})
+    assert _integer_drainable(4, {2, 5})
+    assert not _integer_drainable(1, {2, 5})
+    assert not _integer_drainable(3, {2, 5})
 
 
 def _write_fixture(root: Path, *, completion_scale: float = 1.0) -> dict[str, Path]:

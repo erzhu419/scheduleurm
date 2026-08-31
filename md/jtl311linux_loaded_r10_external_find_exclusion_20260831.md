@@ -16,3 +16,11 @@ Wave 10 must be remeasured under the same measurement manifest and natural-
 completion protocol. A clean remeasurement may replace the canonical wave-10
 artifact; the excluded observation remains diagnostic and does not enter the
 split-conformal calibration population.
+
+## Remeasurement outcome
+
+The same registered wave was remeasured under the unchanged manifest after a
+clean scheduler reservation. All four trajectories passed the completion and
+continuous-load audits. Each trajectory had zero unapproved CPU processes and
+zero conservative unapproved CPU exposure. The clean observation replaces the
+canonical wave-10 artifact; only that observation enters calibration.

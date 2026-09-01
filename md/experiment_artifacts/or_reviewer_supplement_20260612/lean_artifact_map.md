@@ -1,8 +1,35 @@
 # Lean artifact map for Scheduleurm theory
 
-This file maps the paper-level claims in `math.md` to the split Lean source files and to theorem names that are searchable in the consolidated upload file `ScheduleurmUpload.lean`.
+This file maps the paper-facing claims in `paper/main.tex` and its Electronic
+Companion (EC) to the split Lean source files and to theorem names that are
+searchable in the consolidated upload file `ScheduleurmUpload.lean`.
 
 Use this map to avoid the artifact inconsistency flagged in `gpt_revise_round2.md`: if only the upload file is sent to a reviewer, every theorem name below should be searchable directly in that file.
+
+The consolidated upload is the complete checked formal source.  The manuscript
+and EC do not print all implementation lemmas line by line.  Instead, the exact
+theorem tables below provide the paper-to-Lean direction, while the module map
+provides the Lean-to-paper direction.  Helper declarations that are not
+independent paper claims remain visible in their mapped module and in the
+consolidated source.
+
+## Complete split-source module map
+
+| Lean source module(s) | Human-readable manuscript layer | Role |
+|---|---|---|
+| `Basic.lean`, `SupportFunction.lean` | Section 3 and EC.1 | Finite action families, mixtures, support functions, and shared notation. |
+| `CapacityRegion.lean`, `CapacityGeometry.lean`, `HausdorffCapacity.lean` | Section 3.2, EC.1, and the support-function discussion in EC.8 | Capacity slack, downward closure, support geometry, and the compact-convex Hausdorff specialization. |
+| `CandidateApprox.lean`, `OperationalMetric.lean`, `DiagonalScaling.lean` | Propositions 1--2 and EC.2 | Finite-feature candidate construction, calibrated fabric cover, and heterogeneous service-unit lower bounds. |
+| `RobustPolicy.lean`, `PenaltyGrowth.lean`, `MaxWeightDrift.lean` | Lemmas 1--2, Theorem 1, and EC.3 | Exact and approximate robust MaxWeight selection, bounded penalties, and drift loss accounting. |
+| `StochasticQueueModel.lean`, `ConcreteStochasticModel.lean`, `IntegerQueue.lean` | Section 3.1, Lemma 3, Theorem 1, and EC.4 | Queue dynamics, finite-support conditional moments, and integer-state stochastic models. |
+| `FosterLyapunov.lean`, `MarkovRecurrence.lean`, `QueueRecurrence.lean` | Theorem 1, Corollaries 1--2, and EC.4 | Foster telescoping, finite-sublevel recurrence, and positive recurrence. |
+| `OperationalCapacity.lean` | EC.5 and the operational-boundary paragraph in Section 3 | Load-certified operational stabilizability and conservation-law necessity. |
+| `FrameBasedStability.lean` | Proposition 3 and EC.6 | Variable-duration cumulative service, normalized oracle scores, frame drift, and embedded recurrence. |
+| `ActionUnion.lean` | Proposition 4 and EC.8 | Monotonicity under finite registered action-family expansion. |
+| `Concentration.lean`, `ConcentrationProbability.lean`, `Learning.lean`, `StructuredLearning.lean`, `Regret.lean` | EC.7 and the extension paragraph in Section 6 | Conditional active-bucket concentration, regret, union bounds, and certificate-event lifting. |
+| `PiecewiseStationary.lean`, `RegimeBelief.lean`, `RegimeStability.lean` | EC.7 and the hidden-regime extension paragraph in Section 6 | Regime segmentation, belief/detection budgets, and switching-drift composition. |
+| `SweetSpot.lean` | Experimental service-profile and candidate-family discussion in Sections 4--5 | Finite service-profile selection support; not an independent stability claim. |
+| `MainTheorems.lean` | Theorem 1, Corollaries 1--2, and EC.1--EC.7 | Paper-facing composition theorems and calibrated/statewise wrappers. |
 
 ## Main theorem spine
 

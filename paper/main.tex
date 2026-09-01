@@ -137,6 +137,7 @@ restricted to the registered measured population.
 
 \begin{document}
 \ifECOnly
+\ECSwitch
 \ECHead{Electronic Companion to ``Robust Candidate MaxWeight Certificates for
 Heterogeneous Compute Scheduling: A Scheduleurm Case Study''}
 \else
@@ -697,9 +698,11 @@ measured Scheduleurm certificates.}
 \end{table}
 
 Table~\ref{tab:proof-roadmap} is the proof spine used below.  The numbered
-lemmas give the main-text derivation; Appendix ``Conventional Proof Details''
-then expands the same chain in electronic-companion style so that the reader can
-check the theorem without opening the Lean files.
+lemmas give the main-text derivation; EC.1--EC.5 expand the same support,
+lower-service, drift, recurrence, and operational-capacity chain so that the
+reader can check it without opening the Lean files.  EC.6 treats the separate
+variable-duration result, EC.7 records the conditional learning and
+hidden-regime extensions, and EC.8 gives the paper-to-Lean crosswalk.
 
 \begin{assumption}[Load slack]
 \label{ass:load-slack}
@@ -1099,10 +1102,12 @@ conclusion additionally uses Assumption~\ref{ass:foster-state}.  The artifact
 also proves a bounded finite-support specialization in which \(B\) is
 constructed from coordinate sample bounds and a finite-horizon telescoping
 backlog inequality.  The paper theorem numbers are not Lean identifiers.
-The theorem crosswalk in the Electronic Companion gives the exact Lean
-identifiers for Theorem~\ref{thm:main}, Corollary~\ref{cor:statewise}, the
-coordinate-scaled lower confidence bound result, and the operational sandwich
-boundary.
+The theorem crosswalk in EC.8 gives exact searchable Lean identifiers for every
+paper-facing formal statement, including Theorem~\ref{thm:main}, its statewise
+and finite-horizon consequences, candidate construction, diagonal scaling,
+variable-duration drift, action-union monotonicity, and the operational
+capacity boundary.  Lean-only helper lemmas are indexed in the submitted
+artifact crosswalk rather than restated as additional paper claims.
 \emph{Scope.}  The theorem applies when the stated slack, lower-service,
 penalty, oracle-error, and moment assumptions are certified; it is not by itself
 a certificate for every scheduler dispatch.
@@ -1123,7 +1128,9 @@ The Lean formalization mirrors this separation.  The operational necessity direc
 kept separate: an ``operationally stabilizes'' predicate is load-certified by a
 model that explicitly encodes the mean arrival vector, and zero-slack necessity
 follows from a conservation-law argument rather than from the definition of the
-predicate.
+predicate.  EC.1--EC.5 reproduce this complete conventional proof chain and
+state the operational sandwich formally; EC.8 maps each component back to its
+Lean theorem.
 
 \begin{proposition}[Variable-duration robust frame drift]
 \label{prop:frame-drift}
@@ -2157,9 +2164,11 @@ calibration: extending the positive-service certificate beyond the declared
 finite domains requires perturbation evidence for the feature map, projection,
 cover radius, Lipschitz envelope, and statistical failure probability.  The
 second is online learning: the active-bucket sampler and regime detector have
-formal conditional guarantees and replay checks, but they should be validated
-in live A/B experiments before becoming default scheduling logic.  The third is
-migration-aware control.  Proposition~\ref{prop:frame-drift} closes the
+the conditional guarantees derived in EC.7 and replay checks, but they should
+be validated in live A/B experiments before becoming default scheduling logic.
+The exact Lean statements are listed in EC.8; neither the conventional nor the
+formal implication supplies the missing sampler-specific probability model.
+The third is migration-aware control.  Proposition~\ref{prop:frame-drift} closes the
 mathematical variable-duration boundary: setup time, lost work, and resume risk
 enter a cumulative net-service frame or a unit-matched bounded penalty, and a
 positive minimum duration transfers per-time slack to embedded-chain drift.
@@ -2478,6 +2487,73 @@ the implication from certified assumptions to drift and recurrence, while the
 experiments and admission checks certify when Scheduleurm rows satisfy those
 assumptions.
 
+Call an integer-queue model \emph{load certified for \(\lambda\)} when it has an
+explicit finite-support arrival/service realization with the same transition
+kernel, conditional mean arrival equal to \(\lambda\) in every state, and
+conditional mean service equal to the service accounting used by the model.
+Call the load operationally stabilizable when such a model is positive recurrent
+through a finite backlog sublevel set.  This binding prevents a stable but
+unrelated transition kernel from serving as a witness for an arbitrary load.
+
+For necessity, the model-specific conservation law is the following statement.
+Every operationally stable load-certified model admits a stationary occupation
+mix \(x^{\mathrm{occ}}\in\operatorname{Mix}(\Afull)\) satisfying
+\begin{equation}
+  \lambda_i
+  \le
+  \sum_{a\in\Afull}x^{\mathrm{occ}}_a\mu_i(a),
+  \qquad i\in\mathcal I.
+  \label{eq:ec-operational-conservation}
+\end{equation}
+The occupation mix is a model certificate, not an automatic consequence of
+the geometric definition of \(\Lambda(\Afull)\).
+
+\begin{proposition}[Load-certified operational capacity sandwich]
+\label{prop:ec-operational-sandwich}
+Suppose the full action family and service map satisfy both of the following
+model-specific obligations.
+\begin{enumerate}[label=(\roman*)]
+\item For every \(\lambda\) with positive full-action slack, there is a
+load-certified integer-queue model satisfying the hypotheses of
+Theorem~\ref{thm:main} and Assumption~\ref{ass:foster-state}.
+\item Every operationally stable load-certified model satisfies the
+conservation law~\eqref{eq:ec-operational-conservation}.
+\end{enumerate}
+Then positive-slack membership in \(\Lambda(\Afull)\) is sufficient for
+operational stabilizability, and operational stabilizability is necessary only
+up to the zero-slack closure:
+\begin{equation}
+  \begin{aligned}
+  &\lambda\text{ operationally stabilizable}\\
+  &\qquad\Longrightarrow
+  \lambda\in\Lambda(\Afull).
+  \end{aligned}
+  \label{eq:ec-operational-necessity}
+\end{equation}
+Thus the result is a positive-slack/zero-slack sandwich, not an unsupported
+equivalence at a fixed positive slack.
+\end{proposition}
+
+\proof{Proof.}
+For sufficiency, obligation (i) supplies a load-certified model whose arrival
+mean is the same \(\lambda\) appearing in the capacity premise.  The positive
+residual margin in Theorem~\ref{thm:main} gives negative drift outside a finite
+backlog sublevel set, and Assumption~\ref{ass:foster-state} turns that drift
+certificate into positive recurrence of the relevant closed class.  Hence the
+same load \(\lambda\) is operationally stabilizable.
+
+For necessity, take an operationally stable load-certified model.  Obligation
+(ii) supplies \(x^{\mathrm{occ}}\in\operatorname{Mix}(\Afull)\) satisfying
+\eqref{eq:ec-operational-conservation}.  Define
+\(v_i=\sum_{a\in\Afull}x^{\mathrm{occ}}_a\mu_i(a)\).  By the definition of
+the stationary mixture, \(v\in\mathcal C(\Afull)\), and the conservation law
+gives \(\lambda\le v\) coordinatewise.  The definition of the downward-closed
+region therefore gives \(\lambda\in\Lambda(\Afull)\), proving
+\eqref{eq:ec-operational-necessity}.  The two directions use different
+model-specific premises, which is why no positive-slack ``if and only if'' is
+claimed.
+\endproof
+
 \subsection*{EC.6. Variable-Duration Configuration Trajectories}
 
 The slotted theorem does not silently cover migration, machine reconfiguration,
@@ -2651,53 +2727,234 @@ relabels the migration boundary: a measured migration row must still certify
 cumulative net service, duration, checkpoint/synchronization/resume loss, and
 risk before it can enter a stochastic frame model.
 
-\subsection*{EC.7. Lean Crosswalk and Artifact Assumptions}
+\subsection*{EC.7. Conditional Hidden-Regime and Active-Bucket Extensions}
 
-Tables~\ref{tab:appendix-lean-crosswalk} and
+These results are formalized extensions, not premises silently used by
+Theorem~\ref{thm:main}.  They state exactly what a future sampler or regime
+detector must certify before a probabilistic learning or switching claim can be
+composed with the stability theorem.
+
+Let \(\mathcal T\) be a finite set of decision slots partitioned by a regime
+segment map \(\sigma:\mathcal T\to\mathcal Z_{\mathrm{seg}}\), and let
+\(\mathcal M\subseteq\mathcal T\) be the marked switching or detection-delay
+slots.  Write \(\mathfrak D_t\) for the one-step drift quantity,
+\(\ell_t^{\mathrm{est}}\) for its estimation-loss term, and
+\(B_{\mathrm d}\) for the slotwise additive drift bound.  Let
+\(\eta_0\ge0\) be the base drift margin.  Suppose
+\begin{equation}
+  \mathfrak D_t
+  \le B_{\mathrm d}-\eta_0\normone{Q(t)}+\ell_t^{\mathrm{est}},
+  \qquad t\in\mathcal T,
+  \label{eq:ec-regime-step-drift}
+\end{equation}
+and each segment \(z\in\mathcal Z_{\mathrm{seg}}\) satisfies the
+marked-backlog budget
+\begin{equation}
+  \sum_{\substack{t\in\mathcal M\\\sigma(t)=z}}\normone{Q(t)}
+  \le
+  \theta_{\mathrm d}
+  \sum_{\substack{t\in\mathcal T\\\sigma(t)=z}}\normone{Q(t)}+\zeta_z,
+  \label{eq:ec-regime-marked-budget}
+\end{equation}
+where \(\theta_{\mathrm d}\ge0\) is the dwell/detection coefficient and
+\(\zeta_z\ge0\) is the fixed segment budget.  Let
+\(u_{\mathrm{sw}}\ge0\) be the coefficient
+charged to marked backlog and let \(C_{\mathrm{sw}}\) be an additive switching
+cost with \(C_{\mathrm{sw}}\ge0\).
+
+For the learning extension, let \(\mathcal B_{\mathrm{act}}\) be the finite set
+of active fabric or co-location buckets.  At slot \(t\), let \(\varepsilon_t\)
+be the nonnegative active-bucket confidence radius and let \(R_{\mathcal T}\) be the
+cumulative true-support minus lower-confidence-support loss.  Suppose the
+simultaneous confidence path gives
+\begin{equation}
+  R_{\mathcal T}
+  \le 2\sum_{t\in\mathcal T}
+    \varepsilon_t\normone{Q(t)},
+  \label{eq:ec-active-path-loss}
+\end{equation}
+and the active-bucket concentration certificate gives
+\begin{equation}
+  \sum_{t\in\mathcal T}\varepsilon_t
+  \le C_{\mathrm{act}}
+    \sqrt{|\mathcal B_{\mathrm{act}}|\nu_{\mathcal T}},
+  \label{eq:ec-active-concentration}
+\end{equation}
+where \(C_{\mathrm{act}}\ge0\) is a concentration constant and
+\(\nu_{\mathcal T}\ge0\) is the certified horizon mass.
+
+\begin{proposition}[Conditional switching and active-bucket bounds]
+\label{prop:ec-conditional-extensions}
+Under the two preceding assumptions,
+\begin{equation}
+  \begin{aligned}
+  &\sum_{t\in\mathcal T}\mathfrak D_t
+   +u_{\mathrm{sw}}\sum_{t\in\mathcal M}\normone{Q(t)}
+   +C_{\mathrm{sw}}\\
+  &\quad\le
+   |\mathcal T|B_{\mathrm d}
+   -(\eta_0-u_{\mathrm{sw}}\theta_{\mathrm d})
+     \sum_{t\in\mathcal T}\normone{Q(t)}
+   +\sum_{t\in\mathcal T}\ell_t^{\mathrm{est}}\\
+  &\qquad{}
+   +u_{\mathrm{sw}}\sum_{z\in\mathcal Z_{\mathrm{seg}}}\zeta_z
+   +C_{\mathrm{sw}}.
+  \end{aligned}
+  \label{eq:ec-regime-cumulative-drift}
+\end{equation}
+Under \eqref{eq:ec-active-path-loss}--\eqref{eq:ec-active-concentration},
+\(Q_{\max}\ge0\), and \(\normone{Q(t)}\le Q_{\max}\) for all \(t\),
+\begin{equation}
+  R_{\mathcal T}
+  \le 2Q_{\max}C_{\mathrm{act}}
+    \sqrt{|\mathcal B_{\mathrm{act}}|\nu_{\mathcal T}}.
+  \label{eq:ec-active-bucket-regret}
+\end{equation}
+If each active-bucket event \(E_b\) fails with probability at most
+\(p_b\in[0,1]\), then the simultaneous event fails with probability at most
+\(\sum_{b\in\mathcal B_{\mathrm{act}}}p_b\).  More generally, if a measurable
+certificate event has probability at least \(p\in[0,1]\) and implies a deterministic
+Foster certificate, then that Foster certificate holds with probability at
+least \(p\).
+\end{proposition}
+
+\proof{Proof.}
+Sum \eqref{eq:ec-regime-step-drift} over \(\mathcal T\), partition the marked
+backlog sum by \(\sigma(t)\), multiply
+\eqref{eq:ec-regime-marked-budget} by \(u_{\mathrm{sw}}\), and add the resulting
+inequality.  Collecting the total-backlog coefficient gives
+\(\eta_0-u_{\mathrm{sw}}\theta_{\mathrm d}\), which proves
+\eqref{eq:ec-regime-cumulative-drift}.  For the learning bound, substitute
+\(\normone{Q(t)}\le Q_{\max}\) into
+\eqref{eq:ec-active-path-loss} and then apply
+\eqref{eq:ec-active-concentration}.  The probability statement follows because
+the complement of \(\bigcap_{b\in\mathcal B_{\mathrm{act}}}E_b\) is the union
+of the bucket-level complements; the finite union bound gives the stated
+failure probability.  The last statement is event inclusion followed by
+monotonicity of probability.
+\endproof
+
+The bounds are deliberately conditional.  The Lean implications do not prove
+that Scheduleurm's adaptive sampler attains
+\eqref{eq:ec-active-concentration}, nor that a deployed detector attains
+\eqref{eq:ec-regime-marked-budget}; those are separate stochastic-model and
+live-validation obligations.
+
+\subsection*{EC.8. Lean Crosswalk and Artifact Assumptions}
+
+Tables~\ref{tab:appendix-lean-crosswalk},
+\ref{tab:appendix-lean-crosswalk-additional}, and
 \ref{tab:appendix-artifact-assumptions} separate the formal proof contract from
-the empirical Scheduleurm certificates.  The manuscript uses paper-facing
-statement names; exact Lean identifiers are kept in the supplementary theorem
-crosswalk so that the article does not become a code index.
+the empirical Scheduleurm certificates.  The first two tables give exact,
+searchable Lean identifiers for every paper-facing formal statement.  The
+supplementary theorem crosswalk additionally indexes lower-level helper lemmas;
+those helpers are part of the complete checked source but are not presented as
+independent paper claims.
+
+The stepwise EC.1--EC.4 chain is itself searchable rather than hidden inside a
+single wrapper theorem.  Its principal Lean checkpoints are:
+{\small\raggedright
+\noindent\textit{EC.1:}
+\path{capacity_slack_implies_support_slack}.\par
+\noindent\textit{EC.2:}
+\path{main_candidate_restricted_capacity_approximation} and
+\path{main_candidate_restricted_capacity_approximation_from_calibration}.\par
+\noindent\textit{EC.3:}
+\path{main_robust_candidate_maxweight_drift_approx_oracle}.\par
+\noindent\textit{EC.4:}
+\path{expectedLyapunovDrift_eq} and
+\path{main_concrete_finite_support_stochastic_stability_from_coordinate_moments}.\par
+\par}
+The complete artifact crosswalk records the subordinate algebraic and
+recurrence lemmas used between these checkpoints.
+
+The submitted Lean file is the complete 6,680-line checked source, not an
+excerpt generated from the two tables.  The tables map every paper-facing
+formal statement to exact declarations; the accompanying theorem crosswalk
+also maps every split-source module back to the main text or EC layer that uses
+it.  The EC therefore represents the full formal development semantically and
+searchably without typesetting all implementation lemmas as additional paper
+claims.
 
 \begin{table}[!htbp]
-\TABLE{Paper statements and Lean proof groups.\label{tab:appendix-lean-crosswalk}}{
+\TABLE{Core paper statements and searchable Lean theorems.\label{tab:appendix-lean-crosswalk}}{
 \scriptsize
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\linewidth}
-                >{\raggedright\arraybackslash}p{0.30\linewidth}
-                >{\raggedright\arraybackslash}p{0.34\linewidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.22\linewidth}
+                >{\raggedright\arraybackslash}p{0.43\linewidth}
+                >{\raggedright\arraybackslash}p{0.25\linewidth}}
 \toprule
-Paper statement & Lean proof group & What the formal result checks \\
+Paper statement & Searchable Lean theorem(s) & Formal coverage \\
 \midrule
-Proposition~\ref{prop:finite-cell-candidate} & Finite feature-cell candidate
-construction theorem & Candidate containment, cardinality bounded by active
-feature cells, and nonzero \(L\rho\) support loss. \\
-Theorem~\ref{thm:main}, exact candidate version & Fixed-family exact-oracle
-robust candidate MaxWeight theorem & Support-function candidate loss, robust
-lower-service drift, and finite-set recurrence certificate. \\
-Theorem~\ref{thm:main}, approximate-oracle version & Fixed-family
-approximate-oracle robust candidate MaxWeight theorem & Calibrated fabric
-cover, bounded second moment, additive and queue-scaled oracle loss, and slack
-accounting. \\
-Corollary~\ref{cor:statewise} & State-indexed candidate-family theorem &
-State-dependent feasible families under the same uniform constants used in the
-fixed-family theorem. \\
-Proposition~\ref{prop:diagonal-lcb} & Diagonal-scaled lower confidence
-bound theorem & Heterogeneous service-unit scaling and lower-service support
-loss in normalized coordinates. \\
-Corollary~\ref{cor:finite-horizon-backlog} & Foster telescoping backlog theorem &
-Finite-horizon cumulative-backlog and asymptotic expected-backlog bounds from
-the residual drift margin. \\
-Proposition~\ref{prop:frame-drift} & Variable-duration frame drift and
-embedded recurrence theorems & Cumulative-work oracle, bounded frame penalty,
-uniform frame drift, duration-one reduction, and elapsed-time bound. \\
-Operational capacity boundary & Load-certified capacity sandwich theorem &
-Positive-slack sufficiency and zero-slack conservation-law necessity once the
-stochastic model encodes arrivals and service accounting. \\
+Proposition~\ref{prop:finite-cell-candidate} &
+\path{finite_feature_cell_candidate_certificate} & Containment, active-cell
+cardinality, and \(L\rho\) support loss. \\
+Proposition~\ref{prop:diagonal-lcb} &
+\path{main_diagonal_scaled_lcb_support_loss};
+\path{main_diagonal_scaled_lcb_support_loss_l1} & Coordinate scaling and the
+induced lower-service support loss. \\
+Theorem~\ref{thm:main}, exact-oracle case &
+\path{main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound}
+& Candidate and estimation loss, bounded moment, drift, and recurrence. \\
+Theorem~\ref{thm:main}, approximate-oracle case &
+\path{main_theorem_robust_candidate_maxweight_stability_with_second_moment_bound_approx_oracle}
+& Additive and queue-scaled oracle loss in the same slack budget. \\
+Theorem~\ref{thm:main}, calibrated fabric specialization &
+\path{main_theorem_robust_candidate_maxweight_stability_from_calibrated_fabric_with_second_moment_bound_approx_oracle}
+& Projection, feature sensitivity, nonzero \(L\rho\), and approximate oracle. \\
+Corollary~\ref{cor:statewise} &
+\path{main_statewise_calibrated_fabric_robust_candidate_stability_with_second_moment_bound_approx_oracle}
+& Queue-indexed feasible families with uniform constants. \\
+Corollary~\ref{cor:finite-horizon-backlog} &
+\path{foster_telescoping_l1_bound} & Finite-horizon and asymptotic expected
+backlog bounds. \\
 \bottomrule
 \end{tabular}
-}{The exact Lean theorem identifiers, file hashes, and build log are supplied in
-the supplementary artifact crosswalk.  This table records the mathematical
-correspondence used by the paper.}
+}{Every identifier is searchable in \texttt{ScheduleurmUpload.lean}.  The
+main-text statements are conventional versions of these formal implications;
+the stated augmented-filtration boundary for Corollary~\ref{cor:statewise}
+remains explicit.}
+\end{table}
+
+\begin{table}[!htbp]
+\TABLE{Additional paper statements and searchable Lean theorems.\label{tab:appendix-lean-crosswalk-additional}}{
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.22\linewidth}
+                >{\raggedright\arraybackslash}p{0.43\linewidth}
+                >{\raggedright\arraybackslash}p{0.25\linewidth}}
+\toprule
+Paper statement & Searchable Lean theorem(s) & Formal coverage \\
+\midrule
+Proposition~\ref{prop:frame-drift} and EC.6 &
+\path{frameApproximateOracle_iff_durationNormalized};
+\path{frame_approximate_maxWeight_lyapunov_drift_uniform};
+\path{frame_nat_model_positive_recurrent_via_finite_set};
+\path{frame_lyapunov_drift_duration_one};
+\path{elapsedFrameTime_le} & Cumulative units, uniform frame drift, embedded
+recurrence, slotted reduction, and elapsed time. \\
+Proposition~\ref{prop:action-union-monotonicity} &
+\path{support_gap_mono_under_candidate_expansion};
+\path{candidate_capacity_slack_loss_under_expansion} & Support-loss and
+capacity-margin monotonicity under finite action-family expansion. \\
+Proposition~\ref{prop:ec-operational-sandwich} &
+\path{ModelEncodesLoad};
+\path{OperationallyStabilizesIntegerLoad};
+\path{main_operational_conservation_law_necessity};
+\path{main_operational_capacity_sandwich} & Load binding, positive-slack
+sufficiency, and zero-slack conservation-law necessity. \\
+Proposition~\ref{prop:ec-conditional-extensions}, switching part &
+\path{main_hidden_regime_dwell_switching_drift} & Explicit dwell/detection
+budget and switching charge; extension only. \\
+Proposition~\ref{prop:ec-conditional-extensions}, learning part &
+\path{main_active_bucket_lcb_learning_regret};
+\path{main_active_bucket_lcb_learning_regret_high_probability};
+\path{main_active_bucket_local_failure_union_bound};
+\path{main_high_probability_stability_from_certificate_event} & Active-bucket
+regret, finite union bound, and event-to-certificate lifting; extension only. \\
+\bottomrule
+\end{tabular}
+}{These rows close the reverse map from each paper-level formalization claim to
+the submitted Lean source.  They do not promote the conditional extension rows
+to main empirical claims.}
 \end{table}
 
 \begin{table}[!htbp]
@@ -2746,6 +3003,7 @@ these hypotheses hold, while the Scheduleurm artifact determines which measured
 rows satisfy them.}
 \end{table}
 
+\clearpage
 \section*{Appendix: Supplementary Evidence Index}
 
 The full machine-readable status dashboard is provided in the supplementary
@@ -2851,6 +3109,7 @@ unregistered schedulers, or unmeasured hardware states. \\
 preserving the paper's scoped mathematical claim.}
 \end{table}
 
+\clearpage
 \section*{Code and Data Availability}
 
 The code, experiment artifacts, measured service-cache summaries, reviewer

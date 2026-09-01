@@ -59,11 +59,15 @@ def test_stage_plan_orders_cache_slack_migration_replay_and_figure() -> None:
         "export_paper_results",
         "render_quadrant_figure",
         "verify_manuscript_sync",
-        "build_opre_manuscript",
+        "build_opre_submission_package",
     ]
     stages = build_stages(python="python-test")
     assert all(stage.argv[0] == "python-test" for stage in stages[:-1])
-    assert stages[-1].argv[0] == "latexmk"
+    assert stages[-1].argv == ("make", "-C", "paper", "all")
+    assert [path.name for path in stages[-1].outputs] == [
+        "main.pdf",
+        "electronic_companion.pdf",
+    ]
     generalization = next(
         stage for stage in stages if stage.name == "certify_or_generalization_v7"
     )

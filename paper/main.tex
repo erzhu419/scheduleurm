@@ -35,6 +35,15 @@
 \usepackage{enumitem}
 \usepackage{float}
 
+\newif\ifECOnly
+\ifdefined\BuildECOnly
+  \ECOnlytrue
+  \usepackage{xr}
+  \externaldocument{main}
+\else
+  \ECOnlyfalse
+\fi
+
 \TheoremsNumberedThrough
 \ECRepeatTheorems
 \EquationsNumberedThrough
@@ -67,34 +76,29 @@
 }
 
 \ABSTRACT{%
-Modern compute clusters serve jobs whose rates depend on co-location, host
-load, accelerator memory, and placement.  This makes the natural scheduling
-action a full configuration rather than a scalar resource allocation.  We model
-the problem as a configuration-action stochastic processing network and prove a
-robust candidate MaxWeight theorem.  The theorem keeps the full action space in
-the capacity statement and charges four implementable losses against explicit
-slack: candidate approximation, conservative service estimation, bounded
-penalties, and approximate optimization.  A positive residual margin gives a
-finite-set Foster drift certificate under bounded conditional second moments.
-We construct candidate families from finite feature cells, obtaining an
-explicit cardinality bound and an \(L\rho\) support-loss certificate, and derive
-finite-horizon expected-backlog bounds in addition to recurrence.  We provide a
-Lean formalization of the fixed-family, queue-indexed statewise, candidate-cover,
-diagonal-scaling, and variable-duration frame statements.
-We instantiate the model in Scheduleurm, an operational research-cluster scheduler.  The
-implementation records measured lower-service rows, admissible candidate
-configurations, penalty terms, oracle gaps, and production-admission status.
-Across \UnifiedOnlineComparisonCount{} online-arrival measured-cache replay
-traces, the robust candidate improves geometric-mean makespan by
+Modern compute clusters serve jobs whose rates depend on co-location, host load,
+accelerator memory, and placement, making a full configuration the natural
+scheduling action.  We formulate a configuration-action stochastic processing
+network and prove a robust candidate MaxWeight theorem that preserves the full
+action space in the capacity statement while charging candidate approximation,
+conservative service estimation, bounded penalties, and approximate optimization
+against explicit slack.  Positive residual slack yields finite-horizon
+expected-backlog bounds and a finite-set Foster recurrence certificate under
+bounded conditional second moments.  A finite-feature-cell construction gives a
+cardinality bound and an \(L\rho\) support-loss certificate; diagonal scaling
+handles heterogeneous service units, and a variable-duration frame result covers
+migration and reconfiguration.  Lean formalizes the fixed-family, statewise,
+candidate-cover, scaling, and frame statements.  Scheduleurm instantiates the
+framework with measured lower-service actions and audited oracle gaps.  Across
+\UnifiedOnlineComparisonCount{} online-arrival measured-cache traces, the
+candidate improves geometric-mean makespan by
 \(\UnifiedOnlineLegacyMakespanGeoRatio\times\) and mean flow by
-\(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) over legacy Scheduleurm caps.
-On the same measured service cache, it has lower aggregate geometric-mean
-makespan and mean flow for \UnifiedSotaAggregateBothMetricWinCount{} of
-\UnifiedSotaPolicyCount{} registered policy-semantics baselines.  At trace level,
-a baseline strictly Pareto-dominates it in \UnifiedSotaDominatesOursCount{} of
-\UnifiedSotaPolicyTraceComparisonCount{} policy-trace comparisons.  The evidence
-supports a measured finite-slice stability and performance claim, with external
-full-stack and future-workload generalization left outside the main claim.
+\(\UnifiedOnlineLegacyMeanFlowGeoRatio\times\) over legacy caps.  It improves
+both aggregate metrics against all \UnifiedSotaPolicyCount{} registered
+policy-semantics baselines, although a baseline strictly Pareto-dominates it in
+\UnifiedSotaDominatesOursCount{} of
+\UnifiedSotaPolicyTraceComparisonCount{} policy-trace comparisons.  Claims are
+restricted to the registered measured population.
 }%
 
 \KEYWORDS{stochastic processing networks; MaxWeight scheduling; heterogeneous clusters; graphics-processing-unit co-location; robust optimization; formal verification; queueing networks}
@@ -132,6 +136,10 @@ full-stack and future-workload generalization left outside the main claim.
 \makeatother
 
 \begin{document}
+\ifECOnly
+\ECHead{Electronic Companion to ``Robust Candidate MaxWeight Certificates for
+Heterogeneous Compute Scheduling: A Scheduleurm Case Study''}
+\else
 \maketitle
 
 \section{Introduction}
@@ -1091,9 +1099,10 @@ conclusion additionally uses Assumption~\ref{ass:foster-state}.  The artifact
 also proves a bounded finite-support specialization in which \(B\) is
 constructed from coordinate sample bounds and a finite-horizon telescoping
 backlog inequality.  The paper theorem numbers are not Lean identifiers.
-Appendix Table~\ref{tab:appendix-lean-crosswalk} gives the exact crosswalk for
-Theorem~\ref{thm:main}, Corollary~\ref{cor:statewise}, the coordinate-scaled
-lower confidence bound result, and the operational sandwich boundary.
+The theorem crosswalk in the Electronic Companion gives the exact Lean
+identifiers for Theorem~\ref{thm:main}, Corollary~\ref{cor:statewise}, the
+coordinate-scaled lower confidence bound result, and the operational sandwich
+boundary.
 \emph{Scope.}  The theorem applies when the stated slack, lower-service,
 penalty, oracle-error, and moment assumptions are certified; it is not by itself
 a certificate for every scheduler dispatch.
@@ -1115,6 +1124,77 @@ kept separate: an ``operationally stabilizes'' predicate is load-certified by a
 model that explicitly encodes the mean arrival vector, and zero-slack necessity
 follows from a conservation-law argument rather than from the definition of the
 predicate.
+
+\begin{proposition}[Variable-duration robust frame drift]
+\label{prop:frame-drift}
+Let \(n\) index decision frames, let the frame duration satisfy
+\(0<\tau_{\min}\leq\tau_n\leq\tau_{\max}<\infty\), and let
+\(Q^{\mathrm F}(n)\) be the frame-boundary queue.  Suppose conditional arrivals
+are bounded by \(\tau_n\lambda\), the frame second-order term is at most
+\(B_{\mathrm F}\), and the full action family has support slack \(\delta\).
+Write
+\(\overline S^{\mathrm F}(n)=
+\E[S^{\mathrm F}(n)\mid\mathcal F_n^{\mathrm F}]\).
+Assume the selected cumulative lower-service trajectory has combined candidate
+and estimation loss \(\epsilon_{\mathrm F}\), approximate-oracle losses
+\((\alpha_0,\alpha_1)\), and satisfies
+\begin{equation}
+  \begin{aligned}
+  \tau_n H_{\Afull}\!\left(Q^{\mathrm F}(n)\right)
+  &\leq \left(Q^{\mathrm F}(n)\right)^{\!\top}
+    \overline S^{\mathrm F}(n)\\
+  &\quad+\tau_n(\epsilon_{\mathrm F}+\alpha_1)
+    \normone{Q^{\mathrm F}(n)}\\
+  &\quad+\alpha_0+P_n^{\mathrm F},
+  \end{aligned}
+  \label{eq:main-frame-oracle}
+\end{equation}
+with penalty bound
+\[
+  P_n^{\mathrm F}
+  \leq P_0+\tau_n\beta\normone{Q^{\mathrm F}(n)}.
+\]
+Define
+\begin{equation}
+  \eta_{\mathrm F}
+  =\delta-\epsilon_{\mathrm F}-\alpha_1-\beta.
+  \label{eq:main-frame-margin}
+\end{equation}
+If \(\eta_{\mathrm F}>0\), then the quadratic Lyapunov function satisfies
+\begin{equation}
+  \begin{aligned}
+  &\E\!\left[
+    V\!\left(Q^{\mathrm F}(n+1)\right)
+    -V\!\left(Q^{\mathrm F}(n)\right)
+    \middle|\mathcal F_n^{\mathrm F}
+  \right]\\
+  &\qquad\leq B_{\mathrm F}+\alpha_0+P_0
+  -\tau_{\min}\eta_{\mathrm F}\normone{Q^{\mathrm F}(n)}.
+  \end{aligned}
+  \label{eq:main-frame-drift}
+\end{equation}
+If the augmented frame-boundary state is countable, its backlog sublevel sets
+are finite and nonempty, and the local-return condition holds, then any
+\(N\in\mathbb N\) and \(\gamma>0\) satisfying
+\begin{equation}
+  B_{\mathrm F}+\alpha_0+P_0+\gamma
+  \leq\tau_{\min}\eta_{\mathrm F}N
+  \label{eq:main-frame-threshold}
+\end{equation}
+give a finite-set Foster recurrence certificate for the embedded chain.
+Moreover, elapsed physical time through frame \(n\) is at most
+\(n\tau_{\max}\).
+\end{proposition}
+
+\proof{Proof.}
+Apply the quadratic queue inequality to cumulative frame arrivals and service,
+then combine full-action support slack with the cumulative lower-service oracle
+and penalty bounds.  Collecting queue-scaled losses gives
+\eqref{eq:main-frame-margin}--\eqref{eq:main-frame-drift};
+\eqref{eq:main-frame-threshold} supplies negative drift outside a finite
+sublevel set.  EC.6 gives the complete unit-matched derivation and the
+duration-one reduction.
+\endproof
 
 \section{Scheduleurm Instantiation}
 \label{sec:implementation}
@@ -2130,7 +2210,21 @@ template for making approximate configuration-action scheduling certifiable:
 define the action family, measure conservative service, account for every loss,
 and claim stability only when the residual slack remains positive.
 
-\section*{Appendix: Conventional Proof Details}
+\section*{Code and Data Availability}
+
+The submission package provides the Scheduleurm source, theorem-facing replay
+modules, measured service-cache summaries, generated experiment reports, and the
+Lean supplement headed by \texttt{ScheduleurmUpload.lean}.  Its reproduction
+entry point rebuilds the paper, reruns the safe replay and certificate checks,
+executes the targeted tests, and refreshes the manifest.  Recorded live-launch
+and external-runtime outputs are packaged with their environment notes; the
+reproduction entry point does not launch remote jobs by default.  Raw operational
+telemetry outside the declared completed-active population is not used as the
+claimed replication population.
+
+\fi
+\ifECOnly
+\section*{EC. Conventional Proof Details}
 \label{app:conventional-proof}
 
 This appendix gives the conventional, paper-readable proof chain behind
@@ -2475,10 +2569,9 @@ equivalently
 \underline\mu_n^{\mathrm{old}}\).  Thus wall-clock overhead first changes the
 trajectory duration; it is not subtracted directly from a service-rate score.
 
-\begin{proposition}[Variable-duration robust frame drift]
-\label{prop:frame-drift}
-Suppose \eqref{eq:frame-duration-bounds}--\eqref{eq:frame-penalty} hold and the
-full family has support slack \(\delta\).  Define
+For the detailed proof of Proposition~\ref{prop:frame-drift}, suppose
+\eqref{eq:frame-duration-bounds}--\eqref{eq:frame-penalty} hold and the full
+family has support slack \(\delta\).  Define
 \begin{equation}
   \eta_{\mathrm F}
   =
@@ -2514,9 +2607,8 @@ satisfying
 give a finite-set Foster recurrence certificate for the embedded
 frame-boundary chain.  Moreover, elapsed physical time through frame \(n\) is
 at most \(n\tau_{\max}\).
-\end{proposition}
 
-\proof{Proof.}
+\proof{Detailed proof of Proposition~\ref{prop:frame-drift}.}
 The quadratic queue inequality applied to
 \eqref{eq:frame-queue-dynamics}, followed by conditional expectation, gives
 \begin{equation}
@@ -2777,7 +2869,12 @@ The Lean supplement package contains \texttt{ScheduleurmUpload.lean},
 \texttt{lakefile.toml}, \texttt{lean-toolchain}, \texttt{build.log},
 \texttt{theorem\_crosswalk.md}, \texttt{manifest.json}, and checksums.
 
+\fi
+\ifECOnly\else
+\clearpage
+\label{page:references-start}
 \bibliographystyle{informs2014}
 \bibliography{references}
+\fi
 
 \end{document}

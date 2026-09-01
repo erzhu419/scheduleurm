@@ -211,17 +211,12 @@ def build_stages(*, python: str = sys.executable, include_figure: bool = True) -
                     ),
                 ),
                 Stage(
-                    "build_opre_manuscript",
+                    "build_opre_submission_package",
+                    ("make", "-C", "paper", "all"),
                     (
-                        "latexmk",
-                        "-cd",
-                        "-g",
-                        "-pdf",
-                        "-interaction=nonstopmode",
-                        "-halt-on-error",
-                        "paper/main.tex",
+                        REPO_ROOT / "paper" / "main.pdf",
+                        REPO_ROOT / "paper" / "electronic_companion.pdf",
                     ),
-                    (REPO_ROOT / "paper" / "main.pdf",),
                 ),
             ]
         )

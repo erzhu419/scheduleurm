@@ -171,6 +171,25 @@ def build_critical_gpu_stochastic_lcb_gate(
             )
         )
 
+    admitted_cell_ids, excluded_capacity_cells, support_errors = (
+        _freeze_training_candidate_support(
+            payloads=payloads,
+            expected_cells=expected_cells,
+        )
+    )
+    validation_errors.extend(support_errors)
+    admitted_cells = {
+        cell_id: expected_cells[cell_id]
+        for cell_id in sorted(admitted_cell_ids)
+    }
+    if payloads and not admitted_cells:
+        validation_errors.append(
+            _issue(
+                "EMPTY_ADMITTED_CANDIDATE_SUPPORT",
+                detail="training-wave capacity discovery excluded every action",
+            )
+        )
+
     observations: dict[tuple[int, str], dict[str, Any]] = {}
     wave_audits: list[dict[str, Any]] = []
     for wave in EXPECTED_WAVES:
@@ -182,6 +201,8 @@ def build_critical_gpu_stochastic_lcb_gate(
             wave=wave,
             payload=payload,
             expected_cells=expected_cells,
+            admitted_cell_ids=set(admitted_cells),
+            excluded_cell_ids=set(excluded_capacity_cells),
         )
         wave_audits.append(audit)
         wait_reasons.extend(wave_waits)
@@ -193,7 +214,7 @@ def build_critical_gpu_stochastic_lcb_gate(
             }
         )
 
-    expected_observation_count = len(EXPECTED_WAVES) * len(expected_cells)
+    expected_observation_count = len(EXPECTED_WAVES) * len(admitted_cells)
     all_measurements_ready = bool(
         not missing_waves
         and not wait_reasons
@@ -209,7 +230,7 @@ def build_critical_gpu_stochastic_lcb_gate(
     if all_measurements_ready:
         certificate = _build_certificate(
             observations=observations,
-            expected_cells=expected_cells,
+            expected_cells=admitted_cells,
             alpha=alpha,
         )
         if not certificate.get("finite_sample_rank_ready"):
@@ -271,6 +292,8 @@ def build_critical_gpu_stochastic_lcb_gate(
             next(iter(code_hashes)) if len(code_hashes) == 1 and "" not in code_hashes else None
         ),
         "expected_cell_count": len(expected_cells),
+        "admitted_cell_count": len(admitted_cells),
+        "training_capacity_excluded_cell_count": len(excluded_capacity_cells),
         "expected_wave_count": len(EXPECTED_WAVES),
         "expected_observation_count": expected_observation_count,
         "ready_observation_count": len(observations),
@@ -290,6 +313,15 @@ def build_critical_gpu_stochastic_lcb_gate(
         ),
         "hardware_local_only": True,
         "expected_cells": [expected_cells[key] for key in sorted(expected_cells)],
+        "admitted_cells": [admitted_cells[key] for key in sorted(admitted_cells)],
+        "training_capacity_excluded_cells": [
+            excluded_capacity_cells[key]
+            for key in sorted(excluded_capacity_cells)
+        ],
+        "candidate_support_frozen_from_training_waves": bool(
+            len(payloads) == len(EXPECTED_WAVES)
+            and all(wave in payloads for wave in TRAINING_WAVES)
+        ),
         "wave_audits": wave_audits,
         "source_artifacts": source_artifacts,
         "certificate": certificate,
@@ -306,7 +338,11 @@ def build_critical_gpu_stochastic_lcb_gate(
             "one-sided split-conformal lower-service construction. Training waves freeze the "
             "phase model; calibration-wave maximum scores provide one-sided joint "
             "coverage over both drain completion time and mean task JCT for the "
-            "nine declared actions. It neither uses smoke measurements nor pools "
+            "training-admitted actions. A cell with a controlled capacity failure "
+            "in any training wave is conservatively removed before calibration and "
+            "cannot be re-admitted by later successes; a capacity failure after "
+            "support freezing invalidates the certificate. It neither uses smoke "
+            "measurements nor pools "
             "hardware classes, and it does not extrapolate to loaded states, "
             "unmeasured profiles, or arbitrary future workload environments."
         ),
@@ -357,12 +393,75 @@ def _expected_cells(node: str) -> dict[str, dict[str, Any]]:
     return result
 
 
+def _freeze_training_candidate_support(
+    *,
+    payloads: Mapping[int, Mapping[str, Any]],
+    expected_cells: Mapping[str, Mapping[str, Any]],
+) -> tuple[set[str], dict[str, dict[str, Any]], list[dict[str, Any]]]:
+    """Freeze the positive-service support using training waves only.
+
+    A controlled capacity failure is not averaged away.  The corresponding
+    hardware-local action is removed before calibration, and later successes
+    cannot re-admit it.  Failures first observed after training remain fatal in
+    the strict row audit.
+    """
+
+    admitted = set(expected_cells)
+    excluded: dict[str, dict[str, Any]] = {}
+    errors: list[dict[str, Any]] = []
+    if any(wave not in payloads for wave in TRAINING_WAVES):
+        return admitted, excluded, errors
+
+    for wave in TRAINING_WAVES:
+        row_index, duplicates, invalid = _index_cells(
+            payloads[wave].get("rows") or []
+        )
+        errors.extend(
+            _issue("INVALID_CELL_IDENTITY", wave=wave, detail=detail)
+            for detail in invalid
+        )
+        errors.extend(
+            _issue("DUPLICATE_CELL", wave=wave, cell=cell, detail="rows")
+            for cell in duplicates
+        )
+        for cell_id in sorted(set(expected_cells) & set(row_index)):
+            row = row_index[cell_id]
+            if not bool(row.get("capacity_boundary")):
+                continue
+            if row.get("status") != "CAPACITY_BOUNDARY" or bool(row.get("ready")):
+                errors.append(
+                    _issue(
+                        "CAPACITY_BOUNDARY_CONTRACT_INVALID",
+                        wave=wave,
+                        cell=cell_id,
+                        detail="capacity row must be terminal, non-ready CAPACITY_BOUNDARY",
+                    )
+                )
+                continue
+            admitted.discard(cell_id)
+            record = excluded.setdefault(
+                cell_id,
+                {
+                    **dict(expected_cells[cell_id]),
+                    "support_status": "TRAINING_CAPACITY_EXCLUDED",
+                    "first_capacity_wave": wave,
+                    "capacity_waves": [],
+                    "later_success_cannot_readmit": True,
+                    "lower_service": 0.0,
+                },
+            )
+            record["capacity_waves"].append(wave)
+    return admitted, excluded, errors
+
+
 def _audit_wave(
     *,
     node: str,
     wave: int,
     payload: Mapping[str, Any],
     expected_cells: Mapping[str, Mapping[str, Any]],
+    admitted_cell_ids: set[str],
+    excluded_cell_ids: set[str],
 ) -> tuple[
     dict[str, Any],
     list[dict[str, Any]],
@@ -531,11 +630,28 @@ def _audit_wave(
     if campaign_terminal_pass:
         for cell_id in sorted(expected_set & set(row_index)):
             row = row_index[cell_id]
-            row_errors, observation = _audit_measurement_row(
-                row=row,
-                expected=expected_cells[cell_id],
-                wave=wave,
-            )
+            if cell_id in admitted_cell_ids:
+                row_errors, observation = _audit_measurement_row(
+                    row=row,
+                    expected=expected_cells[cell_id],
+                    wave=wave,
+                )
+            elif cell_id in excluded_cell_ids:
+                row_errors, observation = _audit_training_excluded_row(
+                    row=row,
+                    expected=expected_cells[cell_id],
+                    wave=wave,
+                )
+            else:
+                row_errors = [
+                    _issue(
+                        "CANDIDATE_SUPPORT_PARTITION_INVALID",
+                        wave=wave,
+                        cell=cell_id,
+                        detail="cell is neither admitted nor training-excluded",
+                    )
+                ]
+                observation = None
             errors.extend(row_errors)
             if observation is not None and not row_errors:
                 observations[cell_id] = observation
@@ -548,6 +664,8 @@ def _audit_wave(
         "planned_cell_count": len(planned_index),
         "observed_cell_count": len(row_index),
         "ready_cell_count": len(observations),
+        "admitted_cell_count": len(admitted_cell_ids),
+        "training_capacity_excluded_cell_count": len(excluded_cell_ids),
         "terminal_pass": campaign_terminal_pass,
         "missing_cells": missing_rows,
         "unexpected_cells": unexpected_rows,
@@ -837,6 +955,92 @@ def _audit_measurement_row(
         "real_checkpoint_ready": True,
         "empty_preflight_ready": True,
     }
+
+
+def _audit_training_excluded_row(
+    *,
+    row: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    wave: int,
+) -> tuple[list[dict[str, Any]], None]:
+    """Audit a profiled action removed by a training-wave capacity failure."""
+
+    if bool(row.get("ready")) and row.get("status") == "READY":
+        errors, _ = _audit_measurement_row(
+            row=row,
+            expected=expected,
+            wave=wave,
+        )
+        return errors, None
+
+    cell_id = str(expected["service_cell_id"])
+    errors: list[dict[str, Any]] = []
+
+    def require(condition: bool, code: str, detail: str) -> None:
+        if not condition:
+            errors.append(_issue(code, wave=wave, cell=cell_id, detail=detail))
+
+    for field in (
+        "node",
+        "node_bucket",
+        "hardware_class",
+        "workload_key",
+        "workload_env",
+        "profile_axis",
+        "total_task_count",
+        "service_evidence_mode",
+    ):
+        require(
+            row.get(field) == expected.get(field),
+            "CELL_METADATA_MISMATCH",
+            f"{field}: expected {expected.get(field)!r}, got {row.get(field)!r}",
+        )
+    require(
+        int(row.get("profile") or 0) == int(expected["profile"]),
+        "CELL_METADATA_MISMATCH",
+        f"profile: expected {expected['profile']}, got {row.get('profile')!r}",
+    )
+    require(_int_or(row.get("wave"), -1) == wave, "WAVE_MISMATCH", "row wave differs")
+    require(
+        row.get("split_role") == wave_role(wave),
+        "SPLIT_ROLE_MISMATCH",
+        "row role differs",
+    )
+    require(
+        row.get("measurement_protocol") == PROTOCOL,
+        "PROTOCOL_MISMATCH",
+        f"row protocol must be {PROTOCOL!r}",
+    )
+    require(bool(row.get("capacity_boundary")), "CAPACITY_BOUNDARY_MISSING", "excluded row is neither ready nor a capacity boundary")
+    require(row.get("status") == "CAPACITY_BOUNDARY", "CAPACITY_BOUNDARY_CONTRACT_INVALID", f"status={row.get('status')!r}")
+    require(not bool(row.get("ready")), "CAPACITY_BOUNDARY_CONTRACT_INVALID", "capacity row cannot be ready")
+    require(bool(row.get("measurement_code_identity_ready")), "MEASUREMENT_CODE_IDENTITY_INVALID", "row code identity is not ready")
+
+    preflight = row.get("preflight") or {}
+    selected_gpus = preflight.get("selected_gpus") or []
+    require(bool(preflight.get("ready")), "EMPTY_PREFLIGHT_INVALID", "preflight is not ready")
+    require(_int_or(preflight.get("returncode"), -1) == 0, "EMPTY_PREFLIGHT_INVALID", "preflight returncode is nonzero")
+    require(not (preflight.get("compute_process_rows") or []), "EMPTY_PREFLIGHT_INVALID", "compute process existed before launch")
+    require(len(selected_gpus) == int(expected["gpu_count"]), "EMPTY_PREFLIGHT_INVALID", "selected GPU count differs")
+    require(
+        all(
+            float(gpu.get("util_pct") or 0.0) <= GPU_IDLE_UTIL_LIMIT_PCT
+            and float(gpu.get("used_mb") or 0.0) <= GPU_IDLE_MEMORY_LIMIT_MB
+            for gpu in selected_gpus
+        ),
+        "EMPTY_PREFLIGHT_INVALID",
+        "GPU utilization or memory exceeds the registered empty-state boundary",
+    )
+    summary = row.get("summary") or {}
+    children = summary.get("rows") or []
+    require(summary.get("measurement_valid") is False, "CAPACITY_BOUNDARY_CONTRACT_INVALID", "capacity summary unexpectedly passed")
+    require((row.get("probe_result") or {}).get("pass") is False, "CAPACITY_BOUNDARY_CONTRACT_INVALID", "capacity probe unexpectedly passed")
+    require(
+        any(_int_or(child.get("returncode"), 0) != 0 for child in children),
+        "CAPACITY_BOUNDARY_CONTRACT_INVALID",
+        "capacity row has no failed child",
+    )
+    return errors, None
 
 
 def _build_certificate(
@@ -1172,6 +1376,9 @@ def _markdown(report: Mapping[str, Any], json_path: Path) -> str:
         f"- Node: `{report.get('node')}`",
         f"- Hardware-local bucket: `{report.get('node_bucket')}`",
         f"- Resource state: `{report.get('resource_state')}`",
+        f"- Registered cells: `{report.get('expected_cell_count')}`",
+        f"- Training-admitted positive-service cells: `{report.get('admitted_cell_count')}`",
+        f"- Training capacity exclusions: `{report.get('training_capacity_excluded_cell_count')}`",
         f"- Ready observations: `{report.get('ready_observation_count')}` / `{report.get('expected_observation_count')}`",
         f"- Missing waves: `{report.get('missing_waves')}`",
         f"- Smoke excluded: `{bool(report.get('smoke_wave_excluded'))}`",
@@ -1225,6 +1432,23 @@ def _markdown(report: Mapping[str, Any], json_path: Path) -> str:
                         else "no"
                     ),
                 )
+            )
+        lines.append("")
+    excluded = report.get("training_capacity_excluded_cells") or []
+    if excluded:
+        lines.extend(
+            [
+                "## Training-frozen capacity exclusions",
+                "",
+                "| workload environment | profile | first capacity wave | capacity waves | lower service |",
+                "|---|---:|---:|---|---:|",
+            ]
+        )
+        for row in excluded:
+            lines.append(
+                f"| `{row['workload_env']}` | {row['profile']} | "
+                f"{row['first_capacity_wave']} | `{row['capacity_waves']}` | "
+                f"{float(row['lower_service']):.6f} |"
             )
         lines.append("")
     lines.extend([str(report.get("claim_boundary") or ""), ""])

@@ -39,6 +39,7 @@ def _deps(
     stage_state_by_target: dict[str, str] | None = None,
     stage_blocked: bool = False,
     input_stage_state=None,
+    input_stage_blocked: bool = False,
 ):
     migrated = migrated or []
     preempted = preempted or []
@@ -127,6 +128,10 @@ def _deps(
     def release(task, *args, **kwargs):
         calls.append(("release", task["id"], kwargs))
 
+    def debit(nodes, task):
+        calls.append((
+            "debit", task["id"], task.get("node"), task.get("gpu_idx")))
+
     def stage_gate(task, *, target, cwd_for_stage, stage_state, deps):
         calls.append(("stage_gate", task["id"], target, cwd_for_stage, stage_state))
         return SimpleNamespace(
@@ -136,7 +141,18 @@ def _deps(
 
     def input_stage_gate(task, *, target, stage_state, deps):
         calls.append(("input_stage_gate", task["id"], target, stage_state))
-        return SimpleNamespace(blocked=False, event=None)
+        if not input_stage_blocked:
+            return SimpleNamespace(blocked=False, event=None)
+        task["status"] = "queued"
+        task["node"] = None
+        task["gpu_idx"] = None
+        return SimpleNamespace(
+            blocked=True,
+            event={
+                "type": "launch_input_stage_deferred",
+                "task_id": task["id"],
+            },
+        )
 
     def launch_execution(task, *, state, nodes, picked_state, running_keys, events, defer_launches, deps):
         calls.append(("launch", task["id"], picked_state, defer_launches))
@@ -168,6 +184,7 @@ def _deps(
         dispatch_placement_apply_deps=lambda: object(),
         validate_selected_resume_checkpoint=lambda *args, **kwargs: validate_ok,
         release_task_claims_and_intents=release,
+        debit_node_resources_for_launch=debit,
         precheck_git=lambda task: precheck_by_task.get(task["id"], (True, "")),
         resume_location_for_node=lambda task, node: (
             calls.append(("resume_location", task["id"], node))
@@ -585,6 +602,25 @@ def test_bounded_dispatch_retries_staged_input_before_fresh_same_lane():
     selected = select_dispatch_cycle_tasks(tasks, 1)
 
     assert [task["id"] for task in selected] == ["staged"]
+
+
+def test_input_staging_defer_reserves_selected_resources_for_this_pass():
+    calls = []
+    task = _task("t1", stage_input_paths=["/inputs"])
+
+    do_dispatch(
+        {"tasks": [task]},
+        [{"name": "n1"}, {"name": "n2"}],
+        deps=_deps(
+            calls,
+            placement_by_task={"t1": ("n2", 1)},
+            input_stage_blocked=True,
+        ),
+    )
+
+    assert task["status"] == "queued"
+    assert task["node"] is None
+    assert ("debit", "t1", "n2", 1) in calls
 
 
 def test_dispatch_records_attempt_metadata_even_when_gate_blocks_task():

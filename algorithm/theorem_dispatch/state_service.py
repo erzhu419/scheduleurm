@@ -227,6 +227,9 @@ def semantic_workload_from_record(record: ProfileRecord) -> str:
 
 
 def load_state_from_record(record: ProfileRecord) -> str:
+    explicit = str(getattr(record, "resource_state", "") or "").strip()
+    if explicit and explicit != "unspecified":
+        return explicit
     text = f"{record.workload_key} {record.resource_kind} {record.node_bucket}".lower()
     if "saturated" in text:
         return "vram_saturated_resident"

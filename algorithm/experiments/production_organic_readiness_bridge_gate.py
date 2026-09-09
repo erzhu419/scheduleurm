@@ -8,14 +8,16 @@ shadow traces, and the strict scheduler-history completion certificate.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
 from .organic_production_canary_recorder_gate import build_organic_production_canary_recorder_gate
 from .production_live_theorem_trace_gate import build_production_live_theorem_trace_gate
-from .production_load_certificate import load_scheduler_records
+from .production_load_certificate import load_scheduler_records, _file_fingerprint
 from .production_queued_theorem_trace import generate_production_queued_theorem_trace
 from .production_shadow_theorem_trace import build_production_shadow_theorem_trace
 
@@ -35,19 +37,60 @@ def build_production_organic_readiness_bridge_gate(
     min_shadow_tasks: int = 8,
     max_shadow_tasks: int = 96,
 ) -> dict[str, Any]:
-    records = load_scheduler_records()
+    trace = Path(trace_path).expanduser()
+    queued_trace = Path(queued_trace_path).expanduser()
+    state_dir = Path.home() / ".claude" / "scheduler"
+    queue = state_dir / "queue.json"
+    archive = state_dir / "queue_archive.jsonl"
+    return copy.deepcopy(_cached_production_organic_readiness_bridge_gate(
+        str(trace),
+        str(queued_trace),
+        int(min_shadow_tasks),
+        int(max_shadow_tasks),
+        str(queue),
+        *_file_fingerprint(queue),
+        str(archive),
+        *_file_fingerprint(archive),
+    ))
+
+
+@lru_cache(maxsize=8)
+def _cached_production_organic_readiness_bridge_gate(
+    trace_path: str,
+    queued_trace_path: str,
+    min_shadow_tasks: int,
+    max_shadow_tasks: int,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
+    trace_path = Path(trace_path)
+    queued_trace_path = Path(queued_trace_path)
+    records = load_scheduler_records(copy_records=False)
     live = build_production_live_theorem_trace_gate(records=records, min_trace_slots=32)
     canary = build_organic_production_canary_recorder_gate()
-    shadow = build_production_shadow_theorem_trace(
-        trace_path=trace_path,
-        output_path=ARTIFACT_ROOT / "production_organic_readiness_shadow_trace_20260614.json",
-        max_tasks=max_shadow_tasks,
-        algorithm="theorem_maxweight_v1",
-        hard_rule_mode="",
-        uncertified_mode="block",
-        reserve_shadow_capacity=True,
-        append=False,
-    )
+    if int(max_shadow_tasks) <= 0:
+        shadow = {
+            "production_shadow_trace_closed": False,
+            "active_production_shadow_task_count": 0,
+            "trace_slot_count": 0,
+            "theorem_slot_count": 0,
+            "candidate_count_total": 0,
+        }
+    else:
+        shadow = build_production_shadow_theorem_trace(
+            trace_path=trace_path,
+            output_path=ARTIFACT_ROOT / "production_organic_readiness_shadow_trace_20260614.json",
+            max_tasks=max_shadow_tasks,
+            algorithm="theorem_maxweight_v1",
+            hard_rule_mode="",
+            uncertified_mode="block",
+            reserve_shadow_capacity=True,
+            append=False,
+        )
     queued_trace = generate_production_queued_theorem_trace(
         trace_path=queued_trace_path,
         output_path=ARTIFACT_ROOT / "production_organic_readiness_queued_trace_20260614.json",

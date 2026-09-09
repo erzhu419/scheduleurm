@@ -131,6 +131,7 @@ def build_dispatch_loop_deps(namespace: Mapping[str, Any]) -> DispatchLoopDeps:
         dispatch_placement_apply_deps=_ns(namespace, "_dispatch_placement_apply_deps"),
         validate_selected_resume_checkpoint=_ns(namespace, "_validate_selected_resume_checkpoint"),
         release_task_claims_and_intents=_ns(namespace, "_release_task_claims_and_intents"),
+        debit_node_resources_for_launch=_ns(namespace, "_debit_node_resources_for_launch"),
         precheck_git=_ns(namespace, "precheck_git"),
         resume_location_for_node=_ns(namespace, "_resume_location_for_node"),
         node_configs=_ns(namespace, "NODES"),

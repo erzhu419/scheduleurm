@@ -332,6 +332,20 @@ def _mutate(path: Path, callback) -> None:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
 
 
+def _mark_capacity_boundary(payload, *, row_index: int = 0) -> None:
+    row = payload["rows"][row_index]
+    row["ready"] = False
+    row["status"] = "CAPACITY_BOUNDARY"
+    row["capacity_boundary"] = True
+    row["summary"]["measurement_valid"] = False
+    row["summary"]["all_stable_rate_ready"] = False
+    row["summary"]["all_completion_models_ready"] = False
+    row["summary"]["rows"][-1]["returncode"] = 1
+    row["probe_result"]["pass"] = False
+    payload["ready_row_count"] = 8
+    payload["capacity_boundary_count"] = 1
+
+
 def test_complete_campaign_builds_wave_max_simultaneous_certificate(tmp_path):
     paths = _write_campaigns(tmp_path)
 
@@ -359,6 +373,47 @@ def test_complete_campaign_builds_wave_max_simultaneous_certificate(tmp_path):
     assert all(
         row["node_bucket"] == NODE_SPECS[NODE].node_bucket
         for row in certificate["rows"]
+    )
+
+
+def test_training_capacity_failure_freezes_smaller_positive_support(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    _mutate(paths[2], _mark_capacity_boundary)
+
+    report = build_critical_gpu_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "PASS"
+    assert report["expected_cell_count"] == 9
+    assert report["admitted_cell_count"] == 8
+    assert report["training_capacity_excluded_cell_count"] == 1
+    assert report["ready_observation_count"] == 13 * 8
+    assert report["candidate_support_frozen_from_training_waves"] is True
+    excluded = report["training_capacity_excluded_cells"][0]
+    assert excluded["first_capacity_wave"] == 2
+    assert excluded["capacity_waves"] == [2]
+    assert excluded["later_success_cannot_readmit"] is True
+    assert excluded["lower_service"] == 0.0
+    assert report["certificate"]["simultaneous_scope"]["cell_count"] == 8
+    assert len(report["certificate"]["rows"]) == 8
+
+
+def test_capacity_failure_after_training_invalidates_frozen_support(tmp_path):
+    paths = _write_campaigns(tmp_path)
+    _mutate(paths[4], _mark_capacity_boundary)
+
+    report = build_critical_gpu_stochastic_lcb_gate(
+        node=NODE,
+        campaign_paths=paths,
+    )
+
+    assert report["status"] == "FAIL_VALIDATION"
+    assert report["admitted_cell_count"] == 9
+    assert any(
+        issue["code"] in {"ROW_NOT_READY", "CAPACITY_BOUNDARY"}
+        for issue in report["validation_errors"]
     )
 
 

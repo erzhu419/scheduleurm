@@ -9,15 +9,17 @@ either live trace thresholds or strict scheduler-history thresholds are met.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
 from .future_production_admission_contract import build_future_production_admission_contract
 from .organic_history_completion_gate import build_organic_history_completion_gate
 from .production_launch_completion_gate import build_production_launch_completion_gate
-from .production_load_certificate import load_scheduler_records
+from .production_load_certificate import load_scheduler_records, _file_fingerprint
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -36,8 +38,46 @@ def build_organic_production_canary_recorder_gate(
     use_history_completion: bool = True,
 ) -> dict[str, Any]:
     trace_path = Path(trace_path or os.environ.get("SCHEDULEURM_ORACLE_TRACE_PATH") or DEFAULT_TRACE_PATH).expanduser()
+    state_dir = Path.home() / ".claude" / "scheduler"
+    queue = state_dir / "queue.json"
+    archive = state_dir / "queue_archive.jsonl"
+    return copy.deepcopy(_cached_organic_production_canary_recorder_gate(
+        str(trace_path),
+        *_file_fingerprint(trace_path),
+        int(launch_threshold),
+        int(completion_threshold),
+        float(completion_fraction_threshold),
+        int(workload_domain_threshold),
+        int(node_threshold),
+        bool(use_history_completion),
+        str(queue),
+        *_file_fingerprint(queue),
+        str(archive),
+        *_file_fingerprint(archive),
+    ))
+
+
+@lru_cache(maxsize=16)
+def _cached_organic_production_canary_recorder_gate(
+    trace_path: str,
+    trace_mtime_ns: int,
+    trace_size: int,
+    launch_threshold: int,
+    completion_threshold: int,
+    completion_fraction_threshold: float,
+    workload_domain_threshold: int,
+    node_threshold: int,
+    use_history_completion: bool,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
+    trace_path = Path(trace_path)
     admission = build_future_production_admission_contract(
-        records=load_scheduler_records(),
+        records=load_scheduler_records(copy_records=False),
         admission_mode="strict",
     )
     production = build_production_launch_completion_gate(allow_launch=False)

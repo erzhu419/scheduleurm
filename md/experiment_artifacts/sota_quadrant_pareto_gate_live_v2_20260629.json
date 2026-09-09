@@ -1,0 +1,102 @@
+{
+  "cache_record_count": 290,
+  "cache_source": "default_cache+live_overlay:md/experiment_artifacts/service_cache_v2_live_merged_20260629.json",
+  "gate": "sota_quadrant_pareto_gate",
+  "pareto_tolerance": 0.005,
+  "pass": false,
+  "quadrants": [
+    {
+      "best_makespan_ratio": 1.0,
+      "best_mean_flow_ratio": 1.0,
+      "open_strict_rows": [],
+      "quadrant": "q00_low_cpu_low_gpu",
+      "scenario_count": 2,
+      "strict_improvement_present": false,
+      "strict_noninferiority_ready": true,
+      "strict_pareto_dominance_ready": false,
+      "tolerance_pareto_ready": true,
+      "worst_makespan_ratio": 1.0,
+      "worst_mean_flow_ratio": 1.0
+    },
+    {
+      "best_makespan_ratio": 1.0013825045517355,
+      "best_mean_flow_ratio": 1.0108219384878037,
+      "open_strict_rows": [
+        {
+          "arrival_mode": "static",
+          "makespan_ratio": 0.9887088747258792,
+          "mean_flow_ratio": 1.0108219384878037,
+          "taskset": "q01_gpu_bound_cnn_resnet50"
+        }
+      ],
+      "quadrant": "q01_low_cpu_high_gpu",
+      "scenario_count": 8,
+      "strict_improvement_present": true,
+      "strict_noninferiority_ready": false,
+      "strict_pareto_dominance_ready": false,
+      "tolerance_pareto_ready": false,
+      "worst_makespan_ratio": 0.9887088747258792,
+      "worst_mean_flow_ratio": 1.0
+    },
+    {
+      "best_makespan_ratio": 1.0,
+      "best_mean_flow_ratio": 1.0,
+      "open_strict_rows": [],
+      "quadrant": "q10_high_cpu_low_gpu",
+      "scenario_count": 2,
+      "strict_improvement_present": false,
+      "strict_noninferiority_ready": true,
+      "strict_pareto_dominance_ready": false,
+      "tolerance_pareto_ready": true,
+      "worst_makespan_ratio": 1.0,
+      "worst_mean_flow_ratio": 1.0
+    },
+    {
+      "best_makespan_ratio": 1.0,
+      "best_mean_flow_ratio": 1.0,
+      "open_strict_rows": [
+        {
+          "arrival_mode": "static",
+          "makespan_ratio": 1.0,
+          "mean_flow_ratio": 0.9999833430335442,
+          "taskset": "q11_cpu_gpu_coupled"
+        }
+      ],
+      "quadrant": "q11_high_cpu_high_gpu",
+      "scenario_count": 2,
+      "strict_improvement_present": false,
+      "strict_noninferiority_ready": false,
+      "strict_pareto_dominance_ready": false,
+      "tolerance_pareto_ready": true,
+      "worst_makespan_ratio": 1.0,
+      "worst_mean_flow_ratio": 0.9999833430335442
+    },
+    {
+      "best_makespan_ratio": 1.0,
+      "best_mean_flow_ratio": 1.0,
+      "open_strict_rows": [
+        {
+          "arrival_mode": "static",
+          "makespan_ratio": 1.0,
+          "mean_flow_ratio": 0.9998174126514441,
+          "taskset": "hybrid_research_portfolio"
+        }
+      ],
+      "quadrant": "hybrid_portfolio",
+      "scenario_count": 2,
+      "strict_improvement_present": false,
+      "strict_noninferiority_ready": false,
+      "strict_pareto_dominance_ready": false,
+      "tolerance_pareto_ready": true,
+      "worst_makespan_ratio": 1.0,
+      "worst_mean_flow_ratio": 0.9998174126514441
+    }
+  ],
+  "scope": "Four-quadrant measured-cache policy-semantics gate.  Strict dominance is reported separately from the 0.5% replay-tolerance Pareto claim.",
+  "status": "SOTA_QUADRANT_TOLERANCE_OPEN",
+  "strict_eps": 1e-12,
+  "strict_frontier_count": 3,
+  "strict_noninferiority_ready": false,
+  "strict_pareto_dominance_ready": false,
+  "tolerance_pareto_ready": false
+}

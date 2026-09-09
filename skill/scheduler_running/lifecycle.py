@@ -561,10 +561,20 @@ def apply_alive_probe_result(task: dict, res: dict, reconnect_sync: Optional[dic
                 task["cpu_cores"] = new_cpu
         else:
             declared_floor = deps.declared_cpu_slot_floor(task)
-            if declared_floor and cur_cpu < declared_floor:
+            try:
+                explicit_declared_cpu = int(task.get("cpu_declared_cores") or 0)
+            except (TypeError, ValueError):
+                explicit_declared_cpu = 0
+            if task.get("cpu_cores_explicit") and explicit_declared_cpu > 0:
+                # Explicit CPU counts describe the placement contract. Parent and
+                # coordinator overhead may add fractional aggregate CPU without
+                # consuming another schedulable worker slot.
+                cur_cpu = explicit_declared_cpu
+                task["cpu_cores"] = explicit_declared_cpu
+            elif declared_floor and cur_cpu < declared_floor:
                 cur_cpu = declared_floor
                 task["cpu_cores"] = declared_floor
-            if new_cpu > cur_cpu:
+            if not task.get("cpu_cores_explicit") and new_cpu > cur_cpu:
                 task["cpu_cores"] = new_cpu
             elif cur_cpu > new_cpu * 2.5 and not (
                     task.get("cpu_cores_explicit") or declared_floor):

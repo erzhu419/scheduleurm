@@ -17,8 +17,10 @@ to the finite candidate set cannot weaken the MaxWeight candidate selector.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -41,6 +43,11 @@ DIRECT_REQUIRED_SYSTEMS = {"Gavel", "Pollux/AdaptDL", "Sia", "IADeep", "Salus"}
 
 
 def build_sota_admitted_universe_closure_gate() -> dict[str, Any]:
+    return copy.deepcopy(_cached_sota_admitted_universe_closure_gate())
+
+
+@lru_cache(maxsize=1)
+def _cached_sota_admitted_universe_closure_gate() -> dict[str, Any]:
     registry = build_sota_universe_registry_gate()
     union = build_sota_candidate_union_gate()
     frontier = build_sota_strict_dominance_frontier()

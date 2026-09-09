@@ -36,8 +36,14 @@ def build_measured_finite_slice_certificate(
     load_fraction: float = 0.80,
     alpha: float = 1.0,
     include_actions: bool = False,
+    live_cache_json: str | Path = "",
 ) -> dict[str, Any]:
     cache = build_default_cache()
+    cache_source = "default_cache"
+    if live_cache_json:
+        overlay_path = Path(live_cache_json).expanduser()
+        _overlay_cache(cache, ServiceRateCache.load(overlay_path))
+        cache_source = f"default_cache+live_overlay:{overlay_path}"
     taskset = taskset_by_name(taskset_name)
     specs = taskset.workload_specs()
     policy = sota_candidate_union_policy(
@@ -114,6 +120,7 @@ def build_measured_finite_slice_certificate(
     cert.update(
         {
             "taskset": taskset_name,
+            "cache_source": cache_source,
             "policy": policy.name,
             "selected_profiles": selected_profiles,
             "selected_action_id": selected_action_id,
@@ -140,6 +147,13 @@ def build_measured_finite_slice_certificate(
     if include_actions:
         cert["actions"] = actions
     return cert
+
+
+def _overlay_cache(base: ServiceRateCache, overlay: ServiceRateCache) -> None:
+    snapshot = overlay.snapshot()
+    for row in list(snapshot.get("records") or []) + list(snapshot.get("capacity_boundaries") or []):
+        record = ProfileRecord.from_snapshot(row)
+        base.add(record, force_replace=True)
 
 
 def _profile_domain(cache: ServiceRateCache, member: TaskSetMember) -> list[int]:
@@ -275,6 +289,7 @@ def _cmd_build(args: argparse.Namespace) -> int:
         load_fraction=args.load_fraction,
         alpha=args.alpha,
         include_actions=args.include_actions,
+        live_cache_json=args.live_cache_json,
     )
     _write_json(args.output, cert)
     if args.markdown_output:
@@ -293,6 +308,7 @@ def _markdown_certificate(cert: Mapping[str, Any]) -> str:
         "",
         "```text",
         f"taskset = {cert.get('taskset')}",
+        f"cache_source = {cert.get('cache_source')}",
         f"policy = {cert.get('policy')}",
         f"load_fraction = {cert.get('load_fraction')}",
         f"selected_profiles = {cert.get('selected_profiles')}",
@@ -331,6 +347,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--output", required=True)
     p.add_argument("--markdown-output", default="")
     p.add_argument("--include-actions", action="store_true")
+    p.add_argument(
+        "--live-cache-json",
+        default="",
+        help="Optional service-cache v2 snapshot to overlay on top of the default cache.",
+    )
     p.set_defaults(func=_cmd_build)
     return p
 

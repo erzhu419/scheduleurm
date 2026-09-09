@@ -16,8 +16,10 @@ that enlarged family in the same service units.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -28,6 +30,7 @@ from simulation.sota_baselines import (
     sota_candidate_union_policy,
     sota_candidate_union_policies,
 )
+from simulation.service_cache import ProfileRecord, ServiceRateCache
 from simulation.tasksets import taskset_by_name
 from simulation.trace_benchmark import build_task_trace, replay_trace
 
@@ -55,8 +58,57 @@ def build_sota_candidate_union_gate(
     arrivals: Sequence[str] = DEFAULT_ARRIVALS,
     trace_seed: int = 42,
     replay_seed: int = 7,
+    cache: ServiceRateCache | None = None,
+    cache_source: str = "simulation.defaults.build_default_cache",
 ) -> dict[str, Any]:
-    cache = build_default_cache()
+    tasksets = tuple(tasksets)
+    arrivals = tuple(arrivals)
+    if cache is None:
+        return copy.deepcopy(_cached_sota_candidate_union_gate(
+            tasksets,
+            arrivals,
+            int(trace_seed),
+            int(replay_seed),
+            str(cache_source),
+        ))
+    return _build_sota_candidate_union_gate_uncached(
+        tasksets=tasksets,
+        arrivals=arrivals,
+        trace_seed=trace_seed,
+        replay_seed=replay_seed,
+        cache=cache,
+        cache_source=cache_source,
+    )
+
+
+@lru_cache(maxsize=16)
+def _cached_sota_candidate_union_gate(
+    tasksets: tuple[str, ...],
+    arrivals: tuple[str, ...],
+    trace_seed: int,
+    replay_seed: int,
+    cache_source: str,
+) -> dict[str, Any]:
+    return _build_sota_candidate_union_gate_uncached(
+        tasksets=tasksets,
+        arrivals=arrivals,
+        trace_seed=trace_seed,
+        replay_seed=replay_seed,
+        cache=None,
+        cache_source=cache_source,
+    )
+
+
+def _build_sota_candidate_union_gate_uncached(
+    *,
+    tasksets: Sequence[str],
+    arrivals: Sequence[str],
+    trace_seed: int,
+    replay_seed: int,
+    cache: ServiceRateCache | None,
+    cache_source: str,
+) -> dict[str, Any]:
+    cache = cache or build_default_cache()
     scenario_rows = []
     policy_rows = []
     for taskset_name in tasksets:
@@ -104,6 +156,8 @@ def build_sota_candidate_union_gate(
         "arrivals": list(arrivals),
         "trace_seed": int(trace_seed),
         "replay_seed": int(replay_seed),
+        "cache_source": str(cache_source),
+        "cache_record_count": len(cache.snapshot().get("records") or []),
         "pareto_tolerance": PARETO_TOLERANCE,
         "scenario_count": len([row for row in scenario_rows if row.get("replayable", True)]),
         "scenarios": scenario_rows,
@@ -135,6 +189,8 @@ def markdown_report(report: Mapping[str, Any]) -> str:
         f"| `scoped_claim_ready` | {str(bool(report.get('scoped_claim_ready'))).lower()} |",
         f"| `strong_claim_ready` | {str(bool(report.get('strong_claim_ready'))).lower()} |",
         f"| `scenario_count` | {report.get('scenario_count', 0)} |",
+        f"| `cache_source` | `{report.get('cache_source', '')}` |",
+        f"| `cache_record_count` | {report.get('cache_record_count', 0)} |",
         f"| `union_makespan_beats_sota_envelope_all` | {str(bool(aggregate.get('union_makespan_beats_sota_envelope_all'))).lower()} |",
         f"| `union_mean_flow_beats_sota_envelope_all` | {str(bool(aggregate.get('union_mean_flow_beats_sota_envelope_all'))).lower()} |",
         f"| `guarded_union_not_pareto_dominated_all` | {str(bool(aggregate.get('guarded_union_not_pareto_dominated_all'))).lower()} |",
@@ -637,11 +693,14 @@ def _write_csv(path: str | Path, rows: Sequence[Mapping[str, Any]]) -> None:
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
+    cache, cache_source = _cache_for_args(args)
     report = build_sota_candidate_union_gate(
         tasksets=tuple(x.strip() for x in args.tasksets.split(",") if x.strip()),
         arrivals=tuple(x.strip() for x in args.arrivals.split(",") if x.strip()),
         trace_seed=args.trace_seed,
         replay_seed=args.replay_seed,
+        cache=cache,
+        cache_source=cache_source,
     )
     _write_json(args.output, report)
     if args.markdown_output:
@@ -654,6 +713,18 @@ def _cmd_build(args: argparse.Namespace) -> int:
     return 0 if report.get("pass") else 2
 
 
+def _cache_for_args(args: argparse.Namespace) -> tuple[ServiceRateCache, str]:
+    cache = build_default_cache()
+    live_path = str(getattr(args, "live_cache_json", "") or "").strip()
+    if not live_path:
+        return cache, "simulation.defaults.build_default_cache"
+    path = Path(live_path).expanduser()
+    live = ServiceRateCache.load(path)
+    for row in live.snapshot().get("records") or []:
+        cache.add(ProfileRecord.from_snapshot(dict(row)), force_replace=True)
+    return cache, f"default_cache+live_overlay:{path}"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m algorithm.experiments.sota_candidate_union_gate")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -662,6 +733,11 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--arrivals", default=",".join(DEFAULT_ARRIVALS))
     build.add_argument("--trace-seed", type=int, default=42)
     build.add_argument("--replay-seed", type=int, default=7)
+    build.add_argument(
+        "--live-cache-json",
+        default="",
+        help="Optional service-cache v2 snapshot to overlay on top of the default cache.",
+    )
     build.add_argument(
         "--output",
         default=str(ARTIFACT_ROOT / "sota_candidate_union_gate_20260613.json"),

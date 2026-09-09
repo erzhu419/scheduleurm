@@ -11,16 +11,18 @@ unsafe work.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from simulation.defaults import build_default_cache
 
 from .production_live_theorem_trace_gate import _looks_like_production
-from .production_load_certificate import _dedupe_records, load_scheduler_records
+from .production_load_certificate import _dedupe_records, load_scheduler_records, _file_fingerprint
 from ..theorem_dispatch.admission import task_admission_certificate
 
 
@@ -39,6 +41,69 @@ def build_organic_history_completion_gate(
     workload_domain_threshold: int = 3,
     node_threshold: int = 2,
     max_unadmitted_strict_launched: int = 0,
+) -> dict[str, Any]:
+    if records is None:
+        state_dir = Path.home() / ".claude" / "scheduler"
+        queue = state_dir / "queue.json"
+        archive = state_dir / "queue_archive.jsonl"
+        return copy.deepcopy(_cached_organic_history_completion_gate(
+            int(launch_threshold),
+            int(completion_threshold),
+            float(completion_fraction_threshold),
+            int(workload_domain_threshold),
+            int(node_threshold),
+            int(max_unadmitted_strict_launched),
+            str(queue),
+            *_file_fingerprint(queue),
+            str(archive),
+            *_file_fingerprint(archive),
+        ))
+    return _build_organic_history_completion_gate_uncached(
+        records=records,
+        launch_threshold=launch_threshold,
+        completion_threshold=completion_threshold,
+        completion_fraction_threshold=completion_fraction_threshold,
+        workload_domain_threshold=workload_domain_threshold,
+        node_threshold=node_threshold,
+        max_unadmitted_strict_launched=max_unadmitted_strict_launched,
+    )
+
+
+@lru_cache(maxsize=16)
+def _cached_organic_history_completion_gate(
+    launch_threshold: int,
+    completion_threshold: int,
+    completion_fraction_threshold: float,
+    workload_domain_threshold: int,
+    node_threshold: int,
+    max_unadmitted_strict_launched: int,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
+    return _build_organic_history_completion_gate_uncached(
+        records=None,
+        launch_threshold=launch_threshold,
+        completion_threshold=completion_threshold,
+        completion_fraction_threshold=completion_fraction_threshold,
+        workload_domain_threshold=workload_domain_threshold,
+        node_threshold=node_threshold,
+        max_unadmitted_strict_launched=max_unadmitted_strict_launched,
+    )
+
+
+def _build_organic_history_completion_gate_uncached(
+    *,
+    records: Iterable[Mapping[str, Any]] | None,
+    launch_threshold: int,
+    completion_threshold: int,
+    completion_fraction_threshold: float,
+    workload_domain_threshold: int,
+    node_threshold: int,
+    max_unadmitted_strict_launched: int,
 ) -> dict[str, Any]:
     cache = build_default_cache()
     materialized = _dedupe_records(records if records is not None else load_scheduler_records())

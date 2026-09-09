@@ -24,6 +24,10 @@ def _progress(iterable, *, total: int, desc: str, unit: str):
         return iterable
 
 
+def _phase(name: str, event: str) -> None:
+    print(f"ScheduleurmPhase name={name} event={event}", flush=True)
+
+
 def _light_work(items: int) -> float:
     acc = 0.0
     for i in range(max(1, int(items))):
@@ -48,8 +52,10 @@ def main() -> int:
     parser.add_argument("--label", default="scheduleurm-cpu-bench")
     args = parser.parse_args()
 
+    _phase("initialization", "start")
     steps = max(1, int(args.steps))
     work = _cpu_work if args.mode == "cpu" else _light_work
+    _phase("initialization", "end")
     print(
         f"CPU_BENCH_START label={args.label} mode={args.mode} "
         f"steps={steps} work_items={int(args.work_items)} sleep_s={float(args.sleep_s):.6f}",
@@ -57,6 +63,7 @@ def main() -> int:
     )
     start = time.time()
     checksum = 0.0
+    _phase("outer_loop", "start")
     for i in _progress(range(1, steps + 1), total=steps, desc=str(args.label), unit="step"):
         t0 = time.time()
         checksum += work(args.work_items)
@@ -72,6 +79,7 @@ def main() -> int:
             f"rate={rate:.6f} step/s ETA {eta:.1f}s",
             flush=True,
         )
+    _phase("outer_loop", "end")
     elapsed = time.time() - start
     print(
         f"CPU_BENCH_DONE label={args.label} mode={args.mode} steps={steps} "

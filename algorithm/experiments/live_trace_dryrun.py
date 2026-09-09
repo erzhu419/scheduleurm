@@ -149,19 +149,10 @@ def _prepare_probe_nodes(module: Any, state: Mapping[str, Any], nodes: list[dict
         (task.get("node"), task.get("gpu_idx")) for task in state.get("tasks", [])
         if _counts_against_concurrency(module, task) and task.get("gpu_idx") is not None
     )
-    split_by_node = {}
-    if hasattr(module, "_count_slurm_pending_per_node"):
-        try:
-            split_by_node = module._count_slurm_pending_per_node(state)
-        except Exception:
-            split_by_node = {}
     for node in nodes:
         node["running_count"] = running_per_node.get(node.get("name"), 0)
         for gpu in node.get("gpus") or []:
             gpu["running_task_count"] = running_per_gpu.get((node.get("name"), gpu.get("idx")), 0)
-        split = split_by_node.get(node.get("name")) or {"cpu": 0, "gpu": 0}
-        node["slurm_pending_split"] = split
-        node["slurm_pending_count"] = int(split.get("cpu") or 0) + int(split.get("gpu") or 0)
 
 
 def _counts_against_concurrency(module: Any, task: Mapping[str, Any]) -> bool:

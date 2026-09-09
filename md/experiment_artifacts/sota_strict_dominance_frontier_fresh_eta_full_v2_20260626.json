@@ -1,0 +1,41 @@
+{
+  "frontier": [
+    {
+      "arrival_mode": "static",
+      "best_makespan_policy": "scheduleurm_sota_union_guarded_mean_flow",
+      "best_makespan_profiles": {
+        "gpu_cnn_torch_resnet50": 3
+      },
+      "best_makespan_s": 50.62070581630731,
+      "best_mean_flow_policy": "scheduleurm_sota_union_guarded_mean_flow",
+      "best_mean_flow_profiles": {
+        "gpu_cnn_torch_resnet50": 3
+      },
+      "best_mean_flow_s": 27.304264159130508,
+      "diagnosis": "same measured CNN profile but different statewise drain trajectory; current phase-switch/SJF/LPT bridge candidates improve flow but fail the strict makespan guard",
+      "makespan_ratio": 1.0,
+      "mean_flow_ratio": 0.9994755340692042,
+      "pareto_slack_profiles": {
+        "gpu_cnn_torch_resnet50": 3
+      },
+      "required_action": "measure a new CNN tail/co-location service point or admit a bridge only after it improves flow without exceeding the finish-time makespan envelope",
+      "taskset": "q01_gpu_bound_cnn_resnet50"
+    }
+  ],
+  "frontier_count": 1,
+  "gate": "sota_strict_dominance_frontier",
+  "gate_pass": false,
+  "next_probe_order": [
+    "CNN tail/co-location bridge: current cache-only phase-switch, SJF, critical-SJF, and LPT-static bridge variants improve flow but miss the strict makespan envelope; run controlled ResNet-50 tail and CNN+LLM/CNN+CUDA service probes and admit only if the LCB improves flow without exceeding the finish-time makespan envelope."
+  ],
+  "pareto_tolerance": 0.005,
+  "pass": false,
+  "pass_meaning": "remaining measured-cache external-policy frontier rows require bridge actions",
+  "scope": "This certificate only diagnoses strict measured-cache policy-semantics gaps against the registered external-policy envelope. It does not claim direct full-stack SOTA binary superiority.",
+  "scoped_claim_ready": false,
+  "source_gate_status": "SOTA_CANDIDATE_UNION_PASS",
+  "status": "MEASURED_CACHE_EXTERNAL_POLICY_FRONTIER_OPEN",
+  "strict_pareto_ready": false,
+  "strong_claim_ready": false,
+  "within_tolerance_ready": true
+}

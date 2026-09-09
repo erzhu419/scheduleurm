@@ -53,6 +53,36 @@ def generate_production_queued_theorem_trace(
         trace.unlink()
 
     queued_rows = _queued_admissible_production(load_scheduler_records(), max_tasks=max_tasks)
+    if not queued_rows:
+        bridge = build_theorem_oracle_audit_from_trace([])
+        report = {
+            "gate": "production_queued_theorem_trace",
+            "trace_path": str(trace),
+            "algorithm": algorithm,
+            "queued_admissible_count": 0,
+            "max_tasks": int(max_tasks),
+            "max_tasks_per_gpu": int(max_tasks_per_gpu),
+            "max_post_vram_frac": float(max_post_vram_frac),
+            "requested_algorithm": algorithm,
+            "hard_rule_mode": hard_rule_mode,
+            "allow_all_hard_rule_scope": bool(allow_all_hard_rule_scope),
+            "placed_count": 0,
+            "unplaced_count": 0,
+            "trace_slot_count": 0,
+            "theorem_slot_count": 0,
+            "candidate_count_total": 0,
+            "oracle_bridge": bridge,
+            "node_summary": [],
+            "placements": [],
+            "pass": False,
+            "scope": (
+                "read-only theorem trace over currently queued production tasks; "
+                "queue is not mutated and no process is launched."
+            ),
+        }
+        if output_path:
+            _write_json(output_path, report)
+        return report
     old_env = {
         "SCHEDULEURM_ORACLE_TRACE_PATH": os.environ.get("SCHEDULEURM_ORACLE_TRACE_PATH"),
         "SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU": os.environ.get("SCHEDULEURM_ALGO_MAX_TASKS_PER_GPU"),

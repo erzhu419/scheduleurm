@@ -11,11 +11,15 @@ measured-cache policy-semantics noninferiority can be claimed.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
-from .sota_candidate_union_gate import PARETO_TOLERANCE, build_sota_candidate_union_gate
+from simulation.service_cache import ServiceRateCache
+
+from .sota_candidate_union_gate import PARETO_TOLERANCE, _cache_for_args, build_sota_candidate_union_gate
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -25,8 +29,40 @@ ARTIFACT_ROOT = REPO_ROOT / "md" / "experiment_artifacts"
 def build_sota_strict_dominance_frontier(
     *,
     strict_eps: float = 1e-12,
+    cache: ServiceRateCache | None = None,
+    cache_source: str = "simulation.defaults.build_default_cache",
 ) -> dict[str, Any]:
-    gate = build_sota_candidate_union_gate()
+    if cache is None:
+        return copy.deepcopy(_cached_sota_strict_dominance_frontier(
+            float(strict_eps),
+            str(cache_source),
+        ))
+    return _build_sota_strict_dominance_frontier_uncached(
+        strict_eps=strict_eps,
+        cache=cache,
+        cache_source=cache_source,
+    )
+
+
+@lru_cache(maxsize=16)
+def _cached_sota_strict_dominance_frontier(
+    strict_eps: float,
+    cache_source: str,
+) -> dict[str, Any]:
+    return _build_sota_strict_dominance_frontier_uncached(
+        strict_eps=strict_eps,
+        cache=None,
+        cache_source=cache_source,
+    )
+
+
+def _build_sota_strict_dominance_frontier_uncached(
+    *,
+    strict_eps: float,
+    cache: ServiceRateCache | None,
+    cache_source: str,
+) -> dict[str, Any]:
+    gate = build_sota_candidate_union_gate(cache=cache, cache_source=cache_source)
     policy_rows = list(gate.get("policy_matrix") or [])
     frontier = []
     for row in gate.get("scenarios") or []:
@@ -67,6 +103,8 @@ def build_sota_strict_dominance_frontier(
             "claim direct full-stack SOTA binary superiority."
         ),
         "source_gate_status": gate.get("status"),
+        "cache_source": str(cache_source),
+        "cache_record_count": gate.get("cache_record_count"),
         "pass": bool(frontier_closed),
     }
 
@@ -214,8 +252,14 @@ def main() -> None:
         type=Path,
         default=REPO_ROOT / "md" / "sota_strict_dominance_frontier_20260613.md",
     )
+    parser.add_argument(
+        "--live-cache-json",
+        default="",
+        help="Optional service-cache v2 snapshot to overlay on top of the default cache.",
+    )
     args = parser.parse_args()
-    report = build_sota_strict_dominance_frontier()
+    cache, cache_source = _cache_for_args(args)
+    report = build_sota_strict_dominance_frontier(cache=cache, cache_source=cache_source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     args.markdown_output.parent.mkdir(parents=True, exist_ok=True)

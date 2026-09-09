@@ -60,6 +60,10 @@ def test_algorithm_feature_surface_is_finite_and_stable(check, sch):
     check("algorithm task kind distinguishes gpu train",
           task_kind(task) == "gpu_train",
           diag=task_kind(task))
+    legacy_submit_task = dict(task, slurm_partition="gpu", slurm_account="legacy")
+    check("algorithm task kind ignores deprecated slurm submit fields",
+          task_kind(legacy_submit_task) == "gpu_train",
+          diag=task_kind(legacy_submit_task))
     check("algorithm class key includes finite resource bucket",
           resource_bucket(task) in class_key(task),
           diag=class_key(task))

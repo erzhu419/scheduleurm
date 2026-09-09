@@ -53,6 +53,7 @@ def select_global_action(
         row for row in candidate_rows
         if str(row.get("score_semantics") or "") == "robust_maxweight_lower_service"
         and bool(row.get("theorem_ready", True))
+        and _action_row_allowed(row)
     ]
     configs = _enumerate_configurations(
         theorem_rows,
@@ -185,3 +186,9 @@ def _positive_float(value: Any) -> float:
     except (TypeError, ValueError):
         return 0.0
     return out if out > 0.0 else 0.0
+
+
+def _action_row_allowed(row: Mapping[str, Any]) -> bool:
+    if str(row.get("action_type") or "").lower() == "migrate":
+        return bool(row.get("controlled_migration_ready")) and not row.get("migration_block_reason")
+    return True

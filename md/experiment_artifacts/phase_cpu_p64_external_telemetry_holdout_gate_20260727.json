@@ -1,0 +1,38 @@
+{
+  "all_rows_ready": true,
+  "claim_boundary": "The fit model is frozen from the first natural-completion run and scored against a distinct second run of the same exact cell. This is an out-of-sample run holdout, not the algebraic in-run residual. When run-window resource telemetry is present, fit and holdout must also occupy the same observed external-CPU bucket.",
+  "fit_path": "md/experiment_artifacts/phase_cpu_p64_external_telemetry_fit_20260727.json",
+  "gate": "phase_aware_completion_holdout_gate",
+  "holdout_path": "md/experiment_artifacts/phase_cpu_p64_external_telemetry_holdout_20260727.json",
+  "max_relative_error": 0.08577837396326418,
+  "max_relative_error_limit": 0.15,
+  "p95_relative_error": 0.08577837396326418,
+  "p95_relative_error_limit": 0.1,
+  "pass": true,
+  "ready_row_count": 1,
+  "row_count": 1,
+  "rows": [
+    {
+      "absolute_error_s": 1.211520572192967,
+      "actual_total_s": 14.123846328817308,
+      "cell_id": "cpu_p64_external",
+      "completion_ready": true,
+      "fit_external_cpu_bucket": "external_c33_64",
+      "fit_external_cpu_core_equiv": 48.172849134560096,
+      "fit_run_id": "phase_cpu_p64_external_telemetry_fit_20260727_r0_node004_cpu_p64_external",
+      "holdout_external_cpu_bucket": "external_c33_64",
+      "holdout_external_cpu_core_equiv": 48.123850969197136,
+      "holdout_run_id": "phase_cpu_p64_external_telemetry_holdout_20260727_r0_node004_cpu_p64_external",
+      "node": "node004",
+      "predicted_total_s": 15.335366901010275,
+      "ready": true,
+      "relative_error": 0.08577837396326418,
+      "resource_state": "cpu_resident_external",
+      "resource_state_match": true,
+      "resource_telemetry_required": true,
+      "workers": 64,
+      "workload_key": "cpu_heavy_local_bench"
+    }
+  ],
+  "status": "PASS"
+}

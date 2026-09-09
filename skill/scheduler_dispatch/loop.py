@@ -33,6 +33,7 @@ class DispatchLoopDeps:
     dispatch_placement_apply_deps: Callable[[], Any]
     validate_selected_resume_checkpoint: Callable[..., bool]
     release_task_claims_and_intents: Callable[..., Any]
+    debit_node_resources_for_launch: Callable[[list, dict], None]
     precheck_git: Callable[[dict], tuple[bool, str]]
     resume_location_for_node: Callable[[dict, str], dict | None]
     node_configs: dict
@@ -257,6 +258,18 @@ def do_dispatch(
     def _global_batch_hint_for(task: dict) -> Optional[dict]:
         return global_batch_plan.get(str(task.get("id") or ""))
 
+    def _reserve_deferred_staging(placement_task: dict, event: dict | None) -> None:
+        if not isinstance(event, dict) or event.get("type") not in (
+            "launch_stage_deferred",
+            "launch_input_stage_deferred",
+        ):
+            return
+        # Staging clears task.node/gpu_idx and releases remote claims. Keep a
+        # pass-local reservation so the rest of this batch does not herd onto
+        # the same apparently empty node. The next probe rebuilds nodes from
+        # live state, so failed or abandoned staging leaves no stale capacity.
+        deps.debit_node_resources_for_launch(nodes, placement_task)
+
     def _pick_placement_with_global_batch_hint(task: dict, search_nodes: list, extra_allowed_nodes=None):
         hint = _global_batch_hint_for(task)
         if global_batch_enforced:
@@ -441,6 +454,7 @@ def do_dispatch(
                     deps.stage_cwd_check(target, cwd_for_stage)
                 )
             stage_state = launch_cwd_state_cache[cwd_cache_key]
+            stage_reservation = dict(task)
             stage_result = deps.apply_launch_staging_gate(
                 task,
                 target=target,
@@ -449,6 +463,8 @@ def do_dispatch(
                 deps=deps.dispatch_launch_staging_deps(),
             )
             if stage_result.blocked:
+                _reserve_deferred_staging(
+                    stage_reservation, stage_result.event)
                 if stage_result.event:
                     events.append(stage_result.event)
                 continue
@@ -459,6 +475,7 @@ def do_dispatch(
                 launch_input_state_cache[input_cache_key] = (
                     deps.launch_input_stage_state(task, target)
                 )
+            stage_reservation = dict(task)
             input_result = deps.apply_launch_input_staging_gate(
                 task,
                 target=target,
@@ -466,6 +483,8 @@ def do_dispatch(
                 deps=deps.dispatch_launch_staging_deps(),
             )
             if input_result.blocked:
+                _reserve_deferred_staging(
+                    stage_reservation, input_result.event)
                 if input_result.event:
                     events.append(input_result.event)
                 continue

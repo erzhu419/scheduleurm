@@ -25,6 +25,7 @@ PROTOCOL_INTEGRITY_PATTERNS = (
     "refusing to mix sources",
     "source manifest differs from protocol checkpoint",
     "source archive differs from protocol checkpoint",
+    "lacks its frozen protocol",
     "recovery is finalize-only and will not train",
     "partial completion artifacts exist; refusing recovery",
     "the two common-restart physical rollouts differ at iter 700",
@@ -273,6 +274,13 @@ def requeue_after_crash(parent: dict, state: dict, *, deps: CrashRequeueDeps):
     deps.clear_live_eta_fields(new_task, clear_runtime_projection=True)
     for key in RETRY_CLEAR_KEYS:
         new_task.pop(key, None)
+    if new_task.get("cpu_cores_explicit"):
+        try:
+            declared_cpu = int(new_task.get("cpu_declared_cores") or 0)
+        except (TypeError, ValueError):
+            declared_cpu = 0
+        if declared_cpu > 0:
+            new_task["cpu_cores"] = declared_cpu
     if resolved_environment_retry:
         new_task["recovered_from_environment_resolution"] = dict(
             parent.get("resolved_environment_retry") or {}

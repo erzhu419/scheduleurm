@@ -103,6 +103,29 @@ def test_apply_alive_probe_result_tracks_usage_and_resources():
     assert task["last_status_sync_status"] == "running"
 
 
+def test_apply_alive_probe_preserves_explicit_cpu_contract():
+    deps, _calls = _deps(cpu_floor=0)
+    task = {
+        "id": "t-explicit",
+        "ram_mb": 1000,
+        "cpu_cores": 12,
+        "cpu_declared_cores": 12,
+        "cpu_cores_explicit": True,
+        "peak_vram_mb": 0,
+        "peak_ram_mb": 0,
+    }
+
+    apply_alive_probe_result(
+        task,
+        {"alive_pids": [11], "vram_mb": 0, "ram_mb": 100, "pcpu": 1201.0},
+        None,
+        deps=deps,
+    )
+
+    assert task["current_pcpu"] == 1201.0
+    assert task["cpu_cores"] == 12
+
+
 def test_check_running_probe_result_interprets_backend_states():
     calls = []
 

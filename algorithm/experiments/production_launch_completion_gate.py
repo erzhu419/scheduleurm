@@ -8,14 +8,16 @@ theorem trace with live progress observations from running production records.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import subprocess
 import time
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-from .production_load_certificate import load_scheduler_records, _dedupe_records
+from .production_load_certificate import load_scheduler_records, _dedupe_records, _file_fingerprint
 from .production_live_theorem_trace_gate import _looks_like_production
 from .production_shadow_theorem_trace import build_production_shadow_theorem_trace
 from .progress_units import task_progress_observation
@@ -35,7 +37,60 @@ def build_production_launch_completion_gate(
     max_gpu_util_for_launch: float = 25.0,
     allow_launch: bool = False,
 ) -> dict[str, Any]:
-    records = _dedupe_records(load_scheduler_records())
+    if not allow_launch:
+        state_dir = Path.home() / ".claude" / "scheduler"
+        queue = state_dir / "queue.json"
+        archive = state_dir / "queue_archive.jsonl"
+        return copy.deepcopy(_cached_production_launch_completion_gate(
+            str(Path(shadow_trace_path).expanduser()),
+            int(max_tasks),
+            int(min_launch_slots),
+            float(max_gpu_util_for_launch),
+            str(queue),
+            *_file_fingerprint(queue),
+            str(archive),
+            *_file_fingerprint(archive),
+        ))
+    return _build_production_launch_completion_gate_uncached(
+        shadow_trace_path=shadow_trace_path,
+        max_tasks=max_tasks,
+        min_launch_slots=min_launch_slots,
+        max_gpu_util_for_launch=max_gpu_util_for_launch,
+        allow_launch=allow_launch,
+    )
+
+
+@lru_cache(maxsize=8)
+def _cached_production_launch_completion_gate(
+    shadow_trace_path: str,
+    max_tasks: int,
+    min_launch_slots: int,
+    max_gpu_util_for_launch: float,
+    queue_path: str,
+    queue_mtime_ns: int,
+    queue_size: int,
+    archive_path: str,
+    archive_mtime_ns: int,
+    archive_size: int,
+) -> dict[str, Any]:
+    return _build_production_launch_completion_gate_uncached(
+        shadow_trace_path=shadow_trace_path,
+        max_tasks=max_tasks,
+        min_launch_slots=min_launch_slots,
+        max_gpu_util_for_launch=max_gpu_util_for_launch,
+        allow_launch=False,
+    )
+
+
+def _build_production_launch_completion_gate_uncached(
+    *,
+    shadow_trace_path: str | Path,
+    max_tasks: int,
+    min_launch_slots: int,
+    max_gpu_util_for_launch: float,
+    allow_launch: bool,
+) -> dict[str, Any]:
+    records = _dedupe_records(load_scheduler_records(copy_records=False))
     active = [dict(row) for row in records if str(row.get("status") or "") in ACTIVE_STATUSES and _looks_like_production(row)]
     queued = [row for row in active if str(row.get("status") or "") == "queued"]
     running = [row for row in active if str(row.get("status") or "") == "running"]
@@ -53,22 +108,24 @@ def build_production_launch_completion_gate(
     elif launch_safe:
         launch_status = "NOT_IMPLEMENTED_PRODUCTION_SAFE_BY_DEFAULT"
 
-    shadow = build_production_shadow_theorem_trace(
-        trace_path=shadow_trace_path,
-        output_path=ARTIFACT_ROOT / "production_large_active_shadow_trace_20260612.json",
-        max_tasks=max_tasks,
-        algorithm="theorem_maxweight_v1",
-        hard_rule_mode="",
-        uncertified_mode="block",
-        reserve_shadow_capacity=True,
-        append=False,
-    )
     realization_rows = _active_realization_rows(running)
     progress = [row for row in realization_rows if float(row.get("progress_rate_per_s") or 0.0) > 0.0]
     completed = [row for row in realization_rows if row.get("status") == "done"]
-    shadow_ready = bool(shadow.get("pass"))
     history = build_organic_history_completion_gate()
     history_completion_ready = bool(history.get("large_scale_organic_history_completion_ready"))
+    shadow = {}
+    if progress:
+        shadow = build_production_shadow_theorem_trace(
+            trace_path=shadow_trace_path,
+            output_path=ARTIFACT_ROOT / "production_large_active_shadow_trace_20260612.json",
+            max_tasks=max_tasks,
+            algorithm="theorem_maxweight_v1",
+            hard_rule_mode="",
+            uncertified_mode="block",
+            reserve_shadow_capacity=True,
+            append=False,
+        )
+    shadow_ready = bool(shadow.get("pass"))
     if history_completion_ready and progress and shadow_ready:
         status = "HISTORY_COMPLETION_AND_ACTIVE_PROGRESS_SHADOW_TRACE_PASS"
     elif history_completion_ready:

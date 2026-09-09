@@ -297,6 +297,7 @@ def _profile_record(
         completion_unit_s=unit_s,
         finalization_overhead_s=terminal,
         completion_total_wall_s=point_eta,
+        completion_group_total_units=total_units,
         completion_model_relative_error=point_error,
     )
 

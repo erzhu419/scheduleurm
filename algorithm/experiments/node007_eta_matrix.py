@@ -119,7 +119,7 @@ def build_node007_eta_matrix(
             try:
                 result = build_remote_workload_selected_profile_probe(
                     run_id=child_run_id,
-                    node="node007-direct",
+                    node="node007",
                     gpus=[int(x) for x in case["gpus"]],
                     profiles=[int(x) for x in profiles],
                     cwd=workload.cwd,
@@ -154,7 +154,7 @@ def build_node007_eta_matrix(
     report = {
         "gate": "node007_eta_matrix",
         "run_id": run_id,
-        "node": "node007-direct",
+        "node": "node007",
         "eta_source": "task-native tqdm/progress logs parsed by progress_wrapper; tui-top ETA is not used",
         "workloads": [w.key for w in selected_workloads],
         "cases": [str(c["case"]) for c in selected_cases],

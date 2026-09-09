@@ -8,9 +8,11 @@ systems and keeps arbitrary/direct full-stack SOTA superiority false.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import shutil
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -38,6 +40,11 @@ NAMED_SOTA_ADAPTERS = {
 
 
 def build_sota_fullstack_superiority_gate() -> dict[str, Any]:
+    return copy.deepcopy(_cached_sota_fullstack_superiority_gate())
+
+
+@lru_cache(maxsize=1)
+def _cached_sota_fullstack_superiority_gate() -> dict[str, Any]:
     readiness = build_direct_sota_fullstack_readiness(run_smoke=True)
     gavel_physical = _load_json(GAVEL_PHYSICAL)
     pollux_fullstack = build_pollux_fullstack_same_workload_gate()

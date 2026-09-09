@@ -38,7 +38,7 @@ SCHEDULER_PATH = REPO_ROOT / "skill" / "scheduler.py"
 TARGET_GPU_NODES: dict[str, tuple[int, ...]] = {
     "gpu_a": (0, 1),
     "gpu_b": (0, 1),
-    "node007-direct": (0, 1, 2, 3),
+    "node007": (0, 1, 2, 3),
 }
 
 PROBE_SPECS: tuple[dict[str, Any], ...] = (

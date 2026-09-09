@@ -1,12 +1,17 @@
 """Event-driven fast-forward replay using cached service curves."""
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
+import json
 import random
 from statistics import mean, median
 from typing import Any
 
 from .service_cache import ProfileRecord, ServiceRateCache
+
+
+_POLICY_SUMMARY_CACHE: dict[tuple[Any, ...], "PolicyReplaySummary"] = {}
 
 
 @dataclass(frozen=True)
@@ -308,6 +313,16 @@ def _summarize_policy(
     trials: int,
     seed: int,
 ) -> PolicyReplaySummary:
+    cache_key = _policy_summary_cache_key(
+        cache=cache,
+        specs=specs,
+        policy=policy,
+        trials=trials,
+        seed=seed,
+    )
+    cached = _POLICY_SUMMARY_CACHE.get(cache_key)
+    if cached is not None:
+        return copy.deepcopy(cached)
     results = []
     for idx, spec in enumerate(specs):
         profile = policy.select_profile(cache, spec)
@@ -316,7 +331,41 @@ def _summarize_policy(
             for t in range(max(1, int(trials)))
         ]
         results.append(_median_result(trial_results, profile.profile))
-    return PolicyReplaySummary(policy=policy.name, workloads=results, policy_config=policy.snapshot())
+    summary = PolicyReplaySummary(policy=policy.name, workloads=results, policy_config=policy.snapshot())
+    _POLICY_SUMMARY_CACHE[cache_key] = copy.deepcopy(summary)
+    return summary
+
+
+def _policy_summary_cache_key(
+    *,
+    cache: ServiceRateCache,
+    specs: list[WorkloadSpec],
+    policy: ReplayPolicy,
+    trials: int,
+    seed: int,
+) -> tuple[Any, ...]:
+    return (
+        id(cache),
+        tuple(_workload_spec_key(spec) for spec in specs),
+        _policy_snapshot_key(policy),
+        max(1, int(trials)),
+        int(seed),
+    )
+
+
+def _workload_spec_key(spec: WorkloadSpec) -> tuple[Any, ...]:
+    return (
+        spec.workload_key,
+        spec.resource_kind,
+        int(spec.task_count),
+        round(float(spec.total_units), 12),
+        int(spec.resource_count),
+        round(float(spec.variation_cv), 12),
+    )
+
+
+def _policy_snapshot_key(policy: ReplayPolicy) -> str:
+    return json.dumps(policy.snapshot(), sort_keys=True, separators=(",", ":"), default=str)
 
 
 def replay_workload(
